@@ -56,7 +56,7 @@ const VIS_BY_SOURCE = {
   institutional_13f: { id: 'holders_leaders', type: 'leaderboard', metric: 'holdings_value' },
 };
 
-function paramsFor(source, resolution, spec) {
+export function paramsFor(source, resolution, spec) {
   const r = resolution || {};
   const tickers = r.universe?.tickers || [];
   const p = {};

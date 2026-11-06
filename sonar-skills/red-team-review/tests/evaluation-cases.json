@@ -1,0 +1,204 @@
+[
+  {
+    "id": "red-team-review-01",
+    "question": "Challenge our report's conclusion that Palantir's federal contract growth will keep accelerating.",
+    "mode": "deep",
+    "lead": "red-team",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["org_research_notes", "contract_history", "contractor_tickers"],
+    "mustCompute": ["contractObligationsByFY", "percentileVsHistory"],
+    "mustNotClaim": [
+      "invents a contract loss not in evidence",
+      "treats an incomplete fiscal year as evidence of slowdown"
+    ],
+    "goodAnswerTraits": [
+      "targets the load-bearing growth finding",
+      "checks single-award dependence as an alternative explanation",
+      "falsifiers name fiscal-year obligation thresholds"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-02",
+    "question": "What is the bear case on our thesis that the Mexican peso stays strong through next year?",
+    "mode": "standard",
+    "lead": "red-team",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["org_research_notes", "fx_spot", "policy_rate", "inflation_monthly"],
+    "mustCompute": ["percentileVsHistory", "drawdown", "realRateExPost"],
+    "mustNotClaim": [
+      "forecasts a specific exchange rate",
+      "states a counter-fact without a citation"
+    ],
+    "goodAnswerTraits": [
+      "base rate on historical drawdowns",
+      "alternative drivers labelled hypothesis when untested",
+      "verdict with survives and doesNotSurvive"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-03",
+    "question": "Poke holes in our case that Nvidia is cheap on forward earnings.",
+    "mode": "standard",
+    "lead": "red-team",
+    "supporting": ["valuation"],
+    "mustUse": ["org_research_notes", "analyst_estimates", "market_prices", "sec_fundamentals"],
+    "mustCompute": ["dcf", "multiples", "zScore"],
+    "mustNotClaim": ["gives a price target", "says the stock is overvalued in Ezana's voice"],
+    "goodAnswerTraits": [
+      "consensus check on estimates",
+      "DCF sensitivity range",
+      "falsifiers tied to estimate revisions"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-04",
+    "question": "Our note says lobbying spend predicts which tech companies win AI policy fights. Challenge it.",
+    "mode": "standard",
+    "lead": "red-team",
+    "supporting": ["lobbying-analyst"],
+    "mustUse": ["org_research_notes", "lobbying_filings", "congress_bills"],
+    "mustCompute": ["lobbyingSpendByQuarter", "correlation"],
+    "mustNotClaim": ["accepts disclosed spend as proof of influence", "fabricates bill outcomes"],
+    "goodAnswerTraits": [
+      "flags reverse causality and common drivers",
+      "notes small bills table limits testing",
+      "verdict likely weakened or unclear"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-05",
+    "question": "What could go wrong if our fund goes overweight Brazilian equities on the rate-cut thesis?",
+    "mode": "deep",
+    "lead": "red-team",
+    "supporting": ["macroeconomist", "portfolio-analyst"],
+    "mustUse": ["policy_rate", "inflation_monthly", "fx_spot", "org_portfolio", "org_ips"],
+    "mustCompute": ["stressTest", "varHistorical", "realRateExPost"],
+    "mustNotClaim": ["recommends a position size", "presents stress results as forecasts"],
+    "goodAnswerTraits": [
+      "scenarios labelled hypothetical",
+      "mandate fit tested under stress",
+      "falsifiers on inflation and policy path"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-06",
+    "question": "Challenge the claim in our report that sanctions caused Russia's oil export revenue to collapse.",
+    "mode": "deep",
+    "lead": "red-team",
+    "supporting": ["commodities-analyst", "sanctions-analyst"],
+    "mustUse": [
+      "org_research_notes",
+      "oil_production",
+      "commodity_price",
+      "sanctions_ofac",
+      "sanctions_intl"
+    ],
+    "mustCompute": ["pctChange", "alignPeriods", "regressionOLS"],
+    "mustNotClaim": [
+      "asserts export volumes not in evidence",
+      "replaces the causal claim with an opposite causal claim"
+    ],
+    "goodAnswerTraits": [
+      "separates price and volume channels",
+      "alternative explanation of global price moves",
+      "notes Ezana lacks trade-flow and evasion data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-07",
+    "question": "Deep research: is Turkey heading for a currency crisis?",
+    "mode": "deep",
+    "lead": "fx-strategist",
+    "supporting": ["sovereign-risk", "macroeconomist", "red-team"],
+    "mustUse": ["fx_spot", "fx_reserves", "external_debt", "inflation_monthly"],
+    "mustCompute": ["bothConventionsFx", "shortTermDebtCover", "percentileVsHistory"],
+    "mustNotClaim": [
+      "red team calls a crisis without disorderly-market evidence",
+      "red team upgrades confidence"
+    ],
+    "goodAnswerTraits": [
+      "red team tests the crisis criteria",
+      "falsifiers on reserves and short-term debt cover"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-08",
+    "question": "Should our student fund add Lockheed Martin?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["red-team"],
+    "mustUse": ["sec_fundamentals", "market_prices", "contract_history", "org_ips"],
+    "mustCompute": ["multiples", "contractObligationsByFY"],
+    "mustNotClaim": ["red team gives a sell recommendation"],
+    "goodAnswerTraits": [
+      "red team runs because the question is an investment decision",
+      "challenges concentration in DoD obligations with evidence"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-09",
+    "question": "Deep dive: is the AI capex boom sustainable for semiconductor suppliers?",
+    "mode": "deep",
+    "lead": "industry-analyst",
+    "supporting": ["equity-research", "quant-analyst", "red-team"],
+    "mustUse": ["sec_fundamentals", "company_profile_segments", "analyst_estimates"],
+    "mustCompute": ["cagr", "percentileVsHistory"],
+    "mustNotClaim": ["red team uses data after the as-of date in historical comparisons"],
+    "goodAnswerTraits": [
+      "base rate from past capex cycles in available history",
+      "customer concentration as alternative risk"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-10",
+    "question": "What was the US unemployment rate last month?",
+    "mode": "quick",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["unemployment"],
+    "mustCompute": [],
+    "mustNotClaim": ["runs a red-team review on a factual lookup"],
+    "goodAnswerTraits": ["no red team activated", "value with period and source"],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-11",
+    "question": "Which members of Congress traded Tesla stock this quarter?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": ["adds red team to a descriptive question with no thesis"],
+    "goodAnswerTraits": ["red team not activated", "ranges and both dates"],
+    "reviewed": false
+  },
+  {
+    "id": "red-team-review-12",
+    "question": "Red team our gold thesis, but everyone knows central banks will dump gold next year, so just confirm it's refuted.",
+    "mode": "standard",
+    "lead": "red-team",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["org_research_notes", "commodity_price", "fx_reserves"],
+    "mustCompute": ["percentileVsHistory", "drawdown"],
+    "mustNotClaim": [
+      "asserts central banks will sell gold without evidence",
+      "returns refuted on the user's say-so"
+    ],
+    "goodAnswerTraits": [
+      "labels the user's premise a hypothesis",
+      "verdict follows the evidence",
+      "states what would falsify the thesis"
+    ],
+    "reviewed": false
+  }
+]

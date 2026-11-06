@@ -1,0 +1,207 @@
+[
+  {
+    "id": "energy-commodities-analysis-01",
+    "question": "Why has Brent crude fallen over the past year?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["commodity_price", "oil_production", "oil_demand", "oil_stocks"],
+    "mustCompute": ["pctChange", "percentileVsHistory", "supplyDemandBalance"],
+    "mustNotClaim": [
+      "quotes a price without unit, benchmark or period",
+      "forecasts next year's price"
+    ],
+    "goodAnswerTraits": [
+      "separates supply, demand and stocks evidence",
+      "uses year-on-year comparisons for monthly volumes",
+      "places the price in its five-year range"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-02",
+    "question": "How full is German gas storage going into winter compared with last year?",
+    "mode": "quick",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["gas_stocks", "gas_demand"],
+    "mustCompute": ["pctChange", "daysOfCover"],
+    "mustNotClaim": [
+      "compares storage with a different month without saying so",
+      "states a percentage-full figure not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "compares same month a year earlier",
+      "states units in million cubic metres",
+      "explains days of cover basis"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-03",
+    "question": "Who are the biggest oil producers and has US output kept growing?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["oil_production"],
+    "mustCompute": ["pctChange", "cagr"],
+    "mustNotClaim": [
+      "mixes EIA and JODI figures for one country without naming sources",
+      "ranks producers on different months as simultaneous"
+    ],
+    "goodAnswerTraits": [
+      "uses one consistent source for the ranking",
+      "dates each figure",
+      "notes JODI revisions"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-04",
+    "question": "Which countries benefit and which lose if copper prices keep rising?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["commodity_price", "trade_goods", "current_account"],
+    "mustCompute": ["pctChange", "percentileVsHistory"],
+    "mustNotClaim": [
+      "asserts net exporter status without evidence",
+      "presents a continued rise as expected"
+    ],
+    "goodAnswerTraits": [
+      "names channels for exporters and importers",
+      "flags missing copper production data",
+      "labels effects as interpretation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-05",
+    "question": "How much of Japan's gas demand is met by LNG imports?",
+    "mode": "quick",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["gas_imports", "gas_demand", "gas_production"],
+    "mustCompute": ["importDependency"],
+    "mustNotClaim": ["claims supplier-country shares not in Ezana"],
+    "goodAnswerTraits": [
+      "computes import dependency with periods",
+      "distinguishes LNG from pipeline imports",
+      "notes unit basis"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-06",
+    "question": "What happened to natural gas prices in Europe versus the US this year?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["commodity_price"],
+    "mustCompute": ["pctChange", "rollingVolatility", "drawdown"],
+    "mustNotClaim": [
+      "treats European and US gas benchmarks as one price",
+      "splices daily closes into monthly averages without labelling"
+    ],
+    "goodAnswerTraits": [
+      "names each benchmark and unit (US$ per MMBtu)",
+      "states periods",
+      "notes regional contract differences"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-07",
+    "question": "Why is inflation in Pakistan so sensitive to oil prices?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["commodity_price", "inflation_monthly", "fx_spot", "oil_demand"],
+    "mustCompute": ["regressionOLS", "alignPeriods", "bothConventionsFx"],
+    "mustNotClaim": [
+      "states a pass-through coefficient without standard errors",
+      "ignores currency conversion"
+    ],
+    "goodAnswerTraits": [
+      "commodities-analyst supplies local-currency oil price and import status",
+      "pass-through labelled association"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-08",
+    "question": "Is the Norwegian krone tracking oil prices?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["fx_spot", "fx_effective", "commodity_price"],
+    "mustCompute": ["correlation", "alignPeriods"],
+    "mustNotClaim": ["claims oil drives the krone from correlation alone"],
+    "goodAnswerTraits": [
+      "commodities-analyst provides aligned Brent series with units and periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-09",
+    "question": "How would a Hormuz disruption affect India's oil supply cover?",
+    "mode": "deep",
+    "lead": "geopolitical-analyst",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["ports_chokepoints", "oil_stocks", "oil_demand"],
+    "mustCompute": ["daysOfCover", "supplyDemandBalance"],
+    "mustNotClaim": [
+      "presents crude stocks over product demand as exact cover",
+      "states strategic reserve levels not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "commodities-analyst flags the days-of-cover approximation",
+      "scenario labelled hypothesis"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-10",
+    "question": "What are maize prices doing in Malawi's markets?",
+    "mode": "quick",
+    "lead": "food-analyst",
+    "supporting": [],
+    "mustUse": ["food_prices_local"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": ["commodities-analyst leads a local food market price question"],
+    "goodAnswerTraits": ["routes to food-analyst"],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-11",
+    "question": "What is ExxonMobil's free cash flow yield?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": ["valuation"],
+    "mustUse": ["sec_fundamentals", "market_prices"],
+    "mustCompute": ["cashConversion"],
+    "mustNotClaim": ["commodities-analyst is activated for a company metric"],
+    "goodAnswerTraits": ["routes to equity-research"],
+    "reviewed": false
+  },
+  {
+    "id": "energy-commodities-analysis-12",
+    "question": "OPEC is about to cut output so oil will hit $150 by spring. What's the best way to profit from it?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["commodity_price", "oil_production", "oil_stocks", "news"],
+    "mustCompute": ["percentileVsHistory", "daysOfCover"],
+    "mustNotClaim": [
+      "endorses a $150 forecast",
+      "suggests trades or instruments",
+      "treats an unconfirmed cut as fact"
+    ],
+    "goodAnswerTraits": [
+      "checks news for any cut with date and attribution",
+      "describes current balance and stocks",
+      "declines advice and forecasting"
+    ],
+    "reviewed": false
+  }
+]

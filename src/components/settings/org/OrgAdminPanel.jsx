@@ -7,6 +7,7 @@ import { OrgSettingsPanel } from '@/components/settings/OrgSettingsPanel';
 import { InviteOnboarding } from './InviteOnboarding';
 import { TeamsSectors } from './TeamsSectors';
 import { FundConfig } from './FundConfig';
+import { ResearchMethodology } from './ResearchMethodology';
 import { CohortSettings } from './CohortSettings';
 import { OrgBranding } from './OrgBranding';
 import { AuditLog } from './AuditLog';
@@ -18,6 +19,7 @@ const SECTIONS = [
   { key: 'invite', label: 'Invite & Onboarding', Comp: InviteOnboarding },
   { key: 'teams', label: 'Teams & Sectors', Comp: TeamsSectors },
   { key: 'fund', label: 'Fund Configuration', Comp: FundConfig },
+  { key: 'research', label: 'Research Methodology', Comp: ResearchMethodology },
   { key: 'cohorts', label: 'Cohorts', Comp: CohortSettings },
   { key: 'branding', label: 'Branding', Comp: OrgBranding },
   { key: 'audit', label: 'Audit Log', Comp: AuditLog },
@@ -29,19 +31,30 @@ export function OrgAdminPanel() {
   const { isExecutive, canInvite } = useOrg();
   const [section, setSection] = useState('members');
 
-  // Members granted invite rights see the invite tools only.
-  if (!isExecutive && canInvite) return <InviteOnboarding />;
+  /* Members granted invite rights see the invite tools; every member sees
+     the fund's research methodology read-only (the API decides who edits). */
+  if (!isExecutive && canInvite) {
+    return (
+      <>
+        <InviteOnboarding />
+        <ResearchMethodology />
+      </>
+    );
+  }
 
   if (!isExecutive) {
     return (
-      <div className="settings-panel">
-        <div className="settings-panel-header">
-          <h2 className="settings-panel-title">Organization</h2>
-          <p className="settings-panel-desc">
-            Executive access is required to manage the organization.
-          </p>
+      <>
+        <div className="settings-panel">
+          <div className="settings-panel-header">
+            <h2 className="settings-panel-title">Organization</h2>
+            <p className="settings-panel-desc">
+              Executive access is required to manage the organization.
+            </p>
+          </div>
         </div>
-      </div>
+        <ResearchMethodology />
+      </>
     );
   }
 

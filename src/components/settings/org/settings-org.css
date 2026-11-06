@@ -180,3 +180,92 @@
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
+
+/* ---- research methodology (ResearchMethodology.jsx) ---- */
+.sorg-rm-fieldset {
+  border: 0;
+  margin: 0 0 16px;
+  padding: 0;
+  min-width: 0;
+}
+.sorg-rm-legend {
+  padding: 0;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+}
+.sorg-rm-hint {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: var(--type-caption-size);
+}
+.sorg-rm-error {
+  margin: 8px 0 0;
+  color: var(--negative);
+  font-size: var(--type-caption-size);
+}
+.sorg-rm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 8px 16px;
+}
+.sorg-rm-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+.sorg-rm-row--wide {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+}
+.sorg-rm-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sorg-rm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.sorg-rm-dl {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) 1fr;
+  gap: 10px 16px;
+  margin: 0;
+  font-size: var(--type-body-size);
+}
+.sorg-rm-dl dt {
+  color: var(--text-muted);
+}
+.sorg-rm-dl dd {
+  margin: 0;
+  color: var(--text-primary);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sorg-rm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sorg-rm-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.sorg-rm-notes {
+  white-space: pre-wrap;
+}
+@media (max-width: 560px) {
+  .sorg-rm-dl {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .sorg-rm-dl dd {
+    margin-bottom: 8px;
+  }
+}

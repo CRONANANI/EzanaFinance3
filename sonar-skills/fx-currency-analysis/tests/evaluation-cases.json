@@ -1,0 +1,216 @@
+[
+  {
+    "id": "fx-currency-analysis-01",
+    "question": "How much has the Egyptian pound lost against the dollar over the last year?",
+    "mode": "quick",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_spot"],
+    "mustCompute": ["bothConventionsFx"],
+    "mustNotClaim": [
+      "quotes only the dollar-dearer percentage as the currency's loss",
+      "describes a move beyond the last observed FX month"
+    ],
+    "goodAnswerTraits": [
+      "states both conventions with start and end months",
+      "states the source and quote convention",
+      "flags monthly-only data if no daily quote"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-02",
+    "question": "Is the Turkish lira under pressure right now?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": [
+      "fx_spot",
+      "inflation_monthly",
+      "policy_rate",
+      "current_account",
+      "geopolitical_risk"
+    ],
+    "mustCompute": ["bothConventionsFx", "annualise", "realRateExPost", "percentileVsHistory"],
+    "mustNotClaim": [
+      "states an overall pressure level different from assessCurrencyPressure",
+      "calls a crisis without disorderly-market or reserve-exhaustion evidence",
+      "presents thresholds as official"
+    ],
+    "goodAnswerTraits": [
+      "reports each component level with evidence",
+      "cites Ezana's thresholds",
+      "uses the last observed current-account year, not a projection"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-03",
+    "question": "Is the Japanese yen cheap in real terms compared with its history?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_effective", "fx_spot"],
+    "mustCompute": ["percentileVsHistory", "zScore", "pctChange"],
+    "mustNotClaim": [
+      "claims the yen is undervalued against a fair value model",
+      "predicts the yen will rebound"
+    ],
+    "goodAnswerTraits": [
+      "uses the BIS real effective rate against its own history",
+      "distinguishes bilateral from effective moves",
+      "states the history window"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-04",
+    "question": "Did the pound strengthen or weaken against the dollar this year?",
+    "mode": "quick",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_spot"],
+    "mustCompute": ["bothConventionsFx"],
+    "mustNotClaim": ["reads a rise in USD per GBP as sterling depreciation"],
+    "goodAnswerTraits": [
+      "states the Bank of England quote is USD per GBP and normalises it",
+      "gives both conventions",
+      "dates the daily observation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-05",
+    "question": "Explain the carry trade on the Brazilian real and whether interest parity holds.",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["policy_rate", "fx_spot", "inflation_monthly"],
+    "mustCompute": ["realRateExPost", "bothConventionsFx", "rollingVolatility"],
+    "mustNotClaim": [
+      "quotes forward rates or covered-parity deviations",
+      "computes a realised carry return without deposit or forward data",
+      "recommends entering the trade"
+    ],
+    "goodAnswerTraits": [
+      "explains carry and parity as concepts",
+      "uses the policy-rate differential as a proxy with caveats",
+      "lists missing forward data as a gap"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-06",
+    "question": "Is the Nigerian naira peg being devalued again?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_spot", "fx_reserves", "inflation_monthly"],
+    "mustCompute": ["bothConventionsFx", "pctChange"],
+    "mustNotClaim": [
+      "calls a market depreciation a devaluation without evidence of an official reset",
+      "asserts a regime without a source"
+    ],
+    "goodAnswerTraits": [
+      "distinguishes depreciation from devaluation",
+      "states regime as not established unless evidenced",
+      "notes official rate only, no parallel rate"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-07",
+    "question": "How exposed is Pakistan to an external financing crisis?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["fx_spot", "external_debt", "current_account", "bop"],
+    "mustCompute": ["bothConventionsFx", "shortTermDebtCover"],
+    "mustNotClaim": ["fx-strategist declares a crisis on depreciation alone"],
+    "goodAnswerTraits": [
+      "fx-strategist supplies the currency leg and pressure components",
+      "sovereign-risk owns the liquidity verdict"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-08",
+    "question": "How did currency moves affect our fund's European holdings this year?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["org_portfolio", "fx_spot"],
+    "mustCompute": ["bothConventionsFx", "portfolioReturn"],
+    "mustNotClaim": [
+      "uses USD per EUR without stating the convention",
+      "mixes monthly-average FX with daily portfolio valuations without noting it"
+    ],
+    "goodAnswerTraits": [
+      "fx-strategist provides normalised EUR and GBP moves with dates",
+      "portfolio-analyst owns the attribution"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-09",
+    "question": "Is Argentine inflation being driven by the peso's weakness?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["inflation_monthly", "fx_spot"],
+    "mustCompute": ["bothConventionsFx", "correlation", "alignPeriods"],
+    "mustNotClaim": ["infers causation from correlated timing"],
+    "goodAnswerTraits": [
+      "fx-strategist supplies aligned FX moves",
+      "pass-through presented as a channel with evidence, not a proven cause"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-10",
+    "question": "What is the 10-year Treasury yield and where is it heading?",
+    "mode": "quick",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["policy_rate"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "fx-strategist is activated for a pure rates question",
+      "quotes a Treasury yield not in evidence"
+    ],
+    "goodAnswerTraits": ["routes to rates-strategist", "states the yield-curve data gap"],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-11",
+    "question": "Which ETFs hold the most Brazilian stocks?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["etf_holdings"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": ["fx-strategist adds currency commentary unprompted"],
+    "goodAnswerTraits": ["routes to ownership-analyst only"],
+    "reviewed": false
+  },
+  {
+    "id": "fx-currency-analysis-12",
+    "question": "The rand dropped 100% since 2015 so it is basically worthless and will keep crashing. How far will it fall next year?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_spot", "fx_effective", "inflation_monthly", "policy_rate"],
+    "mustCompute": ["bothConventionsFx", "percentileVsHistory"],
+    "mustNotClaim": [
+      "accepts that a currency can lose 100% of value from a doubling of the dollar price",
+      "gives a forecast for next year",
+      "calls the currency worthless"
+    ],
+    "goodAnswerTraits": [
+      "corrects the convention error with both percentages",
+      "declines to forecast",
+      "describes current pressure components with Ezana's thresholds"
+    ],
+    "reviewed": false
+  }
+]

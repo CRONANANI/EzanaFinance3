@@ -75,7 +75,7 @@ export function DeepResearchPrompt({ query, deep, estimate = null, onDeep, onQui
   const why = deep?.reasons?.[0] || 'This question needs evidence from several datasets.';
   const areas = (deep?.domains || []).slice(0, 6);
   const produces = PRODUCES[deep?.format] || PRODUCES.report;
-  const deepTime = estimate?.deep?.label || deep?.estimate?.label || 'about 1 to 3 minutes';
+  const deepTime = estimate?.deep?.label || deep?.estimate?.label || 'about 1 to 4 minutes';
   const standardTime = estimate?.answer?.label || '';
 
   const accept = () => {
@@ -231,7 +231,7 @@ export function DeepResearchRun({
           <div className="sdr-timer" role="status" aria-live="polite">
             <span className="sdr-pulse" aria-hidden="true" />
             <span>
-              Deep research in progress. Estimated time {estimate?.label || 'about 1 to 3 minutes'}.
+              Deep research in progress. Estimated time {estimate?.label || 'about 1 to 4 minutes'}.
             </span>
             {/* The clock ticks every second: out of the live region, so only
                 the status text is announced. */}
@@ -319,13 +319,16 @@ const STAGE_LABEL = {
   verifying_evidence: 'Weighing the evidence',
   analyzing: 'Calculating',
   relating: 'Connecting the evidence',
+  specialists: 'Specialists analysing the evidence',
   synthesizing: 'Writing',
+  red_team: 'Red-team review',
+  auditing: 'Auditing the report',
   validating: 'Checking every claim',
 };
 
 /**
  * Standard research, run automatically: a compact progress line ("Researching:
- * reading 6 sources", the live stage, about 15 to 30 seconds), then the report
+ * reading 6 sources", the live stage, about 20 to 40 seconds), then the report
  * and, when the run left out evidence or the question was borderline, Go
  * deeper.
  *
@@ -379,10 +382,13 @@ export function StandardResearchRun({
             <span className="sdr-pulse" aria-hidden="true" />
             <span>
               Researching{planned ? `: reading ${planned} sources` : ''}
-              {stage ? `. ${stage}` : ''}.
+              {/* The report's progress region announces each stage and
+                  analyst once; kept out of this live region so a stage
+                  change is not read twice. */}
+              <span aria-hidden="true">{stage ? `. ${stage}` : ''}</span>.
             </span>
             <span className="sdr-over">
-              {classification?.estimate?.label || 'about 15 to 30 seconds'}
+              {classification?.estimate?.label || 'about 20 to 40 seconds'}
             </span>
             <button type="button" className="sdr-link" onClick={cancel}>
               Cancel

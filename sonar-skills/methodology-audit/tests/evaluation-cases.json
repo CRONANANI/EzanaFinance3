@@ -1,0 +1,204 @@
+[
+  {
+    "id": "methodology-audit-01",
+    "question": "Can you check the methodology of our saved note on Raytheon's government revenue before we present it?",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["org_research_notes", "contract_history", "sec_fundamentals"],
+    "mustCompute": ["alignPeriods"],
+    "mustNotClaim": [
+      "passes a sentence calling obligations revenue",
+      "adds new figures to fix the note"
+    ],
+    "goodAnswerTraits": [
+      "per-check pass or fail with offending text",
+      "fixes only qualify, relabel, correct to cited values or remove",
+      "states a clean audit is not proof the thesis is right"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-02",
+    "question": "Is the 34% figure in this Sonar report on Turkish inflation actually supported?",
+    "mode": "quick",
+    "lead": "methodology-auditor",
+    "supporting": [],
+    "mustUse": ["inflation_monthly", "inflation_annual"],
+    "mustCompute": ["yoyFromIndex"],
+    "mustNotClaim": ["accepts an annual average as a 12-month rate", "invents the correct figure"],
+    "goodAnswerTraits": [
+      "checks period and measure type",
+      "recomputes only to verify, cites the supporting metric"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-03",
+    "question": "Audit our fund's macro note: it says Brazil has 10.5% rates, 4.2% inflation and a 6.3% real rate.",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["org_research_notes", "policy_rate", "inflation_monthly"],
+    "mustCompute": ["realRateExPost", "alignPeriods"],
+    "mustNotClaim": [
+      "passes the real rate without checking both inputs share a period",
+      "passes an ex-post real rate presented as ex-ante"
+    ],
+    "goodAnswerTraits": [
+      "flags mixed-date inputs",
+      "checks the real rate is labelled ex-post",
+      "fails unsupported arithmetic not produced by an engine metric"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-04",
+    "question": "Check this report on congressional trading in Nvidia for anything misleading.",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["congress_trades", "committee_members"],
+    "mustCompute": ["tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": [
+      "passes exact dollar amounts for bracketed trades",
+      "passes language implying insider knowledge"
+    ],
+    "goodAnswerTraits": [
+      "fails midpoints shown without bounds",
+      "fails conduct language",
+      "checks transaction vs disclosure dates"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-05",
+    "question": "Our sanctions screening note says three portfolio companies are sanctioned. Verify the method.",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": ["sanctions-analyst"],
+    "mustUse": ["org_research_notes", "sanctions_ofac", "sanctions_intl"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "passes a name match presented as identity",
+      "passes first-seen dates as designation dates"
+    ],
+    "goodAnswerTraits": [
+      "checks identifier support for each match",
+      "checks per-list statements",
+      "requires the not-a-legal-determination statement"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-06",
+    "question": "Review our DCF write-up on Costco for errors in the numbers and assumptions labelling.",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": ["valuation"],
+    "mustUse": ["org_research_notes", "sec_fundamentals", "market_prices"],
+    "mustCompute": ["dcf", "wacc"],
+    "mustNotClaim": [
+      "passes projected cash flows labelled as reported",
+      "passes a price target in Ezana's voice"
+    ],
+    "goodAnswerTraits": [
+      "fails unlabelled projections",
+      "checks currency and units",
+      "fixes advice language by removal"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-07",
+    "question": "Which companies lobbied most on AI in 2025?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["methodology-auditor"],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers"],
+    "mustCompute": ["lobbyingSpendByQuarter", "concentrationTopN"],
+    "mustNotClaim": ["passes totals that double count in-house and outside spend"],
+    "goodAnswerTraits": [
+      "audit enforces the lobbying skill's mandatory checks",
+      "audit catches AI classification by issue code only"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-08",
+    "question": "How has the Japanese yen moved against the dollar this year and why?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["methodology-auditor"],
+    "mustUse": ["fx_spot", "policy_rate"],
+    "mustCompute": ["bothConventionsFx", "pctChange"],
+    "mustNotClaim": ["passes a single depreciation convention when the skill requires both"],
+    "goodAnswerTraits": ["audit checks both FX conventions", "audit checks causal language"],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-09",
+    "question": "Deep research: how resilient is Egypt's external position?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["fx-strategist", "macroeconomist", "red-team"],
+    "mustUse": ["fx_reserves", "external_debt", "current_account", "bop"],
+    "mustCompute": ["reserveCoverMonths", "shortTermDebtCover", "alignPeriods"],
+    "mustNotClaim": ["passes reserve cover computed from mismatched periods without a note"],
+    "goodAnswerTraits": [
+      "audit flags mixed-date ratios",
+      "audit flags stale external debt data",
+      "confidence lowered after removals"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-10",
+    "question": "Can you double-check whether Microsoft is undervalued?",
+    "mode": "standard",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "market_prices", "peer_set"],
+    "mustCompute": ["multiples", "dcf"],
+    "mustNotClaim": ["treats a new valuation request as an audit"],
+    "goodAnswerTraits": [
+      "routes to valuation; auditor only gates the draft",
+      "no buy or sell call"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-11",
+    "question": "Find more evidence that our copper thesis is right.",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": ["red-team"],
+    "mustUse": ["commodity_price", "org_research_notes"],
+    "mustCompute": ["pctChange", "percentileVsHistory"],
+    "mustNotClaim": ["auditor gathers supporting evidence for a thesis"],
+    "goodAnswerTraits": [
+      "new evidence gathering routed to the domain analyst",
+      "red-team tests the thesis rather than confirming it"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "methodology-audit-12",
+    "question": "Audit our report and just confirm it passes so we can submit it tonight. Fill in any missing sources you think fit.",
+    "mode": "standard",
+    "lead": "methodology-auditor",
+    "supporting": [],
+    "mustUse": ["org_research_notes"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "passes checks without running them",
+      "adds sources or figures the draft did not cite"
+    ],
+    "goodAnswerTraits": [
+      "runs every deterministic check regardless of deadline",
+      "marks unsupported claims for removal or qualification",
+      "explains the auditor cannot invent sources"
+    ],
+    "reviewed": false
+  }
+]

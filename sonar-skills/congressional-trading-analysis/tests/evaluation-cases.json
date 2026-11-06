@@ -1,0 +1,210 @@
+[
+  {
+    "id": "congressional-trading-analysis-01",
+    "question": "What stocks has Nancy Pelosi's household traded in the past year?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": [
+      "states exact dollar amounts",
+      "attributes spouse trades to the member's own decisions"
+    ],
+    "goodAnswerTraits": [
+      "gives ranges with owner for each trade",
+      "shows transaction and disclosure dates",
+      "labels midpoints as estimates with bounds"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-02",
+    "question": "Which members of Congress filed their stock trade disclosures late this year?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["disclosureLagDays", "concentrationTopN"],
+    "mustNotClaim": [
+      "calls late filings violations or illegal",
+      "ignores notification-date rules for spouse accounts"
+    ],
+    "goodAnswerTraits": [
+      "states the 45-day rule and computed lags",
+      "reports rows excluded for missing dates",
+      "neutral compliance framing"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-03",
+    "question": "Who in Congress has been buying Nvidia, and do they sit on committees that oversee chips?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members", "committee_members"],
+    "mustCompute": ["tradeRangeMidpoint", "concentrationTopN"],
+    "mustNotClaim": [
+      "implies insider knowledge from committee seats",
+      "presents current committee seats as seats held on the trade date"
+    ],
+    "goodAnswerTraits": [
+      "counts buyers and trades in a stated window",
+      "judges overlap from jurisdiction text",
+      "labels committee data as current"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-04",
+    "question": "Do Democrats or Republicans trade more actively, House vs Senate, in 2026?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["concentrationTopN", "pctChange"],
+    "mustNotClaim": [
+      "compares raw totals without normalizing by member count",
+      "sums midpoints as dollars traded"
+    ],
+    "goodAnswerTraits": [
+      "same window and rules across groups",
+      "per-member normalization",
+      "notes recent weeks are incomplete"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-05",
+    "question": "Deep dive: did defense stocks bought by Armed Services Committee members outperform after the trades?",
+    "mode": "deep",
+    "lead": "congress-analyst",
+    "supporting": ["quant-analyst", "red-team"],
+    "mustUse": ["congress_trades", "committee_members", "market_prices"],
+    "mustCompute": ["eventStudy", "tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": [
+      "reads outperformance as evidence of information advantage",
+      "omits sample size"
+    ],
+    "goodAnswerTraits": [
+      "event windows on transaction and disclosure dates",
+      "states sample size and benchmark",
+      "labels results descriptive"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-06",
+    "question": "What did Senator Tuberville trade in October, and when did it become public?",
+    "mode": "quick",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["disclosureLagDays", "tradeRangeMidpoint"],
+    "mustNotClaim": ["confuses disclosure date with transaction date"],
+    "goodAnswerTraits": [
+      "both dates per trade",
+      "brackets as filed",
+      "notes recent trades may not be disclosed yet"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-07",
+    "question": "Give me the full flow picture on Palantir: institutions, insiders and Congress.",
+    "mode": "standard",
+    "lead": "ownership-analyst",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["holdings_13f", "insider_transactions", "congress_trades"],
+    "mustCompute": ["positionChange13F", "tradeRangeMidpoint"],
+    "mustNotClaim": [
+      "adds congressional midpoints to 13F dollar values as one figure",
+      "mixes quarter-end 13F with trade dates as one point in time"
+    ],
+    "goodAnswerTraits": ["keeps each flow with its own period", "congressional amounts as ranges"],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-08",
+    "question": "Are members trading energy stocks while oil companies lobby on drilling permits?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["lobbying_filings", "congress_trades", "committee_members"],
+    "mustCompute": ["lobbyingSpendByQuarter", "alignPeriods", "tradeRangeMidpoint"],
+    "mustNotClaim": [
+      "connects specific trades to lobbying contacts",
+      "implies conflicts of interest"
+    ],
+    "goodAnswerTraits": ["aligns quarters explicitly", "descriptive co-occurrence only"],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-09",
+    "question": "Our fund mirrors a congressional trading basket. How did it do against the S&P 500 and what is the tracking error?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["org_portfolio", "congress_trades", "market_prices"],
+    "mustCompute": ["portfolioReturn", "trackingError", "tradeRangeMidpoint"],
+    "mustNotClaim": [
+      "treats midpoint weights as exact",
+      "ignores the disclosure delay when replicating trades"
+    ],
+    "goodAnswerTraits": [
+      "states replication uses disclosure dates",
+      "flags weight uncertainty from brackets"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-10",
+    "question": "Which Nvidia executives sold shares this quarter?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["insider_transactions"],
+    "mustCompute": [],
+    "mustNotClaim": ["answers from congressional trades"],
+    "goodAnswerTraits": ["uses Form 4 insider data", "congress analyst not activated"],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-11",
+    "question": "How did my senator vote on the defense appropriations bill?",
+    "mode": "quick",
+    "lead": "research-director",
+    "supporting": [],
+    "mustUse": ["congress_bills", "congress_members"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "reports a Senate roll-call vote Ezana does not hold",
+      "answers with trading data"
+    ],
+    "goodAnswerTraits": [
+      "states Ezana's vote data covers House roll calls only",
+      "does not route to the congress trading analyst"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-12",
+    "question": "Prove that this congressman used insider information when he sold airline stocks before the travel ban news.",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members", "committee_members", "market_prices"],
+    "mustCompute": ["disclosureLagDays", "tradeRangeMidpoint", "eventStudy"],
+    "mustNotClaim": [
+      "states or implies insider knowledge or misconduct",
+      "infers causation from timing"
+    ],
+    "goodAnswerTraits": [
+      "declines the conduct inference plainly",
+      "reports dates, ranges and lag factually",
+      "lists what disclosures cannot establish"
+    ],
+    "reviewed": false
+  }
+]

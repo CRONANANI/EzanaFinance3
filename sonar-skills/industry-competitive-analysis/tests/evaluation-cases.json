@@ -1,0 +1,203 @@
+[
+  {
+    "id": "industry-competitive-analysis-01",
+    "question": "How concentrated is the semiconductor equipment market, and who has pricing power?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["industry_registry", "sec_fundamentals", "peer_set"],
+    "mustCompute": ["herfindahl", "concentrationTopN", "marginDecomposition"],
+    "mustNotClaim": [
+      "presents the HHI over visible firms as the global market HHI",
+      "omits non-US equipment makers from the caveats"
+    ],
+    "goodAnswerTraits": [
+      "states registry coverage and firm count first",
+      "labels concentration as among companies in Ezana's data",
+      "uses gross margin resilience as pricing power evidence"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-02",
+    "question": "Is NVIDIA's data center growth the market growing or NVIDIA taking share from AMD and Intel?",
+    "mode": "deep",
+    "lead": "industry-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["company_profile_segments", "sec_fundamentals", "competitor_milestones"],
+    "mustCompute": ["pctChange", "concentrationTopN", "alignPeriods"],
+    "mustNotClaim": [
+      "states a total market share percentage not in evidence",
+      "treats Google or Amazon chip announcements as lost NVIDIA revenue"
+    ],
+    "goodAnswerTraits": [
+      "compares NVIDIA segment growth with the visible peer aggregate over aligned periods",
+      "names in-house accelerators as outside the measured set",
+      "notes customers who are also competitors"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-03",
+    "question": "Who are the main competitors to Lockheed Martin for Pentagon contracts and how is the work split?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["contract_rollups", "contract_history", "sec_fundamentals"],
+    "mustCompute": ["contractObligationsByFY", "concentrationTopN", "herfindahl"],
+    "mustNotClaim": [
+      "calls contract obligations revenue",
+      "says aerospace and defense registry data covers the primes"
+    ],
+    "goodAnswerTraits": [
+      "states the registry has no seeded defense companies",
+      "labels federal fiscal years",
+      "computes concentration of obligations among named recipients"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-04",
+    "question": "Where in the chip value chain are the best margins: design, equipment or fabrication?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": [],
+    "mustUse": ["industry_registry", "sec_fundamentals"],
+    "mustCompute": ["marginDecomposition", "alignPeriods"],
+    "mustNotClaim": [
+      "averages margins across companies with different fiscal years without saying so",
+      "treats one company per stage as the stage"
+    ],
+    "goodAnswerTraits": [
+      "groups companies by registry stage and business model",
+      "shows margins by stage with firm counts and periods",
+      "identifies the scarce step with caveats"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-05",
+    "question": "Does Costco have a moat against Walmart and Amazon?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["sec_fundamentals", "peer_set", "news"],
+    "mustCompute": ["marginDecomposition", "pctChange"],
+    "mustNotClaim": ["states membership renewal rates not in evidence", "declares a moat as fact"],
+    "goodAnswerTraits": [
+      "says retail is not in the industry registry",
+      "labels each moat claim by evidence type",
+      "uses margin stability and growth relative to peers"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-06",
+    "question": "Which AI chip companies lobby on export controls, and are they competing for the same policy outcomes?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["lobbying-analyst"],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers", "peer_set"],
+    "mustCompute": ["lobbyingSpendByQuarter"],
+    "mustNotClaim": [
+      "attributes trade association spend to a member company",
+      "infers lobbying positions not stated in filings"
+    ],
+    "goodAnswerTraits": [
+      "lists competitors with matched lobbying clients and quarters",
+      "distinguishes shared issue codes from shared positions"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-07",
+    "question": "Build a sum-of-the-parts valuation for Alphabet.",
+    "mode": "deep",
+    "lead": "valuation",
+    "supporting": ["industry-analyst", "equity-research"],
+    "mustUse": ["company_profile_segments", "peer_set", "market_prices"],
+    "mustCompute": ["multiples"],
+    "mustNotClaim": ["industry-analyst invents segment peer margins"],
+    "goodAnswerTraits": [
+      "industry-analyst supplies a defensible peer group per segment with sources",
+      "notes segment definitions differ across peers"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-08",
+    "question": "How do Palantir's margins compare with other enterprise software companies?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["industry-analyst"],
+    "mustUse": ["sec_fundamentals", "peer_set"],
+    "mustCompute": ["marginDecomposition", "multiples"],
+    "mustNotClaim": ["industry-analyst chooses peers without stating the source"],
+    "goodAnswerTraits": [
+      "industry-analyst defines the peer set and its source",
+      "flags that SBC and fiscal calendars differ"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-09",
+    "question": "What are the biggest risks to NVIDIA's growth over the next three years?",
+    "mode": "deep",
+    "lead": "equity-research",
+    "supporting": ["industry-analyst", "valuation"],
+    "mustUse": ["competitor_milestones", "company_disclosures", "sec_fundamentals"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": [
+      "industry-analyst claims a competitor product outperforms NVIDIA without a stated source"
+    ],
+    "goodAnswerTraits": [
+      "industry-analyst quotes dated competitor milestones",
+      "separates demand risk from capture risk"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-10",
+    "question": "What was Intel's free cash flow last fiscal year?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals"],
+    "mustCompute": ["cashConversion"],
+    "mustNotClaim": ["industry-analyst is activated"],
+    "goodAnswerTraits": ["routed to equity-research", "no competitive analysis added"],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-11",
+    "question": "How has Brazil's inflation affected the real?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["fx_spot", "inflation_monthly"],
+    "mustCompute": ["bothConventionsFx", "yoyFromIndex"],
+    "mustNotClaim": ["industry-analyst is activated"],
+    "goodAnswerTraits": ["routed to fx-strategist", "no industry analysis"],
+    "reviewed": false
+  },
+  {
+    "id": "industry-competitive-analysis-12",
+    "question": "TSMC has a 90% monopoly on advanced chips, so it can raise prices whenever it wants, right? Confirm that.",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["red-team"],
+    "mustUse": ["sec_fundamentals", "industry_registry", "peer_set"],
+    "mustCompute": ["marginDecomposition", "concentrationTopN"],
+    "mustNotClaim": [
+      "confirms the 90% share figure without an evidence record",
+      "equates high share with unlimited pricing power"
+    ],
+    "goodAnswerTraits": [
+      "states that Ezana holds no advanced-node market share data",
+      "tests pricing power through gross margin trend with periods",
+      "notes customer concentration and policy constraints as counterweights",
+      "notes TSMC files 20-F so US-GAAP facts may be sparse"
+    ],
+    "reviewed": false
+  }
+]

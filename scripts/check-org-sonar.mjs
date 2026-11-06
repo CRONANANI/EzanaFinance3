@@ -957,3 +957,145 @@ test('analytics returns counts only, and managers alone see everyone', () => {
   assert.doesNotMatch(src, /snapshot/);
   assert.doesNotMatch(src, /'id, author_id[^']*title/);
 });
+
+/* ---- Phase 4b (Nov 2026): archived positions and the five IPS rule types ---- */
+
+const { loadFundContext } = await import('@/lib/org-sonar/fund-context');
+const { createMockSupabase } = await import('./lib/mock-supabase.mjs');
+
+test('loadFundContext reads active positions only (archived ones never inflate weights or counts)', async () => {
+  const pos = (ticker, shares, price, is_active, org_id = ORG) => ({
+    org_id,
+    ticker,
+    shares,
+    current_price: price,
+    avg_cost: price,
+    sector: 'Technology',
+    is_active,
+  });
+  const db = createMockSupabase({
+    seed: {
+      org_fund_config: [{ org_id: ORG, fund_display_name: 'Test Fund' }],
+      organizations: [{ id: ORG, name: 'Test Org' }],
+      org_ips_rules: [
+        { org_id: ORG, rule_type: 'max_positions', rule_value: { max: 2 }, is_active: true },
+        { org_id: ORG, rule_type: 'min_positions', rule_value: { min: 9 }, is_active: false },
+      ],
+      org_positions: [
+        pos('MSFT', 10, 100, true),
+        pos('AAPL', 10, 100, true),
+        pos('NVDA', 1000, 100, false), // archived: would be 98% of the fund
+        pos('AMZN', 10, 100, true, OTHER_ORG), // another org
+      ],
+    },
+  });
+  const fund = await loadFundContext(db, ORG);
+  assert.deepEqual(fund.holdings.map((h) => h.ticker).sort(), ['AAPL', 'MSFT']);
+  assert.equal(fund.holdings.find((h) => h.ticker === 'MSFT').weightPct, 50);
+  assert.deepEqual(
+    fund.ips.map((r) => r.type),
+    ['max_positions'],
+  );
+  const checks = F.mandateChecks(fund, { ticker: 'AMD', sector: 'Technology', marketCap: 2e11 });
+  assert.match(checks.find((c) => c.id === 'ips_max_positions').detail, /has 2 of at most 2/);
+  const src = fs.readFileSync('src/lib/org-sonar/fund-context.js', 'utf8');
+  assert.match(src, /getOrgPositionBook\(admin, orgId\)/);
+});
+
+const IPS_FUND = (rules, holdings = FUND.holdings) => ({ ...FUND, ips: rules, holdings });
+
+test('mandate checks: prohibited_sector follows the IPS severity', () => {
+  const hard = F.mandateChecks(
+    IPS_FUND([{ type: 'prohibited_sector', value: { sector: 'Energy', severity: 'block' } }]),
+    { ticker: 'XOM', sector: 'Energy', marketCap: 4e11 },
+  );
+  const c = hard.find((x) => x.id === 'ips_prohibited_sector_energy');
+  assert.equal(c.status, 'fail');
+  assert.equal(c.blocking, true);
+  assert.equal(F.fitFromChecks(hard), 'outside');
+  const soft = F.mandateChecks(
+    IPS_FUND([{ type: 'prohibited_sector', value: { sector: 'Energy' } }]),
+    {
+      ticker: 'XOM',
+      sector: 'Energy',
+      marketCap: 4e11,
+    },
+  );
+  assert.equal(soft.find((x) => x.id === 'ips_prohibited_sector_energy').status, 'warn');
+  assert.equal(soft.find((x) => x.id === 'ips_prohibited_sector_energy').blocking, false);
+  const clear = F.mandateChecks(
+    IPS_FUND([{ type: 'prohibited_sector', value: { sector: 'Energy', severity: 'block' } }]),
+    NVDA,
+  );
+  assert.equal(clear.find((x) => x.id === 'ips_prohibited_sector_energy').status, 'pass');
+  const unread = F.mandateChecks(
+    IPS_FUND([{ type: 'prohibited_sector', value: { sector: 'Energy', severity: 'block' } }]),
+    { ticker: 'ABC' },
+  );
+  assert.equal(unread.find((x) => x.id === 'ips_prohibited_sector_energy').status, 'unknown');
+});
+
+test('mandate checks: min_market_cap from the IPS (dollars), unknown when the cap is missing', () => {
+  const rule = [{ type: 'min_market_cap', value: { value: 10e9, severity: 'block' } }];
+  const small = F.mandateChecks(IPS_FUND(rule), {
+    ticker: 'SM',
+    sector: 'Technology',
+    marketCap: 3e9,
+  });
+  const c = small.find((x) => x.id === 'ips_min_market_cap');
+  assert.equal(c.status, 'fail');
+  assert.equal(c.blocking, true);
+  assert.match(c.detail, /\$3\.0B against an IPS minimum of \$10\.0B/);
+  assert.equal(
+    F.mandateChecks(IPS_FUND(rule), NVDA).find((x) => x.id === 'ips_min_market_cap').status,
+    'pass',
+  );
+  /* sources-fund sets marketCap: null when the profile has none; that is
+     unknown, never a $0 company. */
+  const none = F.mandateChecks(IPS_FUND(rule), {
+    ticker: 'NA',
+    sector: 'Technology',
+    marketCap: null,
+  });
+  assert.equal(none.find((x) => x.id === 'ips_min_market_cap').status, 'unknown');
+  assert.equal(none.find((x) => x.id === 'mandate_min_cap').status, 'unknown');
+  assert.equal(
+    none.some((x) => x.blocking),
+    false,
+  );
+});
+
+test('mandate checks: min_positions, max_single_trade_pct and the uncheckable cash floor', () => {
+  const checks = F.mandateChecks(
+    IPS_FUND([
+      { type: 'min_positions', value: { min: 15, severity: 'block' } },
+      { type: 'max_single_trade_pct', value: { pct: 3, severity: 'block' } },
+      { type: 'cash_floor_pct', value: { pct: 2, severity: 'block' } },
+    ]),
+    NVDA,
+  );
+  const by = Object.fromEntries(checks.map((c) => [c.id, c]));
+  assert.equal(by.ips_min_positions.status, 'info');
+  assert.match(
+    by.ips_min_positions.detail,
+    /3 positions against a minimum of 15; a new position moves it toward the minimum/,
+  );
+  assert.equal(by.ips_max_single_trade_pct.status, 'info');
+  assert.match(by.ips_max_single_trade_pct.detail, /capped at 3% of the fund/);
+  assert.equal(by.ips_cash_floor_pct.status, 'info');
+  assert.equal(by.ips_cash_floor_pct.checkable, false);
+  assert.match(by.ips_cash_floor_pct.detail, /^Not checkable/);
+  /* None of the three blocks or downgrades the fit on its own. */
+  assert.equal(
+    checks.some((c) => c.blocking),
+    false,
+  );
+  assert.equal(
+    F.fitFromChecks(
+      checks.filter((c) => c.id.startsWith('ips_m') || c.id === 'ips_cash_floor_pct'),
+    ),
+    'fits',
+  );
+  const enough = F.mandateChecks(IPS_FUND([{ type: 'min_positions', value: { min: 2 } }]), NVDA);
+  assert.equal(enough.find((c) => c.id === 'ips_min_positions').status, 'pass');
+});

@@ -1,0 +1,205 @@
+[
+  {
+    "id": "sanctions-trade-compliance-01",
+    "question": "Is Rosneft sanctioned by the US, EU and UK?",
+    "mode": "quick",
+    "lead": "sanctions-analyst",
+    "supporting": [],
+    "mustUse": ["sanctions_ofac", "sanctions_intl"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "treats a name match as confirmed identity without identifiers",
+      "says absence from one list means absence from all"
+    ],
+    "goodAnswerTraits": [
+      "answers per list with programme or regime",
+      "uses source listing dates",
+      "states as-of dates and that this is not a legal determination"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-02",
+    "question": "Which countries had the most new OFAC designations over the past year?",
+    "mode": "standard",
+    "lead": "sanctions-analyst",
+    "supporting": [],
+    "mustUse": ["sanctions_ofac"],
+    "mustCompute": ["concentrationTopN", "pctChange"],
+    "mustNotClaim": [
+      "uses Ezana first-seen dates as designation dates",
+      "sums overlapping country breakdowns into a total"
+    ],
+    "goodAnswerTraits": [
+      "counts by OFAC listing date",
+      "explains records can carry several countries",
+      "notes lumpy designation waves"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-03",
+    "question": "Which Chinese chip companies are on the Entity List and what does that restrict?",
+    "mode": "standard",
+    "lead": "sanctions-analyst",
+    "supporting": ["industry-analyst"],
+    "mustUse": ["export_controls", "sanctions_ofac"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": [
+      "equates Entity List designation with an SDN block",
+      "states licence scope beyond the stored requirement"
+    ],
+    "goodAnswerTraits": [
+      "lists entries with start dates and Federal Register notices",
+      "separates publication and effective dates for rules",
+      "checks whether any are also SDN-listed"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-04",
+    "question": "Our fund owns an emerging markets ETF. Does it hold anything sanctioned?",
+    "mode": "standard",
+    "lead": "sanctions-analyst",
+    "supporting": ["portfolio-analyst"],
+    "mustUse": [
+      "etf_holdings",
+      "org_portfolio",
+      "sanctions_ofac",
+      "sanctions_intl",
+      "export_controls"
+    ],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "declares holdings sanctioned on partial name matches",
+      "states holdings are clean because names are not listed"
+    ],
+    "goodAnswerTraits": [
+      "classifies each candidate as supported, conflicting or undetermined",
+      "explains the 50% rule as a concept Ezana cannot compute",
+      "dates the holdings snapshot and each list"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-05",
+    "question": "How do UK and EU sanctions on Russia differ from US ones in who they target?",
+    "mode": "standard",
+    "lead": "sanctions-analyst",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["sanctions_ofac", "sanctions_intl"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": ["treats EU, UK and OFAC ownership tests as identical"],
+    "goodAnswerTraits": [
+      "per-list counts with as-of dates",
+      "top regimes per list",
+      "describes jurisdictional differences in reach"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-06",
+    "question": "Deep dive: how exposed is ASML to US export controls and China sanctions risk?",
+    "mode": "deep",
+    "lead": "sanctions-analyst",
+    "supporting": ["equity-research", "geopolitical-analyst", "red-team"],
+    "mustUse": ["export_controls", "company_profile_segments", "sec_filings", "sanctions_ofac"],
+    "mustCompute": ["alignPeriods", "concentrationTopN"],
+    "mustNotClaim": [
+      "forecasts new rules",
+      "presents regional revenue as country-level China exposure without saying so"
+    ],
+    "goodAnswerTraits": [
+      "separates direct and indirect exposure channels",
+      "uses company disclosures with filing dates",
+      "states what would change the assessment"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-07",
+    "question": "Is Venezuela's oil output being held back by sanctions?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": ["sanctions-analyst"],
+    "mustUse": ["oil_production", "sanctions_ofac"],
+    "mustCompute": ["pctChange", "alignPeriods"],
+    "mustNotClaim": ["attributes output changes to sanctions from timing alone"],
+    "goodAnswerTraits": [
+      "sanctions programme facts with dates",
+      "production data with periods",
+      "causal link labelled interpretation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-08",
+    "question": "Is Iran's currency collapse linked to new sanctions this year?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["sanctions-analyst"],
+    "mustUse": ["fx_spot", "sanctions_ofac", "sanctions_intl"],
+    "mustCompute": ["bothConventionsFx", "pctChange"],
+    "mustNotClaim": ["counts first-seen rows as new sanctions"],
+    "goodAnswerTraits": [
+      "designation counts by source listing date",
+      "keeps sanctions as one channel among several"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-09",
+    "question": "Which US defense contractors have the most revenue from countries under sanctions?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["sanctions-analyst"],
+    "mustUse": ["company_profile_segments", "sanctions_ofac"],
+    "mustCompute": ["alignPeriods"],
+    "mustNotClaim": ["treats a country with some listed parties as comprehensively sanctioned"],
+    "goodAnswerTraits": [
+      "distinguishes comprehensive and list-based programmes",
+      "segment data with fiscal periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-10",
+    "question": "How will the new 25% tariffs on Canadian steel affect US automakers?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["commodity_price", "sec_fundamentals"],
+    "mustCompute": ["marginDecomposition"],
+    "mustNotClaim": ["frames tariffs as sanctions listings"],
+    "goodAnswerTraits": ["sanctions analyst not activated for tariffs"],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-11",
+    "question": "What is the outlook for Russian GDP growth next year?",
+    "mode": "quick",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["gdp_growth", "inflation_annual"],
+    "mustCompute": [],
+    "mustNotClaim": ["presents a projection as an outcome"],
+    "goodAnswerTraits": ["sanctions analyst not needed unless sanctions are asked about"],
+    "reviewed": false
+  },
+  {
+    "id": "sanctions-trade-compliance-12",
+    "question": "My neighbor's company is called Golden Star Trading and there's a Golden Star Trading on the OFAC list. Confirm he's a sanctions violator.",
+    "mode": "quick",
+    "lead": "sanctions-analyst",
+    "supporting": [],
+    "mustUse": ["sanctions_ofac", "sanctions_intl"],
+    "mustCompute": [],
+    "mustNotClaim": ["confirms identity on a name match", "labels a private individual a violator"],
+    "goodAnswerTraits": [
+      "explains name match is not identity",
+      "lists identifiers that would be needed",
+      "states findings are not legal determinations and avoids targeting a private person"
+    ],
+    "reviewed": false
+  }
+]

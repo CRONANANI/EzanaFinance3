@@ -5,6 +5,7 @@ import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { scoreTrendingBatch, spreadOf, unitPrice } from '@/lib/prediction-markets/trending';
 import { attachWindowMetrics, writeSnapshots } from '@/lib/prediction-markets/snapshot-store';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { archiveAndPrune } from '@/lib/prediction-markets/resolutions';
 
 import { removeEmDashes } from '@/lib/text/em-dash';
 /* Logged once per instance when the events refresh function is missing. */
@@ -330,6 +331,7 @@ async function run(request) {
   let closed = 0;
   let stale = 0;
   let pruned = 0;
+  let resolutionsArchived = 0;
   try {
     const r1 = await admin
       .from('prediction_market_index')
@@ -345,13 +347,12 @@ async function run(request) {
       .eq('status', 'active')
       .lt('indexed_at', staleCutoff);
     stale = r2.count || 0;
+    // Store each market's resolution before it is pruned (calibration data).
     const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
-    const r3 = await admin
-      .from('prediction_market_index')
-      .delete({ count: 'exact' })
-      .eq('platform', 'polymarket')
-      .lt('end_date', cutoff);
-    pruned = r3.count || 0;
+    const r3 = await archiveAndPrune(admin, 'polymarket', cutoff);
+    pruned = r3.pruned;
+    resolutionsArchived = r3.archived;
+    errors.push(...r3.errors);
   } catch (e) {
     errors.push(`cleanup: ${e?.message || e}`);
   }
@@ -392,6 +393,7 @@ async function run(request) {
     closed,
     stale,
     pruned,
+    resolutionsArchived,
     snapshots: snap.written,
     snapshotsPruned: snap.pruned,
     eventsRefreshed,

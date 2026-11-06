@@ -505,8 +505,8 @@ const QUESTION_WORD_RE =
 /* ── Estimates ───────────────────────────────────────────────────────── */
 
 export const MODE_LABELS = {
-  standard: 'about 15 to 30 seconds',
-  deep: 'about 1 to 3 minutes',
+  standard: 'about 20 to 40 seconds',
+  deep: 'about 1 to 4 minutes',
 };
 
 /** "about 1 to 2 minutes", "about 2 to 3 minutes". */
@@ -522,15 +522,25 @@ export function estimateLabel(minSec, maxSec) {
  * budget, plus a little per task for scoring), then the writing phase (the
  * depth profile's synthesis budget; an investment memo writes longer).
  */
-export function estimateFromPlan(mode, { tasks = 0, memo = false } = {}) {
+/* Nov 6: the research team adds one parallel round of specialist calls before the director
+   (standard: about 4 to 10 s on the fast tier; deep: about 15 to 40 s on the strong tier), and
+   in deep the red team, the director's resolution pass and the audit review (about 15 to 45 s).
+   The estimate endpoint replaces these with observed p50/p90 once 30 runs are ledgered. */
+export const TEAM_SECONDS = {
+  standard: { min: 4, max: 10 },
+  deep: { min: 30, max: 85 },
+};
+
+export function estimateFromPlan(mode, { tasks = 0, memo = false, team = true } = {}) {
   if (mode === 'standard') {
     const D = DEPTHS.standard;
     const evidence = D.taskMs / 1000 + 0.3 * tasks;
-    const minSec = Math.round(2 + evidence + 9);
-    const maxSec = Math.max(minSec + 5, Math.round(2 + evidence * 2 + 18));
+    const t = team ? TEAM_SECONDS.standard : { min: 0, max: 0 };
+    const minSec = Math.round(2 + evidence + 9 + t.min);
+    const maxSec = Math.max(minSec + 5, Math.round(2 + evidence * 2 + 18 + t.max));
     return {
-      minSec: Math.min(minSec, 25),
-      maxSec: Math.min(maxSec, 30),
+      minSec: Math.min(minSec, 25 + t.min),
+      maxSec: Math.min(maxSec, 30 + t.max),
       label: MODE_LABELS.standard,
     };
   }
@@ -538,8 +548,11 @@ export function estimateFromPlan(mode, { tasks = 0, memo = false } = {}) {
     const evidence = Math.min(DEPTHS.deep.taskMs / 1000, 6 + 0.8 * tasks);
     const writeMin = memo ? 45 : 35;
     const writeMax = memo ? 150 : 110;
-    const minSec = Math.round(Math.min(150, 3 + evidence + writeMin));
-    const maxSec = Math.round(Math.min(240, 3 + DEPTHS.deep.taskMs / 1000 + writeMax + tasks));
+    const t = team ? TEAM_SECONDS.deep : { min: 0, max: 0 };
+    const minSec = Math.round(Math.min(150 + t.min, 3 + evidence + writeMin + t.min));
+    const maxSec = Math.round(
+      Math.min(280, 3 + DEPTHS.deep.taskMs / 1000 + writeMax + tasks + t.max),
+    );
     return { minSec, maxSec, label: MODE_LABELS.deep };
   }
   return { minSec: 3, maxSec: 6, label: 'a few seconds' };

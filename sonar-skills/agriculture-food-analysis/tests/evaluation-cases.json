@@ -1,0 +1,197 @@
+[
+  {
+    "id": "agriculture-food-analysis-01",
+    "question": "How much have maize prices risen in Malawi over the past year?",
+    "mode": "quick",
+    "lead": "food-analyst",
+    "supporting": [],
+    "mustUse": ["food_prices_local"],
+    "mustCompute": ["aggregateFews", "pctChange"],
+    "mustNotClaim": [
+      "quotes one market's price as the national price",
+      "combines prices in different units"
+    ],
+    "goodAnswerTraits": [
+      "reports the median across markets with market count",
+      "states unit, currency and month",
+      "omits year-on-year if year-ago median is unavailable"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-02",
+    "question": "Is the rise in sorghum prices in Sudan just the lean season or a real shock?",
+    "mode": "standard",
+    "lead": "food-analyst",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["food_prices_local", "news"],
+    "mustCompute": ["aggregateFews", "seasonalAdjustSimple", "percentileVsHistory"],
+    "mustNotClaim": [
+      "calls a move a shock without a same-month historical range test",
+      "attributes the rise to conflict from timing alone"
+    ],
+    "goodAnswerTraits": [
+      "compares with the same calendar month in prior years",
+      "uses year-on-year not month-on-month",
+      "labels conflict channel as interpretation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-03",
+    "question": "World wheat prices are down. Why is bread still getting more expensive in Ethiopia?",
+    "mode": "standard",
+    "lead": "food-analyst",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["commodity_price", "food_prices_local", "fx_spot"],
+    "mustCompute": ["pctChange", "bothConventionsFx", "alignPeriods"],
+    "mustNotClaim": [
+      "compares retail and world prices as the same concept",
+      "claims import parity costs not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "converts the world price move into local terms via the engine",
+      "names currency, transport and local supply channels",
+      "states missing freight and tariff data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-04",
+    "question": "What happened to rice and wheat world prices this year?",
+    "mode": "quick",
+    "lead": "food-analyst",
+    "supporting": [],
+    "mustUse": ["commodity_price"],
+    "mustCompute": ["pctChange", "percentileVsHistory"],
+    "mustNotClaim": ["omits unit or benchmark (for example Thai 5% or US HRW)", "forecasts prices"],
+    "goodAnswerTraits": [
+      "names each benchmark with US$ per metric ton and month",
+      "gives five-year range position"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-05",
+    "question": "Are farmers in Kenya getting paid more for maize than five years ago?",
+    "mode": "standard",
+    "lead": "food-analyst",
+    "supporting": [],
+    "mustUse": ["food_producer_prices"],
+    "mustCompute": ["cagr", "pctChange"],
+    "mustNotClaim": [
+      "presents annual FAOSTAT prices as current",
+      "treats US$ producer prices as local-currency income"
+    ],
+    "goodAnswerTraits": [
+      "states the FAOSTAT year and lag",
+      "distinguishes producer from retail prices",
+      "notes US$ basis"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-06",
+    "question": "Is there going to be a drought-driven food crisis in the Horn of Africa next year?",
+    "mode": "standard",
+    "lead": "food-analyst",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["food_prices_local", "commodity_price", "news"],
+    "mustCompute": ["aggregateFews", "pctChange"],
+    "mustNotClaim": ["makes weather or harvest claims without cited evidence", "predicts a crisis"],
+    "goodAnswerTraits": [
+      "states Ezana has no live weather or harvest data",
+      "describes current price conditions",
+      "lists indicators to watch"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-07",
+    "question": "What is driving inflation in Nigeria?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": ["food-analyst", "fx-strategist"],
+    "mustUse": ["inflation_monthly", "food_prices_local", "fx_spot"],
+    "mustCompute": ["yoyFromIndex", "aggregateFews"],
+    "mustNotClaim": ["food-analyst states a food CPI figure not in Ezana"],
+    "goodAnswerTraits": [
+      "food-analyst supplies local staple price trends with market counts",
+      "headline CPI labelled headline"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-08",
+    "question": "How would a Black Sea shipping disruption affect grain-importing countries?",
+    "mode": "deep",
+    "lead": "geopolitical-analyst",
+    "supporting": ["food-analyst"],
+    "mustUse": ["ports_chokepoints", "commodity_price"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": [
+      "food-analyst states import dependency figures without importDependency output"
+    ],
+    "goodAnswerTraits": [
+      "food-analyst provides world wheat and maize price context with units",
+      "lists missing food import data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-09",
+    "question": "Have fertiliser prices come down enough to lower crop costs?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": ["food-analyst"],
+    "mustUse": ["commodity_price"],
+    "mustCompute": ["pctChange", "percentileVsHistory"],
+    "mustNotClaim": ["food-analyst quantifies farm cost savings without data"],
+    "goodAnswerTraits": ["food-analyst explains input-cost channel labelled interpretation"],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-10",
+    "question": "What is Archer-Daniels-Midland's operating margin trend?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals"],
+    "mustCompute": ["marginDecomposition"],
+    "mustNotClaim": ["food-analyst is activated for company margins"],
+    "goodAnswerTraits": ["routes to equity-research"],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-11",
+    "question": "How much LNG does South Korea import?",
+    "mode": "quick",
+    "lead": "commodities-analyst",
+    "supporting": [],
+    "mustUse": ["gas_imports"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": ["food-analyst is activated for an energy question"],
+    "goodAnswerTraits": ["routes to commodities-analyst only"],
+    "reviewed": false
+  },
+  {
+    "id": "agriculture-food-analysis-12",
+    "question": "Food prices in Haiti doubled last month because of the drought, right? Which agriculture stocks will profit?",
+    "mode": "standard",
+    "lead": "food-analyst",
+    "supporting": [],
+    "mustUse": ["food_prices_local", "news"],
+    "mustCompute": ["aggregateFews", "momChange", "pctChange"],
+    "mustNotClaim": [
+      "accepts the doubling without matching evidence",
+      "attributes prices to drought without cited weather evidence",
+      "names stocks to buy"
+    ],
+    "goodAnswerTraits": [
+      "checks the claim against market medians with periods",
+      "states no weather data in Ezana",
+      "declines stock picks"
+    ],
+    "reviewed": false
+  }
+]

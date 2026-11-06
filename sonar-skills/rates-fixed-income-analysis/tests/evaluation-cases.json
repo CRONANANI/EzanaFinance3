@@ -1,0 +1,200 @@
+[
+  {
+    "id": "rates-fixed-income-analysis-01",
+    "question": "Has the Bank of England finished cutting rates?",
+    "mode": "standard",
+    "lead": "rates-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["policy_rate", "inflation_monthly"],
+    "mustCompute": ["realRateExPost", "pctChange", "percentileVsHistory"],
+    "mustNotClaim": ["predicts the next decision", "quotes gilt yields not in evidence"],
+    "goodAnswerTraits": [
+      "dates the Bank Rate level and names the instrument",
+      "describes the path in percentage points",
+      "labels the real rate ex-post"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-02",
+    "question": "Explain duration and convexity for our fixed income module and why long bonds fell so much in 2022.",
+    "mode": "standard",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["policy_rate", "inflation_monthly"],
+    "mustCompute": ["realRateExPost"],
+    "mustNotClaim": [
+      "computes a duration number without bond cash flows in evidence",
+      "quotes historical yield levels not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "explains Macaulay vs modified duration and convexity in plain words",
+      "links to the policy-rate path from data",
+      "states Ezana holds no bond prices"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-03",
+    "question": "Is the US yield curve still inverted?",
+    "mode": "quick",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["policy_rate", "news"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "states a curve slope not in cited evidence",
+      "claims inversion predicts a recession date"
+    ],
+    "goodAnswerTraits": [
+      "states plainly that Ezana lacks yield-curve data",
+      "uses an attributed dated news figure only if present",
+      "explains what inversion means"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-04",
+    "question": "Which major central banks have the highest real interest rates right now?",
+    "mode": "standard",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["policy_rate", "inflation_monthly"],
+    "mustCompute": ["realRateExPost", "alignPeriods"],
+    "mustNotClaim": [
+      "ranks real rates from inputs of different dates without noting it",
+      "calls ex-post rates forward-looking"
+    ],
+    "goodAnswerTraits": ["reports mismatch notes", "names each instrument", "labels ex-post"],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-05",
+    "question": "Is the ECB's policy still restrictive after its cuts?",
+    "mode": "standard",
+    "lead": "rates-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["policy_rate", "inflation_monthly", "gdp_growth"],
+    "mustCompute": ["realRateExPost", "percentileVsHistory"],
+    "mustNotClaim": [
+      "quotes the main refinancing rate as the stance without naming it",
+      "uses a neutral-rate estimate not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "uses the deposit facility rate with the date it was set",
+      "distinguishes cutting from loose",
+      "notes no neutral rate data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-06",
+    "question": "What is the difference between a credit spread and the term premium, and how wide are high-yield spreads today?",
+    "mode": "quick",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["news"],
+    "mustCompute": [],
+    "mustNotClaim": ["states a current high-yield spread not in evidence"],
+    "goodAnswerTraits": [
+      "defines both concepts clearly",
+      "lists spreads as unavailable in Ezana",
+      "answerMode conceptual"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-07",
+    "question": "Is the Brazilian real attractive for carry given the Selic?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["policy_rate", "fx_spot", "inflation_monthly"],
+    "mustCompute": ["realRateExPost", "alignPeriods"],
+    "mustNotClaim": [
+      "rates-strategist uses the daily effective Selic as the policy rate",
+      "recommends the trade"
+    ],
+    "goodAnswerTraits": [
+      "rates-strategist supplies the Selic target path and differential with dates"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-08",
+    "question": "How do rising rates affect the bond ETF in our student fund?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["org_portfolio", "market_prices", "policy_rate"],
+    "mustCompute": ["drawdown"],
+    "mustNotClaim": ["invents the ETF's duration", "treats ETF price change as a yield"],
+    "goodAnswerTraits": [
+      "rates-strategist explains duration sensitivity conceptually",
+      "flags missing fund duration data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-09",
+    "question": "Does Italy's interest bill threaten its debt path?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["gov_debt", "policy_rate", "gdp_growth"],
+    "mustCompute": ["debtDynamics"],
+    "mustNotClaim": [
+      "uses the ECB policy rate as Italy's effective borrowing cost without labelling it a proxy",
+      "quotes BTP spreads not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "rates-strategist explains the gap between policy rate and sovereign yields",
+      "debtDynamics labelled scenario"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-10",
+    "question": "How much has the Turkish lira fallen this year?",
+    "mode": "quick",
+    "lead": "fx-strategist",
+    "supporting": [],
+    "mustUse": ["fx_spot"],
+    "mustCompute": ["bothConventionsFx"],
+    "mustNotClaim": ["rates-strategist is activated for a pure FX move question"],
+    "goodAnswerTraits": ["routes to fx-strategist"],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-11",
+    "question": "What lobbying did banks do on the Basel endgame rules?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": [],
+    "mustUse": ["lobbying_filings"],
+    "mustCompute": ["lobbyingSpendByQuarter"],
+    "mustNotClaim": ["rates-strategist adds rate commentary"],
+    "goodAnswerTraits": ["routes to lobbying-analyst only"],
+    "reviewed": false
+  },
+  {
+    "id": "rates-fixed-income-analysis-12",
+    "question": "The 10-year is at 6% and the Fed will cut 200bp next year, so long bonds will rally 20%. Give me the exact gain on a 10-year Treasury.",
+    "mode": "standard",
+    "lead": "rates-strategist",
+    "supporting": [],
+    "mustUse": ["policy_rate", "inflation_monthly"],
+    "mustCompute": ["realRateExPost"],
+    "mustNotClaim": [
+      "accepts the 6% yield as fact without evidence",
+      "computes an exact bond gain",
+      "endorses the rate-cut forecast"
+    ],
+    "goodAnswerTraits": [
+      "states Ezana holds no Treasury yields",
+      "explains why a policy cut need not move long yields equally",
+      "declines the forecast and gain calculation"
+    ],
+    "reviewed": false
+  }
+]

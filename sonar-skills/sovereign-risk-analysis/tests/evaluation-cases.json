@@ -1,0 +1,209 @@
+[
+  {
+    "id": "sovereign-risk-analysis-01",
+    "question": "Is Egypt at risk of defaulting on its external debt?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["external_debt", "current_account", "bop", "fx_reserves"],
+    "mustCompute": ["shortTermDebtCover", "reserveCoverMonths", "alignPeriods"],
+    "mustNotClaim": [
+      "quotes CDS spreads or bond yields not in evidence",
+      "assigns a default probability",
+      "treats gross reserves as usable"
+    ],
+    "goodAnswerTraits": [
+      "separates liquidity from solvency",
+      "states short-term debt is by original maturity",
+      "reports period mismatches between IDS and reserves"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-02",
+    "question": "Are Argentina's reserves enough to cover its short-term obligations?",
+    "mode": "standard",
+    "lead": "sovereign-risk",
+    "supporting": [],
+    "mustUse": ["fx_reserves", "external_debt", "trade_goods"],
+    "mustCompute": ["shortTermDebtCover", "reserveCoverMonths", "pctChange"],
+    "mustNotClaim": [
+      "describes gross reserves as net reserves",
+      "computes short-term debt by remaining maturity"
+    ],
+    "goodAnswerTraits": [
+      "labels reserves gross and notes swap lines may encumber them",
+      "states goods-only import cover",
+      "dates each input"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-03",
+    "question": "Is Japan's government debt sustainable given its size?",
+    "mode": "standard",
+    "lead": "sovereign-risk",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["gov_debt", "gov_balance", "gdp_growth", "inflation_annual", "policy_rate"],
+    "mustCompute": ["debtDynamics", "percentileVsHistory"],
+    "mustNotClaim": [
+      "calls Japan insolvent on the debt ratio alone",
+      "presents debtDynamics with an assumed r as observed"
+    ],
+    "goodAnswerTraits": [
+      "explains domestic-currency debt and creditor base qualitatively",
+      "labels debtDynamics as scenario",
+      "notes no primary balance in Ezana"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-04",
+    "question": "How is Kenya financing its current account deficit?",
+    "mode": "standard",
+    "lead": "sovereign-risk",
+    "supporting": [],
+    "mustUse": ["current_account", "bop", "remittances", "external_debt"],
+    "mustCompute": ["pctChange", "alignPeriods"],
+    "mustNotClaim": [
+      "uses a WEO projection year as the observed deficit",
+      "infers currency composition of debt"
+    ],
+    "goodAnswerTraits": [
+      "classifies inflows as direct, portfolio or other",
+      "notes remittance support",
+      "states financing gap concept versus deficit"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-05",
+    "question": "Which emerging markets look most vulnerable to an external funding squeeze?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["current_account", "external_debt", "fx_reserves", "fx_spot"],
+    "mustCompute": ["percentileVsHistory", "shortTermDebtCover", "alignPeriods"],
+    "mustNotClaim": [
+      "ranks countries using inputs from different years without disclosure",
+      "fills missing reserves with estimates"
+    ],
+    "goodAnswerTraits": [
+      "states which countries lack reserve data",
+      "ranks on consistent sources",
+      "describes vulnerability not timing"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-06",
+    "question": "Is Sri Lanka still in crisis or just recovering slowly?",
+    "mode": "standard",
+    "lead": "sovereign-risk",
+    "supporting": [],
+    "mustUse": ["external_debt", "current_account", "fx_spot", "news"],
+    "mustCompute": ["pctChange", "bothConventionsFx"],
+    "mustNotClaim": [
+      "declares crisis or recovery without cited markers",
+      "states restructuring terms not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "distinguishes crisis markers from sustained weakness",
+      "cites news for restructuring status with dates",
+      "flags IDS lag"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-07",
+    "question": "Is the Pakistani rupee under pressure?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["sovereign-risk"],
+    "mustUse": ["fx_spot", "inflation_monthly", "policy_rate", "external_debt"],
+    "mustCompute": ["bothConventionsFx", "shortTermDebtCover"],
+    "mustNotClaim": ["sovereign-risk overrides the assessCurrencyPressure label"],
+    "goodAnswerTraits": [
+      "sovereign-risk contributes external liquidity evidence",
+      "fx-strategist owns the pressure label"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-08",
+    "question": "What would new sanctions on Russia's remaining banks mean for its external finances?",
+    "mode": "deep",
+    "lead": "geopolitical-analyst",
+    "supporting": ["sovereign-risk", "sanctions-analyst"],
+    "mustUse": ["sanctions_intl", "current_account", "bop"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": [
+      "quantifies reserve freezes not in evidence",
+      "presents a scenario as a forecast"
+    ],
+    "goodAnswerTraits": [
+      "sovereign-risk describes the financing channel",
+      "scenario labelled hypothesis"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-09",
+    "question": "How risky is our fund's exposure to Brazilian equities from a country perspective?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["sovereign-risk"],
+    "mustUse": ["org_portfolio", "gov_debt", "fx_reserves"],
+    "mustCompute": ["stressTest"],
+    "mustNotClaim": ["recommends reducing the position"],
+    "goodAnswerTraits": [
+      "sovereign-risk supplies dated country vulnerability findings",
+      "no allocation advice"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-10",
+    "question": "What is Boeing's debt maturity schedule?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "sec_filings"],
+    "mustCompute": [],
+    "mustNotClaim": ["sovereign-risk is activated for corporate debt"],
+    "goodAnswerTraits": ["routes to equity-research"],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-11",
+    "question": "Is US inflation coming down?",
+    "mode": "quick",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["inflation_monthly"],
+    "mustCompute": ["yoyFromIndex"],
+    "mustNotClaim": ["sovereign-risk adds debt commentary to an inflation question"],
+    "goodAnswerTraits": ["routes to macroeconomist only"],
+    "reviewed": false
+  },
+  {
+    "id": "sovereign-risk-analysis-12",
+    "question": "Ghana's CDS is at 2,000 bps so default is certain within six months. Confirm and tell me whether to short its bonds.",
+    "mode": "standard",
+    "lead": "sovereign-risk",
+    "supporting": [],
+    "mustUse": ["external_debt", "current_account", "gov_debt"],
+    "mustCompute": ["percentileVsHistory"],
+    "mustNotClaim": [
+      "repeats the user's CDS figure as verified",
+      "states default is certain or gives a date",
+      "gives a short recommendation"
+    ],
+    "goodAnswerTraits": [
+      "states CDS is not in Ezana and cannot be verified",
+      "describes vulnerabilities from available data",
+      "declines trading advice"
+    ],
+    "reviewed": false
+  }
+]

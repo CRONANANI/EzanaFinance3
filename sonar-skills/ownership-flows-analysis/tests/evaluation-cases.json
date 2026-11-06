@@ -1,0 +1,213 @@
+[
+  {
+    "id": "ownership-flows-analysis-01",
+    "question": "Which big funds added to Apple last quarter and which ones sold?",
+    "mode": "standard",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["holdings_13f", "sec_filings"],
+    "mustCompute": ["positionChange13F", "dedupeHoldings"],
+    "mustNotClaim": [
+      "says funds sold during the current month based on quarter-end holdings",
+      "counts changes among managers that filed only one quarter",
+      "attributes a reason for selling"
+    ],
+    "goodAnswerTraits": [
+      "names both quarters and the 45-day lag",
+      "states the number of managers compared",
+      "reports adds and cuts in shares"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-02",
+    "question": "How concentrated is institutional ownership of Super Micro Computer, and who are the top holders?",
+    "mode": "standard",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["holdings_13f", "sec_fundamentals"],
+    "mustCompute": ["concentrationTopN", "herfindahl"],
+    "mustNotClaim": [
+      "states total institutional ownership of all holders rather than reported 13F holders",
+      "includes option rows as shares held"
+    ],
+    "goodAnswerTraits": [
+      "reports top-10 share of reported value with quarter",
+      "expresses reported shares against shares outstanding with both dates",
+      "notes index-heavy holders follow index weights"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-03",
+    "question": "Have Tesla insiders been buying or selling over the last six months?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["insider_transactions", "sec_filings"],
+    "mustCompute": ["disclosureLagDays"],
+    "mustNotClaim": [
+      "counts option exercises or tax withholding as open-market selling",
+      "interprets sales as insiders being bearish"
+    ],
+    "goodAnswerTraits": [
+      "separates P and S codes from A, M, F and G",
+      "gives transaction and filing dates",
+      "notes partial coverage of Ezana's insider table"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-04",
+    "question": "Are there any activist investors with stakes in Disney right now?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["activist_stakes", "sec_filings"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "calls a 13G filer an activist",
+      "states an activist's plan not in the filing text",
+      "says there are no activists because Ezana has no rows"
+    ],
+    "goodAnswerTraits": [
+      "separates 13D from 13G",
+      "gives percent of class and filing date",
+      "states coverage limits"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-05",
+    "question": "Which ETFs hold the most Palantir and at what weight?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["etf_holdings"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": [
+      "describes ETF weights as active purchase decisions",
+      "presents weights from different report dates as one date"
+    ],
+    "goodAnswerTraits": [
+      "lists funds with pct_value and report_date",
+      "notes only 46 funds are covered"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-06",
+    "question": "What does Berkshire Hathaway own now and what did it change this quarter?",
+    "mode": "standard",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["holdings_13f", "sec_filings"],
+    "mustCompute": ["positionChange13F", "dedupeHoldings", "concentrationTopN"],
+    "mustNotClaim": [
+      "says 'now' about a quarter-end portfolio without the date",
+      "double counts a new-holdings amendment",
+      "includes non-13F securities or foreign holdings as reported"
+    ],
+    "goodAnswerTraits": [
+      "states the quarter and filing date",
+      "handles confidential treatment or amendments explicitly if present",
+      "reports changes in shares"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-07",
+    "question": "What are the biggest risks to NVIDIA's growth over the next three years?",
+    "mode": "deep",
+    "lead": "equity-research",
+    "supporting": ["ownership-analyst", "industry-analyst"],
+    "mustUse": ["holdings_13f"],
+    "mustCompute": ["positionChange13F", "concentrationTopN"],
+    "mustNotClaim": ["ownership-analyst presents 13F changes as a signal about growth risk"],
+    "goodAnswerTraits": [
+      "ownership-analyst supplies positioning context with quarters",
+      "notes index-heavy share and crowding as context, not a forecast"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-08",
+    "question": "Is our fund's portfolio crowded in the same names hedge funds pile into?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["ownership-analyst"],
+    "mustUse": ["org_portfolio", "holdings_13f"],
+    "mustCompute": ["concentrationTopN", "herfindahl"],
+    "mustNotClaim": ["manager-type labels presented as exact", "uses another organization's data"],
+    "goodAnswerTraits": [
+      "ownership-analyst reports holder concentration per holding with quarter",
+      "states manager types are inferred from names"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-09",
+    "question": "Do stocks rise after an activist files a 13D? Test it on Ezana's data.",
+    "mode": "deep",
+    "lead": "quant-analyst",
+    "supporting": ["ownership-analyst"],
+    "mustUse": ["activist_stakes", "sec_filings", "market_prices"],
+    "mustCompute": ["eventStudy", "regressionOLS"],
+    "mustNotClaim": [
+      "uses period of report rather than filing date as the event date",
+      "ignores delisted targets"
+    ],
+    "goodAnswerTraits": [
+      "ownership-analyst supplies filing dates and separates 13D from 13G",
+      "flags survivorship from missing delisted prices"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-10",
+    "question": "What is Microsoft's operating margin trend?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals"],
+    "mustCompute": ["marginDecomposition"],
+    "mustNotClaim": ["ownership-analyst is activated"],
+    "goodAnswerTraits": ["routed to equity-research", "no ownership data used"],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-11",
+    "question": "Which senators bought Nvidia stock this year?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": ["ownership-analyst leads a congressional trading question"],
+    "goodAnswerTraits": [
+      "routed to congress-analyst",
+      "13F and Form 4 data not substituted for congressional disclosures"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "ownership-flows-analysis-12",
+    "question": "Smart money is dumping Amazon. Show me which funds know something we don't.",
+    "mode": "standard",
+    "lead": "ownership-analyst",
+    "supporting": ["red-team"],
+    "mustUse": ["holdings_13f", "sec_filings"],
+    "mustCompute": ["positionChange13F", "dedupeHoldings"],
+    "mustNotClaim": [
+      "attributes private information or motives to managers",
+      "calls index fund reductions informed selling",
+      "states a net selling conclusion without the compared-manager count"
+    ],
+    "goodAnswerTraits": [
+      "tests the premise with adds versus cuts among managers filing both quarters",
+      "states the quarter and lag",
+      "reframes 'know something' as unknowable from disclosures"
+    ],
+    "reviewed": false
+  }
+]

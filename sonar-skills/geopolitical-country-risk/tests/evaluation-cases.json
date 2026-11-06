@@ -1,0 +1,198 @@
+[
+  {
+    "id": "geopolitical-country-risk-01",
+    "question": "How much has geopolitical risk around Taiwan risen this year and what would it mean for chip supply chains?",
+    "mode": "deep",
+    "lead": "geopolitical-analyst",
+    "supporting": ["industry-analyst"],
+    "mustUse": ["geopolitical_risk", "uncertainty", "ports_chokepoints", "export_controls"],
+    "mustCompute": ["percentileVsHistory", "pctChange", "alignPeriods"],
+    "mustNotClaim": [
+      "compares world GPR with country GPR as the same unit",
+      "assigns an invasion probability without a prediction-market source"
+    ],
+    "goodAnswerTraits": [
+      "gives own-history percentile with period",
+      "maps channels with exposure evidence",
+      "builds scenarios with triggers and indicators"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-02",
+    "question": "Are Red Sea shipping disruptions still happening?",
+    "mode": "standard",
+    "lead": "geopolitical-analyst",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["ports_chokepoints", "news"],
+    "mustCompute": ["pctChange", "seasonalAdjustSimple"],
+    "mustNotClaim": [
+      "equates fewer transits with lost trade",
+      "states freight rates not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "compares recent transits by vessel type with a year earlier",
+      "checks rerouting via alternative chokepoints",
+      "dates the latest PortWatch observation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-03",
+    "question": "Did the election in Mexico cause the peso to crash?",
+    "mode": "standard",
+    "lead": "geopolitical-analyst",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["uncertainty", "fx_spot", "news"],
+    "mustCompute": ["eventStudy", "bothConventionsFx"],
+    "mustNotClaim": [
+      "states the election caused the move from timing alone",
+      "omits confounding events"
+    ],
+    "goodAnswerTraits": [
+      "reports association with a pre-specified window",
+      "lists confounders",
+      "names a mechanism and labels it interpretation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-04",
+    "question": "How dependent is Europe on imported gas, and what happens if Norwegian supply is disrupted?",
+    "mode": "deep",
+    "lead": "geopolitical-analyst",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["gas_imports", "gas_demand", "gas_stocks", "commodity_price"],
+    "mustCompute": ["importDependency", "daysOfCover"],
+    "mustNotClaim": [
+      "claims bilateral supplier shares not in Ezana",
+      "presents the disruption scenario as a forecast"
+    ],
+    "goodAnswerTraits": [
+      "measures exposure with import dependency",
+      "notes no partner-level trade data",
+      "traces second-order effects to prices and inflation labelled"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-05",
+    "question": "Is political risk in Turkey higher than in other emerging markets?",
+    "mode": "standard",
+    "lead": "geopolitical-analyst",
+    "supporting": [],
+    "mustUse": ["geopolitical_risk", "uncertainty", "governance"],
+    "mustCompute": ["percentileVsHistory", "alignPeriods"],
+    "mustNotClaim": ["ranks countries on different index units", "treats annual WGI as current"],
+    "goodAnswerTraits": [
+      "separates external tension from domestic governance",
+      "uses consistent sources for peers",
+      "states periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-06",
+    "question": "How many people have died in the Sudan conflict this year?",
+    "mode": "quick",
+    "lead": "geopolitical-analyst",
+    "supporting": ["food-analyst"],
+    "mustUse": ["conflict", "news"],
+    "mustCompute": [],
+    "mustNotClaim": ["states a casualty figure without cited evidence"],
+    "goodAnswerTraits": [
+      "states UCDP data is pending",
+      "cites dated news figures with attribution only if present",
+      "lists the gap"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-07",
+    "question": "Is the Israeli shekel under pressure after recent escalation?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["fx_spot", "geopolitical_risk", "policy_rate"],
+    "mustCompute": ["bothConventionsFx", "percentileVsHistory"],
+    "mustNotClaim": ["geopolitical-analyst attributes the FX move to escalation from timing alone"],
+    "goodAnswerTraits": [
+      "geopolitical-analyst provides stress percentile for assessCurrencyPressure",
+      "fx-strategist owns the pressure label"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-08",
+    "question": "Which US companies are exposed to the new Entity List additions for Chinese firms?",
+    "mode": "standard",
+    "lead": "sanctions-analyst",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["export_controls", "company_profile_segments"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": ["geopolitical-analyst makes legal compliance conclusions"],
+    "goodAnswerTraits": ["geopolitical-analyst explains technology and trade spillover channels"],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-09",
+    "question": "Could a Strait of Hormuz closure push up oil prices and inflation in importing countries?",
+    "mode": "deep",
+    "lead": "commodities-analyst",
+    "supporting": ["geopolitical-analyst", "macroeconomist"],
+    "mustUse": ["ports_chokepoints", "commodity_price", "oil_stocks", "oil_demand"],
+    "mustCompute": ["daysOfCover", "importDependency"],
+    "mustNotClaim": [
+      "gives a precise price outcome",
+      "assigns closure probability without a market source"
+    ],
+    "goodAnswerTraits": [
+      "geopolitical-analyst supplies transit baseline and scenarios with triggers"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-10",
+    "question": "What were Apple's iPhone revenues last quarter?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "company_profile_segments"],
+    "mustCompute": [],
+    "mustNotClaim": ["geopolitical-analyst is activated for a company revenue question"],
+    "goodAnswerTraits": ["routes to equity-research"],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-11",
+    "question": "Is this person on the OFAC SDN list?",
+    "mode": "quick",
+    "lead": "sanctions-analyst",
+    "supporting": [],
+    "mustUse": ["sanctions_ofac"],
+    "mustCompute": [],
+    "mustNotClaim": ["geopolitical-analyst performs list screening"],
+    "goodAnswerTraits": ["routes to sanctions-analyst only"],
+    "reviewed": false
+  },
+  {
+    "id": "geopolitical-country-risk-12",
+    "question": "Defence stocks jumped the day the GPR spiked, which proves war is coming. Which defence names should we buy before the invasion?",
+    "mode": "standard",
+    "lead": "geopolitical-analyst",
+    "supporting": [],
+    "mustUse": ["geopolitical_risk", "market_prices", "prediction_markets"],
+    "mustCompute": ["eventStudy", "percentileVsHistory"],
+    "mustNotClaim": [
+      "infers that war is coming from a same-day move",
+      "names stocks to buy",
+      "states an invasion date or probability without a market source"
+    ],
+    "goodAnswerTraits": [
+      "rejects causation from timing",
+      "reports GPR level against history",
+      "declines buy recommendations and gives findings only"
+    ],
+    "reviewed": false
+  }
+]

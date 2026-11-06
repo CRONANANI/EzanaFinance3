@@ -8,8 +8,10 @@
  * company falls inside the fund's thesis and mandate.
  *
  * The mandate checks here are deterministic and come first: the fund's IPS
- * rules (prohibited tickers, position and sector limits, the number of
- * positions) and the mandate the executives wrote (focus and excluded
+ * rules (prohibited tickers and sectors, the minimum market cap, position,
+ * trade and sector limits, the minimum and maximum number of positions; the
+ * cash floor is reported as not checkable because positions carry no cash)
+ * and the mandate the executives wrote (focus and excluded
  * sectors, a minimum market capitalization). The IPS engine stays the
  * authority: a blocking failure makes the stance 'pass' whatever the
  * written assessment says, and Sonar never sizes a position or sets a
@@ -60,6 +62,15 @@ export function usdShort(n) {
 }
 
 const pctOf = (rule) => Number(rule?.value?.pct ?? rule?.value?.max_pct ?? rule?.value?.max);
+
+/* A number, or null for null/undefined/'' (Number(null) is 0, which would
+   read a missing market cap as a $0 company). */
+const numOrNull = (v) =>
+  v == null || v === '' ? null : Number.isFinite(Number(v)) ? Number(v) : null;
+
+/* IPS severity, read the way the IPS engine reads it (api/org/ips/check and
+   the compliance monitor): only an explicit 'block' is a hard rule. */
+const isBlock = (rule) => (rule?.value?.severity || 'warning') === 'block';
 
 /**
  * The fund's deterministic checks for one company.
@@ -128,8 +139,9 @@ export function mandateChecks(fund, company) {
   }
 
   const minCap = Number(fund?.minMarketCapMusd);
+  const companyCap = numOrNull(company?.marketCap);
   if (Number.isFinite(minCap) && minCap > 0) {
-    const cap = Number(company?.marketCap);
+    const cap = companyCap ?? NaN;
     out.push({
       id: 'mandate_min_cap',
       label: 'Mandate: minimum market capitalization',
@@ -138,6 +150,87 @@ export function mandateChecks(fund, company) {
         ? `Market capitalization was not available; the minimum is ${usdShort(minCap * 1e6)}.`
         : `Market capitalization ${usdShort(cap)} against a minimum of ${usdShort(minCap * 1e6)}.`,
       blocking: Number.isFinite(cap) && cap < minCap * 1e6,
+    });
+  }
+
+  for (const r of rules.filter((x) => x.type === 'prohibited_sector')) {
+    const sector = String(r.value?.sector || '').trim();
+    if (!sector) continue;
+    const hit = sectorMatch(company, [sector]);
+    const block = isBlock(r);
+    out.push({
+      id: `ips_prohibited_sector_${norm(sector).replace(/ /g, '_')}`,
+      label: 'IPS: prohibited sector',
+      status: hit === null ? 'unknown' : hit ? (block ? 'fail' : 'warn') : 'pass',
+      detail:
+        hit === null
+          ? `The company sector could not be read, so the prohibited sector (${sector}) was not checked.`
+          : hit
+            ? `${company.sector || company.industry} is a prohibited sector under the IPS${r.label ? ` (${r.label})` : ''}.`
+            : `Not in the prohibited sector (${sector}).`,
+      blocking: Boolean(hit) && block,
+    });
+  }
+
+  for (const r of rules.filter((x) => x.type === 'min_market_cap')) {
+    const min = numOrNull(r.value?.value ?? r.value?.min);
+    if (!Number.isFinite(min) || min <= 0) continue;
+    const below = companyCap != null && companyCap < min;
+    const block = isBlock(r);
+    out.push({
+      id: 'ips_min_market_cap',
+      label: 'IPS: minimum market capitalization',
+      status: companyCap == null ? 'unknown' : below ? (block ? 'fail' : 'warn') : 'pass',
+      detail:
+        companyCap == null
+          ? `Market capitalization was not available; the IPS minimum is ${usdShort(min)}.`
+          : `Market capitalization ${usdShort(companyCap)} against an IPS minimum of ${usdShort(min)}.`,
+      blocking: below && block,
+    });
+  }
+
+  for (const r of rules.filter((x) => x.type === 'min_positions')) {
+    const min = numOrNull(r.value?.min);
+    if (!Number.isFinite(min) || min <= 0) continue;
+    const n = holdings.length;
+    const short = n < min;
+    out.push({
+      id: 'ips_min_positions',
+      label: 'IPS: minimum number of positions',
+      /* Being under the minimum is a fund-level gap, not a reason against
+         this company; a new name moves the fund toward the minimum. */
+      status: short ? 'info' : 'pass',
+      detail: short
+        ? `The fund has ${n} positions against a minimum of ${min}${held ? '' : '; a new position moves it toward the minimum'}.`
+        : `The fund has ${n} positions, at or above the minimum of ${min}.`,
+      blocking: false,
+    });
+  }
+
+  for (const r of rules.filter((x) => x.type === 'max_single_trade_pct')) {
+    const max = pctOf(r);
+    if (!Number.isFinite(max)) continue;
+    out.push({
+      id: 'ips_max_single_trade_pct',
+      label: 'IPS: single trade limit',
+      /* Sonar never sizes a position, so there is no trade to test; the
+         limit is carried for the committee and enforced at trade time. */
+      status: 'info',
+      detail: `A single trade is capped at ${max}% of the fund. Sonar does not size trades, so the limit applies when the committee sets the order.`,
+      blocking: false,
+    });
+  }
+
+  for (const r of rules.filter((x) => x.type === 'cash_floor_pct')) {
+    const min = pctOf(r);
+    if (!Number.isFinite(min)) continue;
+    out.push({
+      id: 'ips_cash_floor_pct',
+      label: 'IPS: cash floor',
+      status: 'info',
+      checkable: false,
+      detail: `Not checkable: the fund's positions carry no cash balance, so the ${min}% cash floor was not evaluated.`,
+      blocking: false,
     });
   }
 

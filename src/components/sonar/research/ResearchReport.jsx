@@ -8,17 +8,24 @@
  * only), the executive conclusion, key metrics, key findings (each with its
  * claim classification, verification status, citations and feedback),
  * research-specific charts (only those whose data came back, each with
- * source, period, unit and method), the relationship explorer (observed and
- * inferred kept apart), the evidence explorer (grouped, with why each item
- * was selected), limitations and methodology, and follow-on research.
+ * source, period, unit and method), the research team (Nov 2026: who worked
+ * on the question, their conclusions, the methodology checks and the red
+ * team), the relationship explorer (observed and inferred kept apart), the
+ * evidence explorer (grouped, with why each item was selected), methodology
+ * and limitations, and follow-on research.
  *
  * Tokens only (EZANA_BRANDING_GUIDE): numbers, tickers and dates in mono,
  * prose in sans, emerald for interaction, --positive/--negative for
  * direction only. No backend vendor names anywhere in copy.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
+import { selectTeam, teamProgress } from '@/lib/sonar/research-state';
+import { VisuallyHidden } from '@/components/ds';
 import { sendFeedback } from './useResearchStream';
+import { Cites, calcAnchor } from './Cites';
+import ResearchTeamPanel from './ResearchTeamPanel';
+import MethodologySection from './MethodologySection';
 import InvestmentMemo from './InvestmentMemo';
 import PositioningMemo from './PositioningMemo';
 import FundFitMemo from './FundFitMemo';
@@ -115,38 +122,123 @@ export function fmtValue(v, unit) {
   return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function Cites({ markers, onCite }) {
-  if (!markers?.length) return null;
-  return (
-    <span className="srr-cites">
-      {markers.map((m) => (
-        <button key={m} type="button" className="srr-cite" onClick={() => onCite(m)}>
-          {m}
-        </button>
-      ))}
-    </span>
-  );
+const STEP_STATE = {
+  pending: 'Not started',
+  active: 'In progress',
+  done: 'Done',
+  failed: 'Did not complete',
+};
+const ANALYST_STATE = {
+  pending: 'Waiting',
+  active: 'Working',
+  done: 'Finished',
+  failed: 'Did not report',
+};
+
+/**
+ * The run screen's steps, from real events only: the engine's stages, then
+ * (Nov 2026, research team) the red-team review in deep research and the
+ * methodology audit. The director's writing stays active while it drafts
+ * and again for its final pass after the red team; it is done while a
+ * control step runs.
+ */
+function progressSteps(state, tp) {
+  const seen = new Set(state.stages || []);
+  const last = state.stage;
+  const running = state.status === 'running';
+  const spec = state.plan?.spec;
+  const steps = STAGES.map(([id, label]) => {
+    let status = 'pending';
+    if (seen.has(id)) {
+      const controlRunning =
+        tp && (tp.redTeam === 'active' || (tp.audit && tp.audit !== 'pending'));
+      status =
+        id === last && running && !(id === 'synthesizing' && controlRunning) ? 'active' : 'done';
+    }
+    return {
+      id,
+      label:
+        (spec?.memoKind === 'fund_fit' && FUND_STAGES[id]) ||
+        (spec?.format === 'investment_memo' && MEMO_STAGES[id]) ||
+        label,
+      status,
+    };
+  });
+  if (tp?.redTeam) steps.push({ id: 'red-team', label: 'Red-team review', status: tp.redTeam });
+  if (tp?.audit) steps.push({ id: 'audit', label: 'Auditing', status: tp.audit });
+  return steps;
+}
+
+/** What a screen reader hears when a step starts or an analyst reports. */
+function progressMessages(steps, tp) {
+  const out = new Map();
+  for (const s of steps) {
+    if (s.status === 'active') out.set(`step:${s.id}`, s.label);
+    else if (s.id === 'audit' && s.status === 'done' && tp?.auditResult?.total)
+      out.set(
+        'step:audit',
+        `Methodology checks: ${tp.auditResult.passed} of ${tp.auditResult.total} passed`,
+      );
+    else if (s.id === 'red-team' && s.status === 'done')
+      out.set('step:red-team', 'Red-team review finished');
+  }
+  if (tp?.lead) out.set('team', `Lead analyst: ${tp.lead.title}`);
+  for (const a of [tp?.lead, ...(tp?.supporting || [])].filter(Boolean)) {
+    if (a.status === 'active') out.set(`a:${a.id}`, `${a.title} started`);
+    else if (a.status === 'done') out.set(`a:${a.id}`, `${a.title} finished`);
+    else if (a.status === 'failed') out.set(`a:${a.id}`, `${a.title} did not report`);
+  }
+  return out;
+}
+
+/* Announces only what changed since the last render, so a screen reader
+   hears each stage change once (never the per-source task counts). */
+function useAnnouncement(messages) {
+  const prev = useRef(new Map());
+  const [text, setText] = useState('');
+  const key = [...messages].map(([k, v]) => `${k}=${v}`).join('|');
+  useEffect(() => {
+    const changed = [];
+    for (const [k, v] of messages) if (prev.current.get(k) !== v) changed.push(v);
+    prev.current = messages;
+    if (changed.length) setText(`${changed.join('. ')}.`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return text;
 }
 
 function Progress({ state }) {
   const tasks = Object.entries(state.tasks || {});
-  const seen = new Set(state.stages || []);
-  const last = state.stage;
+  const tp = teamProgress(state);
+  const steps = progressSteps(state, tp);
+  const announce = useAnnouncement(progressMessages(steps, tp));
+  const people = tp ? [tp.lead, ...tp.supporting].filter(Boolean) : [];
   return (
-    <section className="srr-progress" aria-live="polite" aria-label="Research progress">
+    <section className="srr-progress" aria-label="Research progress">
+      <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">
+        {announce}
+      </VisuallyHidden>
       <ol className="srr-stages">
-        {STAGES.map(([id, label]) => (
-          <li
-            key={id}
-            className={`srr-stage${seen.has(id) ? (id === last && state.status === 'running' ? ' is-active' : ' is-done') : ''}`}
-          >
+        {steps.map((s) => (
+          <li key={s.id} className={`srr-stage${s.status === 'pending' ? '' : ` is-${s.status}`}`}>
             <span className="srr-stage-dot" aria-hidden="true" />
-            {(state.plan?.spec?.memoKind === 'fund_fit' && FUND_STAGES[id]) ||
-              (state.plan?.spec?.format === 'investment_memo' && MEMO_STAGES[id]) ||
-              label}
+            {s.label}
+            <VisuallyHidden>, {STEP_STATE[s.status]}</VisuallyHidden>
           </li>
         ))}
       </ol>
+      {people.length ? (
+        <ul className="srr-tasks srr-team-progress" aria-label="Research team">
+          {people.map((a) => (
+            <li key={a.id} className={`srr-task is-${a.status}`}>
+              <span>
+                {a.role === 'lead' ? 'Lead analyst' : 'Supporting'}: {a.title}
+              </span>
+              <span className="srr-team-progress-state">{ANALYST_STATE[a.status]}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {tasks.length ? (
         <ul className="srr-tasks">
           {tasks.map(([id, t]) => (
@@ -472,6 +564,7 @@ function EvidenceExplorer({ evidence, focus, runId }) {
             <article
               key={e.id}
               id={`ev-${e.marker}`}
+              tabIndex={-1}
               className={`srr-ev${focus === e.marker ? ' is-focus' : ''}`}
             >
               <header className="srr-ev-head">
@@ -548,9 +641,32 @@ export default function ResearchReport({ state, onFollowUp = null }) {
   const evidence = run?.evidence || [];
   const metrics = state.analysis?.metrics || [];
   const vis = state.analysis?.visualizations || [];
+  const team = selectTeam(state);
+  /* A finding's metric refs resolve to their calculation's label; a ref the
+     Methodology section lists jumps to its row. */
+  const calcs = useMemo(() => {
+    const m = new Map();
+    for (const x of state.analysis?.metrics || [])
+      if (x?.id && x.label) m.set(x.id, { label: x.label, linked: false });
+    for (const x of team?.methodology?.calculations || [])
+      if (x?.id && x.label) m.set(x.id, { label: x.label, linked: true });
+    return m;
+  }, [state.analysis, team?.methodology]);
+  const gaps = team?.methodology?.gaps || [];
+  const limitations = [
+    ...new Map(
+      [...(run?.limitations || []), ...gaps]
+        .filter(Boolean)
+        .map((l) => [String(l).trim().toLowerCase(), l]),
+    ).values(),
+  ];
   const cite = (m) => {
     setFocus(m);
-    document.getElementById(`ev-${m}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const el = document.getElementById(m.startsWith('M:') ? calcAnchor(m.slice(2)) : `ev-${m}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    /* Keyboard users land on the cited record, not just a scrolled page. */
+    el.focus({ preventScroll: true });
   };
 
   return (
@@ -687,21 +803,34 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         </section>
       ) : null}
 
+      <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} />
+
       <Relationships data={state.relationships} />
       <EvidenceExplorer evidence={evidence} focus={focus} runId={runId} />
 
       {run ? (
         <section className="srr-section" aria-labelledby="srr-lim-h">
           <h2 id="srr-lim-h" className="srr-h2">
-            Limitations and method
+            Methodology and limitations
           </h2>
-          {run.limitations?.length ? (
-            <ul className="srr-list">
-              {run.limitations.map((l) => (
-                <li key={l}>{l}</li>
-              ))}
-            </ul>
+          {team ? (
+            <MethodologySection
+              methodology={team.methodology}
+              audit={team.live ? null : team.audit}
+              focus={focus}
+            />
           ) : null}
+          {limitations.length ? (
+            <>
+              {team?.methodology ? <h3 className="srr-h3">Limitations and data gaps</h3> : null}
+              <ul className="srr-list">
+                {limitations.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
           <p className="srr-method">
             Searched:{' '}
             {run.methodology.plan.tasks.map((t) => SOURCE_LABELS[t.source] || t.source).join(', ')}.

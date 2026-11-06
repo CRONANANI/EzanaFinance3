@@ -443,6 +443,9 @@ test('pipeline: "Is Turkey\'s lira under pressure?" answers first, from the macr
     const sys = f.calls[0].system;
     const user = f.calls[0].messages[0].content;
     assert.match(sys, /Currency pressure/);
+    /* Quick mode of the analyst team: the lead's definitions and mandatory checks. */
+    assert.match(sys, /Method \(Senior FX and Currency Strategist\):/);
+    assert.match(r.timing.lead, /fx-strategist/);
     assert.match(user, /TRY per US dollar/);
     assert.match(user, /Policy rate, Sep 2026/);
     assert.match(user, /Annual inflation, Sep 2026/);

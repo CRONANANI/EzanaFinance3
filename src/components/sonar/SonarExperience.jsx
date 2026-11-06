@@ -516,7 +516,7 @@ export function SonarExperience({
         reasons: hint?.reasons || [],
         domains: [],
         format: 'report',
-        estimate: { label: 'about 1 to 3 minutes' },
+        estimate: { label: 'about 1 to 4 minutes' },
         guestNeedsAccount: !signedIn,
         meta: hint?.meta || null,
       },

@@ -1,0 +1,239 @@
+[
+  {
+    "id": "government-contracts-analysis-01",
+    "question": "How much has Palantir won in federal contracts over the last five years, and is it growing?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": [],
+    "mustUse": ["contract_history", "contractor_tickers", "contract_awards"],
+    "mustCompute": ["contractObligationsByFY", "pctChange", "cagr"],
+    "mustNotClaim": [
+      "calls obligations Palantir's government revenue",
+      "treats the current incomplete fiscal year as a decline"
+    ],
+    "goodAnswerTraits": [
+      "uses federal fiscal years and labels them",
+      "excludes or flags incomplete years",
+      "states the recipient-to-ticker mapping"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-02",
+    "question": "Lockheed just got a $20 billion contract. How much of that will show up in revenue next year?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["contract_awards", "contract_history", "sec_fundamentals"],
+    "mustCompute": ["awardCeilingVsObligated", "alignPeriods"],
+    "mustNotClaim": [
+      "treats award ceiling as revenue",
+      "forecasts next-year revenue from the award amount"
+    ],
+    "goodAnswerTraits": [
+      "separates ceiling, current value and obligation",
+      "explains revenue is recognized as work is performed",
+      "states what Ezana cannot see (outlays, funded backlog)"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-03",
+    "question": "Which agencies does Booz Allen depend on most, and how concentrated is that?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": [],
+    "mustUse": ["contract_history", "contractor_tickers"],
+    "mustCompute": ["concentrationTopN", "herfindahl"],
+    "mustNotClaim": [
+      "mixes calendar-year and fiscal-year totals",
+      "presents the Herfindahl threshold as an official classification"
+    ],
+    "goodAnswerTraits": [
+      "reports top-1 and top-3 agency shares over complete years",
+      "names the fiscal-year window",
+      "frames concentration as dependency, not a forecast"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-04",
+    "question": "Who are the top 10 DoD contractors this fiscal year and how has the ranking changed?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": ["industry-analyst"],
+    "mustUse": ["contract_rollups", "contractor_tickers"],
+    "mustCompute": ["concentrationTopN", "pctChange"],
+    "mustNotClaim": [
+      "compares a partial current fiscal year with a full prior year without labelling it",
+      "assumes all top recipients are public companies"
+    ],
+    "goodAnswerTraits": [
+      "flags the DoD reporting delay",
+      "separates resolved tickers from private recipients",
+      "compares like-for-like periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-05",
+    "question": "How much of Leidos' revenue comes from federal contracts?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": [
+      "contract_history",
+      "sec_fundamentals",
+      "company_profile_segments",
+      "contractor_tickers"
+    ],
+    "mustCompute": ["contractObligationsByFY", "alignPeriods"],
+    "mustNotClaim": [
+      "divides obligations by revenue and calls it the government revenue share",
+      "ignores subcontract work invisible in prime awards"
+    ],
+    "goodAnswerTraits": [
+      "prefers the company's own disclosed government revenue share if present",
+      "states the period mismatch",
+      "labels any obligation-to-revenue ratio indicative"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-06",
+    "question": "Deep dive: is SAIC's federal award momentum slowing, and which big contracts expire soon?",
+    "mode": "deep",
+    "lead": "contracts-analyst",
+    "supporting": ["equity-research", "red-team"],
+    "mustUse": ["contract_history", "contract_awards", "contractor_tickers", "sec_filings"],
+    "mustCompute": [
+      "contractObligationsByFY",
+      "cagr",
+      "awardCeilingVsObligated",
+      "concentrationTopN"
+    ],
+    "mustNotClaim": ["predicts recompete losses", "reads start dates as signing dates"],
+    "goodAnswerTraits": [
+      "uses period-of-performance end dates for expiry",
+      "checks whether one award drives a year",
+      "states what would change the momentum reading"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-07",
+    "question": "Does Microsoft's lobbying spend line up with the contracts it wins?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": [
+      "lobbying_filings",
+      "lobbying_client_tickers",
+      "contract_history",
+      "contractor_tickers"
+    ],
+    "mustCompute": ["lobbyingSpendByQuarter", "contractObligationsByFY", "alignPeriods"],
+    "mustNotClaim": [
+      "says lobbying caused contract wins",
+      "computes a return on lobbying as if obligations were profit"
+    ],
+    "goodAnswerTraits": [
+      "aligns calendar-quarter lobbying with federal fiscal years explicitly",
+      "notes resellers carry much software procurement",
+      "keeps co-movement descriptive"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-08",
+    "question": "Our fund holds RTX and GD. How exposed are we to a federal budget freeze?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["org_portfolio", "contract_history", "sec_fundamentals"],
+    "mustCompute": ["contractObligationsByFY", "concentrationTopN", "alignPeriods"],
+    "mustNotClaim": [
+      "models a budget freeze as an instant loss of all obligations",
+      "treats obligations as revenue at risk"
+    ],
+    "goodAnswerTraits": [
+      "gives agency concentration per holding",
+      "separates committed obligations from ceiling headroom",
+      "hands scenario sizing to the portfolio analyst"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-09",
+    "question": "Which space companies are gaining share of NASA prime contract dollars?",
+    "mode": "standard",
+    "lead": "industry-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["contract_rollups", "contractor_tickers", "peer_set"],
+    "mustCompute": ["concentrationTopN", "pctChange"],
+    "mustNotClaim": [
+      "calls share of prime obligations market share of the space industry",
+      "attributes private recipients to a ticker"
+    ],
+    "goodAnswerTraits": [
+      "defines share as share of NASA prime obligations per fiscal year",
+      "uses complete years",
+      "flags private and unmapped recipients"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-10",
+    "question": "What is Lockheed Martin's free cash flow yield versus peers?",
+    "mode": "quick",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "market_prices", "peer_set"],
+    "mustCompute": ["cashConversion", "multiples"],
+    "mustNotClaim": ["substitutes contract obligations for cash flow"],
+    "goodAnswerTraits": [
+      "does not activate the contracts analyst",
+      "uses reported cash flow with periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-11",
+    "question": "Which Canadian provinces award the most infrastructure contracts?",
+    "mode": "quick",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": [],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "answers from US federal contract data",
+      "invents provincial procurement figures"
+    ],
+    "goodAnswerTraits": [
+      "states Ezana holds US federal prime awards only",
+      "does not route to the contracts analyst for non-US procurement",
+      "lists the missing dataset"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "government-contracts-analysis-12",
+    "question": "Anduril just got a $100B contract ceiling, so it's basically guaranteed $100B in revenue, right? Which public stock benefits most?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": [],
+    "mustUse": ["contract_awards", "contractor_tickers"],
+    "mustCompute": ["awardCeilingVsObligated"],
+    "mustNotClaim": [
+      "treats award ceiling as revenue",
+      "maps a private company to a public ticker",
+      "recommends a stock"
+    ],
+    "goodAnswerTraits": [
+      "corrects the ceiling-as-revenue premise",
+      "states Anduril is not resolved to a listed ticker if unmapped",
+      "gives findings without a buy call"
+    ],
+    "reviewed": false
+  }
+]

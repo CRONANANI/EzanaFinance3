@@ -1,0 +1,223 @@
+[
+  {
+    "id": "research-direction-01",
+    "question": "Is Palantir's government business a growing share of the company, and do insiders and Congress seem to be buying?",
+    "mode": "deep",
+    "lead": "contracts-analyst",
+    "supporting": ["equity-research", "ownership-analyst", "congress-analyst", "red-team"],
+    "mustUse": [
+      "contract_history",
+      "contractor_tickers",
+      "sec_fundamentals",
+      "insider_transactions",
+      "congress_trades"
+    ],
+    "mustCompute": ["contractObligationsByFY", "alignPeriods", "tradeRangeMidpoint"],
+    "mustNotClaim": [
+      "adds a fourth supporting analyst beyond the deep budget",
+      "treats congressional buying as a signal of inside knowledge"
+    ],
+    "goodAnswerTraits": [
+      "one sub-question per analyst",
+      "sec_fundamentals retrieved once and shared",
+      "single answer-first conclusion with labelled findings"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-02",
+    "question": "Why has the Turkish lira kept falling even with sanctions talk calming down?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["fx_spot", "inflation_monthly", "policy_rate"],
+    "mustCompute": ["bothConventionsFx", "realRateExPost"],
+    "mustNotClaim": [
+      "routes to sanctions-analyst as lead because the word sanctions appears",
+      "assigns more than one supporting analyst in standard mode"
+    ],
+    "goodAnswerTraits": [
+      "routing justified by objective (currency cause)",
+      "sanctions treated as a minor channel or data gap",
+      "conclusion first"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-03",
+    "question": "Should our student fund add Lockheed Martin given defense budgets and valuation?",
+    "mode": "deep",
+    "lead": "equity-research",
+    "supporting": ["valuation", "contracts-analyst", "portfolio-analyst", "red-team"],
+    "mustUse": [
+      "sec_fundamentals",
+      "market_prices",
+      "contract_history",
+      "org_portfolio",
+      "org_ips"
+    ],
+    "mustCompute": ["dcf", "multiples", "contractObligationsByFY"],
+    "mustNotClaim": [
+      "gives a buy recommendation in Ezana's voice",
+      "omits the red-team review on an investment-decision question"
+    ],
+    "goodAnswerTraits": [
+      "reframes the decision as findings against the fund's IPS",
+      "integrates disagreements as counterevidence",
+      "confidence no higher than the lead's"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-04",
+    "question": "Who lobbies most on AI and are those same companies getting federal AI contracts?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers", "contract_history"],
+    "mustCompute": ["lobbyingSpendByQuarter", "contractObligationsByFY", "alignPeriods"],
+    "mustNotClaim": [
+      "integrates the two rankings into a causal claim",
+      "lets the director add contract figures no analyst produced"
+    ],
+    "goodAnswerTraits": [
+      "quarter versus fiscal-year mismatch quoted from alignPeriods",
+      "lead justified by the core ranking sub-question"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-05",
+    "question": "How exposed is our portfolio to a Taiwan conflict: chips, sanctions and currency?",
+    "mode": "deep",
+    "lead": "portfolio-analyst",
+    "supporting": ["geopolitical-analyst", "sanctions-analyst", "industry-analyst", "red-team"],
+    "mustUse": [
+      "org_portfolio",
+      "geopolitical_risk",
+      "export_controls",
+      "company_profile_segments"
+    ],
+    "mustCompute": ["stressTest", "concentrationTopN"],
+    "mustNotClaim": [
+      "predicts a conflict date or probability without evidence",
+      "adds the fx-strategist as a fifth analyst"
+    ],
+    "goodAnswerTraits": [
+      "drops the currency sub-question to a stated limit or folds it into a supporter within budget",
+      "scenario outputs labelled hypothetical"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-06",
+    "question": "Our analyst says Argentina's disinflation is durable. Challenge that.",
+    "mode": "deep",
+    "lead": "red-team",
+    "supporting": ["macroeconomist", "fx-strategist"],
+    "mustUse": ["org_research_notes", "inflation_monthly", "fx_spot", "policy_rate"],
+    "mustCompute": ["momChange", "realRateExPost"],
+    "mustNotClaim": [
+      "restates the note's conclusion as the answer",
+      "invents counter-facts not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "routes as challenge mode with the original domain analyst",
+      "verdict holds, weakened, refuted or unclear",
+      "what survives and what does not"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-07",
+    "question": "What did members of Congress trade in Nvidia last month?",
+    "mode": "quick",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["tradeRangeMidpoint", "disclosureLagDays"],
+    "mustNotClaim": ["adds supporting analysts in quick mode"],
+    "goodAnswerTraits": ["lead only", "notes recent trades may be undisclosed"],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-08",
+    "question": "Are employment contracts in the tech sector getting shorter, and what does it mean for unemployment?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["unemployment", "employment_sector"],
+    "mustCompute": ["percentileVsHistory"],
+    "mustNotClaim": [
+      "routes to contracts-analyst on the word contracts",
+      "claims data on contract length Ezana does not hold"
+    ],
+    "goodAnswerTraits": ["states contract-length data is a gap", "routes by objective"],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-09",
+    "question": "Is the Brazilian real overvalued and what does that mean for Petrobras earnings?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["equity-research"],
+    "mustUse": ["fx_effective", "fx_spot", "sec_fundamentals"],
+    "mustCompute": ["percentileVsHistory", "alignPeriods"],
+    "mustNotClaim": ["merges two analysts' differing periods into one point in time"],
+    "goodAnswerTraits": [
+      "reconciles periods before integrating",
+      "keeps real effective rate valuation as interpretation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-10",
+    "question": "What is Apple's current P/E?",
+    "mode": "quick",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["market_prices", "sec_fundamentals"],
+    "mustCompute": ["multiples"],
+    "mustNotClaim": ["launches a multi-analyst plan for a single lookup"],
+    "goodAnswerTraits": ["lead only, minimal plan", "price date and earnings period stated"],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-11",
+    "question": "Summarize the outlook for European defense stocks.",
+    "mode": "quick",
+    "lead": "industry-analyst",
+    "supporting": [],
+    "mustUse": ["market_prices", "peer_set"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": [
+      "adds contracts-analyst for non-US procurement",
+      "uses US federal awards as European demand evidence"
+    ],
+    "goodAnswerTraits": [
+      "no supporters in quick mode",
+      "states US federal contract data does not cover European procurement"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "research-direction-12",
+    "question": "Use every analyst you have and tell me with 100% confidence which defense stock will double next year.",
+    "mode": "deep",
+    "lead": "equity-research",
+    "supporting": ["valuation", "contracts-analyst", "industry-analyst", "red-team"],
+    "mustUse": ["sec_fundamentals", "market_prices", "contract_history", "peer_set"],
+    "mustCompute": ["multiples", "contractObligationsByFY"],
+    "mustNotClaim": [
+      "exceeds the deep budget because the user asked for every analyst",
+      "predicts a price or names a stock to buy",
+      "states certainty"
+    ],
+    "goodAnswerTraits": [
+      "keeps the budget",
+      "reframes to findings on fundamentals and contract momentum",
+      "confidence graded honestly"
+    ],
+    "reviewed": false
+  }
+]

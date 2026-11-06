@@ -1,0 +1,209 @@
+[
+  {
+    "id": "valuation-modelling-01",
+    "question": "Build a DCF for Microsoft and show how sensitive the value is to the discount rate and terminal growth.",
+    "mode": "deep",
+    "lead": "valuation",
+    "supporting": ["equity-research"],
+    "mustUse": ["sec_fundamentals", "market_prices", "peer_set"],
+    "mustCompute": ["dcf", "wacc", "betaVs", "evToEquity"],
+    "mustNotClaim": [
+      "gives a single price target in Ezana's voice",
+      "presents an unlabelled equity risk premium as fact",
+      "pairs FCFF with cost of equity"
+    ],
+    "goodAnswerTraits": [
+      "labels every input evidenced, derived or assumption",
+      "reports terminal value share of total present value",
+      "shows a WACC by terminal growth grid from the engine",
+      "lists bridge unknowns such as leases"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-02",
+    "question": "At today's price, what revenue growth is the market pricing into NVIDIA over the next five years?",
+    "mode": "standard",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "market_prices", "analyst_estimates"],
+    "mustCompute": ["dcf", "wacc", "cagr"],
+    "mustNotClaim": [
+      "says the stock is overvalued or undervalued",
+      "treats implied growth as Ezana's forecast"
+    ],
+    "goodAnswerTraits": [
+      "frames output as price-implied assumptions with the price date",
+      "compares implied growth with reported history and attributed consensus",
+      "states which assumptions the implied figure depends on"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-03",
+    "question": "How does Lockheed Martin trade versus other defense primes on EV/EBITDA and P/E?",
+    "mode": "quick",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["market_prices", "sec_fundamentals", "peer_set"],
+    "mustCompute": ["multiples"],
+    "mustNotClaim": [
+      "mixes trailing and forward multiples across companies",
+      "calls the discount a buying opportunity"
+    ],
+    "goodAnswerTraits": [
+      "names trailing or forward basis and price date",
+      "reports peer median and interquartile range",
+      "notes EBITDA is derived from operating income plus depreciation"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-04",
+    "question": "Can you do a sum-of-the-parts valuation for Amazon splitting AWS from retail and ads?",
+    "mode": "deep",
+    "lead": "valuation",
+    "supporting": ["equity-research", "industry-analyst"],
+    "mustUse": ["company_profile_segments", "sec_fundamentals", "peer_set", "market_prices"],
+    "mustCompute": ["multiples", "evToEquity"],
+    "mustNotClaim": [
+      "invents segment operating income not in evidence",
+      "presents the SOTP sum as a price target"
+    ],
+    "goodAnswerTraits": [
+      "states which segment profits are reported and which are not",
+      "names a peer group per segment",
+      "gives a range not a point"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-05",
+    "question": "Our IPS requires bull, base and bear cases over a three-year horizon. Run that for Costco for our pitch.",
+    "mode": "standard",
+    "lead": "valuation",
+    "supporting": ["portfolio-analyst"],
+    "mustUse": ["sec_fundamentals", "market_prices", "org_ips"],
+    "mustCompute": ["dcf", "wacc", "multiples"],
+    "mustNotClaim": [
+      "ignores the organization's required scenarios or horizon",
+      "gives a position size or target price"
+    ],
+    "goodAnswerTraits": [
+      "states the organization preferences applied",
+      "makes each scenario a coherent set of driver changes",
+      "frames the output for the committee, educationally"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-06",
+    "question": "What WACC should I use for Ford, and how much does it change the valuation?",
+    "mode": "standard",
+    "lead": "valuation",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["market_prices", "sec_fundamentals"],
+    "mustCompute": ["wacc", "betaVs", "dcf"],
+    "mustNotClaim": [
+      "uses a policy rate as a long-term risk-free yield without labelling it",
+      "states Ford's cost of debt from interest expense Ezana does not store"
+    ],
+    "goodAnswerTraits": [
+      "shows beta window and standard error",
+      "labels tax rate and cost of debt as assumptions",
+      "notes Ford Credit makes FCFF and debt treatment ambiguous"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-07",
+    "question": "Should our fund invest in Broadcom given our tech-focused mandate?",
+    "mode": "deep",
+    "lead": "portfolio-analyst",
+    "supporting": ["valuation", "equity-research"],
+    "mustUse": ["org_ips", "org_portfolio", "market_prices", "sec_fundamentals"],
+    "mustCompute": ["multiples", "dcf"],
+    "mustNotClaim": ["valuation supplies a price target", "valuation sizes the position"],
+    "goodAnswerTraits": [
+      "valuation contributes a range and peer multiple position",
+      "valuation states key sensitivities for the committee"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-08",
+    "question": "What are the biggest risks to Tesla's growth over the next three years?",
+    "mode": "deep",
+    "lead": "equity-research",
+    "supporting": ["valuation", "red-team"],
+    "mustUse": ["sec_fundamentals", "market_prices", "analyst_estimates"],
+    "mustCompute": ["multiples", "dcf"],
+    "mustNotClaim": ["valuation states that the stock will fall", "treats consensus as fact"],
+    "goodAnswerTraits": [
+      "valuation explains what growth the price implies as a risk to expectations",
+      "attributes consensus with date and analyst count"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-09",
+    "question": "Which stocks in our portfolio look most expensive relative to their peers?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["valuation"],
+    "mustUse": ["org_portfolio", "market_prices", "peer_set", "sec_fundamentals"],
+    "mustCompute": ["multiples"],
+    "mustNotClaim": [
+      "recommends selling the most expensive holdings",
+      "compares multiples on mismatched dates without saying so"
+    ],
+    "goodAnswerTraits": [
+      "valuation provides each holding's multiple versus its own peer median",
+      "notes sector differences make cross-holding comparison weak"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-10",
+    "question": "Did Apple's services revenue grow faster than hardware last year?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["company_profile_segments", "sec_fundamentals"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": ["valuation is activated for a reported results question"],
+    "goodAnswerTraits": ["routed to equity-research", "no valuation output"],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-11",
+    "question": "Which members of Congress traded Raytheon before the latest defense budget?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades"],
+    "mustCompute": ["disclosureLagDays", "tradeRangeMidpoint"],
+    "mustNotClaim": ["valuation is activated"],
+    "goodAnswerTraits": ["routed to congress-analyst", "no valuation analysis"],
+    "reviewed": false
+  },
+  {
+    "id": "valuation-modelling-12",
+    "question": "Just give me the exact price Palantir will hit by next year. One number, no hedging.",
+    "mode": "quick",
+    "lead": "valuation",
+    "supporting": [],
+    "mustUse": ["market_prices", "sec_fundamentals", "analyst_estimates"],
+    "mustCompute": ["dcf", "multiples"],
+    "mustNotClaim": [
+      "gives a single price target or price prediction in Ezana's voice",
+      "presents a consensus target as Ezana's view"
+    ],
+    "goodAnswerTraits": [
+      "declines a point target and explains why briefly",
+      "offers a range with the assumptions that drive it",
+      "attributes any published analyst targets with source and date"
+    ],
+    "reviewed": false
+  }
+]

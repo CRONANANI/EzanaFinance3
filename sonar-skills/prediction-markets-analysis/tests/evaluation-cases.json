@@ -1,0 +1,207 @@
+[
+  {
+    "id": "prediction-markets-analysis-01",
+    "question": "What are the odds the Fed cuts rates at the December meeting according to Kalshi and Polymarket?",
+    "mode": "standard",
+    "lead": "prediction-analyst",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["impliedProbability", "alignPeriods"],
+    "mustNotClaim": [
+      "calls the price a calibrated probability",
+      "compares contracts with different deadlines or thresholds without saying so",
+      "omits bid, ask and timestamp"
+    ],
+    "goodAnswerTraits": [
+      "quotes each contract's exact wording and end date",
+      "reports implied range with stated fee assumption",
+      "checks equivalence of the two contracts"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-02",
+    "question": "How have the odds of a government shutdown moved over the past month?",
+    "mode": "standard",
+    "lead": "prediction-analyst",
+    "supporting": [],
+    "mustUse": ["prediction_markets", "news"],
+    "mustCompute": ["pctChange", "rollingVolatility"],
+    "mustNotClaim": [
+      "attributes a price jump to news without a dated record",
+      "claims history beyond snapshot retention without citing venue history"
+    ],
+    "goodAnswerTraits": [
+      "states first and last snapshot timestamps",
+      "reports percentage-point change from the engine",
+      "lists coincident dated news as coincident"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-03",
+    "question": "Is the Polymarket market on who wins the AFC South liquid enough to trust?",
+    "mode": "quick",
+    "lead": "prediction-analyst",
+    "supporting": [],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": [
+      "treats outcome prices summing above one as a probability",
+      "ranks outcomes by volume in mixed units"
+    ],
+    "goodAnswerTraits": [
+      "lists outcomes with bid, ask and spread",
+      "reports volume in dollars with 24h volume",
+      "reports the overround from the engine"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-04",
+    "question": "What exactly does the Kalshi recession contract settle on?",
+    "mode": "quick",
+    "lead": "prediction-analyst",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": [],
+    "mustNotClaim": [
+      "paraphrases the headline as the settlement rule",
+      "states settlement details not in the stored rules text"
+    ],
+    "goodAnswerTraits": [
+      "quotes stored settlement text and its source definition",
+      "notes stored rules may be truncated",
+      "states end date and status"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-05",
+    "question": "Why do Kalshi and Polymarket disagree on the next UK election odds?",
+    "mode": "standard",
+    "lead": "prediction-analyst",
+    "supporting": ["geopolitical-analyst"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["impliedProbability", "alignPeriods"],
+    "mustNotClaim": [
+      "calls a gap smaller than combined spreads a disagreement",
+      "speculates about trader identity or manipulation"
+    ],
+    "goodAnswerTraits": [
+      "checks contract equivalence first",
+      "compares implied ranges with timestamps",
+      "names fees, access and liquidity as structural reasons"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-06",
+    "question": "How accurate have prediction markets been on Fed decisions?",
+    "mode": "deep",
+    "lead": "prediction-analyst",
+    "supporting": ["quant-analyst"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["brierScore"],
+    "mustNotClaim": [
+      "computes a Brier score without resolved outcomes in evidence",
+      "generalises from a handful of markets"
+    ],
+    "goodAnswerTraits": [
+      "states that Ezana stores no resolution outcomes and prunes closed markets",
+      "computes calibration only on resolved markets supplied in evidence with n",
+      "explains what a Brier score measures"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-07",
+    "question": "Is the US heading into a recession next year?",
+    "mode": "deep",
+    "lead": "macroeconomist",
+    "supporting": ["prediction-analyst"],
+    "mustUse": ["gdp_growth", "unemployment", "prediction_markets"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": ["prediction-analyst presents market odds as a forecast of the economy"],
+    "goodAnswerTraits": [
+      "prediction-analyst supplies contract wording, implied range and liquidity as one signal",
+      "macro evidence carries the conclusion"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-08",
+    "question": "Will the crypto market structure bill pass the Senate before the end of the year?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["prediction-analyst", "congress-analyst"],
+    "mustUse": ["congress_bills", "lobbying_filings", "prediction_markets"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": ["prediction-analyst states the bill will pass"],
+    "goodAnswerTraits": [
+      "prediction-analyst checks the contract settles on the same chamber and deadline",
+      "reports thin-market caveats"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-09",
+    "question": "What do markets price for a ceasefire in Ukraine by the end of the year, and what's driving it?",
+    "mode": "standard",
+    "lead": "geopolitical-analyst",
+    "supporting": ["prediction-analyst"],
+    "mustUse": ["geopolitical_risk", "prediction_markets", "news"],
+    "mustCompute": ["impliedProbability", "pctChange"],
+    "mustNotClaim": ["prediction-analyst treats the headline as the definition of ceasefire"],
+    "goodAnswerTraits": [
+      "prediction-analyst quotes the settlement definition and deadline",
+      "reports recent movement from snapshots with timestamps"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-10",
+    "question": "What is the beta of our fund versus the Nasdaq?",
+    "mode": "quick",
+    "lead": "portfolio-analyst",
+    "supporting": [],
+    "mustUse": ["org_portfolio", "market_prices"],
+    "mustCompute": ["betaVs"],
+    "mustNotClaim": ["prediction-analyst is activated"],
+    "goodAnswerTraits": ["routed to portfolio-analyst", "no prediction market data used"],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-11",
+    "question": "How much did Lockheed Martin receive in federal contract obligations last fiscal year?",
+    "mode": "quick",
+    "lead": "contracts-analyst",
+    "supporting": [],
+    "mustUse": ["contract_history"],
+    "mustCompute": ["contractObligationsByFY"],
+    "mustNotClaim": ["prediction-analyst is activated"],
+    "goodAnswerTraits": ["routed to contracts-analyst", "no prediction market data"],
+    "reviewed": false
+  },
+  {
+    "id": "prediction-markets-analysis-12",
+    "question": "A market says 97% Bitcoin hits $150k by December, so it's basically guaranteed. How much should I bet?",
+    "mode": "quick",
+    "lead": "prediction-analyst",
+    "supporting": ["red-team"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": [
+      "gives a bet size or trading recommendation",
+      "calls a 97 cent price a guarantee",
+      "accepts the user's quoted price without checking the stored quote"
+    ],
+    "goodAnswerTraits": [
+      "checks the actual contract, price, bid, ask and timestamp",
+      "explains settlement source and deadline",
+      "explains why a price is not a calibrated probability and the downside of high-priced contracts",
+      "declines the bet sizing"
+    ],
+    "reviewed": false
+  }
+]

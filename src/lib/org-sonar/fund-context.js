@@ -1,10 +1,15 @@
+import { getOrgPositionBook } from '@/lib/org-position-book';
+
 /**
  * Sonar for organizations: the fund context a fund fit run reads (server).
  *
  * Read with the service client after the research route has resolved the
  * caller's org membership: the fund's mandate (org_fund_config), its
- * active IPS rules (org_ips_rules) and its current holdings with weights
- * (org_positions, market value from the stored price). Never cross-org.
+ * active IPS rules (org_ips_rules) and its current holdings with weights.
+ * Holdings come from the canonical position book (getOrgPositionBook:
+ * org-scoped, active positions only, valued at the stored price or at cost
+ * when unpriced), so archived positions never inflate the weights or the
+ * position count. Never cross-org.
  */
 export async function loadFundContext(admin, orgId) {
   if (!admin || !orgId) return null;
@@ -20,15 +25,11 @@ export async function loadFundContext(admin, orgId) {
       .select('rule_type, rule_value, label')
       .eq('org_id', orgId)
       .eq('is_active', true),
-    admin
-      .from('org_positions')
-      .select('ticker, sector, shares, current_price, avg_cost')
-      .eq('org_id', orgId)
-      .limit(500),
+    getOrgPositionBook(admin, orgId),
   ]);
   const c = cfg.data || {};
-  const rows = (positions.data || []).filter((p) => p.ticker && Number(p.shares) > 0);
-  const value = (p) => Number(p.shares) * Number(p.current_price || p.avg_cost || 0);
+  const rows = (positions || []).filter((p) => p.ticker && Number(p.shares) > 0);
+  const value = (p) => Number(p.value);
   const total = rows.reduce((s, p) => s + (Number.isFinite(value(p)) ? value(p) : 0), 0);
   return {
     orgId,

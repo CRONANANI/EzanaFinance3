@@ -1,0 +1,214 @@
+[
+  {
+    "id": "quantitative-research-01",
+    "question": "Do stocks outperform after company insiders make open-market purchases? Test it on Ezana's data.",
+    "mode": "deep",
+    "lead": "quant-analyst",
+    "supporting": ["ownership-analyst"],
+    "mustUse": ["insider_transactions", "market_prices", "sec_filings"],
+    "mustCompute": ["eventStudy", "alignPeriods"],
+    "mustNotClaim": [
+      "uses transaction date rather than filing date as day 0",
+      "states a significant effect without n and standard error",
+      "ignores survivorship from missing delisted prices"
+    ],
+    "goodAnswerTraits": [
+      "restricts events to code P",
+      "states estimation and event windows and number of events",
+      "flags clustered event dates and partial insider coverage"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-02",
+    "question": "Is there a relationship between oil prices and airline stock returns?",
+    "mode": "standard",
+    "lead": "quant-analyst",
+    "supporting": ["commodities-analyst"],
+    "mustUse": ["commodity_price", "market_prices"],
+    "mustCompute": ["alignPeriods", "regressionOLS", "correlation"],
+    "mustNotClaim": [
+      "reports a causal effect from a correlation",
+      "regresses price levels on price levels without addressing trends"
+    ],
+    "goodAnswerTraits": [
+      "uses returns or changes at matched monthly frequency",
+      "reports coefficient with standard error and n",
+      "notes the Pink Sheet is monthly average not end of month"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-03",
+    "question": "Backtest buying the stocks that members of Congress buy, holding for three months.",
+    "mode": "deep",
+    "lead": "quant-analyst",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["congress_trades", "market_prices"],
+    "mustCompute": ["portfolioReturn", "disclosureLagDays", "drawdown", "betaVs"],
+    "mustNotClaim": [
+      "forms signals on transaction dates instead of disclosure dates",
+      "reports returns without costs or holdout period",
+      "implies members trade on non-public information"
+    ],
+    "goodAnswerTraits": [
+      "builds the signal on disclosure date",
+      "states rebalance rule, cost assumption and survivorship",
+      "reports return versus benchmark with drawdown and beta"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-04",
+    "question": "How volatile has Bitcoin-linked stock MicroStrategy been compared with the Nasdaq over the last two years?",
+    "mode": "quick",
+    "lead": "quant-analyst",
+    "supporting": [],
+    "mustUse": ["market_prices"],
+    "mustCompute": ["rollingVolatility", "betaVs", "drawdown"],
+    "mustNotClaim": [
+      "annualises volatility without stating the method",
+      "uses close instead of adj_close without saying so"
+    ],
+    "goodAnswerTraits": [
+      "states window and annualisation",
+      "reports beta with standard error",
+      "gives maximum drawdown dates"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-05",
+    "question": "Did defense stocks react to large Pentagon contract awards in the days after the announcement?",
+    "mode": "deep",
+    "lead": "quant-analyst",
+    "supporting": ["contracts-analyst"],
+    "mustUse": ["contract_awards", "contractor_tickers", "market_prices"],
+    "mustCompute": ["eventStudy", "awardCeilingVsObligated"],
+    "mustNotClaim": [
+      "treats ceiling value as the economic size of the award",
+      "uses award action date when the public announcement date differs without stating it"
+    ],
+    "goodAnswerTraits": [
+      "defines day 0 by public availability",
+      "scales awards by obligation relative to revenue with caveats",
+      "reports mean and median CAR with n"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-06",
+    "question": "I tried 20 different moving-average windows and one of them beat the S&P. Is that real?",
+    "mode": "standard",
+    "lead": "quant-analyst",
+    "supporting": [],
+    "mustUse": ["market_prices"],
+    "mustCompute": ["portfolioReturn", "regressionOLS"],
+    "mustNotClaim": [
+      "treats the best window's p-value at face value",
+      "presents in-sample results as expected future returns"
+    ],
+    "goodAnswerTraits": [
+      "explains multiple-testing inflation",
+      "proposes and runs a holdout or walk-forward check",
+      "reports all 20 specifications or their distribution"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-07",
+    "question": "What is our fund's beta and value at risk versus the S&P 500?",
+    "mode": "standard",
+    "lead": "portfolio-analyst",
+    "supporting": ["quant-analyst"],
+    "mustUse": ["org_portfolio", "market_prices"],
+    "mustCompute": ["betaVs", "varHistorical", "portfolioReturn"],
+    "mustNotClaim": [
+      "quant-analyst uses another organization's holdings",
+      "states VaR without alpha and window"
+    ],
+    "goodAnswerTraits": [
+      "quant-analyst supplies beta with standard error and historical VaR with window",
+      "warns when history is short"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-08",
+    "question": "Are Polymarket election prices well calibrated?",
+    "mode": "deep",
+    "lead": "prediction-analyst",
+    "supporting": ["quant-analyst"],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["brierScore"],
+    "mustNotClaim": [
+      "computes calibration without resolved outcomes in evidence",
+      "treats a handful of markets as a calibration study"
+    ],
+    "goodAnswerTraits": [
+      "quant-analyst states the number of resolved markets and confidence interval",
+      "notes Ezana does not store resolution outcomes and snapshots last about 35 days"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-09",
+    "question": "Does the Mexican peso move with US interest rates?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["quant-analyst"],
+    "mustUse": ["fx_spot", "policy_rate"],
+    "mustCompute": ["alignPeriods", "correlation", "regressionOLS"],
+    "mustNotClaim": ["quant-analyst reports a correlation on unaligned frequencies"],
+    "goodAnswerTraits": [
+      "quant-analyst aligns monthly series and reports n and standard errors",
+      "describes the result as co-movement"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-10",
+    "question": "Who are the largest holders of Coca-Cola?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["holdings_13f"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": ["quant-analyst is activated for a descriptive ownership question"],
+    "goodAnswerTraits": ["routed to ownership-analyst", "no statistical testing"],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-11",
+    "question": "What did Amazon report for AWS revenue last quarter?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["company_profile_segments", "sec_fundamentals"],
+    "mustCompute": ["pctChange"],
+    "mustNotClaim": ["quant-analyst is activated"],
+    "goodAnswerTraits": ["routed to equity-research", "no regression or test"],
+    "reviewed": false
+  },
+  {
+    "id": "quantitative-research-12",
+    "question": "Run the numbers and prove that stocks with rising lobbying spend beat the market by 15% a year.",
+    "mode": "deep",
+    "lead": "quant-analyst",
+    "supporting": ["lobbying-analyst", "red-team"],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers", "market_prices"],
+    "mustCompute": ["lobbyingSpendByQuarter", "portfolioReturn", "regressionOLS"],
+    "mustNotClaim": [
+      "confirms the 15% figure without an engine result",
+      "uses lobbying filings before their filing date",
+      "ignores that LDA data starts in 2024 so the sample is short"
+    ],
+    "goodAnswerTraits": [
+      "reframes 'prove' as test with a pre-specified hypothesis",
+      "uses filing dates for signal formation",
+      "gives small-sample warning and interval",
+      "states survivorship and only 370 lobbying clients mapped to tickers"
+    ],
+    "reviewed": false
+  }
+]

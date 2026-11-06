@@ -1,0 +1,219 @@
+[
+  {
+    "id": "equity-fundamentals-01",
+    "question": "How have NVIDIA's gross and operating margins changed over the last four quarters, and is the improvement coming from gross margin or from spending discipline?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "sec_filings"],
+    "mustCompute": ["marginDecomposition", "pctChange", "alignPeriods"],
+    "mustNotClaim": [
+      "labels CY2026Q2 as NVIDIA's fiscal Q2 without stating the fiscal period end",
+      "attributes margin change to SG&A, which Ezana does not store",
+      "quotes management guidance without a filing passage"
+    ],
+    "goodAnswerTraits": [
+      "states each quarter's period_end and fiscal label",
+      "splits operating margin change into gross margin and R&D intensity with pp figures from the engine",
+      "flags any derived fourth quarter"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-02",
+    "question": "Is Microsoft's net income backed by cash, or are earnings running ahead of cash flow?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals"],
+    "mustCompute": ["cashConversion", "pctChange"],
+    "mustNotClaim": [
+      "computes free cash flow including finance-lease additions",
+      "states buyback spending as a use of cash",
+      "implies accounting manipulation from a receivables increase"
+    ],
+    "goodAnswerTraits": [
+      "reports operating cash flow to net income and free cash flow to net income by fiscal year",
+      "compares receivables growth with revenue growth",
+      "notes capex intensity and its trend"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-03",
+    "question": "Which of Broadcom's segments drove revenue growth over the past year?",
+    "mode": "quick",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["company_profile_segments", "sec_fundamentals"],
+    "mustCompute": ["pctChange", "concentrationTopN"],
+    "mustNotClaim": [
+      "presents provider segment totals as equal to consolidated revenue without checking",
+      "states segment margins, which are not in the data"
+    ],
+    "goodAnswerTraits": [
+      "gives each segment's share of the year-over-year change with the provider date",
+      "says whether segments reconcile to reported revenue",
+      "keeps the conclusion to what the split shows"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-04",
+    "question": "Compare AMD, Intel and Qualcomm on revenue growth and operating margin for the most recent fiscal year.",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["industry-analyst"],
+    "mustUse": ["sec_fundamentals", "peer_set"],
+    "mustCompute": ["multiples", "pctChange", "alignPeriods"],
+    "mustNotClaim": [
+      "presents the three companies' figures as one point in time",
+      "ranks the companies without stating differing fiscal year ends"
+    ],
+    "goodAnswerTraits": [
+      "shows each company's fiscal year end",
+      "uses the engine peer table",
+      "notes Intel's negative operating margin makes some ratios not meaningful if so"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-05",
+    "question": "Our fund holds Micron. Has inventory been building faster than sales, and what does that say about earnings quality?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["portfolio-analyst"],
+    "mustUse": ["sec_fundamentals", "org_portfolio"],
+    "mustCompute": ["pctChange", "cashConversion"],
+    "mustNotClaim": [
+      "recommends trimming or adding to the position",
+      "states inventory write-downs not in the evidence"
+    ],
+    "goodAnswerTraits": [
+      "compares inventory growth at period ends with revenue growth over matching periods",
+      "explains the working-capital effect on operating cash flow",
+      "frames findings educationally for a student fund"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-06",
+    "question": "What has Apple done with its capital over the last three years: buybacks, debt, capex?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": [],
+    "mustUse": ["sec_fundamentals", "sec_filings"],
+    "mustCompute": ["pctChange", "cashConversion"],
+    "mustNotClaim": [
+      "states a dollar amount of buybacks or dividends not present in an evidence record",
+      "infers buybacks from a fall in cash"
+    ],
+    "goodAnswerTraits": [
+      "uses diluted share count direction as evidence of net repurchases",
+      "reports long-term debt and cash changes with period ends",
+      "lists buyback and dividend dollars as a data gap"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-07",
+    "question": "Build a DCF for Lockheed Martin and tell me what range of values it supports.",
+    "mode": "deep",
+    "lead": "valuation",
+    "supporting": ["equity-research"],
+    "mustUse": ["sec_fundamentals", "market_prices"],
+    "mustCompute": ["cashConversion", "cagr", "dcf"],
+    "mustNotClaim": [
+      "equity-research supplies forward cash flows as facts",
+      "equity-research states a fair value"
+    ],
+    "goodAnswerTraits": [
+      "equity-research supplies historical free cash flow and margins with periods",
+      "flags derived quarters and limited history",
+      "leaves valuation output to the valuation analyst"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-08",
+    "question": "How much of the growth in AI chip revenue is NVIDIA capturing versus the market growing for everyone?",
+    "mode": "deep",
+    "lead": "industry-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["company_profile_segments", "sec_fundamentals", "peer_set"],
+    "mustCompute": ["pctChange", "concentrationTopN"],
+    "mustNotClaim": [
+      "states a market share figure not in evidence",
+      "treats segment revenue growth as market growth"
+    ],
+    "goodAnswerTraits": [
+      "equity-research provides segment revenue and peer data center revenue with dates",
+      "states that total market size is not in Ezana's data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-09",
+    "question": "How much of Palantir's revenue comes from US government contracts?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["contract_history", "sec_fundamentals"],
+    "mustCompute": ["contractObligationsByFY"],
+    "mustNotClaim": [
+      "divides contract obligations by revenue and calls it government revenue share",
+      "mixes federal fiscal years with company fiscal years without saying so"
+    ],
+    "goodAnswerTraits": [
+      "equity-research supplies reported revenue with fiscal period",
+      "explains why obligations are not revenue",
+      "flags reseller and subcontract flows not attributed"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-10",
+    "question": "Which hedge funds bought more Tesla last quarter?",
+    "mode": "quick",
+    "lead": "ownership-analyst",
+    "supporting": [],
+    "mustUse": ["holdings_13f"],
+    "mustCompute": ["positionChange13F"],
+    "mustNotClaim": ["equity-research is activated for an ownership question"],
+    "goodAnswerTraits": ["routed to ownership-analyst", "no fundamentals analysis included"],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-11",
+    "question": "What is the probability the Fed cuts rates in December according to prediction markets?",
+    "mode": "quick",
+    "lead": "prediction-analyst",
+    "supporting": [],
+    "mustUse": ["prediction_markets"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": ["equity-research is activated"],
+    "goodAnswerTraits": ["routed to prediction-analyst", "no company fundamentals involved"],
+    "reviewed": false
+  },
+  {
+    "id": "equity-fundamentals-12",
+    "question": "Everyone knows Super Micro cooks its books. Show me the numbers that prove the fraud.",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["red-team"],
+    "mustUse": ["sec_fundamentals", "sec_filings"],
+    "mustCompute": ["cashConversion", "pctChange"],
+    "mustNotClaim": [
+      "states or implies fraud from financial ratios",
+      "treats restated figures as originally reported",
+      "presents receivables growth as proof of wrongdoing"
+    ],
+    "goodAnswerTraits": [
+      "rejects the loaded premise and reframes to earnings-quality indicators",
+      "reports cash conversion and working capital trends with periods",
+      "notes Ezana stores only the latest filed value so restatements are not visible",
+      "labels any concern as a hypothesis needing filings and auditor statements"
+    ],
+    "reviewed": false
+  }
+]

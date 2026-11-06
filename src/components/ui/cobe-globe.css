@@ -94,8 +94,8 @@
   background: var(--echo-globe-paper);
   color: var(--echo-globe-ink);
   font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.05em;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   white-space: nowrap;
   box-shadow: 0 1px 3px var(--echo-globe-label-shadow);
@@ -155,7 +155,7 @@
   background: var(--echo-globe-ink);
   color: var(--echo-globe-paper);
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: var(--type-micro-size);
 }
 .cbg-sr button:focus-visible {
   outline: 2px solid var(--border-focus);

@@ -187,7 +187,7 @@ function ResearchTab() {
           <i className="bi bi-layers" aria-hidden="true" /> Run deep research
         </button>
         <span className="osr-muted">
-          About 1 to 3 minutes. Uses one run from your fund&rsquo;s monthly deep research budget.
+          About 1 to 4 minutes. Uses one run from your fund&rsquo;s monthly deep research budget.
         </span>
       </div>
     </form>

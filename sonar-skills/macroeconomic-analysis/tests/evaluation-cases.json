@@ -1,0 +1,217 @@
+[
+  {
+    "id": "macroeconomic-analysis-01",
+    "question": "Is Germany in a recession right now?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["gdp_growth", "activity", "unemployment", "inflation_monthly"],
+    "mustCompute": ["percentileVsHistory", "yoyFromIndex", "alignPeriods"],
+    "mustNotClaim": [
+      "presents the 2026 IMF WEO growth figure as observed growth",
+      "applies a two-quarter technical recession test without quarterly GDP in evidence"
+    ],
+    "goodAnswerTraits": [
+      "separates last observed annual growth from projections",
+      "uses industrial production and unemployment as confirmation",
+      "states the cycle phase only with three or more inputs",
+      "flags mixed-date evidence"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-02",
+    "question": "Why is inflation in Argentina falling so fast, and is it still high?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": ["fx-strategist"],
+    "mustUse": ["inflation_monthly", "inflation_annual", "policy_rate", "fx_spot"],
+    "mustCompute": ["yoyFromIndex", "momChange", "annualise", "realRateExPost"],
+    "mustNotClaim": [
+      "equates falling inflation with falling prices",
+      "attributes disinflation to a single cause from timing alone"
+    ],
+    "goodAnswerTraits": [
+      "states both the disinflation and the still-high level",
+      "distinguishes month-on-month from 12-month rates",
+      "names candidate drivers and the evidence for each"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-03",
+    "question": "Compare growth, inflation and unemployment in Brazil, Mexico and Chile for our LatAm pitch.",
+    "mode": "deep",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["gdp_growth", "inflation_monthly", "unemployment", "policy_rate"],
+    "mustCompute": ["alignPeriods", "percentileVsHistory", "realRateExPost"],
+    "mustNotClaim": [
+      "compares unemployment rates from different definitions without noting it",
+      "ranks countries on figures from different years as if simultaneous"
+    ],
+    "goodAnswerTraits": [
+      "aligns periods and reports mismatches",
+      "judges each country against its own history and peers",
+      "labels projections separately"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-04",
+    "question": "What does the IMF say UK growth will be in 2027 and how does that compare with recent years?",
+    "mode": "quick",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["gdp_growth"],
+    "mustCompute": ["percentileVsHistory"],
+    "mustNotClaim": [
+      "describes the 2027 figure as anything other than an IMF projection",
+      "treats 2026 as an observed year"
+    ],
+    "goodAnswerTraits": [
+      "names the WEO vintage and projection years",
+      "gives last observed year separately",
+      "notes projections can lag later monthly data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-05",
+    "question": "Is monetary policy in Turkey tight or loose given inflation?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["policy_rate", "inflation_monthly", "inflation_annual"],
+    "mustCompute": ["realRateExPost", "alignPeriods"],
+    "mustNotClaim": [
+      "calls the policy rate minus inflation a forward-looking real rate",
+      "uses inflation expectations that are not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "labels the real rate ex-post",
+      "states the dates of both inputs",
+      "describes direction of the stance over a year"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-06",
+    "question": "Where is the US economy in the business cycle?",
+    "mode": "deep",
+    "lead": "macroeconomist",
+    "supporting": ["rates-strategist"],
+    "mustUse": ["gdp_growth", "unemployment", "inflation_monthly", "policy_rate", "credit_gap"],
+    "mustCompute": ["percentileVsHistory", "realRateExPost", "zScore"],
+    "mustNotClaim": [
+      "predicts the date of a recession",
+      "claims a core inflation reading not in evidence"
+    ],
+    "goodAnswerTraits": [
+      "names the cycle phase as an Ezana descriptive label",
+      "lists each cycle input and its direction",
+      "records contrary indicators as counterevidence"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-07",
+    "question": "Why has the Nigerian naira weakened so much over the past year?",
+    "mode": "standard",
+    "lead": "fx-strategist",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["fx_spot", "inflation_monthly", "policy_rate"],
+    "mustCompute": ["bothConventionsFx", "realRateExPost"],
+    "mustNotClaim": [
+      "macroeconomist states an FX pressure level that contradicts assessCurrencyPressure output"
+    ],
+    "goodAnswerTraits": [
+      "macroeconomist supplies inflation and policy stance with periods",
+      "keeps currency diagnosis with the fx-strategist"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-08",
+    "question": "Is Italy's government debt sustainable?",
+    "mode": "deep",
+    "lead": "sovereign-risk",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["gov_debt", "gov_balance", "gdp_growth", "inflation_annual"],
+    "mustCompute": ["debtDynamics"],
+    "mustNotClaim": [
+      "treats projected nominal growth as observed",
+      "macroeconomist delivers the sustainability verdict instead of sovereign-risk"
+    ],
+    "goodAnswerTraits": [
+      "macroeconomist provides growth and inflation inputs labelled observed or projected",
+      "hands off r-g analysis to sovereign-risk"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-09",
+    "question": "How much would a 30% rise in oil prices feed into inflation in India?",
+    "mode": "standard",
+    "lead": "commodities-analyst",
+    "supporting": ["macroeconomist"],
+    "mustUse": ["commodity_price", "inflation_monthly", "oil_demand"],
+    "mustCompute": ["correlation", "alignPeriods"],
+    "mustNotClaim": [
+      "gives a precise pass-through coefficient without a computed regression",
+      "presents a hypothetical scenario as a forecast"
+    ],
+    "goodAnswerTraits": [
+      "macroeconomist describes the inflation baseline and transmission channels",
+      "labels any pass-through estimate as hypothesis unless computed"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-10",
+    "question": "What is a fair value for Nvidia stock?",
+    "mode": "standard",
+    "lead": "valuation",
+    "supporting": ["equity-research"],
+    "mustUse": ["sec_fundamentals", "market_prices"],
+    "mustCompute": ["dcf"],
+    "mustNotClaim": ["macroeconomist is activated for a single-company valuation"],
+    "goodAnswerTraits": [
+      "routes to valuation without macro involvement",
+      "no price target in Ezana's voice"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-11",
+    "question": "Which senators traded defence stocks this quarter?",
+    "mode": "quick",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades"],
+    "mustCompute": ["disclosureLagDays"],
+    "mustNotClaim": ["macroeconomist adds macro commentary to a congressional trading question"],
+    "goodAnswerTraits": ["routes to congress-analyst only"],
+    "reviewed": false
+  },
+  {
+    "id": "macroeconomic-analysis-12",
+    "question": "The IMF already confirmed China grew 4.8% in 2026, so the slowdown is over, right? Should we overweight China?",
+    "mode": "standard",
+    "lead": "macroeconomist",
+    "supporting": [],
+    "mustUse": ["gdp_growth", "inflation_monthly", "unemployment"],
+    "mustCompute": ["percentileVsHistory"],
+    "mustNotClaim": [
+      "accepts a 2026 WEO figure as a confirmed outcome",
+      "gives an overweight or underweight recommendation",
+      "uses the user's 4.8% figure without matching evidence"
+    ],
+    "goodAnswerTraits": [
+      "corrects the premise: 2026 is an IMF projection",
+      "checks the user's number against evidence",
+      "declines the allocation advice and gives findings only"
+    ],
+    "reviewed": false
+  }
+]

@@ -94,6 +94,12 @@ import {
   assessmentRows,
 } from '@/lib/sonar/macro/intel-brief';
 import { directionLine } from '@/lib/sonar/macro/currency';
+import { buildResearchSpec } from '@/lib/sonar/engine/research-spec';
+import { classifyCore } from '@/lib/sonar/research-mode-core';
+import { routeAnalysts } from '@/lib/sonar/analysts/analyst-router';
+import { ANALYSTS } from '@/lib/sonar/analysts/registry';
+import { loadSkill } from '@/lib/sonar/analysts/skills';
+import { auditLanding } from '@/lib/sonar/analysts/audit';
 import { CURRENCY_OF } from '@/lib/sonar/macro/currencies';
 import { BoundedMap } from '@/lib/bounded-map';
 import { withTimeout } from '@/lib/with-timeout';
@@ -2345,6 +2351,40 @@ export async function runLandingPipeline(
       !flowsPing &&
       isMacroRelevant(macroRoute, { hasCompany: false, text: query }));
   const lensBlock = `\n${frameworkPrompt(macroAsk ? (intelRoute?.frameworks ?? frameworksFor(macroRoute)) : [])}`;
+  /* Nov 6 (analyst team, quick mode): no analyst calls on a ping. The router picks the lead
+     specialist and its skill's definitions and mandatory checks join the synthesis prompt. */
+  const leadAnalyst = (() => {
+    try {
+      const subject = country
+        ? { kind: 'country', id: country.iso3, label: country.name }
+        : resolved
+          ? { kind: 'company', id: resolved.ticker, label: resolved.name }
+          : politician
+            ? { kind: 'politician', id: politician.bioguideId, label: politician.name }
+            : industry
+              ? { kind: 'industry', id: industry.industry.id, label: industry.industry.label }
+              : null;
+      const classification = classifyCore(query, { understood, coverage: null });
+      const spec = buildResearchSpec(understood, {
+        query,
+        resolution: { subject, countries: country ? [{ iso3: country.iso3 }] : [], universe: null },
+        depth: 'quick',
+        classification,
+      });
+      const routing = routeAnalysts({
+        spec,
+        classification: { ...classification, mode: 'quick' },
+        route: macroRoute,
+        ctx: {},
+      });
+      return routing.lead ? ANALYSTS[routing.lead.id] : null;
+    } catch {
+      return null;
+    }
+  })();
+  const leadSkillBlock = leadAnalyst
+    ? `\n\nMethod (${leadAnalyst.title}):\n${loadSkill(leadAnalyst.skill, { mode: 'quick' })}`
+    : '';
   /* The one country a company ping names, kept as context: it focuses the
      sanctions map and the brief on that country. */
   const contextCountry = !country && resolved ? mentionedCountry(q) : null;
@@ -3148,6 +3188,7 @@ export async function runLandingPipeline(
       .join('\n');
     const intelSystem = useIntel
       ? intelSystemPrompt(intel.frameworks?.length ? intel.frameworks : intelRoute.frameworks) +
+        leadSkillBlock +
         DATE_RULES +
         GROUNDING_RULES +
         NO_WEB_RULES
@@ -3157,6 +3198,7 @@ export async function runLandingPipeline(
         intelSystem ||
         (webActive ? GROUNDED_SYSTEM_PROMPT : FAST_GROUNDED_PROMPT) +
           lensBlock +
+          leadSkillBlock +
           (sanctions ? SANCTIONS_ADDENDUM : '') +
           (intent === 'sanctions' && resolved && !country && !politician && !industryPing
             ? exposureAddendum(resolved.alias || shortName(resolved.name), contextCountry?.name)
@@ -3389,8 +3431,18 @@ export async function runLandingPipeline(
     '"leg":"retrieve"',
     `"leg":"retrieve","kept":${items.length}`,
   );
+  /* Nov 6: the methodology auditor's deterministic checks on every ping (telemetry). */
+  const audit = answer
+    ? auditLanding(
+        answer,
+        items.map((it) => `${it.title || ''} ${it.text || it.snippet || ''}`),
+        { markers: Math.min(items.length, P.maxSnippets) },
+      )
+    : null;
   /* Nov 6: the synthesis-start budget and the total, on the trace line. */
   const timing = {
+    lead: leadAnalyst?.id || null,
+    audit: audit ? `${audit.passed}/${audit.total}` : null,
     profile: P.id,
     synthesisStartMsLeft,
     totalMs: Date.now() - startedAt,

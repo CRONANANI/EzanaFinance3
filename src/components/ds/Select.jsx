@@ -1,17 +1,30 @@
 'use client';
 
 import { cx } from './tokens';
+import { describedBy } from './Input';
 
 /**
  * Native select styled to the system. Pass `options` ([{value,label}] or
  * strings) or children. Optional label / hint / error scaffolding.
  */
-export function Select({ label, hint, error, invalid, id, options, className, children, ...rest }) {
+export function Select({
+  label,
+  hint,
+  error,
+  invalid,
+  id,
+  options,
+  className,
+  children,
+  'aria-describedby': ariaDescribedBy,
+  ...rest
+}) {
   const isInvalid = invalid || !!error;
   const select = (
     <select
       id={id}
       aria-invalid={isInvalid || undefined}
+      aria-describedby={describedBy(id, hint, error, ariaDescribedBy)}
       className={cx('ds-select', isInvalid && 'ds-select--invalid', className)}
       {...rest}
     >
@@ -38,9 +51,13 @@ export function Select({ label, hint, error, invalid, id, options, className, ch
       )}
       {select}
       {error ? (
-        <span className="ds-field-error">{error}</span>
+        <span id={id ? `${id}-desc` : undefined} className="ds-field-error">
+          {error}
+        </span>
       ) : hint ? (
-        <span className="ds-field-hint">{hint}</span>
+        <span id={id ? `${id}-desc` : undefined} className="ds-field-hint">
+          {hint}
+        </span>
       ) : null}
     </div>
   );

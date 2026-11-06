@@ -1,0 +1,312 @@
+/* Sonar research team panel and methodology section (Nov 2026). Page-scoped
+   `srr-` prefix, shared with research-report.css. Tokens only: sans for
+   prose, mono for numbers, periods and markers; status is always written
+   out, colour only reinforces it. */
+
+.srr-team {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.srr-team .srr-h2 {
+  margin-bottom: 0;
+}
+.srr-team-lede {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.srr-team-list,
+.srr-team-findings,
+.srr-team-checks,
+.srr-team-points,
+.srr-meth-analysts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.srr-team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 0.75rem;
+}
+
+/* One specialist */
+.srr-analyst {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.srr-analyst-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.srr-analyst-name {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+.srr-analyst-role {
+  margin: 0 0 2px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.srr-analyst-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.srr-analyst-badge {
+  flex: none;
+}
+.srr-analyst-reason {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.srr-analyst-conclusion {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Disclosure toggles (ds Button, ghost): sit flush with the text. */
+.srr-team-toggle {
+  align-self: flex-start;
+  margin-left: -10px;
+  min-height: 32px;
+}
+.srr-team-block .srr-team-toggle {
+  color: var(--text-secondary);
+}
+
+/* A specialist's findings */
+.srr-team-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.25rem;
+}
+.srr-team-finding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border-primary);
+}
+.srr-team-claim {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.srr-team-period {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.srr-cite.is-calc {
+  font-family: var(--font-sans);
+  max-width: 100%;
+  text-align: left;
+  white-space: normal;
+}
+.srr-cites {
+  flex-wrap: wrap;
+}
+
+/* Methodology checks */
+.srr-team-block {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-primary);
+}
+.srr-team-block .srr-h3 {
+  margin-top: 0;
+}
+.srr-team-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+.srr-team-check {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.srr-team-check > .bi {
+  flex: none;
+  margin-top: 2px;
+  color: var(--positive);
+}
+.srr-team-check.is-fail > .bi {
+  color: var(--warning);
+}
+.srr-team-check-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0.5rem;
+  min-width: 0;
+}
+.srr-team-check-label {
+  color: var(--text-secondary);
+}
+/* Status words use text tokens that pass AA in both themes (--warning and
+   --text-faint do not at this size in light mode); the icon carries colour. */
+.srr-team-check-state {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.srr-team-check.is-fail .srr-team-check-state {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.srr-team-check-detail {
+  flex-basis: 100%;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+/* Red team */
+.srr-team-verdict {
+  margin: 0 0 0.5rem;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.srr-team-points {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.srr-team-point {
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--border-primary);
+}
+.srr-team-point-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.srr-team-point-text {
+  margin: 0.35rem 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.srr-team-point-note {
+  margin: 0.25rem 0 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Methodology section */
+.srr-meth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.srr-meth-block .srr-h3 {
+  margin-top: 0.75rem;
+}
+.srr-meth-analysts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.srr-meth-analysts li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+  vertical-align: middle;
+}
+.srr-meth-summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.srr-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.srr-meth-table td {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.srr-meth-name {
+  color: var(--text-primary);
+}
+.srr-meth-table td.srr-mono {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.srr-meth-table tr.is-focus,
+.srr-meth-table tr:focus {
+  background: var(--emerald-bg-subtle);
+  outline: none;
+}
+
+/* The run screen's team rows (inside .srr-progress) */
+.srr-team-progress {
+  /* Analyst titles are long: wider rows than the per-source task grid. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+  margin-bottom: 0.25rem;
+}
+.srr-team-progress .srr-task > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.srr-team-progress-state {
+  flex: none;
+  color: var(--text-muted);
+}
+.srr-task.is-active .srr-team-progress-state {
+  color: var(--text-primary);
+}
+.srr-task.is-done .srr-team-progress-state {
+  color: var(--emerald-text);
+}
+.srr-task.is-failed .srr-team-progress-state {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .srr-team-toggle {
+    min-height: 44px;
+  }
+  .srr-analyst {
+    padding: 0.85rem;
+  }
+  .srr-team-point {
+    padding: 0.5rem 0.75rem;
+  }
+}

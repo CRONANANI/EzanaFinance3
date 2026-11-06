@@ -267,11 +267,14 @@ test('the coverage check escalates when the standard plan drops a requested fami
 
 test('the estimate comes from planned work', () => {
   const s = estimateFromPlan('standard', { tasks: 8 });
-  assert.equal(s.label, 'about 15 to 30 seconds');
-  assert.ok(s.minSec >= 10 && s.maxSec <= 30 && s.minSec < s.maxSec);
+  assert.equal(s.label, 'about 20 to 40 seconds');
+  /* Nov 6: the research team adds one parallel round of specialist calls. */
+  assert.ok(s.minSec >= 10 && s.maxSec <= 40 && s.minSec < s.maxSec);
+  const noTeam = estimateFromPlan('standard', { tasks: 8, team: false });
+  assert.ok(noTeam.maxSec <= 30 && noTeam.maxSec < s.maxSec);
   const memo = estimateFromPlan('deep', { tasks: 20, memo: true });
   const rep = estimateFromPlan('deep', { tasks: 8, memo: false });
-  assert.equal(memo.label, 'about 1 to 3 minutes');
+  assert.equal(memo.label, 'about 1 to 4 minutes');
   assert.ok(memo.maxSec > rep.maxSec && memo.minSec >= rep.minSec);
   const c = classifyResearchMode('How dependent is Palantir on government spending?');
   assert.equal(c.format, 'investment_memo');

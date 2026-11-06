@@ -1,0 +1,220 @@
+[
+  {
+    "id": "lobbying-policy-analysis-01",
+    "question": "Which companies spent the most lobbying on artificial intelligence in 2025?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": [],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers"],
+    "mustCompute": ["lobbyingSpendByQuarter", "concentrationTopN"],
+    "mustNotClaim": [
+      "counts every SCI or CPI filing as AI lobbying",
+      "attributes a filing's full amount to AI when it lists several issues"
+    ],
+    "goodAnswerTraits": [
+      "classifies AI filings by specific issue text",
+      "states text coverage and topic ingest completeness",
+      "applies the self-file double-count rule"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-02",
+    "question": "How has Nvidia's lobbying spend changed over the last two years and who does it hire?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": [],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers"],
+    "mustCompute": ["lobbyingSpendByQuarter", "pctChange", "herfindahl"],
+    "mustNotClaim": [
+      "adds in-house expenses to outside firm income",
+      "calls the latest partial quarter a cut"
+    ],
+    "goodAnswerTraits": [
+      "quarterly series with quarter labels",
+      "lists registrants and their share",
+      "flags the latest quarter as preliminary if recent"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-03",
+    "question": "Which lobbyists working for crypto companies previously held government jobs?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": [],
+    "mustUse": ["lobbying_filings"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": [
+      "says revolving-door lobbyists secured outcomes",
+      "infers access from a covered position"
+    ],
+    "goodAnswerTraits": [
+      "quotes covered positions as filed",
+      "uses topic text for crypto classification",
+      "states disclosure shows activity not influence"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-04",
+    "question": "Who did Pfizer's lobbyists and PAC give money to last year?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["congress-analyst"],
+    "mustUse": ["lobbying_contributions", "congress_members", "committee_members"],
+    "mustCompute": ["concentrationTopN"],
+    "mustNotClaim": [
+      "links contributions to specific votes",
+      "matches honoree names to members without stating the basis"
+    ],
+    "goodAnswerTraits": [
+      "separates payee and honoree",
+      "gives LD-203 half-year periods",
+      "states committee seats are current, not historical"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-05",
+    "question": "Is semiconductor industry lobbying tied to CHIPS Act legislation moving forward?",
+    "mode": "deep",
+    "lead": "lobbying-analyst",
+    "supporting": ["contracts-analyst", "red-team"],
+    "mustUse": ["lobbying_filings", "congress_bills", "chips_awards"],
+    "mustCompute": ["lobbyingSpendByQuarter", "alignPeriods"],
+    "mustNotClaim": [
+      "says lobbying caused the bill to advance",
+      "gives a stage for a bill missing from the bills table"
+    ],
+    "goodAnswerTraits": [
+      "links bills only on identifiers in filing text",
+      "notes congress_bills coverage is small",
+      "keeps timing descriptive"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-06",
+    "question": "Compare lobbying intensity of Meta, Alphabet, Amazon and Microsoft relative to their size.",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": ["equity-research"],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers", "sec_fundamentals"],
+    "mustCompute": ["lobbyingSpendByQuarter", "alignPeriods"],
+    "mustNotClaim": [
+      "ranks by summing in-house and outside spend",
+      "uses mismatched periods for spend and revenue"
+    ],
+    "goodAnswerTraits": [
+      "same quarters for all four",
+      "states the double-count rule",
+      "scales by revenue with period alignment notes"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-07",
+    "question": "Which defense contractors both lobby heavily and win the most DoD awards?",
+    "mode": "standard",
+    "lead": "contracts-analyst",
+    "supporting": ["lobbying-analyst"],
+    "mustUse": [
+      "contract_history",
+      "lobbying_filings",
+      "lobbying_client_tickers",
+      "contractor_tickers"
+    ],
+    "mustCompute": ["contractObligationsByFY", "lobbyingSpendByQuarter", "alignPeriods"],
+    "mustNotClaim": ["computes a return on lobbying", "implies awards were bought"],
+    "goodAnswerTraits": [
+      "aligns calendar quarters to federal fiscal years",
+      "keeps both rankings descriptive",
+      "lists mapping gaps"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-08",
+    "question": "Members who sit on the Energy Committee traded oil stocks. Were oil companies lobbying that committee at the time?",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": ["lobbying-analyst"],
+    "mustUse": ["congress_trades", "committee_members", "lobbying_filings"],
+    "mustCompute": ["disclosureLagDays", "lobbyingSpendByQuarter", "alignPeriods"],
+    "mustNotClaim": [
+      "says lobbyists contacted named members (LDA lists chambers, not members)",
+      "implies insider knowledge"
+    ],
+    "goodAnswerTraits": [
+      "states entities lobbied are chambers or agencies",
+      "uses filing quarters",
+      "no misconduct inference"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-09",
+    "question": "How might proposed AI export rules affect Nvidia's China revenue?",
+    "mode": "standard",
+    "lead": "equity-research",
+    "supporting": ["lobbying-analyst"],
+    "mustUse": ["company_profile_segments", "export_controls", "lobbying_filings"],
+    "mustCompute": ["alignPeriods"],
+    "mustNotClaim": ["predicts the rule outcome from lobbying spend"],
+    "goodAnswerTraits": [
+      "lobbying appears only as context on advocacy",
+      "revenue exposure from segment data with periods"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-10",
+    "question": "How much do companies spend lobbying the California legislature on AI?",
+    "mode": "quick",
+    "lead": "research-director",
+    "supporting": [],
+    "mustUse": [],
+    "mustCompute": [],
+    "mustNotClaim": ["answers with federal LDA totals as if they were state lobbying"],
+    "goodAnswerTraits": [
+      "states Ezana holds federal LDA filings only",
+      "does not activate the lobbying analyst on state data"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-11",
+    "question": "What is the probability the stablecoin bill passes this year?",
+    "mode": "quick",
+    "lead": "prediction-analyst",
+    "supporting": [],
+    "mustUse": ["prediction_markets", "congress_bills"],
+    "mustCompute": ["impliedProbability"],
+    "mustNotClaim": ["derives a passage probability from lobbying spend"],
+    "goodAnswerTraits": [
+      "uses market-implied probability with fees and spread",
+      "lobbying analyst not required"
+    ],
+    "reviewed": false
+  },
+  {
+    "id": "lobbying-policy-analysis-12",
+    "question": "Big Tech bought the AI moratorium with lobbying money. How much did each company pay to get it?",
+    "mode": "standard",
+    "lead": "lobbying-analyst",
+    "supporting": [],
+    "mustUse": ["lobbying_filings", "lobbying_client_tickers", "congress_bills"],
+    "mustCompute": ["lobbyingSpendByQuarter"],
+    "mustNotClaim": [
+      "states lobbying bought or caused a legislative outcome",
+      "allocates filing amounts to one provision"
+    ],
+    "goodAnswerTraits": [
+      "rejects the causal premise plainly",
+      "reports disclosed AI-related spend with quarters",
+      "states what disclosures cannot show"
+    ],
+    "reviewed": false
+  }
+]

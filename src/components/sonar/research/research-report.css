@@ -117,7 +117,8 @@
   flex-wrap: wrap;
   gap: 0.5rem 1.25rem;
   font-size: 13px;
-  color: var(--text-faint);
+  /* --text-muted, not --text-faint: a pending step must still read (AA). */
+  color: var(--text-muted);
 }
 .srr-stage {
   display: flex;
@@ -143,6 +144,15 @@
 .srr-stage.is-active .srr-stage-dot {
   border-color: var(--emerald);
   box-shadow: 0 0 0 3px var(--emerald-bg);
+}
+/* Nov 2026 (research team): a control step that did not complete. The step
+   text carries the state for screen readers; the dashed dot reinforces it. */
+.srr-stage.is-failed {
+  color: var(--text-muted);
+}
+.srr-stage.is-failed .srr-stage-dot {
+  border-style: dashed;
+  border-color: var(--warning);
 }
 .srr-tasks {
   display: grid;
@@ -267,6 +277,11 @@
 .srr-cite:focus-visible {
   background: var(--emerald-bg);
   outline: none;
+}
+/* The ds focus ring (Nov 2026): a background shift alone was too faint. */
+.srr-cite:focus-visible {
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+  border-color: var(--border-focus);
 }
 .srr-link {
   padding: 0;
@@ -488,6 +503,10 @@
 }
 .srr-ev.is-focus {
   background: var(--emerald-bg-subtle);
+}
+/* A cited record receives focus (tabindex -1); the highlight shows it. */
+.srr-ev:focus {
+  outline: none;
 }
 .srr-ev-head {
   display: flex;
