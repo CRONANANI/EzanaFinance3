@@ -58,6 +58,7 @@ import { aiStackUpsideDown2026 } from './ezana-echo-article-ai-stack-upside-down
 import { grindrPinterestAppianLobbyingQ22026 } from './ezana-echo-article-grindr-pinterest-appian-lobbying-q2-2026.js';
 import { mcmasterDficPortfolioScorecard2026 } from './ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 import { industryNetMargins2026 } from './ezana-echo-article-industry-net-margins-2026.js';
+import { ossoff2028Money2026 } from './ezana-echo-article-ossoff-2028-money-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -95,6 +96,7 @@ const ARTICLES = [
   grindrPinterestAppianLobbyingQ22026,
   mcmasterDficPortfolioScorecard2026,
   industryNetMargins2026,
+  ossoff2028Money2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';
@@ -197,6 +199,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'ossoff-2028-money-2026': [
+    {
+      id: 'c-ossoff-1',
+      author: { name: 'Daniel Okafor', initials: 'DO' },
+      content:
+        'The California number is the one that matters for a primary. More money from one out-of-state donor base than from Georgia itself.',
+      createdAt: '2026-11-07T15:20:00Z',
+    },
+    {
+      id: 'c-ossoff-2',
+      author: { name: 'Mara Lindqvist', initials: 'ML' },
+      content:
+        'Good that the kill switch is a price level and not a vibe. 12% is where he started the week.',
+      createdAt: '2026-11-07T16:05:00Z',
+    },
+  ],
   'mcmaster-dfic-portfolio-scorecard-2026': [
     {
       id: 'c-dfic-1',

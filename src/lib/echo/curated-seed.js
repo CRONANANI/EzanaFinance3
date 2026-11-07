@@ -43,6 +43,7 @@ import { modernaCancerTrialTrump2026 } from '@/lib/ezana-echo-article-moderna-ca
 import { aiStackUpsideDown2026 } from '@/lib/ezana-echo-article-ai-stack-upside-down-2026.js';
 import { mcmasterDficPortfolioScorecard2026 } from '@/lib/ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 import { industryNetMargins2026 } from '@/lib/ezana-echo-article-industry-net-margins-2026.js';
+import { ossoff2028Money2026 } from '@/lib/ezana-echo-article-ossoff-2028-money-2026.js';
 
 const SOURCE = [
   industryNetMargins2026,
@@ -79,6 +80,7 @@ const SOURCE = [
   tariffWinnersContractLosers2026,
   centralBankGoldCycle2026,
   datacenterPowerCrunch2026,
+  ossoff2028Money2026,
 ];
 
 /**

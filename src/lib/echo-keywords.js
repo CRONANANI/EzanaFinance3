@@ -3670,6 +3670,43 @@ export const KEYWORDS = {
       ],
     },
   },
+
+  'implied-probability': {
+    id: 'implied-probability',
+    term: 'Implied Probability',
+    definition:
+      'The chance of an outcome that a market price implies. On event-contract exchanges such as Kalshi and Polymarket, a contract pays $1 if the event happens, so a price of 22 cents implies roughly a 22% probability.',
+    template: 'formula',
+    templateData: {
+      formula: 'Implied probability = Contract price / Payout',
+      example: {
+        title: '2028 presidency contract',
+        substitution:
+          'Price: $0.22 · Payout: $1.00 · Implied probability: 22% · Implied chance of any other winner: 78%',
+      },
+    },
+    realWorld:
+      'Kalshi priced Jon Ossoff at 22% to win the 2028 presidency on 6 November 2026, up from about 12% before his Georgia reelection. A long-dated contract like this moves on news flow two years before it settles, so the price measures attention as well as odds.',
+  },
+
+  'unitemized-contributions': {
+    id: 'unitemized-contributions',
+    term: 'Unitemized Contributions',
+    definition:
+      'Campaign contributions from donors whose total for the election cycle stays at or below $200. Campaigns report these to the FEC as a lump sum without naming the donors, so the dollars are public but the donor count is not.',
+    template: 'comparison',
+    templateData: {
+      title: 'Itemized vs unitemized money',
+      headers: ['Type', 'Donor named?', 'Count in FEC data?'],
+      rows: [
+        { label: 'Unitemized (under $200)', cells: ['No', 'No, dollar total only'] },
+        { label: 'Itemized ($200 and up)', cells: ['Yes', 'Yes, by size band'] },
+      ],
+      footnote: 'Small-dollar headcounts quoted by campaigns are self-reported.',
+    },
+    realWorld:
+      "Jon Ossoff raised $84.5 million under $200 in the 2026 cycle, 75.3% of his sized contributions. His campaign's 474,000 second-quarter donations come from its own statement, not from FEC donor counts.",
+  },
 };
 
 export function getKeywordById(id) {
