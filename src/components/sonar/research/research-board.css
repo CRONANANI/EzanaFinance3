@@ -533,6 +533,124 @@
 .srb .srb-status.is-qualified {
   color: var(--warning);
 }
+/* Nov 2026: what kind of claim a finding is (insight/select.js findingKind). */
+.srb .srb-status.is-observation,
+.srb .srb-status.is-calculated {
+  color: var(--srb-accent);
+}
+.srb .srb-status.is-interpretation,
+.srb .srb-status.is-hypothesis {
+  color: var(--warning);
+}
+.srb .srb-status.is-unavailable {
+  color: var(--text-muted);
+}
+/* The comparison or calculation a finding rests on, in one line. */
+.srb .srb-finding-calc {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--text-primary) !important;
+}
+.srb .srb-finding-calc .bi {
+  flex: none;
+  color: var(--srb-accent);
+}
+.srb .srb-finding-notes {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.srb .srb-finding-notes > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+.srb .srb-finding-notes dt {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.srb .srb-finding-notes dd {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.55;
+  color: var(--text-secondary) !important;
+}
+/* What the conclusion cannot establish, stated beside it. */
+.srb .srb-limits {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.55;
+  color: var(--text-secondary) !important;
+}
+.srb .srb-limits .bi {
+  flex: none;
+  color: var(--warning);
+}
+.srb .srb-limits-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+/* A chart's one-line analytical takeaway. */
+.srb .srb-takeaway {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-primary) !important;
+}
+/* The ranking module's chart and table views (tinted, no outlines: Sonar card rule). */
+.srb .srb-views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--srb-row);
+}
+.srb .srb-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.srb .srb-view:hover {
+  color: var(--text-primary);
+}
+.srb .srb-view.is-on {
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
+  color: var(--srb-accent);
+}
+.srb .srb-view:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+@container srb (max-width: 520px) {
+  .srb .srb-view {
+    min-height: 44px;
+  }
+}
 .srb .srb-finding .srb-finding-title {
   margin: 0;
   font-size: var(--type-card-title-size);

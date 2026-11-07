@@ -20,7 +20,7 @@ const norm = (s) =>
     .trim();
 
 /**
- * Cache key: sonar:qa:v1:<sha256 of the normalized query, context, depth, sorted entitled
+ * Cache key: sonar:qa:v2:<sha256 of the normalized query, context, depth, sorted entitled
  * dataset ids and whether web search is on>.
  */
 export function sonarAnswerCacheKey({
@@ -37,7 +37,7 @@ export function sonarAnswerCacheKey({
     [...(datasets || [])].map(String).sort().join(','),
     webSearch ? 'web' : 'noweb',
   ];
-  return `sonar:qa:v1:${createHash('sha256').update(parts.join('\u0001')).digest('hex')}`;
+  return `sonar:qa:v2:${createHash('sha256').update(parts.join('\u0001')).digest('hex')}`;
 }
 
 /** True when this ping may read or write the cache: it searches no org corpus. */

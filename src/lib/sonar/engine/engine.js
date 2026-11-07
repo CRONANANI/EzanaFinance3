@@ -92,8 +92,18 @@ import { loadActiveConfig } from './config-store';
 import { challengeAddendum, validateChallenge, CHALLENGE_PROMPT_SUFFIX } from './challenge';
 import { recallEvidence } from './memory';
 import { setCacheClient } from './cache';
+import { analyticalIntent, intentBlock } from '@/lib/sonar/insight/intent';
+import { semanticFamilyScores } from '@/lib/sonar/insight/semantic';
+import { gateEvidence } from '@/lib/sonar/insight/relevance';
+import { applyInsightStep } from '@/lib/sonar/insight/pipeline';
 
-export const ENGINE_VERSION = 'engine-v3.0';
+/* v3.1 (Nov 2026): analytical intent, evidence relevance, insight selection and the
+   visualization plan (lib/sonar/insight). */
+export const ENGINE_VERSION = 'engine-v3.1';
+
+/* The cached query embedder, loaded only when a standard or deep run asks for it. */
+const embedQuery = (text) =>
+  import('@/lib/rag/embed-cached').then((m) => m.embedViaSupabaseCached(text)).catch(() => null);
 
 /* Research depth: model, output tokens, run budget, synthesis reserve. */
 export const DEPTH_PROFILES = {
@@ -238,6 +248,16 @@ export async function runResearch(query, opts = {}) {
       }));
   const spec = buildResearchSpec(understood, { query, resolution, depth, now, fund });
   if (challenge?.claim) spec.challenge = { claim: String(challenge.claim).slice(0, 900) };
+  /* Nov 2026: what the question is trying to establish (lib/sonar/insight/intent.js). The
+     lexical intent is immediate; standard and deep runs refine it with semantic family
+     matching, computed in parallel with retrieval so it adds no wait. */
+  let intent = analyticalIntent(query, { spec, understood });
+  const semanticP =
+    depth !== 'quick' && !evidenceOverride
+      ? semanticFamilyScores(spec.rawQuery || query, { embed: embedQuery, timeoutMs: 700 }).catch(
+          () => null,
+        )
+      : Promise.resolve(null);
   /* Nov 6: the active organization's research methodology (defaults for everyone else). Its
      horizon applies when the question names none; it reaches the director and the valuation,
      portfolio and equity analysts. */
@@ -382,6 +402,12 @@ export async function runResearch(query, opts = {}) {
       memoKind: spec.memoKind,
       angles: spec.angles,
       challenge: spec.challenge || null,
+      intent: {
+        primary: intent.primary,
+        objectives: intent.objectives,
+        family: intent.family,
+        measure: intent.measure,
+      },
     },
     plan: {
       configVersion: plan.configVersion,
@@ -535,13 +561,19 @@ export async function runResearch(query, opts = {}) {
 
   /* ── Evidence selection ──────────────────────────────────────────── */
   emit('stage', { stage: 'verifying_evidence' });
+  /* The semantic family score was computed during retrieval; refine the intent with it. */
+  const semantic = await semanticP;
+  if (semantic) intent = analyticalIntent(query, { spec, understood, semantic });
+  /* Nov 2026: every record is classified against the intent (direct, supporting,
+     background, irrelevant). Irrelevant records never reach scoring or the answer. */
+  const relevanceGate = gateEvidence(all, intent, { now });
   const subjectTerms = [
     resolution.subject?.label,
     resolution.subject?.id,
     ...(resolution.politician ? [resolution.politician.lastName] : []),
   ].filter(Boolean);
   const universe = resolution.universe?.tickers || [];
-  const scored = all.map((e) => ({
+  const scored = relevanceGate.kept.map((e) => ({
     evidence: e,
     ...scoreEvidence(e, spec, { subjectTerms, universe, now }),
   }));
@@ -572,6 +604,7 @@ export async function runResearch(query, opts = {}) {
       why: e.why,
     })),
     excluded: decisions.filter((d) => !d.selected).length,
+    irrelevant: relevanceGate.dropped.length,
   });
 
   /* ── Analysis and relationships ──────────────────────────────────── */
@@ -681,7 +714,8 @@ export async function runResearch(query, opts = {}) {
               today: todayLine(now),
             }) +
             (withTeam ? directorBlock(specialists) : '') +
-            methodologyBlock(methodology),
+            methodologyBlock(methodology) +
+            (memo ? '' : intentBlock(intent)),
           /* A positioning memo writes sections per angle as well as risks. */
           maxTokens: memo
             ? spec.memoKind === 'positioning'
@@ -723,6 +757,26 @@ export async function runResearch(query, opts = {}) {
   /* Nov 6: a ranking question opens with its ranking, even when the model's ranking claims
      did not survive validation. */
   if (!memo) ensureRankingAnswer(report, { visualizations, marked, metrics });
+  /* Nov 2026: the insight step (lib/sonar/insight/pipeline.js). Deterministic findings join
+     the model's, every candidate is scored for relevance, new information, evidence, depth
+     and usefulness, restatements of the answer or a chart move to supporting facts, and the
+     charts are planned so no two show the same comparison. No model call. */
+  let insightRun = { diagnostics: null, visualPlan: null };
+  if (!memo) {
+    try {
+      insightRun = applyInsightStep(report, {
+        intent,
+        marked,
+        metrics,
+        visualizations,
+        layout,
+        depth,
+      });
+      emit('analysis', { metrics, visualizations, intent: report.insight?.intent || null });
+    } catch {
+      /* The report stands as validated; the step is an improvement, never a dependency. */
+    }
+  }
   if (spec.challenge) {
     report.challenge = validateChallenge(report.deterministic ? null : parsedChallenge, {
       marked,
@@ -953,6 +1007,20 @@ export async function runResearch(query, opts = {}) {
     analysis: report.analysis,
     relationships,
     visualizations,
+    visualPlan: insightRun.visualPlan
+      ? {
+          version: insightRun.visualPlan.version,
+          items: insightRun.visualPlan.items.map((x) => ({
+            ...x.spec,
+            role: x.role,
+            views: x.views,
+          })),
+          dropped: insightRun.visualPlan.dropped,
+        }
+      : null,
+    intent: report.insight?.intent || null,
+    supportingFacts: report.supportingFacts || [],
+    conclusionLimits: report.conclusionLimits || null,
     evidence: marked.map((e) => ({
       id: e.id,
       marker: e.marker,
@@ -967,6 +1035,7 @@ export async function runResearch(query, opts = {}) {
       historical: e.historical,
       score: e.score,
       why: e.why,
+      relevance: e.relevance || null,
     })),
     methodology: {
       plan: phase1.plan,
@@ -1001,6 +1070,17 @@ export async function runResearch(query, opts = {}) {
       providerErrors,
       validation: report.validation?.stats || null,
       validationLog: report.validation?.log || [],
+      /* Telemetry only: the insight step's decisions (never rendered). */
+      insight: {
+        intent: {
+          primary: intent.primary,
+          family: intent.family,
+          objectives: intent.objectives,
+          semantic: Boolean(semantic),
+        },
+        evidence: { kept: relevanceGate.kept.length, irrelevant: relevanceGate.dropped.length },
+        ...(insightRun.diagnostics || {}),
+      },
       trace,
       /* Telemetry only (never rendered): who ran, the audit, the pre-call cost estimate. */
       team: team.routing.lead

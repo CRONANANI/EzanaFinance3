@@ -10,6 +10,10 @@
  * total they use. Copy rules: sentence case, no em dashes, findings only.
  */
 
+import { findingKind } from './insight/select.js';
+import { isRankRestatement } from './insight/redundancy.js';
+import { measuresOf } from './insight/intent.js';
+
 const num = (v) => typeof v === 'number' && Number.isFinite(v);
 const toNum = (v) => (num(v) ? v : Number.isFinite(Number(v)) ? Number(v) : null);
 const minus = (s) => String(s).replace(/(^|\s|\()-(?=\d)/g, '$1−');
@@ -144,6 +148,11 @@ export function boardSummary(report, rank) {
  */
 export function boardBullets(report, rank) {
   const out = [];
+  /* A concentration finding (insight/derived.js) owns that figure: the bullet does not
+     repeat it. */
+  const concentrationFinding = (report?.keyFindings || []).some(
+    (f) => f?.insight === 'concentration',
+  );
   if (rank && rank.rows.length >= 2) {
     const [a, b] = rank.rows;
     if (b.value > 0) {
@@ -154,7 +163,7 @@ export function boardBullets(report, rank) {
       });
     }
     const listed = rank.rows.slice(0, 10);
-    if (listed.length >= 6) {
+    if (listed.length >= 6 && !concentrationFinding) {
       const total = listed.reduce((s, r) => s + Math.max(0, r.value), 0);
       const five = listed.slice(0, 5).reduce((s, r) => s + Math.max(0, r.value), 0);
       if (total > 0)
@@ -165,7 +174,16 @@ export function boardBullets(report, rank) {
     }
   }
   const leader = rank?.rows?.[0]?.label?.toLowerCase();
-  for (const f of report?.keyFindings || []) {
+  /* Nov 2026: after the insight step the key findings have their own section, so the
+     bullets carry the supporting facts (true, descriptive, worth a line) instead of
+     repeating the findings' titles. A report from before the step has no supportingFacts
+     and keeps the old behaviour. */
+  const facts = Array.isArray(report?.supportingFacts)
+    ? report.supportingFacts.filter(
+        (x) => x.placement !== 'ranking' && x.placement !== 'limitations',
+      )
+    : null;
+  for (const f of facts ?? report?.keyFindings ?? []) {
     if (out.length >= 4) break;
     if (f.id === 'finding_rank') continue;
     if (
@@ -183,6 +201,23 @@ export function boardBullets(report, rank) {
   return out.slice(0, 5);
 }
 
+/* ------------------------------------------------------------------ key findings */
+
+/**
+ * The key findings as the board shows them, each with its kind (verified observation,
+ * calculated, qualified interpretation, hypothesis, not established). A report saved before
+ * the insight step can still carry a finding that only restates the ranking; it is left out
+ * when other findings remain, because the ranking module already shows it.
+ */
+export function boardFindings(report, rank = null) {
+  const all = (report?.keyFindings || []).filter((f) => f && (f.title || f.explanation));
+  const leader = rank?.rows?.[0]?.label || null;
+  const kept = leader
+    ? all.filter((f) => f.id !== 'finding_rank' && !isRankRestatement(f, leader))
+    : all;
+  return (kept.length ? kept : all).map((f) => ({ ...f, kind: findingKind(f) }));
+}
+
 /* ------------------------------------------------------------------ KPI strip */
 
 /**
@@ -196,9 +231,19 @@ export function boardKpis({
   plan = null,
   team = null,
   rank = null,
+  intent = null,
 } = {}) {
   const out = [];
-  const m = metrics.find((x) => x && x.unit !== 'rank' && toNum(x.value) != null);
+  /* Nov 2026: the lead tile measures what the question asks about (never a price change on
+     a production question) and is never a figure a key finding already owns (derived). */
+  const onMeasure = (x) => {
+    if (!intent?.measure) return true;
+    const own = measuresOf(`${x.label} ${x.id || ''}`);
+    return !own.length || own.includes(intent.measure);
+  };
+  const m = metrics.find(
+    (x) => x && x.unit !== 'rank' && !x.derived && toNum(x.value) != null && onMeasure(x),
+  );
   if (m)
     out.push({
       id: 'metric',

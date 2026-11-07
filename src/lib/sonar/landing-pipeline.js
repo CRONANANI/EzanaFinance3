@@ -12,6 +12,8 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { understandQuery } from '@/lib/sonar/understand';
 import { TICKER_BLOCKLIST } from '@/lib/sonar/understand/blocklist';
 import { gateMarkets, gateNews, subjectTerms } from '@/lib/sonar/relevance';
+import { analyticalIntent } from '@/lib/sonar/insight/intent';
+import { gateCountryNews } from '@/lib/sonar/insight/relevance';
 import { passesCountryIntentGuard } from '@/lib/sonar/guards';
 import { extractIntents, ipoSubject, resolveQuery } from '@/lib/sonar/resolveQuery';
 import ipoEvents from '@/lib/sonar/sources/ipo-events';
@@ -2139,7 +2141,8 @@ export async function runLandingPipeline(
   /* Nov 6 (v3): the intent is part of the key, so a country profile
      ("Turkey") and a country question ("Is Turkey's lira under pressure?")
      never share a brief, and today's cached v2 Turkey brief is not served. */
-  const cacheKey = `landing:v3:${understood.intent}:${canon.key}`;
+  /* Nov 2026 (v4): a country answer's news rail is relevance-gated (insight/relevance.js). */
+  const cacheKey = `landing:v4:${understood.intent}:${canon.key}`;
   const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
   if (admin && !hasCacheClient()) setCacheClient(() => admin);
   if (cacheable) {
@@ -3121,7 +3124,15 @@ export async function runLandingPipeline(
         /* Term-gated for any ping that is not one named entity: a column
            item must mention the subject in its title or lead. Never padded. */
         const gated = !country && !politician && !resolved && subjectTerms(understood).length;
-        return gated ? cols.map((c) => ({ ...c, items: gateNews(c.items, understood) })) : cols;
+        if (gated) return cols.map((c) => ({ ...c, items: gateNews(c.items, understood) }));
+        /* Nov 2026: a country ping's rail drops items that only share the country's name
+           (a Thanksgiving turkey on a lira question) or sit outside the question's subject
+           (insight/relevance.js). Never padded. */
+        if (country) {
+          const ci = analyticalIntent(query, { understood });
+          return cols.map((c) => ({ ...c, items: gateCountryNews(c.items, ci) }));
+        }
+        return cols;
       })().catch(() => null)
     : null;
 

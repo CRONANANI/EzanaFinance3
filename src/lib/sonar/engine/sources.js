@@ -16,6 +16,7 @@
  * SERVER ONLY. Every runner is bounded by the executor and fails soft (a
  * throw costs that task, never the run). No vendor name in any text.
  */
+import { currencyInsights } from '@/lib/sonar/insight/derived';
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { getFmpKey } from '@/lib/fmp/upcoming-events';
@@ -817,6 +818,13 @@ async function macroSeriesSource(params, { admin, ms = 2500, maxItems = 6, now }
               transmission: intel.transmission || null,
               episodes: intel.episodes || [],
               sources: intel.sources || [],
+              /* Nov 2026: deterministic currency findings (insight/derived.js); the insight
+                 step validates them against the computed-measures records. */
+              insights: currencyInsights(pic, {
+                place: intel.place,
+                currency: intel.currency,
+                reerBasis: intel.reerBasis ?? null,
+              }),
             }
           : null,
       },

@@ -34,12 +34,14 @@ export const CLASSIFICATIONS = [
   'unknown',
 ];
 
-export const SYNTHESIS_PROMPT_VERSION = 'synth-v2';
+/* synth-v3 (Nov 2026): what a key finding is, the optional comparison, implication and
+   caveat fields, and no quota. */
+export const SYNTHESIS_PROMPT_VERSION = 'synth-v3';
 
 export const SYNTHESIS_SYSTEM = `You are Ezana Sonar, a financial and geopolitical research analyst. You receive a research question, a research plan, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {
   "executiveConclusion": { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] },
-  "keyFindings": [ { "title": string, "explanation": string, "classification": string, "evidence": [markers], "metrics": [metric ids], "entities": [names or tickers], "period": string|null } ],
+  "keyFindings": [ { "title": string, "explanation": string, "comparison": string|null, "implication": string|null, "caveat": string|null, "classification": string, "evidence": [markers], "metrics": [metric ids], "entities": [names or tickers], "period": string|null } ],
   "analysis": [ { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] } ],
   "limitations": [string],
   "followOnResearch": [string],
@@ -53,7 +55,11 @@ Classifications:
 - unknown: something the records cannot establish; state what is missing.
 Rules:
 - Answer the question asked. The executive conclusion answers it directly in two to four sentences.
-- Three to six key findings, most important first. Each cites at least one marker or metric.
+- Key findings: two to five, most important first, and fewer is better than repetitive. Each cites at least one marker or metric.
+- A key finding adds something the executive conclusion does not: an observation with a comparison or relationship (against a baseline, a peer, the past, another measure), what it suggests, and why it matters. The title states the insight, not a label ("Production is concentrated in five countries", not "Crude oil production").
+- Never make a finding that only restates the conclusion, a ranking order, a single latest value or a chart title. Rankings, raw values and source details are shown elsewhere on the page.
+- comparison: the key comparison or calculation in one line. implication: why the result matters, in one sentence, worded as interpretation. caveat: the main qualification or uncertainty, or null.
+- When the records lack data the question needs, one finding (classification unknown) may say what is missing and what that prevents you from concluding.
 - Copy every number exactly as a cited record or metric states it (same unit and rounding). Never compute a new figure unless it is a cited metric. Never invent a figure, date, name or source.
 - Write dates and periods exactly as the records give them. Anything dated before today has already happened.
 - Congressional trade amounts are ranges; write them as ranges. Estimated portfolio values are estimates; say so.
@@ -171,7 +177,16 @@ export function numberSupported(n, allowed) {
  * @returns {{ action: 'kept'|'downgraded'|'removed', classification: string, problems: string[], evidenceIds: string[] }}
  */
 export function validateClaim(claim, { byMarker, metricsById }) {
-  const text = [claim.title, claim.explanation, claim.text].filter(Boolean).join(' ');
+  const text = [
+    claim.title,
+    claim.explanation,
+    claim.text,
+    claim.comparison,
+    claim.implication,
+    claim.caveat,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const problems = [];
   let cls = CLASSIFICATIONS.includes(claim.classification)
     ? claim.classification

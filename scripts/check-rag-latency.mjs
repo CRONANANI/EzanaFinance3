@@ -349,7 +349,7 @@ test('the answer cache key varies by depth and entitlements, and org notes are n
     webSearch: true,
   };
   const a = C.sonarAnswerCacheKey({ ...base, depth: 'summary' });
-  assert.match(a, /^sonar:qa:v1:[0-9a-f]{64}$/);
+  assert.match(a, /^sonar:qa:v2:[0-9a-f]{64}$/);
   assert.notEqual(a, C.sonarAnswerCacheKey({ ...base, depth: 'deep' }));
   assert.equal(
     a,

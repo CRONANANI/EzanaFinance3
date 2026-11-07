@@ -9,8 +9,9 @@
  *   2. KPI strip: the lead metric, confidence, what was ranked or screened, checks passed
  *   3. Key findings and evidence (findings, interpretation, supporting records)
  *                                  | Research team and confidence + Methodology and sources
- *   4. Key data visualizations (the run's charts, full width)
- *   5. Top 10 table (value and share)  | Methodology and limitations
+ *   4. Key data visualizations: the planned charts (lib/sonar/insight/viz-plan.js), each with
+ *      its takeaway; a ranking is one module with a chart and a table view, never two cards
+ *   5. Methodology and limitations
  *   6. Evidence and sources (one chip per evidence category; opens the full evidence)
  *
  * The full evidence explorer, relationships and the methodology in full stay below, in a
@@ -40,8 +41,10 @@ import {
   lineGeometry,
   fmtNum,
   execMeta,
+  boardFindings,
 } from '@/lib/sonar/research-board';
 import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sonar/dot-map';
+import { planVisualizations } from '@/lib/sonar/insight/viz-plan';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
@@ -56,12 +59,14 @@ const dateLabel = (x) => {
   return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : String(x || '');
 };
 
-const CLASS_LABEL = {
-  verified_fact: 'Verified',
-  calculated_result: 'Calculated',
-  analytical_interpretation: 'Interpretation',
-  hypothesis: 'Hypothesis',
-  unknown: 'Unknown',
+/* The reader sees what kind of claim each finding is (select.js findingKind). An
+   interpretation is never labelled verified because its inputs were. */
+const KIND_ICON = {
+  observation: 'bi-check-circle-fill',
+  calculated: 'bi-calculator',
+  interpretation: 'bi-lightbulb',
+  hypothesis: 'bi-question-circle',
+  unavailable: 'bi-dash-circle',
 };
 
 function Eyebrow({ id, icon, children }) {
@@ -112,6 +117,15 @@ function Executive({ report, rank, deepAction, onCite, meta = [] }) {
           {report?.executiveConclusion?.markers?.length ? (
             <Cites markers={report.executiveConclusion.markers} onCite={onCite} />
           ) : null}
+        </p>
+      ) : null}
+      {report?.conclusionLimits ? (
+        <p className="srb-limits">
+          <i className="bi bi-exclamation-circle" aria-hidden="true" />
+          <span>
+            <span className="srb-limits-label">Not established: </span>
+            {report.conclusionLimits}
+          </span>
         </p>
       ) : null}
       {bullets.length ? (
@@ -300,9 +314,10 @@ function Findings({
   onCite,
   allCited = false,
   title = 'Key findings and evidence',
+  rank = null,
 }) {
   const id = useId();
-  const findings = report?.keyFindings || [];
+  const findings = boardFindings(report, rank);
   const interp = (report?.analysis || []).filter((a) => a?.text);
   const cited = [];
   const seen = new Set();
@@ -320,11 +335,9 @@ function Findings({
         <article key={f.id} className="srb-finding">
           <header className="srb-finding-head">
             <span className="srb-tag">Key finding</span>
-            <span className={`srb-status is-${f.classification}`}>
-              {f.classification === 'verified_fact' ? (
-                <i className="bi bi-check-circle-fill" aria-hidden="true" />
-              ) : null}
-              {CLASS_LABEL[f.classification] || f.classification}
+            <span className={`srb-status is-${f.kind.id}`}>
+              <i className={`bi ${KIND_ICON[f.kind.id]}`} aria-hidden="true" />
+              {f.kind.label}
             </span>
             {f.validation?.action === 'downgraded' ? (
               <span className="srb-status is-qualified">Qualified</span>
@@ -334,6 +347,28 @@ function Findings({
           <p className="srb-finding-text">
             {f.explanation} <Cites markers={f.markers} onCite={onCite} />
           </p>
+          {f.comparison ? (
+            <p className="srb-finding-calc">
+              <i className="bi bi-arrow-left-right" aria-hidden="true" />
+              {f.comparison}
+            </p>
+          ) : null}
+          {f.implication || f.caveat ? (
+            <dl className="srb-finding-notes">
+              {f.implication ? (
+                <div>
+                  <dt>Why it matters</dt>
+                  <dd>{f.implication}</dd>
+                </div>
+              ) : null}
+              {f.caveat ? (
+                <div>
+                  <dt>Qualification</dt>
+                  <dd>{f.caveat}</dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
           <FindingFlags f={f} runId={runId} />
         </article>
       ))}
@@ -453,7 +488,7 @@ function TeamAndMethod({ team, run, lines }) {
 
 /* ── 4. charts ────────────────────────────────────────────────────────── */
 
-function LineChart({ vis }) {
+function LineChart({ vis, takeaway = null }) {
   const g = lineGeometry(vis.series);
   if (!g) return null;
   const desc = `${vis.title}, ${dateLabel(g.from)} to ${dateLabel(g.to)}: from ${fmtNum(g.first, { decimals: 2 })} to ${fmtNum(g.last, { decimals: 2 })}, low ${fmtNum(g.low, { decimals: 2 })}, high ${fmtNum(g.high, { decimals: 2 })}.`;
@@ -517,6 +552,7 @@ function LineChart({ vis }) {
           ))}
         </div>
       </div>
+      {takeaway ? <p className="srb-takeaway">{takeaway}</p> : null}
       <p className="srb-cap">
         Source: {vis.source}. Period:{' '}
         {vis.period?.label ||
@@ -528,30 +564,97 @@ function LineChart({ vis }) {
   );
 }
 
-function BarsChart({ vis }) {
+/* A ranking is drawn once: the bars and, in the same module, the exact figures as a table
+   (value and share of the listed). The reader switches views; no second card repeats it. */
+function RankingModule({ vis, takeaway = null }) {
+  const id = useId();
+  const [view, setView] = useState('chart');
   const rank = rankingOf([vis]);
   if (!rank) return null;
   const rows = rankingRows(rank, 10);
   return (
-    <figure className="srb-card srb-chart">
-      <figcaption className="srb-chart-title">
-        {rank.title}
-        <span className="srb-chart-sub">
-          {rank.unit ? `${rank.unit}, ` : ''}
-          {rank.period}
-        </span>
-      </figcaption>
-      <ol className="srb-bars">
-        {rows.map((r) => (
-          <li key={r.label} className="srb-bars-row">
-            <span className="srb-bars-name">{r.label}</span>
-            <span className="srb-bars-track" aria-hidden="true">
-              <span style={{ width: `${r.width}%` }} />
-            </span>
-            <span className="srb-bars-val">{r.display}</span>
-          </li>
-        ))}
-      </ol>
+    <figure className="srb-card srb-chart" aria-labelledby={id}>
+      <div className="srb-chart-head">
+        <figcaption id={id} className="srb-chart-title">
+          {rank.title}
+          <span className="srb-chart-sub">
+            {rank.unit ? `${rank.unit}, ` : ''}
+            {rank.period}
+          </span>
+        </figcaption>
+        <div className="srb-views" role="group" aria-label="Show as">
+          {['chart', 'table'].map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={`srb-view${view === v ? ' is-on' : ''}`}
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+            >
+              <i
+                className={`bi ${v === 'chart' ? 'bi-bar-chart-line' : 'bi-table'}`}
+                aria-hidden="true"
+              />
+              {v === 'chart' ? 'Chart' : 'Table'}
+            </button>
+          ))}
+        </div>
+      </div>
+      {view === 'chart' ? (
+        <ol className="srb-bars">
+          {rows.map((r) => (
+            <li key={r.label} className="srb-bars-row">
+              <span className="srb-bars-name">{r.label}</span>
+              <span className="srb-bars-track" aria-hidden="true">
+                <span style={{ width: `${r.width}%` }} />
+              </span>
+              <span className="srb-bars-val">{r.display}</span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div
+          className="srb-tablewrap"
+          role="region"
+          aria-label={`${rank.title}, table`}
+          tabIndex={0}
+        >
+          <table className="srb-table">
+            <caption className="srb-sr">
+              {rank.title}: the top {rows.length}, each value and its share of the {rows.length}{' '}
+              listed
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col" className="is-num">
+                  Value
+                </th>
+                <th scope="col" className="is-num">
+                  Share (top {rows.length})
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.label}>
+                  <td className="srb-mono">{r.rank}</td>
+                  <th scope="row">
+                    {r.label}
+                    {r.note && r.note !== rank.rows[0].note ? (
+                      <span className="srb-muted"> ({r.note})</span>
+                    ) : null}
+                  </th>
+                  <td className="is-num">{r.display}</td>
+                  <td className="is-num">{fmtNum(r.share, { fixed: true })}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {takeaway ? <p className="srb-takeaway">{takeaway}</p> : null}
       <p className="srb-cap">
         Source: {vis.source}. {vis.method ? `Method: ${vis.method}.` : ''}
       </p>
@@ -559,16 +662,18 @@ function BarsChart({ vis }) {
   );
 }
 
-function Charts({ vis, Fallback }) {
+/* The planned charts (viz-plan.js): each says what it shows, none repeats another. */
+function Charts({ items: planned, Fallback }) {
   const id = useId();
-  const items = vis
-    .map((v) => {
-      if (v.type === 'line') return { id: v.id, node: <LineChart vis={v} /> };
+  const items = planned
+    .map(({ id: key, vis: v, spec }) => {
+      const takeaway = spec?.takeaway || null;
+      if (v.type === 'line') return { id: key, node: <LineChart vis={v} takeaway={takeaway} /> };
       if (v.type === 'bars' || v.type === 'leaderboard')
-        return { id: v.id, node: <BarsChart vis={v} /> };
+        return { id: key, node: <RankingModule vis={v} takeaway={takeaway} /> };
       return Fallback
         ? {
-            id: v.id,
+            id: key,
             node: (
               <div className="srb-card srb-chart">
                 <Fallback vis={v} />
@@ -591,58 +696,6 @@ function Charts({ vis, Fallback }) {
             {c.node}
           </div>
         ))}
-      </div>
-    </section>
-  );
-}
-
-/* ── 5a. top 10 table ─────────────────────────────────────────────────── */
-
-function TopTable({ rank }) {
-  const id = useId();
-  const rows = rankingRows(rank, 10);
-  return (
-    <section className="srb-card" aria-labelledby={id}>
-      <Eyebrow id={id}>Top {rows.length}</Eyebrow>
-      <p className="srb-sub">
-        {rank.title}
-        {rank.unit ? ` (${rank.unit})` : ''}
-        {rank.period ? `, ${rank.period}` : ''}
-      </p>
-      <div className="srb-tablewrap" role="region" aria-labelledby={id} tabIndex={0}>
-        <table className="srb-table">
-          <caption className="srb-sr">
-            {rank.title}: the top {rows.length}, each value and its share of the {rows.length}{' '}
-            listed
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Name</th>
-              <th scope="col" className="is-num">
-                Value
-              </th>
-              <th scope="col" className="is-num">
-                Share (top {rows.length})
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.label}>
-                <td className="srb-mono">{r.rank}</td>
-                <th scope="row">
-                  {r.label}
-                  {r.note && r.note !== rank.rows[0].note ? (
-                    <span className="srb-muted"> ({r.note})</span>
-                  ) : null}
-                </th>
-                <td className="is-num">{r.display}</td>
-                <td className="is-num">{fmtNum(r.share, { fixed: true })}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </section>
   );
@@ -777,7 +830,21 @@ export default function ResearchBoard({
   const metrics = state.analysis?.metrics || [];
   const vis = state.analysis?.visualizations || [];
   const rank = rankingOf(vis);
-  const kpis = boardKpis({ metrics, run, plan: state.plan, team, rank });
+  /* Nov 2026: the charts are planned (what each answers, no two alike); the plan reads the
+     run's intent and the key findings, so a saved or cached run plans the same way. */
+  const vizPlan = planVisualizations(vis, {
+    intent: state.analysis?.intent || run?.intent || null,
+    findings: report?.keyFindings || [],
+    depth: state.plan?.spec?.depth || 'standard',
+  });
+  const kpis = boardKpis({
+    metrics,
+    run,
+    plan: state.plan,
+    team,
+    rank,
+    intent: state.analysis?.intent || run?.intent || null,
+  });
   const lines = methodologyLines({ rank, metrics, run, limitations, sourceLabels });
   const groups = evidenceGroups(evidence, EVIDENCE_CATEGORIES);
   const resources = researchResources(state, { sourceLabels });
@@ -825,6 +892,7 @@ export default function ResearchBoard({
               runId={runId}
               onCite={onCite}
               allCited={!unlocked}
+              rank={rank}
             />
           ),
         }
@@ -836,22 +904,19 @@ export default function ResearchBoard({
       min: 5,
       node: <TeamAndMethod team={team} run={run} lines={lines} />,
     },
-    vis.length
+    vizPlan.items.length
       ? {
           id: 'charts',
           section: 'charts',
           span: 12,
           min: 12,
-          node: <Charts vis={vis} Fallback={ChartFallback} />,
+          node: <Charts items={vizPlan.items} Fallback={ChartFallback} />,
         }
-      : null,
-    rank
-      ? { id: 'table', section: 'charts', span: 6, min: 5, mid: 6, node: <TopTable rank={rank} /> }
       : null,
     {
       id: 'limits',
       section: 'methodology',
-      span: rank ? 6 : 12,
+      span: 12,
       min: 5,
       mid: 6,
       node: <Limits lines={lines} limitations={limitations} />,
@@ -878,7 +943,7 @@ export default function ResearchBoard({
         }
       : null,
   ].filter(Boolean);
-  const replaced = new Set(['exec', 'snapshot', 'kpis', 'charts', 'table']);
+  const replaced = new Set(['exec', 'snapshot', 'kpis', 'charts']);
   const cells = (
     activity
       ? [
@@ -897,6 +962,7 @@ export default function ResearchBoard({
                         onCite={onCite}
                         allCited={!unlocked}
                         title="Analyst findings and evidence"
+                        rank={rank}
                       />
                     ),
                   }
