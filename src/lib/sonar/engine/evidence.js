@@ -122,6 +122,7 @@ const SOURCE_METRIC = {
   congress_sector: 'trade_count',
   congress_company: 'trade_count',
   politician_dossier: 'trade_count',
+  congress_activity: 'trade_count',
   contracts_history: 'contract_obligations',
   institutional_13f: 'holdings_value',
   revenue_geo: 'revenue_by_region',

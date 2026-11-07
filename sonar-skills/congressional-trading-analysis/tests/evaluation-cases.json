@@ -206,5 +206,27 @@
       "lists what disclosures cannot establish"
     ],
     "reviewed": false
+  },
+  {
+    "id": "congressional-trading-analysis-13",
+    "question": "How has disclosed congressional trading activity changed over the last three years? Compare transaction counts, purchases versus sales, and House versus Senate activity, accounting for reporting limitations.",
+    "mode": "standard",
+    "lead": "congress-analyst",
+    "supporting": [],
+    "mustUse": ["congress_trades", "congress_members"],
+    "mustCompute": ["pctChange", "logChangeDecomposition", "twoProportionZ", "disclosureLagDays"],
+    "mustNotClaim": [
+      "says the data is unavailable or beyond its knowledge",
+      "states a Senate trend across windows with thin coverage",
+      "sums midpoints as dollars traded"
+    ],
+    "goodAnswerTraits": [
+      "opens with the direction and size of the change",
+      "uses windows ending 45 days before today",
+      "separates members trading from trades per member",
+      "compares chambers per member on the shared window",
+      "names the coverage gaps and late filings still to come"
+    ],
+    "reviewed": false
   }
 ]

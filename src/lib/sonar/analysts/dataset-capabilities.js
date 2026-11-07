@@ -483,7 +483,12 @@ export const CAPABILITIES = {
   },
   congress_trades: {
     kind: 'engine',
-    engineSources: ['congress_company', 'congress_sector', 'politician_dossier'],
+    engineSources: [
+      'congress_company',
+      'congress_sector',
+      'politician_dossier',
+      'congress_activity',
+    ],
     tables: ['congress_trades', 'house_trades', 'senate_trades'],
     label: 'Congressional trade disclosures (STOCK Act)',
     unit: 'USD range',

@@ -102,6 +102,12 @@ export function paramsFor(source, resolution, spec) {
       return { ticker: r.company.ticker, name: r.company.name };
     case 'politician_dossier':
       return r.politician ? { politician: r.politician } : null;
+    /* Nov 7: chamber-wide activity runs only when no member or company is
+       the subject; the runner re-checks the question itself. */
+    case 'congress_activity':
+      return r.politician || tickers.length || r.company?.ticker
+        ? null
+        : { rawQuery: spec.rawQuery || spec.question || '' };
     case 'commodity_series':
       return r.commodity ? { commodity: r.commodity, horizon: spec.timeHorizon } : null;
     case 'macro_country':

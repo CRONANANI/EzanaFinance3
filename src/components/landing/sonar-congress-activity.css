@@ -1,0 +1,241 @@
+/* Sonar congressional activity cards (Nov 7, SonarCongressActivityStack).
+   Rides the band's .snr-news shell and the sector stack's .snr-sec-* classes;
+   this file adds the segmented controls, the monthly chart, the window tables,
+   the purchase-share bars and the limits list. Tokens only, no outlines.
+   House is --snr-mint, Senate a neutral ink (two chambers, no status meaning);
+   purchases --positive and sales --negative, as in the sector stack. */
+
+.snr-band .snr-cga-card .is-up {
+  color: var(--positive);
+}
+.snr-band .snr-cga-card .is-down {
+  color: var(--negative);
+}
+.snr-band .snr-cga-card small {
+  color: var(--snr-text-faint);
+  font-size: 0.85em;
+}
+
+/* Segmented controls */
+.snr-band .snr-cga-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.snr-band .snr-cga-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--snr-text) 6%, transparent);
+}
+.snr-band .snr-cga-seg-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--snr-text-muted);
+  font-family: var(--snr-font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.snr-band .snr-cga-seg-btn:hover {
+  color: var(--snr-text);
+  background: color-mix(in srgb, var(--snr-emerald) 16%, transparent);
+}
+.snr-band .snr-cga-seg-btn.is-on {
+  color: var(--snr-ink);
+  background: var(--snr-mint);
+}
+.snr-band .snr-cga-seg-btn:focus-visible,
+.snr-band .snr-cga-col:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+/* Monthly chart */
+.snr-band .snr-cga-readout {
+  min-height: 1.4em;
+  margin: 0 0 4px;
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-cga-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.snr-band .snr-cga-grid {
+  stroke: var(--snr-grid);
+  stroke-width: 1;
+}
+.snr-band .snr-cga-edge {
+  stroke: var(--snr-hair-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+.snr-band .snr-cga-axis {
+  fill: var(--snr-text-faint);
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+}
+.snr-band .snr-cga-hit {
+  fill: transparent;
+}
+.snr-band .snr-cga-col {
+  cursor: default;
+  outline: none;
+}
+.snr-band .snr-cga-col.is-hover .snr-cga-hit {
+  fill: color-mix(in srgb, var(--snr-emerald) 10%, transparent);
+}
+.snr-band .snr-cga-bar.is-house {
+  fill: var(--snr-mint);
+}
+.snr-band .snr-cga-bar.is-senate {
+  fill: color-mix(in srgb, var(--snr-text) 62%, transparent);
+}
+.snr-band .snr-cga-bar.is-buy {
+  fill: var(--positive);
+}
+.snr-band .snr-cga-bar.is-sell {
+  fill: color-mix(in srgb, var(--negative) 85%, transparent);
+}
+.snr-band .snr-cga-bar.is-gap {
+  fill-opacity: 0.3;
+}
+.snr-band .snr-cga-col.is-late .snr-cga-bar {
+  fill-opacity: 0.35;
+}
+.snr-band .snr-cga-key.is-house::before {
+  background: var(--snr-mint);
+}
+.snr-band .snr-cga-key.is-senate::before {
+  background: color-mix(in srgb, var(--snr-text) 62%, transparent);
+}
+.snr-band .snr-cga-key.is-late::before {
+  background: color-mix(in srgb, var(--snr-mint) 35%, transparent);
+}
+.snr-band .snr-cga-key.is-gap::before {
+  background: color-mix(in srgb, var(--snr-text) 20%, transparent);
+}
+
+/* Tables */
+.snr-band .snr-cga-table .snr-sec-tr {
+  grid-template-columns: minmax(0, 1.5fr) 74px 74px 82px 52px 70px 56px;
+}
+.snr-band .snr-cga-table--ch .snr-sec-tr {
+  grid-template-columns: 64px 58px 52px 78px 66px minmax(0, 1.4fr);
+}
+.snr-band .snr-cga-table .snr-sec-tr.is-gap {
+  opacity: 0.5;
+}
+.snr-band .snr-cga-table .snr-sec-tr > span {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.snr-band .snr-cga-table .snr-cga-win,
+.snr-band .snr-cga-table .snr-cga-name {
+  font-family: var(--snr-font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.snr-band .snr-cga-est {
+  display: block;
+}
+
+/* Purchase share bars */
+.snr-band .snr-cga-sides {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.snr-band .snr-cga-side {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 8px;
+}
+.snr-band .snr-cga-side.is-gap {
+  opacity: 0.45;
+}
+.snr-band .snr-cga-side-label,
+.snr-band .snr-cga-side-val {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--snr-text);
+}
+.snr-band .snr-cga-side-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--negative) 70%, transparent);
+  overflow: hidden;
+}
+.snr-band .snr-cga-side-buy {
+  display: block;
+  height: 100%;
+  background: var(--positive);
+  transition: width 0.4s ease;
+}
+.snr-band .snr-cga-side-mid {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--snr-text);
+}
+
+/* Limits */
+.snr-band .snr-cga-limits {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--snr-text-muted);
+}
+
+@media (max-width: 640px) {
+  .snr-band .snr-cga-table .snr-sec-tr {
+    grid-template-columns: minmax(0, 1.4fr) 64px 70px 52px;
+  }
+  .snr-band .snr-cga-table .snr-sec-tr > :nth-child(4),
+  .snr-band .snr-cga-table .snr-sec-tr > :nth-child(6),
+  .snr-band .snr-cga-table .snr-sec-tr > :nth-child(7) {
+    display: none;
+  }
+  .snr-band .snr-cga-table--ch .snr-sec-tr {
+    grid-template-columns: 60px 56px 48px minmax(0, 1fr);
+  }
+  .snr-band .snr-cga-table--ch .snr-sec-tr > :nth-child(5),
+  .snr-band .snr-cga-table--ch .snr-sec-tr > :nth-child(6) {
+    display: none;
+  }
+  .snr-band .snr-cga-side {
+    grid-template-columns: 92px minmax(0, 1fr) 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-cga-side-buy,
+  .snr-band .snr-cga-seg-btn {
+    transition: none;
+  }
+}

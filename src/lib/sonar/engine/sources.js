@@ -22,6 +22,11 @@ import { getFmpKey } from '@/lib/fmp/upcoming-events';
 import { marketSnapshot, matchEcho } from '@/lib/sonar/landing-sources';
 import { analystEvidence } from '@/lib/sonar/analyst-evidence';
 import { buildPoliticianDossier, politicianEvidence } from '@/lib/sonar/landing-politician';
+import {
+  buildCongressActivityDossier,
+  congressActivityEvidence,
+  detectCongressActivityPing,
+} from '@/lib/sonar/landing-congress-activity';
 import { buildCountryDossier, countryEvidence } from '@/lib/sonar/landing-country';
 import { industryEvidence } from '@/lib/sonar/landing-industry';
 import { summarizeCongress, summarizeContracts, rankPerformance } from '@/lib/sonar/sector-screen';
@@ -281,6 +286,28 @@ async function politicianDossierSource({ politician }, { admin }) {
       text: e.snippet,
       date: e.date || null,
       entities: [d.name, ...(d.holdings || []).slice(0, 5).map((h) => h.ticker)],
+    })),
+  };
+}
+
+/* Nov 7: chamber-wide disclosed trading by 12-month window (the same RPC and
+   evidence as the quick ping), for "how has congressional trading changed"
+   deep research. A member or ticker question keeps its own sources. */
+async function congressActivitySource({ rawQuery }, { admin, now }) {
+  const ask = detectCongressActivityPing(rawQuery || '');
+  if (!ask) return { items: [] };
+  const d = await buildCongressActivityDossier({ admin, years: ask.years, now });
+  if (!d) return { items: [] };
+  return {
+    layout: { congressActivity: d },
+    items: congressActivityEvidence(d).map((e) => ({
+      kind: 'aggregate',
+      title: e.title,
+      text: e.snippet,
+      date: e.date || null,
+      period: { from: d.windows[0]?.from, to: d.cutoff, label: `${d.years} 12-month windows` },
+      data: { metric: 'trade_count' },
+      entities: ['House', 'Senate'],
     })),
   };
 }
@@ -887,6 +914,7 @@ export const RUNNERS = {
   congress_sector: congressTrades,
   congress_company: congressTrades,
   politician_dossier: politicianDossierSource,
+  congress_activity: congressActivitySource,
   contracts_history: contractsHistory,
   institutional_13f: institutional13f,
   sec_filings: secFilings,

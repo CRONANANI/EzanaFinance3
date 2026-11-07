@@ -127,6 +127,7 @@ export const SOURCES = {
   congress_sector: { category: 'government_records', reliability: 0.95, needs: ['tickers'] },
   congress_company: { category: 'government_records', reliability: 0.95, needs: ['tickers'] },
   politician_dossier: { category: 'government_records', reliability: 0.95, needs: ['politician'] },
+  congress_activity: { category: 'government_records', reliability: 0.95, needs: [] },
   contracts_history: { category: 'government_records', reliability: 0.95, needs: ['tickers'] },
   institutional_13f: { category: 'corporate_filings', reliability: 0.9, needs: ['tickers'] },
   sec_filings: { category: 'corporate_filings', reliability: 0.9, needs: ['tickers'] },
@@ -219,6 +220,7 @@ export const DEFAULT_CONFIG = {
       echo: 0.3,
     },
     congress_trading: {
+      congress_activity: 1,
       congress_sector: 1,
       congress_company: 1,
       politician_dossier: 0.9,

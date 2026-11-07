@@ -3461,6 +3461,110 @@ export function aggregateFews(rows, opts = {}) {
 /* ================================================================== registry */
 
 /** Every engine function by name, so evaluations can verify each `mustCompute` exists. */
+/* ================================================================== activity over time */
+
+/* Standard normal CDF (Abramowitz and Stegun 7.1.26 erf; error under 1.5e-7). */
+function normalCdf(z) {
+  const x = Math.abs(z) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * x);
+  const erf =
+    1 -
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
+      t *
+      Math.exp(-x * x);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+}
+
+/**
+ * Two-proportion z test: did a share (purchases among purchases and sales) change between
+ * two periods? a, b: { x, n }. Returns z (b minus a), the two-sided p-value and the change in
+ * percentage points. Observations are treated as independent; when they cluster (trades by
+ * the same member) the p-value overstates certainty, and a warning says so.
+ */
+export function twoProportionZ(a, b, opts = {}) {
+  const x1 = toNum(a?.x);
+  const n1 = toNum(a?.n);
+  const x2 = toNum(b?.x);
+  const n2 = toNum(b?.n);
+  const warnings = [];
+  if (!(n1 > 0) || !(n2 > 0) || x1 == null || x2 == null)
+    return metric(
+      'twoProportionZ',
+      {
+        value: null,
+        unit: 'z',
+        method: 'two-proportion z test',
+        warnings: ['needs x and n for both periods'],
+      },
+      opts,
+    );
+  const p1 = x1 / n1;
+  const p2 = x2 / n2;
+  const pooled = (x1 + x2) / (n1 + n2);
+  const se = Math.sqrt(pooled * (1 - pooled) * (1 / n1 + 1 / n2));
+  if (n1 < 30 || n2 < 30) warnings.push(`small sample (n = ${n1}, ${n2})`);
+  if (opts.clustered !== false)
+    warnings.push('observations may cluster by member; treat the p-value as indicative');
+  const z = se > 0 ? (p2 - p1) / se : null;
+  return metric(
+    'twoProportionZ',
+    {
+      value: z,
+      unit: 'z',
+      method: '(p2 - p1) / sqrt(p(1 - p)(1/n1 + 1/n2)), pooled p',
+      warnings,
+      p1,
+      p2,
+      changePp: (p2 - p1) * 100,
+      pValue: z == null ? null : 2 * (1 - normalCdf(Math.abs(z))),
+    },
+    opts,
+  );
+}
+
+/**
+ * Splits a change in a total into a change in units and a change in intensity, on logs:
+ * ln(T1/T0) = ln(U1/U0) + ln(I1/I0), I = T / U. For trades: members trading and trades per
+ * member. Returns the log change of the total and each part's share of it (shares sum to 1;
+ * a part moving against the total gets a negative share).
+ */
+export function logChangeDecomposition(p0, p1, opts = {}) {
+  const t0 = toNum(p0?.total);
+  const u0 = toNum(p0?.units);
+  const t1 = toNum(p1?.total);
+  const u1 = toNum(p1?.units);
+  if (!(t0 > 0) || !(u0 > 0) || !(t1 > 0) || !(u1 > 0))
+    return metric(
+      'logChangeDecomposition',
+      {
+        value: null,
+        unit: 'log',
+        method: 'ln(T1/T0) = ln(U1/U0) + ln(I1/I0)',
+        warnings: ['needs positive totals and units'],
+      },
+      opts,
+    );
+  const total = Math.log(t1 / t0);
+  const units = Math.log(u1 / u0);
+  const intensity = Math.log(t1 / u1 / (t0 / u0));
+  const warnings = [];
+  if (Math.abs(total) < 0.02) warnings.push('total barely changed; shares are unstable');
+  return metric(
+    'logChangeDecomposition',
+    {
+      value: total,
+      unit: 'log',
+      method: 'ln(T1/T0) = ln(U1/U0) + ln(I1/I0), I = T / U',
+      warnings,
+      unitsLog: units,
+      intensityLog: intensity,
+      unitsShare: total !== 0 ? units / total : null,
+      intensityShare: total !== 0 ? intensity / total : null,
+    },
+    opts,
+  );
+}
+
 export const QUANT = Object.freeze({
   weoStatus,
   pctChange,
@@ -3511,6 +3615,8 @@ export const QUANT = Object.freeze({
   importDependency,
   assessCurrencyPressure,
   aggregateFews,
+  twoProportionZ,
+  logChangeDecomposition,
 });
 
 export const QUANT_NAMES = Object.freeze(Object.keys(QUANT).sort());

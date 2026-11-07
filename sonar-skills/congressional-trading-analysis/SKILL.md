@@ -58,6 +58,18 @@ Report what members of Congress disclosed about their own, their spouses' and th
 10. Hand off lobbying, contracts or company fundamentals to the relevant analyst.
 11. Write the conclusion answer first with ranges, dates and owners; state plainly what disclosures cannot show.
 
+### Activity change over time (chamber, period or side comparisons)
+
+When the question asks how disclosed trading changed (counts, purchases versus sales, House versus Senate), answer it from Ezana's own disclosures with a decisive finding; never fall back to saying the data is unavailable.
+
+1. Use 12-month windows on transaction date that end 45 days before today, so every trade in them was due; show the 45 days after the cutoff separately and never compare them.
+2. Count each trade once: a third-party feed row that repeats an official House Clerk or Senate eFD filing (same member, transaction date, ticker or asset, lower bound and type) is dropped.
+3. Test coverage before comparing: a chamber's window is comparable only with at least 50 trades, at least 60% of the chamber's best-covered member count, and a median filing lag under 180 days. A window that fails is shown and labelled a coverage gap; no trend is stated across it.
+4. Estimate filings still to come in the latest window from the prior window's filing-lag tail, month by month, and show the estimate beside the observed count.
+5. Decompose the change in trades into members trading and trades per member, and say which one moved.
+6. Compare the purchase share between the last two windows with a two-proportion test, and show the member split (net buyers vs net sellers) because trades cluster by member.
+7. Compare chambers per member on the shared window only, and name the share of the most active filer when it exceeds 30% of a chamber's total.
+
 ## Calculations (performed by the quantitative engine)
 
 - Range midpoint with bounds: midpoint = (min + max) / 2, bounds = [min, max]; open top bracket returns the minimum and an open flag. Engine: tradeRangeMidpoint(range). Interpretation: totals are quoted as "between X and Y (midpoint estimate Z)".
@@ -65,7 +77,9 @@ Report what members of Congress disclosed about their own, their spouses' and th
 - Trade concentration by ticker, sector or member: top-N share of trade counts or midpoint estimates. Engine: concentrationTopN(values, n).
 - Event study around transaction or disclosure dates: abnormal returns over a window versus a benchmark. Engine: eventStudy(returns, events, window). Interpretation: small samples and overlapping events make results descriptive; never evidence of foreknowledge.
 - Return of a tracked member basket vs benchmark: Engines: portfolioReturn(weights, returns) and betaVs(benchmark). Interpretation: weights come from midpoints, so returns are estimates with wide uncertainty.
-- Activity change over time: Engine: pctChange(a,b) on trade counts per period.
+- Activity change over time: Engine: pctChange(a,b) on trade counts per comparable window.
+- Members vs intensity: Engine: logChangeDecomposition({ total, units }, { total, units }). Interpretation: the log change in trades splits exactly into the log change in members trading plus the log change in trades per member; report which share dominates.
+- Purchase share shift: Engine: twoProportionZ({ x, n }, { x, n }). Interpretation: z and two-sided p on trade counts; trades cluster by member, so quote it as indicative and show net buyers vs net sellers beside it.
 
 ## Mandatory checks
 
@@ -76,6 +90,8 @@ Report what members of Congress disclosed about their own, their spouses' and th
 - Committee assignments are labelled as current membership, not membership on the trade date.
 - No sentence uses or implies insider knowledge, front-running, conflict of interest, illegality or wrongdoing.
 - Comparisons across members or periods use the same window and counting rules.
+- No trend is stated across a window that fails the coverage test; the gap is named with its member count.
+- The latest window's count is shown as observed, with any late-filing adjustment labelled an estimate.
 - Event-study results state the sample size and are labelled descriptive.
 
 ## Common mistakes to avoid

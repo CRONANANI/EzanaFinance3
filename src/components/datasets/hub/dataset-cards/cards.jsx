@@ -63,7 +63,10 @@ export async function loadHouseVsSenate() {
   };
   for (const r of s?.rankings || []) {
     const c = by[r.chamber];
-    if (!c) continue;
+    /* Nov 7: politician_rankings returns every member, traders or not, so
+       "members trading" read 440 for the House. Count only members with a
+       disclosed trade in the window. */
+    if (!c || !(r.count > 0)) continue;
     c.members += 1;
     c.trades += r.count || 0;
     c.volume += r.volume || 0;

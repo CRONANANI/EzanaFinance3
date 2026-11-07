@@ -86,6 +86,7 @@ import {
 } from './SonarCountryStack';
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
+import { SonarCongressActivityStack } from './SonarCongressActivityStack';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { sectionAccess } from '@/lib/sonar/answer-sections';
 import { SonarSourceBelt } from './SonarSourceBelt';
@@ -267,6 +268,18 @@ const SWEPT_FLOWS = [
   ...SWEPT.filter((d) => d.id !== '13f'),
 ];
 const FLOWS_ORDER = ['flow-sells', 'flow-exits'];
+
+/* Nov 7: a congressional activity ping leads with Ezana's own disclosure
+   counts by 12-month window and chamber. */
+const SWEPT_ACTIVITY = [
+  {
+    id: 'congress-activity',
+    chip: 'CONGRESS',
+    name: 'Disclosed congressional trades by 12-month window',
+  },
+  ...SWEPT.filter((d) => d.id !== 'congress'),
+];
+const ACTIVITY_ORDER = ['congress-activity'];
 
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
@@ -2798,6 +2811,18 @@ export function SonarSection({
         />
       ) : null}
 
+      {/* Nov 7: a congressional activity ping: the monthly chart, the window
+              table, purchases vs sales, House vs Senate and the reporting limits. */}
+      {stage2 && live?.dossier?.kind === 'congress_activity' ? (
+        <SonarCongressActivityStack
+          dossier={live.dossier}
+          onGate={() => openGate()}
+          topSlot={leadTop}
+          newsSlot={railNews}
+          full={isPage}
+        />
+      ) : null}
+
       {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
@@ -2822,6 +2847,7 @@ export function SonarSection({
       live?.dossier?.kind !== 'politician' &&
       live?.dossier?.kind !== 'sector' &&
       live?.dossier?.kind !== 'flows' &&
+      live?.dossier?.kind !== 'congress_activity' &&
       live?.dossier?.kind !== 'country' &&
       live?.dossier?.kind !== 'industry' &&
       (live?.dossier?.fundamentals ||
@@ -3457,6 +3483,7 @@ export function SonarSection({
                       const isPolitician = live?.dossier?.kind === 'politician';
                       const isSector = live?.dossier?.kind === 'sector';
                       const isFlows = live?.dossier?.kind === 'flows';
+                      const isActivity = live?.dossier?.kind === 'congress_activity';
                       const swept = isCountry
                         ? SWEPT_COUNTRY
                         : isPolitician
@@ -3465,7 +3492,9 @@ export function SonarSection({
                             ? SWEPT_SECTOR
                             : isFlows
                               ? SWEPT_FLOWS
-                              : SWEPT;
+                              : isActivity
+                                ? SWEPT_ACTIVITY
+                                : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -3489,6 +3518,9 @@ export function SonarSection({
                           : null,
                         'flow-sells': m?.flowSells?.length ? m.flowSells : null,
                         'flow-exits': m?.flowExits?.length ? m.flowExits : null,
+                        'congress-activity': m?.congressActivity?.length
+                          ? m.congressActivity
+                          : null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
@@ -3511,7 +3543,9 @@ export function SonarSection({
                           ? SECTOR_ORDER
                           : isFlows
                             ? FLOWS_ORDER
-                            : [];
+                            : isActivity
+                              ? ACTIVITY_ORDER
+                              : [];
                       const order = [...lead, ...baseOrder.filter((id) => !lead.includes(id))];
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
@@ -3730,6 +3764,25 @@ export function SonarSection({
                                     </span>
                                   );
                                 })}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'congress-activity' && data ? (
+                              <div className="snr-rich">
+                                {data.map((w) => (
+                                  <span key={w.key} className="snr-trade">
+                                    <span className="snr-trade-member">{w.label}</span>
+                                    <span className="snr-trade-type">
+                                      House{' '}
+                                      {w.house == null ? 'n/a' : w.house.toLocaleString('en-US')}
+                                    </span>
+                                    <span className="snr-trade-date">
+                                      Senate{' '}
+                                      {w.senate == null ? 'n/a' : w.senate.toLocaleString('en-US')}
+                                      {w.senateOk ? '' : ' (coverage-limited)'}
+                                    </span>
+                                  </span>
+                                ))}
                               </div>
                             ) : null}
 
