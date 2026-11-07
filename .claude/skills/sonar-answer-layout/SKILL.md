@@ -31,5 +31,14 @@ Every Sonar answer is one board with a side navigation. The approved mock-ups an
    Data gaps stay visible on free answers.
 5. Add tests in `scripts/check-sonar-answer-sections.mjs` (or the board's own check script), then
    run the design-review and a11y-review skills at 1440, 1024 and 375 px.
-6. When the founder sends a new mock-up, save it to `docs/sonar/answer-templates/` as
+6. Founder rules added Nov 7 2026:
+   - a country ranking's Top 5 snapshot is a dotted world map with the ranked countries lit
+     (`src/lib/sonar/dot-map.js`, grid in `world-dots.js`), with the five listed under it;
+   - on a finished research board, Back and the ping bar sit at the top of the sections
+     column (`navTop`), never as a dark full-width bar above the answer;
+   - KPI tiles are short and centred;
+   - a currency answer leads its findings with computed Key findings
+     (`src/lib/sonar/macro/fx-findings.js`), each linked to the chart that shows it, and never
+     shows the same series in two charts.
+7. When the founder sends a new mock-up, save it to `docs/sonar/answer-templates/` as
    `NN-<kind>-<subject>.webp`, add it to the README table, and record what it adds to the rules.

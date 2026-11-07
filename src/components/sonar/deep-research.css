@@ -620,3 +620,52 @@
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
+
+/* Nov 7: the ping bar in a research board's sections column (SonarRunNav). Lighter than the
+   run bar's field and only as wide as the column; icon-only submit. */
+.sdr-runnav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.sdr-runnav-back {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 7%, color-mix(in srgb, white 5%, transparent));
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.sdr-runnav-back:hover {
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.sdr-runnav-back:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.sdr-ping--nav {
+  flex: 1 1 auto;
+  gap: 6px;
+  padding: 3px 3px 3px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 7%, color-mix(in srgb, white 5%, transparent));
+}
+.sdr-ping--nav .sdr-ping-input {
+  width: 0;
+  min-height: 34px;
+  font-size: var(--type-caption-size);
+}
+.sdr-ping--nav .sdr-ping-btn {
+  flex: 0 0 auto;
+  justify-content: center;
+  min-height: 32px;
+  width: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}

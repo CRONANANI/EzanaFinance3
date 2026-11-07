@@ -647,6 +647,8 @@ export default function ResearchReport({
   /* Nov 6: runs deep research on this question (the side navigation's call to action for a
      Starter reader on a standard run). */
   onRunDeep = null,
+  /* Nov 7: the run's Back and ping bar, for the top of the board's sections column. */
+  navTop = null,
 }) {
   const rootRef = useRef(null);
   const sonarPlan = useSonarPlan();
@@ -846,6 +848,7 @@ export default function ResearchReport({
             access={access}
             onDeep={onRunDeep}
             deepBlocks={deepBlocks}
+            navTop={navTop}
           />
           {state.status === 'running' ? <Progress state={state} /> : null}
           {!unlocked && run ? (

@@ -178,7 +178,7 @@ test('every answer on /datasets is a board with the side navigation', () => {
     const src = read(f);
     assert.match(
       src,
-      /<SonarAnswerFrame present=\{present\} access=\{access\} onDeep=\{onDeep\}>/,
+      /<SonarAnswerFrame\s+present=\{present\}\s+access=\{access\}\s+onDeep=\{onDeep\}[\s\S]{0,60}?>/,
       f,
     );
     assert.match(src, /anchorCells\(/, f);

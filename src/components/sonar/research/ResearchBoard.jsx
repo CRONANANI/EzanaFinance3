@@ -21,7 +21,7 @@
  * Tokens only, mono for numbers, Bootstrap Icons. Data: src/lib/sonar/research-board.js.
  */
 
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { VisuallyHidden } from '@/components/ds';
 import { SonarSourceBelt } from '@/components/landing/SonarSourceBelt';
 import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
@@ -39,7 +39,9 @@ import {
   researchResources,
   lineGeometry,
   fmtNum,
+  execMeta,
 } from '@/lib/sonar/research-board';
+import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sonar/dot-map';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
@@ -73,23 +75,37 @@ function Eyebrow({ id, icon, children }) {
 
 /* ── 1a. executive answer ─────────────────────────────────────────────── */
 
-function Executive({ report, rank, deepAction, onCite }) {
+/* Nov 7: the answer itself is the card's title. Eyebrow and the deep research action on one
+   line, the headline across the card, a meta line (data date, lead source, sources used),
+   the summary, then the key points in two columns on a wide card. */
+function Executive({ report, rank, deepAction, onCite, meta = [] }) {
   const id = useId();
+  const pointsId = useId();
   const headline = boardHeadline(report, rank);
   const summary = boardSummary(report, rank);
   const bullets = boardBullets(report, rank);
   return (
     <section className="srb-card srb-exec" aria-labelledby={id}>
       <div className="srb-exec-top">
-        <div>
-          <span className="srb-eyebrow">Research answer</span>
-          <h2 id={id} className="srb-exec-title">
-            Executive answer
-          </h2>
-        </div>
+        <span className="srb-eyebrow">
+          <i className="bi bi-broadcast" aria-hidden="true" />
+          Executive answer
+        </span>
         {deepAction ? <div className="srb-exec-deep">{deepAction}</div> : null}
       </div>
-      {headline ? <p className="srb-headline">{headline}</p> : null}
+      <h2 id={id} className="srb-exec-title">
+        {headline || 'Research answer'}
+      </h2>
+      {meta.length ? (
+        <ul className="srb-exec-meta" aria-label="About this answer">
+          {meta.map((m) => (
+            <li key={m.id}>
+              <i className={`bi ${m.icon}`} aria-hidden="true" />
+              {m.text}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {summary ? (
         <p className="srb-lede">
           {summary}{' '}
@@ -99,16 +115,21 @@ function Executive({ report, rank, deepAction, onCite }) {
         </p>
       ) : null}
       {bullets.length ? (
-        <ul className="srb-bullets">
-          {bullets.map((b, i) => (
-            <li key={i} className={`is-${b.kind}`}>
-              {b.text}
-              {b.kind === 'derived' ? (
-                <VisuallyHidden> (calculated from the ranking)</VisuallyHidden>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <div className="srb-exec-points">
+          <h3 id={pointsId} className="srb-exec-label">
+            Key points
+          </h3>
+          <ul className="srb-bullets" aria-labelledby={pointsId}>
+            {bullets.map((b, i) => (
+              <li key={i} className={`is-${b.kind}`}>
+                {b.text}
+                {b.kind === 'derived' ? (
+                  <VisuallyHidden> (calculated from the ranking)</VisuallyHidden>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </section>
   );
@@ -116,33 +137,68 @@ function Executive({ report, rank, deepAction, onCite }) {
 
 /* ── 1b. top snapshot ─────────────────────────────────────────────────── */
 
+/* Nov 7: a country ranking's top five on a dotted world map, each ranked country lit in
+   emerald (deeper for a higher rank) with its rank marker, and the five listed under it.
+   A ranking that is not of countries keeps the bar list. */
 function Snapshot({ rank }) {
   const id = useId();
   const rows = rankingRows(rank, 5);
+  const placed = placeRanking(rows);
+  const sub = (
+    <p className="srb-sub">
+      {rank.title}
+      {rank.unit ? ` (${rank.unit})` : ''}
+      {rank.period ? `, ${rank.period}` : ''}
+    </p>
+  );
+  if (!placed.isCountries) {
+    return (
+      <section className="srb-card" aria-labelledby={id}>
+        <Eyebrow id={id}>Top {rows.length} snapshot</Eyebrow>
+        {sub}
+        <ol className="srb-snap">
+          {rows.map((r) => (
+            <li key={r.label} className="srb-snap-row">
+              <span className="srb-snap-rank" aria-hidden="true">
+                #{r.rank}
+              </span>
+              <span className="srb-snap-body">
+                <span className="srb-snap-name">
+                  <VisuallyHidden>Rank {r.rank}: </VisuallyHidden>
+                  {r.label}
+                </span>
+                <span className="srb-snap-bar" aria-hidden="true">
+                  <span style={{ width: `${r.width}%` }} />
+                </span>
+              </span>
+              <span className="srb-snap-val">{r.display}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    );
+  }
   return (
-    <section className="srb-card" aria-labelledby={id}>
-      <Eyebrow id={id}>Top {rows.length} snapshot</Eyebrow>
-      <p className="srb-sub">
-        {rank.title}
-        {rank.unit ? ` (${rank.unit})` : ''}
-        {rank.period ? `, ${rank.period}` : ''}
-      </p>
-      <ol className="srb-snap">
-        {rows.map((r) => (
-          <li key={r.label} className="srb-snap-row">
-            <span className="srb-snap-rank" aria-hidden="true">
-              #{r.rank}
+    <section className="srb-card srb-mapcard" aria-labelledby={id}>
+      <Eyebrow id={id} icon="bi-globe-americas">
+        Top {rows.length} snapshot
+      </Eyebrow>
+      {sub}
+      <DotMap rows={placed.rows} label={`${rank.title}: top ${rows.length} on a world map`} />
+      <ol className="srb-maplist">
+        {placed.rows.map((r) => (
+          <li key={r.label} className={`srb-maplist-row is-r${r.rank}`}>
+            <span className="srb-maplist-rank" aria-hidden="true">
+              {r.rank}
             </span>
-            <span className="srb-snap-body">
-              <span className="srb-snap-name">
-                <VisuallyHidden>Rank {r.rank}: </VisuallyHidden>
-                {r.label}
-              </span>
-              <span className="srb-snap-bar" aria-hidden="true">
-                <span style={{ width: `${r.width}%` }} />
-              </span>
+            <span className="srb-maplist-name">
+              <VisuallyHidden>Rank {r.rank}: </VisuallyHidden>
+              {r.label}
             </span>
-            <span className="srb-snap-val">{r.display}</span>
+            <span className="srb-maplist-val">{r.display}</span>
+            <span className="srb-maplist-share" aria-hidden="true">
+              <span style={{ width: `${r.width}%` }} />
+            </span>
           </li>
         ))}
       </ol>
@@ -150,19 +206,59 @@ function Snapshot({ rank }) {
   );
 }
 
+function DotMap({ rows, label }) {
+  const geo = useMemo(() => dotMapGeometry(rows), [rows]);
+  const names = new Map(rows.map((r) => [r.iso3, r.label]));
+  return (
+    <div className="srb-map" role="img" aria-label={`${label}. The list below gives each value.`}>
+      <svg
+        viewBox={`0 0 ${WORLD_COLS} ${WORLD_ROWS}`}
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d={geo.base} className="srb-map-land" />
+        {geo.ranked.map((g) => (
+          <path key={g.iso3} d={g.d} className={`srb-map-hit is-r${g.rank}`} />
+        ))}
+        {geo.markers
+          .filter((m) => m.moved)
+          .map((m) => (
+            <line key={m.iso3} x1={m.ax} y1={m.ay} x2={m.x} y2={m.y} className="srb-map-leader" />
+          ))}
+      </svg>
+      {geo.markers.map((m) => (
+        <span
+          key={m.iso3}
+          className={`srb-map-pin is-r${m.rank}`}
+          style={{
+            left: `${(m.x / WORLD_COLS) * 100}%`,
+            top: `${(m.y / WORLD_ROWS) * 100}%`,
+          }}
+          title={names.get(m.iso3) || m.iso3}
+          aria-hidden="true"
+        >
+          {m.rank}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /* ── 2. KPI strip ─────────────────────────────────────────────────────── */
 
+/* Nov 7: shorter tiles, everything centred: the icon over the value, label and note. */
 function Kpis({ tiles }) {
   return (
     <ul className="srb-kpis" aria-label="Key measures" style={{ '--srb-kpis': tiles.length }}>
       {tiles.map((t) => (
         <li key={t.id} className="srb-card srb-kpi">
-          <i className={`bi ${t.icon} srb-kpi-ico`} aria-hidden="true" />
-          <span className="srb-kpi-text">
+          <span className="srb-kpi-head">
+            <i className={`bi ${t.icon} srb-kpi-ico`} aria-hidden="true" />
             <span className="srb-kpi-value">{t.value}</span>
-            <span className="srb-kpi-label">{t.label}</span>
-            {t.sub ? <span className="srb-kpi-sub">{t.sub}</span> : null}
           </span>
+          <span className="srb-kpi-label">{t.label}</span>
+          {t.sub ? <span className="srb-kpi-sub">{t.sub}</span> : null}
         </li>
       ))}
     </ul>
@@ -670,6 +766,8 @@ export default function ResearchBoard({
   access = null,
   onDeep = null,
   deepBlocks = [],
+  /* Nov 7: Back and the ping bar, at the top of the sections column (the run passes them). */
+  navTop = null,
 }) {
   const unlocked = Boolean(access?.unlocked);
   const report = state.report;
@@ -683,6 +781,7 @@ export default function ResearchBoard({
   const lines = methodologyLines({ rank, metrics, run, limitations, sourceLabels });
   const groups = evidenceGroups(evidence, EVIDENCE_CATEGORIES);
   const resources = researchResources(state, { sourceLabels });
+  const meta = execMeta({ rank, resources, evidence });
   /* Nov 7: a congressional activity run ("How has disclosed congressional trading changed?")
      carries Ezana's computed counts as a panel. Its board leads with them (executive answer,
      takeaways, KPI strip, three charts, key findings, reporting limitations); the model's
@@ -697,7 +796,15 @@ export default function ResearchBoard({
       section: 'answer',
       span: rank ? 7 : 12,
       min: rank ? 6 : 12,
-      node: <Executive report={report} rank={rank} deepAction={deepAction} onCite={onCite} />,
+      node: (
+        <Executive
+          report={report}
+          rank={rank}
+          deepAction={deepAction}
+          onCite={onCite}
+          meta={meta}
+        />
+      ),
     },
     rank
       ? { id: 'snapshot', section: 'answer', span: 5, min: 5, node: <Snapshot rank={rank} /> }
@@ -807,7 +914,7 @@ export default function ResearchBoard({
   const seenKeys = new Set(cells.map((c) => c.section));
 
   return (
-    <SonarAnswerFrame present={present} access={access} onDeep={onDeep}>
+    <SonarAnswerFrame present={present} access={access} onDeep={onDeep} navTop={navTop}>
       <div className="srb" role="region" aria-label="Research answer">
         {resources.length ? <SonarSourceBelt items={resources} /> : null}
         <div className="srb-grid">

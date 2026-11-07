@@ -28,7 +28,7 @@
  * under prefers-reduced-motion. No em dashes in copy.
  */
 import { useEffect, useRef, useState } from 'react';
-import { SonarRunPingBar } from './SonarRunPingBar';
+import { SonarRunPingBar, SonarRunNav } from './SonarRunPingBar';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
 import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
@@ -257,6 +257,15 @@ export function DeepResearchRun({
   const over = estimate?.maxSec && elapsed > estimate.maxSec;
   const draft = withDraft(state);
 
+  /* Nov 7: as on a standard run, a finished board takes Back and the ping bar into its
+     sections column. */
+  const doneReport = state.status === 'done' ? draft.view?.report : null;
+  const boardUp = Boolean(
+    doneReport &&
+    doneReport.format !== 'investment_memo' &&
+    (doneReport.executiveConclusion || doneReport.keyFindings?.length),
+  );
+
   return (
     <div
       className="sdr-run force-dark-theme"
@@ -264,31 +273,34 @@ export function DeepResearchRun({
       tabIndex={-1}
       aria-label="Deep research"
     >
-      <div className="sdr-run-bar">
-        <button type="button" className="sdr-link" onClick={onBack}>
-          <i className="bi bi-arrow-left" aria-hidden="true" /> Back
-        </button>
-        {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
-        {running ? (
-          <div className="sdr-timer" role="status" aria-live="polite">
-            <span className="sdr-pulse" aria-hidden="true" />
-            <span>
-              Deep research in progress. Estimated time {estimate?.label || 'about 1 to 4 minutes'}.
-            </span>
-            {/* The clock ticks every second: out of the live region, so only
+      {boardUp ? null : (
+        <div className="sdr-run-bar">
+          <button type="button" className="sdr-link" onClick={onBack}>
+            <i className="bi bi-arrow-left" aria-hidden="true" /> Back
+          </button>
+          {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
+          {running ? (
+            <div className="sdr-timer" role="status" aria-live="polite">
+              <span className="sdr-pulse" aria-hidden="true" />
+              <span>
+                Deep research in progress. Estimated time{' '}
+                {estimate?.label || 'about 1 to 4 minutes'}.
+              </span>
+              {/* The clock ticks every second: out of the live region, so only
                 the status text is announced. */}
-            <span className="sdr-clock" aria-hidden="true">
-              {clock(elapsed)} elapsed
-            </span>
-            {over ? (
-              <span className="sdr-over">Taking longer than usual. Still working.</span>
-            ) : null}
-            <button type="button" className="sdr-link" onClick={cancel}>
-              Cancel
-            </button>
-          </div>
-        ) : null}
-      </div>
+              <span className="sdr-clock" aria-hidden="true">
+                {clock(elapsed)} elapsed
+              </span>
+              {over ? (
+                <span className="sdr-over">Taking longer than usual. Still working.</span>
+              ) : null}
+              <button type="button" className="sdr-link" onClick={cancel}>
+                Cancel
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
       {state.status === 'gated' ? (
         <div className="sdr-gate">
           <p>{state.error}</p>
@@ -340,7 +352,10 @@ export function DeepResearchRun({
       {state.status !== 'idle' && state.status !== 'gated' && state.status !== 'quota' ? (
         <div className="sdr-report">
           {running ? <DraftStatus showing={draft.showing} /> : null}
-          <ResearchReport state={draft.view} />
+          <ResearchReport
+            state={draft.view}
+            navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
+          />
         </div>
       ) : null}
       {state.status === 'done' ? (
@@ -439,32 +454,38 @@ export function StandardResearchRun({
       }
     : estimate;
 
+  /* Nov 7: a finished board carries Back and the ping bar at the top of its sections column,
+     so the full-width run bar goes and the answer starts at the top. */
+  const boardUp = onBoard && state.status === 'done';
+
   return (
     <div className="sdr-run force-dark-theme">
-      <div className="sdr-run-bar">
-        <button type="button" className="sdr-link" onClick={onBack}>
-          <i className="bi bi-arrow-left" aria-hidden="true" /> Back
-        </button>
-        {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
-        {running ? (
-          <div className="sdr-timer" role="status" aria-live="polite">
-            <span className="sdr-pulse" aria-hidden="true" />
-            <span>
-              Researching{planned ? `: reading ${planned} sources` : ''}
-              {/* The report's progress region announces each stage and
+      {boardUp ? null : (
+        <div className="sdr-run-bar">
+          <button type="button" className="sdr-link" onClick={onBack}>
+            <i className="bi bi-arrow-left" aria-hidden="true" /> Back
+          </button>
+          {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
+          {running ? (
+            <div className="sdr-timer" role="status" aria-live="polite">
+              <span className="sdr-pulse" aria-hidden="true" />
+              <span>
+                Researching{planned ? `: reading ${planned} sources` : ''}
+                {/* The report's progress region announces each stage and
                   analyst once; kept out of this live region so a stage
                   change is not read twice. */}
-              <span aria-hidden="true">{stage ? `. ${stage}` : ''}</span>.
-            </span>
-            <span className="sdr-over">
-              {classification?.estimate?.label || 'about 20 to 40 seconds'}
-            </span>
-            <button type="button" className="sdr-link" onClick={cancel}>
-              Cancel
-            </button>
-          </div>
-        ) : null}
-      </div>
+                <span aria-hidden="true">{stage ? `. ${stage}` : ''}</span>.
+              </span>
+              <span className="sdr-over">
+                {classification?.estimate?.label || 'about 20 to 40 seconds'}
+              </span>
+              <button type="button" className="sdr-link" onClick={cancel}>
+                Cancel
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
       {state.status === 'gated' ? (
         <div className="sdr-gate">
           <p>{state.error}</p>
@@ -497,6 +518,7 @@ export function StandardResearchRun({
           {running ? <DraftStatus showing={draft.showing} /> : null}
           <ResearchReport
             state={draft.view}
+            navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
             onRunDeep={
               estimate && onDeep && !draft.showing ? () => onDeep({ supersede: false }) : null
             }

@@ -558,20 +558,168 @@
 }
 @container snr-board (min-width: 680px) {
   .snr-board .snr-bd-charts {
-    grid-template-columns: repeat(var(--bd-chart-cols-mid, 2), minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   /* Two across at mid width: an odd last chart takes the whole row, never half of it. */
   .snr-board .snr-bd-charts.is-odd > :last-child {
     grid-column: 1 / -1;
   }
 }
+/* Nov 7: twelve columns on a wide board; each chart's span comes from chartSpans (the
+   exchange rate 7 beside inflation and the policy rate 5, the rest evenly below). */
 @container snr-board (min-width: 1080px) {
   .snr-board .snr-bd-charts {
-    grid-template-columns: repeat(var(--bd-chart-cols, 3), minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
+  .snr-board .snr-bd-charts > .snr-bd-chart,
   .snr-board .snr-bd-charts.is-odd > :last-child {
-    grid-column: auto;
+    grid-column: span var(--bd-cspan, 6);
   }
+}
+
+/* ── Key findings (Nov 7) ─────────────────────────────────────────────── */
+
+.snr-board .snr-bd-flist {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@container snr-board (min-width: 900px) {
+  .snr-board .snr-bd-flist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.snr-board .snr-bd-finding {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--snr-row);
+}
+.snr-board .snr-bd-finding-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.snr-board .snr-bd-finding-n {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--snr-emerald) 18%, transparent);
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 700;
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-finding-kicker {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-finding-status {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--snr-emerald) 14%, transparent);
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-finding-status.is-scope {
+  background: color-mix(in srgb, var(--snr-text-faint) 22%, transparent);
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-finding-head {
+  margin: 0;
+  font-size: var(--type-card-title-size);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--snr-text) !important;
+}
+.snr-board .snr-bd-finding-ev {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-finding-ev li {
+  position: relative;
+  padding-left: 14px;
+}
+.snr-board .snr-bd-finding-ev li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--snr-emerald);
+}
+.snr-board .snr-bd-finding-dl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.snr-board .snr-bd-finding-dl dt {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-finding-dl dd {
+  margin: 2px 0 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--snr-text);
+}
+.snr-board .snr-bd-finding-q {
+  margin: auto 0 0;
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--snr-text-faint) !important;
+}
+.snr-board .snr-bd-finding-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  min-height: 32px;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--snr-mint);
+  text-decoration: none;
+}
+.snr-board .snr-bd-finding-link:hover {
+  text-decoration: underline;
+}
+.snr-board .snr-bd-finding-link:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 /* A chart inside a board card: no extra rule or padding of its own. */
 .snr-board .snr-bd-chart > .snr-cii-chart,

@@ -28,6 +28,20 @@
   min-width: 0;
 }
 
+/* The column: navTop (Back and the ping bar) over the section nav. */
+.san .san-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.san .san-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
 /* Narrow: a row of chips above the board, the locked ones after the open ones. */
 .san .san-nav {
   display: flex;
@@ -67,6 +81,7 @@
 .san .san-link {
   /* Positioned, so the visually hidden lock note stays inside the scrolling chip row. */
   position: relative;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -170,15 +185,19 @@
     column-gap: 24px;
     align-items: start;
   }
-  .san .san-nav {
+  .san .san-side {
     position: sticky;
     top: calc(var(--navbar-height, 64px) + 20px);
+    gap: 12px;
+    max-height: calc(100vh - var(--navbar-height, 64px) - 40px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .san .san-nav {
     flex-direction: column;
     align-items: stretch;
     flex-wrap: nowrap;
     gap: 6px;
-    max-height: calc(100vh - var(--navbar-height, 64px) - 40px);
-    overflow-y: auto;
   }
   .san .san-head {
     display: flex;

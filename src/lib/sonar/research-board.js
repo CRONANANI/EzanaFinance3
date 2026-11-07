@@ -56,7 +56,12 @@ export function rankingOf(visualizations) {
   const v = list.find((x) => /^macro_rank_/.test(x.id || '')) || list[0];
   if (!v) return null;
   const rows = v.rows
-    .map((r) => ({ label: r.label, value: toNum(r.value), note: r.note || r.sub || null }))
+    .map((r) => ({
+      label: r.label,
+      value: toNum(r.value),
+      note: r.note || r.sub || null,
+      iso3: r.iso3 || null,
+    }))
     .filter((r) => r.label && r.value != null);
   if (rows.length < 2) return null;
   const periodLabel =
@@ -88,6 +93,7 @@ export function rankingRows(rank, n = 10) {
     rank: i + 1,
     label: r.label,
     value: r.value,
+    iso3: r.iso3 || null,
     display: fmtNum(r.value, { fixed }),
     note: r.note,
     share: (Math.max(0, r.value) / total) * 100,
@@ -429,4 +435,29 @@ export function lineGeometry(series) {
     from: String(s[0].x),
     to: String(s[s.length - 1].x),
   };
+}
+
+/**
+ * Nov 7: the executive answer's meta line, three short facts under the headline: how recent
+ * the data is, the lead source, and how many resources the run used.
+ * -> [{ id, icon, text }]
+ */
+export function execMeta({ rank, resources = [], evidence = [] } = {}) {
+  const out = [];
+  const period = String(rank?.period || '');
+  const m = /latest data:\s*([A-Za-z]{3,9}\s+\d{4}|\d{4}(?:-\d{2})?)/i.exec(period);
+  const when = m ? m[1] : /^\d{4}-\d{2}/.test(period) ? period.slice(0, 7) : '';
+  if (when) out.push({ id: 'when', icon: 'bi-calendar3', text: `Data to ${when}` });
+  const src = String(rank?.source || '')
+    .split(/[,(;]/)[0]
+    .trim();
+  if (src) out.push({ id: 'source', icon: 'bi-bank', text: src });
+  const n = resources.length || evidence.length;
+  if (n)
+    out.push({
+      id: 'used',
+      icon: 'bi-collection',
+      text: `${n} ${n === 1 ? 'source' : 'sources'} used`,
+    });
+  return out;
 }

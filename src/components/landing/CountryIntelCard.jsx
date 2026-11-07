@@ -36,6 +36,11 @@ import {
   fxWindow,
   fxWindowsAvailable,
   defaultFxWindow,
+  rollingValueChange,
+  realRateSeries,
+  lastMonths,
+  medianOf,
+  percentileRank,
   axisTicks,
   stepDecimals,
   fmtValue,
@@ -90,7 +95,20 @@ const M = { l: 44, r: 10, t: 8, b: 20 };
  * One or two series on one axis (never two scales), drawn in pixel space so the axis text
  * is real 11px type. Crosshair and readout on hover; arrow keys step through the points.
  */
-function IntelLineChart({ title, series, unit, caption, legend = false, controls = null }) {
+function IntelLineChart({
+  title,
+  series,
+  unit,
+  caption,
+  legend = false,
+  controls = null,
+  /* Nov 7: reference lines on the same axis ([{ y, label }]), e.g. a REER's median. */
+  refs = [],
+  /* Nov 7: the figure's id, so a key finding can link to its chart. */
+  id = undefined,
+  /* Nov 7: forces a % axis (a zero line) for a series whose unit is pp. */
+  forcePct = false,
+}) {
   const [width, setNode] = usePixelWidth();
   const [idx, setIdx] = useState(null);
   const [kbd, setKbd] = useState(false);
@@ -99,13 +117,14 @@ function IntelLineChart({ title, series, unit, caption, legend = false, controls
   const primary = live.reduce((a, b) => (!a || b.points.length > a.points.length ? b : a), null);
   if (!primary) return null;
 
-  const pct = isPctUnit(unit);
+  const pct = forcePct || isPctUnit(unit);
   const W = width || 320;
   const H = PLOT_H;
   const all = live.flatMap((s) => s.points);
   const t0 = Math.min(...all.map((p) => p.t));
   const t1 = Math.max(...all.map((p) => p.t));
-  const ys = all.map((p) => p.y);
+  const refLines = (refs || []).filter((r) => Number.isFinite(r?.y));
+  const ys = [...all.map((p) => p.y), ...refLines.map((r) => r.y)];
   let lo0 = Math.min(...ys);
   let hi0 = Math.max(...ys);
   if (pct && lo0 < 0 && hi0 > 0) {
@@ -117,7 +136,10 @@ function IntelLineChart({ title, series, unit, caption, legend = false, controls
   const x = (t) => M.l + ((t - t0) / (t1 - t0 || 1)) * (W - M.l - M.r);
   const y = (v) => H - M.b - ((v - lo) / (hi - lo || 1)) * (H - M.t - M.b);
   const path = (pts) => pts.map((p) => `${x(p.t).toFixed(1)},${y(p.y).toFixed(1)}`).join(' ');
-  const val = (v) => fmtValue(v, { pct, decimals: pct ? 1 : null });
+  /* Percentage points read as "7.3 pp", not "7.3%". */
+  const pp = unit === 'pp';
+  const val = (v) =>
+    pp ? `${fmtValue(v, { decimals: 1 })} pp` : fmtValue(v, { pct, decimals: pct ? 1 : null });
   const nearest = (pts, t) =>
     pts.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a), pts[0]);
 
@@ -170,7 +192,7 @@ function IntelLineChart({ title, series, unit, caption, legend = false, controls
   const xMid = (t0 + t1) / 2;
 
   return (
-    <figure className="snr-cii-chart">
+    <figure className="snr-cii-chart" id={id} tabIndex={id ? -1 : undefined}>
       <figcaption className="snr-cii-chart-title">{title}</figcaption>
       {controls}
       <div className="snr-cii-chart-top">
@@ -218,13 +240,26 @@ function IntelLineChart({ title, series, unit, caption, legend = false, controls
                 textAnchor="end"
                 dominantBaseline="middle"
               >
-                {fmtValue(t, { pct, decimals: tickDec })}
+                {pp ? fmtValue(t, { decimals: tickDec }) : fmtValue(t, { pct, decimals: tickDec })}
               </text>
             </g>
           ))}
           {pct && lo < 0 && hi > 0 ? (
             <line x1={M.l} x2={W - M.r} y1={y(0)} y2={y(0)} className="snr-cii-zero" />
           ) : null}
+          {refLines.map((r) => (
+            <g key={`ref-${r.label}`}>
+              <line x1={M.l} x2={W - M.r} y1={y(r.y)} y2={y(r.y)} className="snr-cii-ref" />
+              <text
+                x={W - M.r - 2}
+                y={y(r.y) - 4}
+                className="snr-cii-tick snr-cii-ref-label"
+                textAnchor="end"
+              >
+                {r.label}
+              </text>
+            </g>
+          ))}
           {live.map((s) => (
             <polyline
               key={s.id}
@@ -271,18 +306,71 @@ const chartCaption = (c) =>
         .join('. ') + '.'
     : null;
 
+function Seg({ label, options, value, onChange }) {
+  const groupId = useId();
+  if (!options || options.length < 2) return null;
+  return (
+    <div className="snr-cii-seg" role="group" aria-labelledby={groupId}>
+      <VisuallyHidden id={groupId}>{label}</VisuallyHidden>
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          className="snr-cii-segbtn"
+          aria-pressed={o.id === value}
+          onClick={() => onChange(o.id)}
+        >
+          {o.short || o.id}
+          {o.label ? <VisuallyHidden>, {o.label}</VisuallyHidden> : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* Nov 7: the exchange rate with its 3M / 1Y / 3Y / 5Y ranges and a second view, the rolling
+   12-month change in the currency's dollar value (negative = lost value), on one % axis. */
 function FxChart({ fx, fxMonthly }) {
   const base = fx || fxMonthly;
   const available = useMemo(
     () => fxWindowsAvailable(base, fx ? fxMonthly : null),
     [base, fx, fxMonthly],
   );
+  const rolling = useMemo(() => rollingValueChange(fx, fxMonthly, 12), [fx, fxMonthly]);
   const [win, setWin] = useState(() => defaultFxWindow(available));
-  const groupId = useId();
+  const [view, setView] = useState('level');
   if (!available.length) return null;
   const cur =
     available.find((w) => w.id === win) ||
     available.find((w) => w.id === defaultFxWindow(available));
+  const code = String(base.unit || '').split(' ')[0] || 'Local currency';
+  const views = [
+    { id: 'level', short: 'Level', label: `${code} per US dollar` },
+    ...(rolling.length >= 3
+      ? [{ id: 'change', short: '12M change', label: 'rolling 12-month change in dollar value' }]
+      : []),
+  ];
+  const controls = (
+    <div className="snr-cii-controls">
+      <Seg label="Exchange-rate view" options={views} value={view} onChange={setView} />
+      <Seg label="Exchange-rate range" options={available} value={cur.id} onChange={setWin} />
+    </div>
+  );
+  if (view === 'change' && rolling.length >= 3) {
+    const shown = lastMonths(rolling, Math.max(cur.months, 12));
+    const pts = shown.length >= 2 ? shown : rolling;
+    return (
+      <IntelLineChart
+        key={`chg-${cur.id}`}
+        id="intel-chart-fx"
+        title={`${code}: 12-month change in dollar value`}
+        unit="%"
+        series={[{ id: 'chg', label: '12-month change', points: pts }]}
+        caption={`Unit: % change in the ${code}'s value against the US dollar over the previous 12 months (negative = lost value). ${dateLabel(pts[0].x)} to ${dateLabel(pts[pts.length - 1].x)}. Computed from ${base.source || 'the exchange-rate series'}.`}
+        controls={controls}
+      />
+    );
+  }
   const shown = fxWindow(base, fx ? fxMonthly : null, cur.months);
   if (!shown) return null;
   const c = shown.chart;
@@ -291,87 +379,138 @@ function FxChart({ fx, fxMonthly }) {
   return (
     <IntelLineChart
       key={`${cur.id}-${c === fxMonthly ? 'm' : 'd'}`}
+      id="intel-chart-fx"
       title={base.label || 'Local currency per US dollar'}
       unit={c.unit || base.unit || ''}
       series={[{ id: 'fx', label: c.label || base.label, points: pts }]}
-      caption={chartCaption({ ...c, period })}
-      controls={
-        available.length > 1 ? (
-          <div className="snr-cii-seg" role="group" aria-labelledby={groupId}>
-            <VisuallyHidden id={groupId}>Exchange-rate range</VisuallyHidden>
-            {available.map((w) => (
-              <button
-                key={w.id}
-                type="button"
-                className="snr-cii-segbtn"
-                aria-pressed={w.id === cur.id}
-                onClick={() => setWin(w.id)}
-              >
-                {w.id}
-                <VisuallyHidden>, {w.label}</VisuallyHidden>
-              </button>
-            ))}
-          </div>
-        ) : null
-      }
+      caption={`${chartCaption({ ...c, period })} A higher line means a weaker ${code}.`}
+      controls={controls}
+    />
+  );
+}
+
+/* Nov 7: inflation and the policy rate on one % axis, with a second view, the ex-post real
+   rate (policy minus inflation) and its latest value in the caption. */
+function PolicyChart({ inflation, policy }) {
+  const [view, setView] = useState('rates');
+  const infl = cleanPoints(inflation);
+  const pol = cleanPoints(policy);
+  if (pol.length < 2) return null;
+  const from = infl.length >= 2 ? Math.max(infl[0].t, pol[0].t) : pol[0].t;
+  const inflShown = infl.filter((p) => p.t >= from);
+  const polShown = pol.filter((p) => p.t >= from);
+  const both = inflShown.length >= 2 && polShown.length >= 2;
+  const spread = both
+    ? realRateSeries(policy, { points: inflShown.map((p) => ({ x: p.x, y: p.y })) })
+    : [];
+  const lastSpread = spread[spread.length - 1];
+  const sources = [...new Set([both ? inflation.source : null, policy.source].filter(Boolean))];
+  const note = lastSpread
+    ? ` Latest ex-post real rate: ${lastSpread.y > 0 ? '+' : ''}${fmtValue(lastSpread.y, { decimals: 1 })} pp (${dateLabel(lastSpread.x)}).`
+    : '';
+  const views =
+    spread.length >= 2
+      ? [
+          { id: 'rates', short: 'Rates', label: 'inflation and the policy rate' },
+          { id: 'real', short: 'Real rate', label: 'policy rate minus inflation' },
+        ]
+      : [];
+  const controls = views.length ? (
+    <div className="snr-cii-controls">
+      <Seg label="Policy chart view" options={views} value={view} onChange={setView} />
+    </div>
+  ) : null;
+  if (view === 'real' && spread.length >= 2) {
+    return (
+      <IntelLineChart
+        key="real"
+        id="intel-chart-policy"
+        title="Ex-post real policy rate"
+        unit="pp"
+        forcePct
+        series={[{ id: 'real', label: 'Policy minus inflation', points: spread }]}
+        caption={`Unit: percentage points, the policy rate minus annual inflation (backward-looking). ${dateLabel(spread[0].x)} to ${dateLabel(lastSpread.x)}. Source: ${sources.join('; ')}.${note}`}
+        controls={controls}
+      />
+    );
+  }
+  const pts = both ? [...inflShown, ...polShown] : polShown;
+  const t0 = Math.min(...pts.map((p) => p.t));
+  const first = pts.find((p) => p.t === t0);
+  const lastPol = polShown[polShown.length - 1];
+  const lastInfl = inflShown[inflShown.length - 1];
+  const end = both && lastInfl && lastInfl.t > lastPol.t ? lastInfl : lastPol;
+  return (
+    <IntelLineChart
+      key="rates"
+      id="intel-chart-policy"
+      title={both ? 'Inflation and the policy rate' : policy.label || 'Policy rate'}
+      unit="%"
+      legend={both}
+      series={[
+        ...(both ? [{ id: 'infl', label: 'Inflation', points: inflShown }] : []),
+        { id: 'policy', label: 'Policy rate', points: polShown, dashed: both },
+      ]}
+      caption={`${both ? 'Annual inflation (solid line) and policy rate (dashed line), unit: %' : `Unit: ${policy.unit || '%'}`}. ${dateLabel(first.x)} to ${dateLabel(end.x)}. Source: ${sources.join('; ')}.${note}`}
+      controls={controls}
+    />
+  );
+}
+
+/* Nov 7: the real effective exchange rate with its own median, and where the latest value
+   sits in its history. Only the BIS real broad index reaches here (intel.js). */
+function ReerChart({ reer }) {
+  const pts = cleanPoints(reer);
+  if (pts.length < 12) return null;
+  const vals = pts.map((p) => p.y);
+  const med = medianOf(vals);
+  const last = pts[pts.length - 1];
+  const pctl = percentileRank(vals, last.y);
+  return (
+    <IntelLineChart
+      id="intel-chart-reer"
+      title={reer.label || 'Real effective exchange rate'}
+      unit="index"
+      series={[{ id: 'reer', label: 'REER', points: pts }]}
+      refs={med != null ? [{ y: med, label: `Median ${fmtValue(med, { decimals: 1 })}` }] : []}
+      caption={`Unit: index; higher means a stronger currency in real terms. Latest ${fmtValue(last.y, { decimals: 1 })} (${dateLabel(last.x)})${pctl != null ? `, the ${pctl}th percentile of its history since ${dateLabel(pts[0].x)}` : ''}. Not by itself a measure of over- or undervaluation. Source: ${reer.source || 'BIS'}.`}
     />
   );
 }
 
 /* The chart tiles, in reading order: [{ key, node }]. IntelCharts stacks them in one card;
-   CountryIntelDetail gives each its own cell in the full-width grid. */
+   the board gives each its own cell. Nov 7: one chart per question, no repeats: the exchange
+   rate (level and 12-month change), inflation against the policy rate (and the real rate),
+   the REER when held, reserves. Inflation stands alone only when there is no policy rate. */
 function intelChartItems(charts) {
   if (!charts) return [];
   const infl = charts.inflation ? cleanPoints(charts.inflation) : [];
   const pol = charts.policy ? cleanPoints(charts.policy) : [];
   const res = charts.reserves ? cleanPoints(charts.reserves) : [];
+  const reer = charts.reer ? cleanPoints(charts.reer) : [];
   const fxBase = charts.fx || charts.fxMonthly;
   const items = [];
-  if (infl.length >= 2)
+  if (fxBase && cleanPoints(fxBase).length + cleanPoints(charts.fxMonthly).length >= 2)
+    items.push(<FxChart key="fx" fx={charts.fx} fxMonthly={charts.fxMonthly} />);
+  if (pol.length >= 2)
+    items.push(<PolicyChart key="policy" inflation={charts.inflation} policy={charts.policy} />);
+  else if (infl.length >= 2)
     items.push(
       <IntelLineChart
         key="infl"
+        id="intel-chart-policy"
         title={charts.inflation.label || 'Inflation'}
         unit={charts.inflation.unit || '%'}
         series={[{ id: 'infl', label: 'Inflation', points: infl }]}
         caption={chartCaption(charts.inflation)}
       />,
     );
-  if (fxBase && cleanPoints(fxBase).length + cleanPoints(charts.fxMonthly).length >= 2)
-    items.push(<FxChart key="fx" fx={charts.fx} fxMonthly={charts.fxMonthly} />);
-  if (pol.length >= 2) {
-    /* Inflation versus the policy rate: one % axis over the months both cover. */
-    const from = infl.length >= 2 ? Math.max(infl[0].t, pol[0].t) : pol[0].t;
-    const inflShown = infl.filter((p) => p.t >= from);
-    const polShown = pol.filter((p) => p.t >= from);
-    const both = inflShown.length >= 2 && polShown.length >= 2;
-    const sources = [
-      ...new Set([both ? charts.inflation.source : null, charts.policy.source].filter(Boolean)),
-    ];
-    const pts = both ? [...inflShown, ...polShown] : polShown;
-    const t0 = Math.min(...pts.map((p) => p.t));
-    const first = pts.find((p) => p.t === t0);
-    const lastPol = polShown[polShown.length - 1];
-    const lastInfl = inflShown[inflShown.length - 1];
-    const end = both && lastInfl && lastInfl.t > lastPol.t ? lastInfl : lastPol;
-    items.push(
-      <IntelLineChart
-        key="policy"
-        title={both ? 'Inflation and the policy rate' : charts.policy.label || 'Policy rate'}
-        unit="%"
-        legend={both}
-        series={[
-          ...(both ? [{ id: 'infl', label: 'Inflation', points: inflShown }] : []),
-          { id: 'policy', label: 'Policy rate', points: polShown, dashed: both },
-        ]}
-        caption={`${both ? 'Annual inflation (solid line) and policy rate (dashed line), unit: %' : `Unit: ${charts.policy.unit || '%'}`}. ${dateLabel(first.x)} to ${dateLabel(end.x)}. Source: ${sources.join('; ')}.`}
-      />,
-    );
-  }
+  if (reer.length >= 12) items.push(<ReerChart key="reer" reer={charts.reer} />);
   if (res.length >= 2)
     items.push(
       <IntelLineChart
         key="res"
+        id="intel-chart-reserves"
         title={charts.reserves.label || 'Official reserves'}
         unit={charts.reserves.unit || ''}
         series={[{ id: 'res', label: 'Reserves', points: res }]}

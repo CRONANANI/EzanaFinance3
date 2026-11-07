@@ -7,6 +7,10 @@
  * band, so the new answer loads behind the same Sonar loading screen as every other ping.
  *
  * Borderless per the Sonar card rule; tokens only. Styles in deep-research.css (sdr-ping).
+ *
+ * Nov 7: on a finished research board the bar moves into the sections column (SonarRunNav,
+ * the frame's navTop) as a compact, lighter field the width of that column, so it no longer
+ * runs dark across the page and the answer moves up.
  */
 import { useId, useState } from 'react';
 
@@ -14,6 +18,8 @@ export function SonarRunPingBar({
   onPing,
   disabled = false,
   placeholder = 'Ping another question',
+  /* 'bar' (the run bar) or 'nav' (the sections column: icon-only submit). */
+  variant = 'bar',
 }) {
   const [value, setValue] = useState('');
   const id = useId();
@@ -24,7 +30,11 @@ export function SonarRunPingBar({
     onPing?.(q);
   };
   return (
-    <form className="sdr-ping" role="search" onSubmit={submit}>
+    <form
+      className={`sdr-ping${variant === 'nav' ? ' sdr-ping--nav' : ''}`}
+      role="search"
+      onSubmit={submit}
+    >
       <label htmlFor={id} className="sdr-ping-label">
         Ping another question
       </label>
@@ -40,11 +50,40 @@ export function SonarRunPingBar({
         placeholder={placeholder}
         onChange={(e) => setValue(e.target.value)}
       />
-      <button type="submit" className="sdr-ping-btn" disabled={disabled || !value.trim()}>
-        Ping
+      <button
+        type="submit"
+        className="sdr-ping-btn"
+        disabled={disabled || !value.trim()}
+        aria-label={variant === 'nav' ? 'Ping' : undefined}
+      >
+        {variant === 'nav' ? null : 'Ping'}
         <i className="bi bi-arrow-up-right" aria-hidden="true" />
       </button>
     </form>
+  );
+}
+
+/**
+ * The top of the sections column on a finished research board, one row: Back (an icon button,
+ * same action as the run bar's) and the compact ping bar.
+ */
+export function SonarRunNav({ onBack = null, onPing = null }) {
+  if (!onBack && !onPing) return null;
+  return (
+    <div className="sdr-runnav">
+      {onBack ? (
+        <button
+          type="button"
+          className="sdr-runnav-back"
+          onClick={onBack}
+          aria-label="Back"
+          title="Back"
+        >
+          <i className="bi bi-arrow-left" aria-hidden="true" />
+        </button>
+      ) : null}
+      {onPing ? <SonarRunPingBar onPing={onPing} variant="nav" placeholder="New question" /> : null}
+    </div>
   );
 }
 

@@ -120,6 +120,7 @@ import { matchEcho, marketSnapshot } from '@/lib/sonar/landing-sources';
 export { matchEcho, marketSnapshot };
 import { canonicalPing } from '@/lib/sonar/canonical-ping';
 import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
+import { compactMetrics } from '@/lib/sonar/macro/fx-findings';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -3483,6 +3484,8 @@ export async function runLandingPipeline(
           rows: intel.picture.assessment?.overall ? assessmentRows(intel.picture, intelBrief) : [],
           missing: intel.picture.missing || [],
           charts: intel.charts || {},
+          /* Nov 7: the computed measures (no long series) for the board's Key findings. */
+          metrics: compactMetrics(intel.picture.metrics, { reerBasis: intel.reerBasis || null }),
           transmission: (intel.frameworks || []).includes('currency') ? intel.transmission : null,
           sources: intel.sources || [],
         }

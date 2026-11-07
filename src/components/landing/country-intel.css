@@ -553,6 +553,32 @@
   gap: 4px;
 }
 
+/* Nov 7: a chart's view toggle and range toggle on one wrapping row. */
+.snr-cii .snr-cii-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+/* Nov 7: a reference line on a chart (a REER's own median). */
+.snr-cii .snr-cii-ref {
+  stroke: var(--cii-faint);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.snr-cii .snr-cii-ref-label {
+  fill: var(--cii-faint);
+}
+.snr-cii .snr-cii-chart:focus {
+  outline: none;
+}
+.snr-cii .snr-cii-chart:focus-visible {
+  outline: 2px solid var(--cii-accent, var(--emerald));
+  outline-offset: 4px;
+}
+
 .snr-cii .snr-cii-segbtn {
   min-width: 36px;
   min-height: 28px;

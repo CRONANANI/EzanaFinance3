@@ -153,6 +153,13 @@ export async function buildCountryIntel(
   const reerRow =
     own.find((r) => r.source === 'bis' && /^WS_EER:M\.R\.B\./.test(r.series_key)) ||
     best(own, 'fx_effective', { now });
+  /* Nov 7: which REER this is. Only the BIS real broad index has a verified base and
+     direction; the findings and the REER chart use nothing else. */
+  const reerBasis = reerRow
+    ? reerRow.source === 'bis' && /^WS_EER:M\.R\.B\./.test(reerRow.series_key)
+      ? 'bis_real_broad'
+      : 'other'
+    : null;
   const reservesRow = best(own, 'fx_reserves', { now });
   const caRow = best(own, 'current_account', { now });
   const extDebtRow = best(own, 'external_debt', { now });
@@ -307,6 +314,12 @@ export async function buildCountryIntel(
     ),
     policy: chart(policyRow, polH, 'Policy rate', '% a year'),
     reserves: chart(reservesRow, resH, 'Official reserves', reservesRow?.unit || 'US$'),
+    /* Nov 7: the real effective exchange rate, only when it is the BIS real, broad-basket
+       index (a verified base and direction: higher = stronger in real terms). */
+    reer:
+      reerBasis === 'bis_real_broad'
+        ? chart(reerRow, reerH, 'Real effective exchange rate (BIS, broad)', 'index')
+        : null,
   };
 
   return {
@@ -318,6 +331,7 @@ export async function buildCountryIntel(
     items: [...computedItems, ...catalogueItems],
     frameworks: frameworksFor(route),
     charts,
+    reerBasis,
     transmission: transmissionMap(picture),
     episodes,
     sources: [...new Set(sourcesUsed.map(cite))],

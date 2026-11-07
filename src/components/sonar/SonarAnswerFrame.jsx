@@ -12,6 +12,8 @@
  *     deep research, by who is reading).
  *
  * Wide container: a sticky column on the left. Narrow: a row of chips above the board.
+ * Nov 7: `navTop` (a research run's Back and ping bar) sits at the top of that column, so the
+ * run needs no full-width bar above the answer and the board starts at the top.
  * Scroll-spy reads the section anchors (`sa-<key>`) in the capture phase, so it works
  * whatever element scrolls. Styles: sonar-answer-frame.css (san-). Tokens only.
  */
@@ -25,6 +27,7 @@ export function SonarAnswerFrame({
   present = [],
   access = null,
   onDeep = null,
+  navTop = null,
   children,
   className = '',
 }) {
@@ -83,60 +86,63 @@ export function SonarAnswerFrame({
   return (
     <div className={`san ${className}`.trim()}>
       <div className="san-grid">
-        <nav className="san-nav" aria-label="Answer sections">
-          <p className="san-head">Sections</p>
-          <ul className="san-list">
-            {nav
-              .filter((s) => !s.locked)
-              .map((s) => (
-                <li key={s.key}>
-                  <a
-                    href={`#${s.id}`}
-                    className={`san-link${active === s.key ? ' is-active' : ''}`}
-                    aria-current={active === s.key ? 'location' : undefined}
-                    onClick={(e) => go(e, s)}
-                  >
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-          </ul>
-          {locked.length ? (
-            <>
-              <p className="san-head san-head--locked" id={lockedHead}>
-                <i className="bi bi-lock" aria-hidden="true" /> Deep research
-              </p>
-              <ul className="san-list san-list--locked" aria-labelledby={lockedHead}>
-                {locked.map((s) => (
+        <div className={`san-side${navTop ? ' has-top' : ''}`}>
+          {navTop ? <div className="san-top">{navTop}</div> : null}
+          <nav className="san-nav" aria-label="Answer sections">
+            <p className="san-head">Sections</p>
+            <ul className="san-list">
+              {nav
+                .filter((s) => !s.locked)
+                .map((s) => (
                   <li key={s.key}>
-                    <span className="san-link is-locked" aria-disabled="true">
-                      <i className="bi bi-lock-fill" aria-hidden="true" />
+                    <a
+                      href={`#${s.id}`}
+                      className={`san-link${active === s.key ? ' is-active' : ''}`}
+                      aria-current={active === s.key ? 'location' : undefined}
+                      onClick={(e) => go(e, s)}
+                    >
                       {s.label}
-                      <VisuallyHidden>, locked: deep research on the Starter plan</VisuallyHidden>
-                    </span>
+                    </a>
                   </li>
                 ))}
-              </ul>
-            </>
-          ) : null}
-          {cta ? (
-            <div className="san-cta">
-              <p className="san-cta-title">{cta.title}</p>
-              <p className="san-cta-line">{cta.line}</p>
-              {cta.href ? (
-                <a className="san-cta-btn" href={cta.href}>
-                  {cta.action}
-                  <i className="bi bi-arrow-right" aria-hidden="true" />
-                </a>
-              ) : onDeep ? (
-                <button type="button" className="san-cta-btn" onClick={onDeep}>
-                  {cta.action}
-                  <i className="bi bi-arrow-right" aria-hidden="true" />
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-        </nav>
+            </ul>
+            {locked.length ? (
+              <>
+                <p className="san-head san-head--locked" id={lockedHead}>
+                  <i className="bi bi-lock" aria-hidden="true" /> Deep research
+                </p>
+                <ul className="san-list san-list--locked" aria-labelledby={lockedHead}>
+                  {locked.map((s) => (
+                    <li key={s.key}>
+                      <span className="san-link is-locked" aria-disabled="true">
+                        <i className="bi bi-lock-fill" aria-hidden="true" />
+                        {s.label}
+                        <VisuallyHidden>, locked: deep research on the Starter plan</VisuallyHidden>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            {cta ? (
+              <div className="san-cta">
+                <p className="san-cta-title">{cta.title}</p>
+                <p className="san-cta-line">{cta.line}</p>
+                {cta.href ? (
+                  <a className="san-cta-btn" href={cta.href}>
+                    {cta.action}
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </a>
+                ) : onDeep ? (
+                  <button type="button" className="san-cta-btn" onClick={onDeep}>
+                    {cta.action}
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </nav>
+        </div>
         <div className="san-body">{children}</div>
       </div>
     </div>

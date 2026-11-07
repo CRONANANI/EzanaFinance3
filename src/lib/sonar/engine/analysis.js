@@ -624,7 +624,12 @@ function analyzeMacroSeries(e, d, metrics, visualizations) {
       period: { label: d.ranking.mix || 'latest observation per country' },
       source: d.attribution,
       method: "each country's latest observation; periods differ by country as noted",
-      rows: rows.map((r) => ({ label: r.name, value: r.value, note: r.period })),
+      rows: rows.map((r) => ({
+        label: r.name,
+        value: r.value,
+        note: r.period,
+        iso3: r.iso3 || null,
+      })),
       evidenceIds: [e.id],
     });
     return;

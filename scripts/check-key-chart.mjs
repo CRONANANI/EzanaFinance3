@@ -268,9 +268,10 @@ test('fx windows: relative to the last point; 5Y falls back to the monthly serie
   const w5 = view.fxWindow(fx, fxm, 60);
   assert.equal(w5.chart, fxm, 'a 400-day daily series does not cover five years');
   assert.equal(w5.points[w5.points.length - 1].x, '2026-09');
+  /* Nov 7: 3M, 1Y, 3Y, 5Y. */
   assert.deepEqual(
     view.fxWindowsAvailable(fx, fxm).map((w) => w.id),
-    ['1M', '3M', '1Y', '5Y'],
+    ['3M', '1Y', '3Y', '5Y'],
   );
   assert.equal(view.defaultFxWindow(view.fxWindowsAvailable(fx, fxm)), '1Y');
 });
@@ -278,7 +279,7 @@ test('fx windows: relative to the last point; 5Y falls back to the monthly serie
 test('fx windows: a monthly-only series hides the windows that show fewer than two points', () => {
   const fxm = monthlyFx();
   const ids = view.fxWindowsAvailable(fxm, null).map((w) => w.id);
-  assert.deepEqual(ids, ['1M', '3M', '1Y', '5Y']);
+  assert.deepEqual(ids, ['3M', '1Y', '3Y', '5Y']);
   const short = { ...fxm, points: fxm.points.slice(-1) };
   assert.deepEqual(view.fxWindowsAvailable(short, null), []);
   assert.equal(view.defaultFxWindow([]), null);

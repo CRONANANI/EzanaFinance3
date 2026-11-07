@@ -9,10 +9,12 @@
  *      dossier link)            | Country intelligence (flag, name, currency, pressure badge,
  *                                 four KPI tiles with sparklines)
  *   2. Pressure breakdown (component levels, "Ezana thresholds" explainer) | Source coverage
- *   3. Evidence from Ezana datasets (OECD, Empire, macro, Echo, markets, any other cited
+ *   3. Key findings (Nov 7: computed FX findings, lib/sonar/macro/fx-findings), full width;
+ *      then Evidence from Ezana datasets (OECD, Empire, macro, Echo, markets, any other cited
  *      dataset)                 | What's moving the story (the news rail, the dataset cards)
- *   4. Key macro charts (inflation, the exchange rate with its range toggle, inflation vs the
- *      policy rate, reserves), full width
+ *   4. Key data visualizations (the exchange rate with 3M to 5Y ranges and its 12-month
+ *      change, wide | inflation vs the policy rate and the real rate; the REER with its
+ *      median and reserves below), full width
  *   5. How pressure can travel (the transmission map), full width
  *   6. Key chart | Key indicators
  *   7. What could happen next | What to monitor and the bottom line
@@ -54,8 +56,9 @@ import {
   datasetEvidence,
   sourceCoverage,
   boardSpans,
-  chartColumns,
+  chartSpans,
 } from '@/lib/sonar/country-board';
+import { fxFindings } from '@/lib/sonar/macro/fx-findings';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
@@ -350,27 +353,99 @@ function Evidence({ live }) {
 
 /* ── 4. key macro charts ──────────────────────────────────────────────── */
 
+const CHART_NAME = {
+  fx: 'the exchange-rate chart',
+  policy: 'the inflation and policy rate chart',
+  reer: 'the real effective exchange rate chart',
+  reserves: 'the reserves chart',
+};
+
+/* Nov 7: the analytic findings (lib/sonar/macro/fx-findings): each a headline, its evidence,
+   what it means, why it matters and its qualification, linked to the chart that shows it. */
+function KeyFindings({ findings }) {
+  const id = useId();
+  const go = (e, chart) => {
+    const el = document.getElementById(`intel-chart-${chart}`);
+    if (!el) return;
+    e.preventDefault();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    el.focus({ preventScroll: true });
+  };
+  return (
+    <section className="snr-bd-card snr-bd-findings" aria-labelledby={id}>
+      <Eyebrow icon="bi-lightbulb" id={id}>
+        Key findings
+      </Eyebrow>
+      <ol className="snr-bd-flist">
+        {findings.map((f, i) => (
+          <li key={f.id} className="snr-bd-finding">
+            <div className="snr-bd-finding-top">
+              <span className="snr-bd-finding-n" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span className="snr-bd-finding-kicker">{f.title}</span>
+              <span className={`snr-bd-finding-status is-${f.status.toLowerCase()}`}>
+                {f.status}
+              </span>
+            </div>
+            <h3 className="snr-bd-finding-head">{f.headline}</h3>
+            <ul className="snr-bd-finding-ev" aria-label="Evidence">
+              {f.evidence.map((e, k) => (
+                <li key={k}>{e}</li>
+              ))}
+            </ul>
+            <dl className="snr-bd-finding-dl">
+              {f.interpretation ? (
+                <div>
+                  <dt>What it means</dt>
+                  <dd>{f.interpretation}</dd>
+                </div>
+              ) : null}
+              <div>
+                <dt>Why it matters</dt>
+                <dd>{f.why}</dd>
+              </div>
+            </dl>
+            <p className="snr-bd-finding-q">
+              <i className="bi bi-info-circle" aria-hidden="true" /> {f.qualification}
+            </p>
+            {f.chart ? (
+              <a
+                className="snr-bd-finding-link"
+                href={`#intel-chart-${f.chart}`}
+                onClick={(e) => go(e, f.chart)}
+              >
+                See {CHART_NAME[f.chart] || 'the chart'}
+                <i className="bi bi-arrow-down-right" aria-hidden="true" />
+              </a>
+            ) : null}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+/* Nov 7: the exchange rate leads, wider (7 of 12) beside inflation and the policy rate (5);
+   the REER and reserves share the row below. */
 function Charts({ intel }) {
   const id = useId();
   const items = intelChartItems(intel.charts);
   if (!items.length) return null;
+  const spans = chartSpans(items.map((c) => c.key));
   return (
-    <section
-      id={CHARTS_ID}
-      tabIndex={-1}
-      className="snr-bd-section"
-      aria-labelledby={id}
-      style={{
-        '--bd-chart-cols': chartColumns(items.length),
-        '--bd-chart-cols-mid': Math.min(2, chartColumns(items.length)),
-      }}
-    >
+    <section id={CHARTS_ID} tabIndex={-1} className="snr-bd-section" aria-labelledby={id}>
       <Eyebrow icon="bi-bar-chart-line" id={id}>
-        Key macro charts
+        Key data visualizations
       </Eyebrow>
       <div className={`snr-bd-charts${items.length % 2 ? ' is-odd' : ''}`}>
         {items.map((c) => (
-          <div key={c.key} className="snr-bd-card snr-bd-chart">
+          <div
+            key={c.key}
+            className="snr-bd-card snr-bd-chart"
+            style={{ '--bd-cspan': spans.get(c.key) || 6 }}
+          >
             {c.node}
           </div>
         ))}
@@ -424,6 +499,13 @@ export function SonarCountryBoard({
   const monitor = (brief?.monitor || []).filter((m) => m && m.indicator);
   const hasStory = Boolean((dossier.keyChart?.stories || dossier.oecd?.stories || []).length);
   const hasIndicators = Boolean(dossier.keyIndicators?.length);
+  /* Nov 7: computed from the measures the pipeline sent (older cached answers have none). */
+  const findings = fxFindings({
+    metrics: intel.metrics,
+    currency: intel.currency,
+    place: intel.place,
+    missing,
+  });
 
   /* Reading order; each cell's preferred and narrowest width in 12ths. */
   const cells = [
@@ -448,6 +530,15 @@ export function SonarCountryBoard({
       : null,
     sourceCoverage(live).length
       ? { id: 'coverage', section: 'sources', span: 6, min: 5, node: <Coverage live={live} /> }
+      : null,
+    findings.length
+      ? {
+          id: 'keyfindings',
+          section: 'findings',
+          span: 12,
+          min: 12,
+          node: <KeyFindings findings={findings} />,
+        }
       : null,
     datasetEvidence(live).length
       ? { id: 'evidence', section: 'findings', span: 7, min: 6, node: <Evidence live={live} /> }

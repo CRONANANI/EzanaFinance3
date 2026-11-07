@@ -49,10 +49,11 @@ function monthsBefore(t, months) {
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - months, d.getUTCDate());
 }
 
+/* Nov 7: 3M, 1Y, 3Y and 5Y (the one-month view read as noise beside the others). */
 export const FX_WINDOWS = [
-  { id: '1M', months: 1, label: 'one month' },
   { id: '3M', months: 3, label: 'three months' },
   { id: '1Y', months: 12, label: 'one year' },
+  { id: '3Y', months: 36, label: 'three years' },
   { id: '5Y', months: 60, label: 'five years' },
 ];
 
@@ -83,6 +84,78 @@ export function fxWindow(fx, fxMonthly, months) {
   if (b && b.pts.length >= 2) return { points: b.pts, chart: fxMonthly };
   if (a && a.pts.length >= 2) return { points: a.pts, chart: fx };
   return null;
+}
+
+/** Points (from cleanPoints) within `months` of the last one. */
+export function lastMonths(points, months) {
+  if (!points?.length) return [];
+  const from = monthsBefore(points[points.length - 1].t, months);
+  return points.filter((p) => p.t >= from);
+}
+
+/* The last point of each calendar month (a daily series read monthly). */
+function monthEnds(points) {
+  const by = new Map();
+  for (const p of points) by.set(String(p.x).slice(0, 7), p);
+  return [...by.values()].sort((a, b) => a.t - b.t);
+}
+
+/**
+ * Nov 7: the rolling 12-month change in the currency's dollar value, from a local-per-USD
+ * series: (rate 12 months earlier / rate now - 1) x 100, so a fall in value is negative.
+ * Monthly points (a daily series is read at month ends; the longer of the two is used).
+ * -> [{ t, x, y }]
+ */
+export function rollingValueChange(fx, fxMonthly, months = 12) {
+  const a = monthEnds(cleanPoints(fx));
+  const b = monthEnds(cleanPoints(fxMonthly));
+  const pts = b.length > a.length ? b : a;
+  const byMonth = new Map(pts.map((p) => [String(p.x).slice(0, 7), p]));
+  const out = [];
+  for (const p of pts) {
+    const d = new Date(p.t);
+    const back = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - months, 1));
+    const key = `${back.getUTCFullYear()}-${String(back.getUTCMonth() + 1).padStart(2, '0')}`;
+    const old = byMonth.get(key);
+    if (old && old.y > 0 && p.y > 0)
+      out.push({ t: p.t, x: String(p.x).slice(0, 7), y: +((old.y / p.y - 1) * 100).toFixed(2) });
+  }
+  return out;
+}
+
+/**
+ * Nov 7: policy rate minus annual inflation, month by month (the ex-post real rate), over
+ * the months both series cover. The policy rate in force is its last value at or before the
+ * inflation month. -> [{ t, x, y }]
+ */
+export function realRateSeries(policy, inflation) {
+  const pol = cleanPoints(policy);
+  const infl = cleanPoints(inflation);
+  if (!pol.length || !infl.length) return [];
+  const out = [];
+  let j = -1;
+  for (const p of infl) {
+    const end = Date.UTC(new Date(p.t).getUTCFullYear(), new Date(p.t).getUTCMonth() + 1, 0);
+    while (j + 1 < pol.length && pol[j + 1].t <= end) j += 1;
+    if (j < 0) continue;
+    out.push({ t: p.t, x: p.x, y: +(pol[j].y - p.y).toFixed(2) });
+  }
+  return out;
+}
+
+/** Median of a list of numbers (null when empty). */
+export function medianOf(values) {
+  const v = (values || []).filter((x) => Number.isFinite(x)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+}
+
+/** Share of values at or below `v`, as a whole percentile (0 to 100). */
+export function percentileRank(values, v) {
+  const xs = (values || []).filter((x) => Number.isFinite(x));
+  if (!xs.length || !Number.isFinite(v)) return null;
+  return Math.round((xs.filter((x) => x <= v).length / xs.length) * 100);
 }
 
 /** The FX windows that would show at least two points, in display order. */

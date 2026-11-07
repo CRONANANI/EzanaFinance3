@@ -503,3 +503,24 @@ export function boardSpans(cells) {
 
 /** Columns for the key macro charts row: 1 to 3 across; four charts sit two by two. */
 export const chartColumns = (n) => (n >= 4 ? 2 : Math.max(1, Math.min(3, n)));
+
+/**
+ * Nov 7: each chart's width in twelfths on a wide board, by its key in reading order. The
+ * exchange rate leads, wider (7) beside inflation and the policy rate (5); the rest share
+ * the rows below evenly (REER and reserves: 6 and 6; one alone takes the row).
+ * -> Map(key -> span)
+ */
+export function chartSpans(keys) {
+  const out = new Map();
+  const k = [...(keys || [])];
+  if (!k.length) return out;
+  if (k.length === 1) return out.set(k[0], 12);
+  const [a, b, ...rest] = k;
+  out.set(a, a === 'fx' ? 7 : 6);
+  out.set(b, a === 'fx' ? 5 : 6);
+  for (let i = 0; i < rest.length; i += 3) {
+    const row = rest.slice(i, i + 3);
+    for (const key of row) out.set(key, 12 / row.length);
+  }
+  return out;
+}
