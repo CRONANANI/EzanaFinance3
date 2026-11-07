@@ -541,3 +541,278 @@ export async function synthesizeWithFallback(args) {
   const out = await synthesizeWithFallbackRaw(args);
   return out?.answer ? { ...out, answer: removeEmDashes(out.answer) } : out;
 }
+
+/* ── Streaming synthesis (Nov 2026) ─────────────────────────────────────────────── */
+
+/**
+ * Rebuild Anthropic Messages content blocks from stream events, so the streamed answer
+ * parses exactly like a non-streamed one (parseAnthropicContent). Pure; tested with a
+ * recorded event sequence.
+ *
+ *   const asm = createAnthropicStreamAssembler();
+ *   for (const ev of events) { const t = asm.event(ev); if (t) onText(t); }
+ *   parseAnthropicContent(asm.content());
+ */
+export function createAnthropicStreamAssembler() {
+  const blocks = [];
+  const partialJson = new Map();
+  let usage = null;
+  let model = null;
+  let error = null;
+  const citedText = [];
+  return {
+    /** Fold one event; returns the text delta it carried, or ''. */
+    event(ev) {
+      if (!ev || typeof ev !== 'object') return '';
+      switch (ev.type) {
+        case 'message_start':
+          model = ev.message?.model || model;
+          usage = { ...(ev.message?.usage || {}) };
+          return '';
+        case 'content_block_start': {
+          const b = ev.content_block ? JSON.parse(JSON.stringify(ev.content_block)) : {};
+          if (b.type === 'text') b.text = b.text || '';
+          blocks[ev.index] = b;
+          return '';
+        }
+        case 'content_block_delta': {
+          const b = blocks[ev.index];
+          const d = ev.delta || {};
+          if (!b) return '';
+          if (d.type === 'text_delta') {
+            b.text = (b.text || '') + (d.text || '');
+            return d.text || '';
+          }
+          if (d.type === 'citations_delta' && d.citation) {
+            (b.citations ||= []).push(d.citation);
+            if (typeof d.citation.cited_text === 'string' && d.citation.cited_text) {
+              citedText.push(d.citation.cited_text.slice(0, 600));
+            }
+            return '';
+          }
+          if (d.type === 'input_json_delta') {
+            partialJson.set(ev.index, (partialJson.get(ev.index) || '') + (d.partial_json || ''));
+          }
+          return '';
+        }
+        case 'content_block_stop': {
+          const raw = partialJson.get(ev.index);
+          if (raw != null && blocks[ev.index]) {
+            try {
+              blocks[ev.index].input = JSON.parse(raw);
+            } catch {
+              /* keep the block without its input */
+            }
+            partialJson.delete(ev.index);
+          }
+          return '';
+        }
+        case 'message_delta':
+          usage = { ...(usage || {}), ...(ev.usage || {}) };
+          return '';
+        case 'error':
+          error = ev.error || { type: 'error' };
+          return '';
+        default:
+          return '';
+      }
+    },
+    content: () => blocks.filter(Boolean),
+    /** Web passages the model has cited so far (for the sentence gate). */
+    citedText: () => citedText.slice(0, 40),
+    usage: () => usage,
+    model: () => model,
+    error: () => error,
+  };
+}
+
+/* Server-Sent Event blocks from a fetch body, as parsed JSON events. */
+async function* readSseJson(body) {
+  const reader = body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let cut;
+    while ((cut = buf.indexOf('\n\n')) >= 0) {
+      const block = buf.slice(0, cut);
+      buf = buf.slice(cut + 2);
+      const data = block
+        .split('\n')
+        .filter((l) => l.startsWith('data:'))
+        .map((l) => l.slice(5).trimStart())
+        .join('\n');
+      if (!data) continue;
+      try {
+        yield JSON.parse(data);
+      } catch {
+        /* skip a malformed block */
+      }
+    }
+  }
+}
+
+/**
+ * Stream a Sonar synthesis from Anthropic, calling onText(delta) as the model writes.
+ * Same request as anthropicSynthesize (model, web search rules, max_uses, budget) with
+ * stream: true, and the same retries (tool 400 without web search, model 400 on Haiku),
+ * all before any text. When the stream fails before its first text, the existing chain
+ * (synthesizeWithFallback: Kimi, DeepSeek) answers and its whole answer goes through
+ * onText. When it fails after text started, what arrived is returned with
+ * degraded: 'stream_cut'. onCitation(text) reports each web passage the model cites.
+ *
+ * Returns the synthesizeWithFallback shape plus { streamed: true|false }.
+ */
+export async function streamSynthesis(
+  args,
+  { onText = () => {}, onCitation = () => {}, signal = null } = {},
+) {
+  const {
+    system,
+    user,
+    maxTokens,
+    model,
+    fallbackModel,
+    webSearch,
+    deadlineAt = null,
+    minHopMs,
+    reserveMs,
+  } = args || {};
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const fallback = async (why) => {
+    if (why) console.warn('[sonar] stream unavailable, using the synthesis chain', { why });
+    const out = await synthesizeWithFallback(args);
+    if (out?.answer) onText(out.answer);
+    return { ...out, streamed: false };
+  };
+  if (!apiKey) return fallback('no key');
+
+  const safeFallback = fallbackModel || HAIKU_MODEL;
+  const hop = { minHopMs, reserveMs };
+  const baseBody = {
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages: [{ role: 'user', content: user }],
+    stream: true,
+  };
+  const webOn =
+    Boolean(webSearch?.enabled) &&
+    process.env.SONAR_WEB_SEARCH === 'true' &&
+    hopMs(38_000, deadlineAt, reserveMs) >= 20_000;
+  const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3);
+
+  /* One bounded request whose signal also follows the caller's (a client disconnect). */
+  const open = (body, ms) => {
+    const timeout = AbortSignal.timeout(ms);
+    const sig = signal ? AbortSignal.any([timeout, signal]) : timeout;
+    return fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        ...(process.env.ANTHROPIC_WORKSPACE_ID
+          ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID }
+          : {}),
+      },
+      body: JSON.stringify(body),
+      signal: sig,
+    });
+  };
+
+  let res;
+  let usedModel = model;
+  try {
+    if (webOn) {
+      res = await open(
+        {
+          ...baseBody,
+          tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
+        },
+        hopMs(38_000, deadlineAt, reserveMs),
+      );
+      if (res.status === 400) {
+        const detail = await readBody(res);
+        console.warn('[sonar] web_search 400, retrying stream without tool', { model, detail });
+        res = await open(baseBody, guardHop(20_000, deadlineAt, hop));
+      }
+    } else {
+      res = await open(baseBody, guardHop(25_000, deadlineAt, hop));
+    }
+    if (res.status === 400 && model !== safeFallback) {
+      const detail = await readBody(res);
+      console.warn('[sonar] model 400, retrying stream on Haiku', { model, detail });
+      usedModel = safeFallback;
+      res = await open({ ...baseBody, model: safeFallback }, guardHop(20_000, deadlineAt, hop));
+    }
+  } catch (e) {
+    if (signal?.aborted) return { answer: null, degraded: 'client_abort', streamed: true };
+    return fallback(isAbort(e) ? 'timed out' : e?.message || 'network');
+  }
+  if (!res.ok || !res.body) {
+    const detail = await readBody(res);
+    console.error('[sonar] anthropic stream error', {
+      model: usedModel,
+      status: res.status,
+      detail,
+    });
+    return fallback(`status ${res.status}`);
+  }
+
+  const asm = createAnthropicStreamAssembler();
+  let sentText = false;
+  let seenCites = 0;
+  try {
+    for await (const ev of readSseJson(res.body)) {
+      const delta = asm.event(ev);
+      const cites = asm.citedText();
+      while (seenCites < cites.length) onCitation(cites[seenCites++]);
+      if (delta) {
+        sentText = true;
+        onText(delta);
+      }
+      if (ev?.type === 'error') break;
+    }
+  } catch (e) {
+    if (signal?.aborted) {
+      const parsed = parseAnthropicContent(asm.content());
+      return {
+        ...parsed,
+        answer: parsed.answer || null,
+        degraded: 'client_abort',
+        provider: 'anthropic',
+        streamed: true,
+      };
+    }
+    if (!sentText) return fallback(isAbort(e) ? 'timed out' : e?.message || 'stream error');
+    const parsed = parseAnthropicContent(asm.content());
+    return { ...parsed, provider: 'anthropic', degraded: 'stream_cut', streamed: true };
+  }
+
+  const usage = asm.usage();
+  if (usage) {
+    console.log('[sonar] anthropic usage', {
+      model: asm.model() || usedModel,
+      input_tokens: usage.input_tokens,
+      output_tokens: usage.output_tokens,
+      web_search_requests: usage.server_tool_use?.web_search_requests,
+      streamed: true,
+    });
+  }
+  const parsed = parseAnthropicContent(asm.content());
+  if (asm.error() && !sentText) return fallback(asm.error()?.type || 'stream error');
+  if (!parsed.answer) {
+    if (!sentText) return fallback('empty reply');
+    return { ...parsed, provider: 'anthropic', degraded: 'stream_cut', streamed: true };
+  }
+  return {
+    ...parsed,
+    answer: removeEmDashes(parsed.answer),
+    provider: 'anthropic',
+    degraded: asm.error() ? 'stream_cut' : undefined,
+    streamed: true,
+  };
+}

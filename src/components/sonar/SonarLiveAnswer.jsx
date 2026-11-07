@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 /**
- * SonarLiveAnswer — Section 1, the "Live Briefing". Reveals the REAL synthesized
- * answer token-by-token (client-side typewriter of the actual /api/sonar/query
- * text — not a fake timeout, not fake content) with a blinking emerald caret and a
- * pulsing ping dot that freezes on completion. Inline [S#] markers render as
- * superscript citations. Footer = the "Sonar searched" manifest, distinguishing
- * hit sources (emerald + dot) from searched-no-hit (outline).
+ * SonarLiveAnswer — Section 1, the "Live Briefing". Renders the REAL synthesized
+ * answer from /api/sonar/query with a blinking emerald caret and a pulsing ping dot
+ * that freezes on completion. Inline [S#] markers render as superscript citations;
+ * a half-received marker ("[S1" at the end of a streamed answer) stays plain text
+ * until it completes. Footer = the "Sonar searched" manifest, distinguishing hit
+ * sources (emerald + dot) from searched-no-hit (outline).
+ *
+ * Nov 2026: `live` answers arrive as the model writes them (streamed); the text
+ * renders as it grows, with the caret, until `final`, then onComplete fires once.
+ * A non-streamed answer renders whole at once (no artificial typewriter).
  */
 
 /** Split text into strings + citation nodes for any [S#] markers present. */
@@ -38,36 +41,22 @@ export function SonarLiveAnswer({
   searched = [],
   webSources = [],
   onComplete,
+  live = false,
+  final = true,
 }) {
-  const reduceMotion = useReducedMotion();
-  const [shown, setShown] = useState(0);
-
+  /* onComplete fires once per finished answer: when a live answer is final, or as
+     soon as a whole answer is shown. */
+  const completedFor = useRef(null);
+  const done = live ? Boolean(final) : true;
   useEffect(() => {
-    if (!answer) return undefined;
-    if (reduceMotion) {
-      setShown(answer.length);
-      onComplete?.();
-      return undefined;
-    }
-    setShown(0);
-    let i = 0;
-    const step = Math.max(1, Math.round(answer.length / 220));
-    const id = setInterval(() => {
-      i += step;
-      if (i >= answer.length) {
-        setShown(answer.length);
-        clearInterval(id);
-        onComplete?.();
-      } else {
-        setShown(i);
-      }
-    }, 16);
-    return () => clearInterval(id);
+    if (!done || !answer) return;
+    if (completedFor.current === answer) return;
+    completedFor.current = answer;
+    onComplete?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answer, reduceMotion]);
+  }, [done, answer]);
 
-  const done = !answer || shown >= answer.length;
-  const visible = answer ? answer.slice(0, shown) : '';
+  const visible = answer || '';
 
   return (
     <div className="sonar-answer sonar-surface">

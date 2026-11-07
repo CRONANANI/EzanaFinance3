@@ -77,6 +77,10 @@ export async function orchestrate(query, options = {}) {
     // resolves countries/themes from them) reads ctx.rawQuery; all others use
     // `query` unchanged.
     rawQuery = null,
+    // Opt-in (Sonar quick answer, Nov 2026): embed the original query WHILE the rewrite
+    // runs, and use that embedding when the rewrite is unused or unchanged. Default
+    // false, so the copilot, landing and eval paths are unchanged.
+    speculativeEmbed = false,
   } = options;
 
   const q = String(query || '').trim();
@@ -101,6 +105,20 @@ export async function orchestrate(query, options = {}) {
   let effectiveQuery = q;
   let rewriteUsed = false;
   let corpusHints = [];
+  /* Speculative embed of the original text, started before the rewrite call. */
+  const embedOnce = (text) =>
+    embedTimeoutMs
+      ? withTimeout(embedViaSupabaseCached(text), embedTimeoutMs, 'embed').then((r) => {
+          if (!r.ok) console.warn('[orchestrate] embed skipped', { timedOut: Boolean(r.timedOut) });
+          return r.ok ? r.value : null;
+        })
+      : embedViaSupabaseCached(text);
+  const tSpec = clockMs();
+  const specEmbed =
+    speculativeEmbed && rewriteEnabled() && supaEmbedConfigured()
+      ? embedOnce(q).catch(() => null)
+      : null;
+
   if (rewriteEnabled()) {
     const tRewrite = clockMs();
     const rwRes = embedTimeoutMs
@@ -120,7 +138,12 @@ export async function orchestrate(query, options = {}) {
   // and extract entities (structured corpora use them).
   let queryEmbedding = null;
   const tEmbed = clockMs();
-  if (supaEmbedConfigured()) {
+  if (specEmbed && effectiveQuery === q) {
+    /* The rewrite was unused or returned the same text: the speculative embedding is the
+       one we need. Its time counts from when it started, alongside the rewrite. */
+    queryEmbedding = await specEmbed;
+    timings.embed = since(tSpec);
+  } else if (supaEmbedConfigured()) {
     if (embedTimeoutMs) {
       const emb = await withTimeout(
         embedViaSupabaseCached(effectiveQuery),

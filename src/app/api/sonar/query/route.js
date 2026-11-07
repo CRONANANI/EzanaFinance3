@@ -17,8 +17,16 @@ import {
   classifyQuery,
   CORPUS_TO_DATASET,
 } from '@/lib/sonar/retrieval';
-import { enforceGrounding, GROUNDING_RULES } from '@/lib/sonar/groundingGuard';
-import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { enforceGrounding, createSentenceGate, GROUNDING_RULES } from '@/lib/sonar/groundingGuard';
+import { synthesizeWithFallback, streamSynthesis } from '@/lib/sonar/llm-providers';
+import { cacheGet, cacheSet } from '@/lib/cache';
+import {
+  sonarAnswerCacheKey,
+  cacheableSearch,
+  shouldCacheSonarAnswer,
+  SONAR_ANSWER_TTL_SECONDS,
+} from '@/lib/sonar/answer-cache';
+import { removeEmDashes } from '@/lib/text/em-dash';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { reservePing, completePing, failPing, annotatePing } from '@/lib/sonar/quota';
 import { createRequestTimer } from '@/lib/rag/request-timer';
@@ -194,49 +202,125 @@ async function handlePing(request, user, ping) {
     const classification = classifyQuery(query);
     const allowCorpora = corporaForDatasets(entitlements.datasets);
     const budget = depthBudget(entitlements.depth);
+    /* Nov 2026: a client that asks for text/event-stream gets the answer as it is
+       written; every other caller (tests, the eval harness) keeps the JSON body. */
+    const wantsStream =
+      /text\/event-stream/i.test(request.headers.get('accept') || '') || body?.stream === true;
+    const webSearchOn =
+      Boolean(entitlements.webSearch?.enabled) && process.env.SONAR_WEB_SEARCH === 'true';
+    /* Synthesis must end inside maxDuration (60 s): request start + 55 s. */
+    const deadlineAt = Date.now() - timer.elapsed() + 55_000;
+    const quota = {
+      limit: entitlements.dailyQueries,
+      used: used + 1,
+      remaining: Math.max(0, entitlements.dailyQueries - used - 1),
+    };
 
     timer.set('gate', timer.elapsed());
-    const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed, timings } =
-      await orchestrate(query, {
-        admin,
-        supabaseUser: userClient,
-        member,
-        allowCorpora,
-        topK: budget.topK,
-        perCorpusCap: budget.perCorpusCap,
-        charBudget: budget.charBudget,
-      });
-    for (const k of ['rewrite', 'embed', 'retrieve', 'rerank']) timer.set(k, timings?.[k] || 0);
 
-    const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
+    // Answer cache (15 min). Never for a ping that searches an org's own notes.
+    const cacheKey =
+      member && !cacheableSearch(allowCorpora)
+        ? null
+        : sonarAnswerCacheKey({
+            query,
+            context,
+            depth: entitlements.depth,
+            datasets: entitlements.datasets,
+            webSearch: webSearchOn,
+          });
+    if (cacheKey) {
+      const hit = await cacheGet(cacheKey, { memTtlSeconds: 60 }).catch(() => undefined);
+      if (hit?.briefing) {
+        await timer.time(
+          'ledger',
+          completePing(admin, reservation, {
+            classification: hit.classification ?? classification,
+            datasets_searched: (hit.searched || []).map((d) => d.id),
+            grounded: true,
+          }),
+        );
+        ping.completed = true;
+        annotatePing(admin, reservation, { durationMs: timer.elapsed() }).catch(() => {});
+        timer.finish(admin, { cacheHit: true, streamed: wantsStream });
+        const payload = { ...hit, quota };
+        if (!wantsStream) return NextResponse.json(payload);
+        return sseResponse(async (send) => {
+          timer.firstByte();
+          send('meta', metaOf(payload));
+          send('delta', { text: payload.briefing });
+          send('done', doneOf(payload));
+        });
+      }
+    }
 
-    // Zero-result telemetry: an empty retrieval is a content gap (fire-and-forget).
-    if (!marked.length) logZeroResult(admin, 'sonar', query);
+    /* Retrieval: bounded like the landing pipeline's legs, embedding the query while the
+       optional rewrite runs. */
+    const retrieve = async () => {
+      const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed, timings } =
+        await orchestrate(query, {
+          admin,
+          supabaseUser: userClient,
+          member,
+          allowCorpora,
+          topK: budget.topK,
+          perCorpusCap: budget.perCorpusCap,
+          charBudget: budget.charBudget,
+          embedTimeoutMs: 1500,
+          rerankTimeoutMs: 1800,
+          retrieverTimeoutMs: 4000,
+          speculativeEmbed: true,
+        });
+      for (const k of ['rewrite', 'embed', 'retrieve', 'rerank']) timer.set(k, timings?.[k] || 0);
 
-    // The "what Sonar searched" manifest — entitled + wired datasets, flagged for
-    // whether each actually returned anything.
-    const usedCorpora = new Set(corporaUsed);
-    const searched = corporaSearched
-      .map((corpus) => {
-        const id = CORPUS_TO_DATASET[corpus];
+      const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
+      // Zero-result telemetry: an empty retrieval is a content gap (fire-and-forget).
+      if (!marked.length) logZeroResult(admin, 'sonar', query);
+
+      // The "what Sonar searched" manifest: entitled + wired datasets, flagged for
+      // whether each actually returned anything.
+      const usedCorpora = new Set(corporaUsed);
+      const searched = corporaSearched
+        .map((corpus) => {
+          const id = CORPUS_TO_DATASET[corpus];
+          const meta = SONAR_DATASETS[id];
+          return meta ? { ...meta, used: usedCorpora.has(corpus) } : null;
+        })
+        .filter(Boolean);
+
+      // Group retrieved items into dataset-labeled, cited sections.
+      const sectionMap = new Map();
+      for (const it of marked) {
+        const id = CORPUS_TO_DATASET[it.corpus];
         const meta = SONAR_DATASETS[id];
-        return meta ? { ...meta, used: usedCorpora.has(corpus) } : null;
-      })
-      .filter(Boolean);
-
-    // 6. Synthesize — grounded + cited, over the datasets AND (tiered) live web.
-    //    Honest empty-state when retrieval is dry.
-    let answer = null;
-    let grounded = false;
-    let degraded;
-    let degradedDetail;
-    let webUsed = false;
-    let webSources = [];
-    let synthProvider = null;
-    if (marked.length) {
-      // Multi-provider fallback: Anthropic (with web search) → Kimi → DeepSeek. If the
-      // primary is out of credits / rate-limited / down, synthesis fails over to a
-      // fallback so the briefing still renders; only if ALL fail is it degraded.
+        if (!meta) continue;
+        if (!sectionMap.has(id)) sectionMap.set(id, { ...meta, items: [] });
+        sectionMap.get(id).items.push({
+          marker: it.marker,
+          title: it.title,
+          url: it.url || null,
+          date: it.date || null,
+          snippet: it.snippet || null,
+          similarity: it.similarity != null ? Number(it.similarity.toFixed(3)) : null,
+          ticker: it.meta?.ticker || null,
+        });
+      }
+      const meta = {
+        query,
+        classification,
+        version,
+        depth: entitlements.depth,
+        exportsEnabled: entitlements.exportsEnabled,
+        sections: [...sectionMap.values()],
+        searched,
+        locked,
+        available: available.map((d) => d.id),
+        quota,
+        disclaimer: DISCLAIMER,
+        empty: marked.length === 0,
+        rerankUsed: Boolean(rerankUsed),
+        rewriteUsed: Boolean(rewriteUsed),
+      };
       const synthArgs = {
         system: SYSTEM_PROMPT + GROUNDING_RULES,
         user: buildUserPrompt(query, marked, context),
@@ -244,122 +328,293 @@ async function handlePing(request, user, ping) {
         model: modelForDepth(entitlements.depth),
         fallbackModel: HAIKU_MODEL,
         webSearch: entitlements.webSearch,
+        deadlineAt,
       };
-      const out = await timer.time('synth', synthesizeWithFallback(synthArgs));
-      answer = out.answer;
-      /* A negative claim no snippet or web result supports is regenerated
-         once, then removed (groundingGuard.js). */
-      if (answer) {
-        const guarded = await timer.time('grounding', () =>
-          enforceGrounding(
-            answer,
-            [
-              ...marked.map((m) => `${m.title || ''}. ${String(m.text || m.snippet || '')}`),
-              ...(out.webCitedText || []),
-            ],
-            async (extra) =>
-              (
-                await synthesizeWithFallback({
-                  ...synthArgs,
-                  system: `${synthArgs.system}\n${extra}`,
-                })
-              )?.answer || null,
-          ),
+      const datasetFindings = marked.map(
+        (m) => `${m.title || ''}. ${String(m.text || m.snippet || '')}`,
+      );
+      return { marked, meta, synthArgs, datasetFindings, corporaSearched, corporaUsed };
+    };
+
+    /* "Live web" in the manifest when web search actually ran: a hit when it returned
+       sources, otherwise searched-no-hit. */
+    const withWeb = (searched, out) =>
+      out?.webUsed
+        ? [
+            ...searched,
+            {
+              id: 'web',
+              label: 'Live web',
+              source: 'Anthropic web search',
+              used: (out.webSources || []).length > 0,
+            },
+          ]
+        : searched;
+
+    /* Complete the reserved ledger row (quota accounting + audit), the ledger time, the
+       timing row and the cache, in that order. */
+    const finishPing = async (payload, r, { streamed = false } = {}) => {
+      await timer.time(
+        'ledger',
+        completePing(admin, reservation, {
+          classification,
+          datasets_searched: payload.searched.map((d) => d.id),
+          grounded: payload.grounded,
+        }),
+      );
+      ping.completed = true;
+      /* Quick-answer time on the ledger, with no mode, so research estimates (which
+         filter by mode) are not mixed with quick answers. Fire-and-forget. */
+      annotatePing(admin, reservation, { durationMs: timer.elapsed() }).catch(() => {});
+      timer.finish(admin, {
+        streamed,
+        degraded: payload.degraded || (payload.empty ? 'empty' : null),
+      });
+      if (
+        cacheKey &&
+        shouldCacheSonarAnswer(payload, {
+          corporaSearched: r.corporaSearched,
+          corporaUsed: r.corporaUsed,
+        })
+      ) {
+        const { quota: _quota, degradedDetail: _detail, ...stored } = payload;
+        await cacheSet(cacheKey, stored, SONAR_ANSWER_TTL_SECONDS, { memTtlSeconds: 60 }).catch(
+          () => {},
         );
-        timer.set('grounding_regen', guarded.regenerated ? 1 : 0);
-        answer = guarded.text;
       }
-      degraded = out.degraded;
-      // Dev ergonomics: the per-provider failure summary rides the JSON payload
-      // in development so the browser network tab shows the real failure;
-      // production keeps the generic user-facing state (logs carry the detail).
-      if (!answer && process.env.NODE_ENV !== 'production' && out.providerErrors?.length) {
-        degradedDetail = out.providerErrors;
+    };
+
+    if (!wantsStream) {
+      const r = await retrieve();
+      const { marked, synthArgs } = r;
+
+      // 6. Synthesize: grounded + cited, over the datasets AND (tiered) live web.
+      //    Honest empty-state when retrieval is dry.
+      let answer = null;
+      let out = null;
+      let degradedDetail;
+      if (marked.length) {
+        // Multi-provider fallback: Anthropic (with web search), Kimi, DeepSeek. If the
+        // primary is out of credits / rate-limited / down, synthesis fails over to a
+        // fallback so the briefing still renders; only if ALL fail is it degraded.
+        out = await timer.time('synth', synthesizeWithFallback(synthArgs));
+        answer = out.answer;
+        /* A negative claim no snippet or web result supports is regenerated
+           once, then removed (groundingGuard.js). */
+        if (answer) {
+          const guarded = await timer.time('grounding', () =>
+            enforceGrounding(
+              answer,
+              [...r.datasetFindings, ...(out.webCitedText || [])],
+              async (extra) =>
+                (
+                  await synthesizeWithFallback({
+                    ...synthArgs,
+                    system: `${synthArgs.system}\n${extra}`,
+                  })
+                )?.answer || null,
+            ),
+          );
+          timer.set('grounding_regen', guarded.regenerated ? 1 : 0);
+          answer = guarded.text;
+        }
+        // Dev ergonomics: the per-provider failure summary rides the JSON payload
+        // in development so the browser network tab shows the real failure;
+        // production keeps the generic user-facing state (logs carry the detail).
+        if (!answer && process.env.NODE_ENV !== 'production' && out.providerErrors?.length) {
+          degradedDetail = out.providerErrors;
+        }
+        logFallback(out.provider);
       }
-      grounded = Boolean(answer);
-      webUsed = Boolean(out.webUsed);
-      webSources = out.webSources || [];
-      synthProvider = out.provider || null;
-      // Chronic failover to a fallback signals the Anthropic account needs attention
-      // (billing/limits) — log it so the chain never silently masks that.
-      if (synthProvider && synthProvider !== 'anthropic') {
-        console.warn('[sonar] synthesis served by fallback provider', { provider: synthProvider });
-      }
+      const payload = {
+        ...r.meta,
+        briefing: answer,
+        degradedDetail,
+        grounded: Boolean(answer),
+        synthProvider: out?.provider || undefined,
+        advice_flagged: answer ? looksLikeAdvice(answer) : false,
+        degraded: out?.degraded || undefined,
+        searched: withWeb(r.meta.searched, out),
+        webSources: out?.webSources || [],
+      };
+      await finishPing(payload, r);
+      return NextResponse.json(payload);
     }
 
-    // Surface "Live web" in the manifest when web search actually ran — a hit when
-    // it returned sources, otherwise searched-no-hit.
-    if (webUsed) {
-      searched.push({
-        id: 'web',
-        label: 'Live web',
-        source: 'Anthropic web search',
-        used: webSources.length > 0,
-      });
-    }
+    /* Stream: the ping is reserved; retrieval runs inside the stream so the client sees
+       the dashboard modules (meta) as soon as retrieval lands, then the answer as it is
+       written. Each sentence passes the grounding gate before it is sent; there is no
+       regeneration on this path, because text on screen cannot be taken back. */
+    ping.completed = true; /* this handler owns the reservation from here */
+    const abort = new AbortController();
+    request.signal?.addEventListener?.('abort', () => abort.abort());
+    return sseResponse(async (send) => {
+      let textSent = false;
+      let r = null;
+      try {
+        r = await retrieve();
+        send('meta', r.meta);
+        if (!r.marked.length) {
+          const payload = {
+            ...r.meta,
+            briefing: null,
+            grounded: false,
+            advice_flagged: false,
+            webSources: [],
+          };
+          await finishPing(payload, r, { streamed: true });
+          send('done', doneOf(payload));
+          return;
+        }
 
-    // Group retrieved items into dataset-labeled, cited sections.
-    const sectionMap = new Map();
-    for (const it of marked) {
-      const id = CORPUS_TO_DATASET[it.corpus];
-      const meta = SONAR_DATASETS[id];
-      if (!meta) continue;
-      if (!sectionMap.has(id)) sectionMap.set(id, { ...meta, items: [] });
-      sectionMap.get(id).items.push({
-        marker: it.marker,
-        title: it.title,
-        url: it.url || null,
-        date: it.date || null,
-        snippet: it.snippet || null,
-        similarity: it.similarity != null ? Number(it.similarity.toFixed(3)) : null,
-        ticker: it.meta?.ticker || null,
-      });
-    }
-    const sections = [...sectionMap.values()];
+        const webCited = [];
+        const gate = createSentenceGate(() => [...r.datasetFindings, ...webCited], {
+          holdFlagged: webSearchOn,
+        });
+        let briefing = '';
+        const release = (piece) => {
+          if (!piece) return;
+          const clean = removeEmDashes(piece);
+          briefing += clean;
+          if (!textSent) timer.firstByte();
+          textSent = true;
+          send('delta', { text: clean });
+        };
+        const out = await timer.time('synth', () =>
+          streamSynthesis(r.synthArgs, {
+            signal: abort.signal,
+            onText: (d) => release(gate.push(d)),
+            onCitation: (t) => webCited.push(t),
+          }),
+        );
+        if (abort.signal.aborted) throw Object.assign(new Error('client gone'), { abort: true });
+        /* The tail, and any sentence held for web citations, checked against the final
+           findings (every passage the model cited). */
+        webCited.splice(0, webCited.length, ...(out.webCitedText || webCited));
+        release(gate.flush());
+        timer.set('grounding_removed', gate.removed.length);
+        if (gate.removed.length) {
+          console.info('[sonar] stream gate removed sentences', { count: gate.removed.length });
+        }
+        logFallback(out.provider);
 
-    // 7. Complete the reserved ledger row (quota accounting + audit).
-    await timer.time(
-      'ledger',
-      completePing(admin, reservation, {
-        classification,
-        datasets_searched: searched.map((d) => d.id),
-        grounded,
-      }),
-    );
-    ping.completed = true;
-    /* Quick-answer time on the ledger, with no mode, so research estimates (which
-       filter by mode) are not mixed with quick answers. Fire-and-forget. */
-    annotatePing(admin, reservation, { durationMs: timer.elapsed() }).catch(() => {});
-    timer.finish(admin, { degraded: degraded || (marked.length ? null : 'empty') });
-
-    return NextResponse.json({
-      query,
-      classification,
-      version,
-      depth: entitlements.depth,
-      exportsEnabled: entitlements.exportsEnabled,
-      briefing: answer,
-      degradedDetail,
-      grounded,
-      synthProvider: synthProvider || undefined,
-      rerankUsed: Boolean(rerankUsed),
-      rewriteUsed: Boolean(rewriteUsed),
-      empty: marked.length === 0,
-      advice_flagged: answer ? looksLikeAdvice(answer) : false,
-      degraded: degraded || undefined,
-      sections,
-      searched,
-      webSources,
-      locked,
-      quota: {
-        limit: entitlements.dailyQueries,
-        used: used + 1,
-        remaining: Math.max(0, entitlements.dailyQueries - used - 1),
-      },
-      available: available.map((d) => d.id),
-      disclaimer: DISCLAIMER,
+        const answer = briefing.trim() ? briefing : null;
+        const payload = {
+          ...r.meta,
+          briefing: answer,
+          grounded: Boolean(answer),
+          synthProvider: out.provider || undefined,
+          advice_flagged: answer ? looksLikeAdvice(answer) : false,
+          degraded: out.degraded || undefined,
+          degradedDetail:
+            !answer && process.env.NODE_ENV !== 'production' && out.providerErrors?.length
+              ? out.providerErrors
+              : undefined,
+          searched: withWeb(r.meta.searched, out),
+          webSources: out.webSources || [],
+        };
+        await finishPing(payload, r, { streamed: true });
+        send('done', doneOf(payload));
+      } catch (e) {
+        const gone = abort.signal.aborted || e?.abort;
+        if (!gone) console.error('[sonar] stream failed', { message: e?.message });
+        if (textSent && r) {
+          /* Text already reached the reader: the ping counts, marked degraded. */
+          await completePing(admin, reservation, {
+            classification,
+            datasets_searched: r.meta.searched.map((d) => d.id),
+            grounded: true,
+          }).catch(() => {});
+          timer.finish(admin, { streamed: true, degraded: gone ? 'client_abort' : 'stream_error' });
+        } else {
+          await failPing(admin, reservation).catch(() => {});
+          timer.finish(admin, { streamed: true, degraded: gone ? 'client_abort' : 'stream_error' });
+        }
+        if (!gone) send('error', { error: 'That ping did not land. Try again.' });
+      }
     });
   }
+}
+
+/* Chronic failover to a fallback signals the Anthropic account needs attention
+   (billing/limits): log it so the chain never silently masks that. */
+function logFallback(provider) {
+  if (provider && provider !== 'anthropic') {
+    console.warn('[sonar] synthesis served by fallback provider', { provider });
+  }
+}
+
+/* The stream's first event: everything the final JSON carries except the answer. */
+function metaOf(p) {
+  return {
+    query: p.query,
+    classification: p.classification,
+    version: p.version,
+    depth: p.depth,
+    exportsEnabled: p.exportsEnabled,
+    sections: p.sections,
+    searched: p.searched,
+    locked: p.locked,
+    available: p.available,
+    quota: p.quota,
+    disclaimer: p.disclaimer,
+    empty: p.empty,
+    rerankUsed: p.rerankUsed,
+    rewriteUsed: p.rewriteUsed,
+  };
+}
+
+/* The stream's last event: the final answer and what it drew on. */
+function doneOf(p) {
+  return {
+    briefing: p.briefing,
+    grounded: p.grounded,
+    degraded: p.degraded,
+    degradedDetail: p.degradedDetail,
+    webSources: p.webSources || [],
+    searched: p.searched,
+    advice_flagged: p.advice_flagged,
+    synthProvider: p.synthProvider,
+  };
+}
+
+/* Server-Sent Events, framed like /api/sonar/research: `event:` + `data:` blocks and a
+   keep-alive comment every 10 s. `work(send)` runs once; the stream closes after it. */
+function sseResponse(work) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      let closed = false;
+      const write = (chunk) => {
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          closed = true;
+        }
+      };
+      const send = (event, data) => write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      const beat = setInterval(() => write(': keep-alive\n\n'), 10_000);
+      try {
+        await work(send);
+      } finally {
+        clearInterval(beat);
+        closed = true;
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      }
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
+  });
 }
 
 /* The reservation made inside handlePing is released if the ping fails

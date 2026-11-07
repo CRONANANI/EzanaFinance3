@@ -191,3 +191,133 @@ export async function enforceGrounding(draft, findings = [], regenerate = null) 
     removed: still,
   };
 }
+
+/**
+ * Sentence gate for streamed briefs (Nov 2026). Text already on screen cannot be taken
+ * back, so the streaming path checks each sentence before it is sent instead of
+ * regenerating: a sentence is released only when complete, and dropped when it makes a
+ * negative claim no finding supports or when it is a coverage note. Paragraph breaks are
+ * kept; a break is only written before the next released sentence, so dropped sentences
+ * leave no blank lines.
+ *
+ * `findings` is an array, or a function returning the current array (web-cited passages
+ * grow while the model writes). Adding findings can only rescue a flagged sentence, never
+ * flag a passing one, so with `holdFlagged` (web search on) the first flagged sentence and
+ * everything after it is held until flush(), then re-checked against the final findings
+ * in order. Without it a flagged sentence is dropped at once.
+ *
+ *   const gate = createSentenceGate(findings, { holdFlagged: true });
+ *   send(gate.push(delta));   // '' until a sentence completes
+ *   send(gate.flush());       // the tail, checked the same way
+ *   gate.text();              // everything released, exactly
+ *   gate.removed;             // the dropped sentences
+ */
+export function createSentenceGate(findings = [], { holdFlagged = false } = {}) {
+  const currentFindings = () => (typeof findings === 'function' ? findings() || [] : findings);
+  let buf = '';
+  let out = '';
+  let pendingBreak = '';
+  const held = [];
+  const removed = [];
+
+  const isCoverage = (s) => stripCoverageNotes(s) === '';
+  const isUnsupported = (s) => findUnsupportedNegatives(s, currentFindings()).length > 0;
+
+  /* Append one checked sentence to the output; returns the text sent for it. */
+  const emit = (sentence, brk) => {
+    let piece = sentence;
+    if (out) piece = (brk || ' ') + sentence;
+    out += piece;
+    return piece;
+  };
+
+  /* One complete sentence with the break that preceded it. */
+  const take = (sentence, brk, final = false) => {
+    if (isCoverage(sentence)) {
+      removed.push(sentence);
+      return '';
+    }
+    if (held.length && !final) {
+      held.push({ sentence, brk });
+      return '';
+    }
+    if (isUnsupported(sentence)) {
+      if (holdFlagged && !final) {
+        held.push({ sentence, brk });
+        return '';
+      }
+      removed.push(sentence);
+      return '';
+    }
+    return emit(sentence, brk);
+  };
+
+  /* Break carried to the next released sentence: a blank line is a paragraph break. */
+  const breakFor = (newlines) => (newlines >= 2 ? '\n\n' : newlines === 1 ? '\n' : '');
+
+  function drain(final) {
+    let sent = '';
+    for (;;) {
+      const nl = buf.search(/\n/);
+      if (nl >= 0) {
+        /* A finished line: every sentence on it is complete. */
+        const line = buf.slice(0, nl);
+        const rest = buf.slice(nl);
+        const run = /^\n+/.exec(rest)[0].length;
+        for (const s of splitSentences(line)) {
+          sent += take(s, pendingBreak);
+          pendingBreak = '';
+        }
+        if (run === rest.length && !final) {
+          /* The newlines end the buffer: wait for what follows, so a paragraph break
+             split across two deltas is counted whole. */
+          buf = rest;
+          break;
+        }
+        buf = rest.slice(run);
+        if (out || held.length) pendingBreak = pendingBreak || breakFor(run);
+        continue;
+      }
+      /* Inside a line: release every sentence but the last, which may still grow. */
+      const parts = splitSentences(buf);
+      if (parts.length > 1) {
+        const last = parts[parts.length - 1];
+        for (const s of parts.slice(0, -1)) {
+          sent += take(s, pendingBreak);
+          pendingBreak = '';
+        }
+        buf = buf.slice(buf.lastIndexOf(last));
+      }
+      break;
+    }
+    if (final) {
+      for (const s of splitSentences(buf)) {
+        sent += take(s, pendingBreak);
+        pendingBreak = '';
+      }
+      buf = '';
+    }
+    return sent;
+  }
+
+  return {
+    removed,
+    /** Feed a text delta; returns the text that passed the gate (may be ''). */
+    push(delta) {
+      buf += String(delta || '');
+      return drain(false);
+    },
+    /** End of stream: check the tail and any held sentences against the final findings. */
+    flush() {
+      let sent = drain(true);
+      const queue = held.splice(0);
+      for (const { sentence, brk } of queue) {
+        if (isUnsupported(sentence)) removed.push(sentence);
+        else sent += emit(sentence, brk);
+      }
+      return sent;
+    },
+    /** Everything released so far, exactly as sent. */
+    text: () => out,
+  };
+}

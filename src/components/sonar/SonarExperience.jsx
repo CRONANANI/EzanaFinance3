@@ -33,6 +33,7 @@ import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
 import SonarLoadingState from '@/components/sonar/loading/SonarLoadingState';
 import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
+import { parseSseBlock } from '@/lib/sonar/research-state';
 
 const SonarBand = dynamic(
   () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
@@ -144,6 +145,10 @@ export function SonarExperience({
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [elapsedSec, setElapsedSec] = useState(null);
+  /* Nov 2026: a streamed answer is `live` while it arrives and `final` once the server
+     has sent its last event. */
+  const [answerLive, setAnswerLive] = useState(false);
+  const [answerFinal, setAnswerFinal] = useState(true);
   const [recent, setRecent] = useState([]);
   /* Nov 4, deep research: the offer for a research assignment ({ query,
      deep }), and the run once the visitor says yes ({ query, estimate }). */
@@ -320,6 +325,8 @@ export function SonarExperience({
     setQueryText(query);
     setError(null);
     setResult(null);
+    setAnswerLive(false);
+    setAnswerFinal(true);
     setPhase('searching');
     const t0 = Date.now();
     const pingId = ++pingIdRef.current;
@@ -349,7 +356,12 @@ export function SonarExperience({
          bearer OR cookie, and credentials are already included, so the request
          goes regardless and the SERVER decides: a real 401 below is the only
          thing that shows the sign-in message. */
-      const headers = { 'Content-Type': 'application/json' };
+      /* Nov 2026: ask for the answer as it is written. Every gate (sign-in, quota,
+         limits) still answers in JSON, and so does any server that cannot stream. */
+      const headers = {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream, application/json',
+      };
       if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch('/api/sonar/query', {
         method: 'POST',
@@ -358,6 +370,11 @@ export function SonarExperience({
         body: JSON.stringify({ query, ...(priorEntity ? { context: priorEntity } : {}) }),
         signal: controller.signal,
       });
+      const type = res.headers.get('content-type') || '';
+      if (res.ok && type.includes('text/event-stream') && res.body) {
+        await readAnswerStream(res, { query, t0, stillCurrent, timeout });
+        return;
+      }
       const data = await res.json().catch(() => null);
       if (!stillCurrent()) return;
       clearTimeout(timeout);
@@ -397,6 +414,71 @@ export function SonarExperience({
         setError('That ping did not land. Try again in a moment.');
         setPhase('error');
       }
+    }
+  }
+
+  /* The streamed quick answer: meta (the dashboard modules, at once), delta (answer
+     text that passed the server's grounding gate), done (the final answer), error. */
+  async function readAnswerStream(res, { query, t0, stillCurrent, timeout }) {
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    let gotText = false;
+    let finished = false;
+    setAnswerLive(true);
+    setAnswerFinal(false);
+    const handle = ([event, d]) => {
+      if (event === 'meta') {
+        setResult({ ...d, briefing: '' });
+        pushRecent(query, d.classification);
+        if (d.quota) setEntitlements((prev) => (prev ? { ...prev, quota: d.quota } : prev));
+        setPhase('streaming');
+      } else if (event === 'delta') {
+        if (!d?.text) return;
+        gotText = true;
+        setResult((r) => (r ? { ...r, briefing: `${r.briefing || ''}${d.text}` } : r));
+      } else if (event === 'done') {
+        finished = true;
+        clearTimeout(timeout);
+        setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
+        setResult((r) => ({ ...(r || {}), ...d, briefing: d.briefing || '' }));
+        setAnswerFinal(true);
+        /* With an answer, SonarLiveAnswer reports completion; without one, complete now. */
+        if (!d.briefing) setPhase('complete');
+      } else if (event === 'error') {
+        finished = true;
+        clearTimeout(timeout);
+        setAnswerFinal(true);
+        if (gotText) {
+          setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
+        } else {
+          setError(d?.error || 'That ping did not land. Try again in a moment.');
+          setPhase('error');
+        }
+      }
+    };
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (!stillCurrent()) {
+        reader.cancel().catch(() => {});
+        return;
+      }
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let cut;
+      while ((cut = buf.indexOf('\n\n')) >= 0) {
+        const ev = parseSseBlock(buf.slice(0, cut));
+        buf = buf.slice(cut + 2);
+        if (ev) handle(ev);
+      }
+    }
+    if (finished || !stillCurrent()) return;
+    /* The connection closed without a last event: keep whatever text arrived. */
+    clearTimeout(timeout);
+    setAnswerFinal(true);
+    if (!gotText) {
+      setError('That ping did not land. Try again in a moment.');
+      setPhase('error');
     }
   }
 
@@ -785,13 +867,15 @@ export function SonarExperience({
                           )}
                         </span>
                       </div>
-                      {result.briefing ? (
+                      {result.briefing || (answerLive && !answerFinal) ? (
                         <SonarLiveAnswer
                           answer={result.briefing}
                           sourceCount={sourceCount}
                           elapsedSec={elapsedSec}
                           searched={result.searched}
                           webSources={result.webSources}
+                          live={answerLive}
+                          final={answerFinal}
                           onComplete={() => setPhase('complete')}
                         />
                       ) : (
