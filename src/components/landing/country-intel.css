@@ -777,7 +777,8 @@
 .snr-cii .snr-cii-tile {
   box-sizing: border-box;
   padding: 16px;
-  border: 1px solid var(--cii-rule);
+  /* Sonar card rule: no outline. The tile tint and the radius separate the tiles. */
+  border: 0;
   border-radius: var(--radius-lg);
   background: var(--cii-tile);
   /* Each tile is its own snr-cii container, so the card's narrow layouts (the scenario table

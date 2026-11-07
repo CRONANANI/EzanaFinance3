@@ -422,3 +422,23 @@
 .sdr-run:focus:not(:focus-visible) {
   outline: none;
 }
+
+/* Nov 6: the inline deep research action in the country answer board's executive answer
+   (DeepResearchCard placement="inline"): the button and one muted status line beside it. */
+.sdr-dinline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.sdr-dinline .sdr-dinline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sdr-dinline .sdr-dinline-line {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint, var(--text-muted));
+}

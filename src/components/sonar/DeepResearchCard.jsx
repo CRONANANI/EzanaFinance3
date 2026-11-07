@@ -43,7 +43,8 @@ export function deepSignupHref(query, { deep = true } = {}) {
  * @param {object} props
  * @param {string} props.query
  * @param {object|null} props.estimate  the /api/sonar/estimate response (null while it loads)
- * @param {'progress'|'after'} [props.placement]
+ * @param {'progress'|'after'|'inline'} [props.placement]  'inline' (Nov 6): the button and
+ *   one line of status only, for the country answer board's executive answer card
  * @param {number} [props.pingsSpent]  pings spent since the estimate was read
  * @param {(state: object) => void} [props.onRun]  the host cancels any answer
  *   in flight and starts deep research (or sign-up, state.blocked 'signup')
@@ -94,6 +95,27 @@ export function DeepResearchCard({
     if (onRun) onRun(state);
     else if (signup) window.location.assign(deepSignupHref(query));
   };
+
+  if (placement === 'inline') {
+    return (
+      <span className="sdr-dinline">
+        <Button
+          variant="primary"
+          size="sm"
+          className="sdr-dinline-btn"
+          onClick={run}
+          disabled={off}
+          aria-describedby={lineId}
+        >
+          Run deep research
+          <i className="bi bi-arrow-right" aria-hidden="true" />
+        </Button>
+        <span id={lineId} className="sdr-dinline-line">
+          {pending ? 'Estimating the time' : [deep.label, state.line].filter(Boolean).join('. ')}
+        </span>
+      </span>
+    );
+  }
 
   return (
     <section

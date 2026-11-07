@@ -1,0 +1,706 @@
+/* The country answer board (SonarCountryBoard.jsx). Scoped snr-bd-.
+
+   Lives inside .snr-band on /datasets, so it reads the band's private --snr-* palette (the
+   always-dark emerald ground) and, through .snr-cii, the card-local --cii-* tokens the
+   charts, the transmission map and the scenario table use.
+
+   Sonar card rule: no outlines and no borders. Every card is the band's panel surface with
+   the soft shadow (--snr-panel, --snr-soft), the same recipe as .snr-fund and .snr-news.
+   Tiles inside a card sit on the row tint (--snr-row). No hex. p and h2..h4 carry a
+   two-class !important colour against the legacy light-mode sheet's p / h1..h5 rules. */
+
+/* ── frame ────────────────────────────────────────────────────────────── */
+
+.snr-band .snr-cii.snr-board {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--snr-font-sans);
+  color: var(--snr-text-muted);
+  container: snr-board / inline-size;
+}
+
+.snr-board .snr-bd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.snr-board .snr-bd-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.snr-board .snr-bd-cell > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* A cell with nothing to show yet (the dataset cards before they land) leaves the grid. */
+.snr-board .snr-bd-cell[hidden] {
+  display: none;
+}
+/* The dataset cards' wrapper only exists to watch for content; it adds no box. */
+.snr-board .snr-bd-extra {
+  display: contents;
+}
+
+@container snr-board (min-width: 680px) {
+  .snr-board .snr-bd-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .snr-board .snr-bd-cell {
+    grid-column: span var(--bd-span-mid, 6);
+  }
+}
+@container snr-board (min-width: 1080px) {
+  .snr-board .snr-bd-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .snr-board .snr-bd-cell {
+    grid-column: span var(--bd-span, 12);
+  }
+}
+
+/* ── cards ────────────────────────────────────────────────────────────── */
+
+.snr-board .snr-bd-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 0;
+  outline: 0;
+  border-radius: var(--snr-r-panel);
+  background: var(--snr-panel);
+  box-shadow: var(--snr-soft);
+  container: snr-cii / inline-size;
+}
+
+/* Host cards placed on the board (key chart, key indicators, the news rail) sit inside a
+   board card (.snr-bd-host), so every block wears the same panel. Their own shell gives up
+   its surface, padding and shadow, takes its natural height (never the landing band's fixed
+   chart slot) and has no border. */
+.snr-band .snr-board .snr-bd-host > .snr-fund,
+.snr-band .snr-board .snr-bd-host > .snr-news {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.snr-band .snr-board .snr-fund,
+.snr-band .snr-board .snr-news {
+  flex: 1 1 auto;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  border: 0;
+}
+
+.snr-board .snr-bd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.snr-board .snr-bd-stack > .snr-bd-host {
+  flex: 1 1 auto;
+}
+
+/* Section headings: mono caps in mint, an icon before. */
+.snr-board .snr-bd-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-mint) !important;
+}
+.snr-board .snr-bd-eyebrow .bi {
+  font-size: 0.95rem;
+}
+
+.snr-board .snr-bd-sub,
+.snr-board .snr-bd-cap,
+.snr-board .snr-bd-sources {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--snr-text-faint) !important;
+}
+.snr-board .snr-bd-sources {
+  max-width: 120ch;
+}
+
+/* ── 1a. executive answer ─────────────────────────────────────────────── */
+
+.snr-board .snr-bd-exec {
+  gap: 14px;
+  padding: 22px 24px;
+  /* A faint emerald wash from the top left, over the panel. */
+  background:
+    radial-gradient(
+      120% 90% at 0% 0%,
+      color-mix(in srgb, var(--snr-emerald) 16%, transparent),
+      transparent 60%
+    ),
+    var(--snr-panel);
+}
+
+.snr-board .snr-bd-headline {
+  margin: 0;
+  font-size: var(--type-page-title-size);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: var(--type-page-title-tracking);
+  color: var(--snr-text) !important;
+}
+
+.snr-board .snr-bd-lede,
+.snr-board .snr-bd-para {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--snr-text-muted) !important;
+}
+
+.snr-board .snr-bd-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-body-size);
+  line-height: 1.5;
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-bullets li {
+  position: relative;
+  padding-left: 18px;
+}
+/* The square mint marker. */
+.snr-board .snr-bd-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-sm);
+  background: var(--snr-emerald);
+}
+.snr-board .snr-bd-bullets strong {
+  font-weight: 600;
+  color: var(--snr-text);
+}
+
+.snr-board .snr-bd-more summary {
+  cursor: pointer;
+  font-size: var(--type-caption-size);
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-more summary:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.snr-board .snr-bd-more[open] summary {
+  margin-bottom: 8px;
+}
+
+.snr-board .snr-bd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.snr-board .snr-bd-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--snr-text);
+  cursor: pointer;
+}
+.snr-board .snr-bd-link:hover {
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-link:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.snr-board .snr-bd-cite {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-mint);
+}
+
+/* ── 1b. country intelligence ─────────────────────────────────────────── */
+
+.snr-board .snr-bd-id {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.snr-board .ez-flag {
+  display: block;
+  border-radius: var(--radius-sm);
+  /* A hairline of shadow, not a border, so white flags keep their edge on the band. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--snr-text) 12%, transparent);
+  object-fit: cover;
+}
+.snr-board .snr-bd-place {
+  margin: 0;
+  font-size: var(--type-section-size);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--snr-text) !important;
+}
+.snr-board .snr-bd-cur {
+  margin: 2px 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--snr-text-faint) !important;
+}
+.snr-board .snr-bd-mono {
+  font-family: var(--snr-font-mono);
+}
+.snr-board .snr-bd-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+.snr-board .snr-bd-asof {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+  white-space: nowrap;
+}
+.snr-board .snr-bd-badge:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+.snr-board .snr-bd-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snr-board .snr-bd-kpis.is-3 > :first-child {
+  grid-column: span 2;
+}
+.snr-board .snr-bd-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+}
+.snr-board .snr-bd-kpi-label {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-board .snr-bd-kpi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.snr-board .snr-bd-kpi-value {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--snr-text);
+}
+.snr-board .snr-bd-kpi-cap {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text-faint);
+}
+.snr-board .snr-bd-kpi-cap.is-change {
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-stale {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--warning);
+}
+
+.snr-board .snr-bd-spark {
+  flex: none;
+  overflow: visible;
+}
+.snr-board .snr-bd-spark path {
+  fill: none;
+  stroke: var(--snr-emerald);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.snr-board .snr-bd-spark circle {
+  fill: var(--snr-mint);
+}
+.snr-board .snr-bd-spark rect {
+  fill: var(--snr-emerald);
+}
+.snr-board .snr-bd-spark rect:last-child {
+  fill: var(--snr-mint);
+}
+
+/* ── 2a. pressure breakdown ───────────────────────────────────────────── */
+
+.snr-board .snr-bd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+}
+.snr-board .snr-bd-table th,
+.snr-board .snr-bd-table td {
+  padding: 7px 0;
+  text-align: left;
+  vertical-align: middle;
+  border: 0;
+}
+/* Rows separate on a tint, not a rule. */
+.snr-board .snr-bd-table tbody tr:nth-child(odd) > * {
+  background: color-mix(in srgb, var(--snr-row) 55%, transparent);
+}
+.snr-board .snr-bd-table tbody th {
+  padding-left: 10px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.snr-board .snr-bd-table tbody td {
+  padding-right: 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.snr-board .snr-bd-table thead th {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-board .snr-bd-table thead th:first-child {
+  padding-left: 10px;
+}
+.snr-board .snr-bd-rowh {
+  font-weight: 400;
+  color: var(--snr-text);
+}
+.snr-board .snr-bd-pill {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+}
+
+/* ── 2b. source coverage ──────────────────────────────────────────────── */
+
+.snr-board .snr-bd-cov {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snr-board .snr-bd-covchip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+}
+.snr-board .snr-bd-covname {
+  font-weight: 600;
+  font-size: var(--type-caption-size);
+  color: var(--snr-mint);
+}
+.snr-board .snr-bd-covdetail {
+  font-size: var(--type-micro-size);
+  line-height: 1.4;
+  color: var(--snr-text-faint);
+}
+
+/* ── 3a. evidence ─────────────────────────────────────────────────────── */
+
+.snr-board .snr-bd-ev {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snr-board .snr-bd-evrow {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1.25fr) minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px 16px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+}
+.snr-board .snr-bd-tag {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: var(--snr-r-chip);
+  background: color-mix(in srgb, var(--snr-emerald) 22%, transparent);
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--snr-mint);
+  overflow-wrap: anywhere;
+}
+.snr-board .snr-bd-evtitle {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--snr-text) !important;
+}
+.snr-board .snr-bd-evsum {
+  margin: 4px 0 0;
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--snr-text-faint) !important;
+}
+.snr-board .snr-bd-evlist {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--type-micro-size);
+  line-height: 1.45;
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-mint);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.snr-board .snr-bd-open:hover {
+  text-decoration: underline;
+}
+.snr-board .snr-bd-open:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── 4. charts ────────────────────────────────────────────────────────── */
+
+.snr-board .snr-bd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.snr-board .snr-bd-section:focus {
+  outline: none;
+}
+.snr-board .snr-bd-section:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+.snr-board .snr-bd-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+@container snr-board (min-width: 680px) {
+  .snr-board .snr-bd-charts {
+    grid-template-columns: repeat(var(--bd-chart-cols-mid, 2), minmax(0, 1fr));
+  }
+  /* Two across at mid width: an odd last chart takes the whole row, never half of it. */
+  .snr-board .snr-bd-charts.is-odd > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+@container snr-board (min-width: 1080px) {
+  .snr-board .snr-bd-charts {
+    grid-template-columns: repeat(var(--bd-chart-cols, 3), minmax(0, 1fr));
+  }
+  .snr-board .snr-bd-charts.is-odd > :last-child {
+    grid-column: auto;
+  }
+}
+/* A chart inside a board card: no extra rule or padding of its own. */
+.snr-board .snr-bd-chart > .snr-cii-chart,
+.snr-board .snr-bd-sec > .snr-cii-sec {
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.snr-board .snr-bd-sec > .snr-cii-sec + .snr-cii-sec {
+  padding-top: 12px;
+}
+
+/* ── 8. data not available ────────────────────────────────────────────── */
+
+.snr-board .snr-bd-missing {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px 20px;
+}
+.snr-board .snr-bd-missing-ico {
+  font-size: 1.1rem;
+  color: var(--snr-text-muted);
+}
+.snr-board .snr-bd-missing-title {
+  margin: 0;
+  font-size: var(--type-card-title-size);
+  font-weight: 600;
+  color: var(--snr-text) !important;
+}
+.snr-board .snr-bd-missing-text {
+  margin: 0;
+  padding-left: 16px;
+  box-shadow: inset 1px 0 0 var(--snr-divider);
+  font-size: var(--type-caption-size);
+  color: var(--snr-text-muted) !important;
+}
+
+/* ── narrow ───────────────────────────────────────────────────────────── */
+
+@container snr-cii (max-width: 560px) {
+  .snr-board .snr-bd-evrow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .snr-board .snr-bd-evrow > .snr-bd-tag {
+    grid-column: 1 / -1;
+  }
+  .snr-board .snr-bd-evrow > .snr-bd-evlist {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .snr-board .snr-bd-evrow > .snr-bd-open {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@container snr-cii (max-width: 420px) {
+  .snr-board .snr-bd-id {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .snr-board .snr-bd-status {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .snr-board .snr-bd-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .snr-board .snr-bd-kpis.is-3 > :first-child {
+    grid-column: auto;
+  }
+  .snr-board .snr-bd-missing-text {
+    padding-left: 0;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .snr-board .snr-bd-card {
+    padding: 16px;
+  }
+  .snr-board .snr-bd-exec {
+    padding: 18px 16px;
+  }
+  .snr-board .snr-bd-headline {
+    font-size: var(--type-section-size);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-board .snr-bd-link,
+  .snr-board .snr-bd-open {
+    transition: none;
+  }
+}
+
+/* ── board mode on the band ───────────────────────────────────────────────
+   When the board answers (SonarSection: `board`), the three result columns collapse to the
+   ping bar alone: the research brief, its footer and the orbital are hidden (the executive
+   answer replaces the brief), and the matches column and the right-hand stack are not
+   rendered at all. !important on the grid switch only: the /datasets sheet sets the
+   three-column grid at the same specificity and its load order is not guaranteed. */
+.snr-band .snr-cols.snr-cols--board {
+  display: block !important;
+  grid-template-columns: none !important;
+  height: auto;
+  margin-bottom: 16px;
+}
+.snr-band .snr-cols.snr-cols--board > .snr-col-left {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.snr-band .snr-cols.snr-cols--board > .snr-col-left > :not(.snr-pingbar):not(.snr-gate),
+.snr-band .snr-cols.snr-cols--board > .snr-col-radar {
+  display: none;
+}
+/* The sign-up gate (pings used up) cannot cover a one-line column: it centres over the
+   viewport instead. */
+.snr-band .snr-cols.snr-cols--board .snr-gate.snr-gate--cover {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border-radius: 0;
+}

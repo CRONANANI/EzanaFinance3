@@ -929,4 +929,15 @@ export function CountryIntelDetail({ dossier, extras = [] }) {
   );
 }
 
+/* Nov 6 (board): the pieces the country answer board (SonarCountryBoard.jsx) lays out on
+   its own grid. Same components, so the card, the report and the board never drift. */
+export {
+  BADGE_TONE,
+  intelChartItems,
+  TransmissionMap,
+  ScenariosSection,
+  MonitorSection,
+  BottomLineSection,
+};
+
 export default CountryIntelCard;

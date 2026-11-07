@@ -200,7 +200,8 @@ test('the band does not repeat the brief, leads with the KPIs and spans the deta
   /* The band's card never repeats the brief; /datasets detaches the detail. */
   assert.match(stack, /<CountryIntelCard dossier=\{dossier\} lede=\{false\}/);
   assert.match(band, /detached=\{isPage\}/);
-  assert.match(band, /<CountryDetail dossier=\{live\.dossier\}/);
+  /* Nov 6 (board): on /datasets the country answer board replaces the detail row. */
+  assert.match(band, /<SonarCountryBoard/);
 
   /* The deep report keeps the full card. */
   const report = read('src/components/sonar/research/ResearchReport.jsx');

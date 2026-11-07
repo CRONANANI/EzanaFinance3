@@ -624,6 +624,19 @@ export function SonarExperience({
                 />
               ) : null
             }
+            deepAction={
+              /* Nov 6: the country answer board's executive answer carries deep
+                 research as one inline button instead of the full card. */
+              answeredQuery && estimateFor(answeredQuery) ? (
+                <DeepResearchCard
+                  query={answeredQuery}
+                  estimate={estimateFor(answeredQuery)}
+                  placement="inline"
+                  pingsSpent={1}
+                  onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
+                />
+              ) : null
+            }
             stackTop={
               answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
             }

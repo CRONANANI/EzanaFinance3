@@ -4,7 +4,7 @@
  * and measures:
  *   1. the three result columns (.snr-col-left, .snr-col-dossier, .snr-stack): the tallest may
  *      not run more than MAX_OVERHANG px past the second tallest;
- *   2. the full-width detail grid (.snr-cii-grid): every row of cells spans the grid's width.
+ *   2. the full-width grids (.snr-cii-grid, the country board .snr-bd-grid): every row of cells spans the grid's width.
  * Writes a screenshot per case to ./test-results/sonar-layout/ and exits non-zero on any failure.
  *
  * Run (dev server or production):
@@ -50,7 +50,7 @@ for (const q of QUERIES) {
           return r.height > 0 ? { top: r.top + scrollY, bottom: r.bottom + scrollY } : null;
         };
         const cols = ['.snr-col-left', '.snr-col-dossier', '.snr-stack'].map(box).filter(Boolean);
-        const grids = [...document.querySelectorAll('.snr-cii-grid')].map((g) => {
+        const grids = [...document.querySelectorAll('.snr-cii-grid, .snr-bd-grid')].map((g) => {
           const gr = g.getBoundingClientRect();
           const rows = new Map();
           for (const c of g.children) {

@@ -729,4 +729,7 @@ export function CountryDetail({ dossier, onGate }) {
   return <CountryIntelDetail dossier={dossier} extras={extras} />;
 }
 
+/* Nov 6 (board): the key chart and key indicators cards, placed by SonarCountryBoard.jsx. */
+export { StoryCard };
+
 export default CountryStack;

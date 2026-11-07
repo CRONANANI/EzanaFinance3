@@ -79,11 +79,13 @@ import SonarGovExposure from './SonarGovExposure';
 import SonarFlowsStack, { FlowsDetailCards } from './SonarFlowsStack';
 import {
   CountryStack,
-  CountryDetail,
   CountryOecdRow,
   CountryEmpireRow,
   CountryMacroRow,
+  hasCountryIntel,
 } from './SonarCountryStack';
+import { SonarCountryBoard } from './SonarCountryBoard';
+import { SonarSourceBelt } from './SonarSourceBelt';
 import { SonarUnderstoodNotice } from './SonarUnderstoodNotice';
 import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
@@ -810,6 +812,9 @@ export function SonarSection({
   /* What the host shows under a landed brief: the deep research card,
      which replaces the Go deeper bar. Without one the bar still shows. */
   afterAnswer = null,
+  /* Nov 6: the host's inline deep research action (DeepResearchCard placement="inline")
+     for the country answer board's executive answer card. */
+  deepAction = null,
 } = {}) {
   /* 'page': the same band embedded on the Datasets search page. No takeover,
      no demo, no header (the page has its own), and it pings `query` as soon
@@ -2649,6 +2654,15 @@ export function SonarSection({
      single `live ? ... : ...` tail, so the two layers can be active
      independently of which one is mounted. */
   const answerReady = hasPinged && !pinging && Boolean(live);
+  /* Nov 6: a country question with a Country & Currency Intelligence card is answered on
+     /datasets as one full-width board (SonarCountryBoard) instead of the three columns:
+     the ping bar stays, the brief, the matches column and the right-hand stack give way. */
+  const board =
+    isPage &&
+    stage2 &&
+    answerReady &&
+    live?.dossier?.kind === 'country' &&
+    hasCountryIntel(live.dossier);
   /* Oct 19: on /datasets the "news around it" columns move into the right-hand
      stack in place of the Relevant News card (company and country stacks; a
      politician keeps its own stack). Wrapped in the .snr-news shell so the
@@ -2749,9 +2763,13 @@ export function SonarSection({
             </p>
           </div>
 
+          {/* Nov 6: the resources belt. Every source this ping used, as soon as the
+            answer lands, above the result (below the ping bar on the board). */}
+          {isPage && answerReady && !board ? <SonarSourceBelt live={live} /> : null}
+
           <div
             ref={colsRef}
-            className={`snr-cols${tug ? ' snr-anim-tug' : ''}`}
+            className={`snr-cols${tug ? ' snr-anim-tug' : ''}${board ? ' snr-cols--board' : ''}`}
             onAnimationEnd={() => setTug(false)}
           >
             <div className="snr-col-left">
@@ -3040,7 +3058,7 @@ export function SonarSection({
                             ) : null}
                           </p>
                         ) : null}
-                        {typed < 0 && isPage && afterAnswer ? afterAnswer : null}
+                        {typed < 0 && isPage && afterAnswer && !board ? afterAnswer : null}
                         {typed < 0 && isPage && !afterAnswer && live.goDeeper ? (
                           <GoDeeperBar
                             query={live.rawQuery || live.query}
@@ -3178,7 +3196,7 @@ export function SonarSection({
               poking in from the right with two dim rows, which promised a
               result the visitor had not been given yet. Until then the
               composition is the left column and Live Synthesis. */}
-            {hasPinged && live ? (
+            {hasPinged && live && !board ? (
               <div ref={dossierRef} className="snr-col-dossier">
                 <div className="snr-dossier-head">
                   <span className="snr-dossier-title">Sourced matches</span>
@@ -3728,7 +3746,7 @@ export function SonarSection({
               {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
-              {stage2 && live?.dossier?.kind === 'country' ? (
+              {stage2 && live?.dossier?.kind === 'country' && !board ? (
                 <CountryStack
                   dossier={live.dossier}
                   onGate={() => openGate()}
@@ -3879,16 +3897,34 @@ export function SonarSection({
             </SonarStackBoundary>
           </div>
 
-          {/* Nov 6 (/datasets): a country question's intel detail (drivers,
-            scenarios, the charts, the transmission map, what to monitor, the key
-            chart and key indicators) spans the full answer width under the three
-            columns instead of running down the right-hand stack beside empty
-            space. Inside the band so the --snr-* tokens and card shells hold.
-            The landing band's locked one-screen stack keeps the whole card. */}
-          {isPage && stage2 && live?.dossier?.kind === 'country' ? (
-            <SonarStackBoundary key={`detail-${live?.rawQuery || live?.query || 'none'}`}>
-              <CountryDetail dossier={live.dossier} onGate={() => openGate()} />
-            </SonarStackBoundary>
+          {/* Nov 6 (/datasets): the country answer board. Under the ping bar, the
+            resources belt, then the whole answer across the full width (executive
+            answer, country intelligence, breakdown, coverage, evidence, news,
+            charts, transmission map, key chart and indicators, scenarios, data
+            not available), packed so no row leaves a gap. Inside the band so the
+            --snr-* tokens and card shells hold. */}
+          {board ? (
+            <>
+              <SonarSourceBelt live={live} />
+              <SonarStackBoundary key={`board-${live?.rawQuery || live?.query || 'none'}`}>
+                <SonarCountryBoard
+                  live={live}
+                  deepAction={deepAction || afterAnswer}
+                  news={railNews}
+                  extra={stackTop}
+                  notice={
+                    live?.understood && !pinging ? (
+                      <SonarUnderstoodNotice
+                        understood={live.understood}
+                        rawQuery={live.rawQuery}
+                        onSearchInstead={() => runPing(live.rawQuery, { noCorrect: true })}
+                        onForce={(force) => runPing(live.rawQuery, { force })}
+                      />
+                    ) : null
+                  }
+                />
+              </SonarStackBoundary>
+            </>
           ) : null}
 
           {/* A ping that lands without a dossier has no right-hand stack, so

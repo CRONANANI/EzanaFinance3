@@ -78,6 +78,7 @@ import {
 } from '@/lib/sonar/landing-flows';
 import { mentionedCompany } from '@/lib/sonar/company-mentions';
 import { routeMacro, isMacroRelevant } from '@/lib/sonar/macro/route';
+import countries from 'i18n-iso-countries';
 import {
   MACRO_LENS,
   FRAMEWORKS,
@@ -3393,6 +3394,8 @@ export async function runLandingPipeline(
     useIntel && intel?.picture
       ? {
           iso3: intel.iso3,
+          /* Nov 6: the flag on the country answer board (public/flags/3x2/<iso2>.svg). */
+          iso2: (intel.iso3 && countries.alpha3ToAlpha2(intel.iso3)) || null,
           place: intel.place,
           currency: intel.currency || null,
           focus: (intel.frameworks || []).includes('currency') ? 'FX risk' : 'Macro',
