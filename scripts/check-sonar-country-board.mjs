@@ -421,7 +421,9 @@ test('board wiring: /datasets only, the belt above, no borders on any board card
     band,
     /const board =\s*isPage &&\s*stage2 &&\s*answerReady &&\s*live\?\.dossier\?\.kind === 'country' &&\s*hasCountryIntel\(live\.dossier\)/,
   );
-  assert.match(band, /hasPinged && live && !board \?/);
+  /* Nov 6: every answer on /datasets is a board (country or ping), so the matches column
+     gives way to either. */
+  assert.match(band, /hasPinged && live && !anyBoard \?/);
   assert.match(band, /kind === 'country' && !board \?/);
   assert.match(band, /<SonarSourceBelt live=\{live\} \/>/);
   assert.match(band, /deepAction=\{deepAction \|\| afterAnswer\}/);

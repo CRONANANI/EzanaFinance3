@@ -447,6 +447,7 @@ export function StandardResearchRun({
         <div className="sdr-report">
           <ResearchReport
             state={state}
+            onRunDeep={estimate && onDeep ? () => onDeep({ supersede: false }) : null}
             deepAction={
               onBoard && state.status === 'done' && estimate && onDeep ? (
                 <DeepResearchCard

@@ -464,6 +464,7 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
         return (
           <li
             key={plan.id}
+            data-plan={plan.id}
             className={['plan-row', plan.highlight && 'plan-row--highlight', open && 'is-open']
               .filter(Boolean)
               .join(' ')}
@@ -574,8 +575,33 @@ export default function PricingPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [noticeMsg, setNoticeMsg] = useState('');
   const [openPlan, setOpenPlan] = useState(null); // mobile price list: one row open at a time
+  /* ?plan=<id> (Sonar's "Get the Starter plan" sends ?plan=starter): that plan's card is
+     marked and scrolled into view, and its row opens in the mobile list. */
+  const [requestedPlan, setRequestedPlan] = useState(null);
   const rootRef = useRef(null);
   useNavHeight(rootRef);
+
+  useEffect(() => {
+    let id = null;
+    try {
+      id = new URL(window.location.href).searchParams.get('plan');
+    } catch {
+      id = null;
+    }
+    if (!id || !PLANS.some((p) => p.id === id)) return undefined;
+    setRequestedPlan(id);
+    setOpenPlan(id);
+    /* After the cards paint: the visible copy (desktop card or mobile row) comes into view. */
+    const t = setTimeout(() => {
+      const el = [...document.querySelectorAll(`[data-plan="${id}"]`)].find(
+        (n) => n.getBoundingClientRect().height > 0,
+      );
+      if (!el) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }, 120);
+    return () => clearTimeout(t);
+  }, []);
 
   /* Auto-dismiss a transient error banner so it doesn't linger. */
   useEffect(() => {
@@ -781,10 +807,12 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
+                data-plan={plan.id}
                 className={[
                   'plan-card',
                   plan.highlight && 'plan-card--highlight',
                   billing === 'yearly' && 'plan-card--yearly',
+                  requestedPlan === plan.id && 'plan-card--requested',
                 ]
                   .filter(Boolean)
                   .join(' ')}

@@ -41,6 +41,8 @@ import {
   fmtNum,
 } from '@/lib/sonar/research-board';
 import { sendFeedback } from './useResearchStream';
+import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import { Cites } from './Cites';
 import './research-board.css';
 
@@ -193,7 +195,7 @@ function FindingFlags({ f, runId }) {
   );
 }
 
-function Findings({ report, evidence, runId, onCite }) {
+function Findings({ report, evidence, runId, onCite, allCited = false }) {
   const id = useId();
   const findings = report?.keyFindings || [];
   const interp = (report?.analysis || []).filter((a) => a?.text);
@@ -240,8 +242,10 @@ function Findings({ report, evidence, runId, onCite }) {
         <div className="srb-support">
           <h3 className="srb-minihead">Supporting evidence</h3>
           <ul className="srb-support-list">
-            {cited.slice(0, 4).map((e) => (
-              <li key={e.marker}>
+            {/* Locked answers have no evidence explorer: every cited record is listed
+                here, and a citation lands on its row (evs-<marker>). */}
+            {(allCited ? cited : cited.slice(0, 4)).map((e) => (
+              <li key={e.marker} id={`evs-${e.marker}`} tabIndex={-1}>
                 <button
                   type="button"
                   className="srb-support-row"
@@ -613,6 +617,24 @@ function SourcesStrip({ groups, onPick }) {
   );
 }
 
+/* ── data gaps (free answers) ─────────────────────────────────────────── */
+
+function Gaps({ limitations }) {
+  const id = useId();
+  return (
+    <section className="srb-card srb-gapsrow" aria-labelledby={id}>
+      <Eyebrow id={id} icon="bi-exclamation-triangle">
+        Data gaps
+      </Eyebrow>
+      <ul className="srb-gaps">
+        {limitations.slice(0, 3).map((l) => (
+          <li key={l}>{l}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /* ── the board ────────────────────────────────────────────────────────── */
 
 /**
@@ -634,7 +656,13 @@ export default function ResearchBoard({
   onPickCategory,
   deepAction = null,
   ChartFallback = null,
+  /* Nov 6: the side navigation's access (sectionAccess), its deep research action, and the
+     deep blocks the host renders under the board when unlocked ([{ key, node }]). */
+  access = null,
+  onDeep = null,
+  deepBlocks = [],
 }) {
+  const unlocked = Boolean(access?.unlocked);
   const report = state.report;
   const run = state.run;
   const runId = run?.runId || state.plan?.runId;
@@ -650,27 +678,56 @@ export default function ResearchBoard({
   const cells = [
     {
       id: 'exec',
+      section: 'answer',
       span: rank ? 7 : 12,
       min: rank ? 6 : 12,
       node: <Executive report={report} rank={rank} deepAction={deepAction} onCite={onCite} />,
     },
-    rank ? { id: 'snapshot', span: 5, min: 5, node: <Snapshot rank={rank} /> } : null,
-    kpis.length ? { id: 'kpis', span: 12, min: 12, node: <Kpis tiles={kpis} /> } : null,
+    rank
+      ? { id: 'snapshot', section: 'answer', span: 5, min: 5, node: <Snapshot rank={rank} /> }
+      : null,
+    kpis.length
+      ? { id: 'kpis', section: 'metrics', span: 12, min: 12, node: <Kpis tiles={kpis} /> }
+      : null,
     (report?.keyFindings || []).length || (report?.analysis || []).length
       ? {
           id: 'findings',
+          section: 'findings',
           span: 7,
           min: 6,
-          node: <Findings report={report} evidence={evidence} runId={runId} onCite={onCite} />,
+          node: (
+            <Findings
+              report={report}
+              evidence={evidence}
+              runId={runId}
+              onCite={onCite}
+              allCited={!unlocked}
+            />
+          ),
         }
       : null,
-    { id: 'team', span: 5, min: 5, node: <TeamAndMethod team={team} run={run} lines={lines} /> },
+    {
+      id: 'team',
+      section: 'team',
+      span: 5,
+      min: 5,
+      node: <TeamAndMethod team={team} run={run} lines={lines} />,
+    },
     vis.length
-      ? { id: 'charts', span: 12, min: 12, node: <Charts vis={vis} Fallback={ChartFallback} /> }
+      ? {
+          id: 'charts',
+          section: 'charts',
+          span: 12,
+          min: 12,
+          node: <Charts vis={vis} Fallback={ChartFallback} />,
+        }
       : null,
-    rank ? { id: 'table', span: 6, min: 5, mid: 6, node: <TopTable rank={rank} /> } : null,
+    rank
+      ? { id: 'table', section: 'charts', span: 6, min: 5, mid: 6, node: <TopTable rank={rank} /> }
+      : null,
     {
       id: 'limits',
+      section: 'methodology',
       span: rank ? 6 : 12,
       min: 5,
       mid: 6,
@@ -679,28 +736,67 @@ export default function ResearchBoard({
     groups.length
       ? {
           id: 'strip',
+          section: 'sources',
           span: 12,
           min: 12,
           node: <SourcesStrip groups={groups} onPick={onPickCategory} />,
         }
       : null,
-  ].filter(Boolean);
+    /* Locked answers keep their data gaps in view (honesty is not a paid feature): a
+       compact card in the free Evidence and sources section. */
+    !unlocked && limitations.length
+      ? {
+          id: 'gaps',
+          section: 'sources',
+          span: 12,
+          min: 12,
+          node: <Gaps limitations={limitations} />,
+        }
+      : null,
+  ]
+    .filter(Boolean)
+    .filter((c) => canRender(c.section, unlocked));
   const spans = boardSpans(cells);
+  const anchors = anchorCells(cells);
+  const blocks = unlocked ? (deepBlocks || []).filter((b) => b && b.node) : [];
+  const present = [
+    ...new Set([...cells.map((c) => c.section), ...blocks.map((b) => b.key).filter(Boolean)]),
+  ];
+  const seenKeys = new Set(cells.map((c) => c.section));
 
   return (
-    <div className="srb" role="region" aria-label="Research answer">
-      {resources.length ? <SonarSourceBelt items={resources} /> : null}
-      <div className="srb-grid">
-        {cells.map((c) => (
-          <div
-            key={c.id}
-            className={`srb-cell srb-cell--${c.id}`}
-            style={{ '--srb-span': spans.get(c.id)?.wide, '--srb-span-mid': spans.get(c.id)?.mid }}
-          >
-            {c.node}
-          </div>
-        ))}
+    <SonarAnswerFrame present={present} access={access} onDeep={onDeep}>
+      <div className="srb" role="region" aria-label="Research answer">
+        {resources.length ? <SonarSourceBelt items={resources} /> : null}
+        <div className="srb-grid">
+          {cells.map((c) => (
+            <div
+              key={c.id}
+              id={anchors.get(c.id)}
+              className={`srb-cell srb-cell--${c.id}`}
+              style={{
+                '--srb-span': spans.get(c.id)?.wide,
+                '--srb-span-mid': spans.get(c.id)?.mid,
+              }}
+            >
+              {c.node}
+            </div>
+          ))}
+        </div>
+        {blocks.map((b, i) => {
+          const first = b.key && !seenKeys.has(b.key);
+          if (b.key) seenKeys.add(b.key);
+          return (
+            <div
+              key={b.key || `block-${i}`}
+              id={first ? `sa-${b.key}` : undefined}
+              className="srb-block"
+            >
+              {b.node}
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </SonarAnswerFrame>
   );
 }

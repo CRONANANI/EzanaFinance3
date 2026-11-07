@@ -206,6 +206,14 @@
     0 12px 32px color-mix(in srgb, var(--emerald) 18%, transparent),
     0 2px 6px rgba(0, 0, 0, 0.08);
 }
+/* The plan a link asked for (?plan=starter from Sonar): an emerald ring so the eye lands on it. */
+.plan-card--requested,
+.plan-card--requested:hover {
+  border-color: var(--emerald);
+  box-shadow:
+    0 0 0 2px var(--emerald),
+    0 12px 32px color-mix(in srgb, var(--emerald) 18%, transparent);
+}
 @media (min-width: 1024px) {
   .plan-card--highlight {
     transform: translateY(-6px);

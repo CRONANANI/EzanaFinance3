@@ -239,7 +239,12 @@ test('wiring: the report renders the board, the run passes deep research inline,
   const rep = read('src/components/sonar/research/ResearchReport.jsx');
   assert.match(rep, /report\.format !== 'investment_memo'/);
   assert.match(rep, /<ResearchBoard/);
-  assert.match(rep, /moreRef\.current\.open = true/, 'a citation opens the full evidence');
+  /* Nov 6: a locked answer has no explorer; a citation lands on its supporting row. */
+  assert.match(
+    rep,
+    /document\.getElementById\(`evs-\$\{m\}`\)/,
+    'a citation finds its supporting row',
+  );
   assert.match(rep, /plan\.universe\?\.count > 0/, 'an empty universe is not shown');
   const run = read('src/components/sonar/DeepResearch.jsx');
   assert.match(run, /placement="inline"/);

@@ -1,0 +1,219 @@
+/* The ping board (SonarPingBoard.jsx). Scoped snr-pb-; the cards themselves are the country
+   board's (snr-bd-, sonar-country-board.css). Inside .snr-band, so it reads the band's
+   private --snr-* palette. Sonar card rule: no outlines, no borders. No hex. */
+
+.snr-board .snr-pb-q {
+  margin: 0;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--snr-text-faint) !important;
+}
+.snr-board .snr-pb-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.snr-board .snr-pb-lead {
+  font-size: var(--type-section-size);
+}
+/* The host's own answer paragraphs (.snr-para, the first one .snr-line-lead). */
+.snr-board .snr-bd-exec .snr-para {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--snr-text-muted) !important;
+}
+.snr-board .snr-bd-exec .snr-para.snr-line-lead {
+  font-size: var(--type-section-size);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--snr-text) !important;
+}
+
+/* Top matches. */
+.snr-board .snr-pb-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snr-board .snr-pb-match {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.snr-board .snr-pb-rank {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+  font-family: var(--snr-font-mono);
+  font-weight: 600;
+  color: var(--snr-mint);
+}
+.snr-board .snr-pb-match-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.snr-board .snr-pb-match-title {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--snr-text);
+  text-decoration: none;
+}
+.snr-board a.snr-pb-match-title:hover {
+  color: var(--snr-mint);
+}
+.snr-board a.snr-pb-match-title:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.snr-board .snr-pb-match-sum {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--snr-text-faint);
+}
+
+/* KPI strip. */
+.snr-board .snr-pb-kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@container snr-board (min-width: 680px) {
+  .snr-board .snr-pb-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container snr-board (min-width: 1080px) {
+  .snr-board .snr-pb-kpis {
+    grid-template-columns: repeat(var(--pb-kpis, 4), minmax(0, 1fr));
+  }
+}
+.snr-board .snr-pb-kpi {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+}
+.snr-board .snr-pb-kpi-ico {
+  font-size: 1.25rem;
+  color: var(--snr-mint);
+}
+.snr-board .snr-pb-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.snr-board .snr-pb-kpi-value {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--snr-text);
+}
+.snr-board .snr-pb-kpi-label {
+  font-size: var(--type-caption-size);
+  color: var(--snr-text);
+}
+.snr-board .snr-pb-kpi-sub {
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+
+/* Charts and data: the ping's own cards, two across on a wide board; an odd last card takes
+   the whole row, never half of it. Each card keeps its own panel (no border). */
+.snr-board .snr-pb-visual:focus {
+  outline: none;
+}
+.snr-board .snr-pb-visual-body,
+.snr-board .snr-pb-visual-body > .snr-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+.snr-board .snr-pb-visual-body > .snr-stack {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+@container snr-board (min-width: 900px) {
+  .snr-board .snr-pb-visual-body > .snr-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .snr-board .snr-pb-visual-body > .snr-stack > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+.snr-band .snr-board .snr-pb-visual-body .snr-fund,
+.snr-band .snr-board .snr-pb-visual-body .snr-news {
+  flex: none;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  border: 0;
+}
+
+/* Web pages. */
+.snr-board .snr-pb-weblist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.snr-board .snr-pb-webchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--snr-row);
+  font-size: var(--type-caption-size);
+  color: var(--snr-text);
+  text-decoration: none;
+}
+.snr-board .snr-pb-webchip > span:first-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.snr-board .snr-pb-webchip .bi {
+  color: var(--snr-mint);
+}
+.snr-board .snr-pb-host {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+.snr-board .snr-pb-webchip:hover {
+  background: color-mix(in srgb, var(--snr-emerald) 16%, var(--snr-row));
+}
+.snr-board .snr-pb-webchip:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}

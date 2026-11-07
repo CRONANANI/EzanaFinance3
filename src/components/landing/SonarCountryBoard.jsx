@@ -56,6 +56,8 @@ import {
   boardSpans,
   chartColumns,
 } from '@/lib/sonar/country-board';
+import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
 import './sonar-country-board.css';
 
@@ -392,6 +394,9 @@ export function SonarCountryBoard({
   news = null,
   extra = null,
   notice = null,
+  /* Nov 6: the side navigation's access (sectionAccess) and its deep research action. */
+  access = null,
+  onDeep = null,
 }) {
   const mapId = useId();
   const naId = useId();
@@ -424,6 +429,7 @@ export function SonarCountryBoard({
   const cells = [
     {
       id: 'exec',
+      section: 'answer',
       span: 7,
       min: 6,
       node: (
@@ -436,19 +442,20 @@ export function SonarCountryBoard({
         />
       ),
     },
-    { id: 'intel', span: 5, min: 5, node: <IntelHead dossier={dossier} /> },
+    { id: 'intel', section: 'answer', span: 5, min: 5, node: <IntelHead dossier={dossier} /> },
     (intel.rows || []).length
-      ? { id: 'breakdown', span: 6, min: 5, node: <Breakdown intel={intel} /> }
+      ? { id: 'breakdown', section: 'metrics', span: 6, min: 5, node: <Breakdown intel={intel} /> }
       : null,
     sourceCoverage(live).length
-      ? { id: 'coverage', span: 6, min: 5, node: <Coverage live={live} /> }
+      ? { id: 'coverage', section: 'sources', span: 6, min: 5, node: <Coverage live={live} /> }
       : null,
     datasetEvidence(live).length
-      ? { id: 'evidence', span: 7, min: 6, node: <Evidence live={live} /> }
+      ? { id: 'evidence', section: 'findings', span: 7, min: 6, node: <Evidence live={live} /> }
       : null,
     news || extra
       ? {
           id: 'news',
+          section: 'sources',
           span: 5,
           min: 4,
           hidden: !news && !extraFilled,
@@ -465,11 +472,12 @@ export function SonarCountryBoard({
         }
       : null,
     intelChartItems(intel.charts).length
-      ? { id: 'charts', span: 12, min: 12, node: <Charts intel={intel} /> }
+      ? { id: 'charts', section: 'charts', span: 12, min: 12, node: <Charts intel={intel} /> }
       : null,
     intel.transmission?.nodes?.length
       ? {
           id: 'map',
+          section: 'charts',
           span: 12,
           min: 12,
           node: (
@@ -485,6 +493,7 @@ export function SonarCountryBoard({
     hasStory
       ? {
           id: 'story',
+          section: 'charts',
           span: 6,
           min: 5,
           mid: 6,
@@ -498,6 +507,7 @@ export function SonarCountryBoard({
     hasIndicators
       ? {
           id: 'indicators',
+          section: 'charts',
           span: 6,
           min: 5,
           mid: 6,
@@ -511,6 +521,7 @@ export function SonarCountryBoard({
     scenarios.length
       ? {
           id: 'scenarios',
+          section: 'scenarios',
           span: 7,
           min: 6,
           node: (
@@ -523,6 +534,7 @@ export function SonarCountryBoard({
     monitor.length || brief?.bottomLine
       ? {
           id: 'monitor',
+          section: 'monitor',
           span: 5,
           min: 4,
           node: (
@@ -541,6 +553,7 @@ export function SonarCountryBoard({
     missing.length
       ? {
           id: 'missing',
+          section: 'sources',
           span: 12,
           min: 12,
           node: (
@@ -557,32 +570,43 @@ export function SonarCountryBoard({
           ),
         }
       : null,
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    /* Nov 6: the deep sections (scenarios, what to monitor) render only when unlocked. */
+    .filter((c) => canRender(c.section, Boolean(access?.unlocked)));
 
   const spans = boardSpans(cells.filter((c) => !c.hidden));
+  const anchors = anchorCells(cells.filter((c) => !c.hidden));
+  const present = [...new Set(cells.filter((c) => !c.hidden).map((c) => c.section))];
   const sources = (intel.sources || []).filter(Boolean);
 
   return (
-    <div
-      className="snr-cii snr-board"
-      role="region"
-      aria-label={`${intel.place || dossier.name}: country answer`}
-    >
-      <div className="snr-bd-grid">
-        {cells.map((c) => (
-          <div
-            key={c.id}
-            className={`snr-bd-cell snr-bd-cell--${c.id}`}
-            hidden={c.hidden || undefined}
-            style={{ '--bd-span': spans.get(c.id)?.wide, '--bd-span-mid': spans.get(c.id)?.mid }}
-          >
-            {c.node}
-          </div>
-        ))}
+    <SonarAnswerFrame present={present} access={access} onDeep={onDeep}>
+      <div
+        className="snr-cii snr-board"
+        role="region"
+        aria-label={`${intel.place || dossier.name}: country answer`}
+      >
+        <div className="snr-bd-grid">
+          {cells.map((c) => (
+            <div
+              key={c.id}
+              id={anchors.get(c.id)}
+              className={`snr-bd-cell snr-bd-cell--${c.id}`}
+              hidden={c.hidden || undefined}
+              style={{ '--bd-span': spans.get(c.id)?.wide, '--bd-span-mid': spans.get(c.id)?.mid }}
+            >
+              {c.node}
+            </div>
+          ))}
+        </div>
+        {sources.length ? <p className="snr-bd-sources">Sources: {sources.join('; ')}.</p> : null}
       </div>
-      {sources.length ? <p className="snr-bd-sources">Sources: {sources.join('; ')}.</p> : null}
-    </div>
+    </SonarAnswerFrame>
   );
 }
+
+/* Nov 6: shared with the ping board (SonarPingBoard.jsx), so every answer uses the same cards. */
+export { Eyebrow, Coverage, Evidence };
 
 export default SonarCountryBoard;

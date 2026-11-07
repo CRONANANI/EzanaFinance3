@@ -61,6 +61,9 @@ export function reduceEvent(state, [type, d]) {
   switch (type) {
     case 'plan':
       return { ...state, plan: d };
+    /* Nov 6: who ran this (depth, plan tier, seat), for the answer's locked sections. */
+    case 'access':
+      return d && typeof d === 'object' ? { ...state, access: d } : state;
     case 'stage':
       return { ...state, stage: d.stage, stages: [...state.stages, d.stage] };
     case 'task':

@@ -1,0 +1,236 @@
+/* SonarAnswerFrame (Nov 2026): the side navigation beside every Sonar answer. Scoped san-.
+   Inside .snr-band it reads the band's private --snr-* palette; in a research report it falls
+   back to the app tokens, through the --san-* layer. Borderless: no outlines on the nav or
+   its call to action, per the Sonar card rule. Tokens only, no hex. */
+
+.san {
+  --san-text: var(--snr-text, var(--text-primary));
+  --san-muted: var(--snr-text-muted, var(--text-secondary));
+  --san-faint: var(--snr-text-faint, var(--text-muted));
+  --san-accent: var(--snr-mint, var(--emerald-text));
+  --san-emerald: var(--snr-emerald, var(--emerald));
+  --san-row: var(--snr-row, color-mix(in srgb, black 22%, transparent));
+  --san-panel: var(--snr-panel, color-mix(in srgb, black 34%, transparent));
+  --san-mono: var(--snr-font-mono, var(--font-mono));
+  --san-sans: var(--snr-font-sans, var(--font-sans));
+  width: 100%;
+  min-width: 0;
+  container: san / inline-size;
+  font-family: var(--san-sans);
+}
+
+.san .san-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 14px;
+}
+.san .san-body {
+  min-width: 0;
+}
+
+/* Narrow: a row of chips above the board, the locked ones after the open ones. */
+.san .san-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.san .san-head {
+  display: none;
+  margin: 0;
+  font-family: var(--san-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--san-faint) !important;
+}
+.san .san-list {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+.san .san-list::-webkit-scrollbar {
+  display: none;
+}
+.san .san-list li {
+  flex: 0 0 auto;
+}
+.san .san-link {
+  /* Positioned, so the visually hidden lock note stays inside the scrolling chip row. */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0.3rem 0.85rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--san-row);
+  font-size: var(--type-caption-size);
+  line-height: 1.35;
+  color: var(--san-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.14s ease,
+    background 0.14s ease;
+}
+.san a.san-link:hover {
+  color: var(--san-text);
+}
+.san a.san-link:focus-visible {
+  outline: 2px solid var(--san-accent);
+  outline-offset: 2px;
+}
+.san a.san-link.is-active {
+  color: var(--san-accent);
+  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
+  font-weight: 600;
+}
+/* Locked: greyed but legible (the faint ink keeps 4.5:1 on the dark ground), never a
+   pointer, never focusable (a span, not a link). */
+.san .san-link.is-locked {
+  color: var(--san-faint);
+  background: color-mix(in srgb, var(--san-row) 60%, transparent);
+  cursor: not-allowed;
+  user-select: none;
+}
+.san .san-link.is-locked .bi {
+  font-size: 0.8em;
+  opacity: 0.85;
+}
+
+.san .san-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  flex-basis: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      120% 120% at 0% 0%,
+      color-mix(in srgb, var(--san-emerald) 18%, transparent),
+      transparent 70%
+    ),
+    var(--san-panel);
+}
+.san .san-cta-title {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--san-text) !important;
+}
+.san .san-cta-line {
+  margin: 0;
+  flex: 1 1 260px;
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--san-muted) !important;
+}
+.san .san-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0.4rem 0.95rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--san-emerald);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--snr-ink, var(--bg-primary));
+  text-decoration: none;
+  cursor: pointer;
+}
+.san .san-cta-btn:hover {
+  filter: brightness(1.08);
+}
+.san .san-cta-btn:focus-visible {
+  outline: 2px solid var(--san-accent);
+  outline-offset: 2px;
+}
+
+/* Wide: a sticky column on the left. */
+@container san (min-width: 1100px) {
+  .san .san-grid {
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+  .san .san-nav {
+    position: sticky;
+    top: calc(var(--navbar-height, 64px) + 20px);
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 6px;
+    max-height: calc(100vh - var(--navbar-height, 64px) - 40px);
+    overflow-y: auto;
+  }
+  .san .san-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 4px;
+  }
+  .san .san-head--locked {
+    margin-top: 10px;
+  }
+  .san .san-list--locked .san-link {
+    min-height: 28px;
+    padding: 0.2rem 0.7rem;
+    font-size: var(--type-micro-size);
+  }
+  .san .san-list {
+    flex-direction: column;
+    gap: 2px;
+    overflow: visible;
+  }
+  .san .san-link {
+    display: flex;
+    min-height: 32px;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-md);
+    background: transparent;
+    white-space: normal;
+  }
+  .san a.san-link.is-active {
+    box-shadow: inset 2px 0 0 var(--san-accent);
+    background: color-mix(in srgb, var(--san-emerald) 10%, transparent);
+  }
+  .san .san-link.is-locked {
+    background: transparent;
+  }
+  .san .san-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 10px;
+  }
+  .san .san-cta-line {
+    flex: none;
+  }
+}
+
+/* Anchors clear the sticky navbar. */
+.san [id^='sa-'] {
+  scroll-margin-top: calc(var(--navbar-height, 64px) + 24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .san .san-link {
+    transition: none;
+  }
+}

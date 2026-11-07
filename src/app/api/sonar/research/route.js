@@ -344,6 +344,15 @@ const POST_HANDLER = withApiGuard(
           }
         }, 10_000);
 
+        /* Nov 6: who ran this, so the answer knows which of its twelve sections open
+           (lib/sonar/answer-sections sectionAccess). No ids, only the tier and seat. */
+        send('access', {
+          depth,
+          planTier: Number(access.planTier) || 0,
+          version: access.version || 'regular',
+          guest: !access.user,
+        });
+
         let run = null;
         /* An org member's run keeps the state the analyst saw, to save it. */
         let snap = orgId ? EMPTY_RESEARCH_STATE : null;

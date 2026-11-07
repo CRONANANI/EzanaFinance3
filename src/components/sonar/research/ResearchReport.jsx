@@ -32,6 +32,8 @@ import FundFitMemo from './FundFitMemo';
 import ChallengeBanner from './ChallengeBanner';
 import ReportContents from './ReportContents';
 import ResearchBoard from './ResearchBoard';
+import { useSonarPlan } from '@/components/sonar/useSonarPlan';
+import { sectionAccess } from '@/lib/sonar/answer-sections';
 import './research-report.css';
 import { CountryIntelCard } from '@/components/landing/CountryIntelCard';
 
@@ -637,9 +639,16 @@ function RunFeedback({ runId }) {
   );
 }
 
-export default function ResearchReport({ state, onFollowUp = null, deepAction = null }) {
+export default function ResearchReport({
+  state,
+  onFollowUp = null,
+  deepAction = null,
+  /* Nov 6: runs deep research on this question (the side navigation's call to action for a
+     Starter reader on a standard run). */
+  onRunDeep = null,
+}) {
   const rootRef = useRef(null);
-  const moreRef = useRef(null);
+  const sonarPlan = useSonarPlan();
   const [focus, setFocus] = useState(null);
   const [evCat, setEvCat] = useState('all');
   const plan = state.plan;
@@ -675,12 +684,29 @@ export default function ResearchReport({ state, onFollowUp = null, deepAction = 
     report.format !== 'investment_memo' &&
     (report.executiveConclusion || report.keyFindings?.length),
   );
+  /* Nov 6: who may open the seven deep sections. The server's 'access' event when the run
+     sent one; otherwise (a saved report) the reader's plan and the run's depth. */
+  const access = state.access
+    ? sectionAccess({
+        depth: state.access.depth,
+        planTier: state.access.planTier,
+        isGuest: Boolean(state.access.guest),
+        version: state.access.version,
+      })
+    : sectionAccess({
+        depth: plan?.spec?.depth || 'standard',
+        planTier: sonarPlan.planTier,
+        isGuest: sonarPlan.isGuest,
+        version: sonarPlan.version,
+      });
   const cite = (m) => {
     setFocus(m);
-    /* The cited record lives in the closed disclosure on a board report: open it first. */
-    if (board && moreRef.current && !moreRef.current.open) moreRef.current.open = true;
     if (board && !m.startsWith('M:')) setEvCat('all');
-    const el = document.getElementById(m.startsWith('M:') ? calcAnchor(m.slice(2)) : `ev-${m}`);
+    /* Locked answers have no evidence explorer: the cited record's row in the findings
+       card (evs-<marker>) stands in for it. */
+    const el =
+      document.getElementById(m.startsWith('M:') ? calcAnchor(m.slice(2)) : `ev-${m}`) ||
+      (m.startsWith('M:') ? null : document.getElementById(`evs-${m}`));
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     /* Keyboard users land on the cited record, not just a scrolled page. */
@@ -749,16 +775,42 @@ export default function ResearchReport({ state, onFollowUp = null, deepAction = 
   );
 
   if (board) {
+    const unlocked = access.unlocked;
     const pick = (cat) => {
       setEvCat(cat);
-      if (moreRef.current) moreRef.current.open = true;
       requestAnimationFrame(() => {
-        const el = document.getElementById('srr-ev-h');
+        const el = document.getElementById(unlocked ? 'srr-ev-h' : 'sa-findings');
         if (!el) return;
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
       });
     };
+    /* The deep sections under the board, open only to a deep run on a Starter plan. */
+    const deepBlocks = unlocked
+      ? [
+          team?.redTeam
+            ? { key: 'risks', node: <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} /> }
+            : { key: null, node: <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} /> },
+          state.relationships?.relationships?.length
+            ? { key: 'relationships', node: <Relationships data={state.relationships} /> }
+            : null,
+          evidence.length
+            ? {
+                key: 'explorer',
+                node: (
+                  <EvidenceExplorer
+                    evidence={evidence}
+                    focus={focus}
+                    runId={runId}
+                    cat={evCat}
+                    setCat={setEvCat}
+                  />
+                ),
+              }
+            : null,
+          { key: null, node: methodBlock },
+        ].filter(Boolean)
+      : [];
     return (
       <div className="srr-frame">
         <div className="srr" ref={rootRef}>
@@ -782,26 +834,33 @@ export default function ResearchReport({ state, onFollowUp = null, deepAction = 
             onPickCategory={pick}
             deepAction={deepAction}
             ChartFallback={ResearchChart}
+            access={access}
+            onDeep={onRunDeep}
+            deepBlocks={deepBlocks}
           />
           {state.status === 'running' ? <Progress state={state} /> : null}
-          <details ref={moreRef} className="srr-more">
-            <summary>
-              <i className="bi bi-layers" aria-hidden="true" /> Full evidence, relationships and
-              methodology
-            </summary>
-            <div className="srr-more-body">
-              <EvidenceExplorer
-                evidence={evidence}
-                focus={focus}
-                runId={runId}
-                cat={evCat}
-                setCat={setEvCat}
-              />
-              <Relationships data={state.relationships} />
-              <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} />
-              {methodBlock}
-            </div>
-          </details>
+          {!unlocked && run ? (
+            <footer className="srr-section srr-board-foot">
+              {run.followOnResearch?.length && onFollowUp ? (
+                <div className="srr-follow">
+                  {run.followOnResearch.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      className="srr-pill"
+                      onClick={() => onFollowUp(q)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <RunFeedback runId={runId} />
+              <p className="srr-disclaimer">
+                Findings only, never financial advice. Every claim carries its source.
+              </p>
+            </footer>
+          ) : null}
           {state.status === 'error' ? <p className="srr-error">{state.error}</p> : null}
         </div>
       </div>
