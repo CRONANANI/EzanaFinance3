@@ -66,8 +66,9 @@ function Chip({ r, hidden = false }) {
   return <span className="snr-belt-chip is-static">{body}</span>;
 }
 
-export function SonarSourceBelt({ live }) {
-  const items = useMemo(() => pingResources(live), [live]);
+export function SonarSourceBelt({ live = null, items: given = null }) {
+  /* `items` (Nov 6): a research report passes its own resources (researchResources). */
+  const items = useMemo(() => given || pingResources(live), [given, live]);
   const [paused, setPaused] = useState(false);
   const titleId = useId();
   if (!items.length) return null;

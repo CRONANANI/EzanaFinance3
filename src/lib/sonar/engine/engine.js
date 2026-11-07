@@ -73,6 +73,7 @@ import {
   parseResearchJson,
   validateResearch,
   validateClaim,
+  ensureRankingAnswer,
   deterministicResearch,
   renderBrief,
 } from './findings';
@@ -707,6 +708,9 @@ export async function runResearch(query, opts = {}) {
     report = memo
       ? deterministicMemo({ spec, marked, metrics })
       : deterministicResearch({ spec, marked, metrics });
+  /* Nov 6: a ranking question opens with its ranking, even when the model's ranking claims
+     did not survive validation. */
+  if (!memo) ensureRankingAnswer(report, { visualizations, marked, metrics });
   if (spec.challenge) {
     report.challenge = validateChallenge(report.deterministic ? null : parsedChallenge, {
       marked,

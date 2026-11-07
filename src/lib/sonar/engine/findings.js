@@ -131,6 +131,24 @@ function unitMult(text) {
   return 1;
 }
 
+/**
+ * The scale a record states its figures in ("Highest crude oil production (thousand barrels
+ * per day): ... United States 13,792"): the multiplier of a scale word that is not attached to
+ * a number of its own. 1 when the record states none. Nov 6: without it a claim that quotes
+ * "13,792 thousand barrels per day" was read as 13,792,000 against the record's 13,792 and
+ * removed, which took out every ranking claim for a production question.
+ */
+export function statedScale(text) {
+  const t = String(text || '');
+  const re = /(\S)?\s*\b(thousand|millions?|billions?|trillions?)\b/gi;
+  for (const m of t.matchAll(re)) {
+    if (m[1] && /[\d$]/.test(m[1])) continue; /* "5 million": a figure, not a stated scale */
+    const w = m[2].toLowerCase().replace(/s$/, '');
+    return { thousand: 1e3, million: 1e6, billion: 1e9, trillion: 1e12 }[w] || 1;
+  }
+  return 1;
+}
+
 /** Whether `n` (a number parsed from a claim) is stated by one of `allowed`. */
 export function numberSupported(n, allowed) {
   if (!n.pct && Number.isInteger(n.value) && n.value >= 1950 && n.value <= 2049)
@@ -193,6 +211,16 @@ export function validateClaim(claim, { byMarker, metricsById }) {
   const allowed = [
     ...cited.flatMap((e) => [...e.numbers, ...numbersOf(JSON.stringify(e.data?.row || ''))]),
     ...mets.map((m) => ({ value: m.value, ratio: m.unit === 'ratio' })),
+    /* A record that states its scale ("thousand barrels per day") also allows its plain
+       figures at that scale: "13,792 thousand" and "13.8 million" both match its 13,792. */
+    ...cited.flatMap((e) => {
+      const k = statedScale(`${e.title} ${e.text}`);
+      return k === 1
+        ? []
+        : (e.numbers || [])
+            .filter((n) => !n.pct && !/[kmbt]\b|thousand|million|billion|trillion/i.test(n.text))
+            .map((n) => ({ value: n.value * k }));
+    }),
   ];
   const claimNums = numbersOf(text.replace(/\[S\d+\]/g, '')).filter(
     (n) => !/^[-+]?\d$/.test(n.text),
@@ -402,6 +430,83 @@ export function deterministicResearch({ spec, marked, metrics }) {
     deterministic: true,
     question: spec.question,
   };
+}
+
+/**
+ * A ranking question must open with its ranking (Nov 6). When the plan produced a country
+ * ranking (analysis.js: a 'bars' visualization `macro_rank_*`) and no surviving claim names
+ * the leader, the report gets the answer straight from that record: a verified conclusion when
+ * the model's was removed or missing, and a key finding listing the top five with their values.
+ * Every figure is the record's own, so it passes the same checks as any claim.
+ * Mutates and returns `report`.
+ */
+export function ensureRankingAnswer(
+  report,
+  { visualizations = [], marked = [], metrics = [] } = {},
+) {
+  if (!report) return report;
+  const vis = (visualizations || []).find(
+    (v) => v && /^macro_rank_/.test(v.id || '') && (v.rows || []).length >= 2,
+  );
+  if (!vis) return report;
+  const rows = vis.rows.filter((r) => r && r.label && Number.isFinite(Number(r.value)));
+  if (rows.length < 2) return report;
+  const leader = rows[0].label;
+  const claims = [report.executiveConclusion, ...(report.keyFindings || [])].filter(Boolean);
+  const named = claims.some((c) =>
+    `${c.title || ''} ${c.text || ''} ${c.explanation || ''}`
+      .toLowerCase()
+      .includes(leader.toLowerCase()),
+  );
+  if (named) return report;
+
+  const ev = marked.find((e) => (vis.evidenceIds || []).includes(e.id)) || null;
+  const markers = ev ? [ev.marker] : [];
+  const evidenceIds = ev ? [ev.id] : [];
+  const rankMetrics = (metrics || []).filter((m) => m.id.startsWith(`${vis.id}_`)).map((m) => m.id);
+  const num = (v) => Number(v).toLocaleString('en-US', { maximumFractionDigits: 1 });
+  const unit = vis.unit && vis.unit !== 'value' ? ` ${vis.unit}` : '';
+  const measure = String(vis.title || 'this measure').replace(/^(highest|largest|most)\s+/i, '');
+  const lowest = /^lowest\s+/i.test(vis.title || '');
+  const top = rows.slice(0, 5);
+  const rest = top.slice(1).map((r) => r.label);
+  const list = rest.length > 1 ? `${rest.slice(0, -1).join(', ')} and ${rest.at(-1)}` : rest[0];
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const when = (p) => {
+    const m = /^(\d{4})-(\d{2})$/.exec(String(p || ''));
+    return m ? `${MON[Number(m[2]) - 1]} ${m[1]}` : p;
+  };
+  const period = (r) => (r.note ? `, ${when(r.note)}` : '');
+  const lead = lowest
+    ? `${leader} has the lowest ${measure.replace(/^lowest\s+/i, '').toLowerCase()}`
+    : `${leader} ranks first on ${measure.toLowerCase()}`;
+  const text = `${lead} (${num(top[0].value)}${unit}${period(top[0])}), followed by ${list}.`;
+  const base = {
+    classification: 'verified_fact',
+    evidenceIds,
+    markers,
+    metrics: rankMetrics,
+    entities: top.map((r) => r.label),
+    validation: { action: 'kept', problems: [], added: 'ranking_answer' },
+  };
+  if (!report.executiveConclusion) {
+    report.executiveConclusion = { id: 'conclusion_rank', text, ...base };
+  }
+  report.keyFindings = [
+    {
+      id: 'finding_rank',
+      title: `${leader} leads ${String(vis.title || 'the ranking')
+        .replace(/^(highest|largest|most)\s+/i, 'the ranking for ')
+        .toLowerCase()}`,
+      explanation: `${vis.title}${unit ? ` (${unit.trim()})` : ''}: ${top
+        .map((r, i) => `${i + 1}. ${r.label} ${num(r.value)}${r.note ? ` (${when(r.note)})` : ''}`)
+        .join('; ')}.`,
+      period: vis.period?.label || null,
+      ...base,
+    },
+    ...(report.keyFindings || []),
+  ];
+  return report;
 }
 
 /** Prose for the legacy brief surface: conclusion then findings, with [S#]. */

@@ -370,6 +370,19 @@ export function StandardResearchRun({
       }
     : null;
   const hint = coverageHint || goDeeper || null;
+  /* Nov 6: a finished research report (not a memo) renders as the research board, whose
+     executive answer carries deep research as one inline button; the card below goes. */
+  const onBoard = Boolean(
+    state.report &&
+    state.report.format !== 'investment_memo' &&
+    (state.report.executiveConclusion || state.report.keyFindings?.length),
+  );
+  const deepEstimate = coverageHint
+    ? {
+        ...estimate,
+        deep: { ...estimate?.deep, recommended: true, reasons: coverageHint.reasons },
+      }
+    : estimate;
 
   return (
     <div className="sdr-run force-dark-theme">
@@ -425,7 +438,20 @@ export function StandardResearchRun({
       ) : null}
       {state.status !== 'idle' && state.status !== 'gated' ? (
         <div className="sdr-report">
-          <ResearchReport state={state} />
+          <ResearchReport
+            state={state}
+            deepAction={
+              onBoard && state.status === 'done' && estimate && onDeep ? (
+                <DeepResearchCard
+                  query={query}
+                  estimate={deepEstimate}
+                  placement="inline"
+                  pingsSpent={1}
+                  onRun={(st) => onDeep({ supersede: false, signup: st.blocked === 'signup' })}
+                />
+              ) : null
+            }
+          />
         </div>
       ) : null}
       {running && estimate && onDeep ? (
@@ -437,21 +463,10 @@ export function StandardResearchRun({
         />
       ) : null}
       {state.status === 'done' ? <SaveToOrg org={state.org} query={query} /> : null}
-      {state.status === 'done' && estimate && onDeep ? (
+      {state.status === 'done' && estimate && onDeep && !onBoard ? (
         <DeepResearchCard
           query={query}
-          estimate={
-            coverageHint
-              ? {
-                  ...estimate,
-                  deep: {
-                    ...estimate.deep,
-                    recommended: true,
-                    reasons: coverageHint.reasons,
-                  },
-                }
-              : estimate
-          }
+          estimate={deepEstimate}
           placement="after"
           pingsSpent={1}
           onRun={(st) => onDeep({ supersede: false, signup: st.blocked === 'signup' })}

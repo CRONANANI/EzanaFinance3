@@ -576,7 +576,7 @@ async function commoditySeriesSource({ commodity, horizon }, { now }) {
       {
         kind: 'aggregate',
         title: `${s.label} price history`,
-        text: `${s.label} (${s.proxy || 'front-month'} proxy) closed at ${s.last?.toFixed?.(2) ?? s.last} on ${s.to}. Change since ${s.from}: ${pct(s.changePct)}.${yr != null ? ` Last 12 months: ${pct(yr)}, range ${Math.min(...y).toFixed(2)} to ${Math.max(...y).toFixed(2)}.` : ''} Three-year range ${Math.min(...vals).toFixed(2)} to ${Math.max(...vals).toFixed(2)}.`,
+        text: `${s.label} (${s.proxy || 'front-month'} proxy) closed at ${Number.isFinite(Number(s.last?.v ?? s.last)) ? Number(s.last?.v ?? s.last).toFixed(2) : 'n/a'} on ${s.to}. Change since ${s.from}: ${pct(s.changePct)}.${yr != null ? ` Last 12 months: ${pct(yr)}, range ${Math.min(...y).toFixed(2)} to ${Math.max(...y).toFixed(2)}.` : ''} Three-year range ${Math.min(...vals).toFixed(2)} to ${Math.max(...vals).toFixed(2)}.`,
         date: s.to,
         period: { from: s.from, to: s.to, label: `${s.from} to ${s.to}` },
         data: { metric: 'price_change', series: s.points, label: s.label, horizon },

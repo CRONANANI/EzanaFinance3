@@ -1,9 +1,25 @@
-/* The resources belt (SonarSourceBelt.jsx). Scoped snr-belt-. Lives inside .snr-band, so it
-   reads the band's private --snr-* palette (always the dark emerald ground). Borderless:
-   chips sit on the band's row tint, the strip on the panel surface with the soft shadow,
+/* The resources belt (SonarSourceBelt.jsx). Scoped snr-belt-. Inside .snr-band it reads the
+   band's private --snr-* palette (the always-dark emerald ground); in a research report
+   (ResearchBoard.jsx) it falls back to the app tokens through the --belt-* layer below.
+   Borderless: chips sit on a row tint, the strip on a panel surface with a soft shadow,
    per the Sonar card rule (no 1px outlines). No hex. */
 
-.snr-band .snr-belt {
+.snr-belt {
+  --belt-emerald: var(--snr-emerald, var(--emerald));
+  --belt-font-mono: var(--snr-font-mono, var(--font-mono));
+  --belt-font-sans: var(--snr-font-sans, var(--font-sans));
+  --belt-mint: var(--snr-mint, var(--emerald-text));
+  --belt-panel: var(--snr-panel, color-mix(in srgb, black 34%, transparent));
+  --belt-r-panel: var(--snr-r-panel, var(--radius-xl));
+  --belt-row: var(--snr-row, color-mix(in srgb, black 22%, transparent));
+  --belt-soft: var(--snr-soft, 0 10px 30px color-mix(in srgb, black 35%, transparent));
+  --belt-t-fast: var(--snr-t-fast, 180ms);
+  --belt-text: var(--snr-text, var(--text-primary));
+  --belt-text-faint: var(--snr-text-faint, var(--text-muted));
+  --belt-text-muted: var(--snr-text-muted, var(--text-secondary));
+}
+
+.snr-belt {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -13,39 +29,39 @@
   margin: 0 0 20px;
   padding: 12px 16px;
   border: 0;
-  border-radius: var(--snr-r-panel);
-  background: var(--snr-panel);
-  box-shadow: var(--snr-soft);
-  font-family: var(--snr-font-sans);
+  border-radius: var(--belt-r-panel);
+  background: var(--belt-panel);
+  box-shadow: var(--belt-soft);
+  font-family: var(--belt-font-sans);
 }
 
-.snr-band .snr-belt-head {
+.snr-belt-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 14px;
 }
 
-.snr-band .snr-belt .snr-belt-title {
+.snr-belt .snr-belt-title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin: 0;
-  font-family: var(--snr-font-mono);
+  font-family: var(--belt-font-mono);
   font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--snr-mint) !important;
+  color: var(--belt-mint) !important;
 }
 
-.snr-band .snr-belt-count {
-  font-family: var(--snr-font-mono);
+.snr-belt-count {
+  font-family: var(--belt-font-mono);
   font-size: var(--type-micro-size);
-  color: var(--snr-text-faint);
+  color: var(--belt-text-faint);
 }
 
-.snr-band .snr-belt-pause {
+.snr-belt-pause {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -53,35 +69,35 @@
   padding: 4px 10px;
   border: 0;
   border-radius: 999px;
-  background: var(--snr-row);
-  font-family: var(--snr-font-mono);
+  background: var(--belt-row);
+  font-family: var(--belt-font-mono);
   font-size: var(--type-micro-size);
-  color: var(--snr-text-muted);
+  color: var(--belt-text-muted);
   cursor: pointer;
 }
-.snr-band .snr-belt-pause:hover {
-  color: var(--snr-text);
+.snr-belt-pause:hover {
+  color: var(--belt-text);
 }
-.snr-band .snr-belt-pause:focus-visible,
-.snr-band .snr-belt-chip:focus-visible {
-  outline: 2px solid var(--snr-mint);
+.snr-belt-pause:focus-visible,
+.snr-belt-chip:focus-visible {
+  outline: 2px solid var(--belt-mint);
   outline-offset: 2px;
 }
 
 /* The viewport fades the chips in and out at both edges. */
-.snr-band .snr-belt-viewport {
+.snr-belt-viewport {
   position: relative;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
   mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
 }
 
-.snr-band .snr-belt-rail {
+.snr-belt-rail {
   display: flex;
   width: max-content;
 }
 
-.snr-band .snr-belt-track {
+.snr-belt-track {
   display: flex;
   gap: 8px;
   margin: 0;
@@ -89,7 +105,7 @@
   list-style: none;
 }
 
-.snr-band .snr-belt-chip {
+.snr-belt-chip {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
@@ -97,37 +113,37 @@
   padding: 6px 12px;
   border: 0;
   border-radius: 999px;
-  background: var(--snr-row);
-  color: var(--snr-text);
+  background: var(--belt-row);
+  color: var(--belt-text);
   text-decoration: none;
   white-space: nowrap;
-  transition: background var(--snr-t-fast) ease;
+  transition: background var(--belt-t-fast) ease;
 }
 .snr-band a.snr-belt-chip:hover {
-  background: color-mix(in srgb, var(--snr-emerald) 18%, var(--snr-row));
+  background: color-mix(in srgb, var(--belt-emerald) 18%, var(--belt-row));
 }
-.snr-band .snr-belt-ico {
-  color: var(--snr-mint);
+.snr-belt-ico {
+  color: var(--belt-mint);
   font-size: 0.85rem;
 }
-.snr-band .snr-belt-label {
+.snr-belt-label {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--type-caption-size);
 }
-.snr-band .snr-belt-sub {
-  font-family: var(--snr-font-mono);
+.snr-belt-sub {
+  font-family: var(--belt-font-mono);
   font-size: var(--type-micro-size);
-  color: var(--snr-text-faint);
+  color: var(--belt-text-faint);
 }
 
 /* The loop: two copies of the list slide left by one copy's width, then repeat. */
-.snr-band .snr-belt.is-moving .snr-belt-rail {
+.snr-belt.is-moving .snr-belt-rail {
   animation: snrBelt var(--belt-dur, 40s) linear infinite;
 }
-.snr-band .snr-belt.is-moving:hover .snr-belt-rail,
-.snr-band .snr-belt.is-moving:focus-within .snr-belt-rail,
-.snr-band .snr-belt.is-paused .snr-belt-rail {
+.snr-belt.is-moving:hover .snr-belt-rail,
+.snr-belt.is-moving:focus-within .snr-belt-rail,
+.snr-belt.is-paused .snr-belt-rail {
   animation-play-state: paused;
 }
 
@@ -142,26 +158,39 @@
 
 /* No motion: a plain scroller, one copy, no pause control needed. */
 @media (prefers-reduced-motion: reduce) {
-  .snr-band .snr-belt.is-moving .snr-belt-rail {
+  .snr-belt.is-moving .snr-belt-rail {
     animation: none;
   }
-  .snr-band .snr-belt-viewport {
+  .snr-belt-viewport {
     overflow-x: auto;
     -webkit-mask-image: none;
     mask-image: none;
   }
-  .snr-band .snr-belt-track.is-clone,
-  .snr-band .snr-belt-pause {
+  .snr-belt-track.is-clone,
+  .snr-belt-pause {
     display: none;
   }
 }
 
 @media (max-width: 640px) {
-  .snr-band .snr-belt {
+  .snr-belt {
     padding: 10px 12px;
   }
-  .snr-band .snr-belt-count {
+  .snr-belt-count {
     flex-basis: 100%;
     order: 3;
   }
+}
+
+/* Visually hidden text inside the belt (the band defines .snr-label-sr, a report does not). */
+.snr-belt .snr-label-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

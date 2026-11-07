@@ -31,6 +31,7 @@ import PositioningMemo from './PositioningMemo';
 import FundFitMemo from './FundFitMemo';
 import ChallengeBanner from './ChallengeBanner';
 import ReportContents from './ReportContents';
+import ResearchBoard from './ResearchBoard';
 import './research-report.css';
 import { CountryIntelCard } from '@/components/landing/CountryIntelCard';
 
@@ -509,8 +510,11 @@ function Relationships({ data }) {
   );
 }
 
-function EvidenceExplorer({ evidence, focus, runId }) {
-  const [cat, setCat] = useState('all');
+function EvidenceExplorer({ evidence, focus, runId, cat: catProp, setCat: setCatProp }) {
+  /* Controlled by the research board's evidence strip when it passes cat/setCat. */
+  const [catLocal, setCatLocal] = useState('all');
+  const cat = catProp ?? catLocal;
+  const setCat = setCatProp ?? setCatLocal;
   const [flagged, setFlagged] = useState({});
   const groups = useMemo(() => {
     const by = new Map();
@@ -633,9 +637,11 @@ function RunFeedback({ runId }) {
   );
 }
 
-export default function ResearchReport({ state, onFollowUp = null }) {
+export default function ResearchReport({ state, onFollowUp = null, deepAction = null }) {
   const rootRef = useRef(null);
+  const moreRef = useRef(null);
   const [focus, setFocus] = useState(null);
+  const [evCat, setEvCat] = useState('all');
   const plan = state.plan;
   const report = state.report;
   const run = state.run;
@@ -662,14 +668,145 @@ export default function ResearchReport({ state, onFollowUp = null }) {
         .map((l) => [String(l).trim().toLowerCase(), l]),
     ).values(),
   ];
+  /* Nov 6: a research report (not a memo) with an answer is laid out as the research board;
+     the full evidence, relationships and methodology sit in a disclosure under it. */
+  const board = Boolean(
+    report &&
+    report.format !== 'investment_memo' &&
+    (report.executiveConclusion || report.keyFindings?.length),
+  );
   const cite = (m) => {
     setFocus(m);
+    /* The cited record lives in the closed disclosure on a board report: open it first. */
+    if (board && moreRef.current && !moreRef.current.open) moreRef.current.open = true;
+    if (board && !m.startsWith('M:')) setEvCat('all');
     const el = document.getElementById(m.startsWith('M:') ? calcAnchor(m.slice(2)) : `ev-${m}`);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     /* Keyboard users land on the cited record, not just a scrolled page. */
     el.focus({ preventScroll: true });
   };
+
+  const methodBlock = (
+    <>
+      {run ? (
+        <section className="srr-section" aria-labelledby="srr-lim-h">
+          <h2 id="srr-lim-h" className="srr-h2">
+            Methodology and limitations
+          </h2>
+          {team ? (
+            <MethodologySection
+              methodology={team.methodology}
+              audit={team.live ? null : team.audit}
+              focus={focus}
+            />
+          ) : null}
+          {limitations.length ? (
+            <>
+              {team?.methodology ? <h3 className="srr-h3">Limitations and data gaps</h3> : null}
+              <ul className="srr-list">
+                {limitations.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
+          <p className="srr-method">
+            Searched:{' '}
+            {run.methodology.plan.tasks.map((t) => SOURCE_LABELS[t.source] || t.source).join(', ')}.
+            {run.methodology.plan.excluded.filter((x) => x.reason !== 'below_threshold').length
+              ? ` Not searched: ${run.methodology.plan.excluded
+                  .filter((x) => x.reason !== 'below_threshold')
+                  .map(
+                    (x) =>
+                      `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
+                  )
+                  .join(', ')}.`
+              : ''}{' '}
+            {run.methodology.evidence.retrieved} records retrieved,{' '}
+            {run.methodology.evidence.selected} selected.
+            {run.researchMetadata?.validation
+              ? ` ${run.researchMetadata.validation.kept} of ${run.researchMetadata.validation.claims} claims passed validation.`
+              : ''}
+          </p>
+          {run.followOnResearch?.length && onFollowUp ? (
+            <div className="srr-follow">
+              {run.followOnResearch.map((q) => (
+                <button key={q} type="button" className="srr-pill" onClick={() => onFollowUp(q)}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <RunFeedback runId={runId} />
+          <p className="srr-disclaimer">
+            Findings only, never financial advice. Every claim carries its source.
+          </p>
+        </section>
+      ) : null}
+    </>
+  );
+
+  if (board) {
+    const pick = (cat) => {
+      setEvCat(cat);
+      if (moreRef.current) moreRef.current.open = true;
+      requestAnimationFrame(() => {
+        const el = document.getElementById('srr-ev-h');
+        if (!el) return;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      });
+    };
+    return (
+      <div className="srr-frame">
+        <div className="srr" ref={rootRef}>
+          {state.memory ? (
+            <p className="srr-note">
+              Sonar researched this subject before (last retrieved{' '}
+              {String(state.memory.lastRetrievedAt || '').slice(0, 10)}).{' '}
+              {state.memory.newSinceLast} records are new since then; earlier records are marked and
+              dated.
+            </p>
+          ) : null}
+          {report?.challenge ? (
+            <ChallengeBanner challenge={report.challenge} onCite={cite} />
+          ) : null}
+          <ResearchBoard
+            state={state}
+            team={team}
+            limitations={limitations}
+            sourceLabels={SOURCE_LABELS}
+            onCite={cite}
+            onPickCategory={pick}
+            deepAction={deepAction}
+            ChartFallback={ResearchChart}
+          />
+          {state.status === 'running' ? <Progress state={state} /> : null}
+          <details ref={moreRef} className="srr-more">
+            <summary>
+              <i className="bi bi-layers" aria-hidden="true" /> Full evidence, relationships and
+              methodology
+            </summary>
+            <div className="srr-more-body">
+              <EvidenceExplorer
+                evidence={evidence}
+                focus={focus}
+                runId={runId}
+                cat={evCat}
+                setCat={setEvCat}
+              />
+              <Relationships data={state.relationships} />
+              <ResearchTeamPanel team={team} onCite={cite} calcs={calcs} />
+              {methodBlock}
+            </div>
+          </details>
+          {state.status === 'error' ? <p className="srr-error">{state.error}</p> : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     /* Nov 2026: the contents legend on the left (ReportContents), the report
@@ -688,7 +825,8 @@ export default function ResearchReport({ state, onFollowUp = null }) {
                     {d.id.replace(/_/g, ' ')}
                   </span>
                 ))}
-                {plan.universe ? (
+                {/* Nov 6: an empty universe ("Energy Companies (0)") is not scope. */}
+                {plan.universe?.count > 0 ? (
                   <span className="srr-chip">
                     {plan.universe.label} ({plan.universe.count})
                   </span>
@@ -706,7 +844,7 @@ export default function ResearchReport({ state, onFollowUp = null }) {
                   </span>
                 ) : null}
               </div>
-              {plan.universe?.basis ? (
+              {plan.universe?.basis && plan.universe?.count > 0 ? (
                 <p className="srr-basis">Companies screened: {plan.universe.basis}.</p>
               ) : null}
             </header>
@@ -820,70 +958,7 @@ export default function ResearchReport({ state, onFollowUp = null }) {
           <Relationships data={state.relationships} />
           <EvidenceExplorer evidence={evidence} focus={focus} runId={runId} />
 
-          {run ? (
-            <section className="srr-section" aria-labelledby="srr-lim-h">
-              <h2 id="srr-lim-h" className="srr-h2">
-                Methodology and limitations
-              </h2>
-              {team ? (
-                <MethodologySection
-                  methodology={team.methodology}
-                  audit={team.live ? null : team.audit}
-                  focus={focus}
-                />
-              ) : null}
-              {limitations.length ? (
-                <>
-                  {team?.methodology ? <h3 className="srr-h3">Limitations and data gaps</h3> : null}
-                  <ul className="srr-list">
-                    {limitations.map((l) => (
-                      <li key={l}>{l}</li>
-                    ))}
-                  </ul>
-                </>
-              ) : null}
-              {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
-              <p className="srr-method">
-                Searched:{' '}
-                {run.methodology.plan.tasks
-                  .map((t) => SOURCE_LABELS[t.source] || t.source)
-                  .join(', ')}
-                .
-                {run.methodology.plan.excluded.filter((x) => x.reason !== 'below_threshold').length
-                  ? ` Not searched: ${run.methodology.plan.excluded
-                      .filter((x) => x.reason !== 'below_threshold')
-                      .map(
-                        (x) =>
-                          `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
-                      )
-                      .join(', ')}.`
-                  : ''}{' '}
-                {run.methodology.evidence.retrieved} records retrieved,{' '}
-                {run.methodology.evidence.selected} selected.
-                {run.researchMetadata?.validation
-                  ? ` ${run.researchMetadata.validation.kept} of ${run.researchMetadata.validation.claims} claims passed validation.`
-                  : ''}
-              </p>
-              {run.followOnResearch?.length && onFollowUp ? (
-                <div className="srr-follow">
-                  {run.followOnResearch.map((q) => (
-                    <button
-                      key={q}
-                      type="button"
-                      className="srr-pill"
-                      onClick={() => onFollowUp(q)}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-              <RunFeedback runId={runId} />
-              <p className="srr-disclaimer">
-                Findings only, never financial advice. Every claim carries its source.
-              </p>
-            </section>
-          ) : null}
+          {methodBlock}
 
           {state.status === 'error' ? <p className="srr-error">{state.error}</p> : null}
         </div>
