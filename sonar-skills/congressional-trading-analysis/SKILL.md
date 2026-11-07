@@ -92,6 +92,8 @@ When the question asks how disclosed trading changed (counts, purchases versus s
 - Comparisons across members or periods use the same window and counting rules.
 - No trend is stated across a window that fails the coverage test; the gap is named with its member count.
 - The latest window's count is shown as observed, with any late-filing adjustment labelled an estimate.
+- An activity-change answer opens with the direction and size of the comparable chamber's change; a coverage gap is stated after it, never as the headline or first finding.
+- Findings cite the computed activity metrics ([M:congress_...]) for every count, change, share or per-member figure they restate.
 - Event-study results state the sample size and are labelled descriptive.
 
 ## Common mistakes to avoid

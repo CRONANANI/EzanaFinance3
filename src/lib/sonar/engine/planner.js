@@ -21,6 +21,7 @@ export const SOURCE_DATASET = {
   congress_sector: 'congress',
   congress_company: 'congress',
   politician_dossier: 'congress',
+  congress_activity: 'congress',
   contracts_history: 'gov-contracts',
   institutional_13f: '13f',
   sec_filings: 'sec-filings',

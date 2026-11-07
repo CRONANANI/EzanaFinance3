@@ -65,6 +65,7 @@ import { MACRO_LENS, frameworkPrompt } from '@/lib/sonar/macro/playbook';
 import { RUNNERS, MEMO_MACRO_FAMILIES, MEMO_MACRO_LABEL } from './sources';
 import { toEvidence, scoreEvidence, packEvidence, withMarkers } from './evidence';
 import { analyze } from './analysis';
+import { SOURCES, DEFAULT_CONFIG, weightOf } from './domains';
 import { discoverRelationships, paths } from './relationships';
 import {
   SYNTHESIS_SYSTEM,
@@ -324,7 +325,18 @@ export async function runResearch(query, opts = {}) {
       });
     };
     team.sources.forEach((src) => addSource(src, 'team:required'));
-    team.preferredSources.forEach((src) => room() > 0 && addSource(src, 'team:preferred'));
+    /* Nov 7: a preferred source that needs no subject (a broad scan such as lobbying
+       leaders) runs only when one of the question's domains asks for it. Otherwise it spends
+       a task budget on an unrelated scan: on "How has congressional trading changed?" lobbying
+       leaders timed out at 20 s and left the lead analyst too little time to report. */
+    const wantedByDomain = (src) =>
+      (spec.domains || []).some((d) => weightOf(config || DEFAULT_CONFIG, d.id, src) > 0);
+    team.preferredSources.forEach(
+      (src) =>
+        room() > 0 &&
+        ((SOURCES[src]?.needs || []).length || wantedByDomain(src)) &&
+        addSource(src, 'team:preferred'),
+    );
     /* macro_series reads the team's families first. */
     const macroTask = plan.tasks.find((t) => t.source === 'macro_series');
     if (macroTask && team.families.length) {

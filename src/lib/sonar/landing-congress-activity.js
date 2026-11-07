@@ -440,6 +440,110 @@ const usdM = (v) => {
 const updown = (v) => (v == null ? '' : v >= 0 ? `up ${pct0(v)}` : `down ${pct0(-v)}`);
 export const activityFormat = { n0, pct0, share1, usdM, updown, fmtDate };
 
+/* ── Engine metrics ─────────────────────────────────────────────────── */
+
+/**
+ * The computed figures as research-engine metrics ({ id, label, value, unit, method }), so a
+ * deep run's findings can cite [M:id] and the auditor can trace every number the analysts
+ * restate. Only comparable windows contribute; null values drop out.
+ */
+export function activityMetricRows(d) {
+  if (!d?.analysis) return [];
+  const a = d.analysis;
+  const h = a.house;
+  const s = a.senate;
+  const latest = d.windows[d.windows.length - 1]?.label || 'latest window';
+  const rows = [
+    [
+      'congress_house_trades_latest',
+      `House disclosed trades, ${latest}`,
+      h.latest?.trades,
+      'count',
+      'count of disclosed House transactions by transaction date',
+    ],
+    [
+      'congress_senate_trades_latest',
+      `Senate disclosed trades, ${latest}`,
+      s.latest?.trades,
+      'count',
+      'count of disclosed Senate transactions by transaction date',
+    ],
+    [
+      'congress_house_trades_change',
+      'House trades, latest vs prior window',
+      h.changeVsPrior,
+      'percent',
+      'latest window trades / prior window trades - 1',
+    ],
+    [
+      'congress_house_trades_change_first',
+      'House trades, latest vs first comparable window',
+      h.changeVsFirst,
+      'percent',
+      'latest window trades / first comparable window trades - 1',
+    ],
+    [
+      'congress_house_trades_estimate',
+      'House trades in the latest window once late filings arrive (estimate)',
+      h.completeness?.estimate,
+      'count',
+      "observed trades scaled month by month by the prior window's share of trades filed after the same age",
+    ],
+    [
+      'congress_house_purchase_share',
+      `House purchases as a share of purchases and sales, ${latest}`,
+      h.sideTest?.p2,
+      'ratio',
+      'purchases / (purchases + sales)',
+    ],
+    [
+      'congress_house_purchase_share_prior',
+      'House purchases as a share of purchases and sales, prior window',
+      h.sideTest?.p1,
+      'ratio',
+      'purchases / (purchases + sales)',
+    ],
+    [
+      'congress_purchase_share_z',
+      'Two-proportion z, House purchase share, latest vs prior window',
+      h.sideTest?.value,
+      'z',
+      'two-proportion z test with pooled p',
+    ],
+    [
+      'congress_house_share_latest',
+      `House share of disclosed trades, ${latest}`,
+      a.shared?.houseShare,
+      'ratio',
+      'House trades / (House + Senate trades)',
+    ],
+    [
+      'congress_house_trades_per_member',
+      `House trades per member trading, ${latest}`,
+      a.shared?.housePerMember,
+      'count',
+      'House trades / House members with a trade',
+    ],
+    [
+      'congress_senate_trades_per_member',
+      `Senate trades per member trading, ${latest}`,
+      a.shared?.senatePerMember,
+      'count',
+      'Senate trades / Senate members with a trade',
+    ],
+    [
+      'congress_intensity_share',
+      'Share of the House change explained by trades per member',
+      h.decomposition?.intensityShare,
+      'ratio',
+      'log decomposition: ln(trades per member ratio) / ln(trades ratio)',
+    ],
+  ];
+  return rows
+    .filter(([, , v]) => typeof v === 'number' && Number.isFinite(v))
+    .map(([id, label, value, unit, method]) => ({ id, label, value, unit, method }));
+}
+
 /* ── Evidence for the brief ─────────────────────────────────────────── */
 
 const SOURCE = 'STOCK Act Periodic Transaction Reports (House Clerk, Senate eFD)';
@@ -464,7 +568,7 @@ export function congressActivityEvidence(d) {
     const lines = d.windows.map((w, i) => {
       const r = c.rows[i];
       if (!r) return `${w.label}: no disclosures on file`;
-      return `${w.label}: ${n0(r.trades)} trades (${n0(r.purchases)} purchases, ${n0(r.sales)} sales) by ${r.members} members, median ${r.tpmMedian ?? 'n/a'} per member${c.gaps[i] ? ` [not comparable: ${c.gaps[i]}]` : ''}`;
+      return `${w.label}: ${n0(r.trades)} trades (${n0(r.purchases)} purchases, ${n0(r.sales)} sales) by ${r.members} member${r.members === 1 ? '' : 's'}, median ${r.tpmMedian ?? 'n/a'} per member${c.gaps[i] ? ` [not comparable: ${c.gaps[i]}]` : ''}`;
     });
     push(
       `${label} disclosed trades by 12-month window`,

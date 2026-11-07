@@ -7,6 +7,7 @@
  * Pure. Client-safe.
  */
 import { DOMAINS } from './domains';
+import { detectCongressActivityPing } from '@/lib/sonar/landing-congress-activity';
 
 /* Base domains per understood intent (the deterministic router's verdict). */
 const INTENT_DOMAINS = {
@@ -66,6 +67,16 @@ export function scoreDomains(text, understood = {}) {
       const c = scores.get('country');
       if (c) c.score = Math.min(c.score, 0.6);
     }
+  }
+  /* Nov 7: a chamber-wide congressional activity question ("How has disclosed congressional
+     trading changed? Compare transaction counts, purchases versus sales...") is congressional
+     trading, full stop. Its words ("sales", "transaction counts", "compare") also cued company
+     financials and the comparison intent's company and market domains, which planned company
+     sources with no company to read. With no company or member named, those drop out. */
+  if (!kinds.has('ticker') && !kinds.has('person_politician') && detectCongressActivityPing(t)) {
+    add('congress_trading', 1, 'congress_activity');
+    for (const id of ['company', 'company_financials', 'market_performance', 'analyst_views'])
+      scores.delete(id);
   }
   return [...scores.values()].filter((d) => d.score > 0).sort((a, b) => b.score - a.score);
 }

@@ -1,0 +1,356 @@
+/* CongressActivityBoard (Nov 7): the congressional activity cards on the research board.
+   Scoped srb-cab-, inside .srb (research-board.css supplies the card surface, grid, KPI
+   tiles and type scale). Sonar card rule: no outlines, no borders. Tokens only: purchases and
+   House are --emerald (growth, the brand's positive), sales and Senate --echo-chart-purple
+   (the tertiary chart colour). Mono with tabular numbers for every figure. */
+
+.srb .srb-cab-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--type-card-title-size);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.srb .srb-cab-h--lg {
+  font-size: var(--type-section-size);
+}
+.srb .srb-cab-h .bi {
+  color: var(--srb-accent);
+}
+.srb .srb-cab-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Executive answer with its snapshot inset */
+.srb .srb-cab-exec-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+@container srb (min-width: 900px) {
+  .srb .srb-cab-exec-body {
+    grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr);
+  }
+}
+.srb p.srb-cab-headline.srb-cab-headline {
+  color: var(--srb-accent) !important;
+}
+.srb .srb-cab-snap {
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--srb-row);
+}
+.srb p.srb-cab-snap-title.srb-cab-snap-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+.srb p.srb-cab-snap-sub.srb-cab-snap-sub {
+  margin: 2px 0 8px;
+  font-size: var(--type-micro-size);
+  color: var(--text-muted) !important;
+}
+.srb .srb-cab-snap-list {
+  margin: 0;
+}
+.srb .srb-cab-snap-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: var(--type-caption-size);
+}
+.srb .srb-cab-snap-row + .srb-cab-snap-row {
+  box-shadow: 0 -1px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.srb .srb-cab-snap-row dt {
+  color: var(--text-secondary);
+}
+.srb .srb-cab-snap-row dd {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.srb .srb-cab-chip {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+}
+.srb .srb-cab-chip.is-up,
+.srb .srb-cab-delta.is-up {
+  color: var(--positive);
+}
+.srb .srb-cab-chip.is-down,
+.srb .srb-cab-delta.is-down {
+  color: var(--negative);
+}
+.srb .srb-cab-delta {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+}
+
+/* Takeaways */
+.srb .srb-cab-take-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.srb .srb-cab-take-list li {
+  position: relative;
+  padding-left: 18px;
+}
+.srb .srb-cab-take-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+}
+.srb .srb-cab-take-list strong {
+  color: var(--text-primary);
+}
+
+/* Segmented controls */
+.srb .srb-cab-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.srb .srb-cab-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--srb-row);
+}
+.srb .srb-cab-seg-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.srb .srb-cab-seg-btn:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.srb .srb-cab-seg-btn.is-on {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--emerald) 28%, transparent);
+}
+.srb .srb-cab-seg-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Charts */
+.srb .srb-cab-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.srb .srb-cab-bar.is-buy,
+.srb .srb-cab-ring.is-house {
+  fill: var(--emerald);
+}
+.srb .srb-cab-bar.is-sell {
+  fill: var(--echo-chart-purple);
+}
+.srb .is-gap .srb-cab-bar {
+  fill-opacity: 0.35;
+}
+.srb .srb-cab-val {
+  fill: var(--text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 600;
+}
+.srb .srb-cab-axis {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+}
+.srb .srb-cab-grid {
+  stroke: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  stroke-width: 1;
+}
+.srb .srb-cab-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.srb .srb-cab-line.is-buy {
+  stroke: var(--emerald);
+}
+.srb .srb-cab-line.is-sell {
+  stroke: var(--echo-chart-purple);
+}
+.srb .srb-cab-dot.is-buy {
+  fill: var(--emerald);
+}
+.srb .srb-cab-dot.is-sell {
+  fill: var(--echo-chart-purple);
+}
+.srb .srb-cab-end {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 700;
+}
+.srb .srb-cab-end.is-buy {
+  fill: var(--emerald-text);
+}
+.srb .srb-cab-end.is-sell {
+  fill: var(--echo-chart-purple);
+}
+.srb .srb-cab-legend {
+  display: flex;
+  gap: 14px;
+  font-size: var(--type-micro-size);
+  color: var(--text-secondary);
+}
+.srb .srb-cab-key::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: var(--radius-sm);
+  vertical-align: -1px;
+}
+.srb .srb-cab-key.is-buy::before,
+.srb .srb-cab-key.is-house::before {
+  background: var(--emerald);
+}
+.srb .srb-cab-key.is-sell::before,
+.srb .srb-cab-key.is-senate::before {
+  background: var(--echo-chart-purple);
+}
+.srb p.srb-cab-note.srb-cab-note,
+.srb p.srb-cab-empty.srb-cab-empty {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  color: var(--text-muted) !important;
+}
+
+/* Donut */
+.srb .srb-cab-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.srb .srb-cab-donut {
+  width: 150px;
+  height: 150px;
+  flex: 0 0 auto;
+}
+.srb .srb-cab-ring {
+  fill: none;
+  stroke-width: 16;
+}
+.srb .srb-cab-ring.is-senate {
+  stroke: var(--echo-chart-purple);
+}
+.srb .srb-cab-ring.is-house {
+  fill: none;
+  stroke: var(--emerald);
+  transition: stroke-dasharray 0.4s ease;
+}
+.srb .srb-cab-donut-total {
+  fill: var(--text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 700;
+}
+.srb .srb-cab-donut-sub {
+  fill: var(--text-muted);
+  font-size: var(--type-micro-size);
+}
+.srb .srb-cab-donut-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--type-caption-size);
+  color: var(--text-primary);
+}
+.srb .srb-cab-donut-legend li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Key findings and limits */
+.srb .srb-cab-findings,
+.srb .srb-cab-limits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.srb .srb-cab-findings li,
+.srb .srb-cab-limits li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.srb .srb-cab-num {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--emerald) 22%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.srb .srb-cab-limits .bi {
+  color: var(--srb-accent);
+  margin-top: 2px;
+}
+.srb .srb-cab-limits strong {
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .srb .srb-cab-ring.is-house,
+  .srb .srb-cab-seg-btn {
+    transition: none;
+  }
+}

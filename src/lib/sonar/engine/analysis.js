@@ -87,6 +87,20 @@ export function analyze(evidence, spec = {}) {
       });
     }
 
+    /* Nov 7: congressional activity by chamber and 12-month window. The figures are computed
+       in landing-congress-activity.js (quant.js underneath); here they become citable metrics. */
+    if (d.metric === 'trade_count' && Array.isArray(d.activity)) {
+      for (const m of d.activity)
+        metrics.push(
+          metric(m.id, m.label, m.value, {
+            unit: m.unit,
+            method: m.method,
+            inputs: [e.id],
+            period: e.period,
+          }),
+        );
+    }
+
     if (d.metric === 'trade_count' && d.summary) {
       const c = d.summary;
       metrics.push(

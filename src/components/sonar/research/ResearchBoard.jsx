@@ -44,6 +44,8 @@ import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import { Cites } from './Cites';
+import { congressActivityCells } from './CongressActivityBoard';
+import { isActivityPanel } from '@/lib/sonar/congress-activity-board';
 import './research-board.css';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -195,7 +197,14 @@ function FindingFlags({ f, runId }) {
   );
 }
 
-function Findings({ report, evidence, runId, onCite, allCited = false }) {
+function Findings({
+  report,
+  evidence,
+  runId,
+  onCite,
+  allCited = false,
+  title = 'Key findings and evidence',
+}) {
   const id = useId();
   const findings = report?.keyFindings || [];
   const interp = (report?.analysis || []).filter((a) => a?.text);
@@ -210,7 +219,7 @@ function Findings({ report, evidence, runId, onCite, allCited = false }) {
   if (!findings.length && !interp.length) return null;
   return (
     <section className="srb-card" aria-labelledby={id}>
-      <Eyebrow id={id}>Key findings and evidence</Eyebrow>
+      <Eyebrow id={id}>{title}</Eyebrow>
       {findings.map((f) => (
         <article key={f.id} className="srb-finding">
           <header className="srb-finding-head">
@@ -674,8 +683,15 @@ export default function ResearchBoard({
   const lines = methodologyLines({ rank, metrics, run, limitations, sourceLabels });
   const groups = evidenceGroups(evidence, EVIDENCE_CATEGORIES);
   const resources = researchResources(state, { sourceLabels });
+  /* Nov 7: a congressional activity run ("How has disclosed congressional trading changed?")
+     carries Ezana's computed counts as a panel. Its board leads with them (executive answer,
+     takeaways, KPI strip, three charts, key findings, reporting limitations); the model's
+     findings, team, methodology and evidence follow. */
+  const activity = isActivityPanel(state.panels?.congressActivity)
+    ? state.panels.congressActivity
+    : null;
 
-  const cells = [
+  const generic = [
     {
       id: 'exec',
       section: 'answer',
@@ -743,8 +759,9 @@ export default function ResearchBoard({
         }
       : null,
     /* Locked answers keep their data gaps in view (honesty is not a paid feature): a
-       compact card in the free Evidence and sources section. */
-    !unlocked && limitations.length
+       compact card in the free Evidence and sources section. The activity board's
+       Reporting limitations card already does this. */
+    !unlocked && limitations.length && !activity
       ? {
           id: 'gaps',
           section: 'sources',
@@ -753,9 +770,34 @@ export default function ResearchBoard({
           node: <Gaps limitations={limitations} />,
         }
       : null,
-  ]
-    .filter(Boolean)
-    .filter((c) => canRender(c.section, unlocked));
+  ].filter(Boolean);
+  const replaced = new Set(['exec', 'snapshot', 'kpis', 'charts', 'table']);
+  const cells = (
+    activity
+      ? [
+          ...congressActivityCells(activity, { deepAction }),
+          ...generic
+            .filter((c) => !replaced.has(c.id))
+            .map((c) =>
+              c.id === 'findings'
+                ? {
+                    ...c,
+                    node: (
+                      <Findings
+                        report={report}
+                        evidence={evidence}
+                        runId={runId}
+                        onCite={onCite}
+                        allCited={!unlocked}
+                        title="Analyst findings and evidence"
+                      />
+                    ),
+                  }
+                : c,
+            ),
+        ]
+      : generic
+  ).filter((c) => canRender(c.section, unlocked));
   const spans = boardSpans(cells);
   const anchors = anchorCells(cells);
   const blocks = unlocked ? (deepBlocks || []).filter((b) => b && b.node) : [];

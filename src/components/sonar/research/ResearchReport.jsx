@@ -43,6 +43,7 @@ export const SOURCE_LABELS = {
   congress_sector: 'Congressional trades',
   congress_company: 'Congressional trades',
   politician_dossier: 'Member disclosures and committees',
+  congress_activity: 'Congressional trades by chamber',
   contracts_history: 'Federal contract obligations',
   institutional_13f: '13F institutional holdings',
   sec_filings: 'SEC filings',
@@ -740,15 +741,23 @@ export default function ResearchReport({
           {team?.methodology ? <h3 className="srr-h3">Sources searched</h3> : null}
           <p className="srr-method">
             Searched:{' '}
-            {run.methodology.plan.tasks.map((t) => SOURCE_LABELS[t.source] || t.source).join(', ')}.
+            {[
+              ...new Set(
+                run.methodology.plan.tasks.map((t) => SOURCE_LABELS[t.source] || t.source),
+              ),
+            ].join(', ')}
+            .
             {run.methodology.plan.excluded.filter((x) => x.reason !== 'below_threshold').length
-              ? ` Not searched: ${run.methodology.plan.excluded
-                  .filter((x) => x.reason !== 'below_threshold')
-                  .map(
-                    (x) =>
-                      `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
-                  )
-                  .join(', ')}.`
+              ? ` Not searched: ${[
+                  ...new Set(
+                    run.methodology.plan.excluded
+                      .filter((x) => x.reason !== 'below_threshold')
+                      .map(
+                        (x) =>
+                          `${SOURCE_LABELS[x.source] || x.source} (${x.reason === 'not_entitled' ? 'not in your plan' : x.reason.startsWith('unmet') ? 'no subject to search' : 'depth limit'})`,
+                      ),
+                  ),
+                ].join(', ')}.`
               : ''}{' '}
             {run.methodology.evidence.retrieved} records retrieved,{' '}
             {run.methodology.evidence.selected} selected.

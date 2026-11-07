@@ -26,6 +26,8 @@ import {
   buildCongressActivityDossier,
   congressActivityEvidence,
   detectCongressActivityPing,
+  activityMetricRows,
+  activityFormat,
 } from '@/lib/sonar/landing-congress-activity';
 import { buildCountryDossier, countryEvidence } from '@/lib/sonar/landing-country';
 import { industryEvidence } from '@/lib/sonar/landing-industry';
@@ -298,15 +300,22 @@ async function congressActivitySource({ rawQuery }, { admin, now }) {
   if (!ask) return { items: [] };
   const d = await buildCongressActivityDossier({ admin, years: ask.years, now });
   if (!d) return { items: [] };
+  const period = {
+    from: d.windows[0]?.from,
+    to: d.cutoff,
+    label: `${d.years} 12-month windows to ${activityFormat.fmtDate(d.cutoff)}`,
+  };
+  const activity = activityMetricRows(d);
   return {
     layout: { congressActivity: d },
-    items: congressActivityEvidence(d).map((e) => ({
+    items: congressActivityEvidence(d).map((e, i) => ({
       kind: 'aggregate',
       title: e.title,
       text: e.snippet,
       date: e.date || null,
-      period: { from: d.windows[0]?.from, to: d.cutoff, label: `${d.years} 12-month windows` },
-      data: { metric: 'trade_count' },
+      period,
+      /* The first record carries the computed metrics (analysis.js turns them into [M:id]). */
+      data: i === 0 ? { metric: 'trade_count', activity } : { metric: 'trade_count' },
       entities: ['House', 'Senate'],
     })),
   };

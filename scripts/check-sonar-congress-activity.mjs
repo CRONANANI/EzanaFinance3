@@ -142,3 +142,95 @@ test('the pipeline and the board are wired', () => {
   assert.match(ui, /kind === 'congress_activity'/);
   assert.match(ui, /'congress-activity': m\?\.congressActivity/);
 });
+
+/* ── Nov 7: the research board and the deep run ─────────────────────── */
+
+const B = await import('@/lib/sonar/congress-activity-board');
+const { scoreDomains } = await import('@/lib/sonar/engine/domain-score');
+const { analyze } = await import('@/lib/sonar/engine/analysis');
+
+test('the board opens with the answer, never the coverage caveat', () => {
+  const h = B.activityHeadline(dossier);
+  assert.match(
+    h,
+    /^Over the last three years, disclosed House trading more than doubled, then eased\. House sales now outnumber purchases/,
+  );
+  assert.doesNotMatch(h, /not comparable|coverage/i);
+  assert.ok(!/\d/.test(h), 'headline carries no figures');
+  const sum = B.activitySummary(dossier);
+  assert.doesNotMatch(sum, /duplicate rows/, 'the limits sentence lives in the limits card');
+});
+
+test('board snapshot, takeaways, KPIs, findings and limits come from the data', () => {
+  const snap = B.activitySnapshot(dossier);
+  assert.equal(snap.rows[0].display, '2,506 to 5,189');
+  assert.equal(snap.shares[0].value, '76.4%');
+  const k = B.activityKpis(dossier);
+  assert.deepEqual(
+    k.map((t) => t.value),
+    ['6,795', '3,518', '3,231', '76.4%'],
+  );
+  assert.equal(k[0].delta.text, 'House down 20% vs prior year');
+  assert.equal(B.activityTakeaways(dossier).length, 5);
+  assert.match(B.activityFindings(dossier)[0], /2,506 \(To Sep 22, 2024\), 6,511/);
+  const lim = B.activityLimits(dossier).map((l) => l.id);
+  assert.deepEqual(lim, ['lag', 'coverage', 'scope', 'quality']);
+  assert.match(B.activityLimits(dossier)[1].text, /1 senator on file/);
+});
+
+test('charts: window bars, chamber split and the purchase index', () => {
+  const bars = B.windowBars(dossier, 'house');
+  assert.deepEqual(
+    bars.map((b) => b.total),
+    [2495, 6490, 5144],
+  );
+  assert.ok(bars.every((b) => !b.gap));
+  assert.ok(B.windowBars(dossier, 'both')[0].gap, 'thin Senate years are marked');
+  const split = B.chamberSplit(dossier);
+  assert.equal(split.total, 6795);
+  const idx = B.sideIndex(dossier, 'house');
+  assert.equal(idx[0].purchases, 100);
+  assert.equal(B.sideIndex(dossier, 'senate'), null, 'one comparable Senate window');
+});
+
+test('deep run: congressional trading only, no company domains', () => {
+  const ids = scoreDomains(QUESTION, { intent: 'comparison', entities: [] }).map((x) => x.id);
+  assert.equal(ids[0], 'congress_trading');
+  for (const id of ['company', 'company_financials', 'market_performance'])
+    assert.ok(!ids.includes(id), id);
+  /* A named member keeps its own domains. */
+  const pel = scoreDomains('How has Nancy Pelosi trading changed over the last three years?', {
+    intent: 'politician',
+    entities: [{ kind: 'person_politician' }],
+  }).map((x) => x.id);
+  assert.ok(pel.includes('politician'));
+});
+
+test('deep run: the activity figures become citable metrics', () => {
+  const rows = M.activityMetricRows(dossier);
+  assert.ok(rows.find((m) => m.id === 'congress_house_trades_change'));
+  const { metrics } = analyze([
+    { id: 'ev1', period: { label: 'x' }, data: { metric: 'trade_count', activity: rows } },
+  ]);
+  assert.equal(metrics.length, rows.length);
+  assert.equal(Math.round(metrics.find((m) => m.id === 'congress_house_trades_change').value), -20);
+});
+
+test('the research board and report are wired', () => {
+  const board = readFileSync(
+    new URL('../src/components/sonar/research/ResearchBoard.jsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(board, /isActivityPanel\(state\.panels\?\.congressActivity\)/);
+  assert.match(board, /congressActivityCells\(activity/);
+  const report = readFileSync(
+    new URL('../src/components/sonar/research/ResearchReport.jsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(report, /congress_activity: 'Congressional trades by chamber'/);
+  const engine = readFileSync(
+    new URL('../src/lib/sonar/engine/engine.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(engine, /wantedByDomain\(src\)/);
+});
