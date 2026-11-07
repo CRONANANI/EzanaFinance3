@@ -100,7 +100,14 @@ export function DeepResearchPrompt({ query, deep, estimate = null, onDeep, onQui
   };
 
   return (
-    <div className="sdr-overlay" role="presentation">
+    <div
+      className="sdr-overlay force-dark-theme"
+      role="presentation"
+      onMouseDown={(e) => {
+        /* A press on the scrim (not the card) closes, as on the free account popup. */
+        if (e.target === e.currentTarget) onClose?.();
+      }}
+    >
       <div
         className="sdr-card"
         role="dialog"

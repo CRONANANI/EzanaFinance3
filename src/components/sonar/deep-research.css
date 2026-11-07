@@ -1,78 +1,113 @@
 /* Deep research mode: the offer dialog and the run view (DeepResearch.jsx).
    Page prefix `sdr-`. Tokens only (EZANA_BRANDING_GUIDE). */
 
+/* The offer dialog (Nov 6): the same dark glass as the Sonar free account
+   popup (sonar-signup-cta.css, .sscp and .ssc--popup): a dark scrim, a
+   black glass card with a mint hairline, mint mono kicker, white title,
+   emerald primary and a ghost secondary. The overlay carries
+   .force-dark-theme, so it stays dark in light mode and the legacy
+   light-mode text colours skip it. */
 .sdr-overlay {
   position: fixed;
   inset: 0;
   z-index: 2147482995;
   display: grid;
   place-items: center;
-  padding: 16px;
-  background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-  backdrop-filter: blur(6px);
+  padding: 24px 16px;
+}
+/* The scrim is its own layer, not the overlay's background: a backdrop
+   filter on the overlay would stop the card's own blur from reaching the
+   page beneath (the free account popup has the same split, .sscp-scrim). */
+.sdr-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, black 38%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 .sdr-card {
   position: relative;
-  width: min(560px, 100%);
-  max-height: calc(100dvh - 32px);
-  overflow: auto;
-  padding: 1.75rem;
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-xl);
-  background: var(--surface-card);
-  box-shadow: var(--shadow-md);
-  color: var(--text-secondary);
+  box-sizing: border-box;
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 26px 26px 22px;
+  border: 1px solid color-mix(in srgb, var(--brand-band-mint) 26%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, black 62%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 24px 64px color-mix(in srgb, black 45%, transparent);
+  color: white;
   font-family: var(--font-sans);
+  text-align: left;
 }
 .sdr-close {
   all: unset;
+  box-sizing: border-box;
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 12px;
+  right: 12px;
   width: 32px;
   height: 32px;
   display: grid;
   place-items: center;
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
   border-radius: var(--radius-md);
-  color: var(--text-muted);
+  color: white;
   cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 .sdr-close:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  border-color: var(--emerald);
+  color: var(--brand-band-mint);
 }
-.sdr-eyebrow {
-  margin: 0 0 0.5rem;
+.sdr-close:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.sdr-card .sdr-eyebrow {
+  margin: 0;
+  padding-right: 36px;
   display: inline-flex;
   gap: 0.4rem;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--emerald-text);
+  color: var(--brand-band-mint);
 }
-.sdr-title {
-  margin: 0 0 0.75rem;
-  font-size: var(--type-section-size);
-  font-weight: var(--type-section-weight);
-  line-height: 1.25;
-  color: var(--text-primary);
+.sdr-card .sdr-title {
+  margin: 8px 0 14px;
+  padding-right: 36px;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: white;
 }
-.sdr-query {
-  margin: 0 0 1rem;
+.sdr-card .sdr-query {
+  margin: 0 0 16px;
   padding: 0.75rem 0.9rem;
-  border-left: 2px solid var(--emerald);
-  background: var(--bg-tertiary);
+  border-left: 2px solid var(--brand-band-mint);
   border-radius: var(--radius-sm);
+  background: color-mix(in srgb, white 6%, transparent);
   font-size: 14px;
   line-height: 1.5;
-  color: var(--text-primary);
+  color: color-mix(in srgb, white 88%, transparent);
 }
-.sdr-body p {
+.sdr-card .sdr-body {
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--brand-band-mint) 18%, transparent);
+}
+.sdr-card .sdr-body p {
   margin: 0 0 0.75rem;
   font-size: 14px;
   line-height: 1.6;
+  color: color-mix(in srgb, white 78%, transparent);
 }
 .sdr-angles {
   list-style: none;
@@ -80,17 +115,18 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem 1rem;
+  gap: 0.5rem 1rem;
   font-size: 13px;
-  color: var(--text-primary);
+  color: color-mix(in srgb, white 88%, transparent);
 }
 .sdr-angles li {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: center;
 }
 .sdr-angles .bi {
-  color: var(--emerald);
+  flex-shrink: 0;
+  color: var(--brand-band-mint);
 }
 .sdr-actions {
   display: flex;
@@ -130,15 +166,56 @@
   border-color: var(--emerald-hover);
 }
 .sdr-btn:focus-visible,
-.sdr-close:focus-visible,
 .sdr-link:focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
-.sdr-note {
-  margin: 1rem 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
+/* The dialog's buttons: the free account popup's emerald primary and ghost
+   secondary (the run view's gates keep the base .sdr-btn above). */
+.sdr-card .sdr-actions {
+  margin-top: 1.25rem;
+  gap: 10px;
+}
+.sdr-card .sdr-btn {
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  border-color: color-mix(in srgb, white 30%, transparent);
+  color: white;
+  font-size: 0.875rem;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.sdr-card .sdr-btn:hover {
+  border-color: var(--emerald);
+  background: transparent;
+  color: var(--brand-band-mint);
+}
+.sdr-card .sdr-btn--primary {
+  border-color: transparent;
+  background: var(--emerald);
+  color: white;
+}
+.sdr-card .sdr-btn--primary:hover {
+  border-color: transparent;
+  background: var(--emerald-hover);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--emerald-glow);
+}
+.sdr-card .sdr-btn:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+.sdr-card .sdr-note {
+  margin: 14px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: color-mix(in srgb, white 62%, transparent);
 }
 
 /* The run view. Like the quick answer band, it sits on Sonar's dark globe
@@ -259,7 +336,11 @@
 
 @media (max-width: 640px) {
   .sdr-card {
-    padding: 1.25rem;
+    padding: 22px 18px 18px;
+  }
+  .sdr-card .sdr-btn {
+    flex: 1 1 100%;
+    justify-content: center;
   }
   .sdr-angles {
     grid-template-columns: 1fr;
@@ -272,30 +353,34 @@
   .sdr-pulse {
     animation: none;
   }
-  .sdr-btn {
+  .sdr-btn,
+  .sdr-close {
     transition: none;
+  }
+  .sdr-card .sdr-btn--primary:hover {
+    transform: none;
   }
 }
 
 /* Research modes (Nov 2026): the offer's sub-headings and estimate, and the
    Go deeper bar under a lighter answer. */
-.sdr-h3 {
-  margin: 0.75rem 0 0.25rem;
+.sdr-card .sdr-h3 {
+  margin: 1rem 0 0.35rem;
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: color-mix(in srgb, white 62%, transparent);
 }
-.sdr-estimate {
+.sdr-card .sdr-body .sdr-estimate {
   display: inline-flex;
   gap: 0.4rem;
   align-items: center;
-  color: var(--text-primary);
+  color: color-mix(in srgb, white 88%, transparent);
 }
 .sdr-estimate .bi {
-  color: var(--emerald);
+  color: var(--brand-band-mint);
 }
 .sdr-deeper {
   display: flex;
@@ -405,6 +490,14 @@
   color: var(--text-muted);
   cursor: not-allowed;
 }
+.sdr-card .sdr-btn.sdr-dcard-btn:disabled,
+.sdr-card .sdr-btn.sdr-dcard-btn[aria-disabled='true'] {
+  border-color: color-mix(in srgb, white 22%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, white 50%, transparent);
+  transform: none;
+  box-shadow: none;
+}
 .sdr-dcard-why {
   margin: 0;
   font-size: var(--type-caption-size);
@@ -412,11 +505,11 @@
   color: var(--text-muted);
 }
 /* The offer dialog's usage line and its standard alternative. */
-.sdr-usage {
+.sdr-card .sdr-body .sdr-usage {
   margin: 0.25rem 0 0;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: color-mix(in srgb, white 78%, transparent);
 }
 /* The run view takes focus when it starts from the card (tabIndex -1). */
 .sdr-run:focus:not(:focus-visible) {
