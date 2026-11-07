@@ -153,6 +153,10 @@
   min-width: 0;
 }
 .snr-board .snr-pb-visual-body > .snr-stack {
+  /* The band places the stack in its third column (sonar-band.css); here it is the cell's only
+     child, so it spans the cell, or its cards sit in an implicit right-hand track. */
+  grid-column: 1 / -1;
+  grid-row: auto;
   height: auto;
   max-height: none;
   overflow: visible;

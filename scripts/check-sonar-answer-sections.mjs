@@ -98,6 +98,15 @@ test('rendering, anchors and scroll-spy', () => {
     'findings',
     'the last open section at the bottom',
   );
+  /* Page order is not nav order: a later section whose anchor sits higher on the page (or has
+     scrolled past) must not win over the one nearest the line. */
+  const nav2 = A.answerNav(['answer', 'metrics', 'findings', 'sources']);
+  const at = { answer: 88, metrics: 88, findings: 520, sources: -400 };
+  const tops2 = nav2.map((s) => (s.locked ? undefined : at[s.key]));
+  assert.equal(A.activeKey(nav2, tops2, 300), 'answer', 'a shared row goes to the earlier section');
+  at.answer = -300;
+  const tops3 = nav2.map((s) => (s.locked ? undefined : at[s.key]));
+  assert.equal(A.activeKey(nav2, tops3, 300), 'metrics', 'the nearest anchor above the line');
 });
 
 /* ------------------------------------------------------------------ ping board */

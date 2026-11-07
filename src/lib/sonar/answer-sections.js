@@ -137,7 +137,18 @@ export function activeKey(nav, tops, line, atBottom = false) {
   const open = nav.map((s, i) => ({ s, top: tops[i] })).filter((x) => !x.s.locked);
   if (!open.length) return null;
   if (atBottom) return open[open.length - 1].s.key;
+  /* The section whose anchor sits closest above the line. Page order is not nav order (Key
+     metrics sits beside the executive answer, the research team beside the findings), so the
+     nearest anchor wins, not the last one in the list; a tie on one row goes to the earlier
+     section in the nav. */
   let cur = open[0].s.key;
-  for (const x of open) if (Number.isFinite(x.top) && x.top <= line) cur = x.s.key;
+  let best = -Infinity;
+  for (const x of open) {
+    if (!Number.isFinite(x.top) || x.top > line) continue;
+    if (x.top > best + 4) {
+      best = x.top;
+      cur = x.s.key;
+    }
+  }
   return cur;
 }

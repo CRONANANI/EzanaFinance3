@@ -357,20 +357,27 @@ export function datasetEvidence(live) {
  */
 export function sourceCoverage(live) {
   const name = live?.dossier?.name || '';
+  /* A ping can land without a dossier, or cite a dataset its dossier did not match (the brief's
+     evidence adds those rows), so every match is read defensively. */
+  const m = live?.dossier?.matches || {};
+  const publishers = (m.macro?.publishers || []).map((p) => String(p).split(/[,(]/)[0].trim());
+  const echo = Array.isArray(m.echo) ? m.echo.length : 0;
+  const markets = Array.isArray(m.markets) ? m.markets.length : 0;
+  const lead = name ? `${name}, ` : '';
   const out = datasetEvidence(live).map((r) => ({
     id: r.id,
     label: r.dataset,
     detail:
       r.id === 'oecd-macro'
-        ? `${name}, macro (matched)`
+        ? `${lead}macro (matched)`
         : r.id === 'empire'
-          ? `${name}, composite (matched)`
-          : r.id === 'macro'
-            ? `${name}, ${clip((live.dossier.matches.macro.publishers || []).map((p) => String(p).split(/[,(]/)[0].trim()).join(', '), 48)}`
-            : r.id === 'echo'
-              ? `${(live.dossier.matches.echo || []).length} article${(live.dossier.matches.echo || []).length === 1 ? '' : 's'}`
-              : r.id === 'prediction-markets'
-                ? `${live.dossier.matches.markets.length} market${live.dossier.matches.markets.length === 1 ? '' : 's'}`
+          ? `${lead}composite (matched)`
+          : r.id === 'macro' && publishers.length
+            ? `${lead}${clip(publishers.join(', '), 48)}`
+            : r.id === 'echo' && echo
+              ? `${echo} article${echo === 1 ? '' : 's'}`
+              : r.id === 'prediction-markets' && markets
+                ? `${markets} market${markets === 1 ? '' : 's'}`
                 : 'cited in the brief',
   }));
   const web = (live?.webSources || []).length;
@@ -404,8 +411,18 @@ export function pingResources(live, { max = 40 } = {}) {
   const out = [];
   const seen = new Set();
   const add = (r) => {
-    const key = `${r.kind}:${(r.href || r.label).toLowerCase()}`;
-    if (!r.label || seen.has(key)) return;
+    if (!r.label) return;
+    /* An Ezana dataset is one chip however many ways the ping used it (a source it searched and
+       a record the brief cited): keyed by name, and the chip keeps a link if any copy has one. */
+    const key =
+      r.kind === 'dataset'
+        ? `dataset:${r.label.toLowerCase()}`
+        : `${r.kind}:${(r.href || r.label).toLowerCase()}`;
+    if (seen.has(key)) {
+      const had = out.find((x) => x.key === key);
+      if (had && !had.href && r.href) Object.assign(had, { href: r.href, external: r.external });
+      return;
+    }
     seen.add(key);
     out.push({ ...r, key });
   };

@@ -16,7 +16,7 @@
  * whatever element scrolls. Styles: sonar-answer-frame.css (san-). Tokens only.
  */
 
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { VisuallyHidden } from '@/components/ds';
 import { answerNav, activeKey } from '@/lib/sonar/answer-sections';
 import './sonar-answer-frame.css';
@@ -33,12 +33,16 @@ export function SonarAnswerFrame({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const nav = useMemo(() => answerNav(present, { unlocked }), [key, unlocked]);
   const [active, setActive] = useState(null);
+  /* After a nav click the clicked section stays current while the smooth scroll runs, so the
+     spy does not flicker through the sections it passes. */
+  const holdUntil = useRef(0);
   const lockedHead = useId();
 
   useEffect(() => {
     let raf = 0;
     const update = () => {
       raf = 0;
+      if (performance.now() < holdUntil.current) return;
       const line = window.innerHeight * 0.35;
       const tops = nav.map((s) =>
         s.locked ? undefined : document.getElementById(s.id)?.getBoundingClientRect().top,
@@ -67,6 +71,7 @@ export function SonarAnswerFrame({
     const el = document.getElementById(s.id);
     if (!el) return;
     e.preventDefault();
+    holdUntil.current = performance.now() + 1200;
     setActive(s.key);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });

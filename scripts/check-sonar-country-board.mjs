@@ -316,6 +316,36 @@ test('source coverage names each dataset, the web and the news', () => {
   assert.equal(c.at(-1).detail, '1 story');
 });
 
+test('source coverage holds when the ping has no dossier or the brief cites an unmatched dataset', () => {
+  /* The ping board reuses this for every answer: an open question lands with no dossier, and a
+     company brief can cite macro, Echo or market records its dossier did not match. */
+  const evidence = [
+    { dataset: 'macro', title: 'Brent crude, monthly' },
+    { dataset: 'echo', title: 'Shipping and the Red Sea' },
+    { dataset: 'prediction-markets', title: 'Will freight rates fall?' },
+  ];
+  for (const dossier of [null, { kind: 'company', name: 'Lockheed Martin', matches: {} }]) {
+    const c = B.sourceCoverage({ dossier, evidence, sources: [] });
+    assert.deepEqual(
+      c.map((x) => x.id),
+      ['macro', 'echo', 'prediction-markets'],
+    );
+    assert.ok(c.every((x) => x.detail === 'cited in the brief'));
+  }
+});
+
+test('the belt shows a dataset once when the ping both searched it and cited it', () => {
+  const r = B.pingResources({
+    dossier: null,
+    sources: [{ id: 'macro', label: 'Macro indicators', used: true }],
+    evidence: [{ dataset: 'macro', title: 'Brent crude, monthly', url: '/datasets/macro' }],
+  });
+  const ds = r.filter((x) => x.kind === 'dataset');
+  assert.equal(ds.length, 1);
+  assert.equal(ds[0].label, 'Macro indicators');
+  assert.equal(ds[0].href, '/datasets/macro', 'the chip keeps the cited record link');
+});
+
 /* ------------------------------------------------------------------ the belt */
 
 test('the belt lists every resource once: datasets, publishers, web, news', () => {
