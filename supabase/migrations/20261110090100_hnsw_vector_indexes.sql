@@ -4,20 +4,35 @@
 -- and recall degrades as rows are added. HNSW (as on polymarket_market_index)
 -- keeps recall without rebuilds. Same opclass (cosine), so the match_* RPCs
 -- (order by embedding <=> q limit k) use it unchanged.
+-- Each index is guarded on its table and embedding column, so the migration also
+-- applies (as a no-op) to a database that does not have those tables yet, such as
+-- the CI stub. Idempotent: drop if exists, create if not exists.
 set maintenance_work_mem = '128MB';
 
-drop index if exists public.idx_hca_embedding;
-create index if not exists idx_hca_embedding_hnsw
-  on public.help_center_articles using hnsw (embedding vector_cosine_ops);
-
-drop index if exists public.echo_articles_embedding_idx;
-create index if not exists echo_articles_embedding_hnsw
-  on public.echo_articles using hnsw (embedding vector_cosine_ops);
-
-drop index if exists public.idx_eac_embedding;
-create index if not exists idx_eac_embedding_hnsw
-  on public.echo_article_chunks using hnsw (embedding vector_cosine_ops);
-
-drop index if exists public.org_research_notes_embedding_idx;
-create index if not exists org_research_notes_embedding_hnsw
-  on public.org_research_notes using hnsw (embedding vector_cosine_ops);
+do $$
+declare
+  t record;
+begin
+  for t in
+    select * from (values
+      ('help_center_articles', 'idx_hca_embedding', 'idx_hca_embedding_hnsw'),
+      ('echo_articles', 'echo_articles_embedding_idx', 'echo_articles_embedding_hnsw'),
+      ('echo_article_chunks', 'idx_eac_embedding', 'idx_eac_embedding_hnsw'),
+      ('org_research_notes', 'org_research_notes_embedding_idx', 'org_research_notes_embedding_hnsw')
+    ) as v(tbl, old_idx, new_idx)
+  loop
+    if to_regclass('public.' || t.tbl) is not null
+       and exists (
+         select 1 from information_schema.columns
+         where table_schema = 'public' and table_name = t.tbl and column_name = 'embedding'
+       )
+    then
+      execute format('drop index if exists public.%I', t.old_idx);
+      execute format(
+        'create index if not exists %I on public.%I using hnsw (embedding vector_cosine_ops)',
+        t.new_idx, t.tbl
+      );
+    end if;
+  end loop;
+end
+$$;
