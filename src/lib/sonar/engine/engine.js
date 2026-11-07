@@ -739,6 +739,29 @@ export async function runResearch(query, opts = {}) {
       status: report.deterministic ? 'failed' : 'done',
     });
 
+  /* ── The director's draft (Nov 7) ────────────────────────────────── */
+  /* While the review passes run (red team, the director's resolution, the model audit
+     review), the reader sees the director's draft, marked as under review. Sent only when
+     one of those passes will run; otherwise findings follows at once and nothing changes.
+     The brief passes the same grounding guard as the final one, and a guard failure sends
+     no draft at all. The report is a deep copy, so later review edits do not alter what was
+     sent. The draft never reaches a saved report: snapshots read the findings report only. */
+  const redTeamAhead = redTeamWanted && withTeam && !report.deterministic && left() > 25_000;
+  const auditReviewAhead = teamMode === 'deep' && !report.deterministic && left() > 15_000;
+  if ((redTeamAhead || auditReviewAhead) && !aborted()) {
+    try {
+      const grounded = await enforceGrounding(
+        memo ? renderMemoBrief(report) : renderBrief(report),
+        marked.map((e) => `${e.title}. ${e.text}`),
+        null,
+      );
+      if (typeof grounded?.text === 'string' && !aborted())
+        emit('draft', { report: structuredClone(report), brief: grounded.text });
+    } catch {
+      /* No draft: the reader waits for findings, as before. */
+    }
+  }
+
   /* ── Red team (deep, or the org requires it) ─────────────────────── */
   let redTeam = null;
   if (redTeamWanted && withTeam && !report.deterministic && left() > 25_000 && !aborted()) {

@@ -255,3 +255,103 @@ test('wiring: the report renders the board, the run passes deep research inline,
   const board = read('src/components/sonar/research/ResearchBoard.jsx');
   assert.ok(!board.includes('—'), 'no em dash');
 });
+
+/* ------------------------------------------------------------------ director draft */
+/* Nov 7: deep research shows the research director's grounded draft while the red team and
+   the audit review run; findings replaces it, and a draft is never saved. */
+
+const S = await import('@/lib/sonar/research-state');
+const Org = await import('@/lib/org-sonar/reports');
+const fold = (events, s = S.EMPTY_RESEARCH_STATE) => events.reduce(S.reduceEvent, s);
+
+test('draft: the event sets state.draft, findings clears it and sets the report', () => {
+  assert.equal(S.EMPTY_RESEARCH_STATE.draft, null);
+  const draftReport = { executiveConclusion: { text: 'Draft view.' }, keyFindings: [] };
+  const s1 = fold([
+    ['stage', { stage: 'synthesizing' }],
+    ['draft', { report: draftReport, brief: 'Draft brief.' }],
+  ]);
+  assert.deepEqual(s1.draft, { report: draftReport, brief: 'Draft brief.' });
+  assert.equal(s1.report, null, 'a draft is not the report');
+  assert.equal(s1.brief, null);
+  const finalReport = { executiveConclusion: { text: 'Final view.' }, keyFindings: [] };
+  const s2 = S.reduceEvent(s1, ['findings', { report: finalReport, brief: 'Final brief.' }]);
+  assert.equal(s2.draft, null);
+  assert.equal(s2.report, finalReport);
+  assert.equal(s2.brief, 'Final brief.');
+  /* A malformed draft changes nothing. */
+  assert.equal(S.reduceEvent(s1, ['draft', null]), s1);
+  assert.equal(S.reduceEvent(s1, ['draft', { brief: 'x' }]), s1);
+});
+
+test('draft: a state with only a draft saves nothing, and a saved snapshot never carries it', () => {
+  const onlyDraft = fold([
+    ['plan', { runId: 'r1', spec: { question: 'q', depth: 'deep', domains: [] } }],
+    ['draft', { report: { executiveConclusion: { text: 'Draft view.' } }, brief: 'Draft brief.' }],
+  ]);
+  assert.equal(Org.snapshotFromState(onlyDraft), null);
+  const done = S.reduceEvent(onlyDraft, [
+    'findings',
+    { report: { executiveConclusion: { text: 'Final view.' } }, brief: 'Final brief.' },
+  ]);
+  const snap = Org.snapshotFromState(done);
+  assert.equal(snap.report.executiveConclusion.text, 'Final view.');
+  assert.equal(snap.brief, 'Final brief.');
+  assert.ok(!('draft' in snap));
+  assert.ok(!JSON.stringify(snap).includes('Draft'));
+});
+
+test('draft: the engine sends a grounded deep copy before the red team, only when a review runs', () => {
+  const src = read('src/lib/sonar/engine/engine.js');
+  const at = (re) => {
+    const m = re.exec(src);
+    assert.ok(m, `engine has ${re}`);
+    return m.index;
+  };
+  const director = at(/status: report\.deterministic \? 'failed' : 'done',/);
+  const draft = at(
+    /emit\('draft', \{ report: structuredClone\(report\), brief: grounded\.text \}\)/,
+  );
+  const redTeam = at(/emit\('stage', \{ stage: 'red_team' \}\)/);
+  const findings = at(/emit\('findings', \{ report, brief \}\)/);
+  assert.ok(director < draft && draft < redTeam && redTeam < findings, 'event order');
+  const block = src.slice(director, draft);
+  /* The same guard and the same evidence lines as the final brief. */
+  assert.match(
+    block,
+    /await enforceGrounding\(\s*memo \? renderMemoBrief\(report\) : renderBrief\(report\),\s*marked\.map\(\(e\) => `\$\{e\.title\}\. \$\{e\.text\}`\),\s*null,\s*\)/,
+  );
+  /* Only when a review step will run, mirroring the red-team and audit-review gates. */
+  assert.match(
+    block,
+    /const redTeamAhead = redTeamWanted && withTeam && !report\.deterministic && left\(\) > 25_000;/,
+  );
+  assert.match(
+    block,
+    /const auditReviewAhead = teamMode === 'deep' && !report\.deterministic && left\(\) > 15_000;/,
+  );
+  assert.match(block, /if \(\(redTeamAhead \|\| auditReviewAhead\) && !aborted\(\)\)/);
+  assert.match(src, /if \(teamMode === 'deep' && !report\.deterministic && left\(\) > 15_000/);
+  assert.ok(!/\u2014/.test(block), 'no em dash');
+});
+
+test('draft: the run renders the draft under a status label while running, save stays off', () => {
+  const run = read('src/components/sonar/DeepResearch.jsx');
+  assert.match(
+    run,
+    /state\.status === 'running' && !state\.report && Boolean\(state\.draft\?\.report\)/,
+  );
+  assert.match(run, /report: state\.draft\.report, brief: state\.draft\.brief/);
+  assert.match(run, /role="status"/);
+  assert.match(run, /Draft\. Review in progress/);
+  assert.equal((run.match(/<ResearchReport\s+state=\{draft\.view\}/g) || []).length, 2);
+  /* SaveToOrg renders only when the run is done, after findings replaced the draft. */
+  assert.ok(!/<SaveToOrg[\s\S]{0,40}draft/.test(run));
+  assert.match(run, /state\.status === 'done' \? \(\s*<SaveToOrg/);
+  assert.ok(!/\u2014/.test(run), 'no em dash');
+  const css = read('src/components/sonar/deep-research.css');
+  const rule = /\.sdr-draft \{[^}]*\}/.exec(css)?.[0] || '';
+  assert.match(rule, /font-size: var\(--type-label-size\)/);
+  assert.match(rule, /letter-spacing: var\(--type-label-tracking\)/);
+  assert.ok(!/#[0-9a-f]{3,8}\b/i.test(rule) && !/transition|animation/.test(rule));
+});

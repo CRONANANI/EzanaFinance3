@@ -333,6 +333,27 @@
   border-radius: var(--radius-xl);
   background: transparent;
 }
+/* Nov 7: the label over the research director's draft while the review passes run. The
+   live region stays in place with no box of its own, so it takes no room until the label
+   fills it. No motion. */
+.sdr-draft {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0 0 1rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--warning-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+}
+.sdr-draft .bi {
+  color: var(--warning);
+}
 
 @media (max-width: 640px) {
   .sdr-card {

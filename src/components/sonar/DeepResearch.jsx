@@ -176,6 +176,36 @@ export function DeepResearchPrompt({ query, deep, estimate = null, onDeep, onQui
   );
 }
 
+/**
+ * Nov 7: while the red team and the audit review run, the engine sends the research
+ * director's grounded draft. It renders in the report's place, marked as under review,
+ * until findings replaces it in place. Only while the run is live: a cancelled or failed
+ * run shows no draft. Save stays off because SaveToOrg renders only once the run is done,
+ * after findings has replaced the draft.
+ */
+function withDraft(state) {
+  const showing = state.status === 'running' && !state.report && Boolean(state.draft?.report);
+  return {
+    showing,
+    view: showing ? { ...state, report: state.draft.report, brief: state.draft.brief } : state,
+  };
+}
+
+/* One live region per run, present before the label fills it, so a screen reader hears
+   the label once when the draft appears and nothing when findings removes it. */
+function DraftStatus({ showing }) {
+  return (
+    <div className="sdr-draft-live" role="status" aria-live="polite">
+      {showing ? (
+        <p className="sdr-draft">
+          <i className="bi bi-hourglass-split" aria-hidden="true" />
+          Draft. Review in progress
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function clock(sec) {
   const s = Math.max(0, Math.floor(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -222,6 +252,7 @@ export function DeepResearchRun({
   }, [running]);
   const elapsed = (now - t0.current) / 1000;
   const over = estimate?.maxSec && elapsed > estimate.maxSec;
+  const draft = withDraft(state);
 
   return (
     <div
@@ -304,7 +335,8 @@ export function DeepResearchRun({
       ) : null}
       {state.status !== 'idle' && state.status !== 'gated' && state.status !== 'quota' ? (
         <div className="sdr-report">
-          <ResearchReport state={state} />
+          {running ? <DraftStatus showing={draft.showing} /> : null}
+          <ResearchReport state={draft.view} />
         </div>
       ) : null}
       {state.status === 'done' ? (
@@ -377,6 +409,8 @@ export function StandardResearchRun({
       }
     : null;
   const hint = coverageHint || goDeeper || null;
+  /* A standard run sends a draft only when the org requires a red team. */
+  const draft = withDraft(state);
   /* Nov 6: a finished research report (not a memo) renders as the research board, whose
      executive answer carries deep research as one inline button; the card below goes. */
   const onBoard = Boolean(
@@ -445,9 +479,12 @@ export function StandardResearchRun({
       ) : null}
       {state.status !== 'idle' && state.status !== 'gated' ? (
         <div className="sdr-report">
+          {running ? <DraftStatus showing={draft.showing} /> : null}
           <ResearchReport
-            state={state}
-            onRunDeep={estimate && onDeep ? () => onDeep({ supersede: false }) : null}
+            state={draft.view}
+            onRunDeep={
+              estimate && onDeep && !draft.showing ? () => onDeep({ supersede: false }) : null
+            }
             deepAction={
               onBoard && state.status === 'done' && estimate && onDeep ? (
                 <DeepResearchCard

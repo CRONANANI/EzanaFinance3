@@ -34,6 +34,10 @@ export const EMPTY_RESEARCH_STATE = {
   team: null,
   analysts: {},
   audit: null,
+  /* Nov 7: the research director's grounded draft { report, brief }, sent while the red team
+     and the audit review run (deep research, or an org that requires a red team). Shown as
+     under review until findings arrives, which clears it. Never part of a saved snapshot. */
+  draft: null,
 };
 
 const ANALYST_ROLES = new Set(['lead', 'supporting', 'director', 'auditor', 'red-team']);
@@ -90,8 +94,12 @@ export function reduceEvent(state, [type, d]) {
       return { ...state, relationships: d };
     case 'coverage':
       return { ...state, coverage: d };
+    case 'draft':
+      return d && typeof d === 'object' && d.report
+        ? { ...state, draft: { report: d.report, brief: d.brief ?? null } }
+        : state;
     case 'findings':
-      return { ...state, report: d.report, brief: d.brief };
+      return { ...state, report: d.report, brief: d.brief, draft: null };
     case 'report':
       return { ...state, run: d };
     case 'team':
