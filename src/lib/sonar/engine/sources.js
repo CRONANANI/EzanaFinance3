@@ -641,11 +641,11 @@ async function sanctionsSource({ countries, query }) {
   };
 }
 
-async function macroCountry({ country }, { admin, ms = 2500 }) {
+async function macroCountry({ country, rawQuery = '' }, { admin, ms = 2500 }) {
   /* The dossier (OECD, Empire, news) plus the country's headline series from the macro
      catalogue, in parallel. */
   const [d, brief] = await Promise.all([
-    buildCountryDossier(country, admin, { matchEcho }),
+    buildCountryDossier(country, admin, { matchEcho, query: rawQuery }),
     countryBrief(admin, country.iso3, { limit: 8, timeoutMs: Math.max(600, ms - 400) }).catch(
       () => [],
     ),

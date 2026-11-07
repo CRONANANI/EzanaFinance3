@@ -238,6 +238,8 @@ export const DEFAULT_CONFIG = {
       export_controls: 0.9,
       sanctions: 0.8,
       macro_series: 0.8,
+      /* Nov 7: a country's dossier now carries UCDP organized violence (conflict evidence). */
+      macro_country: 0.6,
       revenue_geo: 0.9,
       news: 0.8,
       prediction_markets: 0.5,

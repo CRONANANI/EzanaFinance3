@@ -25,7 +25,7 @@ Measure the level and direction of geopolitical and political risk against its o
 
 ## Optional evidence
 
-- conflict -> UCDP deaths and events in organised violence, monthly (pending activation; treat as absent until rows exist).
+- conflict -> UCDP deaths and events in organised violence, monthly by country and type (state-based, non-state, one-sided), with UCDP's low to high range; the current year comes from the preliminary monthly release. A country dossier adds the deadliest conflicts, the most active parties and the share of global deaths.
 - news_tone -> GDELT coverage tone and volume (partial coverage).
 - news -> dated articles (about five weeks of history).
 - ports_chokepoints -> IMF PortWatch daily port calls and chokepoint transits (eyes_port_activity, eyes_chokepoint_transits: totals and by tanker, container, dry bulk, cargo, with capacity).
@@ -146,14 +146,14 @@ Standard contract, plus:
 - No country GPR (only 44 countries): use WUI or EPU and WGI; say the country GPR is not covered.
 - WUI lags by a quarter or more; state its period and do not describe it as current.
 - WGI is annual and lags; use as structural context only.
-- UCDP pending: dataGaps must list conflict event data.
+- UCDP months from the monthly release are preliminary: say so when they carry the finding, and never compare a part-year with a full year.
 - PortWatch data older than 14 days: say so before describing current shipping.
 - News beyond five weeks is unavailable; do not imply a full event history.
 
 ## Known limits of Ezana's data for this discipline
 
 - GPR country coverage is 44 countries; GPR measures newspaper attention, not outcomes.
-- No conflict event data until UCDP is activated; GDELT coverage is partial.
+- UCDP counts deaths in organized violence only (at least one organized actor); it does not cover crime outside organized groups, protests or unrest without deaths. GDELT coverage is partial.
 - No freight rates, insurance premiums or trade values by route; PortWatch gives counts and capacity only.
 - No bilateral trade matrix by partner; dependency on a specific supplier country cannot be measured from macro series.
 - News history is about five weeks.

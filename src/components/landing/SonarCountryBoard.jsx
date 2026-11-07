@@ -59,6 +59,7 @@ import {
   chartSpans,
 } from '@/lib/sonar/country-board';
 import { fxFindings } from '@/lib/sonar/macro/fx-findings';
+import ConflictCountryPanel from '@/components/conflict/ConflictCountryPanel';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
@@ -475,6 +476,7 @@ export function SonarCountryBoard({
 }) {
   const mapId = useId();
   const naId = useId();
+  const cfId = useId();
   /* The host's dataset cards fetch on their own and render nothing when no card matches.
      The cell stays mounted (so the fetch can land) but leaves the packing while empty,
      so an empty cell never holds half a row open. */
@@ -577,6 +579,26 @@ export function SonarCountryBoard({
                 How pressure can travel
               </Eyebrow>
               <TransmissionMap map={intel.transmission} headingId={mapId} />
+            </section>
+          ),
+        }
+      : null,
+    /* Nov 7: UCDP organized violence, when the ping asks about conflict or the country had
+       1,000+ deaths in the last 12 months (landing-country.js sets conflictFocus). */
+    dossier.conflict && dossier.conflictFocus
+      ? {
+          id: 'conflict',
+          section: 'charts',
+          span: 12,
+          min: 12,
+          node: (
+            <section className="snr-bd-card" aria-labelledby={cfId}>
+              <ConflictCountryPanel
+                data={dossier.conflict}
+                compact
+                headingId={cfId}
+                href={`/datasets/conflict?country=${dossier.conflict.iso3}`}
+              />
             </section>
           ),
         }

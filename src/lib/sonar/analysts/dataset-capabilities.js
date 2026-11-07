@@ -180,7 +180,8 @@ export const CAPABILITIES = {
     label: 'Organized violence (UCDP)',
     unit: 'deaths / events per month',
     period: 'monthly',
-    semantics: 'pending access token: usually unavailable',
+    semantics:
+      'UCDP GED monthly country totals (best estimate); the current year is a preliminary monthly release',
     freshDays: 120,
   }),
   news_tone: M(['news_tone'], {

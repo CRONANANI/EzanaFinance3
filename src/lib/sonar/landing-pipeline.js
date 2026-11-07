@@ -1588,9 +1588,9 @@ async function buildDossierFor({
     try {
       return await leg(
         'dossier-country',
-        () => buildCountryDossier(country, admin, { matchEcho }),
+        () => buildCountryDossier(country, admin, { matchEcho, query: understood?.raw || '' }),
         (v) =>
-          `oecd=${v.oecd ? v.oecd.headline.length : 0} story=${v.oecd?.stories?.length || 0} empire=${v.empire ? v.empire.rank || 'unranked' : 'n'} news=${v.news.length} echo=${v.echo.length}`,
+          `oecd=${v.oecd ? v.oecd.headline.length : 0} story=${v.oecd?.stories?.length || 0} empire=${v.empire ? v.empire.rank || 'unranked' : 'n'} news=${v.news.length} echo=${v.echo.length} conflict=${v.conflict ? v.conflict.kpis.deaths : 'n'}`,
       );
     } catch {
       return null;

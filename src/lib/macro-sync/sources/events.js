@@ -8,14 +8,28 @@
  * For each tracked country: share of global coverage that mentions it (timelinevol) and the
  * average tone of that coverage (timelinetone), daily. A weekly pass refreshes the last 3 months.
  *
- * UCDP GED via the API, which now needs an access token (email the UCDP API maintainer, see
- * ucdp.uu.se/apidocs; 5,000 requests/day). Header: x-ucdp-access-token. Without
- * UCDP_ACCESS_TOKEN set, the rotator skips this adapter. CC BY 4.0.
+ * UCDP GED via the API, which needs an access token (email the UCDP API maintainer, see
+ * ucdp.uu.se/apidocs; 5,000 requests a day, errors included, reset at midnight UTC). Header:
+ * x-ucdp-access-token. Without UCDP_ACCESS_TOKEN set, the rotator skips this adapter. CC BY 4.0.
  *   https://ucdpapi.pcr.uu.se/api/gedevents/{version}?pagesize=1000&page=N&StartDate=&EndDate=
- * Each batch pages through one calendar year completely, then sums fatalities ("best") and
- * counts events per country and month, so a batch never writes a partial monthly total.
+ * Nov 7: one batch per quarter (src/lib/ucdp/core.js), by date_end, which is what StartDate
+ * and EndDate filter on. Each batch pages through its quarter completely, sums fatalities
+ * ("best") and counts events per country and month of date_end (so no month is split across
+ * batches), and stores every event in public.ucdp_ged_events (afterBatch) for the Armed
+ * Conflict Tracker and Sonar. Release versions are read from the docs page, so a new monthly
+ * release is picked up without a code change. A weekly pass is about 120 requests.
  */
 import { nameToIso3, normPeriod } from '../formats.js';
+import {
+  resolveUcdpVersions,
+  versionForYear,
+  gedBatches,
+  gedRow,
+  writeGedEvents,
+  UCDP_API,
+  UCDP_PAGE_SIZE,
+  UCDP_FALLBACK,
+} from '../../ucdp/core.js';
 
 /* ------------------------------------------------------------------ GDELT */
 
@@ -118,9 +132,11 @@ export const gdelt = {
 
 /* ------------------------------------------------------------------ UCDP */
 
-/* Versions change every year: the stable release covers through last year, the candidate
-   release covers the current year month by month. Update both when UCDP publishes. */
-export const UCDP_VERSIONS = { stable: '26.1', candidate: '26.0.9' };
+/* The fallback releases (src/lib/ucdp/core.js reads the current ones from the docs page). */
+export const UCDP_VERSIONS = {
+  stable: UCDP_FALLBACK.stable,
+  candidate: Object.values(UCDP_FALLBACK.candidates).at(-1),
+};
 const VIOLENCE = { 1: 'state-based', 2: 'non-state', 3: 'one-sided' };
 
 /** Aggregate GED events to country-month rows. Exported for tests. */
@@ -128,7 +144,9 @@ export function aggregateGed(events) {
   const acc = new Map();
   for (const e of events) {
     const iso3 = nameToIso3(String(e.country || '').replace(/\s*\(.*\)$/, ''));
-    const period = normPeriod(String(e.date_start || '').slice(0, 10))?.slice(0, 7);
+    /* Month of date_end (date_start when absent): batches are cut by date_end, so a month's
+       total always comes from one batch. */
+    const period = normPeriod(String(e.date_end || e.date_start || '').slice(0, 10))?.slice(0, 7);
     if (!iso3 || !period) continue;
     const best = Number(e.best) || 0;
     for (const kind of ['all', VIOLENCE[e.type_of_violence]].filter(Boolean)) {
@@ -168,33 +186,50 @@ export function aggregateGed(events) {
   return rows;
 }
 
+/* The events behind each batch's monthly rows, handed from fetchBatch to afterBatch (the
+   engine passes afterBatch the same array fetchBatch returned). */
+const BATCH_EVENTS = new WeakMap();
+
 export const ucdp = {
   source: 'ucdp',
   minIntervalMs: 1500,
+  refreshAfterDays: 7,
   requiresEnv: ['UCDP_ACCESS_TOKEN'],
   attribution: 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset (CC BY 4.0)',
   buildBatches(passDate) {
-    const y = passDate.getUTCFullYear();
-    return [
-      { version: UCDP_VERSIONS.stable, year: y - 2, label: `GED ${y - 2}` },
-      { version: UCDP_VERSIONS.stable, year: y - 1, label: `GED ${y - 1}` },
-      { version: UCDP_VERSIONS.candidate, year: y, label: `GED candidate ${y}` },
-    ];
+    return gedBatches(passDate);
   },
   async fetchBatch(b, fetchWithRetry) {
+    const release = versionForYear(b.year, await resolveUcdpVersions());
+    if (!release) return []; // no release covers this year yet
     const headers = {
       'x-ucdp-access-token': process.env.UCDP_ACCESS_TOKEN,
       Accept: 'application/json',
     };
     const events = [];
-    for (let page = 0; page < 200; page += 1) {
-      const url = `https://ucdpapi.pcr.uu.se/api/gedevents/${b.version}?pagesize=1000&page=${page}&StartDate=${b.year}-01-01&EndDate=${b.year}-12-31`;
+    let totalPages = 1;
+    /* Pages are 0-based; stop at TotalPages, since a page past the end can answer 500. */
+    for (let page = 0; page < Math.min(totalPages, 200); page += 1) {
+      const url = `${UCDP_API}/${release.version}?pagesize=${UCDP_PAGE_SIZE}&page=${page}&StartDate=${b.from}&EndDate=${b.to}`;
       const res = await fetchWithRetry(url, { headers, okStatuses: [404] });
       if (res.status === 404) break;
       const json = await res.json();
+      totalPages = Number(json.TotalPages || 0);
       events.push(...(json.Result || []));
-      if (!json.NextPageUrl || page + 1 >= Number(json.TotalPages || 0)) break;
+      if (!json.NextPageUrl) break;
     }
-    return aggregateGed(events);
+    const rows = aggregateGed(events);
+    BATCH_EVENTS.set(rows, {
+      batch: { ...b, version: release.version },
+      rows: events.map((e) => gedRow(e, release)).filter(Boolean),
+    });
+    return rows;
+  },
+  async afterBatch(db, rows) {
+    const held = BATCH_EVENTS.get(rows);
+    if (!held) return;
+    BATCH_EVENTS.delete(rows);
+    const r = await writeGedEvents(db, held.batch, held.rows);
+    if (r.missingTable) console.warn('[ucdp] ucdp_ged_events is not migrated yet; events skipped');
   },
 };

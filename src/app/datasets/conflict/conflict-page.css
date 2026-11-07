@@ -1,0 +1,596 @@
+/* Armed Conflict Tracker (/datasets/conflict, prefix cfx-). Dataset page rules: canvas
+   max width and gutter from ds-canvas.css and ds-align.css, no outlines on card shells
+   (ds-cards.css), tokens only, mono numerals. Shading and the one-sided type use
+   --echo-chart-red (decline), state-based --echo-chart-orange, non-state
+   --echo-chart-purple; emerald only for selection and hover. More deaths reads as worse:
+   rises use the decline colour, falls --positive. */
+
+.cfx-page {
+  --cfx-map-empty: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  max-width: var(--ds-canvas-max, 1400px);
+  margin: 0 auto;
+  padding: 0 32px 64px;
+  overflow-x: clip;
+  min-width: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+.cfx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cfx-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Header */
+.cfx-header {
+  padding: 32px 0 8px;
+  text-align: center;
+}
+.cfx-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.cfx-title {
+  margin: 6px 0 8px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.cfx-lead {
+  max-width: 720px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.cfx-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cfx-asof {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Cards */
+.cfx-card {
+  min-width: 0;
+  padding: 16px 18px;
+  background: var(--surface-card, var(--bg-primary));
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+.cfx-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cfx-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.cfx-chip {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.cfx-note,
+.cfx-readout {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.cfx-readout {
+  min-height: 1.4em;
+  color: var(--text-secondary);
+}
+.cfx-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--text-secondary);
+}
+.cfx-empty .bi {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+}
+.cfx-h {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--text-muted);
+}
+.is-worse {
+  color: var(--echo-chart-red);
+}
+.is-better {
+  color: var(--positive);
+}
+
+/* KPI strip */
+.cfx-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cfx-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cfx-kpi-label,
+.cfx-kpi-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cfx-kpi-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.cfx-delta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.cfx-delta.is-up {
+  color: var(--echo-chart-red);
+}
+.cfx-delta.is-down {
+  color: var(--positive);
+}
+
+/* Pairs */
+.cfx-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 2.6fr) minmax(260px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.cfx-pair--even {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Controls */
+.cfx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cfx-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.cfx-seg-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.cfx-seg-btn:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.cfx-seg-btn.is-on {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--emerald) 28%, transparent);
+}
+.cfx-select select {
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.cfx-seg-btn:focus-visible,
+.cfx-select select:focus-visible,
+.cfx-tr:focus-visible,
+.cfx-ranked-row:focus-visible,
+.cfx-rise-row:focus-visible,
+.cfx-more:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Map */
+.cfx-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: opacity 0.2s ease;
+}
+.cfx-map.is-loading {
+  opacity: 0.55;
+}
+.cfx-country-shape {
+  stroke: var(--bg-primary);
+  stroke-width: 0.2;
+}
+.cfx-country-shape.has-data {
+  cursor: pointer;
+}
+.cfx-country-shape.has-data:hover {
+  stroke: var(--emerald);
+  stroke-width: 0.4;
+}
+.cfx-country-shape.is-on {
+  stroke: var(--emerald);
+  stroke-width: 0.6;
+}
+.cfx-dot {
+  fill-opacity: 0.75;
+  stroke: var(--bg-primary);
+  stroke-width: 0.1;
+  cursor: pointer;
+}
+.cfx-dot.is-sb {
+  fill: var(--echo-chart-orange);
+}
+.cfx-dot.is-ns {
+  fill: var(--echo-chart-purple);
+}
+.cfx-dot.is-os {
+  fill: var(--echo-chart-red);
+}
+.cfx-dot.is-none {
+  fill: var(--text-muted);
+}
+.cfx-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+.cfx-bin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cfx-bin i {
+  width: 12px;
+  height: 8px;
+  border-radius: var(--radius-sm);
+}
+.cfx-legend-sep {
+  width: 1px;
+  height: 12px;
+  background: color-mix(in srgb, var(--text-primary) 18%, transparent);
+}
+.cfx-key::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+.cfx-key.is-sb::before {
+  background: var(--echo-chart-orange);
+}
+.cfx-key.is-ns::before {
+  background: var(--echo-chart-purple);
+}
+.cfx-key.is-os::before,
+.cfx-key.is-cur::before {
+  background: var(--echo-chart-red);
+}
+.cfx-key.is-prior::before {
+  background: color-mix(in srgb, var(--text-primary) 30%, transparent);
+}
+
+/* Ranked view, rising list */
+.cfx-ranked,
+.cfx-rise-list,
+.cfx-conf-list,
+.cfx-reg-list,
+.cfx-defs,
+.cfx-releases {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cfx-ranked-row,
+.cfx-rise-row,
+.cfx-tr {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.cfx-ranked-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 160px) minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  font-size: 0.8125rem;
+}
+.cfx-ranked-row:hover,
+.cfx-rise-row:hover,
+.cfx-tr:not(.cfx-th):hover {
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+}
+.cfx-ranked-row.is-on,
+.cfx-rise-row.is-on,
+.cfx-tr.is-on {
+  background: color-mix(in srgb, var(--emerald) 18%, transparent);
+}
+.cfx-rank {
+  color: var(--text-muted);
+}
+.cfx-ranked-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cfx-ranked-bar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.cfx-ranked-bar .is-sb {
+  background: var(--echo-chart-orange);
+}
+.cfx-ranked-bar .is-ns {
+  background: var(--echo-chart-purple);
+}
+.cfx-ranked-bar .is-os {
+  background: var(--echo-chart-red);
+}
+.cfx-rise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cfx-rise-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+}
+.cfx-rise-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cfx-rise-name small {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+/* Table */
+.cfx-table {
+  display: flex;
+  flex-direction: column;
+}
+.cfx-tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 84px 72px 64px 76px 96px minmax(0, 1.6fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  font-size: 0.8125rem;
+}
+.cfx-tr + .cfx-tr {
+  box-shadow: 0 -1px 0 color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+.cfx-th {
+  cursor: default;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--text-muted);
+}
+.cfx-tname {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cfx-tname small {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+}
+.cfx-tconf {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.cfx-type {
+  font-size: 0.75rem;
+}
+.cfx-type.is-sb {
+  color: var(--echo-chart-orange);
+}
+.cfx-type.is-ns {
+  color: var(--echo-chart-purple);
+}
+.cfx-type.is-os {
+  color: var(--echo-chart-red);
+}
+.cfx-more {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  margin-top: 8px;
+  padding: 4px 0;
+  color: var(--emerald-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.cfx-more:hover {
+  color: var(--emerald);
+}
+
+/* Conflicts and regions */
+.cfx-conf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cfx-conf {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cfx-conf-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.8125rem;
+}
+.cfx-conf-main small {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+}
+.cfx-conf-num {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.8125rem;
+}
+.cfx-conf-num small {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.cfx-conf-num small.is-worse {
+  color: var(--echo-chart-red);
+}
+.cfx-conf-num small.is-better {
+  color: var(--positive);
+}
+.cfx-reg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cfx-reg-list li {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+}
+.cfx-reg-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cfx-reg-bar {
+  display: block;
+  height: 7px;
+  border-radius: var(--radius-sm);
+  transition: width 0.4s ease;
+}
+.cfx-reg-bar.is-cur {
+  background: var(--echo-chart-red);
+}
+.cfx-reg-bar.is-prior {
+  background: color-mix(in srgb, var(--text-primary) 30%, transparent);
+}
+
+/* About */
+.cfx-about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.cfx-defs,
+.cfx-releases {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+.cfx-defs li,
+.cfx-releases li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cfx-defs .cfx-key {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .cfx-pair,
+  .cfx-pair--even,
+  .cfx-about-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .cfx-page {
+    padding: 0 16px 48px;
+  }
+  .cfx-tr {
+    grid-template-columns: minmax(0, 1.4fr) 72px 64px;
+  }
+  .cfx-tr > :nth-child(n + 4) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfx-map,
+  .cfx-seg-btn,
+  .cfx-reg-bar {
+    transition: none;
+  }
+}

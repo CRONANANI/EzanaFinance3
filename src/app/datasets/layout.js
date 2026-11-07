@@ -52,6 +52,7 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/world-bank',
   '/datasets/geopolitical-risk',
   '/datasets/sanctions',
+  '/datasets/conflict',
   // Eyes Above: the four open-data datasets.
   '/datasets/supply-chain',
   '/datasets/commercial-real-estate',

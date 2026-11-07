@@ -1,0 +1,255 @@
+/* UCDP conflict components (cfc-): the monthly chart and the country panel, shared by the
+   Armed Conflict Tracker (/datasets/conflict) and Sonar. Tokens only, no card shell of their
+   own (the host draws it), no outlines. Types: state-based --echo-chart-orange, non-state
+   --echo-chart-purple, one-sided (violence against civilians) --echo-chart-red. Numbers in
+   mono with tabular figures. */
+
+.cfc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  color: var(--text-primary);
+}
+.cfc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cfc-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.cfc-sub,
+.cfc-foot,
+.cfc-empty {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cfc-foot {
+  margin: 0;
+}
+.cfc-link {
+  color: var(--emerald-text);
+}
+.cfc-link:hover {
+  color: var(--emerald);
+}
+.cfc-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+.cfc-close:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+.cfc-close:focus-visible,
+.cfc-col:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.cfc-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* KPI tiles */
+.cfc-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cfc-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.cfc-kpi-label,
+.cfc-kpi-sub {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.cfc-kpi-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.cfc-delta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+/* More deaths is a worsening, so up reads in the decline colour. */
+.cfc-delta.is-up {
+  color: var(--echo-chart-red);
+}
+.cfc-delta.is-down {
+  color: var(--positive);
+}
+
+/* Monthly chart */
+.cfc-chart {
+  min-width: 0;
+}
+.cfc-readout {
+  min-height: 1.4em;
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.cfc-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.cfc-grid {
+  stroke: var(--echo-chart-grid);
+  stroke-width: 1;
+}
+.cfc-axis {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+}
+.cfc-hit {
+  fill: transparent;
+}
+.cfc-col {
+  outline: none;
+}
+.cfc-col.is-hover .cfc-hit {
+  fill: color-mix(in srgb, var(--emerald) 10%, transparent);
+}
+.cfc-bar.is-sb {
+  fill: var(--echo-chart-orange);
+}
+.cfc-bar.is-ns {
+  fill: var(--echo-chart-purple);
+}
+.cfc-bar.is-os {
+  fill: var(--echo-chart-red);
+}
+.cfc-hatch {
+  stroke: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+  stroke-width: 1.5;
+}
+.cfc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 6px;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+.cfc-key::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: var(--radius-sm);
+  vertical-align: -1px;
+}
+.cfc-key.is-sb::before {
+  background: var(--echo-chart-orange);
+}
+.cfc-key.is-ns::before {
+  background: var(--echo-chart-purple);
+}
+.cfc-key.is-os::before {
+  background: var(--echo-chart-red);
+}
+.cfc-key.is-prelim::before {
+  background: repeating-linear-gradient(45deg, var(--text-muted) 0 2px, transparent 2px 4px);
+}
+
+/* Lists */
+.cfc-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.cfc-latest {
+  grid-column: 1 / -1;
+}
+.cfc-h {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--text-muted);
+}
+.cfc-rows,
+.cfc-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8125rem;
+}
+.cfc-rows li,
+.cfc-events li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.cfc-row-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.cfc-type {
+  margin-left: 6px;
+  font-size: 0.6875rem;
+}
+.cfc-type.is-sb {
+  color: var(--echo-chart-orange);
+}
+.cfc-type.is-ns {
+  color: var(--echo-chart-purple);
+}
+.cfc-type.is-os {
+  color: var(--echo-chart-red);
+}
+.cfc-ev-date {
+  flex: 0 0 96px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cfc-ev-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cfc-ev-body b {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cfc-ev-body small {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+}

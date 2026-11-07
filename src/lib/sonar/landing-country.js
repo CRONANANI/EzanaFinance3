@@ -19,6 +19,8 @@
  * projections and are flagged `proj: true` all the way to the UI. Every leg
  * resolves null on failure and never throws, matching the other dossiers.
  */
+import { getConflictCountry } from '@/lib/ucdp/store';
+import { CONFLICT_CUE_RE, countryFindings, majorConflict } from '@/lib/ucdp/view';
 import {
   OECD_CURATED_SLUGS,
   OECD_SERIES_BY_SLUG,
@@ -560,6 +562,23 @@ function buildKeyChart(oecd, catalogueBySlug) {
   }
 }
 
+/* ── conflict (UCDP) ────────────────────────────────────────────────────── */
+
+/* Nov 7: the country's organized violence picture (UCDP GED, src/lib/ucdp). Bounded so a slow
+   read never holds the dossier; null when the country has no events or the table is not
+   migrated yet. */
+async function buildConflict(admin, country) {
+  if (!admin || !country?.iso3) return null;
+  const timeout = new Promise((resolve) => {
+    setTimeout(() => resolve(null), 1500);
+  });
+  try {
+    return await Promise.race([getConflictCountry(country.iso3, { admin }), timeout]);
+  } catch {
+    return null;
+  }
+}
+
 /* ── dossier ────────────────────────────────────────────────────────────── */
 
 /**
@@ -567,12 +586,12 @@ function buildKeyChart(oecd, catalogueBySlug) {
  * the Echo match stays one implementation. Resolves even when every leg is
  * empty (the brief still answers); the UI renders only what came back.
  */
-export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
+export async function buildCountryDossier(country, admin, { matchEcho, query = '' } = {}) {
   const macroP = buildKeyIndicators(admin, country);
   /* The Key chart's catalogue histories start as soon as the Key indicators rows are in,
      alongside the OECD read, so they add at most one bounded read to the dossier. */
   const keyCatP = macroP.then((m) => keyChartCatalogue(admin, m?.items)).catch(() => ({}));
-  const [oecd, empire, news, markets, echoMatches, macro, keyCat] = await Promise.all([
+  const [oecd, empire, news, markets, echoMatches, macro, keyCat, conflict] = await Promise.all([
     buildOecd(admin, country),
     buildEmpire(country),
     countryNews(admin, country).catch(() => []),
@@ -580,6 +599,7 @@ export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
     matchEcho ? matchEcho(admin, { name: country.name, ticker: null }).catch(() => null) : null,
     macroP,
     keyCatP,
+    buildConflict(admin, country),
   ]);
   const keyChart = buildKeyChart(oecd, keyCat);
   return {
@@ -593,6 +613,12 @@ export async function buildCountryDossier(country, admin, { matchEcho } = {}) {
     keyChart,
     empire,
     keyIndicators: macro ? macro.rows : [],
+    /* Nov 7: UCDP organized violence. The panel shows when the ping asks about conflict or
+       the country had 1,000+ deaths in the last 12 months; the evidence is always offered. */
+    conflict: conflict && conflict.kpis ? conflict : null,
+    conflictFocus: Boolean(
+      conflict?.kpis && (CONFLICT_CUE_RE.test(String(query || '')) || majorConflict(conflict)),
+    ),
     newsTitle: `${country.name} Relevant News`,
     news,
     echo: (echoMatches || []).map((e) => ({
@@ -663,6 +689,15 @@ export function countryEvidence(dossier) {
       });
     }
   }
+  const c = dossier?.conflict;
+  if (c?.kpis) {
+    out.push({
+      corpus: 'conflict',
+      title: `UCDP organized violence, ${dossier.name}`,
+      snippet: countryFindings(c).join(' '),
+      date: c.window?.to || null,
+    });
+  }
   const e = dossier?.empire;
   if (e) {
     const head = e.rank
@@ -683,4 +718,4 @@ export function countryEvidence(dossier) {
 
 /** System-prompt addendum for a country ping. */
 export const COUNTRY_ADDENDUM = `
-This ping is about a country. Snippets marked (oecd) are OECD Economic Outlook series held by Ezana; any figure for ${PROJECTION_FROM_YEAR} or later is an OECD projection and must be called a projection, never an outcome. Snippets marked (empire) are Ezana's own Global Empire Rankings; call it Ezana's ranking, never an official one. Paragraph two leads with these figures, cited. Use web search for current policy, central bank and political developments the snippets do not cover.`;
+This ping is about a country. Snippets marked (oecd) are OECD Economic Outlook series held by Ezana; any figure for ${PROJECTION_FROM_YEAR} or later is an OECD projection and must be called a projection, never an outcome. Snippets marked (empire) are Ezana's own Global Empire Rankings; call it Ezana's ranking, never an official one. Snippets marked (conflict) are UCDP Georeferenced Event Dataset counts of deaths and events in organized violence held by Ezana: deaths are UCDP best estimates (quote the range when it matters), recent months are preliminary, and they say nothing about cause or blame. Paragraph two leads with these figures, cited. Use web search for current policy, central bank and political developments the snippets do not cover.`;

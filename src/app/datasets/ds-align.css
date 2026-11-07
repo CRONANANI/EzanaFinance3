@@ -78,7 +78,8 @@
     .pat-page,
     .ptx-page,
     .scm-page,
-    .snx-page
+    .snx-page,
+    .cfx-page
   ) {
   padding-inline: var(--ds-gutter);
 }
@@ -114,6 +115,7 @@
     .ptx-card,
     .scm-card,
     .snx-card,
+    .cfx-card,
     .cwh-panel-body
   ) {
   padding-inline: 0;

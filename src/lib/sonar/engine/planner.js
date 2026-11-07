@@ -112,7 +112,9 @@ export function paramsFor(source, resolution, spec) {
     case 'commodity_series':
       return r.commodity ? { commodity: r.commodity, horizon: spec.timeHorizon } : null;
     case 'macro_country':
-      return r.countries?.[0]?.iso3 ? { country: r.countries[0] } : null;
+      return r.countries?.[0]?.iso3
+        ? { country: r.countries[0], rawQuery: spec.rawQuery || spec.question || '' }
+        : null;
     case 'macro_series':
       return macroSeriesParams(spec, r);
     case 'industry_registry':

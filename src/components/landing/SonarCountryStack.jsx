@@ -26,6 +26,7 @@
  * signal hold unchanged. Styles: sonar-country.css, scoped snr-cty-.
  */
 
+import ConflictCountryPanel from '@/components/conflict/ConflictCountryPanel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Table, THead, TBody, TR, TH, TD, VisuallyHidden } from '@/components/ds';
@@ -620,6 +621,8 @@ export function CountryStack({
   const hasStory = !moved && Boolean(keyChartOf(dossier)?.stories?.length);
   const hasEmpire = !moved && Boolean(dossier.empire?.dims?.length);
   const hasIndicators = !moved && Boolean(dossier.keyIndicators?.length);
+  /* Nov 7: UCDP organized violence (the board places its own copy when detached). */
+  const hasConflict = !moved && Boolean(dossier.conflict && dossier.conflictFocus);
   const news = dossier.news || [];
   const echo = dossier.echo || [];
   if (
@@ -627,6 +630,7 @@ export function CountryStack({
     !hasStory &&
     !hasEmpire &&
     !hasIndicators &&
+    !hasConflict &&
     !news.length &&
     !echo.length &&
     !newsSlot &&
@@ -653,6 +657,15 @@ export function CountryStack({
         <EmpireCard dossier={dossier} onGate={onGate} />
       ) : null}
       {hasIndicators ? <KeyIndicatorsCard dossier={dossier} /> : null}
+      {hasConflict ? (
+        <div className="snr-news">
+          <ConflictCountryPanel
+            data={dossier.conflict}
+            compact
+            href={`/datasets/conflict?country=${dossier.conflict.iso3}`}
+          />
+        </div>
+      ) : null}
       {topSlot}
 
       {newsSlot ? (
