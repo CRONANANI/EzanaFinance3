@@ -28,6 +28,7 @@
  * under prefers-reduced-motion. No em dashes in copy.
  */
 import { useEffect, useRef, useState } from 'react';
+import { SonarRunPingBar } from './SonarRunPingBar';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
 import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
@@ -223,6 +224,8 @@ export function DeepResearchRun({
   /* Nov 2026: started from the deep research card, whose overlay has just
      closed: focus moves to the run so it is not dropped on the page. */
   focusOnMount = false,
+  /* Nov 7: the next question, from the ping bar on this answer (the host pings it). */
+  onPing = null,
 }) {
   const { state, run, cancel } = useResearchStream();
   const rootRef = useRef(null);
@@ -263,8 +266,9 @@ export function DeepResearchRun({
     >
       <div className="sdr-run-bar">
         <button type="button" className="sdr-link" onClick={onBack}>
-          <i className="bi bi-arrow-left" aria-hidden="true" /> New question
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Back
         </button>
+        {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
         {running ? (
           <div className="sdr-timer" role="status" aria-live="polite">
             <span className="sdr-pulse" aria-hidden="true" />
@@ -388,12 +392,22 @@ export function StandardResearchRun({
   onBack,
   estimate = null,
   onDeep = null,
+  /* Nov 7: the next question, from the ping bar on this answer (the host pings it). */
+  onPing = null,
+  /* Nov 7: the run's status ('running' | 'done' | 'error' | 'gated' | 'quota'), so the host
+     can hold its loading screen until the report has landed. */
+  onStatus = null,
 }) {
   const { state, run, cancel } = useResearchStream();
   useEffect(() => {
     run(query, { mode: 'standard' });
     return () => cancel();
   }, [query, run, cancel]);
+  const onStatusRef = useRef(onStatus);
+  onStatusRef.current = onStatus;
+  useEffect(() => {
+    onStatusRef.current?.(state.status);
+  }, [state.status]);
 
   const running = state.status === 'running';
   const planned = state.plan?.plan?.tasks?.length || classification?.plannedWork?.tasks || null;
@@ -429,8 +443,9 @@ export function StandardResearchRun({
     <div className="sdr-run force-dark-theme">
       <div className="sdr-run-bar">
         <button type="button" className="sdr-link" onClick={onBack}>
-          <i className="bi bi-arrow-left" aria-hidden="true" /> New question
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Back
         </button>
+        {onPing ? <SonarRunPingBar onPing={onPing} /> : null}
         {running ? (
           <div className="sdr-timer" role="status" aria-live="polite">
             <span className="sdr-pulse" aria-hidden="true" />

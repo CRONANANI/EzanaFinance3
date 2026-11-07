@@ -2561,6 +2561,15 @@ export function SonarSection({
       },
       /* The visitor declined deep research: answer the quick way. */
       quick: (q) => runPingRef.current(q || lastPingRef.current, { mode: 'quick' }),
+      /* Nov 7: a new question asked from a research answer's ping bar. The band pings it
+         like one typed in its own bar (the host's loading screen follows onPing). */
+      ping: (q) => {
+        const words = String(q || '').trim();
+        if (!words) return false;
+        setQueryValue(words);
+        runPingRef.current(words);
+        return true;
+      },
     };
     return () => {
       controlRef.current = null;

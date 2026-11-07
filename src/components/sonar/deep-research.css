@@ -556,3 +556,67 @@
   font-size: var(--type-micro-size);
   color: var(--snr-text-faint, var(--text-muted));
 }
+
+/* Nov 7: the ping bar on a research answer (SonarRunPingBar). Borderless: a row tint and a
+   focus ring, no outline at rest. It takes the run bar's free width. */
+.sdr-ping {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 320px;
+  min-width: 0;
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, black 26%, transparent);
+}
+.sdr-ping:focus-within {
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+.sdr-ping-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.sdr-ping-icon {
+  color: var(--text-muted);
+}
+.sdr-ping-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-body-size);
+  color: var(--text-primary);
+  outline: none;
+}
+.sdr-ping-input::placeholder {
+  color: var(--text-muted);
+}
+.sdr-ping-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  font: inherit;
+  font-weight: 600;
+  color: var(--bg-primary);
+  cursor: pointer;
+}
+.sdr-ping-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.sdr-ping-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}

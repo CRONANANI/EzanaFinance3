@@ -133,6 +133,42 @@ export function SonarExperience({
   const [loader, setLoader] = useState(
     startQuery ? { query: startQuery, phase: 'sweeping', leaving: false } : null,
   );
+  /* Nov 7: the loading screen is a full-viewport overlay, so Tab stays on it while it is
+     up. The band and the runs under it are inert; this also keeps focus off the page
+     footer and header behind it, which sit outside this component. */
+  const loaderRef = useRef(null);
+  useEffect(() => {
+    if (!loader) return undefined;
+    const onKey = (e) => {
+      if (e.key !== 'Tab') return;
+      const root = loaderRef.current;
+      if (!root) return;
+      const items = [
+        ...root.querySelectorAll(
+          'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ].filter((el) => el.getClientRects().length);
+      if (!items.length) {
+        e.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (!root.contains(active)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [loader]);
   const pingInFlight = Boolean(loader && loader.phase === 'sweeping');
   /* The band's handle on its ping (cancel, retry), and whether it has ever
      shown an answer (Cancel or Back then returns to it, not the hero). */
@@ -229,7 +265,9 @@ export function SonarExperience({
          simply fades out; "Briefing ready" would not be true. The loading
          state clears itself when its fade ends (onExited); the timer is a
          safety net. */
-      setLoader((l) => (l && l.phase === 'sweeping' ? { ...l, leaving: true } : l));
+      /* Nov 7: routed to standard research, the loading screen stays up (hold) until the
+         report lands (onStandardStatus), so every new answer loads behind the same screen. */
+      setLoader((l) => (l && l.phase === 'sweeping' && !l.hold ? { ...l, leaving: true } : l));
       loaderTimers.current.push(setTimeout(() => setLoader((l) => (l?.leaving ? null : l)), 900));
       return;
     }
@@ -271,6 +309,58 @@ export function SonarExperience({
     setLoader((l) => (l && (l.phase === 'ready' || l.leaving) ? null : l));
   }, []);
 
+  /* Nov 7: standard research runs behind the loading screen. The screen holds while the run
+     works, plays its hand-off when the report lands, and steps aside for an error, a gate or
+     a quota so the run can say what happened. */
+  function holdLoaderFor(query) {
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader((l) =>
+      l && l.phase !== 'error'
+        ? { ...l, query: l.query || query, hold: 'standard', leaving: false }
+        : { query, phase: 'sweeping', leaving: false, hold: 'standard' },
+    );
+  }
+  function startStandard(query, { classification = null, goDeeper: hint = null } = {}) {
+    setDeepRun(null);
+    setDeepOffer(null);
+    setStandardRun({ query, classification, goDeeper: hint, nonce: Date.now() });
+    holdLoaderFor(query);
+  }
+  const onStandardStatus = useCallback((status) => {
+    if (status === 'done') {
+      setLoader((l) => (l?.hold === 'standard' ? { ...l, phase: 'ready', leaving: false } : l));
+      loaderTimers.current.push(
+        setTimeout(
+          () => setLoader((l) => (l?.hold === 'standard' && l.phase === 'ready' ? null : l)),
+          2600,
+        ),
+      );
+    } else if (status === 'error' || status === 'gated' || status === 'quota') {
+      setLoader((l) => (l?.hold === 'standard' ? { ...l, leaving: true } : l));
+      loaderTimers.current.push(
+        setTimeout(() => setLoader((l) => (l?.hold === 'standard' && l.leaving ? null : l)), 900),
+      );
+    }
+  }, []);
+
+  /* Nov 7: a new question from a research answer's ping bar: close the run and ping it
+     through the band, which raises the same loading screen as any other ping. */
+  function pingFromRun(query) {
+    const q = String(query || '')
+      .trim()
+      .slice(0, 600);
+    if (!q) return;
+    setDeepOffer(null);
+    setDeepRun(null);
+    setStandardRun(null);
+    setQueryText(q);
+    if (bandControlRef.current?.ping?.(q)) return;
+    /* No band handle yet: start the band on the question (it auto-pings its query). */
+    setBandQuery(q);
+    onBandPing(q);
+  }
+
   /* Leave the ping screen. With an earlier answer on the page, back to it;
      on a first ping, back to the Ping field with the query still in it. */
   function leavePing() {
@@ -294,6 +384,9 @@ export function SonarExperience({
   /* Cancel: abort the request (nothing is shown for it), then leave. */
   function cancelPing() {
     bandControlRef.current?.cancel();
+    /* A standard run behind the screen is cancelled with it (unmounting ends its stream,
+       and a cancelled run is never charged). */
+    if (loader?.hold === 'standard') setStandardRun(null);
     leavePing();
   }
 
@@ -599,8 +692,7 @@ export function SonarExperience({
      the sign-up path in it); to standard runs standard straight away. */
   function goDeeper(query, hint) {
     if (hint?.to === 'standard') {
-      setDeepRun(null);
-      setStandardRun({ query, classification: null, goDeeper: null });
+      startStandard(query);
       return;
     }
     setDeepOffer({
@@ -617,37 +709,42 @@ export function SonarExperience({
   }
   /* Today's deep runs are used: run standard on the same question. */
   function standardInstead(query) {
-    setDeepRun(null);
-    setDeepOffer(null);
-    setStandardRun({ query, classification: null, goDeeper: null });
+    startStandard(query);
   }
 
   if (onDatasets && bandQuery) {
     return (
       <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
-        {deepRun ? (
-          <DeepResearchRun
-            query={deepRun.query}
-            estimate={deepRun.estimate}
-            extra={deepRun.supersedes ? { supersedes: { query: deepRun.query } } : null}
-            focusOnMount={Boolean(deepRun.fromCard)}
-            onQuick={() => quickInstead(deepRun.query)}
-            onStandard={() => standardInstead(deepRun.query)}
-            onBack={closeDeep}
-          />
-        ) : null}
-        {standardRun && !deepRun ? (
-          <StandardResearchRun
-            query={standardRun.query}
-            classification={standardRun.classification}
-            goDeeper={standardRun.goDeeper}
-            onGoDeeper={(hint) => goDeeper(standardRun.query, hint)}
-            onQuick={() => quickInstead(standardRun.query)}
-            onBack={closeDeep}
-            estimate={estimateFor(standardRun.query)}
-            onDeep={(opts) => chooseDeep(standardRun.query, opts)}
-          />
-        ) : null}
+        {/* Nov 7: while the loading screen is up the runs under it are inert, like the band. */}
+        <div style={{ display: 'contents' }} inert={loader ? '' : undefined}>
+          {deepRun ? (
+            <DeepResearchRun
+              onPing={pingFromRun}
+              query={deepRun.query}
+              estimate={deepRun.estimate}
+              extra={deepRun.supersedes ? { supersedes: { query: deepRun.query } } : null}
+              focusOnMount={Boolean(deepRun.fromCard)}
+              onQuick={() => quickInstead(deepRun.query)}
+              onStandard={() => standardInstead(deepRun.query)}
+              onBack={closeDeep}
+            />
+          ) : null}
+          {standardRun && !deepRun ? (
+            <StandardResearchRun
+              key={standardRun.nonce || standardRun.query}
+              onPing={pingFromRun}
+              onStatus={onStandardStatus}
+              query={standardRun.query}
+              classification={standardRun.classification}
+              goDeeper={standardRun.goDeeper}
+              onGoDeeper={(hint) => goDeeper(standardRun.query, hint)}
+              onQuick={() => quickInstead(standardRun.query)}
+              onBack={closeDeep}
+              estimate={estimateFor(standardRun.query)}
+              onDeep={(opts) => chooseDeep(standardRun.query, opts)}
+            />
+          ) : null}
+        </div>
         {deepOffer ? (
           <DeepResearchPrompt
             query={deepOffer.query}
@@ -689,10 +786,9 @@ export function SonarExperience({
                 setDeepRun({ query, estimate: deep?.estimate || null });
               } else setDeepOffer({ query, deep });
             }}
-            onStandardResearch={(query, { classification, goDeeper: hint } = {}) => {
-              setDeepRun(null);
-              setStandardRun({ query, classification, goDeeper: hint || null });
-            }}
+            onStandardResearch={(query, { classification, goDeeper: hint } = {}) =>
+              startStandard(query, { classification, goDeeper: hint || null })
+            }
             hidden={Boolean(deepRun || standardRun)}
             onEstimate={(query, data) => setEstimate({ query, data })}
             afterAnswer={
@@ -728,7 +824,10 @@ export function SonarExperience({
             the briefing lands, minimizable to a small widget bottom left. */}
         <SonarSignupCta query={shownQuery || bandQuery} ready={Boolean(answeredQuery)} />
         {loader ? (
-          <div className={`dsl-handoff${stage === 'app' ? ' dsl-handoff--app' : ''}`}>
+          <div
+            ref={loaderRef}
+            className={`dsl-handoff${stage === 'app' ? ' dsl-handoff--app' : ''}`}
+          >
             {loader.phase === 'error' ? (
               <SonarPingLoader
                 entityLabel={pingEntityLabel(loader.query)}
