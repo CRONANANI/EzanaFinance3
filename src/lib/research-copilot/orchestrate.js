@@ -22,7 +22,15 @@ import { withTimeout } from '@/lib/with-timeout';
  *
  * Returns { items, corporaSearched, corporaUsed, entities } — every item keeps
  * full provenance (corpus, title, url, date, similarity, meta).
+ *
+ * Also returns `timings` (Nov 2026): { rewrite, embed, retrieve, rerank } in ms, 0 for a
+ * step that did not run. Additive: callers that ignore it are unchanged.
  */
+
+const clockMs = () =>
+  typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
 
 const DEFAULT_TOPK = 10;
 const DEFAULT_PER_CORPUS_CAP = 4;
@@ -80,7 +88,10 @@ export async function orchestrate(query, options = {}) {
       entities: null,
       rerankUsed: false,
       rewriteUsed: false,
+      timings: { rewrite: 0, embed: 0, retrieve: 0, rerank: 0 },
     };
+  const timings = { rewrite: 0, embed: 0, retrieve: 0, rerank: 0 };
+  const since = (t0) => Math.max(0, Math.round(clockMs() - t0));
 
   // Optional flag-gated query rewrite (RAG_SYSTEM.md §3 P4): normalize an ambiguous
   // query BEFORE retrieval; embed + extract entities from the rewritten form. Its
@@ -91,6 +102,7 @@ export async function orchestrate(query, options = {}) {
   let rewriteUsed = false;
   let corpusHints = [];
   if (rewriteEnabled()) {
+    const tRewrite = clockMs();
     const rwRes = embedTimeoutMs
       ? await withTimeout(rewriteQuery(q), embedTimeoutMs, 'rewrite')
       : { ok: true, value: await rewriteQuery(q) };
@@ -100,12 +112,14 @@ export async function orchestrate(query, options = {}) {
       corpusHints = rw.corpusHints || [];
       rewriteUsed = true;
     }
+    timings.rewrite = since(tRewrite);
   }
   const hintSet = new Set(corpusHints);
 
   // Build the shared context ONCE: embed the query (semantic corpora reuse it)
   // and extract entities (structured corpora use them).
   let queryEmbedding = null;
+  const tEmbed = clockMs();
   if (supaEmbedConfigured()) {
     if (embedTimeoutMs) {
       const emb = await withTimeout(
@@ -118,6 +132,7 @@ export async function orchestrate(query, options = {}) {
     } else {
       queryEmbedding = await embedViaSupabaseCached(effectiveQuery);
     }
+    timings.embed = since(tEmbed);
   }
   const entities = extractEntities(effectiveQuery);
   const ctx = { admin, supabaseUser, member, entities, queryEmbedding, rawQuery: rawQuery || q };
@@ -131,6 +146,7 @@ export async function orchestrate(query, options = {}) {
   const corporaSearched = allowed.map((r) => r.corpus);
 
   // Fan out concurrently; a retriever that throws contributes nothing.
+  const tRetrieve = clockMs();
   const settled = await Promise.all(
     allowed.map(async (r) => {
       try {
@@ -150,6 +166,7 @@ export async function orchestrate(query, options = {}) {
       }
     }),
   );
+  timings.retrieve = since(tRetrieve);
 
   // Merge + dedupe by (corpus,id), keeping the higher-scored duplicate.
   const byKey = new Map();
@@ -175,6 +192,7 @@ export async function orchestrate(query, options = {}) {
   let pool = ranked;
   let rerankUsed = false;
   if (rerankEnabled()) {
+    const tRerank = clockMs();
     const rrCall = rerank(effectiveQuery, ranked.slice(0, 20), { keep: topK });
     const rrRes = rerankTimeoutMs
       ? await withTimeout(rrCall, rerankTimeoutMs, 'rerank')
@@ -184,6 +202,7 @@ export async function orchestrate(query, options = {}) {
       pool = rr;
       rerankUsed = true;
     }
+    timings.rerank = since(tRerank);
   }
 
   // Select with a per-corpus cap (visible mix).
@@ -208,5 +227,13 @@ export async function orchestrate(query, options = {}) {
   }
 
   const corporaUsed = [...new Set(budgeted.map((i) => i.corpus))];
-  return { items: budgeted, corporaSearched, corporaUsed, entities, rerankUsed, rewriteUsed };
+  return {
+    items: budgeted,
+    corporaSearched,
+    corporaUsed,
+    entities,
+    rerankUsed,
+    rewriteUsed,
+    timings,
+  };
 }

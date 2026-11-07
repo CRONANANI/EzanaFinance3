@@ -7,6 +7,7 @@ import { logZeroResult } from '@/lib/rag/zero-results';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { searchHelp } from '@/lib/help-center-search';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { createRequestTimer } from '@/lib/rag/request-timer';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -172,9 +173,17 @@ const POST_HANDLER = withApiGuard(
       );
     }
 
+    /* Per-stage latency (rag_request_timings). Telemetry only: never awaited, never
+       fails the response. */
+    const timer = createRequestTimer('help-center');
+    const timingAdmin = isServerSupabaseConfigured() ? getAdminClient() : null;
+
     const key = cacheKey(audience, query);
     const hit = cache.get(key);
-    if (hit && Date.now() - hit.at < CACHE_TTL) return NextResponse.json(hit.body);
+    if (hit && Date.now() - hit.at < CACHE_TTL) {
+      timer.finish(timingAdmin, { cacheHit: true });
+      return NextResponse.json(hit.body);
+    }
 
     /* The lexical index needs nothing but the content module, so it is the
        floor every other layer falls back to. */
@@ -185,10 +194,13 @@ const POST_HANDLER = withApiGuard(
       let keyword = [];
       if (isServerSupabaseConfigured()) {
         const admin = getAdminClient();
-        [semantic, keyword] = await Promise.all([
-          semanticSearch(admin, query, audience),
-          keywordSearch(admin, query, audience),
-        ]);
+        [semantic, keyword] = await timer.time(
+          'retrieve',
+          Promise.all([
+            semanticSearch(admin, query, audience),
+            keywordSearch(admin, query, audience),
+          ]),
+        );
         if (!semantic.length && !keyword.length && !lexical.length) {
           logZeroResult(admin, 'help-center', query);
         }
@@ -204,10 +216,12 @@ const POST_HANDLER = withApiGuard(
     }
 
     if (!sources.length) {
+      timer.finish(timingAdmin, { degraded: 'empty' });
       return NextResponse.json({ answer: null, sources: [], grounded: false, empty: true });
     }
 
-    const { answer, degraded } = await synthesize(query, sources);
+    const { answer, degraded } = await timer.time('synth', synthesize(query, sources));
+    timer.finish(timingAdmin, { degraded: degraded || null });
     const payload = {
       answer: answer || null,
       grounded: Boolean(answer),

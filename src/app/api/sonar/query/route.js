@@ -20,7 +20,8 @@ import {
 import { enforceGrounding, GROUNDING_RULES } from '@/lib/sonar/groundingGuard';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 import { logZeroResult } from '@/lib/rag/zero-results';
-import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
+import { reservePing, completePing, failPing, annotatePing } from '@/lib/sonar/quota';
+import { createRequestTimer } from '@/lib/rag/request-timer';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -97,6 +98,9 @@ function looksLikeAdvice(text) {
 
 async function handlePing(request, user, ping) {
   {
+    /* Per-stage latency (rag_request_timings). Telemetry only: never awaited, never
+       fails the response. */
+    const timer = createRequestTimer('sonar-query');
     const body = await request.json().catch(() => ({}));
     // Strict input contract (cost control): control chars stripped, 2-300 chars
     // REJECTED rather than silently truncated, so an oversized paste never
@@ -172,6 +176,8 @@ async function handlePing(request, user, ping) {
     ping.reservation = reservation.ok ? reservation : null;
     const used = reservation.used || 0;
     if (!reservation.ok) {
+      timer.set('gate', timer.elapsed());
+      timer.finish(admin, { degraded: 'quota' });
       return NextResponse.json({
         quotaExceeded: true,
         message: `You've used all ${entitlements.dailyQueries} Sonar pings for today. Upgrade for a higher daily quota and deeper synthesis.`,
@@ -189,9 +195,9 @@ async function handlePing(request, user, ping) {
     const allowCorpora = corporaForDatasets(entitlements.datasets);
     const budget = depthBudget(entitlements.depth);
 
-    const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed } = await orchestrate(
-      query,
-      {
+    timer.set('gate', timer.elapsed());
+    const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed, timings } =
+      await orchestrate(query, {
         admin,
         supabaseUser: userClient,
         member,
@@ -199,8 +205,8 @@ async function handlePing(request, user, ping) {
         topK: budget.topK,
         perCorpusCap: budget.perCorpusCap,
         charBudget: budget.charBudget,
-      },
-    );
+      });
+    for (const k of ['rewrite', 'embed', 'retrieve', 'rerank']) timer.set(k, timings?.[k] || 0);
 
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
 
@@ -239,25 +245,28 @@ async function handlePing(request, user, ping) {
         fallbackModel: HAIKU_MODEL,
         webSearch: entitlements.webSearch,
       };
-      const out = await synthesizeWithFallback(synthArgs);
+      const out = await timer.time('synth', synthesizeWithFallback(synthArgs));
       answer = out.answer;
       /* A negative claim no snippet or web result supports is regenerated
          once, then removed (groundingGuard.js). */
       if (answer) {
-        const guarded = await enforceGrounding(
-          answer,
-          [
-            ...marked.map((m) => `${m.title || ''}. ${String(m.text || m.snippet || '')}`),
-            ...(out.webCitedText || []),
-          ],
-          async (extra) =>
-            (
-              await synthesizeWithFallback({
-                ...synthArgs,
-                system: `${synthArgs.system}\n${extra}`,
-              })
-            )?.answer || null,
+        const guarded = await timer.time('grounding', () =>
+          enforceGrounding(
+            answer,
+            [
+              ...marked.map((m) => `${m.title || ''}. ${String(m.text || m.snippet || '')}`),
+              ...(out.webCitedText || []),
+            ],
+            async (extra) =>
+              (
+                await synthesizeWithFallback({
+                  ...synthArgs,
+                  system: `${synthArgs.system}\n${extra}`,
+                })
+              )?.answer || null,
+          ),
         );
+        timer.set('grounding_regen', guarded.regenerated ? 1 : 0);
         answer = guarded.text;
       }
       degraded = out.degraded;
@@ -309,12 +318,19 @@ async function handlePing(request, user, ping) {
     const sections = [...sectionMap.values()];
 
     // 7. Complete the reserved ledger row (quota accounting + audit).
-    await completePing(admin, reservation, {
-      classification,
-      datasets_searched: searched.map((d) => d.id),
-      grounded,
-    });
+    await timer.time(
+      'ledger',
+      completePing(admin, reservation, {
+        classification,
+        datasets_searched: searched.map((d) => d.id),
+        grounded,
+      }),
+    );
     ping.completed = true;
+    /* Quick-answer time on the ledger, with no mode, so research estimates (which
+       filter by mode) are not mixed with quick answers. Fire-and-forget. */
+    annotatePing(admin, reservation, { durationMs: timer.elapsed() }).catch(() => {});
+    timer.finish(admin, { degraded: degraded || (marked.length ? null : 'empty') });
 
     return NextResponse.json({
       query,
