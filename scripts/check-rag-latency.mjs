@@ -113,3 +113,85 @@ test(
     await sleep(5); /* the rejection is swallowed, not unhandled */
   }),
 );
+
+/* ------------------------------------------------------------------ help center (PROMPT_3) */
+
+const H = await import('@/lib/help-center-ask');
+
+const userRow = {
+  audience: 'user',
+  slug: 'reset-password',
+  title: 'Reset your password',
+  category: 'Account',
+  content: 'Open Settings, then Security.',
+};
+
+test('a partner question with no partner match is answered from the user center in one call', async () => {
+  const calls = [];
+  const searchHelp = (q, { audience }) => {
+    calls.push(audience);
+    return audience === 'user' ? [userRow] : [];
+  };
+  const timer = createRequestTimer('help-center');
+  const out = await H.retrieveHelpSources('how do I reset my password', 'partner', {
+    admin: null,
+    searchHelp,
+    timer,
+  });
+  assert.equal(out.answeredFrom, 'user');
+  assert.equal(out.sources[0].slug, 'reset-password');
+  assert.equal(out.sources[0].audience, 'user');
+  assert.deepEqual(calls, ['partner', 'user']);
+  assert.ok('retrieve' in timer.stages() && 'retrieve_fallback' in timer.stages());
+});
+
+test('a partner match stays partner, and a user question never falls back', async () => {
+  const partnerRow = { ...userRow, audience: 'partner', slug: 'payouts' };
+  const searchHelp = (q, { audience }) => (audience === 'partner' ? [partnerRow] : [userRow]);
+  const p = await H.retrieveHelpSources('payouts', 'partner', { searchHelp });
+  assert.equal(p.answeredFrom, 'partner');
+  assert.equal(p.sources[0].slug, 'payouts');
+  const calls = [];
+  const none = (q, { audience }) => (calls.push(audience), []);
+  const u = await H.retrieveHelpSources('nothing matches', 'user', { searchHelp: none });
+  assert.equal(u.answeredFrom, 'user');
+  assert.equal(u.sources.length, 0);
+  assert.deepEqual(calls, ['user'], 'no second retrieval for user questions');
+});
+
+test('the help cache key differs by audience and normalizes the query', () => {
+  const a = H.helpCacheKey('partner', '  Reset   Password ');
+  assert.equal(a, 'help:ask:v1:partner:reset password');
+  assert.notEqual(a, H.helpCacheKey('user', 'reset password'));
+  assert.equal(H.helpCacheKey(null, 'x y'), 'help:ask:v1:all:x y');
+});
+
+test('only grounded, sourced, non-degraded answers are cached', () => {
+  const src = [{ slug: 's' }];
+  assert.equal(H.shouldCacheHelp({ answer: 'A.', grounded: true, sources: src }), true);
+  assert.equal(
+    H.shouldCacheHelp({ answer: null, grounded: false, degraded: 'llm 529', sources: src }),
+    false,
+  );
+  assert.equal(H.shouldCacheHelp({ answer: 'A.', grounded: true, sources: [] }), false);
+  assert.equal(
+    H.shouldCacheHelp({ answer: 'A.', grounded: true, degraded: 'timeout', sources: src }),
+    false,
+  );
+});
+
+test('the client makes one call and reads answeredFrom for the label', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(
+    new URL('../src/components/help-center/SupportCenter.jsx', import.meta.url),
+    'utf8',
+  );
+  assert.ok(!/call\('user'\)/.test(src), 'no second request for the user audience');
+  assert.match(src, /data\?\.answeredFrom === 'user'/);
+  const route = readFileSync(
+    new URL('../src/app/api/help-center/ask/route.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(route, /SYNTH_TIMEOUT_MS = 8000/);
+  assert.ok(!/new Map\(\)/.test(route), 'no per-instance answer cache');
+});

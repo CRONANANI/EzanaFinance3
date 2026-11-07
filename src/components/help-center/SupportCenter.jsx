@@ -250,17 +250,10 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
       };
 
       try {
-        let { ok, data } = await call(audience);
-        let fromUser = false;
-        /* Partner questions fall back to the user help centre when nothing
-           partner-side matches, and the label says so. */
-        if (ok && audience === 'partner' && (!data?.answer || !data?.sources?.length)) {
-          const again = await call('user');
-          if (again.ok && again.data?.answer && again.data?.sources?.length) {
-            data = again.data;
-            fromUser = true;
-          }
-        }
+        const { ok, data } = await call(audience);
+        /* Partner questions fall back to the user help centre on the server, in the
+           same request, when nothing partner-side matches; the label says so. */
+        const fromUser = audience === 'partner' && data?.answeredFrom === 'user';
         if (my !== seq.current) return;
         if (!ok) {
           setPhase('error');

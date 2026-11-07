@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
-import { supaEmbedConfigured } from '@/lib/embeddings-gte';
-import { embedViaSupabaseCached } from '@/lib/rag/embed-cached';
-import { logZeroResult } from '@/lib/rag/zero-results';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { searchHelp } from '@/lib/help-center-search';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { createRequestTimer } from '@/lib/rag/request-timer';
+import { cacheGet, cacheSet } from '@/lib/cache';
+import {
+  GROUNDING,
+  helpCacheKey,
+  retrieveHelpSources,
+  shouldCacheHelp,
+} from '@/lib/help-center-ask';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -22,8 +26,11 @@ import { withNoEmDash } from '@/lib/text/no-em-dash-response';
  *      not exist yet or the database is unreachable.
  * The top three distinct articles ground a short, plain answer. Every failure
  * degrades to { answer: null, sources } with a 200; this route never 500s, so
- * the page can always show article links. Answers are cached per
- * (audience, normalized query) for 24h in the function instance.
+ * the page can always show article links. A partner question no layer matches is
+ * answered from the user help center in the same request (answeredFrom: 'user').
+ * Grounded answers are cached per (audience, normalized query) for 24h in the shared
+ * cache (src/lib/cache.js: in-process plus Redis when configured). Retrieval lives in
+ * src/lib/help-center-ask.js.
  *
  * Public (marketing surface), rate-limited.
  */
@@ -31,79 +38,13 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
-const SEMANTIC_THRESHOLD = Number(process.env.HELP_CENTER_MATCH_THRESHOLD) || 0.3;
-const MAX_SOURCES = 6;
-const GROUNDING = 3;
-const CACHE_TTL = 24 * 60 * 60 * 1000;
-const CACHE_MAX = 500;
-const cache = new Map();
+const CACHE_TTL_SECONDS = 24 * 60 * 60;
+const CACHE_MEM_TTL_SECONDS = 5 * 60;
+/* A 220-token Haiku reply needs a few seconds; past 8 s the route returns the sources
+   (degraded) instead of holding the page. */
+const SYNTH_TIMEOUT_MS = 8000;
 
 const SYSTEM_PROMPT = `You are the Ezana Finance help assistant. Answer ONLY from the provided help-center excerpts. Write 3 to 4 plain sentences, second person, no markdown, no bullet points, no preamble. If the excerpts don't cover the question, say so in one sentence and suggest the closest article by its title. Never give investment advice. Never use em dashes or en dashes as punctuation; use commas, colons, periods or parentheses. Write menu paths as "Settings, then Integrations".`;
-
-function cacheKey(audience, query) {
-  return `${audience || 'all'}:${query.toLowerCase().replace(/\s+/g, ' ').trim()}`;
-}
-
-/** Merge rows from every retrieval layer, dedupe by (audience, slug), cap. */
-function mergeSources(...layers) {
-  const byKey = new Map();
-  for (const rows of layers) {
-    for (const r of rows || []) {
-      const key = `${r.audience}:${r.slug}`;
-      if (byKey.has(key)) continue;
-      byKey.set(key, {
-        audience: r.audience,
-        slug: r.slug,
-        title: r.title,
-        category: r.category || null,
-        url: r.url || `/help-center/${r.audience}/article/${r.slug}`,
-        content: r.content || r.text || '',
-      });
-    }
-  }
-  return [...byKey.values()].slice(0, MAX_SOURCES);
-}
-
-async function semanticSearch(admin, query, audience) {
-  if (!supaEmbedConfigured()) return [];
-  try {
-    const queryEmbedding = await embedViaSupabaseCached(query);
-    if (!queryEmbedding) return [];
-    const { data, error } = await admin.rpc('match_help_articles', {
-      query_embedding: queryEmbedding,
-      match_audience: audience,
-      match_threshold: SEMANTIC_THRESHOLD,
-      match_count: MAX_SOURCES,
-    });
-    return !error && Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
-async function keywordSearch(admin, query, audience) {
-  const cols = 'audience, slug, title, category, url, content';
-  const term = query.replace(/[%,]/g, ' ').trim();
-  if (!term) return [];
-  try {
-    let ftq = admin
-      .from('help_center_articles')
-      .select(cols)
-      .textSearch('tsv', query, { type: 'websearch', config: 'english' })
-      .limit(MAX_SOURCES);
-    if (audience) ftq = ftq.eq('audience', audience);
-    let ilq = admin
-      .from('help_center_articles')
-      .select(cols)
-      .ilike('title', `%${term}%`)
-      .limit(MAX_SOURCES);
-    if (audience) ilq = ilq.eq('audience', audience);
-    const [ft, il] = await Promise.all([ftq, ilq]);
-    return [...(ft.error ? [] : ft.data || []), ...(il.error ? [] : il.data || [])];
-  } catch {
-    return [];
-  }
-}
 
 async function synthesize(query, sources) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -140,7 +81,7 @@ async function synthesize(query, sources) {
           ],
         }),
       },
-      30000,
+      SYNTH_TIMEOUT_MS,
     );
     if (!res.ok) return { answer: null, degraded: `llm ${res.status}` };
     const data = await res.json();
@@ -178,41 +119,23 @@ const POST_HANDLER = withApiGuard(
     const timer = createRequestTimer('help-center');
     const timingAdmin = isServerSupabaseConfigured() ? getAdminClient() : null;
 
-    const key = cacheKey(audience, query);
-    const hit = cache.get(key);
-    if (hit && Date.now() - hit.at < CACHE_TTL) {
+    const key = helpCacheKey(audience, query);
+    const hit = await cacheGet(key, { memTtlSeconds: CACHE_MEM_TTL_SECONDS });
+    if (hit) {
       timer.finish(timingAdmin, { cacheHit: true });
-      return NextResponse.json(hit.body);
+      return NextResponse.json(hit);
     }
 
-    /* The lexical index needs nothing but the content module, so it is the
-       floor every other layer falls back to. */
-    const lexical = searchHelp(query, { audience, limit: MAX_SOURCES, prefix: false });
     let sources = [];
+    let answeredFrom = audience;
     try {
-      let semantic = [];
-      let keyword = [];
-      if (isServerSupabaseConfigured()) {
-        const admin = getAdminClient();
-        [semantic, keyword] = await timer.time(
-          'retrieve',
-          Promise.all([
-            semanticSearch(admin, query, audience),
-            keywordSearch(admin, query, audience),
-          ]),
-        );
-        if (!semantic.length && !keyword.length && !lexical.length) {
-          logZeroResult(admin, 'help-center', query);
-        }
-      }
-      /* Lexical first when the database layers are empty; after them
-         otherwise, so a live index keeps the lead. */
-      sources =
-        semantic.length || keyword.length
-          ? mergeSources(semantic, keyword, lexical)
-          : mergeSources(lexical);
+      ({ sources, answeredFrom } = await retrieveHelpSources(query, audience, {
+        admin: timingAdmin,
+        searchHelp,
+        timer,
+      }));
     } catch {
-      sources = mergeSources(lexical);
+      sources = [];
     }
 
     if (!sources.length) {
@@ -226,11 +149,16 @@ const POST_HANDLER = withApiGuard(
       answer: answer || null,
       grounded: Boolean(answer),
       degraded: degraded || undefined,
+      answeredFrom,
       sources: publicSources(sources.slice(0, GROUNDING)),
     };
-    if (answer) {
-      if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value);
-      cache.set(key, { at: Date.now(), body: payload });
+    /* Cached under the requested audience, so the next partner asker gets the same
+       user-center answer without the fallback. */
+    if (shouldCacheHelp(payload)) {
+      /* Awaited (a few ms): a serverless instance can freeze once the response is sent. */
+      await cacheSet(key, payload, CACHE_TTL_SECONDS, {
+        memTtlSeconds: CACHE_MEM_TTL_SECONDS,
+      }).catch(() => {});
     }
     return NextResponse.json(payload);
   },
