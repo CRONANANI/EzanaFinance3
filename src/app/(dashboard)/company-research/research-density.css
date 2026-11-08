@@ -1,0 +1,102 @@
+/* Research page density pass (Nov 8 2026). Scoped to .crx-canvas.
+   Targets: generic AI analysis panel, ModelCardShell cards, the Valuation /
+   Comps / DCF panel wrappers, and the Industry / Portfolio views. */
+
+/* ── Generic AI analysis panel ───────────────────────────── */
+.crx-canvas .ai-analysis-panel {
+  margin: 0;
+}
+
+.crx-canvas .ai-analysis-card {
+  border-radius: var(--radius-lg) !important;
+  max-height: min(82vh, 720px);
+}
+
+.crx-canvas .ai-analysis-header {
+  padding: 0.75rem 1.25rem !important;
+  gap: 0.5rem;
+  border-bottom-color: var(--border-secondary);
+}
+
+.crx-canvas .ai-analysis-model-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+}
+
+.crx-canvas .ai-analysis-title {
+  font-size: var(--type-card-title-size) !important;
+  letter-spacing: var(--type-card-title-tracking) !important;
+  color: var(--text-primary) !important;
+}
+
+.crx-canvas .ai-analysis-subtitle {
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.crx-canvas .ai-analysis-rerun {
+  width: 32px;
+  height: 32px;
+}
+
+.crx-canvas .ai-price {
+  color: var(--text-primary);
+}
+
+.crx-canvas .ai-analysis-body {
+  padding: 1rem 1.25rem !important;
+}
+
+/* ── ModelCardShell (Portfolio models, GRPV, etc.) ───────── */
+.crx-canvas .mcs-card {
+  padding: 1rem 1.25rem;
+  gap: 0.625rem;
+  border-radius: var(--radius-lg);
+}
+
+.crx-canvas .mcs-icon-pill {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+}
+
+.crx-canvas .mcs-title {
+  font-size: var(--type-card-title-size);
+  letter-spacing: var(--type-card-title-tracking);
+}
+
+.crx-canvas .mcs-desc {
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.crx-canvas .mcs-body {
+  gap: 0.625rem;
+}
+
+/* Shared register (KPI strip) used by model cards */
+.crx-canvas .reg-cell {
+  padding: 7px 12px;
+}
+
+.crx-canvas .reg-label {
+  color: var(--text-muted);
+}
+
+/* ── Industry / Portfolio views ──────────────────────────── */
+/* The canvas gap already spaces the view from the header. */
+.crx-canvas .mpv-root.mpv-ledger {
+  padding: 0;
+  gap: 1rem;
+}
+
+.crx-canvas .mpv-grid {
+  gap: 1rem;
+}
+
+.crx-canvas .mpv-body-text {
+  color: var(--text-secondary);
+}

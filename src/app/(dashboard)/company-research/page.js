@@ -63,6 +63,7 @@ import '@/components/research/model-card-shell.css';
 import '@/components/research/market/market-portfolio.css';
 import './company-research-theme.css';
 import './dossier.css';
+import './research-density.css';
 import '../org-trading/org-trading.css';
 
 const CAROUSEL_MODELS = getCarouselModels();
