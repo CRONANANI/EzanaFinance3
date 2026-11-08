@@ -611,14 +611,19 @@ function CompanyResearchPageInner() {
             <div className="cr-heatmap-main">
               <PinnableCard cardId="stock-heatmap" section="research">
                 <div className="cr-db-card cr-pinnable-inner">
-                  <div className="chart-header compact">
-                    <div className="chart-title-area">
-                      <h2 className="chart-title">Stock Market Heatmap</h2>
-                      <span className="heatmap-subtitle">
-                        S&amp;P 500 · Performance YTD % · Tile size by return magnitude
+                  <header className="rhm-head">
+                    <div className="rhm-head-id">
+                      <span className="rhm-icon" aria-hidden="true">
+                        <i className="bi bi-grid-3x3-gap" />
                       </span>
+                      <div className="rhm-head-text">
+                        <h2 className="rhm-title">Stock Market Heatmap</h2>
+                        <span className="rhm-desc">
+                          S&amp;P 500 · Performance YTD % · Tile size by return magnitude
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </header>
                   <div
                     className="heatmap-container"
                     id="heatmapContainer"

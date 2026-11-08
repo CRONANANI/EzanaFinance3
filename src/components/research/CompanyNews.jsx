@@ -167,57 +167,81 @@ export function CompanyNews({ symbol, className = '' }) {
 
   if (!symbol) return null;
 
-  if (loading) {
-    return (
-      <div className={`cr-news-chain-card ${className}`}>
-        <div className="cr-news-chain-header">
-          <h3>Company News</h3>
-        </div>
-        <div className="cr-news-chain-loading">
-          <span>LOADING NEWS FEED...</span>
+  const header = (
+    <header className="cr-news-chain-header">
+      <div className="cr-news-chain-id">
+        <span className="cr-news-chain-icon" aria-hidden="true">
+          <i className="bi bi-newspaper" />
+        </span>
+        <div className="cr-news-chain-head-text">
+          <h3 className="cr-news-chain-heading">Company News</h3>
+          <p className="cr-news-chain-desc">Latest headlines for {symbol}, newest first</p>
         </div>
       </div>
+      {!loading && mergedNews.length > 0 && (
+        <span className="cr-news-chain-count">{mergedNews.length} articles</span>
+      )}
+    </header>
+  );
+
+  if (loading) {
+    return (
+      <section className={`cr-news-chain-card ${className}`} aria-busy="true">
+        {header}
+        <div className="cr-news-chain-loading">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="cr-news-chain-skel-item">
+              <span className="cr-news-chain-skel cr-news-chain-skel--title" />
+              <span className="cr-news-chain-skel cr-news-chain-skel--meta" />
+              <span className="cr-news-chain-skel cr-news-chain-skel--body" />
+            </div>
+          ))}
+          <span className="cr-news-chain-sr" role="status">
+            LOADING NEWS FEED...
+          </span>
+        </div>
+      </section>
     );
   }
 
   if (!mergedNews.length) {
     return (
-      <div className={`cr-news-chain-card ${className}`}>
-        <div className="cr-news-chain-header">
-          <h3>Company News</h3>
+      <section className={`cr-news-chain-card ${className}`}>
+        {header}
+        <div className="cr-news-chain-empty">
+          <p className="cr-news-chain-empty-title">No news available</p>
+          <p className="cr-news-chain-empty-text">No news available for {symbol}.</p>
         </div>
-        <div className="cr-news-chain-empty">No news available for {symbol}.</div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className={`cr-news-chain-card ${className}`}>
-      <div className="cr-news-chain-header">
-        <h3>Company News</h3>
-        <span className="cr-news-chain-count">{mergedNews.length} articles</span>
-      </div>
+    <section className={`cr-news-chain-card ${className}`}>
+      {header}
       <div className="cr-news-chain-scroll">
-        <div className="cr-news-chain-list">
+        <ol className="cr-news-chain-list">
           {mergedNews.map((item) => {
             const severity = deriveSeverity(item);
+            const sentimentTone =
+              item._avSentiment > 0.1 ? 'is-pos' : item._avSentiment < -0.1 ? 'is-neg' : 'is-flat';
             return (
-              <div key={item.id} className="cr-news-chain-item">
-                <div className="cr-news-chain-dot" />
+              <li key={item.id} className="cr-news-chain-item">
+                <span className="cr-news-chain-dot" aria-hidden="true" />
                 <div className="cr-news-chain-content">
+                  <h4 className="cr-news-chain-title">{item.headline}</h4>
                   <div className="cr-news-chain-row">
-                    <span className="cr-news-chain-title">{item.headline}</span>
                     <span className="cr-news-chain-source">{item.source}</span>
                     <span className={`cr-news-chain-severity ${severityClass(severity)}`}>
                       {severity}
                     </span>
+                    <span className="cr-news-chain-time">{formatDate(item.datetime)}</span>
                     <span className="cr-news-chain-ago">{timeAgo(item.datetime)}</span>
                   </div>
-                  <div className="cr-news-chain-time">{formatDate(item.datetime)}</div>
                   {item.summary && (
-                    <p className="cr-news-chain-body">
+                    <div className="cr-news-chain-body">
                       {item.summary.length > 200 ? `${item.summary.slice(0, 200)}…` : item.summary}
-                    </p>
+                    </div>
                   )}
                   <div className="cr-news-chain-actions">
                     {item.url && (
@@ -227,32 +251,22 @@ export function CompanyNews({ symbol, className = '' }) {
                         rel="noopener noreferrer"
                         className="cr-news-chain-link"
                       >
-                        Read more →
+                        Read more <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
                       </a>
                     )}
                     {item._origin === 'alpha_vantage' && item._avSentiment != null && (
-                      <span
-                        className="cr-news-chain-sentiment"
-                        style={{
-                          color:
-                            item._avSentiment > 0.1
-                              ? '#10b981'
-                              : item._avSentiment < -0.1
-                                ? '#ef4444'
-                                : '#6b7280',
-                        }}
-                      >
+                      <span className={`cr-news-chain-sentiment ${sentimentTone}`}>
                         Sentiment: {item._avSentiment > 0 ? '+' : ''}
                         {item._avSentiment.toFixed(2)}
                       </span>
                     )}
                   </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       </div>
-    </div>
+    </section>
   );
 }

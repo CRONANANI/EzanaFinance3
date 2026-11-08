@@ -1,0 +1,700 @@
+/* Company view section tab cards. Tokens only, no Tailwind.
+   Prefixes: rco- (Company Overview), rar- (Analyst Ratings),
+   rkm- (Key Metrics), rec- (Earnings History), rcp- (Peer Companies),
+   rhm- (Stock Market Heatmap card header on the research page).
+   One surface per card, header on one row, KPI rows as strips. */
+
+/* ── Card surface ───────────────────────────────────────── */
+.rco,
+.rar,
+.rkm,
+.rec,
+.rcp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* ── Header: icon + title + one-line caption, actions right ─ */
+.rco-head,
+.rar-head,
+.rkm-head,
+.rec-head,
+.rcp-head,
+.rhm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.625rem 0.75rem;
+}
+
+.rco-head-id,
+.rar-head-id,
+.rkm-head-id,
+.rec-head-id,
+.rcp-head-id,
+.rhm-head-id {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.rco-head-text,
+.rar-head-text,
+.rkm-head-text,
+.rec-head-text,
+.rcp-head-text,
+.rhm-head-text {
+  min-width: 0;
+}
+
+.rco-icon,
+.rar-icon,
+.rkm-icon,
+.rec-icon,
+.rcp-icon,
+.rhm-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald-text);
+  font-size: 1rem;
+}
+
+.rco-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--inset);
+}
+
+.rco-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rco-title,
+.rar-title,
+.rkm-title,
+.rec-title,
+.rcp-title,
+.rhm-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+  color: var(--text-primary);
+}
+
+.rco-desc,
+.rar-desc,
+.rkm-desc,
+.rec-desc,
+.rcp-desc,
+.rhm-desc {
+  display: block;
+  margin: 0.125rem 0 0;
+  overflow: hidden;
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.rco-desc-sep {
+  margin: 0 0.375rem;
+  color: var(--text-muted);
+}
+
+.rco-desc-industry {
+  color: var(--emerald-text);
+}
+
+/* Heatmap header sits above the heatmap container. */
+.rhm-head {
+  margin-bottom: 0.75rem;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.rec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 32px;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 22%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.rec-btn:hover {
+  background: var(--card-bg-hover);
+  color: var(--text-primary);
+}
+
+.rec-btn:focus-visible,
+.rcp-peer:focus-visible,
+.rco-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--btn-ring);
+}
+
+/* ── KPI strip (Company Overview, price targets) ─────────── */
+.rco-strip,
+.rar-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.rco-strip-cell,
+.rar-strip-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 1rem;
+  border-left: 1px solid var(--border-secondary);
+}
+
+.rco-strip-cell:first-child,
+.rar-strip-cell:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.rco-strip-label,
+.rar-strip-label,
+.rar-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rco-strip-value,
+.rar-strip-value {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: var(--weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.rco-strip-value.is-na,
+.rar-strip-value.is-na {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-regular);
+  color: var(--text-muted);
+}
+
+.rar-strip-value.is-em {
+  color: var(--emerald-text);
+}
+
+.rco-link {
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+
+.rco-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Analyst Ratings ────────────────────────────────────── */
+.rar-consensus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.rar-consensus-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.rar-consensus-label {
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-strong);
+}
+
+.rar-consensus-count {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.rar-consensus.is-buy {
+  background: var(--positive-bg);
+  color: var(--positive);
+}
+
+.rar-consensus.is-sell {
+  background: var(--negative-bg);
+  color: var(--negative);
+}
+
+.rar-consensus.is-hold {
+  background: var(--warning-bg);
+  color: var(--amber);
+}
+
+.rar-dist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rar-dist-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.rar-dist-label {
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.rar-dist-value {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.rar-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--inset);
+}
+
+.rar-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease-out;
+}
+
+.rar-bar-fill.is-strong-buy {
+  background: var(--positive);
+}
+
+.rar-bar-fill.is-buy {
+  background: color-mix(in srgb, var(--positive) 60%, transparent);
+}
+
+.rar-bar-fill.is-hold {
+  background: var(--amber);
+}
+
+.rar-bar-fill.is-sell {
+  background: color-mix(in srgb, var(--negative) 60%, transparent);
+}
+
+.rar-bar-fill.is-strong-sell {
+  background: var(--negative);
+}
+
+.rar-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-secondary);
+}
+
+/* The strip already sits under the eyebrow; drop its own rule. */
+.rar-targets .rar-strip {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rar-foot {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* ── Key Metrics: two-column definition list ────────────── */
+.rkm-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1.5rem;
+  margin: 0;
+}
+
+.rkm-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.4375rem 0;
+  border-top: 1px solid var(--border-secondary);
+  font-size: var(--type-caption-size);
+}
+
+.rkm-row:first-child {
+  border-top: 0;
+}
+
+.rkm-row dt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.rkm-row dd {
+  flex-shrink: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.rkm-row dd.is-na {
+  font-family: var(--font-sans);
+  color: var(--text-muted);
+}
+
+@media (min-width: 640px) {
+  .rkm-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rkm-row:nth-child(2) {
+    border-top: 0;
+  }
+}
+
+/* ── Earnings History table ─────────────────────────────── */
+.rec-table-wrap {
+  overflow-x: auto;
+}
+
+.rec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+}
+
+.rec-table th {
+  padding: 0 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--border-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-align: right;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.rec-table td {
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--border-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.rec-table th:first-child,
+.rec-table td:first-child {
+  text-align: left;
+}
+
+.rec-table th:last-child,
+.rec-table td:last-child {
+  padding-right: 0;
+}
+
+.rec-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rec-table td.rec-est {
+  color: var(--text-secondary);
+}
+
+.rec-table td.is-pos {
+  color: var(--positive);
+}
+
+.rec-table td.is-neg {
+  color: var(--negative);
+}
+
+.rec-table td.is-flat {
+  color: var(--text-secondary);
+}
+
+/* ── Peer Companies ─────────────────────────────────────── */
+.rcp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rcp-peer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--inset);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.rcp-peer i {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.rcp-peer:hover {
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald-text);
+}
+
+.rcp-peer:hover i {
+  color: var(--emerald-text);
+}
+
+/* ── States: one line title, one line explanation ───────── */
+.rco--state,
+.rar--state,
+.rkm--state,
+.rec--state,
+.rcp--state {
+  gap: 0.25rem;
+}
+
+.rco-state-title,
+.rar-state-title,
+.rkm-state-title,
+.rec-state-title,
+.rcp-state-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.rco-state-text,
+.rar-state-text,
+.rkm-state-text,
+.rec-state-text,
+.rcp-state-text {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+/* ── Loading shimmer ────────────────────────────────────── */
+.rco-skel,
+.rar-skel,
+.rkm-skel,
+.rec-skel,
+.rcp-skel {
+  display: block;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--inset) 0%, var(--card-bg-hover) 50%, var(--inset) 100%);
+  background-size: 200% 100%;
+  animation: research-tab-shimmer 1.5s ease-in-out infinite;
+}
+
+.rco-skel--icon,
+.rar-skel--icon,
+.rkm-skel--icon,
+.rec-skel--icon,
+.rcp-skel--icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.rco-skel--title,
+.rar-skel--title,
+.rkm-skel--title,
+.rec-skel--title,
+.rcp-skel--title {
+  width: 11rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+.rco-skel--line,
+.rar-skel--line,
+.rkm-skel--line,
+.rec-skel--line,
+.rcp-skel--line {
+  width: 16rem;
+  max-width: 100%;
+  height: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+.rco-skel--strip {
+  height: 3rem;
+}
+
+.rar-skel--block,
+.rkm-skel--block,
+.rec-skel--block {
+  height: 7.5rem;
+}
+
+.rcp-skel--block {
+  height: 4.75rem;
+}
+
+.rco-sr,
+.rar-sr,
+.rkm-sr,
+.rec-sr,
+.rcp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes research-tab-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rco-skel,
+  .rar-skel,
+  .rkm-skel,
+  .rec-skel,
+  .rcp-skel {
+    animation: none;
+  }
+
+  .rar-bar-fill,
+  .rcp-peer {
+    transition: none;
+  }
+}
+
+/* ── Phone ──────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .rco,
+  .rar,
+  .rkm,
+  .rec,
+  .rcp {
+    padding: 0.875rem 1rem;
+  }
+
+  .rco-desc,
+  .rar-desc,
+  .rkm-desc,
+  .rec-desc,
+  .rcp-desc,
+  .rhm-desc {
+    white-space: normal;
+  }
+
+  .rco-strip-cell,
+  .rar-strip-cell {
+    padding: 0 0.625rem;
+  }
+
+  .rec-btn {
+    min-height: 40px;
+  }
+}

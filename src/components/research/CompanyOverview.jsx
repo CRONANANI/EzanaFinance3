@@ -1,9 +1,10 @@
 'use client';
 
 import { useCompanyProfile } from '@/hooks/useFinnhub';
+import './research-tab-cards.css';
 
 function formatMarketCap(val) {
-  if (val == null || val === 0) return '--';
+  if (val == null || val === 0) return 'n/a';
   const n = Number(val);
   const cap = n >= 1e3 && n < 1e9 ? n * 1e6 : n;
   if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
@@ -18,81 +19,94 @@ export function CompanyOverview({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
-        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-          <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
-          Loading company profile...
+      <section className="rco research-fade-in" aria-busy="true">
+        <div className="rco-head-id">
+          <span className="rco-skel rco-skel--icon" />
+          <div className="rco-head-text">
+            <span className="rco-skel rco-skel--title" />
+            <span className="rco-skel rco-skel--line" />
+          </div>
         </div>
-      </div>
+        <span className="rco-skel rco-skel--strip" />
+        <span className="rco-sr" role="status">
+          Loading company profile...
+        </span>
+      </section>
     );
   }
   if (error || !data) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
-        <p className="text-gray-500 dark:text-gray-400">Unable to load company profile.</p>
-      </div>
+      <section className="rco rco--state research-fade-in">
+        <p className="rco-state-title">Company profile unavailable</p>
+        <p className="rco-state-text">Unable to load company profile.</p>
+      </section>
     );
   }
 
+  const marketCap = formatMarketCap(data.marketCapitalization);
+  const meta = [
+    data.finnhubIndustry && { key: 'industry', text: data.finnhubIndustry },
+    data.exchange && { key: 'exchange', text: data.exchange },
+    data.country && { key: 'country', text: data.country },
+  ].filter(Boolean);
+
   return (
-    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl p-6">
-      <div className="flex items-start gap-4">
-        {data.logo && (
-          <img
-            src={data.logo}
-            alt=""
-            className="w-14 h-14 rounded-lg object-contain bg-gray-100 dark:bg-[#161b22]"
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {data.name || symbol}
-          </h3>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {data.finnhubIndustry && (
-              <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
-                {data.finnhubIndustry}
-              </span>
-            )}
-            {data.exchange && (
-              <span className="px-2 py-0.5 rounded text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                {data.exchange}
-              </span>
-            )}
-            {data.country && (
-              <span className="px-2 py-0.5 rounded text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                {data.country}
-              </span>
-            )}
-          </div>
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
-            {data.weburl && (
-              <a
-                href={data.weburl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-emerald-500 hover:underline"
-              >
-                {data.weburl}
-              </a>
-            )}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <div>
-              <span className="text-xs text-gray-500">Market Cap</span>
-              <p className="text-gray-900 dark:text-white font-medium">
-                {formatMarketCap(data.marketCapitalization)}
+    <section className="rco research-fade-up">
+      <header className="rco-head">
+        <div className="rco-head-id">
+          {data.logo ? (
+            <span className="rco-logo">
+              <img src={data.logo} alt="" />
+            </span>
+          ) : (
+            <span className="rco-icon" aria-hidden="true">
+              <i className="bi bi-building" />
+            </span>
+          )}
+          <div className="rco-head-text">
+            <h3 className="rco-title">{data.name || symbol}</h3>
+            {meta.length > 0 && (
+              <p className="rco-desc">
+                {meta.map((m, i) => (
+                  <span key={m.key}>
+                    {i > 0 && (
+                      <span className="rco-desc-sep" aria-hidden="true">
+                        ·
+                      </span>
+                    )}
+                    <span className={m.key === 'industry' ? 'rco-desc-industry' : undefined}>
+                      {m.text}
+                    </span>
+                  </span>
+                ))}
               </p>
-            </div>
-            {data.ipo && (
-              <div>
-                <span className="text-xs text-gray-500">IPO</span>
-                <p className="text-gray-900 dark:text-white font-medium">{data.ipo}</p>
-              </div>
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </header>
+
+      <dl className="rco-strip">
+        <div className="rco-strip-cell">
+          <dt className="rco-strip-label">Market Cap</dt>
+          <dd className={`rco-strip-value${marketCap === 'n/a' ? ' is-na' : ''}`}>{marketCap}</dd>
+        </div>
+        {data.ipo && (
+          <div className="rco-strip-cell">
+            <dt className="rco-strip-label">IPO</dt>
+            <dd className="rco-strip-value">{data.ipo}</dd>
+          </div>
+        )}
+        {data.weburl && (
+          <div className="rco-strip-cell">
+            <dt className="rco-strip-label">Website</dt>
+            <dd className="rco-strip-value">
+              <a href={data.weburl} target="_blank" rel="noopener noreferrer" className="rco-link">
+                {data.weburl}
+              </a>
+            </dd>
+          </div>
+        )}
+      </dl>
+    </section>
   );
 }

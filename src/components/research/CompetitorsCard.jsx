@@ -1,6 +1,7 @@
 'use client';
 
 import { usePeers } from '@/hooks/useFinnhub';
+import './research-tab-cards.css';
 
 export function CompetitorsCard({ symbol, onSelectPeer }) {
   const { data, loading, error } = usePeers(symbol);
@@ -8,40 +9,60 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
-        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-          <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
-          Loading peers...
+      <section className="rcp research-fade-in" aria-busy="true">
+        <div className="rcp-head-id">
+          <span className="rcp-skel rcp-skel--icon" />
+          <div className="rcp-head-text">
+            <span className="rcp-skel rcp-skel--title" />
+            <span className="rcp-skel rcp-skel--line" />
+          </div>
         </div>
-      </div>
+        <span className="rcp-skel rcp-skel--block" />
+        <span className="rcp-sr" role="status">
+          Loading peers...
+        </span>
+      </section>
     );
   }
   if (error || !data?.length) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-6">
-        <p className="text-gray-500 dark:text-gray-400">Peer companies unavailable.</p>
-      </div>
+      <section className="rcp rcp--state research-fade-in">
+        <p className="rcp-state-title">Peer companies unavailable.</p>
+        <p className="rcp-state-text">No peers were returned for {symbol}.</p>
+      </section>
     );
   }
 
   const peers = data.filter((p) => p && p !== symbol).slice(0, 12);
 
   return (
-    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Peer Companies</h3>
-      <div className="flex flex-wrap gap-2">
+    <section className="rcp research-fade-up">
+      <header className="rcp-head">
+        <div className="rcp-head-id">
+          <span className="rcp-icon" aria-hidden="true">
+            <i className="bi bi-diagram-3" />
+          </span>
+          <div className="rcp-head-text">
+            <h3 className="rcp-title">Peer Companies</h3>
+            <p className="rcp-desc">Select a peer to open its research</p>
+          </div>
+        </div>
+      </header>
+      <ul className="rcp-grid">
         {peers.map((peer, pi) => (
-          <button
-            key={peer}
-            type="button"
-            onClick={() => onSelectPeer?.(peer)}
-            className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#161b22] hover:bg-emerald-500/20 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
-            data-task-target={pi === 0 ? 'research-compare-button' : undefined}
-          >
-            {peer}
-          </button>
+          <li key={peer}>
+            <button
+              type="button"
+              onClick={() => onSelectPeer?.(peer)}
+              className="rcp-peer"
+              data-task-target={pi === 0 ? 'research-compare-button' : undefined}
+            >
+              {peer}
+              <i className="bi bi-chevron-right" aria-hidden="true" />
+            </button>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 }

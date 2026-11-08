@@ -2,9 +2,10 @@
 
 import { useStockMetric } from '@/hooks/useFinnhub';
 import { MetricInfo } from '@/components/beginner/MetricInfo';
+import './research-tab-cards.css';
 
 function fmt(v) {
-  if (v == null || v === '' || v === undefined) return '--';
+  if (v == null || v === '' || v === undefined) return 'n/a';
   const n = Number(v);
   if (Number.isNaN(n)) return String(v);
   if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
@@ -36,34 +37,27 @@ export function KeyMetrics({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
-        <div
-          className="flex items-center gap-2"
-          style={{
-            fontSize: '0.6875rem',
-            fontFamily: 'var(--font-mono, monospace)',
-            color: 'var(--text-muted, #6b7280)',
-          }}
-        >
-          <div className="w-4 h-4 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
-          Loading metrics...
+      <section className="rkm research-fade-in" aria-busy="true">
+        <div className="rkm-head-id">
+          <span className="rkm-skel rkm-skel--icon" />
+          <div className="rkm-head-text">
+            <span className="rkm-skel rkm-skel--title" />
+            <span className="rkm-skel rkm-skel--line" />
+          </div>
         </div>
-      </div>
+        <span className="rkm-skel rkm-skel--block" />
+        <span className="rkm-sr" role="status">
+          Loading metrics...
+        </span>
+      </section>
     );
   }
   if (error || !data?.metric) {
     return (
-      <div className="bg-[var(--card-bg)] research-fade-in research-card rounded-xl p-4">
-        <p
-          style={{
-            fontSize: '0.6875rem',
-            fontFamily: 'var(--font-mono, monospace)',
-            color: 'var(--text-muted, #6b7280)',
-          }}
-        >
-          Key metrics unavailable.
-        </p>
-      </div>
+      <section className="rkm rkm--state research-fade-in">
+        <p className="rkm-state-title">Key metrics unavailable.</p>
+        <p className="rkm-state-text">No fundamentals were returned for {symbol}.</p>
+      </section>
     );
   }
 
@@ -71,66 +65,32 @@ export function KeyMetrics({ symbol }) {
   const entries = Object.entries(metric).filter(([, v]) => v != null && v !== '');
 
   return (
-    <div className="bg-[var(--card-bg)] research-fade-up research-card rounded-xl">
-      <div
-        style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid rgba(16, 185, 129, 0.06)' }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            fontSize: '0.8125rem',
-            fontWeight: 700,
-            fontFamily: 'var(--font-mono, monospace)',
-            color: 'var(--text-primary, #f0f6fc)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Key Financial Metrics
-          <MetricInfo term="pe" />
-        </h3>
-      </div>
-      <div style={{ padding: '0.75rem 1rem' }}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {entries.slice(0, 12).map(([key, value]) => (
-            <div
-              key={key}
-              style={{
-                background: 'var(--bg-tertiary, rgba(10,14,19,0.6))',
-                border: '1px solid var(--border-secondary, rgba(16,185,129,0.06))',
-                borderRadius: 6,
-                padding: '0.5rem 0.625rem',
-              }}
-            >
-              <span
-                style={{
-                  display: 'block',
-                  fontSize: 'var(--type-micro-size)',
-                  fontFamily: 'var(--font-mono, monospace)',
-                  fontWeight: 700,
-                  color: '#6b7280',
-                  letterSpacing: '0.04em',
-                  marginBottom: '0.2rem',
-                }}
-              >
-                {METRIC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').trim()}
-              </span>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-mono, monospace)',
-                  color: 'var(--text-primary, #f0f6fc)',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {fmt(value)}
-              </p>
-            </div>
-          ))}
+    <section className="rkm research-fade-up">
+      <header className="rkm-head">
+        <div className="rkm-head-id">
+          <span className="rkm-icon" aria-hidden="true">
+            <i className="bi bi-clipboard-data" />
+          </span>
+          <div className="rkm-head-text">
+            <h3 className="rkm-title">
+              Key Financial Metrics
+              <MetricInfo term="pe" />
+            </h3>
+            <p className="rkm-desc">Reported fundamentals for {symbol}</p>
+          </div>
         </div>
-      </div>
-    </div>
+      </header>
+      <dl className="rkm-list">
+        {entries.slice(0, 12).map(([key, value]) => {
+          const shown = fmt(value);
+          return (
+            <div key={key} className="rkm-row">
+              <dt>{METRIC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').trim()}</dt>
+              <dd className={shown === 'n/a' ? 'is-na' : undefined}>{shown}</dd>
+            </div>
+          );
+        })}
+      </dl>
+    </section>
   );
 }
