@@ -98,7 +98,7 @@ function Executive({ report, rank, deepAction, onCite, meta = [] }) {
       <div className="srb-exec-top">
         <span className="srb-eyebrow">
           <i className="bi bi-broadcast" aria-hidden="true" />
-          Executive answer
+          Desk summary
         </span>
         {deepAction ? <div className="srb-exec-deep">{deepAction}</div> : null}
       </div>

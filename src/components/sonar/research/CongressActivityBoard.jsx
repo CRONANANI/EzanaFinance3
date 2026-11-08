@@ -69,7 +69,7 @@ function Executive({ d, deepAction }) {
         <div>
           <span className="srb-eyebrow">Research answer</span>
           <h2 id={id} className="srb-exec-title">
-            Executive answer
+            Desk summary
           </h2>
         </div>
         {deepAction ? <div className="srb-exec-deep">{deepAction}</div> : null}

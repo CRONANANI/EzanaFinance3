@@ -57,7 +57,7 @@ function Executive({ live, answer, deepAction, notice }) {
   };
   return (
     <article className="snr-bd-card snr-bd-exec" aria-labelledby={id}>
-      <span className="snr-bd-eyebrow">Executive answer</span>
+      <span className="snr-bd-eyebrow">Desk summary</span>
       {notice}
       <h2 id={id} className="snr-pb-q">
         {live?.query}
@@ -124,7 +124,7 @@ function CompanyExecutive({ live, identity, deepAction, notice }) {
   };
   return (
     <article className="snr-bd-card snr-bd-exec snr-pb-co" aria-labelledby={id}>
-      <span className="snr-bd-eyebrow">Executive answer</span>
+      <span className="snr-bd-eyebrow">Desk summary</span>
       {notice}
       <header className="snr-pb-co-id">
         <h2 id={id} className="snr-pb-co-name">

@@ -14,7 +14,7 @@
  */
 
 export const ANSWER_SECTIONS = [
-  { key: 'answer', label: 'Executive answer', tier: 'free' },
+  { key: 'answer', label: 'Desk summary', tier: 'free' },
   { key: 'metrics', label: 'Key metrics', tier: 'free' },
   { key: 'findings', label: 'Key findings', tier: 'free' },
   { key: 'charts', label: 'Charts and data', tier: 'free' },

@@ -16,8 +16,8 @@ Every other quick ping (a company, a member of Congress, a sector, an industry, 
 ## The layout, top to bottom
 
 1. **Sources belt** (`SonarSourceBelt`). A slow conveyor of every resource the answer used, in this order: Ezana datasets, data publishers, web pages, news. It pauses on hover, on focus and with its Pause button, and stays still under reduced motion.
-2. **Executive answer | Snapshot.** The answer card is 7 of 12 columns and holds:
-   - the "Executive answer" eyebrow;
+2. **Desk summary | Snapshot.** The answer card is 7 of 12 columns and holds:
+   - the "Desk summary" eyebrow;
    - the headline;
    - one summary paragraph;
    - up to five bullets;
@@ -41,7 +41,7 @@ Source: `lib/sonar/answer-sections.js`, `SonarAnswerFrame`.
 
 | Free (everyone)      | Deep (deep research on Starter or higher, or an org or partner seat) |
 | -------------------- | -------------------------------------------------------------------- |
-| Executive answer     | Research team                                                        |
+| Desk summary         | Research team                                                        |
 | Key metrics          | Methodology and limitations                                          |
 | Key findings         | Scenarios                                                            |
 | Charts and data      | What to monitor                                                      |

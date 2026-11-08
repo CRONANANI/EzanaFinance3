@@ -117,7 +117,7 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
   };
   return (
     <article className="snr-bd-card snr-bd-exec" aria-labelledby={titleId}>
-      <span className="snr-bd-eyebrow">Executive answer</span>
+      <span className="snr-bd-eyebrow">Desk summary</span>
       {notice}
       {headline ? (
         <h2 id={titleId} className="snr-bd-headline">
@@ -125,7 +125,7 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
         </h2>
       ) : (
         <VisuallyHidden as="h2" id={titleId}>
-          Executive answer
+          Desk summary
         </VisuallyHidden>
       )}
       {a.text ? <p className="snr-bd-lede">{a.text}</p> : null}
