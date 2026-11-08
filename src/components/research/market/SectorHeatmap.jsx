@@ -12,7 +12,7 @@ import { DateSelector } from '@/components/ui/DateSelector';
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
 function formatChange(value) {
-  if (!Number.isFinite(value)) return '–';
+  if (!Number.isFinite(value)) return 'n/a';
   const sign = value > 0 ? '+' : '';
   return `${sign}${value.toFixed(2)}%`;
 }
@@ -47,7 +47,10 @@ function SectorRow({ row, maxAbs, isHighlighted, onClick, rowRef }) {
       onClick={() => onClick(row)}
       aria-label={`Open ${row.name} sector details`}
     >
-      <span className={`shm-sector-dot ${isPos ? 'is-pos' : 'is-neg'}`} aria-hidden />
+      <i
+        className={`bi shm-sector-dir ${isPos ? 'bi-caret-up-fill is-pos' : 'bi-caret-down-fill is-neg'}`}
+        aria-hidden
+      />
       <span className="shm-sector-name">{row.name}</span>
       <span className="sbar" aria-hidden>
         <span className="sbar-track">
@@ -179,16 +182,16 @@ export function SectorHeatmap() {
     () => [
       { label: 'Window', value: range, format: undefined },
       { label: 'Sectors', value: sorted.length, format: 'number' },
-      { label: 'As of', value: asOf || '–', format: undefined },
+      { label: 'As of', value: asOf || 'n/a', format: undefined },
       {
         label: 'Top move',
-        value: best ? formatChange(best.changePct) : '–',
+        value: best ? formatChange(best.changePct) : 'n/a',
         format: undefined,
         emphasis: true,
       },
       {
         label: 'Bottom move',
-        value: worst ? formatChange(worst.changePct) : '–',
+        value: worst ? formatChange(worst.changePct) : 'n/a',
         format: undefined,
         emphasis: 'negative',
       },
@@ -229,7 +232,7 @@ export function SectorHeatmap() {
         <ModelVariableStrip variables={stripVariables} />
         {error && !isLoading && (
           <div className="shm-error" role="alert">
-            <i className="bi bi-exclamation-triangle" />
+            <i className="bi bi-exclamation-triangle" aria-hidden />
             <div className="shm-error-body">
               <div className="shm-error-message">{error.message}</div>
               {error.detail && <div className="shm-error-detail">{error.detail}</div>}
@@ -239,7 +242,7 @@ export function SectorHeatmap() {
 
         {degraded && !error && !isLoading && (
           <div className="shm-warning">
-            <i className="bi bi-info-circle" />
+            <i className="bi bi-info-circle" aria-hidden />
             <span>{degraded.reason}</span>
           </div>
         )}

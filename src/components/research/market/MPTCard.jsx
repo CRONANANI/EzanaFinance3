@@ -23,7 +23,7 @@ const COLORS = {
   Bonds: 'var(--blue)',
   'Real Estate': 'var(--purple)',
   Commodities: 'var(--warning)',
-  Cash: 'var(--text-faint)',
+  Cash: 'var(--text-muted)',
 };
 
 function interpolate(risk) {
@@ -79,48 +79,56 @@ export function MPTCard() {
       description="Find the optimal asset mix along the efficient frontier"
     >
       <ModelVariableStrip variables={stripVariables} />
-      <label className="stc-field">
-        <span className="stc-field-label">
-          Risk tolerance <span className="stc-slider-readout lf-mono">{risk}/100</span>
-        </span>
-        <div className="stc-slider-row">
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={risk}
-            onChange={(e) => setRisk(Number(e.target.value))}
-            className="stc-slider"
-          />
-        </div>
-      </label>
-
-      <button type="button" className="stc-run-btn" onClick={() => setShown(allocation)}>
-        <i className="bi bi-lightning-charge" /> Run model
-      </button>
-
-      <div className="mpv-allocation-bar" aria-label="Recommended allocation">
-        {Object.entries(display).map(([label, value]) => (
-          <div
-            key={label}
-            className="mpv-allocation-segment"
-            style={{ width: `${value}%`, background: COLORS[label] }}
-            title={`${label} ${value}%`}
-          />
-        ))}
-      </div>
-
-      <div className="mpv-allocation-legend">
-        {Object.entries(display).map(([label, value]) => (
-          <span key={label}>
-            <span className="mpv-allocation-dot" style={{ background: COLORS[label] }} />
-            {label} · <strong>{value}%</strong>
+      <div className="stc-field-row">
+        <label className="stc-field">
+          <span className="stc-field-label">
+            Risk tolerance <span className="stc-slider-readout lf-mono">{risk}/100</span>
           </span>
-        ))}
+          <div className="stc-slider-row">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={risk}
+              onChange={(e) => setRisk(Number(e.target.value))}
+              className="stc-slider"
+            />
+          </div>
+        </label>
+
+        <button type="button" className="stc-run-btn" onClick={() => setShown(allocation)}>
+          <i className="bi bi-lightning-charge" aria-hidden /> Run model
+        </button>
       </div>
 
-      <p className="mpv-body-text">{verdict}</p>
+      <section className="mpv-section">
+        <h4 className="mpv-section-title">
+          <i className="bi bi-pie-chart" aria-hidden />
+          Recommended allocation
+        </h4>
+        <div className="mpv-allocation-bar" aria-label="Recommended allocation">
+          {Object.entries(display).map(([label, value]) => (
+            <div
+              key={label}
+              className="mpv-allocation-segment"
+              style={{ width: `${value}%`, background: COLORS[label] }}
+              title={`${label} ${value}%`}
+            />
+          ))}
+        </div>
+
+        <div className="mpv-allocation-legend">
+          {Object.entries(display).map(([label, value]) => (
+            <span key={label}>
+              <span className="mpv-allocation-dot" style={{ background: COLORS[label] }} />
+              {label} <strong>{value}%</strong>
+            </span>
+          ))}
+        </div>
+
+        <p className="mpv-body-text">{verdict}</p>
+      </section>
     </ModelCardShell>
   );
 }

@@ -117,12 +117,11 @@ export function ObsidianPanel() {
       </div>
 
       {status === 'loading' && (
-        <div className="obsidian-loading" aria-live="polite">
-          <div className="obsidian-loading-spinner" aria-hidden />
+        <div className="obsidian-loading" aria-live="polite" aria-busy="true">
           <p className="obsidian-loading-text">
             Obsidian is analyzing &ldquo;{activeKeyword}&rdquo;&hellip;
           </p>
-          <div className="obsidian-skeleton">
+          <div className="obsidian-skeleton" aria-hidden>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="obsidian-skeleton-line" />
             ))}
@@ -132,8 +131,11 @@ export function ObsidianPanel() {
 
       {status === 'error' && error && (
         <div className="obsidian-error" role="alert">
-          <i className="bi bi-exclamation-triangle" aria-hidden />
-          <p>{error}</p>
+          <p className="obsidian-error-title">
+            <i className="bi bi-exclamation-triangle" aria-hidden />
+            Obsidian couldn&apos;t finish this analysis
+          </p>
+          <p className="obsidian-error-text">{error}</p>
           <button
             type="button"
             className="stc-run-btn"
@@ -169,6 +171,10 @@ export function ObsidianPanel() {
                       <span
                         className={`obsidian-top-chg ${p.changePct >= 0 ? 'is-up' : 'is-down'}`}
                       >
+                        <i
+                          className={`bi ${p.changePct >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`}
+                          aria-hidden
+                        />
                         {p.changePct >= 0 ? '+' : ''}
                         {p.changePct.toFixed(2)}%
                       </span>

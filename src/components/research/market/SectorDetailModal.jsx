@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import './sector-detail-modal.css';
 
@@ -70,6 +70,7 @@ export function SectorDetailModal({
   const [loading, setLoading] = useState(false);
   /* A request that failed outright: both panels show their error state. */
   const [failed, setFailed] = useState(false);
+  const closeRef = useRef(null);
   const headerLabel = displayName || sector;
 
   /* The API falls back to daily returns when multi-day history is thin. */
@@ -116,6 +117,20 @@ export function SectorDetailModal({
     return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
+  /* Focus moves into the dialog on open and back to whatever opened it (the
+     sector row) on close. The opener is not passed in, so it is read from
+     document.activeElement at open time. */
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const opener = document.activeElement;
+    closeRef.current?.focus({ preventScroll: true });
+    return () => {
+      if (opener && opener !== document.body && opener.isConnected && opener.focus) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return undefined;
     const prev = document.body.style.overflow;
@@ -140,19 +155,29 @@ export function SectorDetailModal({
     >
       <div className="sdm-panel" onClick={(e) => e.stopPropagation()}>
         <header className="sdm-header">
-          <div>
-            <span className="sdm-eyebrow">Sector · {range}</span>
+          <div className="sdm-head-id">
             <h2 className="sdm-title">{headerLabel}</h2>
+            <span className="sdm-eyebrow">Sector · {range}</span>
             {Number.isFinite(changePct) && (
-              <div className="sdm-heading-meta">
+              <span className="sdm-heading-meta">
                 <span className={`sdm-heading-change ${changePct >= 0 ? 'is-up' : 'is-down'}`}>
+                  <i
+                    className={`bi ${changePct >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`}
+                    aria-hidden="true"
+                  />
                   {formatChange(changePct)}
                 </span>
                 <span className="sdm-sector-index-label">Sector avg.</span>
-              </div>
+              </span>
             )}
           </div>
-          <button type="button" className="sdm-close" onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            ref={closeRef}
+            className="sdm-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </header>

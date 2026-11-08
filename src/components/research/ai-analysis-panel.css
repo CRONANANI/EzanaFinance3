@@ -1,6 +1,7 @@
 /* =============================================
-   AI ANALYSIS PANEL — Ezana Finance
-   Dark theme, glass-morphism, #10b981 primary
+   AI ANALYSIS PANEL (ai-): the generic Sonar model panel.
+   One card surface, header on one row, tokens only. The model accent
+   arrives as --ai-accent (a theme token from the model config).
    ============================================= */
 
 /* ── Panel container ── */
@@ -12,8 +13,7 @@
 .ai-analysis-card {
   border: 1px solid transparent !important;
   background: var(--card-bg) !important;
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-md, 1rem) !important;
+  border-radius: var(--radius-lg) !important;
   overflow: hidden;
   max-height: min(80vh, 640px);
   display: flex !important;
@@ -21,8 +21,7 @@
 }
 
 .ai-model-variable-strip {
-  margin-bottom: 0.75rem;
-  margin-top: 0.125rem;
+  margin: 0;
   flex-shrink: 0;
 }
 
@@ -31,59 +30,69 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 1rem 1.5rem !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  padding: 0.75rem 1.25rem !important;
+  border-bottom: 1px solid var(--border-secondary);
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
   flex-shrink: 0;
 }
 
 .ai-analysis-header-left {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.ai-analysis-head-text {
+  min-width: 0;
 }
 
 .ai-analysis-model-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-lg);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1rem;
   flex-shrink: 0;
+  background: color-mix(in srgb, var(--ai-accent, var(--emerald)) 14%, transparent);
+  color: var(--ai-accent, var(--emerald));
 }
 
 .ai-analysis-title {
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
-  color: var(--foreground) !important;
+  font-size: var(--type-card-title-size) !important;
+  font-weight: var(--type-card-title-weight) !important;
+  line-height: var(--type-card-title-leading);
+  color: var(--text-primary) !important;
   margin: 0 !important;
   text-transform: none !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: var(--type-card-title-tracking) !important;
 }
 
 .ai-analysis-subtitle {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
   display: block;
-  margin-top: 2px;
+  margin-top: 0.125rem;
 }
 
 .ai-analysis-header-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .ai-analysis-price-badge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
-  border: 1px solid var(--emerald-border);
+  min-height: 32px;
+  padding: 0 0.625rem;
+  background: var(--inset);
+  border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
 }
 
@@ -92,277 +101,201 @@
   font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--foreground);
-  font-feature-settings: 'tnum' 1;
+  color: var(--text-primary);
 }
 
 .ai-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--type-value-sm-size);
   font-weight: var(--type-value-sm-weight);
-  font-feature-settings: 'tnum' 1;
+}
+
+.ai-change > i {
+  font-size: var(--type-micro-size);
 }
 
 .ai-change.positive {
-  color: var(--emerald);
+  color: var(--emerald-text);
 }
+
 .ai-change.negative {
   color: var(--negative);
 }
 
 .ai-analysis-rerun {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-md);
-  background: var(--emerald-bg);
-  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
-  color: var(--emerald);
-  font-size: 1rem;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.ai-analysis-rerun:hover {
-  background: var(--emerald-border);
-  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+.ai-analysis-rerun:hover:not(:disabled) {
+  background: var(--card-bg-hover);
+  color: var(--text-primary);
+}
+
+.ai-analysis-rerun:focus-visible,
+.ai-retry-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--btn-ring);
 }
 
 .ai-analysis-rerun:disabled {
-  opacity: 0.5;
+  opacity: var(--btn-disabled-opacity);
   cursor: not-allowed;
+}
+
+/* "Explain simply" is a text toggle, not an icon button. The extra class
+   outranks the 32px square set for .ai-analysis-rerun in research-density. */
+.ai-analysis-header .ai-analysis-rerun.ai-analysis-explain {
+  width: auto;
+  gap: 0.375rem;
+  padding: 0 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.ai-analysis-rerun.is-active {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 /* ── Body ── */
 .ai-analysis-body {
-  padding: 1.5rem !important;
+  padding: 1rem 1.25rem !important;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-/* ── Loading ── */
+/* ── Loading (Sonar stack) ── */
 .ai-analysis-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 2rem 0;
+  padding: 1.25rem 0;
 }
 
-.ai-loading-visual {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.ai-loading-rings {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.ai-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 2px solid;
-  animation: ai-ring-spin 2.5s linear infinite;
-}
-
-.ai-ring-1 {
-  inset: 0;
-  animation-duration: 2s;
-}
-.ai-ring-2 {
-  inset: 8px;
-  animation-duration: 3s;
-  animation-direction: reverse;
-}
-.ai-ring-3 {
-  inset: 16px;
-  animation-duration: 4s;
-}
-
-.ai-loading-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.25rem;
-  animation: ai-icon-pulse 2s ease-in-out infinite;
-}
-
-@keyframes ai-ring-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes ai-icon-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(0.9);
-  }
-}
-
-.ai-loading-text {
-  text-align: center;
-}
-
-.ai-loading-title {
-  display: block;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 4px;
-}
-
-.ai-loading-desc {
-  display: block;
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
-}
-
-.ai-loading-skeleton {
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ai-skeleton-line {
-  height: 12px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--emerald) 6%, transparent) 25%,
-    var(--emerald-bg-hover) 50%,
-    color-mix(in srgb, var(--emerald) 6%, transparent) 75%
-  );
-  background-size: 200% 100%;
-  border-radius: var(--radius-sm);
-  animation: ai-skeleton-shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes ai-skeleton-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* ── Error ── */
-.ai-analysis-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 3rem 1rem;
-  text-align: center;
-}
-
-.ai-analysis-error i {
-  font-size: 2rem;
-  color: var(--negative);
-}
-
-.ai-analysis-error p {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  max-width: 400px;
-}
-
-.ai-retry-btn {
-  padding: 0.5rem 1.25rem;
-  background: color-mix(in srgb, var(--emerald) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
-  border-radius: var(--radius-md);
-  color: var(--emerald);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.2s;
-}
-
-.ai-retry-btn:hover {
-  background: color-mix(in srgb, var(--emerald) 20%, transparent);
-  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
-}
-
-/* ── Empty ── */
+/* ── Error / empty: one line title, one line explanation ── */
+.ai-analysis-error,
 .ai-analysis-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 3rem 1rem;
+  gap: 0.375rem;
+  padding: 1.5rem 1rem;
   text-align: center;
 }
 
-.ai-analysis-empty i {
-  font-size: 2rem;
-  color: var(--muted-foreground);
+.ai-state-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
 }
 
-.ai-analysis-empty p {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  max-width: 400px;
+.ai-analysis-error .ai-state-title i {
+  color: var(--negative);
+}
+
+.ai-analysis-empty .ai-state-title i {
+  color: var(--text-muted);
+}
+
+.ai-state-text {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.ai-retry-btn {
+  margin-top: 0.375rem;
+  min-height: 32px;
+  padding: 0 0.875rem;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: background 0.15s ease;
+}
+
+.ai-retry-btn:hover {
+  background: var(--card-bg-hover);
 }
 
 /* ── Result ── */
 .ai-analysis-meta-bar {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--emerald-bg);
+  gap: 0.375rem 1rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-secondary);
   flex-wrap: wrap;
 }
 
 .ai-meta-item {
-  font-size: 0.6875rem;
-  color: var(--muted-foreground);
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.3rem;
 }
 
+.ai-meta-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 .ai-meta-item i {
-  color: var(--emerald);
-  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-size: var(--type-micro-size);
 }
 
 /* ── Analysis Content Formatting ── */
 .ai-analysis-content {
   font-family: var(--font-sans);
-  line-height: 1.7;
-  color: var(--foreground);
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
 .ai-h1 {
-  font-size: var(--type-section-size);
-  font-weight: var(--type-section-weight);
-  margin: 2rem 0 0.75rem;
-  letter-spacing: var(--type-section-tracking);
-  line-height: var(--type-section-leading);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  margin: 1.25rem 0 0.5rem;
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
 }
 
 .ai-h1:first-child {
@@ -370,9 +303,10 @@
 }
 
 .ai-h2 {
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  margin: 1.75rem 0 0.5rem;
+  line-height: 1.3;
+  margin: 1.125rem 0 0.375rem;
 }
 
 .ai-h2:first-child {
@@ -380,24 +314,24 @@
 }
 
 .ai-h3 {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: var(--foreground);
-  margin: 1.5rem 0 0.5rem;
+  color: var(--text-primary);
+  margin: 0.875rem 0 0.25rem;
 }
 
 .ai-paragraph {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: 0.75rem;
-  line-height: 1.7;
+  margin: 0 0 0.5rem;
+  line-height: 1.6;
 }
 
 .ai-bullet {
   display: flex;
   align-items: flex-start;
-  gap: 0.625rem;
-  padding: 0.25rem 0;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
@@ -407,14 +341,14 @@
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 7px;
+  margin-top: 0.5rem;
 }
 
 .ai-numbered {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.25rem 0;
+  padding: 0.125rem 0;
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
@@ -425,24 +359,33 @@
   font-weight: 700;
   font-size: 0.875rem;
   min-width: 20px;
-  font-feature-settings: 'tnum' 1;
 }
 
 .ai-inline-code {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
-  background: var(--emerald-bg);
-  color: var(--emerald);
+  background: var(--inset);
+  color: var(--text-primary);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
+}
+
+/* The renderer paints headings and list numbers in the model accent via an
+   inline colour. The accents hold contrast on the dark card but several
+   (amber, cyan, blue) do not on the light card, so readable text falls back
+   to --text-primary there; the accent stays on bullet dots and the icon. */
+body.light-mode .ai-analysis-content .ai-h1,
+body.light-mode .ai-analysis-content .ai-h2,
+body.light-mode .ai-analysis-content .ai-num {
+  color: var(--text-primary) !important;
 }
 
 /* ── Tables ── */
 .ai-table-wrap {
   overflow-x: auto;
-  margin: 1rem 0;
-  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  margin: 0.5rem 0 0.75rem;
+  border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
 }
 
@@ -454,22 +397,22 @@
 
 .ai-analysis-table th {
   text-align: left;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--emerald);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--type-label-tracking);
-  background: var(--emerald-bg-subtle);
-  border-bottom: 1px solid var(--emerald-bg-hover);
+  background: var(--inset);
+  border-bottom: 1px solid var(--border-secondary);
   white-space: nowrap;
 }
 
 .ai-analysis-table td {
-  padding: 0.5rem 0.875rem;
-  border-bottom: 1px solid var(--emerald-bg-subtle);
+  padding: 0.4375rem 0.75rem;
+  border-bottom: 1px solid var(--border-secondary);
   color: var(--text-secondary);
-  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .ai-analysis-table tr:last-child td {
@@ -477,118 +420,47 @@
 }
 
 .ai-analysis-table tr:hover td {
-  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  background: var(--emerald-bg-subtle);
 }
 
-/* ── Spin animation ── */
-@keyframes ai-spin-anim {
-  from {
-    transform: rotate(0deg);
+/* ── Re-run busy state: a soft pulse, not a spinner ── */
+@keyframes ai-busy-pulse {
+  0%,
+  100% {
+    opacity: 1;
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    opacity: 0.35;
   }
 }
 
 .ai-spin {
-  animation: ai-spin-anim 1s linear infinite;
+  animation: ai-busy-pulse 1.2s ease-in-out infinite;
 }
 
-/* ── Carousel card enhancements ── */
-.model-metric-card.ai-model-card {
-  cursor: pointer;
-  transition: all 0.25s ease;
-  position: relative;
-  overflow: hidden;
-}
+@media (prefers-reduced-motion: reduce) {
+  .ai-spin {
+    animation: none;
+  }
 
-.model-metric-card.ai-model-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: transparent;
-  transition: background 0.25s;
-}
-
-.model-metric-card.ai-model-card:hover {
-  border-color: transparent;
-  background: var(--card-bg-hover);
-  transform: translateY(-2px);
-}
-
-.model-metric-card.ai-model-card.active {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--emerald) 12%, var(--card-bg));
-}
-
-.model-metric-card.ai-model-card.active::before {
-  background: var(--emerald);
-}
-
-.ai-model-badge {
-  font-size: var(--type-label-size);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--emerald-bg-hover);
-  color: var(--emerald);
-  margin-top: 2px;
-  display: inline-block;
+  .ai-analysis-rerun,
+  .ai-retry-btn {
+    transition: none;
+  }
 }
 
 /* ── Responsive ── */
-@media (max-width: 768px) {
+@media (max-width: 639px) {
   .ai-analysis-header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .ai-analysis-body {
+    padding: 0.875rem 1rem !important;
   }
 
   .ai-analysis-header-right {
     width: 100%;
     justify-content: flex-end;
   }
-
-  .ai-analysis-meta-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .ai-analysis-body {
-    padding: 1rem !important;
-  }
-}
-
-/* ── Light mode ── */
-body.light-mode .ai-analysis-card {
-  background: var(--card-bg) !important;
-  border-color: transparent !important;
-}
-
-body.light-mode .ai-analysis-title,
-body.light-mode .ai-h3,
-body.light-mode .ai-loading-title {
-  color: #111827;
-}
-
-body.light-mode .ai-paragraph,
-body.light-mode .ai-bullet,
-body.light-mode .ai-numbered,
-body.light-mode .ai-analysis-table td {
-  color: #374151;
-}
-
-body.light-mode .ai-skeleton-line {
-  background: linear-gradient(
-    90deg,
-    rgba(16, 185, 129, 0.04) 25%,
-    rgba(16, 185, 129, 0.08) 50%,
-    rgba(16, 185, 129, 0.04) 75%
-  );
-  background-size: 200% 100%;
 }

@@ -117,52 +117,61 @@ export function BlackLittermanCard() {
             ))}
           </select>
         </label>
-      </div>
-
-      <label className="stc-field">
-        <span className="stc-field-label">
-          Confidence <span className="stc-slider-readout lf-mono">{confidence}%</span>
-        </span>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={5}
-          value={confidence}
-          onChange={(e) => setConfidence(Number(e.target.value))}
-          className="stc-slider"
-        />
-      </label>
-
-      <button type="button" className="stc-run-btn" onClick={run}>
-        <i className="bi bi-graph-up" /> Run model
-      </button>
-
-      <div className="mpv-allocation-bar" aria-label="Recommended allocation">
-        {Object.entries(display).map(([label, value]) => (
-          <div
-            key={label}
-            className="mpv-allocation-segment"
-            style={{ width: `${value}%`, background: COLORS[label] }}
-            title={`${label} ${value}%`}
-          />
-        ))}
-      </div>
-
-      <div className="mpv-allocation-legend">
-        {Object.entries(display).map(([label, value]) => (
-          <span key={label}>
-            <span className="mpv-allocation-dot" style={{ background: COLORS[label] }} />
-            {label} · <strong>{value}%</strong>
+        <label className="stc-field">
+          <span className="stc-field-label">
+            Confidence <span className="stc-slider-readout lf-mono">{confidence}%</span>
           </span>
-        ))}
+          <div className="stc-slider-row">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={confidence}
+              onChange={(e) => setConfidence(Number(e.target.value))}
+              className="stc-slider"
+            />
+          </div>
+        </label>
+        <button type="button" className="stc-run-btn" onClick={run}>
+          <i className="bi bi-graph-up" aria-hidden /> Run model
+        </button>
       </div>
 
-      <p className="mpv-body-text">
-        Views shift the baseline by a weight proportional to confidence. A <strong>bullish</strong>{' '}
-        view adds weight; a <strong>bearish</strong> view removes it. At 0% confidence you get the
-        equilibrium mix back.
-      </p>
+      <section className="mpv-section">
+        <h4 className="mpv-section-title">
+          <i className="bi bi-pie-chart" aria-hidden />
+          {result ? 'Posterior allocation' : 'Equilibrium allocation'}
+        </h4>
+        <div className="mpv-allocation-bar" aria-label="Recommended allocation">
+          {Object.entries(display).map(([label, value]) => (
+            <div
+              key={label}
+              className="mpv-allocation-segment"
+              style={{ width: `${value}%`, background: COLORS[label] }}
+              title={`${label} ${value}%`}
+            />
+          ))}
+        </div>
+
+        <div className="mpv-allocation-legend">
+          {Object.entries(display).map(([label, value]) => (
+            <span key={label}>
+              <span className="mpv-allocation-dot" style={{ background: COLORS[label] }} />
+              {label} <strong>{value}%</strong>
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <details className="mpv-method">
+        <summary>How the tilt works</summary>
+        <p className="mpv-body-text">
+          Views shift the baseline by a weight proportional to confidence. A{' '}
+          <strong>bullish</strong> view adds weight; a <strong>bearish</strong> view removes it. At
+          0% confidence you get the equilibrium mix back.
+        </p>
+      </details>
     </ModelCardShell>
   );
 }

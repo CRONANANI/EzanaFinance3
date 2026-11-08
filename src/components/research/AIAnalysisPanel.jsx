@@ -157,17 +157,14 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
 
   return (
     <div ref={panelRef} className="ai-analysis-panel">
-      <div className="component-card ai-analysis-card">
+      <div className="component-card ai-analysis-card" style={{ '--ai-accent': modelConfig.color }}>
         {/* Header */}
         <div className="card-header ai-analysis-header">
           <div className="ai-analysis-header-left">
-            <div
-              className="ai-analysis-model-icon"
-              style={{ background: `${modelConfig.color}20`, color: modelConfig.color }}
-            >
+            <div className="ai-analysis-model-icon" aria-hidden="true">
               <i className={`bi ${modelConfig.icon}`} />
             </div>
-            <div>
+            <div className="ai-analysis-head-text">
               <h3 className="ai-analysis-title">{modelConfig.name}</h3>
               <span className="ai-analysis-subtitle">
                 {modelConfig.subtitle} · {symbol}
@@ -177,16 +174,12 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
           <div className="ai-analysis-header-right">
             <button
               type="button"
-              className={`ai-analysis-rerun ${simpleExplain ? 'is-active' : ''}`}
+              className={`ai-analysis-rerun ai-analysis-explain ${simpleExplain ? 'is-active' : ''}`}
               onClick={toggleSimpleExplain}
               title="Explain results in plain language"
-              style={
-                simpleExplain
-                  ? { borderColor: 'rgba(16,185,129,0.5)', color: 'var(--emerald, #10b981)' }
-                  : undefined
-              }
+              aria-pressed={simpleExplain}
             >
-              <i className="bi bi-chat-left-text" /> Explain simply
+              <i className="bi bi-chat-left-text" aria-hidden="true" /> Explain simply
             </button>
             {analysis?.marketData && (
               <div className="ai-analysis-price-badge">
@@ -194,6 +187,10 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
                 <span
                   className={`ai-change ${analysis.marketData.changesPercentage >= 0 ? 'positive' : 'negative'}`}
                 >
+                  <i
+                    className={`bi ${analysis.marketData.changesPercentage >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`}
+                    aria-hidden="true"
+                  />
                   {analysis.marketData.changesPercentage >= 0 ? '+' : ''}
                   {analysis.marketData.changesPercentage?.toFixed(2)}%
                 </span>
@@ -204,19 +201,23 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
               onClick={runAnalysis}
               disabled={loading}
               title="Re-run analysis"
+              aria-label="Re-run analysis"
               type="button"
             >
-              <i className={`bi bi-arrow-clockwise ${loading ? 'ai-spin' : ''}`} />
+              <i
+                className={`bi bi-arrow-clockwise ${loading ? 'ai-spin' : ''}`}
+                aria-hidden="true"
+              />
             </button>
             <button className="card-action-btn" onClick={onClose} type="button">
-              <i className="bi bi-x-lg" /> Close
+              <i className="bi bi-x-lg" aria-hidden="true" /> Close
             </button>
           </div>
         </div>
 
         {/* Body */}
         <div className="card-body ai-analysis-body">
-          <ModelVariableStrip variables={stripVariables} className="ai-model-variable-strip mb-0" />
+          <ModelVariableStrip variables={stripVariables} className="ai-model-variable-strip" />
           {/* Loading State */}
           {loading && (
             <div className="ai-analysis-loading">
@@ -226,11 +227,14 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
 
           {/* Error State */}
           {error && !loading && (
-            <div className="ai-analysis-error">
-              <i className="bi bi-exclamation-triangle" />
-              <p>{error}</p>
+            <div className="ai-analysis-error" role="alert">
+              <p className="ai-state-title">
+                <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+                Couldn&apos;t run {modelConfig.name}
+              </p>
+              <p className="ai-state-text">{error}</p>
               <button onClick={runAnalysis} type="button" className="ai-retry-btn">
-                <i className="bi bi-arrow-clockwise" /> Retry Analysis
+                <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Retry Analysis
               </button>
             </div>
           )}
@@ -238,8 +242,13 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
           {/* No Stock Selected */}
           {!symbol && !loading && !error && (
             <div className="ai-analysis-empty">
-              <i className="bi bi-search" />
-              <p>Select a stock from the heatmap or search bar above to run {modelConfig.name}.</p>
+              <p className="ai-state-title">
+                <i className="bi bi-search" aria-hidden="true" />
+                No ticker selected
+              </p>
+              <p className="ai-state-text">
+                Select a stock from the heatmap or search bar above to run {modelConfig.name}.
+              </p>
             </div>
           )}
 
@@ -248,14 +257,16 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
             <div className="ai-analysis-result">
               <div className="ai-analysis-meta-bar">
                 <span className="ai-meta-item">
-                  <i className="bi bi-clock" /> Generated{' '}
-                  {new Date(analysis.generatedAt).toLocaleTimeString()}
+                  <i className="bi bi-clock" aria-hidden="true" /> Generated{' '}
+                  <span className="ai-meta-mono">
+                    {new Date(analysis.generatedAt).toLocaleTimeString()}
+                  </span>
                 </span>
                 <span className="ai-meta-item">
-                  <i className="bi bi-cpu" /> Sonar
+                  <i className="bi bi-cpu" aria-hidden="true" /> Sonar
                 </span>
                 <span className="ai-meta-item">
-                  <i className="bi bi-diagram-3" /> {analysis.modelName}
+                  <i className="bi bi-diagram-3" aria-hidden="true" /> {analysis.modelName}
                 </span>
               </div>
               <div className="ai-analysis-content">

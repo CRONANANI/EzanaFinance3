@@ -51,7 +51,7 @@ export function StressTestCard() {
     const label = SCENARIOS.find((s) => s.id === scenarioId)?.label ?? scenarioId;
     return [
       { label: 'Scenario', value: label, format: undefined },
-      { label: 'Shock mag.', value: '–', format: undefined },
+      { label: 'Shock mag.', value: 'n/a', format: undefined },
       { label: 'Correlation', value: '0.6 est.', format: undefined },
       { label: 'Horizon', value: '1y', format: undefined },
     ];
@@ -89,55 +89,56 @@ export function StressTestCard() {
     >
       <ModelVariableStrip variables={stripVariables} />
       {isDemo && !isLoading && (
-        <div className="stc-demo-banner">
-          <i className="bi bi-info-circle" /> Showing a sample portfolio. Connect a brokerage
-          account to stress-test your real positions.
-        </div>
+        <p className="stc-demo-banner">
+          <i className="bi bi-info-circle" aria-hidden />
+          <span>
+            Showing a sample portfolio. Connect a brokerage account to stress-test your real
+            positions.
+          </span>
+        </p>
       )}
 
       {mode === 'sensitivity' ? (
-        <>
-          <div className="stc-field-row">
-            <label className="stc-field">
-              <span className="stc-field-label">Sector</span>
-              <select
-                className="stc-select"
-                value={sector}
-                onChange={(e) => setSector(e.target.value)}
-              >
-                {GICS_SECTORS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <div className="stc-field-row">
+          <label className="stc-field">
+            <span className="stc-field-label">Sector</span>
+            <select
+              className="stc-select"
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+            >
+              {GICS_SECTORS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            <label className="stc-field">
-              <span className="stc-field-label">Shock magnitude</span>
-              <div className="stc-slider-row">
-                <input
-                  type="range"
-                  min={-30}
-                  max={30}
-                  step={1}
-                  value={shockPct}
-                  onChange={(e) => setShockPct(Number(e.target.value))}
-                  className="stc-slider"
-                />
-                <span className="stc-slider-readout lf-mono">
-                  {shockPct > 0 ? `+${shockPct}` : shockPct}%
-                </span>
-              </div>
-            </label>
-          </div>
+          <label className="stc-field">
+            <span className="stc-field-label">Shock magnitude</span>
+            <div className="stc-slider-row">
+              <input
+                type="range"
+                min={-30}
+                max={30}
+                step={1}
+                value={shockPct}
+                onChange={(e) => setShockPct(Number(e.target.value))}
+                className="stc-slider"
+              />
+              <span className="stc-slider-readout lf-mono">
+                {shockPct > 0 ? `+${shockPct}` : shockPct}%
+              </span>
+            </div>
+          </label>
 
           <button type="button" className="stc-run-btn" onClick={runSensitivity}>
-            <i className="bi bi-lightning-charge" /> Run sensitivity
+            <i className="bi bi-lightning-charge" aria-hidden /> Run sensitivity
           </button>
-        </>
+        </div>
       ) : (
-        <>
+        <div className="stc-field-row">
           <label className="stc-field">
             <span className="stc-field-label">Scenario</span>
             <select
@@ -154,15 +155,19 @@ export function StressTestCard() {
           </label>
 
           <button type="button" className="stc-run-btn" onClick={runScenario}>
-            <i className="bi bi-activity" /> Run scenario
+            <i className="bi bi-activity" aria-hidden /> Run scenario
           </button>
-        </>
+        </div>
       )}
 
       {result && (
         <div className="stc-result-card mpv-result">
           <span className="stc-result-label">Estimated portfolio impact</span>
           <span className={`stc-result-value ${result.deltaPct < 0 ? 'is-neg' : 'is-pos'}`}>
+            <i
+              className={`bi ${result.deltaPct < 0 ? 'bi-graph-down-arrow' : 'bi-graph-up-arrow'}`}
+              aria-hidden
+            />
             {result.deltaPct >= 0 ? '+' : ''}
             {result.deltaPct.toFixed(2)}% ({formatUsd(result.deltaUsd)})
           </span>
@@ -183,6 +188,7 @@ export function StressTestCard() {
                       <span className="stc-breakdown-meta">· {row.sector}</span>
                     </span>
                     <span className={row.deltaUsd < 0 ? 'is-neg' : 'is-pos'}>
+                      {row.deltaUsd > 0 ? '+' : ''}
                       {formatUsd(row.deltaUsd)} ({(row.beta * 100).toFixed(0)}%)
                     </span>
                   </li>
@@ -197,11 +203,14 @@ export function StressTestCard() {
           <i className="bi bi-shield-check" aria-hidden />
           Hedge to All Weather
         </div>
-        <p className="stc-aw-copy">
-          The Ray Dalio <strong>All Weather Portfolio</strong> targets consistent returns across
-          growth, recession, inflation, and deflation regimes using risk parity, roughly{' '}
-          <strong>30% stocks, 55% bonds, 15% commodities/gold</strong>, to limit drawdowns.
-        </p>
+        <details className="mpv-method">
+          <summary>About the All Weather target</summary>
+          <p className="stc-aw-copy">
+            The Ray Dalio <strong>All Weather Portfolio</strong> targets consistent returns across
+            growth, recession, inflation, and deflation regimes using risk parity, roughly{' '}
+            <strong>30% stocks, 55% bonds, 15% commodities/gold</strong>, to limit drawdowns.
+          </p>
+        </details>
         <div className="stc-aw-allocation">
           {awRows.map((row) => (
             <div className="stc-aw-row" key={row.label}>
@@ -221,7 +230,7 @@ export function StressTestCard() {
             )
           }
         >
-          <i className="bi bi-arrow-repeat" /> Apply hedge
+          <i className="bi bi-arrow-repeat" aria-hidden /> Apply hedge
         </button>
       </div>
     </ModelCardShell>

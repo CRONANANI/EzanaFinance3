@@ -112,7 +112,7 @@ export function MonteCarloCard() {
       { label: 'Drift', value: 0.07, format: 'percent' },
       {
         label: 'P(hit)',
-        value: result != null && Number.isFinite(result.probability) ? result.probability : '–',
+        value: result != null && Number.isFinite(result.probability) ? result.probability : 'n/a',
         format: result != null && Number.isFinite(result.probability) ? 'percent' : undefined,
         emphasis: true,
       },
@@ -151,7 +151,7 @@ export function MonteCarloCard() {
           </div>
           <div className="mc-lock-overlay">
             <div className="mc-lock-circle">
-              <i className="bi bi-lock-fill" />
+              <i className="bi bi-lock-fill" aria-hidden />
             </div>
             <div className="mc-lock-title">Advanced Pro membership</div>
             <p className="mc-lock-copy">
@@ -159,7 +159,7 @@ export function MonteCarloCard() {
               of hitting your financial goals.
             </p>
             <button type="button" className="mc-lock-cta" onClick={openProGate}>
-              <i className="bi bi-stars" /> Upgrade to Pro
+              <i className="bi bi-stars" aria-hidden /> Upgrade to Pro
             </button>
           </div>
         </div>
@@ -196,11 +196,6 @@ export function MonteCarloCard() {
             min={0}
           />
         </label>
-      </div>
-
-      <MonteCarloFanChart />
-
-      <div className="stc-field-row">
         <label className="stc-field">
           <span className="stc-field-label">Horizon (years)</span>
           <input
@@ -228,25 +223,37 @@ export function MonteCarloCard() {
         <i className="bi bi-lightning-charge" aria-hidden /> Run 2,000 simulations
       </button>
 
+      <MonteCarloFanChart />
+
       {result && (
         <>
-          <div className="mc-stat-strip lf-mono" aria-label="Simulation summary">
-            <span>
-              P(hit) <strong className="mc-stat-em">{Math.round(result.probability * 100)}%</strong>
-            </span>
-            <span>
-              Median <strong>${Math.round(result.median).toLocaleString()}</strong>
-            </span>
-            <span>
-              Goal <strong>${Number(goal).toLocaleString()}</strong>
-            </span>
-            <span>
-              Horizon <strong>{years}y</strong>
-            </span>
+          <div className="mc-stat-strip reg" role="group" aria-label="Simulation summary">
+            <div className="reg-cell">
+              <span className="reg-label">P(hit)</span>
+              <strong className="reg-value reg-value--em mc-stat-em">
+                {Math.round(result.probability * 100)}%
+              </strong>
+            </div>
+            <div className="reg-cell">
+              <span className="reg-label">Median</span>
+              <strong className="reg-value">${Math.round(result.median).toLocaleString()}</strong>
+            </div>
+            <div className="reg-cell">
+              <span className="reg-label">Goal</span>
+              <strong className="reg-value">${Number(goal).toLocaleString()}</strong>
+            </div>
+            <div className="reg-cell">
+              <span className="reg-label">Horizon</span>
+              <strong className="reg-value">{years}y</strong>
+            </div>
           </div>
           <div className="stc-result-card mpv-result">
             <span className="stc-result-label">Probability of hitting goal</span>
             <span className={`stc-result-value ${probabilityLabel.tone}`}>
+              <i
+                className={`bi ${probabilityLabel.tone === 'is-pos' ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}
+                aria-hidden
+              />
               {Math.round(result.probability * 100)}%
             </span>
             <span className="stc-result-detail">

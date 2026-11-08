@@ -18,7 +18,7 @@ export const ANALYSIS_MODELS = {
     icon: 'bi-gem',
     description: 'Score out of 72',
     subtitle: 'Flagship · Goldman Sachs-Level',
-    color: '#10b981',
+    color: 'var(--emerald)',
     flagship: true,
     systemPrompt: `You are a senior equity analyst at Goldman Sachs with 20 years of experience screening stocks for high-net-worth clients.
 
@@ -55,7 +55,7 @@ Provide a complete GRPV analysis with scores out of 72, detailed breakdown acros
     icon: 'bi-cash-stack',
     description: '5-year projections',
     subtitle: 'Forward & Reverse · Morgan Stanley-Style',
-    color: '#3b82f6',
+    color: 'var(--blue)',
     flagship: false,
     dispatchToComponent: 'DCFInteractiveModel',
     systemPrompt: `You are a VP-level investment banker at Morgan Stanley who builds valuation models for Fortune 500 M&A deals. You have extensive experience in discounted cash flow analysis and have led over 50 major transactions.
@@ -89,7 +89,7 @@ Provide a 5-year DCF valuation including revenue projections, margin estimates, 
     icon: 'bi-bar-chart-line',
     description: 'Quarterly performance & outlook',
     subtitle: 'Sell-Side Quality',
-    color: '#a855f7',
+    color: 'var(--purple)',
     flagship: false,
     dispatchToComponent: 'EarningsAnalysisCard',
     systemPrompt: '', // Custom component, no AI prompt needed
@@ -119,7 +119,7 @@ Provide a 5-year DCF valuation including revenue projections, margin estimates, 
     icon: 'bi-bar-chart-steps',
     description: 'Peer multiples valuation',
     subtitle: 'Peer Benchmarking',
-    color: '#f59e0b',
+    color: 'var(--amber)',
     flagship: false,
     systemPrompt: `You are a senior investment banking associate specializing in peer-group benchmarking for M&A deals and IPOs. Your work appears in pitch books for Fortune 500 transactions.
 
@@ -152,7 +152,7 @@ Identify 5–10 close public peers, build a multiples table covering P/E, EV/Rev
     icon: 'bi-diagram-3',
     description: 'Integrated financial forecast',
     subtitle: 'FP&A · Buy-Side Standard',
-    color: '#06b6d4',
+    color: 'var(--cyan)',
     flagship: false,
     systemPrompt: `You are a senior financial planning & analysis (FP&A) leader at a major buy-side asset manager. You build integrated 3-statement financial models for portfolio companies and investment targets.
 
@@ -184,7 +184,7 @@ Forecast the income statement, balance sheet, and cash flow statement for 5 year
     icon: 'bi-bank',
     description: 'Leveraged buyout returns',
     subtitle: 'Private Equity · KKR-Style',
-    color: '#ef4444',
+    color: 'var(--negative)',
     flagship: false,
     systemPrompt: `You are a Vice President at KKR specializing in leveraged buyout transactions for $1–10B targets. You have closed 30+ LBO deals across consumer, industrials, and tech.
 
@@ -219,7 +219,7 @@ Construct a 5-year LBO with sources & uses, debt schedule, levered FCF, exit ass
     icon: 'bi-arrows-angle-contract',
     description: 'Acquisition EPS impact',
     subtitle: 'Corporate Development',
-    color: '#8b5cf6',
+    color: 'var(--indigo)',
     flagship: false,
     systemPrompt: `You are a Director of Corporate Development for a Fortune 500 company who evaluates strategic acquisitions. You build accretion/dilution models for board-level review.
 
@@ -257,7 +257,7 @@ Assume a reasonable strategic acquirer, propose a deal structure with realistic 
     icon: 'bi-shield-shaded',
     description: 'Volatility, Sharpe, drawdown',
     subtitle: 'Asset Management · Risk-Adjusted Returns',
-    color: '#dc2626',
+    color: 'var(--danger)',
     flagship: false,
     systemPrompt: `You are a senior portfolio risk manager at a major asset management firm responsible for evaluating risk-adjusted returns for institutional portfolios. You don't care about gross returns, you care about returns per unit of risk.
 
@@ -291,7 +291,7 @@ Compute annualized volatility, beta, correlations with major asset classes, Shar
     icon: 'bi-shuffle',
     description: '10,000 scenario paths',
     subtitle: 'Quant · Probability Distribution',
-    color: '#ec4899',
+    color: 'var(--pink)',
     flagship: false,
     systemPrompt: `You are a quantitative analyst at a derivatives trading firm specializing in probabilistic forecasting and risk modeling. Your work informs trading and hedging decisions for nine-figure books.
 
