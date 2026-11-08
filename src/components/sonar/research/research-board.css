@@ -1165,3 +1165,8 @@
   gap: 1.5rem;
   padding-top: 8px;
 }
+
+/* Nov 2026: the Valuation snapshot beside a company's deep research answer. */
+.srb .srb-vsn {
+  height: 100%;
+}

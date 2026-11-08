@@ -47,6 +47,10 @@ import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sona
 import { planVisualizations } from '@/lib/sonar/insight/viz-plan';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
+import { ValuationSection } from '@/components/sonar/valuation/ValuationSection';
+import { snapshotFromModel } from '@/lib/sonar/valuation/history';
+import { exploreValuationAction } from '@/lib/sonar/ping-board';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import { Cites } from './Cites';
 import { congressActivityCells } from './CongressActivityBoard';
@@ -856,13 +860,19 @@ export default function ResearchBoard({
   const activity = isActivityPanel(state.panels?.congressActivity)
     ? state.panels.congressActivity
     : null;
+  /* Nov 2026: an answer about one listed company lists Valuation; a deep run fills it and
+     shows the snapshot beside the answer (a ranking keeps its own snapshot there). */
+  const valuationModel = state.panels?.valuation || run?.valuation || null;
+  const equity = Boolean(run?.equity || state.plan?.spec?.equity || valuationModel);
+  const vSnap = !rank && valuationModel ? snapshotFromModel(valuationModel) : null;
+  const side = rank || vSnap;
 
   const generic = [
     {
       id: 'exec',
       section: 'answer',
-      span: rank ? 7 : 12,
-      min: rank ? 6 : 12,
+      span: side ? 7 : 12,
+      min: side ? 6 : 12,
       node: (
         <Executive
           report={report}
@@ -875,6 +885,24 @@ export default function ResearchBoard({
     },
     rank
       ? { id: 'snapshot', section: 'answer', span: 5, min: 5, node: <Snapshot rank={rank} /> }
+      : null,
+    vSnap
+      ? {
+          id: 'vsnapshot',
+          section: 'answer',
+          span: 5,
+          min: 5,
+          node: (
+            <div className="srb-card srb-vsn">
+              <ValuationSnapshot
+                snapshot={vSnap}
+                identity={null}
+                action={exploreValuationAction(access, { hasSection: true })}
+                onDeep={onDeep}
+              />
+            </div>
+          ),
+        }
       : null,
     kpis.length
       ? { id: 'kpis', section: 'metrics', span: 12, min: 12, node: <Kpis tiles={kpis} /> }
@@ -911,6 +939,15 @@ export default function ResearchBoard({
           span: 12,
           min: 12,
           node: <Charts items={vizPlan.items} Fallback={ChartFallback} />,
+        }
+      : null,
+    valuationModel
+      ? {
+          id: 'valuation',
+          section: 'valuation',
+          span: 12,
+          min: 12,
+          node: <ValuationSection model={valuationModel} />,
         }
       : null,
     {
@@ -980,7 +1017,13 @@ export default function ResearchBoard({
   const seenKeys = new Set(cells.map((c) => c.section));
 
   return (
-    <SonarAnswerFrame present={present} access={access} onDeep={onDeep} navTop={navTop}>
+    <SonarAnswerFrame
+      present={present}
+      access={access}
+      onDeep={onDeep}
+      navTop={navTop}
+      equity={equity}
+    >
       <div className="srb" role="region" aria-label="Research answer">
         {resources.length ? <SonarSourceBelt items={resources} /> : null}
         <div className="srb-grid">

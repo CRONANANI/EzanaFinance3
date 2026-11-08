@@ -31,6 +31,40 @@ export const ANSWER_SECTIONS = [
 export const FREE_KEYS = ANSWER_SECTIONS.filter((s) => s.tier === 'free').map((s) => s.key);
 export const DEEP_KEYS = ANSWER_SECTIONS.filter((s) => s.tier === 'deep').map((s) => s.key);
 
+/**
+ * Nov 2026: sections that exist only for some subjects. Valuation is a deep section for an
+ * answer about one listed company (AAPL, "Is Apple overvalued?", "Compare NVIDIA's valuation
+ * with AMD"); it is never listed for a country, commodity or macro question. Counts in the
+ * navigation and the call to action are computed, never assumed to be twelve.
+ */
+export const SCOPED_SECTIONS = [
+  { key: 'valuation', label: 'Valuation', tier: 'deep', scope: 'equity', after: 'methodology' },
+];
+export const SCOPED_KEYS = SCOPED_SECTIONS.map((s) => s.key);
+
+/** The sections an answer has: the core twelve, plus Valuation when the subject is equity. */
+export function sectionsFor({ equity = false } = {}) {
+  if (!equity) return ANSWER_SECTIONS;
+  const out = [];
+  for (const s of ANSWER_SECTIONS) {
+    out.push(s);
+    for (const x of SCOPED_SECTIONS) if (x.scope === 'equity' && x.after === s.key) out.push(x);
+  }
+  return out;
+}
+
+/** The number of deep sections an answer offers. */
+export const deepCount = ({ equity = false } = {}) =>
+  sectionsFor({ equity }).filter((s) => s.tier === 'deep').length;
+
+/**
+ * Whether an answer is about one listed company, so equity valuation applies. `kind` is the
+ * dossier kind on a quick ping ('company') or the resolved subject's kind in research.
+ */
+export function isEquityAnswer({ ticker = null, kind = null } = {}) {
+  return Boolean(ticker) && (kind == null || kind === 'company' || kind === 'ticker');
+}
+
 /** The page anchor of a section. */
 export const sectionId = (key) => `sa-${key}`;
 
@@ -50,11 +84,12 @@ export function sectionAccess({
   planTier = null,
   isGuest = true,
   version = 'regular',
+  equity = false,
 } = {}) {
   const seat = version === 'org' || version === 'partner';
   const paid = !isGuest && (seat || (Number(planTier) || 0) >= STARTER_TIER);
   if (depth === 'deep' && paid) return { unlocked: true, cta: null };
-  const title = '7 more sections with deep research';
+  const title = `${deepCount({ equity })} more sections with deep research`;
   if (isGuest)
     return {
       unlocked: false,
@@ -72,7 +107,7 @@ export function sectionAccess({
       cta: {
         kind: 'upgrade',
         title,
-        line: 'The Starter plan opens all twelve sections on every deep research answer.',
+        line: 'The Starter plan opens every section on every deep research answer.',
         action: 'Get the Starter plan',
         href: '/pricing?plan=starter',
       },
@@ -82,7 +117,7 @@ export function sectionAccess({
     cta: {
       kind: 'deep',
       title,
-      line: 'Your plan includes them. Run deep research on this question to open all twelve sections.',
+      line: 'Your plan includes them. Run deep research on this question to open every section.',
       action: 'Run deep research',
       href: null,
     },
@@ -95,10 +130,10 @@ export function sectionAccess({
  * present: iterable of section keys the page renders.
  * -> [{ key, label, tier, id, locked }]
  */
-export function answerNav(present, { unlocked = false } = {}) {
+export function answerNav(present, { unlocked = false, equity = false } = {}) {
   const have = new Set(present || []);
   const out = [];
-  for (const s of ANSWER_SECTIONS) {
+  for (const s of sectionsFor({ equity })) {
     if (s.tier === 'free') {
       if (have.has(s.key)) out.push({ ...s, id: sectionId(s.key), locked: false });
     } else if (unlocked) {
@@ -112,7 +147,7 @@ export function answerNav(present, { unlocked = false } = {}) {
 
 /** Whether a section's content may render: free always, deep only when unlocked. */
 export const canRender = (key, unlocked) =>
-  FREE_KEYS.includes(key) || (unlocked && DEEP_KEYS.includes(key));
+  FREE_KEYS.includes(key) || (unlocked && (DEEP_KEYS.includes(key) || SCOPED_KEYS.includes(key)));
 
 /**
  * The first cell of each section carries its anchor. cells: [{ id, section }] in page order

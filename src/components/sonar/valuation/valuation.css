@@ -1,0 +1,447 @@
+/* Valuation snapshot and the deep research Valuation section (Nov 2026), prefix vsn-.
+   Tokens only. Neutral by design: no metric is green or red because it is high or low; the
+   percentile dot uses the text colour and the median a faint tick. Sonar card rule: tinted
+   surfaces, no outlines; rows are separated by hairlines. */
+
+.vsn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  height: 100%;
+}
+
+/* ---------- header ---------- */
+.vsn-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vsn .vsn-eyebrow,
+.vsn-section .vsn-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.vsn .vsn-id {
+  margin: 4px 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+  color: var(--text-primary) !important;
+}
+.vsn-meta,
+.vsn .vsn-meta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text-muted) !important;
+}
+.vsn .vsn-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 6px 0 0;
+}
+.vsn .vsn-context-label {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-tinted);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.vsn .vsn-context-basis {
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+
+/* ---------- metric rows ---------- */
+.vsn-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vsn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.vsn-row:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+.vsn-row-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(72px, auto);
+  align-items: baseline;
+  gap: 12px;
+}
+.vsn-label {
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.vsn-value {
+  font-family: var(--font-mono);
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.vsn-pct {
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.vsn-pct.is-none {
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.vsn-pct-unit {
+  color: var(--text-muted);
+}
+/* Percentile scale 0 to 100: the median at the middle tick, today as the dot. */
+.vsn-track {
+  position: relative;
+  height: 4px;
+  margin: 2px 4px;
+  border-radius: var(--radius-sm);
+  background: var(--border-primary);
+}
+.vsn-median {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 10px;
+  background: var(--text-faint);
+}
+.vsn-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+  transform: translate(-50%, -50%);
+}
+.vsn .vsn-sub {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  line-height: 1.45;
+  color: var(--text-muted) !important;
+}
+
+/* ---------- footer and action ---------- */
+.vsn-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+.vsn .vsn-note,
+.vsn-section .vsn-note {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  line-height: 1.5;
+  color: var(--text-muted) !important;
+}
+.vsn-action {
+  align-self: flex-start;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.vsn-action:hover {
+  background: var(--emerald-bg-hover);
+}
+.vsn-action:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.vsn-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.vsn-action-note {
+  font-size: var(--type-micro-size);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ---------- deep research section ---------- */
+.vsn-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  container-type: inline-size;
+}
+.vsn-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+@container (min-width: 900px) {
+  .vsn-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .vsn-card.is-wide {
+    grid-column: 1 / -1;
+  }
+}
+.vsn-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.vsn-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.vsn-tablewrap {
+  overflow-x: auto;
+}
+.vsn-tablewrap:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.vsn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.vsn-table th,
+.vsn-table td {
+  padding: 7px 10px;
+  border-top: 1px solid var(--border-secondary);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.vsn-table thead th {
+  border-top: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.vsn-table tbody th {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.vsn-table .is-num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.vsn-table tr.is-subject {
+  background: var(--surface-tinted);
+}
+.vsn-table tr.is-median th,
+.vsn-table tr.is-median td {
+  color: var(--text-muted);
+}
+.vsn-grid td.is-base {
+  background: var(--surface-tinted);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.vsn-grid-title {
+  margin: 4px 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.vsn-muted {
+  color: var(--text-muted);
+  white-space: normal;
+}
+.vsn-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.vsn-details {
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.vsn-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.vsn-details summary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.vsn-details p {
+  margin: 6px 0 0;
+}
+.vsn-dcf {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+@container (min-width: 900px) {
+  .vsn-dcf {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+  .vsn-bridge {
+    grid-column: 1 / -1;
+  }
+}
+.vsn-assume,
+.vsn-bridge {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.vsn-assume > div,
+.vsn-bridge > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border-secondary);
+  font-size: var(--type-caption-size);
+}
+.vsn-assume > div:first-child,
+.vsn-bridge > div:first-child {
+  border-top: 0;
+}
+.vsn-assume dt,
+.vsn-bridge dt {
+  color: var(--text-secondary);
+}
+.vsn-assume dd,
+.vsn-bridge dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+.vsn-assume dd .vsn-muted {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--type-micro-size);
+}
+.vsn-bridge .is-total dt,
+.vsn-bridge .is-total dd {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+/* The source of an assumption: reported and market are data, an assumption is chosen. */
+.vsn-src {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  background: var(--surface-tinted);
+  color: var(--text-muted);
+}
+.vsn-src.is-assumption {
+  color: var(--warning);
+}
+.vsn-concl {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vsn-concl-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+.vsn-concl-row p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  color: var(--text-secondary) !important;
+}
+.vsn-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.vsn-concl-row.is-interpretation .vsn-kind,
+.vsn-concl-row.is-risk .vsn-kind {
+  color: var(--warning);
+}
+@container (max-width: 560px) {
+  .vsn-concl-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+@media (max-width: 640px) {
+  .vsn-action {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vsn-action {
+    transition: none;
+  }
+}

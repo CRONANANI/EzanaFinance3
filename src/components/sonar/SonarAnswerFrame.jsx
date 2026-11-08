@@ -3,7 +3,8 @@
 /**
  * SonarAnswerFrame (Nov 2026): the side navigation and the board beside it, for every Sonar
  * answer (the country board and the ping board on /datasets, the research board in a
- * standard or deep report). One vocabulary of twelve sections (lib/sonar/answer-sections):
+ * standard or deep report). One vocabulary of twelve sections (lib/sonar/answer-sections),
+ * plus Valuation on an answer about one listed company (`equity`):
  *
  *   - the five free sections the page has, clickable, the current one in emerald;
  *   - the seven deep sections: open when this is a deep research run on a Starter plan (or an
@@ -28,13 +29,18 @@ export function SonarAnswerFrame({
   access = null,
   onDeep = null,
   navTop = null,
+  /* Nov 2026: an answer about one listed company lists the Valuation section too. */
+  equity = false,
   children,
   className = '',
 }) {
   const unlocked = Boolean(access?.unlocked);
   const key = [...present].join('|');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const nav = useMemo(() => answerNav(present, { unlocked }), [key, unlocked]);
+  const nav = useMemo(
+    () => answerNav(present, { unlocked, equity }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key, unlocked, equity],
+  );
   const [active, setActive] = useState(null);
   /* After a nav click the clicked section stays current while the smooth scroll runs, so the
      spy does not flicker through the sections it passes. */
@@ -126,7 +132,10 @@ export function SonarAnswerFrame({
             ) : null}
             {cta ? (
               <div className="san-cta">
-                <p className="san-cta-title">{cta.title}</p>
+                {/* The count is the locked sections this answer lists (Valuation on a stock). */}
+                <p className="san-cta-title">
+                  {locked.length} more section{locked.length === 1 ? '' : 's'} with deep research
+                </p>
                 <p className="san-cta-line">{cta.line}</p>
                 {cta.href ? (
                   <a className="san-cta-btn" href={cta.href}>

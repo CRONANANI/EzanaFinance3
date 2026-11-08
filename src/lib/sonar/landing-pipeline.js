@@ -123,6 +123,7 @@ export { matchEcho, marketSnapshot };
 import { canonicalPing } from '@/lib/sonar/canonical-ping';
 import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
 import { compactMetrics } from '@/lib/sonar/macro/fx-findings';
+import { fetchValuationRaw, snapshotFromRaw, valuationEvidence } from '@/lib/sonar/valuation/fetch';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -217,7 +218,7 @@ Rules:
    live market data and the listing record for a resolved company (market),
    the IPO filings source (ipo) and recent headlines from Ezana's news feed
    (news). Three shorter paragraphs, so a fast model finishes in time. */
-const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market), published analyst ratings and price targets marked (analysts), and recent headlines from Ezana's news feed marked (news). The (market), (analysts) and (news) snippets are current as of today. Snippets marked (macro) are official statistics (IMF, World Bank, BIS, central banks, JODI, EIA, the World Bank Pink Sheet, risk indices), each with its own period.
+const FAST_GROUNDED_PROMPT = `You are Ezana Sonar, a research analyst answering a ping. Your evidence is the numbered snippets below: Ezana's datasets (congressional trades, government contracts, SEC and IPO filings, 13F holdings, lobbying, the OFAC sanctions list, prediction markets, Echo editorial), live market data marked (market), published analyst ratings and price targets marked (analysts), Ezana's valuation history for a company marked (valuation) (multiples against the company's own month-end history, with percentiles), and recent headlines from Ezana's news feed marked (news). The (market), (analysts), (valuation) and (news) snippets are current as of today. Snippets marked (macro) are official statistics (IMF, World Bank, BIS, central banks, JODI, EIA, the World Bank Pink Sheet, risk indices), each with its own period.
 Rules:
 - Give every (macro) figure the period the snippet states, and keep a projection a projection. Compare two figures only when their periods match, or say that they differ.
 - Answer the question the visitor actually asked. Lead with the direct answer, then the evidence, then what it means.
@@ -242,11 +243,11 @@ Rules:
    what Ezana's datasets add. Headlines are context for a move, never a list:
    a brief that read "Headline: ..." three times told the visitor nothing. */
 const COMPANY_ADDENDUM = `
-This ping is about one listed company. Write exactly three paragraphs:
-(1) Market moves: how the stock is trading, from the (market) snippets only: last price and the day's move, the change over 1 month, 3 months, year to date and 1 year, where the price sits in its 52-week range, and market cap. Say what the moves add up to (a rally, a pullback, range-bound).
-(2) What analysts expect: from the (analysts) snippets, the consensus price target with its high and low and what it implies against the last price, how the ratings split, and the latest rating actions, each named with its firm ("Morgan Stanley maintained Overweight"). These are the firms' published views: always attribute them, never present a target or rating as Ezana's own, and never tell the reader to buy, sell or hold.
-(3) What Ezana's datasets show and what to watch: congressional trades, institutional holders, government contracts and lobbying from the dataset snippets, then the next catalysts.
-Use (news) snippets only to explain a move or an analyst action, cited inline; never list headlines and never quote a headline in full. Leave out a paragraph that has no snippets.`;
+This ping is about one listed company. Write an equity research brief in exactly this structure, the parts separated by blank lines:
+(1) Headline: one sentence of at most 22 words stating the most important research conclusion the snippets support about the company and its stock (its valuation against its own history or peers, what its fundamentals show, or what its market moves add up to). Never just the share price or the day's move. No citation markers in the headline.
+(2) Summary: one paragraph of 60 to 100 words that answers the ping directly. Where the snippets support it, cover the current market context (price, moves, 52-week range, market cap), business fundamentals and financial performance, valuation positioning, and the main opportunity or concern. Cite every fact inline.
+(3) Three lines, each its own paragraph, starting with its label exactly: "Valuation: ", "Fundamentals: ", "Primary consideration: ". One or two sentences each, cited. Valuation: how the multiples compare with the company's own history or peers, from the (valuation) or (market) snippets. Fundamentals: what revenue, earnings, margins or cash flow show. Primary consideration: the most relevant risk, uncertainty or catalyst, including analysts' published views attributed to their firms. Leave out a line the snippets cannot support.
+For a ping that is only a ticker or a name, give a balanced overview of the company and the stock; never treat it as a request for a recommendation and never tell the reader to buy, sell or hold. Use (news) snippets only to explain a move or an analyst action, cited inline; never list headlines.`;
 
 /* Nov 4 (v2): a company ping that asks how dependent it is on government
    money ("How dependent is Palantir on government spending? Examine its
@@ -1340,6 +1341,11 @@ export async function buildDossier({ ticker, name }, admin) {
      the same key. A plan that does not serve one of them loses a field, not
      the card. Each chain reports the status of every attempt, so the next
      empty dossier says WHY: 403 means the plan, 200:empty means the symbol. */
+  /* Nov 2026: the valuation history runs beside the dossier's own legs (cached, capped, fail
+     soft) and becomes the Valuation Snapshot once the quote is in. */
+  const valuationRawP = apikey
+    ? fetchValuationRaw(ticker, { ms: 3500, now: today }).catch(() => null)
+    : Promise.resolve(null);
   const legs = await Promise.all([
     firstOf(
       [u(`${FMP_STABLE}/quote?symbol=${sym}&apikey=${k}`), u(`${FMP_V3}/quote/${sym}?apikey=${k}`)],
@@ -1397,7 +1403,14 @@ export async function buildDossier({ ticker, name }, admin) {
       (d) => {
         const r = Array.isArray(d) ? d[0] : d;
         const industry = r?.industry || r?.finnhubIndustry || null;
-        return industry ? { industry: String(industry), sector: r?.sector || null } : null;
+        /* Nov 2026: the exchange too, for the executive answer's identity line. */
+        return industry
+          ? {
+              industry: String(industry),
+              sector: r?.sector || null,
+              exchange: r?.exchange || r?.exchangeShortName || null,
+            }
+          : null;
       },
     ),
   ]);
@@ -1463,13 +1476,27 @@ export async function buildDossier({ ticker, name }, admin) {
             ratios?.enterpriseValueOverEBITDATTM,
           ),
           fourth: fourthStat(ratios),
+          /* Nov 2026: complementary KPIs, so the strip does not repeat the snapshot. */
+          dividendYieldPct:
+            num(ratios?.dividendYieldTTM) != null ? num(ratios?.dividendYieldTTM) * 100 : null,
+          changePct: num(quote?.changePercentage, quote?.changesPercentage),
         }
       : null;
+  const valuation = snapshotFromRaw(await valuationRawP, { quote, now: today });
 
   return {
     ticker,
     name,
     fundamentals,
+    valuation,
+    profile: profile
+      ? {
+          exchange: profile.exchange || null,
+          sector: profile.sector || null,
+          industry: profile.industry,
+        }
+      : null,
+    asOf: today.toISOString().slice(0, 10),
     spark: spark.length >= 2 ? spark : null,
     sparkLabel: 'YTD',
     /* Surfaced in the trace so an empty card explains itself. */
@@ -2141,8 +2168,9 @@ export async function runLandingPipeline(
   /* Nov 6 (v3): the intent is part of the key, so a country profile
      ("Turkey") and a country question ("Is Turkey's lira under pressure?")
      never share a brief, and today's cached v2 Turkey brief is not served. */
-  /* Nov 2026 (v4): a country answer's news rail is relevance-gated (insight/relevance.js). */
-  const cacheKey = `landing:v4:${understood.intent}:${canon.key}`;
+  /* Nov 2026 (v4): a country answer's news rail is relevance-gated (insight/relevance.js).
+     v5: a company answer's structured brief, valuation snapshot and profile. */
+  const cacheKey = `landing:v5:${understood.intent}:${canon.key}`;
   const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
   if (admin && !hasCacheClient()) setCacheClient(() => admin);
   if (cacheable) {
@@ -2607,6 +2635,26 @@ export async function runLandingPipeline(
           (v) => (v ? 'snapshot' : 'none'),
         ).catch(() => null)
       : Promise.resolve(null);
+  /* Nov 2026: a company ping reads its valuation against its own history (computed from
+     point-in-time filings and daily market cap), so the brief's Valuation line has a source.
+     The same cached payloads feed the dossier's Valuation Snapshot. */
+  const valuationP =
+    resolved?.ticker && !country && !politician && !industryPing
+      ? leg(
+          'valuation',
+          () =>
+            within(
+              valuationEvidence(resolved.ticker, {
+                name: resolved.alias || shortName(resolved.name),
+                ms: LEG.market + 1_500,
+              }),
+              LEG.market + 1_500,
+              null,
+              'valuation',
+            ),
+          (v) => (v ? 'history' : 'none'),
+        ).catch(() => null)
+      : Promise.resolve(null);
   /* Nov 3: a company ping also reads its price performance and what
      analysts publish (targets, ratings, recent actions), beside the market
      snapshot. */
@@ -2846,15 +2894,17 @@ export async function runLandingPipeline(
   /* The IPO filings and the market snapshot lead the evidence, so the
      brief opens with them. */
   const evidenceWait = Math.max(0, left() - P.evidenceReserveMs);
-  const [ipoFindings, market, analystItems, revenueMix] = await Promise.all([
+  const [ipoFindings, market, analystItems, revenueMix, valuationItem] = await Promise.all([
     within(ipoP, evidenceWait, [], 'ipo-wait').catch(() => []),
     within(marketP, evidenceWait, null, 'market-wait').catch(() => null),
     within(analystsP, evidenceWait, [], 'analysts-wait').catch(() => []),
     within(revenueMixP, evidenceWait, null, 'revenue-mix-wait').catch(() => null),
+    within(valuationP, evidenceWait, null, 'valuation-wait').catch(() => null),
   ]);
   /* Order: market snapshot, performance, analysts, then the datasets. A
      government-exposure ping puts the revenue mix right after the listing
      line, so the brief answers before it reports the price. */
+  if (valuationItem) items.unshift(valuationItem);
   items.unshift(...analystItems.filter((it) => it.corpus === 'analysts'));
   items.unshift(...analystItems.filter((it) => it.corpus === 'market'));
   if (revenueMix) {

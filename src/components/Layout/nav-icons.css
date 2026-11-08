@@ -1,0 +1,184 @@
+/* App navigation icon geometry (Nov 2026). One set of measurements for every icon button in
+   the signed-in nav (#mainNav): the brand, the notifications bell, the checklist ring, and
+   profile, settings and log out on the right. Before this, the bell, the checklist and the
+   right-hand actions each sized themselves (a 1px transparent border on the bell, no base box
+   on the right-hand links, two different badge offsets), so their centres and badges drifted.
+
+   The model: every icon button is a 44px square flex box (the touch target and the hover
+   area), centring a 36px visual circle that holds a glyph of one size. Badges are absolutely
+   anchored to the 44px box at the same inset, so a count never changes layout height or moves
+   an icon. Both zones are flex rows centred on the same line as the centre links. Focus uses
+   the app's ring. Loaded after globals.css, nav-notifications.css and nav-sonar-dark.css
+   (Navbar.js). Tokens only. */
+
+#mainNav.main-nav {
+  --nav-icon-box: 44px;
+  --nav-icon-visual: 36px;
+  --nav-icon-glyph: 1.35rem;
+  --nav-icon-gap: 0.25rem;
+  --nav-badge-size: 16px;
+  --nav-badge-inset: 3px;
+  --nav-link-icon: 0.9375rem;
+  --nav-link-gap: 0.375rem;
+}
+
+/* The two side zones and the centre list share one centre line. */
+#mainNav.main-nav .nav-container {
+  align-items: center;
+}
+#mainNav.main-nav .nav-left-zone,
+#mainNav.main-nav .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--nav-icon-gap);
+  min-height: var(--nav-icon-box);
+}
+#mainNav.main-nav .nav-left-zone > .nav-brand {
+  display: inline-flex;
+  align-items: center;
+  height: var(--nav-icon-box);
+  margin-right: 0.5rem;
+  padding: 0;
+}
+#mainNav.main-nav .nn-wrapper {
+  display: inline-flex;
+  align-items: center;
+  height: var(--nav-icon-box);
+}
+
+/* Every icon button: one box, one centre, one hover area. */
+#mainNav.main-nav .nn-bell-btn,
+#mainNav.main-nav .checklist-trigger-btn,
+#mainNav.main-nav .nav-action-tap {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--nav-icon-box);
+  width: var(--nav-icon-box);
+  height: var(--nav-icon-box);
+  min-width: var(--nav-icon-box);
+  min-height: var(--nav-icon-box);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  line-height: 1;
+  font-size: var(--nav-icon-glyph);
+  text-decoration: none;
+  vertical-align: middle;
+  transform: none;
+  cursor: pointer;
+}
+/* The bell's hover border is drawn inside the box, so it never adds a pixel. */
+#mainNav.main-nav .nn-bell-btn:hover,
+#mainNav.main-nav .nn-bell-btn.nn-bell-active {
+  box-shadow: inset 0 0 0 1px var(--emerald-border);
+}
+#mainNav.main-nav .checklist-trigger-btn:hover,
+#mainNav.main-nav .checklist-trigger-btn[aria-expanded='true'] {
+  background: var(--emerald-bg);
+}
+#mainNav.main-nav .nn-bell-btn:focus-visible,
+#mainNav.main-nav .checklist-trigger-btn:focus-visible,
+#mainNav.main-nav .nav-action-tap:focus-visible,
+#mainNav.main-nav .nav-home-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
+
+/* The 36px visual circle and the glyph inside it, the same in all three kinds. */
+#mainNav.main-nav .checklist-trigger-inner,
+#mainNav.main-nav .nav-action-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--nav-icon-visual);
+  height: var(--nav-icon-visual);
+  margin: 0;
+  border-radius: 50%;
+  font-size: var(--nav-icon-glyph);
+  line-height: 1;
+  background: transparent;
+}
+#mainNav.main-nav .nn-bell-btn > i,
+#mainNav.main-nav .checklist-trigger-inner > i:not(.cl2-trig-check),
+#mainNav.main-nav .nav-action-inner > i {
+  display: block;
+  font-size: var(--nav-icon-glyph) !important;
+  line-height: 1;
+}
+/* The checklist ring is drawn at the glyph's size so it reads as the same weight. */
+#mainNav.main-nav .cl2-trig-ring {
+  width: 24px;
+  height: 24px;
+}
+
+/* Badges: anchored to the 44px box, same inset and size for notifications and progress. */
+#mainNav.main-nav .nn-badge,
+#mainNav.main-nav .checklist-trigger-badge {
+  position: absolute;
+  top: var(--nav-badge-inset);
+  right: var(--nav-badge-inset);
+  left: auto;
+  bottom: auto;
+  box-sizing: border-box;
+  min-width: var(--nav-badge-size);
+  height: var(--nav-badge-size);
+  padding: 0 4px;
+  border-radius: var(--radius-md);
+  font-size: var(--type-micro-size);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: none;
+  pointer-events: none;
+}
+
+/* Centre links: icon and label on one line with one gap. */
+#mainNav.main-nav .animated-nav-link {
+  align-items: center;
+  gap: var(--nav-link-gap);
+  line-height: 1;
+  min-height: 36px;
+}
+#mainNav.main-nav .animated-nav-link > i:first-child {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--nav-link-icon);
+  line-height: 1;
+}
+
+/* On Sonar the hover tint sits on the whole 44px button (as on the bell), not only on the
+   checklist's inner circle. */
+html
+  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
+  .checklist-trigger-btn:hover {
+  background: var(--nav-sonar-tint);
+}
+html
+  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
+  .checklist-trigger-btn:hover
+  .checklist-trigger-inner {
+  background: transparent;
+}
+
+/* Small screens: the left cluster is centred by mobile-responsive.css; the boxes stay 44px
+   so nothing shrinks below a touch target, and the gap stays the same. */
+@media (max-width: 767px) {
+  #mainNav.main-nav {
+    --nav-icon-glyph: 1.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #mainNav.main-nav .nn-bell-btn,
+  #mainNav.main-nav .checklist-trigger-btn,
+  #mainNav.main-nav .nav-action-tap {
+    transition: none;
+  }
+}

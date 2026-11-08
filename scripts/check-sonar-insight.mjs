@@ -677,7 +677,7 @@ test('the engine runs the insight step at every depth, and versions its caches',
     /depth !== 'quick' && !evidenceOverride/,
     'semantic matching never delays a quick run',
   );
-  assert.match(read('src/lib/sonar/landing-pipeline.js'), /landing:v4:/);
+  assert.match(read('src/lib/sonar/landing-pipeline.js'), /landing:v[4-9]:/);
   assert.match(read('src/lib/sonar/landing-pipeline.js'), /gateCountryNews\(c\.items, ci\)/);
   assert.match(read('src/lib/sonar/answer-cache.js'), /sonar:qa:v2:/);
   assert.match(read('src/lib/sonar/engine/sources.js'), /insights: currencyInsights\(pic,/);

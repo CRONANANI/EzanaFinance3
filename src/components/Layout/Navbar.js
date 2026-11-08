@@ -19,6 +19,8 @@ import '@/components/ui/animated-nav.css';
 import './nav-datasets-light.css';
 import './mobile-nav-sheet.css';
 import './nav-sonar-dark.css';
+/* Nov 2026: one geometry for every nav icon button and badge (last, so it wins ties). */
+import './nav-icons.css';
 import { hubHref } from '@/lib/datasets/hubs';
 import HubLink from '@/components/datasets/HubLink';
 

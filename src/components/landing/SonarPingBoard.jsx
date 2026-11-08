@@ -7,6 +7,9 @@
  * board and the research board (docs/sonar/answer-templates), filled from the ping:
  *
  *   1. Executive answer (the brief, deep research, the dossier link) | Top matches
+ *      Nov 2026, one listed company: an equity research brief (identity, headline, summary,
+ *      three takeaways, a sources footer) | Valuation snapshot (its multiples against its own
+ *      history) in place of Top matches, which stay in Evidence from Ezana datasets
  *   2. KPI strip (a company's valuation, else what the ping drew on)
  *   3. Evidence from Ezana datasets | Source coverage
  *   4. Charts and data: the ping's own cards (price chart, portfolio, value chain, news),
@@ -23,8 +26,18 @@ import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { boardSpans, sourceCoverage, datasetEvidence, hostOf } from '@/lib/sonar/country-board';
-import { pingKpis, topMatches, answerParagraphs } from '@/lib/sonar/ping-board';
-import { anchorCells } from '@/lib/sonar/answer-sections';
+import {
+  pingKpis,
+  topMatches,
+  answerParagraphs,
+  companyBrief,
+  companyIdentity,
+  splitCitations,
+  briefFooter,
+  exploreValuationAction,
+} from '@/lib/sonar/ping-board';
+import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
+import { ValuationSnapshot, fmtDate } from '@/components/sonar/valuation/ValuationSnapshot';
 import { Eyebrow, Coverage, Evidence } from './SonarCountryBoard';
 import './country-intel.css';
 import './sonar-country-board.css';
@@ -71,6 +84,115 @@ function Executive({ live, answer, deepAction, notice }) {
           </span>
         ) : null}
       </div>
+    </article>
+  );
+}
+
+/* Citation markers as small links to the sources section. */
+function Cited({ text }) {
+  return splitCitations(text).map((p, i) =>
+    p.cite ? (
+      <a key={i} className="snr-pb-cite" href="#sa-sources" aria-label={`Source ${p.cite}`}>
+        {p.cite}
+      </a>
+    ) : (
+      <span key={i}>{p.text}</span>
+    ),
+  );
+}
+
+const TAKEAWAY_ICON = {
+  Valuation: 'bi-speedometer2',
+  Fundamentals: 'bi-bar-chart-line',
+  'Primary consideration': 'bi-exclamation-diamond',
+};
+
+/* Nov 2026: the executive answer for one listed company, as an equity research brief. The
+   headline, summary and takeaways are the brief's own text (lib/sonar/ping-board
+   companyBrief); an older brief without a headline shows its summary and keeps the rest
+   behind "More from the brief", never relabelled. */
+function CompanyExecutive({ live, identity, deepAction, notice }) {
+  const id = useId();
+  const brief = companyBrief(live?.answer);
+  const foot = briefFooter(live);
+  const toVisual = () => {
+    const el = document.getElementById(VISUAL_ID);
+    if (!el) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    el.focus({ preventScroll: true });
+  };
+  return (
+    <article className="snr-bd-card snr-bd-exec snr-pb-co" aria-labelledby={id}>
+      <span className="snr-bd-eyebrow">Executive answer</span>
+      {notice}
+      <header className="snr-pb-co-id">
+        <h2 id={id} className="snr-pb-co-name">
+          {identity.name} <span className="snr-pb-co-ticker">({identity.ticker})</span>
+        </h2>
+        {identity.meta.length || identity.asOf ? (
+          <p className="snr-pb-co-meta">
+            {[...identity.meta, identity.asOf ? `Data as of ${fmtDate(identity.asOf)}` : null]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        ) : null}
+      </header>
+      {brief.headline ? <p className="snr-pb-co-headline">{brief.headline}</p> : null}
+      {brief.summary ? (
+        <p className="snr-pb-co-summary">
+          <Cited text={brief.summary} />
+        </p>
+      ) : null}
+      {brief.takeaways.length ? (
+        <ul className="snr-pb-co-takeaways" aria-label="Key takeaways">
+          {brief.takeaways.map((t) => (
+            <li key={t.label}>
+              <i className={`bi ${TAKEAWAY_ICON[t.label]}`} aria-hidden="true" />
+              <span>
+                <span className="snr-pb-co-tlabel">{t.label}: </span>
+                <Cited text={t.text} />
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {brief.more.length ? (
+        <details className="snr-pb-co-more">
+          <summary>More from the brief</summary>
+          {brief.more.map((p, i) => (
+            <p key={i}>
+              <Cited text={p} />
+            </p>
+          ))}
+        </details>
+      ) : null}
+      <div className="snr-bd-actions">
+        {deepAction}
+        <button type="button" className="snr-bd-link" onClick={toVisual}>
+          <i className="bi bi-stack" aria-hidden="true" />
+          See the charts and data
+        </button>
+      </div>
+      <footer className="snr-pb-co-foot">
+        {[
+          foot.cited ? `${foot.cited} cited record${foot.cited === 1 ? '' : 's'}` : null,
+          foot.datasets ? `${foot.datasets} Ezana dataset${foot.datasets === 1 ? '' : 's'}` : null,
+          foot.web ? `${foot.web} web page${foot.web === 1 ? '' : 's'}` : null,
+          foot.asOf ? `Updated ${fmtDate(foot.asOf)}` : null,
+          foot.status,
+          typeof live?.remaining === 'number'
+            ? `${live.remaining} free ping${live.remaining === 1 ? '' : 's'} left`
+            : null,
+        ]
+          .filter(Boolean)
+          .map((t, i) => (
+            <span key={i}>{t}</span>
+          ))}
+        <a className="snr-pb-co-srclink" href="#sa-sources">
+          Evidence and sources
+        </a>
+      </footer>
     </article>
   );
 }
@@ -199,15 +321,42 @@ export function SonarPingBoard({
 }) {
   if (!live) return null;
   const matches = datasetEvidence(live).length;
+  /* Nov 2026: one listed company gets the equity brief and the Valuation snapshot. */
+  const identity = companyIdentity(live);
+  const equity = isEquityAnswer({ ticker: live?.dossier?.ticker, kind: live?.dossier?.kind });
+  const snapshot = identity ? live.dossier.valuation : null;
+  const right = snapshot?.rows?.length ? 'valuation' : matches ? 'matches' : null;
   const cells = [
     {
       id: 'exec',
       section: 'answer',
-      span: matches ? 7 : 12,
-      min: matches ? 6 : 12,
-      node: <Executive live={live} answer={answer} deepAction={deepAction} notice={notice} />,
+      span: right ? 7 : 12,
+      min: right ? 6 : 12,
+      node: identity ? (
+        <CompanyExecutive live={live} identity={identity} deepAction={deepAction} notice={notice} />
+      ) : (
+        <Executive live={live} answer={answer} deepAction={deepAction} notice={notice} />
+      ),
     },
-    matches
+    right === 'valuation'
+      ? {
+          id: 'valuation',
+          section: 'answer',
+          span: 5,
+          min: 5,
+          node: (
+            <div className="snr-bd-card snr-pb-vsn">
+              <ValuationSnapshot
+                snapshot={snapshot}
+                identity={identity}
+                action={exploreValuationAction(access, { hasSection: false })}
+                onDeep={onDeep}
+              />
+            </div>
+          ),
+        }
+      : null,
+    right === 'matches'
       ? { id: 'matches', section: 'answer', span: 5, min: 5, node: <Matches live={live} /> }
       : null,
     { id: 'kpis', section: 'metrics', span: 12, min: 12, node: <Kpis live={live} /> },
@@ -228,7 +377,7 @@ export function SonarPingBoard({
   const anchors = anchorCells(cells);
   const present = [...new Set(cells.map((c) => c.section))];
   return (
-    <SonarAnswerFrame present={present} access={access} onDeep={onDeep}>
+    <SonarAnswerFrame present={present} access={access} onDeep={onDeep} equity={equity}>
       <div className="snr-cii snr-board snr-pb" role="region" aria-label={`${live.query}: answer`}>
         <div className="snr-bd-grid">
           {cells.map((c) => (

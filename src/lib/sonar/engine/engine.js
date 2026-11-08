@@ -96,6 +96,8 @@ import { analyticalIntent, intentBlock } from '@/lib/sonar/insight/intent';
 import { semanticFamilyScores } from '@/lib/sonar/insight/semantic';
 import { gateEvidence } from '@/lib/sonar/insight/relevance';
 import { applyInsightStep } from '@/lib/sonar/insight/pipeline';
+import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
+import { isEquityAnswer } from '@/lib/sonar/answer-sections';
 
 /* v3.1 (Nov 2026): analytical intent, evidence relevance, insight selection and the
    visualization plan (lib/sonar/insight). */
@@ -258,6 +260,16 @@ export async function runResearch(query, opts = {}) {
           () => null,
         )
       : Promise.resolve(null);
+  /* Nov 2026: an answer about one listed company has a Valuation section. On a deep run its
+     model (historical multiples, peers, DCF, scenarios, sensitivity) is built alongside
+     retrieval from cached market data; quick and standard runs list the section, locked. */
+  const equityTicker = isEquityAnswer({ ticker: resolution?.company?.ticker || null })
+    ? resolution.company.ticker
+    : null;
+  const valuationP =
+    equityTicker && depth === 'deep' && !evidenceOverride
+      ? fetchDeepValuation(equityTicker, { ms: 6000, now }).catch(() => null)
+      : Promise.resolve(null);
   /* Nov 6: the active organization's research methodology (defaults for everyone else). Its
      horizon applies when the question names none; it reaches the director and the valuation,
      portfolio and equity analysts. */
@@ -408,6 +420,7 @@ export async function runResearch(query, opts = {}) {
         family: intent.family,
         measure: intent.measure,
       },
+      equity: Boolean(equityTicker),
     },
     plan: {
       configVersion: plan.configVersion,
@@ -563,6 +576,18 @@ export async function runResearch(query, opts = {}) {
   emit('stage', { stage: 'verifying_evidence' });
   /* The semantic family score was computed during retrieval; refine the intent with it. */
   const semantic = await semanticP;
+  /* The valuation model ran beside retrieval; a slow or missing one never holds the run. */
+  let valuationTimer = null;
+  const valuation = equityTicker
+    ? await Promise.race([
+        valuationP,
+        new Promise((r) => {
+          valuationTimer = setTimeout(() => r(null), Math.max(0, Math.min(2000, left())));
+        }),
+      ])
+    : null;
+  if (valuationTimer) clearTimeout(valuationTimer);
+  if (valuation) emit('panel', { source: 'valuation', layout: { valuation } });
   if (semantic) intent = analyticalIntent(query, { spec, understood, semantic });
   /* Nov 2026: every record is classified against the intent (direct, supporting,
      background, irrelevant). Irrelevant records never reach scoring or the answer. */
@@ -1007,6 +1032,8 @@ export async function runResearch(query, opts = {}) {
     analysis: report.analysis,
     relationships,
     visualizations,
+    valuation: valuation || null,
+    equity: Boolean(equityTicker),
     visualPlan: insightRun.visualPlan
       ? {
           version: insightRun.visualPlan.version,
