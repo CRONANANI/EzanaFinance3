@@ -128,61 +128,64 @@ export default function EchoHome({
           </h2>
           <span className="ech-mono ech-sechead__note">NEWEST FIRST</span>
         </div>
-        <Segmented
-          className="ech-tabs"
-          label="Section"
-          options={[
-            { value: '', label: 'All' },
-            ...SECTIONS.map((s) => ({ value: s.id, label: s.label })),
-          ]}
-          value={filters.section}
-          onChange={(section) => onFiltersChange?.({ section })}
-        />
-        <div className="ech-controls">
-          <div className="ech-controls__left">
-            <RegionMenu
-              value={filters.region}
-              onChange={(region) => onFiltersChange?.({ region })}
-            />
-            <Segmented
-              label="Time range"
-              mono
-              options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
-              value={filters.range}
-              onChange={(range) => onFiltersChange?.({ range })}
-            />
-          </div>
-          {showSearch && (
-            <div className="ech-controls__right">
-              <div className="ech-search">
-                <label htmlFor="ech-search" className="ech-sr">
-                  Search Echo
-                </label>
-                <i className="bi bi-search" aria-hidden="true" />
-                <input
-                  ref={searchRef}
-                  id="ech-search"
-                  type="search"
-                  className="ds-search-input"
-                  placeholder="Search stories, tickers, topics"
-                  value={filters.q}
-                  maxLength={80}
-                  onChange={(e) => onFiltersChange?.({ q: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') closeSearch();
-                  }}
-                />
-              </div>
-              <button
-                type="button"
-                className="ech-iconbtn"
-                aria-label="Close search"
-                onClick={closeSearch}
-              >
-                <i className="bi bi-x-lg" aria-hidden="true" />
-              </button>
+        {/* One filter row: section pills on the left, region and time range on the right. */}
+        <div className="ech-filterbar">
+          <Segmented
+            className="ech-tabs"
+            label="Section"
+            options={[
+              { value: '', label: 'All' },
+              ...SECTIONS.map((s) => ({ value: s.id, label: s.label })),
+            ]}
+            value={filters.section}
+            onChange={(section) => onFiltersChange?.({ section })}
+          />
+          <div className="ech-controls">
+            <div className="ech-controls__left">
+              <RegionMenu
+                value={filters.region}
+                onChange={(region) => onFiltersChange?.({ region })}
+              />
+              <Segmented
+                label="Time range"
+                mono
+                options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
+                value={filters.range}
+                onChange={(range) => onFiltersChange?.({ range })}
+              />
             </div>
-          )}
+            {showSearch && (
+              <div className="ech-controls__right">
+                <div className="ech-search">
+                  <label htmlFor="ech-search" className="ech-sr">
+                    Search Echo
+                  </label>
+                  <i className="bi bi-search" aria-hidden="true" />
+                  <input
+                    ref={searchRef}
+                    id="ech-search"
+                    type="search"
+                    className="ds-search-input"
+                    placeholder="Search stories, tickers, topics"
+                    value={filters.q}
+                    maxLength={80}
+                    onChange={(e) => onFiltersChange?.({ q: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') closeSearch();
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="ech-iconbtn"
+                  aria-label="Close search"
+                  onClick={closeSearch}
+                >
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

@@ -196,17 +196,17 @@ body.light-mode .ech-page {
   color: var(--ech-mute);
 }
 
-/* ---------- Article of the Month ---------- */
+/* ---------- Article of the Month ----------
+   Flat on the page ground (Nov 8): no card padding, radius or shadow, so the
+   kicker, title, dek and meta share the left edge of the date line, Most read
+   and Latest, and Past picks / the image sit on the right content edge. */
 .ech-aotm {
   margin-top: 32px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
   gap: 48px;
   align-items: center;
-  padding: 32px;
-  border-radius: var(--radius-xl);
-  background: var(--ech-bg);
-  box-shadow: var(--ech-card-shadow);
+  padding: 32px 0;
 }
 .ech-aotm.is-noimg {
   grid-template-columns: minmax(0, 1fr);
@@ -399,16 +399,41 @@ body.light-mode .ech-page {
   flex-wrap: wrap;
   gap: 6px;
 }
-.ech-latest > .ech-tabs {
-  justify-content: center;
-  align-self: stretch;
+/* Section pills, region and time range on one row (Nov 8). The pills scroll
+   sideways instead of wrapping when the row is tight; below 1024px the two
+   groups stack, left-aligned. */
+.ech-filterbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ech-filterbar > .ech-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* room for the focus ring inside the scroll box */
+  padding: 2px;
+  margin: -2px;
+}
+.ech-filterbar > .ech-tabs::-webkit-scrollbar {
+  display: none;
+}
+.ech-filterbar > .ech-controls {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 .ech-seg__opt {
   font: inherit;
   cursor: pointer;
 }
 .ech-tabs .ech-seg__opt {
-  height: 38px;
+  flex-shrink: 0;
+  height: 40px;
   padding: 0 16px;
   border-radius: var(--ech-r-pill);
   border: 1px solid var(--ech-hair-strong);
@@ -435,7 +460,7 @@ body.light-mode .ech-page {
   flex-wrap: wrap;
 }
 .ech-controls__left {
-  justify-content: center;
+  justify-content: flex-end;
 }
 .ech-controls__left,
 .ech-controls__right {
@@ -1164,6 +1189,16 @@ body.light-mode .ech-page {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
+  .ech-filterbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .ech-filterbar > .ech-controls,
+  .ech-controls__left {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
   .ech-aotm__img {
     order: -1;
     max-width: 640px;
@@ -1213,17 +1248,14 @@ body.light-mode .ech-page {
     margin-top: 16px;
     padding: 0 0 18px;
     gap: 16px;
-    overflow: hidden;
   }
   .ech-aotm.is-noimg {
     padding-top: 18px;
   }
   .ech-aotm__text {
-    padding: 0 18px;
     gap: 14px;
   }
   .ech-aotm__img {
-    border-radius: 0;
     max-width: none;
   }
   .ech-aotm__title {
