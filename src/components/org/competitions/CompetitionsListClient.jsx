@@ -176,6 +176,9 @@ export function CompetitionsListClient({ initial, joinable = [], canManage }) {
           </p>
         </div>
         <div className="pcx-cc-links" style={{ marginBottom: 0 }}>
+          <Link href="/org-competitions/circuit" className="pcx-btn">
+            <i className="bi bi-signpost-split" aria-hidden="true" /> Pitch circuit
+          </Link>
           <Link href="/org-competitions/council" className="pcx-btn">
             <i className="bi bi-trophy" aria-hidden="true" /> Council ranking
           </Link>
