@@ -231,6 +231,49 @@ function buildSeries(points, period) {
   return { series: applyPctSeries(aggregated), currentPrice };
 }
 
+/* ── Daily granularity (home comparison chart) ──
+   Returns every trading-day close in the window, preceded by one anchor
+   bar: the last close on or before the window start (the "previous close"
+   every comparison chart is rebased to). Long windows are thinned to the
+   last session of each week (3Y, 5Y) or month (10Y, ALL); the anchor and
+   the latest session are always kept. pct is relative to the anchor. */
+const DAILY_BUCKET = { '3Y': 'week', '5Y': 'week', '10Y': 'month', ALL: 'month' };
+
+function weekKey(ymd) {
+  const d = new Date(`${ymd}T12:00:00Z`);
+  const wd = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() + (wd === 0 ? -6 : 1 - wd));
+  return d.toISOString().slice(0, 10);
+}
+
+function buildDailySeries(points, period) {
+  if (!points.length) return { series: [], currentPrice: null };
+  const startDate = getStartDate(period);
+
+  let anchorIdx = -1;
+  for (let i = 0; i < points.length; i++) {
+    if (points[i].date <= startDate) anchorIdx = i;
+    else break;
+  }
+  const anchor = anchorIdx >= 0 ? points[anchorIdx] : null;
+  let body = points.slice(anchorIdx + 1);
+  if (!anchor && !body.length) return { series: [], currentPrice: null };
+
+  const bucket = DAILY_BUCKET[period];
+  if (bucket && body.length > 1) {
+    const keyOf = bucket === 'week' ? weekKey : (ymd) => ymd.slice(0, 7);
+    const lastPerBucket = new Map();
+    for (const p of body) lastPerBucket.set(keyOf(p.date), p);
+    body = [...lastPerBucket.values()];
+  }
+
+  const rows = (anchor ? [anchor, ...body] : body).map((p) => ({
+    ymd: p.date,
+    close: p.close,
+  }));
+  return { series: applyPctSeries(rows), currentPrice: rows[rows.length - 1].close };
+}
+
 async function fallbackIndexWeek(request) {
   const origin = request.nextUrl.origin;
   const res = await fetch(`${origin}/api/market/index-week`, { cache: 'no-store' });
@@ -244,6 +287,7 @@ export const GET = withApiGuard(
   async (request) => {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '7D';
+    const daily = searchParams.get('granularity') === 'daily' && period !== '1D';
     const avKey = getAlphaVantageApiKey();
     const fmpKey = getFmpKey();
 
@@ -262,6 +306,11 @@ export const GET = withApiGuard(
     }
 
     const startDate = getStartDate(period);
+    // Daily mode needs the close before the window opens, so reach back far
+    // enough to clear a weekend plus a holiday.
+    const fetchFrom = daily
+      ? toYmd(new Date(new Date(`${startDate}T12:00:00Z`).getTime() - 10 * 86400000))
+      : startDate;
     const indices = {};
     let anySuccess = false;
 
@@ -280,7 +329,7 @@ export const GET = withApiGuard(
         }
 
         if (fmpKey && config.fmpSymbol) {
-          const fmpPoints = await fetchFmpDaily(config.fmpSymbol, startDate);
+          const fmpPoints = await fetchFmpDaily(config.fmpSymbol, fetchFrom);
           if (fmpPoints && fmpPoints.length > 0) {
             return { key, points: fmpPoints, source: 'fmp' };
           }
@@ -294,7 +343,9 @@ export const GET = withApiGuard(
       if (result.status !== 'fulfilled') continue;
       const { key, points } = result.value;
       const config = INDEX_CONFIGS[key];
-      const { series, currentPrice } = buildSeries(points, period);
+      const { series, currentPrice } = daily
+        ? buildDailySeries(points, period)
+        : buildSeries(points, period);
 
       if (series.length > 0) anySuccess = true;
 
@@ -318,7 +369,7 @@ export const GET = withApiGuard(
     const cacheTtl = period === '1D' ? 60 : period === '7D' ? 120 : 300;
 
     return NextResponse.json(
-      { ok: anySuccess, indices, period },
+      { ok: anySuccess, indices, period, granularity: daily ? 'daily' : 'aggregated' },
       {
         headers: {
           'Cache-Control': `public, s-maxage=${cacheTtl}, stale-while-revalidate=${cacheTtl * 2}`,

@@ -154,6 +154,119 @@ function portfolioSeriesRange(tf) {
   return tf;
 }
 
+/* ═══ SESSION-ALIGNED CHART ═══
+   The mock portfolio is valued every calendar day, index closes only exist
+   on trading days, and the old merge matched them by exact date, so an
+   index line started on its first session and stopped on its last. Like
+   most brokerage and market-data charts, we plot one point per trading
+   session (weekends and holidays dropped), carry the last known value
+   forward across gaps, and rebase every line to the same anchor (the prior
+   close) so they all start at 0%. */
+const SESSION_CALENDAR_KEYS = ['spx', 'ixic', 'dji', 'rut'];
+const NY_DATE = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/New_York',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function nyYmd(at) {
+  return NY_DATE.format(new Date(at));
+}
+
+function isWeekdayYmd(ymd) {
+  const wd = new Date(`${ymd}T12:00:00Z`).getUTCDay();
+  return wd !== 0 && wd !== 6;
+}
+
+/** Last value on or before `ymd` in ascending [ymd, value] entries. */
+function asOf(entries, ymd) {
+  let lo = 0;
+  let hi = entries.length - 1;
+  let hit = null;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (entries[mid][0] <= ymd) {
+      hit = entries[mid][1];
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return hit;
+}
+
+function buildSessionAlignedChart({ portfolioPoints, indexSeries, activeKeys }) {
+  // Portfolio: last value per New York calendar day.
+  const pfByDay = new Map();
+  for (const p of portfolioPoints) {
+    if (p?.at && Number.isFinite(p.value)) pfByDay.set(nyYmd(p.at), p.value);
+  }
+  const pf = [...pfByDay.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+  // Session calendar: equity index trading days (anchor included).
+  const sessionSet = new Set();
+  for (const key of SESSION_CALENDAR_KEYS) {
+    for (const pt of indexSeries[key] || []) {
+      const ymd = pt.ymd || pt.date;
+      if (ymd) sessionSet.add(ymd);
+    }
+  }
+  let sessions = [...sessionSet].sort();
+  // Clip the calendar to the portfolio window, keeping one prior session as
+  // the anchor, so both share the same left edge.
+  if (sessions.length && pf.length) {
+    const firstPf = pf[0][0];
+    let anchorIdx = -1;
+    for (let i = 0; i < sessions.length && sessions[i] <= firstPf; i++) anchorIdx = i;
+    if (anchorIdx > 0) sessions = sessions.slice(anchorIdx);
+  }
+  // No index data at all: fall back to weekdays the portfolio was valued on.
+  if (!sessions.length) sessions = pf.map(([d]) => d).filter(isWeekdayYmd);
+  if (!sessions.length) return [];
+
+  const lastIdx = sessions.length - 1;
+  const firstPfYmd = pf[0]?.[0];
+  const pfValueAt = (ymd, i) => {
+    if (!pf.length) return null;
+    // Newest session carries the newest (live) value, so a weekend or
+    // pre-open read ends on the same number as the headline.
+    if (i === lastIdx) return pf[pf.length - 1][1];
+    const v = asOf(pf, ymd);
+    if (v != null) return v;
+    // The anchor predates the first valuation only by the session gap.
+    if (i === 0 && sessions[1] && firstPfYmd <= sessions[1]) return pf[0][1];
+    return null;
+  };
+
+  const rows = sessions.map((ymd, i) => ({
+    at: `${ymd}T12:00:00Z`,
+    label: Date.parse(`${ymd}T12:00:00Z`),
+    value: pfValueAt(ymd, i),
+  }));
+
+  const pfBase = rows.find((r) => r.value != null)?.value;
+  for (const r of rows) {
+    if (r.value != null && pfBase > 0) r.portfolio = ((r.value - pfBase) / pfBase) * 100;
+  }
+
+  for (const key of activeKeys) {
+    const closes = (indexSeries[key] || [])
+      .map((pt) => [pt.ymd || pt.date, pt.close])
+      .filter(([d, c]) => d && Number.isFinite(c))
+      .sort((a, b) => a[0].localeCompare(b[0]));
+    if (!closes.length) continue;
+    let base = null;
+    for (const r of rows) {
+      const c = asOf(closes, r.at.slice(0, 10));
+      if (c == null) continue;
+      if (base == null) base = c;
+      if (base) r[key] = ((c - base) / base) * 100;
+    }
+  }
+  return rows;
+}
+
 /* ═══ HELPERS ═══ */
 const fmtMoney = (n) =>
   '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -555,6 +668,15 @@ export default function HomePage() {
   }, [valueSeriesDisplayPoints, currentValue]);
 
   const combinedChartData = useMemo(() => {
+    // Every range except 1D plots on a trading-session axis (weekends and
+    // market holidays dropped), with all lines rebased to the same anchor.
+    if (timeframe !== '1D') {
+      return buildSessionAlignedChart({
+        portfolioPoints: sparklinePoints || [],
+        indexSeries,
+        activeKeys: [...activeIndices].map((l) => INDEX_API_KEYS[l]).filter(Boolean),
+      });
+    }
     const portfolioPts = (sparklinePoints || []).map((p) => ({
       at: p.at,
       label: new Date(p.at).getTime(),
@@ -599,7 +721,7 @@ export default function HomePage() {
       }
     }
     return out;
-  }, [sparklinePoints, activeIndices, indexSeries]);
+  }, [sparklinePoints, activeIndices, indexSeries, timeframe]);
 
   /* Existing holdings normalization (preserve from current page.js) */
   const useLiveHoldings =
@@ -742,7 +864,10 @@ export default function HomePage() {
     let cancelled = false;
     const period = indexHistoryPeriod(timeframe);
     setIndexSeriesLoading(true);
-    fetch(`/api/market/index-history?period=${period}`, { cache: 'no-store' })
+    // Daily closes plus a prior-close anchor, so every line can be rebased to
+    // the same session. 1D stays on the legacy shape.
+    const granularity = timeframe === '1D' ? '' : '&granularity=daily';
+    fetch(`/api/market/index-history?period=${period}${granularity}`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (cancelled || !json?.indices) return;

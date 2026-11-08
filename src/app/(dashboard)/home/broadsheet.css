@@ -260,8 +260,9 @@ body:not(.light-mode) .bs-shell {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  align-items: center;
-  text-align: center;
+  /* Copy is left aligned; the metric blocks below re-centre themselves. */
+  align-items: stretch;
+  text-align: left;
 }
 /* A1: size container so the lede can scale to fit one line. */
 .bs-hero-l {
@@ -285,10 +286,11 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-hero-r-head {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  /* Label on the left, Add Portfolio flush with the card's right edge. */
+  justify-content: space-between;
+  gap: 12px;
 }
 .bs-add-portfolio-btn {
   flex-shrink: 0;
@@ -360,7 +362,7 @@ body:not(.light-mode) .bs-shell {
 .bs-hero-delta-row {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
   margin-top: 6px;
 }
