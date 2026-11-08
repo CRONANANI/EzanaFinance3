@@ -13,7 +13,7 @@
 import { useState, useCallback } from 'react';
 import { formatAssumption } from './dcf-assumptions';
 
-const MAX_GROWTH_PCT = 0.30; // 30% upper bound on revenue growth search
+const MAX_GROWTH_PCT = 0.3; // 30% upper bound on revenue growth search
 const MIN_GROWTH_PCT = -0.05; // -5% lower bound (allow modest decline)
 const PRICE_TOLERANCE = 0.5; // $0.50 per share convergence tolerance
 const MAX_ITERATIONS = 12;
@@ -56,7 +56,10 @@ async function solveImpliedGrowth(symbol, baseAssumptions, targetPrice, onProgre
      is ABOVE market price, the stock is undervalued at any reasonable growth rate. */
   const fvAtMax = await runDcfWithGrowth(symbol, baseAssumptions, hi);
   if (fvAtMax == null) {
-    return { error: 'DCF API returned no valid fair value at upper bound. Try adjusting other assumptions.' };
+    return {
+      error:
+        'DCF API returned no valid fair value at upper bound. Try adjusting other assumptions.',
+    };
   }
   history.push({ growth: hi, fairValue: fvAtMax });
   onProgress?.({ iteration: 1, growth: hi, fairValue: fvAtMax });
@@ -166,32 +169,34 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
   return (
     <div className="rdcf-panel">
       <div className="rdcf-head">
-        <div className="rdcf-icon">
-          <i className="bi bi-arrow-left-right" />
-        </div>
         <div>
-          <h3 className="rdcf-title">Reverse DCF Model</h3>
+          <h4 className="rdcf-title">Reverse DCF Model</h4>
           <p className="rdcf-sub">
-            Solve for the revenue growth rate that would justify {symbol}&apos;s current market price.
+            Solve for the revenue growth rate that would justify {symbol}&apos;s current market
+            price.
           </p>
         </div>
       </div>
 
-      <div className="rdcf-inputs">
+      <div className="rdcf-inputs" role="group" aria-label="Reverse DCF target and solution">
         <div className="rdcf-input-card">
           <div className="rdcf-input-label">Market Price (Target)</div>
-          <div className="rdcf-input-value">
-            {livePrice ? `$${livePrice.toFixed(2)}` : '–'}
-          </div>
+          <div className="rdcf-input-value">{livePrice ? `$${livePrice.toFixed(2)}` : 'n/a'}</div>
           <div className="rdcf-input-hint">From live quote</div>
         </div>
-        <div className="rdcf-input-arrow"><i className="bi bi-arrow-right" /></div>
+        <div className="rdcf-input-arrow" aria-hidden="true">
+          <i className="bi bi-arrow-right" />
+        </div>
         <div className="rdcf-input-card rdcf-input-card--solve">
           <div className="rdcf-input-label">Implied Revenue Growth</div>
           <div className="rdcf-input-value">
-            {result?.impliedGrowth != null
-              ? `${(result.impliedGrowth * 100).toFixed(1)}%`
-              : running ? '...' : '?'}
+            {result?.impliedGrowth != null ? (
+              `${(result.impliedGrowth * 100).toFixed(1)}%`
+            ) : running ? (
+              <span className="rdcf-skel" aria-label="Solving" />
+            ) : (
+              '?'
+            )}
           </div>
           <div className="rdcf-input-hint">Solved by reverse DCF</div>
         </div>
@@ -206,7 +211,9 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
           <span>·</span>
           <span>WACC ≈ {formatAssumption(baseAssumptions?.costOfEquity, 'pct')}</span>
           <span>·</span>
-          <span>Terminal growth {formatAssumption(baseAssumptions?.longTermGrowthRate, 'pct')}</span>
+          <span>
+            Terminal growth {formatAssumption(baseAssumptions?.longTermGrowthRate, 'pct')}
+          </span>
         </div>
       </div>
 
@@ -218,18 +225,22 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
       >
         {running ? (
           <>
-            <i className="bi bi-arrow-repeat rdcf-spin" />
+            <i className="bi bi-hourglass-split" aria-hidden="true" />
             Solving... iteration {progress?.iteration || 0}
           </>
         ) : (
           <>
-            <i className="bi bi-calculator" />
+            <i className="bi bi-calculator" aria-hidden="true" />
             {result ? 'Re-run reverse DCF' : 'Run reverse DCF'}
           </>
         )}
       </button>
 
-      {error && <div className="rdcf-error">{error}</div>}
+      {error && (
+        <div className="rdcf-error" role="alert">
+          {error}
+        </div>
+      )}
 
       {result && result.impliedGrowth != null && (
         <div className="rdcf-result">
@@ -250,7 +261,9 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
             </div>
             <div className="rdcf-comparison-row">
               <span className="rdcf-comparison-label">Difference</span>
-              <span className={`rdcf-comparison-value ${result.impliedGrowth > currentGrowth ? 'rdcf-up' : 'rdcf-down'}`}>
+              <span
+                className={`rdcf-comparison-value ${result.impliedGrowth > currentGrowth ? 'rdcf-up' : 'rdcf-down'}`}
+              >
                 {result.impliedGrowth > currentGrowth ? '+' : ''}
                 {((result.impliedGrowth - currentGrowth) * 100).toFixed(1)} pp
               </span>
@@ -267,12 +280,10 @@ export default function ReverseDCFPanel({ symbol, baseAssumptions, livePrice }) 
                     <span className="rdcf-history-growth">
                       Growth: {(h.growth * 100).toFixed(2)}%
                     </span>
-                    <span className="rdcf-history-fv">
-                      Fair value: ${h.fairValue.toFixed(2)}
-                    </span>
+                    <span className="rdcf-history-fv">Fair value: ${h.fairValue.toFixed(2)}</span>
                     <span className="rdcf-history-delta">
-                      vs target: {h.fairValue >= livePrice ? '+' : ''}
-                      ${(h.fairValue - livePrice).toFixed(2)}
+                      vs target: {h.fairValue >= livePrice ? '+' : ''}$
+                      {(h.fairValue - livePrice).toFixed(2)}
                     </span>
                   </div>
                 ))}
@@ -318,8 +329,9 @@ function ResultVerdict({ result, currentGrowth }) {
           <i className="bi bi-check-circle-fill" /> Aligned with market
         </div>
         <p>
-          The market&apos;s implied growth of {(result.impliedGrowth * 100).toFixed(1)}% is in line with your
-          forecast of {(currentGrowth * 100).toFixed(1)}%. Your DCF and the market broadly agree.
+          The market&apos;s implied growth of {(result.impliedGrowth * 100).toFixed(1)}% is in line
+          with your forecast of {(currentGrowth * 100).toFixed(1)}%. Your DCF and the market broadly
+          agree.
         </p>
       </div>
     );
@@ -332,10 +344,10 @@ function ResultVerdict({ result, currentGrowth }) {
           <i className="bi bi-graph-up-arrow" /> Market expects more
         </div>
         <p>
-          The market is pricing in <strong>{(result.impliedGrowth * 100).toFixed(1)}%</strong> annual
-          revenue growth: {deltaPp.toFixed(1)} percentage points HIGHER than your forecast. If you
-          believe growth will only hit {(currentGrowth * 100).toFixed(1)}%, the stock is overvalued
-          on your assumptions.
+          The market is pricing in <strong>{(result.impliedGrowth * 100).toFixed(1)}%</strong>{' '}
+          annual revenue growth: {deltaPp.toFixed(1)} percentage points HIGHER than your forecast.
+          If you believe growth will only hit {(currentGrowth * 100).toFixed(1)}%, the stock is
+          overvalued on your assumptions.
         </p>
       </div>
     );
@@ -349,7 +361,8 @@ function ResultVerdict({ result, currentGrowth }) {
       <p>
         The market is pricing in <strong>{(result.impliedGrowth * 100).toFixed(1)}%</strong> annual
         revenue growth: {Math.abs(deltaPp).toFixed(1)} percentage points LOWER than your forecast.
-        If your {(currentGrowth * 100).toFixed(1)}% growth view is correct, the stock is undervalued.
+        If your {(currentGrowth * 100).toFixed(1)}% growth view is correct, the stock is
+        undervalued.
       </p>
     </div>
   );

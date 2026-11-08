@@ -26,7 +26,7 @@ export default function DCFInfoModal({ assumption, onClose }) {
         <div className="dcf-modal-header">
           <h3 id="dcf-modal-title">{info.title}</h3>
           <button type="button" className="dcf-modal-close" onClick={onClose} aria-label="Close">
-            <i className="bi bi-x-lg" />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
 

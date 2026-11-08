@@ -5,9 +5,6 @@
   "src/app/(dashboard)/betting-markets/betting-markets.css": {
     "sub-floor": 1
   },
-  "src/app/(dashboard)/company-research/company-research-theme.css": {
-    "sub-floor": 1
-  },
   "src/app/(dashboard)/home-dashboard/home-dashboard.css": {
     "sub-floor": 3
   },
@@ -290,12 +287,6 @@
     "caps-tracking": 2
   },
   "src/components/learning/redesign/ActivePath.jsx": {
-    "sub-floor": 1
-  },
-  "src/components/research/dcf/dcf-interactive.css": {
-    "sub-floor": 1
-  },
-  "src/components/research/dcf/dcf-v5.css": {
     "sub-floor": 1
   },
   "src/components/settings/org/AuditLog.jsx": {

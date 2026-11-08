@@ -2,7 +2,7 @@
 
 /**
  * V5 horizontal peer comparison chart — centered at 0%, bars extend left
- * (overvalued / red) or right (undervalued / green) with hand-drawn SVG filter.
+ * (overvalued, red) or right (undervalued, green); every value carries a sign.
  * Exported for reuse; DCFInteractiveModel inlines the same markup in forward mode.
  */
 
@@ -47,13 +47,30 @@ export default function PriceComparisonChart({
   const primary = stocks?.find((s) => s.isPrimary);
 
   if (!primary && loadingSelected) {
-    return <div className="dcf-v5-loading">Calculating DCF…</div>;
+    return (
+      <div
+        className="dcf-v5-skel dcf-v5-skel--chart"
+        aria-busy="true"
+        aria-label="Calculating DCF"
+      />
+    );
   }
   if (!primary && errorSelected) {
-    return <div className="dcf-v5-error">{errorSelected}</div>;
+    return (
+      <div className="dcf-v5-error" role="alert">
+        <p className="dcf-v5-error-title">DCF unavailable</p>
+        <p className="dcf-v5-error-text">{errorSelected}</p>
+      </div>
+    );
   }
   if (!primary) {
-    return <div className="dcf-v5-loading">Loading price data…</div>;
+    return (
+      <div
+        className="dcf-v5-skel dcf-v5-skel--chart"
+        aria-busy="true"
+        aria-label="Loading price data"
+      />
+    );
   }
 
   const renderable = stocks.filter(
@@ -68,7 +85,13 @@ export default function PriceComparisonChart({
   const peerRows = renderable.filter((s) => !s.isPrimary);
 
   if (!primaryRow) {
-    return <div className="dcf-v5-loading">Loading chart data…</div>;
+    return (
+      <div
+        className="dcf-v5-skel dcf-v5-skel--chart"
+        aria-busy="true"
+        aria-label="Loading chart data"
+      />
+    );
   }
 
   const primaryDelta = computePeerDelta(primaryRow.fairValue, primaryRow.livePrice);
@@ -93,7 +116,7 @@ export default function PriceComparisonChart({
         ))}
       </div>
       {peerLoadComplete && peerRows.length === 0 && (
-        <p className="dcf-v5-summary">Peer DCF data unavailable for this stock.</p>
+        <p className="dcf-v5-note">Peer DCF data unavailable for this stock.</p>
       )}
     </div>
   );

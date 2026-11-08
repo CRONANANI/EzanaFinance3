@@ -34,10 +34,12 @@ function computeDelta(fairValue, livePrice) {
 }
 
 function badgeVariant(deltaPct) {
-  if (deltaPct == null) return { label: '–', cls: 'dcf-v5-badge--fair', arrow: '·' };
-  if (deltaPct >= 5) return { label: 'Undervalued', cls: 'dcf-v5-badge--good', arrow: '↑' };
-  if (deltaPct <= -5) return { label: 'Overvalued', cls: 'dcf-v5-badge--bad', arrow: '↓' };
-  return { label: 'Fairly Valued', cls: 'dcf-v5-badge--fair', arrow: '≈' };
+  if (deltaPct == null) return { label: 'n/a', cls: 'dcf-v5-badge--fair', icon: 'bi-dash-lg' };
+  if (deltaPct >= 5)
+    return { label: 'Undervalued', cls: 'dcf-v5-badge--good', icon: 'bi-graph-up-arrow' };
+  if (deltaPct <= -5)
+    return { label: 'Overvalued', cls: 'dcf-v5-badge--bad', icon: 'bi-graph-down-arrow' };
+  return { label: 'Fairly Valued', cls: 'dcf-v5-badge--fair', icon: 'bi-dash-lg' };
 }
 
 function PeerBar({ ticker, delta, isSelf }) {
@@ -237,24 +239,21 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
 
   return (
     <article className="dcf-v5">
-      <svg width="0" height="0" className="dcf-v5-defs" aria-hidden="true">
-        <defs>
-          <filter id="dcf-v5-sk-rough" x="-2%" y="-2%" width="104%" height="104%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="3" />
-            <feDisplacementMap in="SourceGraphic" scale="1.6" />
-          </filter>
-          <filter id="dcf-v5-sk-rough-strong" x="-3%" y="-3%" width="106%" height="106%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" />
-            <feDisplacementMap in="SourceGraphic" scale="2.5" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Title bar */}
+      {/* Header: icon, title and one line description left; controls right */}
       <header className="dcf-v5-title-bar">
-        <h1 className="dcf-v5-title">
-          DCF Valuation Model <span className="dcf-v5-muted">· {symbol}</span>
-        </h1>
+        <div className="dcf-v5-head-id">
+          <span className="dcf-v5-head-icon" aria-hidden="true">
+            <i className="bi bi-calculator" />
+          </span>
+          <div className="dcf-v5-head-text">
+            <h3 className="dcf-v5-title">
+              DCF Valuation Model <span className="dcf-v5-muted">· {symbol}</span>
+            </h3>
+            <p className="dcf-v5-desc">
+              Discounted cash flow fair value against the live price, with sector peers
+            </p>
+          </div>
+        </div>
         <div className="dcf-v5-actions">
           <label className="dcf-v5-peer-toggle">
             <input
@@ -270,54 +269,36 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
             onClick={handleRecalculate}
             disabled={loadingSelected}
           >
+            <i className="bi bi-arrow-clockwise" aria-hidden="true" />
             {loadingSelected ? 'Calculating…' : 'Recalculate'}
           </button>
           <button type="button" className="dcf-v5-btn" onClick={onClose}>
-            ✕ Close
+            <i className="bi bi-x-lg" aria-hidden="true" />
+            Close
           </button>
         </div>
-        <svg
-          className="dcf-v5-rule"
-          viewBox="0 0 100 4"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M 0.5 2 L 99.5 2"
-            stroke="currentColor"
-            strokeWidth="0.5"
-            filter="url(#dcf-v5-sk-rough)"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
       </header>
 
       {/* Mode tabs */}
-      <nav className="dcf-v5-mode-tabs">
+      <nav className="dcf-v5-mode-tabs" aria-label="DCF mode">
         <button
           type="button"
           className={`dcf-v5-mode-tab${dcfMode === 'forward' ? ' is-active' : ''}`}
           onClick={() => setDcfMode('forward')}
+          aria-pressed={dcfMode === 'forward'}
         >
-          <span className="dcf-v5-mode-tab-top">
-            <span className="dcf-v5-mode-icon" aria-hidden>
-              📈
-            </span>
-            <span className="dcf-v5-mode-name">Forward DCF</span>
-          </span>
+          <i className="bi bi-graph-up-arrow dcf-v5-mode-icon" aria-hidden="true" />
+          <span className="dcf-v5-mode-name">Forward DCF</span>
           <span className="dcf-v5-mode-sub">compute fair value</span>
         </button>
         <button
           type="button"
           className={`dcf-v5-mode-tab${dcfMode === 'reverse' ? ' is-active' : ''}`}
           onClick={() => setDcfMode('reverse')}
+          aria-pressed={dcfMode === 'reverse'}
         >
-          <span className="dcf-v5-mode-tab-top">
-            <span className="dcf-v5-mode-icon" aria-hidden>
-              ⇌
-            </span>
-            <span className="dcf-v5-mode-name">Reverse DCF</span>
-          </span>
+          <i className="bi bi-arrow-left-right dcf-v5-mode-icon" aria-hidden="true" />
+          <span className="dcf-v5-mode-name">Reverse DCF</span>
           <span className="dcf-v5-mode-sub">implied growth</span>
         </button>
       </nav>
@@ -333,57 +314,60 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
           {/* Result band */}
           <section className="dcf-v5-result-band">
             {loadingSelected && !primaryStock && (
-              <div className="dcf-v5-loading">Calculating DCF for {symbol}…</div>
+              <div
+                className="dcf-v5-skel-group"
+                aria-busy="true"
+                aria-label={`Calculating DCF for ${symbol}`}
+              >
+                <div className="dcf-v5-skel dcf-v5-skel--strip" />
+                <div className="dcf-v5-skel dcf-v5-skel--chart" />
+              </div>
             )}
 
-            {errorSelected && !primaryStock && <div className="dcf-v5-error">{errorSelected}</div>}
+            {errorSelected && !(primaryStock && primaryStock.fairValue != null) && (
+              <div className="dcf-v5-error" role="alert">
+                <p className="dcf-v5-error-title">DCF unavailable for {symbol}</p>
+                <p className="dcf-v5-error-text">{errorSelected}</p>
+              </div>
+            )}
 
             {primaryStock && primaryStock.fairValue != null && (
               <>
-                <div className="dcf-v5-hero">
-                  <div className="dcf-v5-hero-figure">
-                    <div className="dcf-v5-hero-label">Fair value (DCF)</div>
-                    <div className="dcf-v5-hero-fair">${primaryStock.fairValue.toFixed(2)}</div>
+                <div className="dcf-v5-strip" role="group" aria-label="DCF result">
+                  <div className="dcf-v5-strip-cell">
+                    <span className="dcf-v5-strip-label">Fair value (DCF)</span>
+                    <span className="dcf-v5-strip-value dcf-v5-strip-value--lg">
+                      ${primaryStock.fairValue.toFixed(2)}
+                    </span>
                   </div>
-                  <div className="dcf-v5-hero-vs">vs</div>
-                  <div className="dcf-v5-hero-figure">
-                    <div className="dcf-v5-hero-label">Market price</div>
-                    <div className="dcf-v5-hero-market">
-                      ${(primaryStock.livePrice ?? 0).toFixed(2)}
-                    </div>
+                  <div className="dcf-v5-strip-cell">
+                    <span className="dcf-v5-strip-label">Market price</span>
+                    <span className="dcf-v5-strip-value">
+                      {primaryStock.livePrice != null
+                        ? `$${primaryStock.livePrice.toFixed(2)}`
+                        : 'n/a'}
+                    </span>
                   </div>
-                  <div className="dcf-v5-hero-badge">
+                  <div className="dcf-v5-strip-cell dcf-v5-strip-cell--verdict">
+                    <span className="dcf-v5-strip-label">Verdict</span>
                     <span className={`dcf-v5-badge ${variant.cls}`}>
-                      <span className="dcf-v5-badge-arrow" aria-hidden>
-                        {variant.arrow}
-                      </span>
+                      <i className={`bi ${variant.icon}`} aria-hidden="true" />
                       {variant.label}
-                      <span className="dcf-v5-badge-pct">
-                        {primaryDelta != null
-                          ? `${primaryDelta >= 0 ? '+' : ''}${primaryDelta.toFixed(1)}%`
-                          : '–'}
-                      </span>
+                      {primaryDelta != null && (
+                        <span className="dcf-v5-badge-pct">
+                          {`${primaryDelta >= 0 ? '+' : ''}${primaryDelta.toFixed(1)}%`}
+                        </span>
+                      )}
                     </span>
                   </div>
                 </div>
 
-                <svg
-                  className="dcf-v5-rule"
-                  viewBox="0 0 100 4"
-                  preserveAspectRatio="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M 0.5 2 L 99.5 2"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                    filter="url(#dcf-v5-sk-rough)"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-
                 {peers.length > 0 && (
                   <div className="dcf-v5-peer-chart">
+                    <h4 className="dcf-v5-block-title">
+                      <i className="bi bi-bar-chart" aria-hidden="true" />
+                      Upside to DCF fair value, {primaryStock.symbol} and peers
+                    </h4>
                     <div className="dcf-v5-peer-axis">
                       <span>−100%</span>
                       <span>0% (fairly valued)</span>
@@ -405,7 +389,7 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
                 )}
 
                 {peerLoadComplete && peers.length === 0 && (
-                  <p className="dcf-v5-summary">Peer DCF data unavailable for this stock.</p>
+                  <p className="dcf-v5-note">Peer DCF data unavailable for this stock.</p>
                 )}
 
                 {primaryDelta != null && (
@@ -437,17 +421,17 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
           </section>
 
           {/* Inputs band */}
-          <section className="dcf-v5-inputs-band">
+          <section className="dcf-v5-inputs-band" aria-label="DCF assumptions">
             {COLUMN_ORDER.map((colName) => {
               const items = assumptionsByColumn[colName] || [];
               return (
                 <div key={colName} className="dcf-v5-input-col">
-                  <h2 className="dcf-v5-col-head">{colName}</h2>
+                  <h4 className="dcf-v5-col-head">{colName}</h4>
                   {items.map((a) => {
                     const value = assumptions[a.id];
                     const isExpanded = expandedId === a.id;
                     return (
-                      <div key={a.id} style={{ position: 'relative' }}>
+                      <div key={a.id} className="dcf-v5-input-wrap">
                         <button
                           type="button"
                           className={`dcf-v5-input${isExpanded ? ' is-active' : ''}`}
@@ -458,9 +442,7 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
                           <span className="dcf-v5-input-value">
                             {formatAssumption(value, a.unit)}
                           </span>
-                          <span className="dcf-v5-caret" aria-hidden>
-                            ▾
-                          </span>
+                          <i className="bi bi-chevron-down dcf-v5-caret" aria-hidden="true" />
                         </button>
 
                         {isExpanded && (
@@ -480,7 +462,7 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
                                 }}
                                 aria-label={`About ${a.label}`}
                               >
-                                ⓘ
+                                <i className="bi bi-info-circle" aria-hidden="true" />
                               </button>
                             </div>
                             <input
