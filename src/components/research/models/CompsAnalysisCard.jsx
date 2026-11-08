@@ -1,19 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Info,
-  ArrowUpRight,
-  ArrowDownRight,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-} from 'lucide-react';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
+import './comps-analysis-card.css';
 
 const MULTIPLE_COLS = [
   { key: 'pe', label: 'P/E', fmt: (v) => v?.toFixed(1) ?? '–' },
@@ -25,45 +14,22 @@ const MULTIPLE_COLS = [
   { key: 'revenueGrowth', label: 'Rev Growth', fmt: (v) => (v != null ? `${v.toFixed(1)}%` : '–') },
 ];
 
+/* Target-row cell class: discount sits below the peer 25th percentile,
+   premium above the 75th. Colour is paired with an arrow and hidden text. */
 function posColor(pos) {
-  if (pos === 'discount') return 'text-green-700 dark:text-green-400';
-  if (pos === 'premium') return 'text-red-600 dark:text-red-400';
-  return 'text-gray-500 dark:text-gray-400';
+  if (pos === 'discount') return 'is-discount';
+  if (pos === 'premium') return 'is-premium';
+  return '';
 }
 
 function verdictConfig(v) {
   return (
     {
-      undervalued: {
-        icon: TrendingUp,
-        bg: 'bg-green-50 dark:bg-green-500/15',
-        text: 'text-green-700 dark:text-green-400',
-        label: 'Undervalued',
-      },
-      overvalued: {
-        icon: TrendingDown,
-        bg: 'bg-red-50 dark:bg-red-500/15',
-        text: 'text-red-700 dark:text-red-400',
-        label: 'Overvalued',
-      },
-      fairly_valued: {
-        icon: Minus,
-        bg: 'bg-amber-50 dark:bg-amber-500/15',
-        text: 'text-amber-700 dark:text-amber-400',
-        label: 'Fairly Valued',
-      },
-      insufficient_data: {
-        icon: Minus,
-        bg: 'bg-gray-100 dark:bg-gray-800',
-        text: 'text-gray-500 dark:text-gray-400',
-        label: 'Insufficient Data',
-      },
-    }[v] || {
-      icon: Minus,
-      bg: 'bg-gray-100 dark:bg-gray-800',
-      text: 'text-gray-500 dark:text-gray-400',
-      label: v,
-    }
+      undervalued: { icon: 'bi-graph-up-arrow', tone: 'pos', label: 'Undervalued' },
+      overvalued: { icon: 'bi-graph-down-arrow', tone: 'neg', label: 'Overvalued' },
+      fairly_valued: { icon: 'bi-dash-lg', tone: 'mid', label: 'Fairly Valued' },
+      insufficient_data: { icon: 'bi-dash-lg', tone: 'flat', label: 'Insufficient Data' },
+    }[v] || { icon: 'bi-dash-lg', tone: 'flat', label: v }
   );
 }
 
@@ -102,9 +68,11 @@ function computeRankScore(p) {
 }
 
 function SortIcon({ sortKey, activeKey, direction }) {
-  if (sortKey !== activeKey) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
-  if (direction === 'asc') return <ChevronUp className="h-3 w-3" />;
-  return <ChevronDown className="h-3 w-3" />;
+  if (sortKey !== activeKey)
+    return <i className="bi bi-chevron-expand cmp-sort-icon is-idle" aria-hidden="true" />;
+  if (direction === 'asc')
+    return <i className="bi bi-chevron-up cmp-sort-icon" aria-hidden="true" />;
+  return <i className="bi bi-chevron-down cmp-sort-icon" aria-hidden="true" />;
 }
 
 export function CompsAnalysisCard({ symbol, onClose }) {
@@ -176,51 +144,46 @@ export function CompsAnalysisCard({ symbol, onClose }) {
     return peers;
   }, [data?.peers, sortKey, sortDir]);
 
-  if (loading) {
+  if (!symbol) {
     return (
-      <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4">
-        <div className="h-8 w-56 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        <div className="h-16 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        <div className="h-64 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-      </section>
+      <CompsState
+        title="No ticker selected"
+        text="Choose a company to benchmark it against its peers."
+        onClose={onClose}
+      />
     );
   }
+
+  if (loading) return <CompsLoading />;
 
   if (error) {
+    /* Presentation only: the API guard answers 429 with "Too many requests". */
+    const isRateLimited = /too many requests|\(429\)/i.test(String(error));
     return (
-      <section className="bg-[var(--card-bg)] rounded-xl p-5 text-center space-y-2">
-        <div className="flex justify-end">
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 px-2.5 py-1 text-[11px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Close
-            </button>
-          )}
-        </div>
-        <p className="text-sm font-medium text-gray-900 dark:text-white">
-          Comparable analysis unavailable
-        </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">{error}</p>
-        <button
-          type="button"
-          onClick={load}
-          className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-        >
-          Retry
-        </button>
-      </section>
+      <CompsState
+        tone={isRateLimited ? 'warn' : 'error'}
+        title={isRateLimited ? 'Rate limit reached' : 'Comparable analysis unavailable'}
+        text={error}
+        onRetry={load}
+        onClose={onClose}
+      />
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <CompsState
+        title={`No comparable analysis for ${symbol}`}
+        text="The peer data came back empty. Try again in a moment."
+        onRetry={load}
+        onClose={onClose}
+      />
+    );
+  }
 
   const { target, peerStats, positions, valuation, verdict } = data;
   const peers = sortedPeers;
   const vc = verdictConfig(verdict.verdict);
-  const VIcon = vc.icon;
 
   const stripVars = [
     { label: 'Price', value: target.price != null ? `$${target.price.toFixed(2)}` : '–' },
@@ -237,233 +200,245 @@ export function CompsAnalysisCard({ symbol, onClose }) {
     },
   ];
 
-  const thBase = 'px-2 py-2 font-medium text-right cursor-pointer select-none transition-colors';
-  const thHover = 'hover:text-amber-700 dark:hover:text-amber-400';
-  const thInactive = 'text-gray-500 dark:text-gray-400';
-  const thActive = 'text-amber-700 dark:text-amber-400';
+  const ariaSort = (key) =>
+    sortKey === key ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined;
 
   return (
-    <section className="bg-[var(--card-bg)] rounded-xl p-5 space-y-4 ring-1 ring-amber-500/20">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-8 w-8 shrink-0 rounded-lg bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center">
-            <BarChart3 className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+    <section className="cmp" aria-labelledby="cmp-title">
+      <header className="cmp-head">
+        <div className="cmp-head-id">
+          <span className="cmp-icon" aria-hidden="true">
+            <i className="bi bi-bar-chart-line" />
+          </span>
+          <div className="cmp-head-text">
+            <h3 id="cmp-title" className="cmp-title">
               Comparable Company Analysis
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="cmp-desc">
               Peer benchmarking · {symbol} · {target.sector || 'N/A'} · {peers.length} peers
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ${vc.bg}`}>
-            <VIcon className={`h-4 w-4 ${vc.text}`} />
-            <div className="text-right">
-              <div className={`text-xs font-semibold ${vc.text}`}>{vc.label}</div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400">vs. peer median</div>
-            </div>
+        <div className="cmp-head-actions">
+          <div className={`cmp-badge is-${vc.tone}`}>
+            <i className={`bi ${vc.icon}`} aria-hidden="true" />
+            <span className="cmp-badge-text">
+              <span className="cmp-badge-label">{vc.label}</span>
+              <span className="cmp-badge-sub">vs. peer median</span>
+            </span>
           </div>
           {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 px-2.5 py-1.5 text-[11px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60"
-            >
-              Close
+            <button type="button" onClick={onClose} className="cmp-btn">
+              <i className="bi bi-x-lg" aria-hidden="true" /> Close
             </button>
           )}
         </div>
       </header>
 
-      <ModelVariableStrip variables={stripVars} />
+      <ModelVariableStrip variables={stripVars} className="cmp-strip" />
 
-      <div className="bg-[var(--card-bg)] rounded-lg overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#161b22]">
-              <th
-                className={`text-left px-3 py-2 font-semibold sticky left-0 bg-gray-50 dark:bg-[#161b22] min-w-[120px] cursor-pointer select-none ${thHover} ${sortKey === 'ranking' ? thActive : 'text-gray-900 dark:text-white'}`}
-                onClick={() => handleSort('ranking')}
-              >
-                <span className="flex items-center gap-1">
-                  Company Ranking
-                  <SortIcon sortKey="ranking" activeKey={sortKey} direction={sortDir} />
-                </span>
-              </th>
-              <th
-                className={`${thBase} ${thHover} ${sortKey === 'marketCap' ? thActive : thInactive}`}
-                onClick={() => handleSort('marketCap')}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Mkt Cap
-                  <SortIcon sortKey="marketCap" activeKey={sortKey} direction={sortDir} />
-                </span>
-              </th>
-              {MULTIPLE_COLS.map((c) => (
+      <div className="cmp-table-block">
+        <div className="cmp-table-wrap">
+          <table className="cmp-table">
+            <thead>
+              <tr>
                 <th
-                  key={c.key}
-                  className={`${thBase} ${thHover} ${sortKey === c.key ? thActive : thInactive}`}
-                  onClick={() => handleSort(c.key)}
+                  scope="col"
+                  className={sortKey === 'ranking' ? 'is-active' : undefined}
+                  aria-sort={ariaSort('ranking')}
                 >
-                  <span className="flex items-center justify-end gap-1">
-                    {c.label}
-                    <SortIcon sortKey={c.key} activeKey={sortKey} direction={sortDir} />
-                  </span>
+                  <button type="button" className="cmp-sort" onClick={() => handleSort('ranking')}>
+                    Company Ranking
+                    <SortIcon sortKey="ranking" activeKey={sortKey} direction={sortDir} />
+                  </button>
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5">
-              <td className="px-3 py-2 font-semibold text-amber-800 dark:text-amber-400 sticky left-0 bg-amber-50 dark:bg-amber-500/5">
-                {target.symbol}
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-1 font-normal">
-                  Target
-                </span>
-              </td>
-              <td className="px-2 py-2 text-right font-mono text-gray-900 dark:text-white">
-                {target.marketCapFormatted}
-              </td>
-              {MULTIPLE_COLS.map((c) => {
-                const pos = positions[c.key]?.position;
-                return (
-                  <td key={c.key} className={`px-2 py-2 text-right font-mono ${posColor(pos)}`}>
-                    {c.fmt(target[c.key])}
-                  </td>
-                );
-              })}
-            </tr>
-
-            {peers.map((p, idx) => (
-              <tr
-                key={p.symbol}
-                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#161b22]"
-              >
-                <td className="px-3 py-2 font-medium text-gray-900 dark:text-white sticky left-0 bg-white dark:bg-[#0d1117]">
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500 mr-1.5 font-mono">
-                    {idx + 1}.
-                  </span>
-                  <span>{p.symbol}</span>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1 block truncate max-w-[100px]">
-                    {p.name}
-                  </span>
-                </td>
-                <td className="px-2 py-2 text-right font-mono text-gray-600 dark:text-gray-400">
-                  {p.marketCapFormatted}
-                </td>
-                {MULTIPLE_COLS.map((c) => (
-                  <td
-                    key={c.key}
-                    className="px-2 py-2 text-right font-mono text-gray-600 dark:text-gray-400"
+                <th
+                  scope="col"
+                  className={sortKey === 'marketCap' ? 'is-active' : undefined}
+                  aria-sort={ariaSort('marketCap')}
+                >
+                  <button
+                    type="button"
+                    className="cmp-sort"
+                    onClick={() => handleSort('marketCap')}
                   >
-                    {c.fmt(p[c.key])}
-                  </td>
+                    Mkt Cap
+                    <SortIcon sortKey="marketCap" activeKey={sortKey} direction={sortDir} />
+                  </button>
+                </th>
+                {MULTIPLE_COLS.map((c) => (
+                  <th
+                    key={c.key}
+                    scope="col"
+                    className={sortKey === c.key ? 'is-active' : undefined}
+                    aria-sort={ariaSort(c.key)}
+                  >
+                    <button type="button" className="cmp-sort" onClick={() => handleSort(c.key)}>
+                      {c.label}
+                      <SortIcon sortKey={c.key} activeKey={sortKey} direction={sortDir} />
+                    </button>
+                  </th>
                 ))}
               </tr>
-            ))}
-
-            <tr className="border-t-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#161b22]">
-              <td className="px-3 py-2 font-semibold text-gray-900 dark:text-white sticky left-0 bg-gray-50 dark:bg-[#161b22]">
-                Peer Median
-              </td>
-              <td className="px-2 py-2" />
-              {MULTIPLE_COLS.map((c) => (
-                <td
-                  key={c.key}
-                  className="px-2 py-2 text-right font-mono font-semibold text-gray-900 dark:text-white"
-                >
-                  {c.fmt(peerStats[c.key]?.median)}
+            </thead>
+            <tbody>
+              <tr className="cmp-row cmp-row--target">
+                <td>
+                  <span className="cmp-sym">{target.symbol}</span>
+                  <span className="cmp-tag">Target</span>
                 </td>
-              ))}
-            </tr>
-            <tr className="bg-gray-50/50 dark:bg-[#161b22]/50">
-              <td className="px-3 py-1.5 text-[10px] text-gray-400 dark:text-gray-500 sticky left-0 bg-gray-50/50 dark:bg-[#161b22]/50">
-                25th – 75th pctl
-              </td>
-              <td className="px-2 py-1.5" />
-              {MULTIPLE_COLS.map((c) => {
-                const s = peerStats[c.key];
-                return (
-                  <td
-                    key={c.key}
-                    className="px-2 py-1.5 text-right text-[10px] font-mono text-gray-400 dark:text-gray-500"
-                  >
-                    {s?.p25 != null ? `${c.fmt(s.p25)} – ${c.fmt(s.p75)}` : '–'}
+                <td>{target.marketCapFormatted}</td>
+                {MULTIPLE_COLS.map((c) => {
+                  const pos = positions[c.key]?.position;
+                  return (
+                    <td key={c.key} className={posColor(pos) || undefined}>
+                      {pos === 'discount' && (
+                        <i className="bi bi-arrow-down-short cmp-pos-icon" aria-hidden="true" />
+                      )}
+                      {pos === 'premium' && (
+                        <i className="bi bi-arrow-up-short cmp-pos-icon" aria-hidden="true" />
+                      )}
+                      {c.fmt(target[c.key])}
+                      {(pos === 'discount' || pos === 'premium') && (
+                        <span className="cmp-vh"> ({pos} to peers)</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {peers.map((p, idx) => (
+                <tr key={p.symbol} className="cmp-row">
+                  <td>
+                    <span className="cmp-rank">{idx + 1}.</span>
+                    <span className="cmp-sym">{p.symbol}</span>
+                    <span className="cmp-peer-name">{p.name}</span>
                   </td>
-                );
-              })}
-            </tr>
-          </tbody>
-        </table>
+                  <td>{p.marketCapFormatted}</td>
+                  {MULTIPLE_COLS.map((c) => (
+                    <td key={c.key}>{c.fmt(p[c.key])}</td>
+                  ))}
+                </tr>
+              ))}
+
+              <tr className="cmp-row cmp-row--median">
+                <td>Peer Median</td>
+                <td />
+                {MULTIPLE_COLS.map((c) => (
+                  <td key={c.key}>{c.fmt(peerStats[c.key]?.median)}</td>
+                ))}
+              </tr>
+              <tr className="cmp-row cmp-row--range">
+                <td>25th – 75th pctl</td>
+                <td />
+                {MULTIPLE_COLS.map((c) => {
+                  const s = peerStats[c.key];
+                  return (
+                    <td key={c.key}>
+                      {s?.p25 != null ? `${c.fmt(s.p25)} – ${c.fmt(s.p75)}` : '–'}
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul className="cmp-legend" aria-label="Target row legend">
+          <li className="is-discount">
+            <i className="bi bi-arrow-down-short" aria-hidden="true" /> Discount: below peer 25th
+            pctl
+          </li>
+          <li className="is-premium">
+            <i className="bi bi-arrow-up-short" aria-hidden="true" /> Premium: above peer 75th pctl
+          </li>
+        </ul>
       </div>
 
       {valuation.methods.length > 0 && (
-        <div className="bg-[var(--card-bg)] rounded-lg p-4 space-y-3">
-          <h4 className="text-xs font-semibold text-gray-900 dark:text-white">
-            Implied Valuation (Peer-Median Multiples)
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="cmp-implied">
+          <h4 className="cmp-block-title">Implied Valuation (Peer-Median Multiples)</h4>
+          <ul className="cmp-implied-strip">
             {valuation.methods.map((m) => {
               const diff = target.price
                 ? ((m.impliedPrice - target.price) / target.price) * 100
                 : 0;
               const isUp = diff > 0;
               return (
-                <div
-                  key={m.method}
-                  className="rounded-md bg-gray-50 dark:bg-[#161b22] p-3 text-center space-y-1"
-                >
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400">{m.method}</div>
-                  <div className="text-sm font-semibold font-mono text-gray-900 dark:text-white">
-                    ${m.impliedPrice.toFixed(2)}
-                  </div>
-                  <div
-                    className={`text-[10px] font-medium flex items-center justify-center gap-0.5 ${isUp ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-                  >
-                    {isUp ? (
-                      <ArrowUpRight className="h-3 w-3" />
-                    ) : (
-                      <ArrowDownRight className="h-3 w-3" />
-                    )}
+                <li key={m.method} className="cmp-implied-cell">
+                  <span className="cmp-implied-label">{m.method}</span>
+                  <span className="cmp-implied-price">${m.impliedPrice.toFixed(2)}</span>
+                  <span className={`cmp-implied-diff ${isUp ? 'is-up' : 'is-down'}`}>
+                    <i
+                      className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`}
+                      aria-hidden="true"
+                    />
                     {isUp ? '+' : ''}
                     {diff.toFixed(1)}% vs current
-                  </div>
-                </div>
+                  </span>
+                </li>
               );
             })}
-          </div>
+          </ul>
           {valuation.avgImpliedPrice && (
-            <div className="text-center pt-2 border-t border-gray-200 dark:border-gray-700">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Average implied price:{' '}
-              </span>
-              <span className="text-sm font-semibold font-mono text-gray-900 dark:text-white">
-                ${valuation.avgImpliedPrice.toFixed(2)}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+            <p className="cmp-implied-avg">
+              Average implied price:{' '}
+              <span className="cmp-implied-avg-value">${valuation.avgImpliedPrice.toFixed(2)}</span>
+              <span className="cmp-implied-avg-delta">
                 ({valuation.premiumDiscount > 0 ? '+' : ''}
                 {valuation.premiumDiscount?.toFixed(1)}%{' '}
                 {valuation.premiumDiscount > 0 ? 'premium' : 'discount'} to current)
               </span>
-            </div>
+            </p>
           )}
         </div>
       )}
 
-      <div className="rounded-md bg-gray-50 dark:bg-[#161b22] p-3 flex gap-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-        <div>
-          <strong className="text-gray-900 dark:text-white">How this works:</strong> Peers are
-          selected by FMP&apos;s peer-matching algorithm (sector, size, business model). Multiples
-          are TTM (trailing twelve months). Implied valuation applies peer-median multiples to{' '}
-          {symbol}
+      <details className="cmp-method">
+        <summary>
+          <i className="bi bi-info-circle" aria-hidden="true" /> How this works
+        </summary>
+        <p>
+          Peers are selected by FMP&apos;s peer-matching algorithm (sector, size, business model).
+          Multiples are TTM (trailing twelve months). Implied valuation applies peer-median
+          multiples to {symbol}
           &apos;s financials. Click any column header to sort peers. Company Ranking sorts by a
           composite score based on margins, growth, and valuation efficiency.
+        </p>
+      </details>
+    </section>
+  );
+}
+
+function CompsLoading() {
+  return (
+    <section className="cmp" aria-busy="true" aria-label="Loading comparable company analysis">
+      <div className="cmp-skel cmp-skel--title" />
+      <div className="cmp-skel cmp-skel--strip" />
+      <div className="cmp-skel cmp-skel--table" />
+    </section>
+  );
+}
+
+function CompsState({ title, text, tone, onRetry, onClose }) {
+  return (
+    <section
+      className={`cmp cmp--state${tone ? ` is-${tone}` : ''}`}
+      role={tone === 'error' ? 'alert' : undefined}
+    >
+      {onClose && (
+        <div className="cmp-state-actions">
+          <button type="button" onClick={onClose} className="cmp-btn">
+            <i className="bi bi-x-lg" aria-hidden="true" /> Close
+          </button>
         </div>
-      </div>
+      )}
+      <p className="cmp-state-title">{title}</p>
+      <p className="cmp-state-text">{text}</p>
+      {onRetry && (
+        <button type="button" onClick={onRetry} className="cmp-btn">
+          <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Retry
+        </button>
+      )}
     </section>
   );
 }
