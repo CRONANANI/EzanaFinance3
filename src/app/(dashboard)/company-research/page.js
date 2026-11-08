@@ -67,9 +67,66 @@ import '../org-trading/org-trading.css';
 
 const CAROUSEL_MODELS = getCarouselModels();
 
+const EMPTY_QUOTE = {
+  name: null,
+  exchange: null,
+  sector: null,
+  industry: null,
+  logo: null,
+  change: null,
+  changePct: null,
+  asOf: null,
+};
+
+function formatAsOf(ts) {
+  if (!Number.isFinite(ts)) return null;
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(new Date(ts * 1000));
+  } catch {
+    return null;
+  }
+}
+
+/** Company logo with a ticker monogram fallback. Keyed by symbol at the call site. */
+function CompanyMark({ symbol, logo }) {
+  const [failed, setFailed] = useState(false);
+  if (logo && !failed) {
+    return (
+      <span className="crx-co-mark">
+        {/* eslint-disable-next-line @next/next/no-img-element -- remote issuer logo, sized by CSS */}
+        <img
+          src={logo}
+          alt=""
+          width={36}
+          height={36}
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      </span>
+    );
+  }
+  return (
+    <span className="crx-co-mark crx-co-mark--text" aria-hidden="true">
+      {(symbol || '').slice(0, 4)}
+    </span>
+  );
+}
+
 function ResearchPageHeader({ view, setView }) {
   return (
-    <header className="cpr-page-header">
+    <header className="crx-page-head">
+      <div className="crx-page-head-text">
+        <h1 className="crx-page-title">Research</h1>
+        <p className="crx-page-sub">
+          Analyze companies, industries, and portfolios using market data, financial models, and
+          AI-powered intelligence.
+        </p>
+      </div>
       <ViewToggle view={view} setView={setView} />
     </header>
   );
@@ -117,6 +174,7 @@ function CompanyResearchPageInner() {
     capType: '--',
   });
   const [livePrice, setLivePrice] = useState(null);
+  const [quote, setQuote] = useState(EMPTY_QUOTE);
   const [viewMode, setViewMode] = useState('heatmap');
   const [activeModel, setActiveModel] = useState(null);
   const [wlModalOpen, setWlModalOpen] = useState(false);
@@ -133,7 +191,6 @@ function CompanyResearchPageInner() {
     createList,
   } = useWatchlists();
   const searchRef = useRef(null);
-  const modelsCarouselScrollRef = useRef(null);
   /* Section tabs (Overview, Models, Valuation, Earnings, News, Peers):
      in-place panels with pinning. activeModel and each card's data live
      above the stack, so a pinned section moves instead of remounting. */
@@ -188,6 +245,7 @@ function CompanyResearchPageInner() {
     if (!selectedStock) return;
     setStats({ mcap: '…', pe: '…', divYield: '…', eps: '…', capType: '…' });
     setLivePrice(null);
+    setQuote(EMPTY_QUOTE);
 
     fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(selectedStock)}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -195,11 +253,13 @@ function CompanyResearchPageInner() {
         if (!data) {
           setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
           setLivePrice(null);
+          setQuote(EMPTY_QUOTE);
           return;
         }
         if (data.error) {
           setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
           setLivePrice(null);
+          setQuote(EMPTY_QUOTE);
           return;
         }
         setStats({
@@ -210,20 +270,40 @@ function CompanyResearchPageInner() {
           capType: data.capType || '--',
         });
         if (data.price != null) setLivePrice(data.price);
+        setQuote({
+          name: data.name || null,
+          exchange: data.exchange || null,
+          sector: data.sector || null,
+          industry: data.industry || null,
+          logo: data.logo || null,
+          change: Number.isFinite(data.change) ? data.change : null,
+          changePct: Number.isFinite(data.changePct) ? data.changePct : null,
+          asOf: Number.isFinite(data.asOf) ? data.asOf : null,
+        });
       })
       .catch(() => {
         setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
         setLivePrice(null);
+        setQuote(EMPTY_QUOTE);
       });
   }, [selectedStock]);
 
+  const tickerMeta = useMemo(
+    () => (selectedStock ? getTickerMeta(selectedStock) : null),
+    [selectedStock],
+  );
+  const companyName = quote.name || tickerMeta?.name || selectedStock || '';
   const companyMetaLine = useMemo(() => {
     const parts = [];
-    if (stats.capType && stats.capType !== '--') parts.push(stats.capType);
-    if (stats.mcap && stats.mcap !== '--' && stats.mcap !== '…')
-      parts.push(`Market Cap: ${stats.mcap}`);
-    return parts.join(' · ') || selectedStock || '';
-  }, [stats.mcap, stats.capType, selectedStock]);
+    const sector = quote.sector || tickerMeta?.sector;
+    if (sector) parts.push(sector);
+    if (quote.industry && quote.industry !== sector) parts.push(quote.industry);
+    if (stats.capType && stats.capType !== '--' && stats.capType !== '…') parts.push(stats.capType);
+    return parts.join(' · ');
+  }, [quote.sector, quote.industry, tickerMeta, stats.capType]);
+  const chgDir =
+    quote.change == null ? 'flat' : quote.change > 0 ? 'up' : quote.change < 0 ? 'down' : 'flat';
+  const asOfLabel = formatAsOf(quote.asOf);
 
   useEffect(() => {
     if (selectedStock && stats.mcap !== '--' && stats.mcap !== '…') {
@@ -306,11 +386,8 @@ function CompanyResearchPageInner() {
   const resetStats = () => {
     setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
     setLivePrice(null);
+    setQuote(EMPTY_QUOTE);
   };
-
-  const scrollModelsCarousel = useCallback((dir) => {
-    modelsCarouselScrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
-  }, []);
 
   /* QA RET-5: adds go to the user's saved lists (/api/watchlists), not demo
      state, so the ticker is still there after a reload of /watchlist. */
@@ -353,6 +430,13 @@ function CompanyResearchPageInner() {
     [newListLabel, creatingList, createList, toast, handleAddToWatchlist],
   );
 
+  useEffect(() => {
+    if (!wlModalOpen) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setWlModalOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [wlModalOpen]);
+
   const openWatchlistModal = useCallback(() => {
     if (!isAuthenticated) {
       router.push(`/auth/signin?redirect=${encodeURIComponent(pathname || '/company-research')}`);
@@ -368,63 +452,40 @@ function CompanyResearchPageInner() {
     setActiveModel('grpv');
   }, [handleSelectStock]);
 
-  const renderModelCards = (keyPrefix) =>
+  const renderTools = () =>
     CAROUSEL_MODELS.map((model) => {
       const isPremium = PREMIUM_MODEL_IDS.has(model.id);
       const isActive = activeModel === model.id;
       const showModelTips = beginner?.showTips ?? false;
-      const tileClass = [
-        'model-metric-card',
-        'model-card',
-        'ai-model-card',
-        'cr-model-tile',
-        model.flagship ? 'grpv-flagship' : '',
-        isPremium ? 'cr-model-tile--premium' : 'cr-model-tile--neutral',
-        isActive ? 'active' : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
-
       return (
-        <div
-          key={`${keyPrefix}-${model.id}`}
-          className={tileClass}
+        <button
+          key={model.id}
+          type="button"
           data-model={model.id}
+          aria-pressed={isActive}
+          className={`crx-tool${isPremium ? ' crx-tool--premium' : ''}${isActive ? ' is-active' : ''}`}
           onClick={() => handleModelClick(model.id)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
         >
           {model.flagship ? (
-            <div className="grpv-brand-logo">
-              <EzanaNavLogo
-                width={17}
-                height={19}
-                className="grpv-logo-img nav-logo-img nav-logo-img--wing"
-              />
-            </div>
+            <EzanaNavLogo
+              width={14}
+              height={16}
+              className="crx-tool-logo nav-logo-img nav-logo-img--wing"
+            />
           ) : (
-            <div className={`model-metric-icon ${model.id} cr-model-tile__icon`}>
-              <i className={`bi ${model.icon}`} />
-            </div>
+            <i className={`bi ${model.icon} crx-tool-icon`} aria-hidden="true" />
           )}
-          <div className="model-metric-content">
-            <span className="model-metric-label cr-model-tile__title">
-              {model.name}
-              {showModelTips && model.id === 'grpv' && (
-                <span className="beginner-model-chip">Start here</span>
-              )}
-              {showModelTips && model.id !== 'grpv' && isPremium && (
-                <span className="beginner-model-advanced">Advanced</span>
-              )}
-            </span>
-          </div>
+          <span className="crx-tool-label">{model.name}</span>
+          {showModelTips && model.id === 'grpv' && (
+            <span className="beginner-model-chip">Start here</span>
+          )}
+          {showModelTips && model.id !== 'grpv' && isPremium && (
+            <span className="beginner-model-advanced">Advanced</span>
+          )}
           {isPremium && (
-            <span className="cr-model-premium-star" aria-hidden>
-              ★
-            </span>
+            <i className="bi bi-star-fill crx-tool-star" aria-label="Premium model" role="img" />
           )}
-        </div>
+        </button>
       );
     });
 
@@ -529,36 +590,14 @@ function CompanyResearchPageInner() {
           />
         </div>
 
-        {/* Stock analysis models — horizontal strip, above heatmap (heatmap view) or above stock chart (stock view) */}
         {((selectedStock && viewMode === 'stock') || viewMode === 'heatmap') && (
-          <section
-            className="models-carousel-section compact cr-models-above-chart"
-            aria-label="Stock analysis models"
-          >
-            <button
-              className="carousel-nav prev"
-              type="button"
-              onClick={() => scrollModelsCarousel(-1)}
-              aria-label="Previous models"
-            >
-              <i className="bi bi-chevron-left" />
-            </button>
-            <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
-              <div
-                className="models-carousel-track"
-                id={viewMode === 'stock' ? 'modelsCarouselTrackStock' : 'modelsCarouselTrack'}
-              >
-                {renderModelCards(viewMode === 'stock' ? 'st' : 'hm')}
-              </div>
+          <section className="crx-tools" aria-label="Research tools">
+            <span className="crx-tools-label" id="crx-tools-label">
+              Tools
+            </span>
+            <div className="crx-tools-row" role="group" aria-labelledby="crx-tools-label">
+              {renderTools()}
             </div>
-            <button
-              className="carousel-nav next"
-              type="button"
-              onClick={() => scrollModelsCarousel(1)}
-              aria-label="Next models"
-            >
-              <i className="bi bi-chevron-right" />
-            </button>
           </section>
         )}
 
@@ -594,67 +633,28 @@ function CompanyResearchPageInner() {
           <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
             {selectedStock && (
               <PinnableCard cardId="stock-chart-merged" section="research">
-                <div className="market-chart-section cr-db-card cr-stock-merged-card">
-                  <div className="cr-merged-stock-head">
-                    <div className="cr-merged-title-row">
-                      <div className="cr-merged-names">
-                        <span className="cr-merged-ticker">{selectedStock}</span>
-                        <span id="stockChartTitle" className="sr-only">
-                          {selectedStock}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          flexWrap: 'wrap',
-                          marginLeft: 'auto',
-                        }}
-                      >
-                        {isOrgUser && hasPermission('send_to_team') && (
-                          <button
-                            type="button"
-                            className="ot-position-flag-btn"
-                            onClick={() => setSendChartTicker(selectedStock)}
-                            style={{ whiteSpace: 'nowrap' }}
-                          >
-                            <i className="bi bi-send" /> Send Chart
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={openWatchlistModal}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.35rem',
-                            padding: '0.35rem 0.85rem',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            background: 'rgba(16, 185, 129, 0.08)',
-                            color: '#10b981',
-                            fontSize: '0.8125rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            fontFamily: 'var(--font-sans)',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
-                          Add to Watchlist
-                        </button>
+                <div className="market-chart-section cr-db-card cr-stock-merged-card crx-co-card">
+                  <div className="crx-co-head">
+                    <div className="crx-co-id">
+                      <CompanyMark key={selectedStock} symbol={selectedStock} logo={quote.logo} />
+                      <div className="crx-co-names">
+                        <div className="crx-co-name-row">
+                          <h2 id="stockChartTitle" className="crx-co-name">
+                            {companyName}
+                          </h2>
+                          {companyName !== selectedStock && (
+                            <span className="crx-co-ticker">{selectedStock}</span>
+                          )}
+                          {quote.exchange && <span className="crx-co-exch">{quote.exchange}</span>}
+                        </div>
+                        {companyMetaLine && <p className="crx-co-meta">{companyMetaLine}</p>}
                       </div>
                     </div>
-                    <p className="cr-merged-meta-line">{companyMetaLine}</p>
-                  </div>
-                  <div className="chart-header compact cr-chart-toolbar">
-                    <div className="chart-controls">
+                    <div className="crx-co-actions">
                       <button
-                        className="back-to-heatmap-btn"
-                        id="backToHeatmap"
                         type="button"
+                        className="crx-btn crx-btn--ghost back-to-heatmap-btn"
+                        id="backToHeatmap"
                         onClick={() => {
                           setViewMode('heatmap');
                           setSelectedStock(null);
@@ -665,14 +665,76 @@ function CompanyResearchPageInner() {
                           } catch (_) {}
                         }}
                       >
-                        <i className="bi bi-grid-3x3-gap" /> Heatmap
+                        <i className="bi bi-grid-3x3-gap" aria-hidden="true" /> Heatmap
+                      </button>
+                      {isOrgUser && hasPermission('send_to_team') && (
+                        <button
+                          type="button"
+                          className="crx-btn crx-btn--ghost"
+                          onClick={() => setSendChartTicker(selectedStock)}
+                        >
+                          <i className="bi bi-send" aria-hidden="true" /> Send Chart
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="crx-btn crx-btn--accent"
+                        onClick={openWatchlistModal}
+                      >
+                        <i className="bi bi-plus-lg" aria-hidden="true" /> Add to Watchlist
                       </button>
                     </div>
                   </div>
 
-                  {/* New React-based chart component */}
-                  <div style={{ padding: '1rem 0' }}>
-                    <StockPriceChart symbol={selectedStock} livePrice={livePrice} stats={stats} />
+                  <div className="crx-co-quote">
+                    <span className="crx-co-price">
+                      {livePrice != null
+                        ? `$${Number(livePrice).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`
+                        : stats.mcap === '…'
+                          ? '…'
+                          : 'Price unavailable'}
+                    </span>
+                    {quote.change != null && quote.changePct != null && (
+                      <span className={`crx-co-chg crx-co-chg--${chgDir}`}>
+                        <i
+                          className={`bi ${
+                            chgDir === 'up'
+                              ? 'bi-caret-up-fill'
+                              : chgDir === 'down'
+                                ? 'bi-caret-down-fill'
+                                : 'bi-dash'
+                          }`}
+                          aria-hidden="true"
+                        />
+                        {quote.change > 0 ? '+' : ''}
+                        {quote.change.toFixed(2)} ({quote.changePct > 0 ? '+' : ''}
+                        {quote.changePct.toFixed(2)}%)
+                        <span className="crx-visually-hidden">
+                          {chgDir === 'up' ? ' up' : chgDir === 'down' ? ' down' : ' unchanged'}{' '}
+                          today
+                        </span>
+                      </span>
+                    )}
+                    {(quote.change != null || asOfLabel) && (
+                      <span className="crx-co-asof">
+                        {quote.change != null ? 'Today' : null}
+                        {quote.change != null && asOfLabel ? ' · ' : null}
+                        {asOfLabel ? `As of ${asOfLabel}` : null}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="crx-co-chart">
+                    <StockPriceChart
+                      symbol={selectedStock}
+                      livePrice={livePrice}
+                      stats={stats}
+                      hideSymbol
+                      statsVariant="strip"
+                    />
                   </div>
                 </div>
               </PinnableCard>
@@ -683,31 +745,27 @@ function CompanyResearchPageInner() {
         {/* Heatmap: user opened a model before selecting a ticker */}
         {activeModel && !selectedStock && (
           <section
-            className="model-detail-section cr-model-detail-no-ticker"
+            className="model-detail-section cr-model-detail-no-ticker crx-empty-panel"
             id="modelDetailSectionHeatmap"
+            aria-labelledby="crx-empty-model-title"
           >
-            <div className="component-card model-detail-card">
-              <div className="card-header">
-                <h3>{CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}</h3>
-                <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
-                  <i className="bi bi-x-lg" /> Close
-                </button>
-              </div>
-              <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
-                <i
-                  className="bi bi-search"
-                  style={{
-                    fontSize: '2rem',
-                    color: '#6b7280',
-                    display: 'block',
-                    marginBottom: '1rem',
-                  }}
-                />
-                <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
-                  Search for a company or select a stock from the heatmap above to run this
-                  analysis.
-                </p>
-              </div>
+            <div className="crx-empty-panel-head">
+              <h3 id="crx-empty-model-title" className="crx-empty-panel-title">
+                {CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}
+              </h3>
+              <button
+                type="button"
+                className="crx-btn crx-btn--ghost"
+                onClick={handleCloseAnalysis}
+              >
+                <i className="bi bi-x-lg" aria-hidden="true" /> Close
+              </button>
+            </div>
+            <div className="crx-empty-panel-body">
+              <i className="bi bi-search" aria-hidden="true" />
+              <p>
+                Search for a company or select a stock from the heatmap above to run this analysis.
+              </p>
             </div>
           </section>
         )}
@@ -734,105 +792,55 @@ function CompanyResearchPageInner() {
         )}
 
         <CoursePreviewSection
+          variant="compact"
           title="Fundamental Analysis Mastery"
-          subtitle="Deep dive into financial statement analysis and valuation"
+          subtitle="Build core financial analysis skills with expert-led courses."
           courses={researchCourses}
           viewAllHref="/learning-center?track=stocks"
+          viewAllLabel="View all courses"
         />
       </div>
 
       {wlModalOpen && selectedStock && (
         <>
           <div
+            className="crx-wl-backdrop"
             onClick={() => setWlModalOpen(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.55)',
-              zIndex: 1000,
-              backdropFilter: 'blur(2px)',
-            }}
+            aria-hidden="true"
           />
-
           <div
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 1001,
-              background: 'var(--card-bg, #ffffff)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              width: 'min(420px, 92vw)',
-              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.25)',
-            }}
+            className="crx-wl-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="crx-wl-title"
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem',
-              }}
-            >
+            <div className="crx-wl-head">
               <div>
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    color: 'var(--home-heading, #111827)',
-                  }}
-                >
+                <h3 id="crx-wl-title" className="crx-wl-title">
                   Add to Watchlist
                 </h3>
-                <p
-                  style={{
-                    margin: '3px 0 0',
-                    fontSize: '0.75rem',
-                    color: 'var(--home-muted, #6b7280)',
-                  }}
-                >
-                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong>: select a
-                  watchlist
+                <p className="crx-wl-sub">
+                  Adding <strong>{selectedStock}</strong>: select a watchlist
                 </p>
               </div>
               <button
                 type="button"
+                className="crx-icon-btn"
                 onClick={() => setWlModalOpen(false)}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(0,0,0,0.1)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--home-muted, #6b7280)',
-                  fontSize: '0.875rem',
-                  flexShrink: 0,
-                }}
                 aria-label="Close"
               >
-                <i className="bi bi-x" />
+                <i className="bi bi-x-lg" aria-hidden="true" />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="crx-wl-list">
               {watchlistsLoading && userWatchlists.length === 0 && (
-                <p
-                  role="status"
-                  style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}
-                >
+                <p role="status" className="crx-wl-note">
                   Loading your watchlists...
                 </p>
               )}
               {!watchlistsLoading && userWatchlists.length === 0 && (
-                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                <p className="crx-wl-note">
                   You don&apos;t have a watchlist yet. Create one below.
                 </p>
               )}
@@ -840,8 +848,7 @@ function CompanyResearchPageInner() {
                 const alreadyIn = (wl.stocks || []).some(
                   (s) => s.ticker === selectedStock && (s.type || 'stock') === 'stock',
                 );
-                const justAdded = wlAddedMap[wl.id];
-                const done = alreadyIn || justAdded;
+                const done = alreadyIn || wlAddedMap[wl.id];
                 const busy = wlBusyId === wl.id;
                 return (
                   <button
@@ -850,75 +857,19 @@ function CompanyResearchPageInner() {
                     disabled={done || busy}
                     aria-busy={busy || undefined}
                     onClick={() => !done && handleAddToWatchlist(wl.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '0.75rem 1rem',
-                      borderRadius: '10px',
-                      border: done
-                        ? '1px solid rgba(16, 185, 129, 0.35)'
-                        : '1px solid rgba(0, 0, 0, 0.08)',
-                      background: done ? 'rgba(16, 185, 129, 0.06)' : 'rgba(0, 0, 0, 0.02)',
-                      cursor: done ? 'default' : 'pointer',
-                      textAlign: 'left',
-                      fontFamily: 'var(--font-sans)',
-                      transition: 'border-color 0.15s, background 0.15s',
-                    }}
+                    className={`crx-wl-item${done ? ' is-done' : ''}`}
                   >
-                    <div>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: '0.875rem',
-                          fontWeight: 700,
-                          color: 'var(--home-heading, #111827)',
-                        }}
-                      >
-                        {wl.label}
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: '0.6875rem',
-                          color: 'var(--home-muted, #6b7280)',
-                        }}
-                      >
-                        {(wl.stocks || []).length} stocks
-                      </p>
-                    </div>
-
+                    <span className="crx-wl-item-text">
+                      <span className="crx-wl-item-name">{wl.label}</span>
+                      <span className="crx-wl-item-count">{(wl.stocks || []).length} stocks</span>
+                    </span>
                     {done ? (
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          color: '#10b981',
-                        }}
-                      >
-                        <i className="bi bi-check-circle-fill" /> Added
+                      <span className="crx-wl-item-done">
+                        <i className="bi bi-check-circle-fill" aria-hidden="true" /> Added
                       </span>
                     ) : (
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '50%',
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          color: '#10b981',
-                          fontSize: '1rem',
-                          fontWeight: 700,
-                          flexShrink: 0,
-                        }}
-                      >
-                        +
+                      <span className="crx-wl-item-add" aria-hidden="true">
+                        <i className="bi bi-plus-lg" />
                       </span>
                     )}
                   </button>
@@ -926,10 +877,7 @@ function CompanyResearchPageInner() {
               })}
             </div>
 
-            <form
-              onSubmit={handleCreateListAndAdd}
-              style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}
-            >
+            <form onSubmit={handleCreateListAndAdd} className="crx-wl-new">
               <input
                 aria-label="New watchlist name"
                 type="text"
@@ -937,48 +885,19 @@ function CompanyResearchPageInner() {
                 onChange={(e) => setNewListLabel(e.target.value)}
                 placeholder="New list name"
                 maxLength={60}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  padding: '0.6rem 0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-primary)',
-                  background: 'transparent',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.8125rem',
-                  fontFamily: 'var(--font-sans)',
-                }}
+                className="crx-wl-input"
               />
               <button
                 type="submit"
                 disabled={!newListLabel.trim() || creatingList}
-                style={{
-                  padding: '0.6rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid color-mix(in srgb, var(--emerald) 35%, transparent)',
-                  background: 'color-mix(in srgb, var(--emerald) 10%, transparent)',
-                  color: 'var(--emerald-text, var(--emerald))',
-                  fontSize: '0.8125rem',
-                  fontWeight: 700,
-                  cursor: newListLabel.trim() && !creatingList ? 'pointer' : 'default',
-                  fontFamily: 'var(--font-sans)',
-                  whiteSpace: 'nowrap',
-                }}
+                className="crx-btn crx-btn--accent"
               >
                 <i className="bi bi-plus-lg" aria-hidden="true" />{' '}
                 {creatingList ? 'Creating...' : 'Create list'}
               </button>
             </form>
 
-            <p
-              style={{
-                margin: '1rem 0 0',
-                fontSize: '0.6875rem',
-                color: 'var(--home-muted, #9ca3af)',
-                textAlign: 'center',
-                lineHeight: 1.4,
-              }}
-            >
+            <p className="crx-wl-foot">
               Your watchlists are saved to your account. Visit the Watchlist page to manage them.
             </p>
           </div>
@@ -1032,7 +951,7 @@ export default function CompanyResearchPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#8b949e',
+            color: 'var(--text-muted)',
           }}
         >
           Loading…

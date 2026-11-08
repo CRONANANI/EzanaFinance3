@@ -94,6 +94,8 @@ export default function StockPriceChart({
   defaultRange,
   compact = false,
   hideRangeButtons = false,
+  hideSymbol = false,
+  statsVariant = 'cards',
 }) {
   const resolvedInitialRange = defaultRange || initialRange;
   const [range, setRange] = useState(resolvedInitialRange);
@@ -289,33 +291,37 @@ export default function StockPriceChart({
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '0.5rem',
-          padding: '0 0 0.875rem',
-          borderBottom: '1px solid rgba(128,128,128,0.12)',
-          marginBottom: '0.875rem',
+          padding: hideSymbol ? '0 0 0.5rem' : '0 0 0.875rem',
+          borderBottom: hideSymbol ? 'none' : '1px solid rgba(128,128,128,0.12)',
+          marginBottom: hideSymbol ? '0.25rem' : '0.875rem',
         }}
       >
         {/* Left: ticker, price, change */}
         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <span
-            style={{
-              fontSize: '1.1rem',
-              fontWeight: 700,
-              color: 'var(--foreground, #f0f6fc)',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {symbol}
-          </span>
-          {(livePrice != null || lastPrice != null) && (
-            <span
-              style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--foreground, #f0f6fc)' }}
-            >
-              $
-              {Number(livePrice ?? lastPrice).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+          {!hideSymbol && (
+            <>
+              <span
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: 'var(--foreground, #f0f6fc)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {symbol}
+              </span>
+              {(livePrice != null || lastPrice != null) && (
+                <span
+                  style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--foreground, #f0f6fc)' }}
+                >
+                  $
+                  {Number(livePrice ?? lastPrice).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              )}
+            </>
           )}
           {pctChange !== null && (
             <span
@@ -328,8 +334,18 @@ export default function StockPriceChart({
                 borderRadius: '4px',
               }}
             >
+              {hideSymbol && (
+                <i
+                  className={`bi ${isPositive ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`}
+                  aria-hidden="true"
+                  style={{ marginRight: 4 }}
+                />
+              )}
               {isPositive ? '+' : ''}
               {pctChange}%
+              {hideSymbol && (
+                <span style={{ marginLeft: 6, fontWeight: 500, opacity: 0.85 }}>{range}</span>
+              )}
             </span>
           )}
         </div>
@@ -684,7 +700,28 @@ export default function StockPriceChart({
       </div>
 
       {/* ── Stat cards: Market Cap · P/E · Div Yield · EPS ── */}
-      {stats && (
+      {stats && statsVariant === 'strip' && (
+        <dl className="spc-strip" data-stat-cards>
+          {[
+            { label: 'Market Cap', value: stats.mcap, sub: stats.capType },
+            { label: 'P/E Ratio', value: stats.pe, sub: 'Price / Earnings' },
+            { label: 'Dividend Yield', value: stats.divYield, sub: 'Annual yield' },
+            { label: 'EPS', value: stats.eps, sub: 'Earnings per share' },
+          ].map(({ label, value, sub }) => {
+            const missing = value == null || value === '--';
+            return (
+              <div key={label} className="spc-strip-cell">
+                <dt className="spc-strip-label">{label}</dt>
+                <dd className={`spc-strip-value${missing ? ' is-na' : ''}`}>
+                  {missing ? 'Unavailable' : value}
+                </dd>
+                {sub && sub !== '--' && sub !== '…' && <dd className="spc-strip-sub">{sub}</dd>}
+              </div>
+            );
+          })}
+        </dl>
+      )}
+      {stats && statsVariant !== 'strip' && (
         <div
           className="stock-stat-cards-grid grid grid-cols-2 gap-3 border-t border-[rgba(128,128,128,0.12)] pt-4 mt-5 sm:grid-cols-4 sm:gap-3"
           data-stat-cards
