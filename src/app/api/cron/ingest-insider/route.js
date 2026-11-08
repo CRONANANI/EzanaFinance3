@@ -4,6 +4,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { secFetchText, getFilingIndexJson, edgarUrls, secRequestCount } from '@/lib/sec-edgar';
 import { parseForm4Xml, form4ToRows, rawForm4Url } from '@/lib/sec/form4';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { submissionTxtUrl, extractForm4Xml } from '@/lib/sec/daily-form-index';
 
 /**
  * Parse Form 4 filings already indexed in sec_filings (form_family 'insider')
@@ -65,14 +66,18 @@ async function unparsed(admin, cap) {
 }
 
 async function form4Xml(f) {
-  let url = f.primary_doc_url ? rawForm4Url(f.primary_doc_url) : null;
-  if (!url || !/\.xml$/i.test(url)) {
-    const index = await getFilingIndexJson({ cik: f.cik, accessionNo: f.accession_no });
-    const xml = (index?.directory?.item || []).find((it) => /\.xml$/i.test(it?.name || ''));
-    if (!xml) return null;
-    url = `${edgarUrls({ accessionNo: f.accession_no, cik: f.cik }).base}/${xml.name}`;
-  }
-  return secFetchText(url);
+  const url = f.primary_doc_url ? rawForm4Url(f.primary_doc_url) : null;
+  if (url && /\.xml$/i.test(url)) return secFetchText(url);
+  /* Nov 2026: one request; the ownership XML is inline in the full submission. */
+  const sub = await secFetchText(
+    submissionTxtUrl({ cik: f.cik, accessionNo: f.accession_no }),
+  ).catch(() => null);
+  const inline = extractForm4Xml(sub);
+  if (inline) return inline;
+  const index = await getFilingIndexJson({ cik: f.cik, accessionNo: f.accession_no });
+  const xml = (index?.directory?.item || []).find((it) => /\.xml$/i.test(it?.name || ''));
+  if (!xml) return null;
+  return secFetchText(`${edgarUrls({ accessionNo: f.accession_no, cik: f.cik }).base}/${xml.name}`);
 }
 
 async function run(request) {
