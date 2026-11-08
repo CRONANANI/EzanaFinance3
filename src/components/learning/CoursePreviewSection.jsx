@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { getLevelLabel } from '@/lib/learning-curriculum';
 import '../../../app-legacy/components/learning/learning-opportunities.css';
+import './course-preview-compact.css';
 
 function levelClass(level) {
   if (level === 'basic') return 'beginner';
@@ -20,8 +21,43 @@ export function CoursePreviewSection({
   viewAllHref = '/learning-center',
   viewAllLabel = 'View All Courses →',
   className = '',
+  variant = 'default',
 }) {
   if (!courses?.length) return null;
+
+  if (variant === 'compact') {
+    const headingId = `cps-${title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+    return (
+      <section className={`cps ${className}`.trim()} aria-labelledby={headingId}>
+        <div className="cps-head">
+          <div className="cps-head-text">
+            <h2 id={headingId} className="cps-title">
+              {title}
+            </h2>
+            {subtitle ? <p className="cps-sub">{subtitle}</p> : null}
+          </div>
+          <Link href={viewAllHref} className="cps-all">
+            {viewAllLabel}
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </Link>
+        </div>
+        <ul className="cps-row">
+          {courses.map((c) => (
+            <li key={c.id}>
+              <Link href={`/learning-center/course/${c.id}`} className="cps-item">
+                <span className="cps-icon" aria-hidden="true">
+                  <i className="bi bi-play-fill" />
+                </span>
+                <span className="cps-name">{c.title}</span>
+                <span className="cps-dur">{c.duration_minutes} min</span>
+                <i className="bi bi-chevron-right cps-go" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
 
   return (
     <section className={`learning-opportunities ${className}`.trim()}>
@@ -41,7 +77,11 @@ export function CoursePreviewSection({
       </div>
       <div className="courses-grid">
         {courses.map((c) => (
-          <Link key={c.id} href={`/learning-center/course/${c.id}`} className="course-card course-card--link">
+          <Link
+            key={c.id}
+            href={`/learning-center/course/${c.id}`}
+            className="course-card course-card--link"
+          >
             <div className="course-header">
               <span className="course-type">Course</span>
               <span className="course-duration">
@@ -59,7 +99,9 @@ export function CoursePreviewSection({
               </div>
             </div>
             <div className="course-footer">
-              <span className={`course-level ${levelClass(c.level)}`}>{getLevelLabel(c.level)}</span>
+              <span className={`course-level ${levelClass(c.level)}`}>
+                {getLevelLabel(c.level)}
+              </span>
               <span className="enroll-btn" style={{ pointerEvents: 'none' }}>
                 Open course
               </span>
