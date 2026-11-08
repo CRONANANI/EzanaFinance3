@@ -170,6 +170,20 @@ export const GET = withApiGuard(
             ? `$${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             : null,
         symbol,
+        // Identity + day change for the Research company header (additive).
+        name: prof?.companyName ?? q?.name ?? null,
+        exchange: prof?.exchange ?? prof?.exchangeShortName ?? q?.exchange ?? null,
+        sector: prof?.sector || null,
+        industry: prof?.industry || null,
+        logo:
+          typeof prof?.image === 'string' && prof.image.startsWith('https://') ? prof.image : null,
+        change: q?.change != null && Number.isFinite(Number(q.change)) ? Number(q.change) : null,
+        changePct: (() => {
+          const raw = q?.changePercentage ?? q?.changesPercentage ?? null;
+          return raw != null && Number.isFinite(Number(raw)) ? Number(raw) : null;
+        })(),
+        asOf:
+          q?.timestamp != null && Number.isFinite(Number(q.timestamp)) ? Number(q.timestamp) : null,
       });
     } catch (err) {
       console.error('[fmp/stock-stats]', err);
