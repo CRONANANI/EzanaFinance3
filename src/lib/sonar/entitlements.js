@@ -35,6 +35,7 @@ export const SONAR_DATASETS = {
      an IPO question must be answerable at the lowest tier. */
   'ipo-filings': { id: 'ipo-filings', label: 'IPO filings', source: 'SEC filings' },
   '13f': { id: '13f', label: '13F institutional holdings', source: 'SEC 13F' },
+  'insider-buys': { id: 'insider-buys', label: 'SEC Form 4 insider filings', source: 'SEC Form 4' },
   lobbying: { id: 'lobbying', label: 'Lobbying disclosures', source: 'Senate LDA' },
   'org-internal': {
     id: 'org-internal',

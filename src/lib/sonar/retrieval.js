@@ -29,6 +29,9 @@ export const DATASET_TO_CORPUS = {
   /* Not an orchestrator retriever: the landing pipeline reads 13F matches
      (company pings) and the flow-leaders snapshot (flows pings) itself. */
   '13f': '13f',
+  /* Not an orchestrator retriever: insider-buying pings read Form 4 open-market
+     purchases themselves (landing-insider-buying.js). */
+  'insider-buys': 'insider',
 };
 
 /** Corpus name → the Sonar dataset id it satisfies (reverse of the above). */

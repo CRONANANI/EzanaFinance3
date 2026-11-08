@@ -1,0 +1,711 @@
+/* Sonar insider buying cards (Nov 2026, SonarInsiderBuyingStack).
+   Rides the band's .snr-news shell and .snr-card-head; this file adds the bar
+   race, the detail card, the caption, the ledger, the role bars and the limits
+   list. Tokens only (band --snr-* plus the global brand and status tokens),
+   no card outlines, no hardcoded hex.
+   Spotlight buys are emerald (the five biggest companies by market cap), every
+   other buy is amber. Role pills: executives filled warning, directors amber,
+   officers neutral, 10% owners emerald. Up / down use --positive / --negative. */
+
+.snr-band .snr-ib-card {
+  --ib-spot: var(--snr-emerald);
+  --ib-spot-hi: var(--snr-mint);
+  --ib-plain: color-mix(in srgb, var(--amber) 82%, var(--snr-ink));
+  --ib-plain-hi: color-mix(in srgb, var(--amber) 70%, var(--snr-text));
+  --ib-mute: color-mix(in srgb, var(--snr-text) 14%, transparent);
+  color: var(--snr-text);
+  font-family: var(--snr-font-sans);
+}
+
+/* The race spans the whole row on the answer board. */
+.snr-board .snr-pb-visual-body > .snr-stack > .snr-ib-span {
+  grid-column: 1 / -1;
+}
+
+.snr-band .snr-ib-card:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+/* Header */
+.snr-band .snr-ib-head {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.snr-band .snr-ib-kicker,
+.snr-band .snr-ib-eyebrow {
+  margin: 0;
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--ib-plain-hi);
+}
+.snr-band .snr-ib-eyebrow {
+  color: var(--snr-mint);
+  letter-spacing: var(--type-eyebrow-tracking);
+}
+.snr-band .snr-ib-eyebrow.is-warm {
+  color: var(--ib-plain-hi);
+}
+.snr-band .snr-ib-title {
+  margin: 6px 0 4px;
+  font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--snr-text);
+}
+.snr-band .snr-ib-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--snr-text-muted);
+}
+
+/* Running total and segments */
+.snr-band .snr-ib-meter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-bottom: 8px;
+}
+.snr-band .snr-ib-meter-label {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-meter-value,
+.snr-band .snr-ib-meter-count {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+.snr-band .snr-ib-meter-count {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.snr-band .snr-ib-segs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.snr-band .snr-ib-seg {
+  appearance: none;
+  border: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 4px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--ib-mute);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+/* A taller hit area than the 4px line. */
+.snr-band .snr-ib-seg::before {
+  content: '';
+  display: block;
+  height: 20px;
+  margin-top: -8px;
+}
+.snr-band .snr-ib-seg.is-spot {
+  background: var(--ib-spot);
+}
+.snr-band .snr-ib-seg.is-plain {
+  background: var(--ib-plain);
+}
+.snr-band .snr-ib-seg.is-now {
+  transform: scaleY(1.6);
+}
+.snr-band .snr-ib-seg:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 3px;
+}
+
+/* Stage */
+.snr-band .snr-ib-stage {
+  --ib-plot: 240px;
+  --ib-axis: 66px;
+  position: relative;
+  height: calc(var(--ib-plot) + var(--ib-axis) + 34px);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: radial-gradient(
+    ellipse at 50% 60%,
+    color-mix(in srgb, var(--ib-plain) 10%, transparent),
+    transparent 70%
+  );
+}
+.snr-band .snr-ib-scale-note {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dotted var(--snr-grid);
+  pointer-events: none;
+}
+.snr-band .snr-ib-grid-line span {
+  position: absolute;
+  z-index: 2;
+  right: 6px;
+  top: -16px;
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--ib-axis);
+  border-top: 1px solid var(--snr-text-faint);
+}
+.snr-band .snr-ib-track {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  transition: transform 0.6s var(--snr-ease-out);
+}
+.snr-band .snr-ib-stage-hint {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  transform: translateX(-50%);
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+  pointer-events: none;
+}
+.snr-band .snr-ib-play-big {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--ib-axis) - 32px);
+  transform: translateX(-50%);
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--snr-panel-solid);
+  color: var(--snr-text);
+  font-size: 1.9rem;
+  cursor: pointer;
+  box-shadow: var(--snr-soft);
+  transition: background 0.15s ease;
+}
+.snr-band .snr-ib-play-big:hover {
+  background: color-mix(in srgb, var(--snr-emerald) 30%, var(--snr-panel-solid));
+}
+
+/* Bars */
+.snr-band .snr-ib-bar {
+  appearance: none;
+  position: absolute;
+  bottom: 0;
+  width: var(--ib-slot);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  animation: snr-ib-rise 0.45s var(--snr-ease-out) both;
+  transition:
+    opacity 0.3s ease,
+    left 0.6s var(--snr-ease-out),
+    width 0.6s var(--snr-ease-out);
+}
+.snr-band .snr-ib-bar-val {
+  margin-bottom: 4px;
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-ib-bar-fill {
+  width: 74%;
+  height: calc(var(--ib-plot) * var(--ib-h));
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: linear-gradient(
+    180deg,
+    var(--ib-plain-hi),
+    color-mix(in srgb, var(--ib-plain) 70%, var(--snr-ink))
+  );
+  transition:
+    height 0.6s var(--snr-ease-out),
+    box-shadow 0.3s ease;
+}
+.snr-band .snr-ib-bar.is-spot .snr-ib-bar-fill {
+  background: linear-gradient(
+    180deg,
+    var(--ib-spot-hi),
+    color-mix(in srgb, var(--ib-spot) 70%, var(--snr-ink))
+  );
+}
+.snr-band .snr-ib-bar-n {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  color: color-mix(in srgb, var(--snr-text) 70%, transparent);
+}
+.snr-band .snr-ib-bar-foot {
+  height: var(--ib-axis);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+}
+.snr-band .snr-ib-bar-tk {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--snr-text);
+}
+/* Dim the children: the bar's entrance animation (fill-mode both) owns its own opacity. */
+.snr-band .snr-ib-bar.is-dim > * {
+  opacity: 0.42;
+  transition: opacity 0.3s ease;
+}
+.snr-band .snr-ib-bar.is-on .snr-ib-bar-val {
+  color: var(--snr-text);
+  font-size: 13px;
+}
+.snr-band .snr-ib-bar.is-on .snr-ib-bar-fill {
+  box-shadow: 0 0 22px color-mix(in srgb, var(--ib-plain) 55%, transparent);
+}
+.snr-band .snr-ib-bar.is-on.is-spot .snr-ib-bar-fill {
+  box-shadow: 0 0 22px var(--emerald-glow);
+}
+.snr-band .snr-ib-bar:focus-visible .snr-ib-bar-fill {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+.snr-band .snr-ib-stage.is-fit .snr-ib-bar-fill {
+  width: 68%;
+}
+@keyframes snr-ib-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Controls */
+.snr-band .snr-ib-controls {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+.snr-band .snr-ib-controls button {
+  appearance: none;
+  border: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--snr-text) 7%, transparent);
+  color: var(--snr-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.snr-band .snr-ib-controls button:hover:not(:disabled) {
+  color: var(--snr-text);
+  background: color-mix(in srgb, var(--snr-emerald) 18%, transparent);
+}
+.snr-band .snr-ib-controls button.is-main {
+  width: 44px;
+  height: 44px;
+  color: var(--snr-ink);
+  background: var(--snr-mint);
+}
+.snr-band .snr-ib-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.snr-band .snr-ib-controls button:focus-visible,
+.snr-band .snr-ib-play-big:focus-visible,
+.snr-band .snr-ib-rowbtn:focus-visible,
+.snr-band .snr-ib-more:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 2px;
+}
+
+/* Detail card (no outline: a tinted panel; spotlight gets the emerald wash) */
+.snr-band .snr-ib-detail {
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+}
+.snr-band .snr-ib-detail.is-spot {
+  background: color-mix(in srgb, var(--snr-emerald) 12%, var(--snr-row));
+}
+.snr-band .snr-ib-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--snr-divider);
+}
+.snr-band .snr-ib-idx {
+  font-family: var(--snr-font-mono);
+  font-size: 12px;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-co {
+  margin: 4px 0 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--snr-text);
+}
+.snr-band .snr-ib-detail-head .snr-ib-co {
+  margin: 0;
+}
+.snr-band .snr-ib-detail.is-plain .snr-ib-co {
+  margin-bottom: 14px;
+}
+.snr-band .snr-ib-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+.snr-band .snr-ib-grid dt {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-grid dd {
+  margin: 3px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--snr-text);
+}
+.snr-band .snr-ib-num,
+.snr-band .snr-ib-table .is-num {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.snr-band .snr-ib-up,
+.snr-band .snr-ib-num.is-up {
+  color: var(--positive);
+}
+.snr-band .snr-ib-down {
+  color: var(--negative);
+}
+.snr-band .snr-ib-na,
+.snr-band .snr-ib-faint {
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-copy {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-ib-filing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--snr-mint);
+  text-decoration: none;
+}
+.snr-band .snr-ib-filing:hover {
+  text-decoration: underline;
+}
+
+/* Role pills */
+.snr-band .snr-ib-pill {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.snr-band .snr-ib-pill.is-small {
+  padding: 1px 6px;
+  font-size: var(--type-micro-size);
+}
+.snr-band .snr-ib-pill.is-exec {
+  color: var(--warning);
+}
+.snr-band .snr-ib-pill.is-director {
+  color: var(--ib-plain-hi);
+}
+.snr-band .snr-ib-pill.is-officer,
+.snr-band .snr-ib-pill.is-other {
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-ib-pill.is-owner {
+  color: var(--snr-mint);
+}
+.snr-band .snr-ib-pill.is-on.is-exec {
+  color: var(--snr-ink);
+  background: var(--warning);
+  border-color: var(--warning);
+}
+.snr-band .snr-ib-pill.is-on.is-director {
+  color: var(--snr-ink);
+  background: var(--ib-plain-hi);
+  border-color: var(--ib-plain-hi);
+}
+.snr-band .snr-ib-pill.is-on.is-owner {
+  color: var(--snr-ink);
+  background: var(--snr-mint);
+  border-color: var(--snr-mint);
+}
+.snr-band .snr-ib-pill.is-on.is-officer,
+.snr-band .snr-ib-pill.is-on.is-other {
+  color: var(--snr-ink);
+  background: var(--snr-text-muted);
+  border-color: var(--snr-text-muted);
+}
+
+/* Caption: words light up as they are "said"; the current one is highlighted */
+.snr-band .snr-ib-caption {
+  margin: 14px 0 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--snr-row);
+  text-align: center;
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+.snr-band .snr-ib-caption .is-said {
+  color: var(--snr-text);
+}
+.snr-band .snr-ib-caption .is-ahead {
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-caption .is-now {
+  color: var(--snr-ink);
+  background: var(--warning);
+  border-radius: var(--radius-sm);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.snr-band .snr-ib-note,
+.snr-band .snr-ib-source {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--snr-text-faint);
+  text-align: center;
+}
+
+/* Ledger */
+.snr-band .snr-ib-table-wrap {
+  overflow-x: auto;
+}
+.snr-band .snr-ib-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.snr-band .snr-ib-table th,
+.snr-band .snr-ib-table td {
+  padding: 7px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--snr-divider);
+  vertical-align: middle;
+}
+.snr-band .snr-ib-table thead th {
+  font-family: var(--snr-font-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--snr-text-faint);
+}
+.snr-band .snr-ib-table .is-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.snr-band .snr-ib-table tr.is-link:hover td,
+.snr-band .snr-ib-table tr.is-link:hover th {
+  background: color-mix(in srgb, var(--snr-emerald) 8%, transparent);
+}
+.snr-band .snr-ib-who {
+  margin-right: 6px;
+}
+.snr-band .snr-ib-rowbtn,
+.snr-band .snr-ib-more {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--snr-mint);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.snr-band .snr-ib-more {
+  margin-top: 10px;
+  font-family: var(--snr-font-sans);
+  font-size: 0.8rem;
+}
+
+/* Who bought */
+.snr-band .snr-ib-roles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.snr-band .snr-ib-roles li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+.snr-band .snr-ib-roles-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--snr-text-muted);
+}
+.snr-band .snr-ib-swatch {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ib-plain);
+}
+.snr-band .snr-ib-swatch.is-exec {
+  background: var(--warning);
+}
+.snr-band .snr-ib-swatch.is-owner {
+  background: var(--snr-mint);
+}
+.snr-band .snr-ib-swatch.is-officer,
+.snr-band .snr-ib-swatch.is-other {
+  background: var(--snr-text-muted);
+}
+.snr-band .snr-ib-roles-bar {
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ib-mute);
+  overflow: hidden;
+}
+.snr-band .snr-ib-roles-bar span {
+  display: block;
+  height: 100%;
+  background: var(--ib-plain);
+}
+.snr-band .snr-ib-roles-bar .is-exec {
+  background: var(--warning);
+}
+.snr-band .snr-ib-roles-bar .is-owner {
+  background: var(--snr-mint);
+}
+.snr-band .snr-ib-roles-bar .is-officer,
+.snr-band .snr-ib-roles-bar .is-other {
+  background: var(--snr-text-muted);
+}
+
+/* Limits */
+.snr-band .snr-ib-limits {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--snr-text-muted);
+}
+
+/* Phones */
+@media (max-width: 560px) {
+  .snr-band .snr-ib-meter-value,
+  .snr-band .snr-ib-meter-count {
+    font-size: 1rem;
+  }
+  .snr-band .snr-ib-stage {
+    --ib-plot: 190px;
+    --ib-axis: 60px;
+  }
+  .snr-band .snr-ib-grid {
+    gap: 10px 14px;
+  }
+  .snr-band .snr-ib-grid dd {
+    font-size: 0.95rem;
+  }
+  .snr-band .snr-ib-co {
+    font-size: 1.1rem;
+  }
+  .snr-band .snr-ib-roles li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .snr-band .snr-ib-roles-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
+/* Reduced motion: nothing slides, rises or glows in. */
+@media (prefers-reduced-motion: reduce) {
+  .snr-band .snr-ib-track,
+  .snr-band .snr-ib-bar,
+  .snr-band .snr-ib-bar-fill,
+  .snr-band .snr-ib-seg {
+    transition: none;
+    animation: none;
+  }
+}
+.snr-band .snr-ib-card.is-still .snr-ib-track,
+.snr-band .snr-ib-card.is-still .snr-ib-bar {
+  transition: none;
+  animation: none;
+}

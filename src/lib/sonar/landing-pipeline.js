@@ -85,6 +85,13 @@ import {
   congressActivityBrief,
   CONGRESS_ACTIVITY_ADDENDUM,
 } from '@/lib/sonar/landing-congress-activity';
+import {
+  detectInsiderBuyingPing,
+  buildInsiderBuyingDossier,
+  insiderBuyingEvidence,
+  insiderBuyingBrief,
+  INSIDER_BUYING_ADDENDUM,
+} from '@/lib/sonar/landing-insider-buying';
 import { mentionedCompany } from '@/lib/sonar/company-mentions';
 import { routeMacro, isMacroRelevant } from '@/lib/sonar/macro/route';
 import countries from 'i18n-iso-countries';
@@ -1547,10 +1554,23 @@ async function buildDossierFor({
   sector = null,
   flows = null,
   activity = null,
+  insider = null,
   understood,
   admin,
   leg,
 }) {
+  /* Nov 2026: an insider-buying ping: one table read plus capped quotes. */
+  if (insider) {
+    try {
+      return await leg(
+        'dossier-insider-buying',
+        () => buildInsiderBuyingDossier({ admin, window: insider.window }),
+        (v) => (v ? `window=${v.window.id} buys=${v.summary.count} race=${v.race.length}` : 'none'),
+      );
+    } catch {
+      return null;
+    }
+  }
   /* Nov 7: a congressional activity ping ("How has disclosed congressional
      trading changed over the last three years?"): one RPC, no member,
      company or retrieval legs. */
@@ -1874,6 +1894,7 @@ const PROFILES = {
       lobbying: 4_000,
       flows: 3_000,
       activity: 3_000,
+      insider: 4_000,
       resolve: 2_500,
       retrieveCap: 6_000,
       retriever: 4_000,
@@ -1921,6 +1942,7 @@ const PROFILES = {
       lobbying: 6_000,
       flows: 4_000,
       activity: 4_000,
+      insider: 5_000,
       resolve: 6_000,
       retrieveCap: 18_000,
       retriever: 15_000,
@@ -2202,13 +2224,22 @@ export async function runLandingPipeline(
      on as context (sanctionsFocus below), not as the subject. */
   const companyMention =
     !companyAlias && !entity('ticker') ? mentionedCompany(query) || mentionedCompany(q) : null;
+  /* Nov 2026: "Who's buying their own stock this week?" names insiders and a
+     purchase but no company, so it fell to a general briefing. It now reads
+     Ezana's own Form 4 open-market purchases. A named company or ticker still
+     wins ("Is Nvidia's CEO buying?" is a company ping). */
+  const insiderAsk =
+    !companyAlias && !companyMention && !entity('ticker')
+      ? detectInsiderBuyingPing(query) || detectInsiderBuyingPing(q)
+      : null;
+  const insiderPing = Boolean(insiderAsk);
   /* Nov 4: "What are hedge funds selling right now?" names managers and an
      action but no company, member, country or industry, so it fell through
      to a general briefing about what a 13F is. It now reads Ezana's own 13F
      flows. A named company or ticker still wins ("hedge funds selling NVDA"
      is a company ping, with its 13F holders). */
   const flowsAsk =
-    !companyAlias && !companyMention && !entity('ticker')
+    !insiderPing && !companyAlias && !companyMention && !entity('ticker')
       ? detectFlowsPing(query) || detectFlowsPing(q)
       : null;
   const flowsPing = Boolean(flowsAsk);
@@ -2218,6 +2249,7 @@ export async function runLandingPipeline(
      the data. It now reads Ezana's own disclosures (sonar_congress_activity).
      A named member, ticker, company or sector screen still wins. */
   const activityAsk =
+    !insiderPing &&
     !companyAlias &&
     !companyMention &&
     !flowsPing &&
@@ -2228,7 +2260,7 @@ export async function runLandingPipeline(
       : null;
   const activityPing = Boolean(activityAsk);
   /* Pings answered from one Ezana aggregate: no subject is resolved. */
-  const aggregatePing = flowsPing || activityPing;
+  const aggregatePing = flowsPing || activityPing || insiderPing;
   /* "spacex ipo" is about the company, never the space industry. */
   const industryEnt =
     INDUSTRY_INTENTS.has(understood.intent) && !companyAlias && !companyMention && !aggregatePing
@@ -2275,7 +2307,7 @@ export async function runLandingPipeline(
      or the country a currency word names. */
   const COUNTRY_INTENTS = ['country', 'country_rank', 'country_question'];
   let country =
-    industryPing || companyMention || sectorPing || flowsPing
+    industryPing || companyMention || sectorPing || flowsPing || insiderPing
       ? null
       : resolveCountry(q) ||
         (COUNTRY_INTENTS.includes(understood.intent) && countryEnt
@@ -2509,31 +2541,37 @@ export async function runLandingPipeline(
             ? `${resolved.name} (${resolved.ticker})`
             : q;
   /* What the synthesis is told the ping resolved to. */
-  const resolvedNote = activityPing
-    ? ` (understood as a congressional activity question: how disclosed STOCK Act trading changed over the last ${activityAsk.years} years, by chamber and side; answer from the (congress) snippets only, which are Ezana's own counts)`
-    : flowsPing
-      ? ` (understood as a 13F flows question: what institutional managers ${
-          flowsAsk.side === 'buy' ? 'bought' : flowsAsk.side === 'sell' ? 'sold' : 'sold and bought'
-        } most in the latest filed quarter${flowsAsk.sector ? ` in ${flowsAsk.sector}` : ''}; answer from the (13f) snippets)`
-      : sectorPing
-        ? ` (understood as a sector screen: ${display}; answer from the congressional trading, performance and contract snippets, not about any single company)`
-        : industryPing
-          ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
-          : country
-            ? countryMentioned || countryQuestion
-              ? ` (about ${country.name}, ISO ${country.iso3}${
-                  currencyAsk?.iso3 === country.iso3 && CURRENCY_OF[country.iso3]
-                    ? `, currency ${CURRENCY_OF[country.iso3].name} (${CURRENCY_OF[country.iso3].code})`
-                    : ''
-                }; Ezana's official statistics, OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
-              : rankPing
-                ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
-                : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
-            : politician
-              ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
-              : resolved
-                ? ` (resolved to ${resolved.alias ? `${resolved.alias}, ` : ''}${resolved.name}, ${resolved.ticker})`
-                : '';
+  const resolvedNote = insiderPing
+    ? ` (understood as an insider-buying question: open-market purchases insiders made of their own companies' stock ${insiderAsk.window.replace('_', ' ')}; answer from the (insider) snippets only, which are Ezana's own Form 4 groupings)`
+    : activityPing
+      ? ` (understood as a congressional activity question: how disclosed STOCK Act trading changed over the last ${activityAsk.years} years, by chamber and side; answer from the (congress) snippets only, which are Ezana's own counts)`
+      : flowsPing
+        ? ` (understood as a 13F flows question: what institutional managers ${
+            flowsAsk.side === 'buy'
+              ? 'bought'
+              : flowsAsk.side === 'sell'
+                ? 'sold'
+                : 'sold and bought'
+          } most in the latest filed quarter${flowsAsk.sector ? ` in ${flowsAsk.sector}` : ''}; answer from the (13f) snippets)`
+        : sectorPing
+          ? ` (understood as a sector screen: ${display}; answer from the congressional trading, performance and contract snippets, not about any single company)`
+          : industryPing
+            ? ` (understood as an industry layout: ${display}; describe structure, major players, where it operates, concentration, capital flows, key dependencies and what to watch, from the sources only)`
+            : country
+              ? countryMentioned || countryQuestion
+                ? ` (about ${country.name}, ISO ${country.iso3}${
+                    currencyAsk?.iso3 === country.iso3 && CURRENCY_OF[country.iso3]
+                      ? `, currency ${CURRENCY_OF[country.iso3].name} (${CURRENCY_OF[country.iso3].code})`
+                      : ''
+                  }; Ezana's official statistics, OECD Economic Outlook and Global Empire Rankings figures for ${country.name} are among the sources; answer the question as asked)`
+                : rankPing
+                  ? ` (understood as ${display}: where ${country.name} ranks among the world's economies. Use ONLY the ranks, values, years and sources in the sources; name the measure, year and source for every rank; never state a rank or figure the sources do not give; projections only as "IMF projects" with the year. Sections: ${RANK_SECTIONS.join(' · ')}.)`
+                  : ` (resolved to the country ${country.name}, ISO ${country.iso3})`
+              : politician
+                ? ` (resolved to ${politician.name}, ${[politician.party, politician.state].filter(Boolean).join('-')}, U.S. ${politician.chamberLabel || 'Congress'})`
+                : resolved
+                  ? ` (resolved to ${resolved.alias ? `${resolved.alias}, ` : ''}${resolved.name}, ${resolved.ticker})`
+                  : '';
 
   const entitlements = getSonarEntitlements({ planTier: 0, version: 'regular' });
   const classification = classifyQuery(retrievalQuery);
@@ -2555,7 +2593,7 @@ export async function runLandingPipeline(
     ? { industryId: sectorEnt.id, label: sectorEnt.label, basket: [], query, admin, ms: LEG.sector }
     : null;
   const dossierP =
-    wantDossier || country || industry || sector || flowsAsk || activityAsk
+    wantDossier || country || industry || sector || flowsAsk || activityAsk || insiderAsk
       ? buildDossierFor({
           country,
           politician,
@@ -2564,6 +2602,7 @@ export async function runLandingPipeline(
           sector,
           flows: flowsAsk,
           activity: activityAsk,
+          insider: insiderAsk,
           understood,
           admin,
           leg,
@@ -2725,23 +2764,25 @@ export async function runLandingPipeline(
         (v) => `items=${v?.items?.length || 0}`,
       ).catch(() => ({ items: [] }))
     : Promise.resolve({ items: [] });
-  const newsPhrase = activityPing
-    ? 'congressional stock trading'
-    : flowsPing
-      ? flowsAsk.side === 'buy'
-        ? 'hedge fund buying'
-        : 'hedge fund selling'
-      : sectorPing
-        ? `${sectorU.label} stocks`
-        : industryPing
-          ? display
-          : country
-            ? country.name
-            : politician
-              ? politician.name
-              : resolved
-                ? resolved.alias || shortName(resolved.name)
-                : ipoSubj || subjectTerms(understood).slice(0, 3).join(' ');
+  const newsPhrase = insiderPing
+    ? 'insider buying'
+    : activityPing
+      ? 'congressional stock trading'
+      : flowsPing
+        ? flowsAsk.side === 'buy'
+          ? 'hedge fund buying'
+          : 'hedge fund selling'
+        : sectorPing
+          ? `${sectorU.label} stocks`
+          : industryPing
+            ? display
+            : country
+              ? country.name
+              : politician
+                ? politician.name
+                : resolved
+                  ? resolved.alias || shortName(resolved.name)
+                  : ipoSubj || subjectTerms(understood).slice(0, 3).join(' ');
   const newsP = leg(
     'news',
     () =>
@@ -2812,27 +2853,29 @@ export async function runLandingPipeline(
         ...subjectTerms(understood),
       ].map((t) => t.toLowerCase())
     : null;
-  const entityTerms = activityPing
-    ? ['congress', 'congressional', 'stock act', 'senator', 'senators', 'lawmakers']
-    : flowsPing
-      ? ['13f', 'hedge fund', 'hedge funds', 'institutional']
-      : sectorTermList?.length
-        ? sectorTermList
-        : industryTermList?.length
-          ? industryTermList
-          : country
-            ? countryEntityTerms(country)
-            : politician
-              ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
-              : resolved
-                ? [resolved.name, shortName(resolved.name), resolved.ticker, resolved.alias]
-                    .filter(Boolean)
-                    .map((t) => t.toLowerCase())
-                : ipoSubj
-                  ? /* An IPO ping for a company nothing resolved: only snippets
+  const entityTerms = insiderPing
+    ? ['insider', 'insiders', 'form 4', 'insider buying', 'buyback']
+    : activityPing
+      ? ['congress', 'congressional', 'stock act', 'senator', 'senators', 'lawmakers']
+      : flowsPing
+        ? ['13f', 'hedge fund', 'hedge funds', 'institutional']
+        : sectorTermList?.length
+          ? sectorTermList
+          : industryTermList?.length
+            ? industryTermList
+            : country
+              ? countryEntityTerms(country)
+              : politician
+                ? [politician.name, politician.lastName].filter(Boolean).map((t) => t.toLowerCase())
+                : resolved
+                  ? [resolved.name, shortName(resolved.name), resolved.ticker, resolved.alias]
+                      .filter(Boolean)
+                      .map((t) => t.toLowerCase())
+                  : ipoSubj
+                    ? /* An IPO ping for a company nothing resolved: only snippets
                  that name it, never unrelated ones for the brief to fill. */
-                    [ipoSubj.toLowerCase()]
-                  : null;
+                      [ipoSubj.toLowerCase()]
+                    : null;
   /* Oct 27: whole words, not substrings ("india" must not match Indiana),
      and for a country, US domestic names that carry a demonym are removed
      first: an India ping was citing federal awards to "The Friendship House
@@ -2987,6 +3030,20 @@ export async function runLandingPipeline(
     flowsDossier = early;
     if (early) items.unshift(...flowsEvidence(early));
     if (!corporaSearched.includes('13f')) corporaSearched.push('13f');
+  }
+
+  /* Nov 2026: the Form 4 buys are the evidence for an insider-buying ping. */
+  let insiderDossier = null;
+  if (insiderPing && dossierP) {
+    const early = await within(
+      dossierP,
+      Math.min(LEG.insider, left() - P.dossierReserveMs),
+      null,
+      'insider-buying-dossier',
+    ).catch(() => null);
+    insiderDossier = early;
+    if (early) items.unshift(...insiderBuyingEvidence(early));
+    if (!corporaSearched.includes('insider')) corporaSearched.push('insider');
   }
 
   /* Nov 7: the activity counts are the evidence for an activity ping. */
@@ -3268,6 +3325,13 @@ export async function runLandingPipeline(
       briefKind = 'facts';
     }
   }
+  if (!answer && insiderPing && insiderDossier) {
+    answer = insiderBuyingBrief(insiderDossier);
+    if (answer) {
+      grounded = true;
+      briefKind = 'facts';
+    }
+  }
   if (!answer && flowsPing && flowsDossier) {
     answer = flowsBrief(flowsDossier);
     if (answer) {
@@ -3346,6 +3410,7 @@ export async function runLandingPipeline(
           (lobbyingPing ? LOBBYING_ADDENDUM : '') +
           (flowsPing ? FLOWS_ADDENDUM : '') +
           (activityPing ? CONGRESS_ACTIVITY_ADDENDUM : '') +
+          (insiderPing ? INSIDER_BUYING_ADDENDUM : '') +
           (ipoIntent ? IPO_ADDENDUM : '') +
           (resolved &&
           !country &&

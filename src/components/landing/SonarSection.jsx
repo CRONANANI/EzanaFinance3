@@ -87,6 +87,8 @@ import {
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
 import { SonarCongressActivityStack } from './SonarCongressActivityStack';
+import { SonarInsiderBuyingStack } from './SonarInsiderBuyingStack';
+import { usdTight } from '@/lib/sec/insider-buys';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { sectionAccess } from '@/lib/sonar/answer-sections';
 import { SonarSourceBelt } from './SonarSourceBelt';
@@ -280,6 +282,14 @@ const SWEPT_ACTIVITY = [
   ...SWEPT.filter((d) => d.id !== 'congress'),
 ];
 const ACTIVITY_ORDER = ['congress-activity'];
+
+/* Nov 2026: an insider-buying ping leads with Ezana's own Form 4 open-market
+   purchases. */
+const SWEPT_INSIDER = [
+  { id: 'insider-buys', chip: 'SEC', name: 'Form 4 open-market insider purchases' },
+  ...SWEPT.filter((d) => d.id !== 'sec-filings'),
+];
+const INSIDER_ORDER = ['insider-buys'];
 
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
@@ -2832,6 +2842,18 @@ export function SonarSection({
         />
       ) : null}
 
+      {/* Nov 2026: an insider-buying ping: the bar race (full width on the board),
+              then every buy, who bought and the reporting limits. */}
+      {stage2 && live?.dossier?.kind === 'insider_buying' ? (
+        <SonarInsiderBuyingStack
+          dossier={live.dossier}
+          onGate={() => openGate()}
+          topSlot={leadTop}
+          newsSlot={railNews}
+          full={isPage}
+        />
+      ) : null}
+
       {/* A country: the key chart (the series furthest from its own
               20-year norm, switchable) in the price chart's slot, and the
               country's news in the news slot. Same shells again. */}
@@ -2857,6 +2879,7 @@ export function SonarSection({
       live?.dossier?.kind !== 'sector' &&
       live?.dossier?.kind !== 'flows' &&
       live?.dossier?.kind !== 'congress_activity' &&
+      live?.dossier?.kind !== 'insider_buying' &&
       live?.dossier?.kind !== 'country' &&
       live?.dossier?.kind !== 'industry' &&
       (live?.dossier?.fundamentals ||
@@ -3493,6 +3516,7 @@ export function SonarSection({
                       const isSector = live?.dossier?.kind === 'sector';
                       const isFlows = live?.dossier?.kind === 'flows';
                       const isActivity = live?.dossier?.kind === 'congress_activity';
+                      const isInsider = live?.dossier?.kind === 'insider_buying';
                       const swept = isCountry
                         ? SWEPT_COUNTRY
                         : isPolitician
@@ -3503,7 +3527,9 @@ export function SonarSection({
                               ? SWEPT_FLOWS
                               : isActivity
                                 ? SWEPT_ACTIVITY
-                                : SWEPT;
+                                : isInsider
+                                  ? SWEPT_INSIDER
+                                  : SWEPT;
                       /* A dataset is matched only when its leg actually returned
                      something. The honesty rule: no rich row is rendered from
                      an empty leg, and a null leg falls through to the dry row
@@ -3530,6 +3556,7 @@ export function SonarSection({
                         'congress-activity': m?.congressActivity?.length
                           ? m.congressActivity
                           : null,
+                        'insider-buys': m?.insiderBuys?.length ? m.insiderBuys : null,
                       };
                       /* Matched rich rows first, in the brief's order, then
                      everything else dimmed. */
@@ -3554,7 +3581,9 @@ export function SonarSection({
                             ? FLOWS_ORDER
                             : isActivity
                               ? ACTIVITY_ORDER
-                              : [];
+                              : isInsider
+                                ? INSIDER_ORDER
+                                : [];
                       const order = [...lead, ...baseOrder.filter((id) => !lead.includes(id))];
                       /* Oct 26: only datasets that found something are listed.
                      A matched dataset with no dossier preview (an open
@@ -3790,6 +3819,21 @@ export function SonarSection({
                                       {w.senate == null ? 'n/a' : w.senate.toLocaleString('en-US')}
                                       {w.senateOk ? '' : ' (coverage-limited)'}
                                     </span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {d.id === 'insider-buys' && data ? (
+                              <div className="snr-rich">
+                                {data.slice(0, 5).map((b) => (
+                                  <span
+                                    key={`${b.ticker}-${b.reporter}-${b.date}`}
+                                    className="snr-trade"
+                                  >
+                                    <span className="snr-trade-member">{b.ticker}</span>
+                                    <span className="snr-trade-type">{usdTight(b.value)}</span>
+                                    <span className="snr-trade-date">{b.role}</span>
                                   </span>
                                 ))}
                               </div>
