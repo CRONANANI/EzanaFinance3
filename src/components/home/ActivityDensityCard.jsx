@@ -51,6 +51,9 @@ import './activity-density.css';
 
 const VIEW_KEY = 'ezana.home.activityView';
 const DURATION = 1300;
+/* Canvas heights (px): the flat heat map, and the 3D skyline when toggled. */
+const H2_MAX = 124;
+const H3_MAX = 260;
 const LOCALE = 'en-US';
 const FG_FALLBACK = [23, 23, 23];
 const BG_FALLBACK = [255, 255, 255];
@@ -97,33 +100,16 @@ const quadPath = (ctx, p, o, r) => {
   ctx.closePath();
 };
 
-function Stat({ label, value, unit, sub, size, align }) {
-  if (align === 'stack') {
-    return (
-      <div className="adc-stat adc-stat--stack">
-        <div className="adc-stat__label">{label}</div>
-        <div className="adc-stat__line">
-          <span className="adc-stat__value" style={{ fontSize: size }}>
-            {value}
-          </span>
-          <span className="adc-stat__unit">{unit}</span>
-        </div>
-        <div className="adc-stat__sub">{sub}</div>
-      </div>
-    );
-  }
+/* One centred stat: label, value + unit, and a small date line. */
+function Stat({ label, value, unit, sub }) {
   return (
-    <div className={`adc-stat adc-stat--corner adc-stat--${align}`}>
+    <div className="adc-stat">
       <div className="adc-stat__label">{label}</div>
       <div className="adc-stat__line">
-        <span className="adc-stat__value" style={{ fontSize: size }}>
-          {value}
-        </span>
-        <span className="adc-stat__unitwrap">
-          <span className="adc-stat__unit">{unit}</span>
-          <span className="adc-stat__sub">{sub}</span>
-        </span>
+        <span className="adc-stat__value">{value}</span>
+        <span className="adc-stat__unit">{unit}</span>
       </div>
+      <div className="adc-stat__sub">{sub}</div>
     </div>
   );
 }
@@ -193,7 +179,6 @@ export function ActivityDensityCard({ className = '' }) {
     }
   };
 
-  const [width, setWidth] = useState(0);
   const [active, setActive] = useState(-1);
   const [legendLevel, setLegendLevel] = useState(-1);
   const [announce, setAnnounce] = useState('');
@@ -247,7 +232,6 @@ export function ActivityDensityCard({ className = '' }) {
     legendLevel,
     target: view === '3d' ? 1 : 0,
     setActive,
-    setWidth,
     setAnnounce,
     describe,
   };
@@ -409,17 +393,21 @@ export function ActivityDensityCard({ className = '' }) {
       gutter = W < 520 ? 0 : labelW;
       dpr = Math.min(2, window.devicePixelRatio || 1);
       const b2 = extent(camera(0), 0, true);
-      H2 = 20 + 4 + ((b2.maxy - b2.miny) / (b2.maxx - b2.minx)) * (W - gutter - 4);
+      // Nov 2026: the card is half its first height. The flat grid is capped
+      // at H2_MAX and centred (cells shrink instead of spanning the width).
+      H2 = Math.min(
+        H2_MAX,
+        20 + 4 + ((b2.maxy - b2.miny) / (b2.maxx - b2.minx)) * (W - gutter - 4),
+      );
       const b3 = extent(camera(1), 1, true);
       const natural = ((b3.maxy - b3.miny) / (b3.maxx - b3.minx)) * (W - 40) + 40;
-      H3 = Math.max(Math.min(natural, W * 0.6, 520), Math.min(natural, 220));
+      H3 = Math.max(Math.min(natural, W * 0.32, H3_MAX), Math.min(natural, 180));
       Hmax = Math.ceil(Math.max(H2, H3));
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(Hmax * dpr);
       canvas.style.width = `${W}px`;
       canvas.style.height = `${Hmax}px`;
       lastH = -1;
-      cfg.current.setWidth(W);
       draw();
     };
 
@@ -931,8 +919,6 @@ export function ActivityDensityCard({ className = '' }) {
     return `${f.format(dayMs(a))} to ${f.format(dayMs(b))}`;
   };
   const is3d = view === '3d';
-  const corners = width >= 560;
-  const bigSize = Math.round(Math.max(28, Math.min(48, width * 0.05)));
   const statBlocks = [
     {
       label: 'Active days',
@@ -959,7 +945,6 @@ export function ActivityDensityCard({ className = '' }) {
       sub: range(stats.current.start, stats.current.end),
     },
   ];
-  const showRow = !(is3d && corners);
   const hint = is3d
     ? 'Drag to orbit. Double-click to reset.'
     : 'Hover a day for details. Arrow keys to explore.';
@@ -979,105 +964,21 @@ export function ActivityDensityCard({ className = '' }) {
         ))}
       </span>
 
+      {/* Header: title left; legend and the 2D / 3D toggle right. */}
       <header className="adc-head">
-        <div>
+        <div className="adc-head__text">
           <div className="adc-eyebrow">Your activity</div>
           <h3 id="adc-title" className="adc-title">
             <span className="adc-num">{nf.format(stats.activeDays)}</span> active{' '}
             {stats.activeDays === 1 ? 'day' : 'days'} and{' '}
             <span className="adc-num">{nf.format(stats.total)}</span>{' '}
             {stats.total === 1 ? 'action' : 'actions'} in the last year
+            {payload.status === 'error' ? (
+              <span className="adc-title__note"> Activity could not be loaded.</span>
+            ) : null}
           </h3>
         </div>
-        <div className="adc-toggle" role="group" aria-label="Chart view">
-          <span className={`adc-toggle__thumb${is3d ? ' is-3d' : ''}`} aria-hidden="true" />
-          {['2d', '3d'].map((v) => (
-            <button
-              key={v}
-              type="button"
-              className={`adc-toggle__btn${view === v ? ' is-on' : ''}`}
-              aria-pressed={view === v}
-              aria-label={v === '2d' ? 'Flat heat map' : '3D skyline'}
-              title={v === '2d' ? 'Flat heat map' : '3D skyline'}
-              onClick={() => setView(v)}
-            >
-              <i
-                className={`bi ${v === '2d' ? 'bi-grid-3x3-gap-fill' : 'bi-box'}`}
-                aria-hidden="true"
-              />
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <div className="adc-frame">
-        <div className="adc-stagewrap">
-          <div ref={stageRef} className="adc-stage" style={{ height: 150 }}>
-            <canvas
-              ref={canvasRef}
-              tabIndex={0}
-              role="img"
-              aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. Use the arrow keys to read individual days.`}
-              className="adc-canvas"
-              style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
-            />
-
-            {corners ? (
-              <>
-                <div
-                  aria-hidden={!is3d}
-                  className={`adc-corner adc-corner--tr${is3d ? ' is-on' : ''}`}
-                  style={{ transitionDelay: is3d ? `${Math.round(DURATION * 0.55)}ms` : '0ms' }}
-                >
-                  <Stat {...statBlocks[0]} size={bigSize} align="end" />
-                  <Stat {...statBlocks[1]} size={bigSize} align="end" />
-                </div>
-                <div
-                  aria-hidden={!is3d}
-                  className={`adc-corner adc-corner--bl${is3d ? ' is-on' : ''}`}
-                  style={{ transitionDelay: is3d ? `${Math.round(DURATION * 0.65)}ms` : '0ms' }}
-                >
-                  <Stat {...statBlocks[2]} size={bigSize} align="start" />
-                  <Stat {...statBlocks[3]} size={bigSize} align="start" />
-                </div>
-              </>
-            ) : null}
-          </div>
-
-          <div
-            ref={tipRef}
-            role="tooltip"
-            aria-hidden={!activeCell}
-            className={`adc-tip${activeCell ? ' is-on' : ''}`}
-          >
-            {activeCell ? (
-              <>
-                <strong>{dayText(activeCell)}</strong>
-                <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
-              </>
-            ) : (
-              ' '
-            )}
-            <span className="adc-tip__arrow" aria-hidden="true" />
-          </div>
-        </div>
-
-        <div aria-hidden={!showRow} className={`adc-row${showRow ? ' is-on' : ''}`}>
-          <div className="adc-row__clip">
-            <div className="adc-row__grid">
-              {statBlocks.map((b) => (
-                <Stat key={b.label} {...b} size={24} align="stack" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="adc-foot">
-          <span className="adc-hint">
-            {payload.status === 'error'
-              ? 'Activity could not be loaded. Showing an empty year.'
-              : hint}
-          </span>
+        <div className="adc-head__tools">
           <div className="adc-legend" onMouseLeave={() => setLegendLevel(-1)}>
             <span>Less</span>
             {LEVEL_NAMES.map((name, i) => (
@@ -1096,7 +997,64 @@ export function ActivityDensityCard({ className = '' }) {
             ))}
             <span>More</span>
           </div>
+          <div className="adc-toggle" role="group" aria-label="Chart view">
+            <span className={`adc-toggle__thumb${is3d ? ' is-3d' : ''}`} aria-hidden="true" />
+            {['2d', '3d'].map((v) => (
+              <button
+                key={v}
+                type="button"
+                className={`adc-toggle__btn${view === v ? ' is-on' : ''}`}
+                aria-pressed={view === v}
+                aria-label={v === '2d' ? 'Flat heat map' : '3D skyline'}
+                title={v === '2d' ? 'Flat heat map' : '3D skyline'}
+                onClick={() => setView(v)}
+              >
+                <i
+                  className={`bi ${v === '2d' ? 'bi-grid-3x3-gap-fill' : 'bi-box'}`}
+                  aria-hidden="true"
+                />
+              </button>
+            ))}
+          </div>
         </div>
+      </header>
+
+      <div className="adc-stagewrap">
+        <div ref={stageRef} className="adc-stage" style={{ height: H2_MAX }}>
+          <canvas
+            ref={canvasRef}
+            tabIndex={0}
+            role="img"
+            aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. ${hint}`}
+            title={hint}
+            className="adc-canvas"
+            style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
+          />
+        </div>
+
+        <div
+          ref={tipRef}
+          role="tooltip"
+          aria-hidden={!activeCell}
+          className={`adc-tip${activeCell ? ' is-on' : ''}`}
+        >
+          {activeCell ? (
+            <>
+              <strong>{dayText(activeCell)}</strong>
+              <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
+            </>
+          ) : (
+            ' '
+          )}
+          <span className="adc-tip__arrow" aria-hidden="true" />
+        </div>
+      </div>
+
+      {/* The four stats, centred across the card. */}
+      <div className="adc-stats">
+        {statBlocks.map((b) => (
+          <Stat key={b.label} {...b} />
+        ))}
       </div>
 
       <p aria-live="polite" className="adc-sr">

@@ -115,8 +115,8 @@ body:not(.light-mode) .bs-shell {
 
 .bs-page-inner {
   /* Horizontal gutters come from the dashboard shell (canonical --app-shell-pad,
-     shared with the nav) - no extra inset here, so every band and the ticker
-     belt share the same edges as the logo/logout lines. */
+     shared with the nav) - no extra inset here, so every band shares the
+     same edges as the logo/logout lines. */
   padding: 22px 0;
   max-width: 100%;
 }
@@ -124,58 +124,13 @@ body:not(.light-mode) .bs-shell {
   padding: 0;
 }
 
-/* ── Ticker marquee (always dark) ── */
-.bs-ticker {
-  background: var(--bs-bg-dark);
-  color: var(--bs-dark-text);
-  overflow: hidden;
-  font-size: 12px;
-  border-bottom: 1px solid var(--bs-dark-border);
-  /* A7: full bleed, edge to edge of the viewport. */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+/* ── Your activity band (Nov 2026): the first band under the top nav,
+   replacing the ticker marquee. No rule between it and the brief below. ── */
+.bs-band--activity .bs-page-inner {
+  padding: 18px 0 4px;
 }
-.bs-ticker-inner {
-  display: flex;
-  gap: 40px;
-  /* No horizontal inset: the tape aligns to the same shell edges as the bands
-     below it (it previously ran 24px wider per side than the sections). */
-  padding: 8px 0;
-  white-space: nowrap;
-  animation: bs-marquee 60s linear infinite;
-}
-.bs-ticker:hover .bs-ticker-inner {
-  animation-play-state: paused;
-}
-@keyframes bs-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-.bs-ticker-item {
-  display: inline-flex;
-  gap: 8px;
-  align-items: baseline;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.bs-ticker-item:hover {
-  opacity: 0.7;
-}
-.bs-ticker-tag {
-  color: var(--bs-dark-green);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  font-size: 10px;
-  text-transform: uppercase;
-}
-.bs-ticker-text {
-  color: var(--bs-dark-label);
+body.light-mode .bs-band--activity + .bs-band {
+  border-top: 0;
 }
 
 /* ── Band header (I–V) ── */
@@ -1886,10 +1841,9 @@ body.light-mode .bs-band + .bs-band {
 }
 
 /* Activity density card placeholder while its chunk loads (the card's own
-   styles live in components/home/activity-density.css). */
+   styles live in components/home/activity-density.css). Borderless, the
+   card's own compact height. */
 .adc-skel {
-  margin-top: 28px;
-  height: 300px;
-  border: 1px solid var(--bs-border-rule);
+  height: 232px;
   background: var(--bs-bg-light);
 }

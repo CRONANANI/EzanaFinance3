@@ -104,14 +104,6 @@ function formatTickByRange(at, range) {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-const TICKER_ITEMS = [
-  { tag: 'LIVE', text: 'JT CLOSED 20,371.81  +0.61%' },
-  { tag: 'FLOWS', text: 'Equities +$2.1B · IG credit tight 2bps · HY issuance light' },
-  { tag: 'CONGRESS', text: '14 STOCK Act filings (24h), committees: Energy, Intel, Banking' },
-  { tag: 'EIF', text: 'Quarterly window: elevated odds in AI · mfg · biotech mega caps' },
-  { tag: 'FED WATCH', text: 'Speakers on deck, front-end yields tick higher into auction' },
-];
-
 /* Schedule (Band IV) category metadata — colours/labels mirror the
    /api/market-data/upcoming-events feed so dots, chips and event accents
    stay consistent. */
@@ -625,7 +617,6 @@ export default function HomePage() {
   const [sectorData, setSectorData] = useState({ top: [], bottom: [] });
   const [sectorLoaded, setSectorLoaded] = useState(false);
   const [sectorEmpty, setSectorEmpty] = useState(false);
-  const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
   const [activeIndices, setActiveIndices] = useState(new Set(['S&P 500']));
   const [showPortfolio, setShowPortfolio] = useState(true);
   const [indexSeries, setIndexSeries] = useState({});
@@ -1082,111 +1073,18 @@ export default function HomePage() {
     };
   }, [user]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const wlTickers = userWatchlists
-          .flatMap((w) => (w.stocks || []).map((s) => s.ticker))
-          .filter(Boolean)
-          .slice(0, 20)
-          .join(',');
-        const tickerParam = wlTickers ? `&tickers=${wlTickers}` : '';
-        const res = await fetch(`/api/market-data/news?limit=12${tickerParam}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const newsItems = (data.news || []).slice(0, 12).map((a) => ({
-          tag: (a.source || 'NEWS').toString().toUpperCase().slice(0, 10),
-          text: a.title || a.headline || '',
-          url: a.url || '',
-        }));
-
-        const watchPriceItems = [];
-        for (const wl of userWatchlists) {
-          for (const s of (wl.stocks || []).slice(0, 8)) {
-            const q = liveQuotes[s.ticker];
-            if (!q) continue;
-            const px = q.price ?? 0;
-            const ch = q.changePercent ?? 0;
-            watchPriceItems.push({
-              tag: s.ticker,
-              text: `${px.toLocaleString('en-US', { minimumFractionDigits: 2 })}  ${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`,
-              url: `/company-research?q=${encodeURIComponent(s.ticker)}`,
-            });
-          }
-        }
-
-        const INDEX_TICKER_MAP = {
-          'S&P 500': 'SPY',
-          NASDAQ: 'QQQ',
-          'Russell 2K': 'IWM',
-          'Dow Jones': 'DIA',
-          VIX: 'VIXY',
-          WTI: 'USO',
-          '10Y': 'IEF',
-        };
-        const indexPriceItems = indices.map((idx) => ({
-          tag: idx.sym,
-          text: `${idx.last}  ${idx.chg}`,
-          url: INDEX_TICKER_MAP[idx.sym]
-            ? `/company-research?q=${encodeURIComponent(INDEX_TICKER_MAP[idx.sym])}`
-            : '',
-        }));
-
-        const merged = [];
-        const allPrices = [...indexPriceItems, ...watchPriceItems];
-        const maxLen = Math.max(newsItems.length, allPrices.length);
-        for (let i = 0; i < maxLen; i++) {
-          if (i < newsItems.length) merged.push(newsItems[i]);
-          if (i < allPrices.length) merged.push(allPrices[i]);
-        }
-
-        if (!cancelled && merged.length) setTickerItems(merged);
-      } catch {
-        /* keep fallback */
-      }
-    };
-    load();
-    const id = setInterval(load, 120000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [liveQuotes, indices, userWatchlists]);
-
   return (
     <div className="bs-shell">
-      {/* ═══ TICKER MARQUEE ═══ */}
-      <div className="bs-ticker">
-        <div className="bs-ticker-inner">
-          {tickerItems.concat(tickerItems).map((t, i) => {
-            const isInternal = t.url && t.url.startsWith('/');
-            const isExternal = t.url && !t.url.startsWith('/');
-            return (
-              <a
-                key={i}
-                href={t.url || '#'}
-                target={isExternal ? '_blank' : undefined}
-                rel={isExternal ? 'noopener noreferrer' : undefined}
-                className="bs-ticker-item"
-                onClick={(e) => {
-                  if (!t.url) {
-                    e.preventDefault();
-                    return;
-                  }
-                  if (isInternal) {
-                    e.preventDefault();
-                    router.push(t.url);
-                  }
-                }}
-              >
-                <span className="bs-ticker-tag">{t.tag}</span>
-                <span className="bs-ticker-text">{t.text}</span>
-              </a>
-            );
-          })}
+      {/* ═══ YOUR ACTIVITY (Nov 2026) ═══
+          First thing under the top nav: a year of the user's activity on
+          Ezana (a login is the base colour; more activity, deeper colour).
+          Replaces the ticker marquee. Loaded on its own chunk so it stays
+          out of /home's first load. */}
+      <section className="bs-band bs-band--light bs-band--activity">
+        <div className="bs-page-inner">
+          <ActivityDensityCard />
         </div>
-      </div>
+      </section>
 
       {/* Opt-in bridge to the org app — shown to org members, never coercive.
           Replaces the old auto-redirect so members can use the regular app. */}
@@ -1314,10 +1212,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          {/* Activity density (Nov 2026): a year of the user's activity on
-              Ezana. A login is the base colour; more activity, deeper colour.
-              Loaded on its own chunk so it stays out of /home's first load. */}
-          <ActivityDensityCard />
         </div>
       </section>
 
