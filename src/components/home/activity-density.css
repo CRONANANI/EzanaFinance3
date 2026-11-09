@@ -1,0 +1,372 @@
+/* Activity density card (home, Morning Brief band, Nov 2026). Page-scoped
+   `adc-` prefix. Sits inside .bs-shell, so it uses the broadsheet's own
+   ground, ink, label and rule tokens and follows its light/dark switch.
+   Theme tokens only: no hex. The canvas reads the five level colours from
+   the hidden .adc-sw swatches, so these tokens are the single source.
+
+   Levels: 0 no activity, 1 logged in (the base colour), 2-4 deeper with
+   more activity. Light theme: a pale emerald deepening to dark emerald.
+   Dark theme: a dim emerald strengthening to full emerald, so "more" always
+   reads as more ink against the ground. */
+
+.adc {
+  --adc-l0: color-mix(in srgb, var(--bs-text-dark) 7%, var(--bs-bg-light));
+  --adc-l1: color-mix(in srgb, var(--emerald) 24%, var(--bs-bg-light));
+  --adc-l2: color-mix(in srgb, var(--emerald) 52%, var(--bs-bg-light));
+  --adc-l3: var(--emerald-hover);
+  --adc-l4: var(--emerald-dark);
+  --adc-ease: cubic-bezier(0.65, 0, 0.35, 1);
+
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 28px;
+  padding: 18px 20px 14px;
+  border: 1px solid var(--bs-border-rule);
+  background: var(--bs-bg-light);
+  color: var(--bs-text-dark);
+  font-family: var(--font-sans);
+}
+body:not(.light-mode) .adc {
+  --adc-l0: color-mix(in srgb, var(--bs-text-dark) 9%, var(--bs-bg-light));
+  --adc-l1: color-mix(in srgb, var(--emerald) 22%, var(--bs-bg-light));
+  --adc-l2: color-mix(in srgb, var(--emerald) 42%, var(--bs-bg-light));
+  --adc-l3: color-mix(in srgb, var(--emerald) 68%, var(--bs-bg-light));
+  --adc-l4: var(--emerald);
+}
+
+.adc-probes {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  pointer-events: none;
+}
+.adc-sw {
+  display: inline-block;
+}
+.adc-sw--0 {
+  background: var(--adc-l0);
+}
+.adc-sw--1 {
+  background: var(--adc-l1);
+}
+.adc-sw--2 {
+  background: var(--adc-l2);
+}
+.adc-sw--3 {
+  background: var(--adc-l3);
+}
+.adc-sw--4 {
+  background: var(--adc-l4);
+}
+.adc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- header ---------- */
+.adc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+.adc-eyebrow {
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label);
+  margin-bottom: 6px;
+}
+.adc-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--bs-text-dark);
+}
+.adc-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 2D / 3D toggle: a sliding thumb under two icon buttons */
+.adc-toggle {
+  position: relative;
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--bs-border-rule);
+  border-radius: var(--radius-md);
+}
+.adc-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--bs-text-dark);
+  transition: transform 500ms var(--adc-ease);
+}
+.adc-toggle__thumb.is-3d {
+  transform: translateX(100%);
+}
+.adc-toggle__btn {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--bs-text-label);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 500ms var(--adc-ease);
+}
+.adc-toggle__btn.is-on {
+  color: var(--bs-bg-light);
+}
+.adc-toggle__btn:focus-visible,
+.adc-legend__sw:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* ---------- chart frame ---------- */
+.adc-frame {
+  position: relative;
+  border: 1px solid var(--bs-border-rule);
+}
+.adc-stagewrap {
+  position: relative;
+  padding: 14px 14px 0;
+}
+.adc-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.adc-stage:has(:focus-visible) {
+  outline: 2px solid var(--emerald);
+  outline-offset: 4px;
+}
+.adc-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  max-width: none;
+  outline: none;
+}
+
+/* corner stats, shown over the 3D skyline */
+.adc-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 300ms var(--adc-ease),
+    transform 300ms var(--adc-ease);
+}
+.adc-corner.is-on {
+  opacity: 1;
+  transform: none;
+  transition-duration: 600ms;
+}
+.adc-corner--tr {
+  top: 4px;
+  right: 4px;
+  align-items: flex-end;
+  transform: translateY(-10px);
+}
+.adc-corner--bl {
+  bottom: 4px;
+  left: 4px;
+  align-items: flex-start;
+  transform: translateY(10px);
+}
+
+/* ---------- stats ---------- */
+.adc-stat__label {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--bs-text-label);
+}
+.adc-stat__line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+}
+.adc-stat__value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--adc-l4);
+  transition: color 500ms ease;
+}
+.adc-stat__unit {
+  font-size: 13px;
+  color: var(--bs-text-dark);
+}
+.adc-stat__sub {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--bs-text-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adc-stat--corner .adc-stat__unitwrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.adc-stat--corner .adc-stat__sub {
+  margin-top: 0;
+}
+.adc-stat--end {
+  text-align: right;
+}
+.adc-stat--end .adc-stat__line {
+  justify-content: flex-end;
+}
+.adc-stat--stack {
+  min-width: 0;
+}
+
+/* ---------- tooltip ---------- */
+.adc-tip {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bs-text-dark);
+  color: var(--bs-bg-light);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: var(--shadow-md);
+  transition: opacity 150ms ease;
+}
+.adc-tip.is-on {
+  opacity: 1;
+}
+.adc-tip strong {
+  font-weight: 600;
+}
+.adc-tip__date {
+  opacity: 0.75;
+}
+.adc-tip__arrow {
+  position: absolute;
+  top: 100%;
+  left: var(--adc-arrow, 50%);
+  margin-left: -5px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--bs-text-dark);
+}
+
+/* ---------- stat row (flat view, or narrow cards) ---------- */
+.adc-row {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 1300ms var(--adc-ease),
+    opacity 1300ms var(--adc-ease);
+}
+.adc-row.is-on {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.adc-row__clip {
+  min-height: 0;
+  overflow: hidden;
+}
+.adc-row__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 14px 4px;
+}
+
+/* ---------- footer: hint and legend ---------- */
+.adc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.adc-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.adc-legend__sw {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bs-text-dark) 10%, transparent);
+  cursor: pointer;
+  transition:
+    transform 200ms ease,
+    background-color 500ms ease;
+}
+.adc-legend__sw:hover {
+  transform: scale(1.25);
+}
+
+@media (max-width: 768px) {
+  .adc {
+    padding: 14px 14px 10px;
+  }
+  .adc-row__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adc-toggle__thumb,
+  .adc-toggle__btn,
+  .adc-corner,
+  .adc-row,
+  .adc-tip,
+  .adc-stat__value,
+  .adc-legend__sw {
+    transition: none;
+  }
+  .adc-legend__sw:hover {
+    transform: none;
+  }
+}

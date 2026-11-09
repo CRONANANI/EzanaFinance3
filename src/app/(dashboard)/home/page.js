@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -28,6 +29,12 @@ import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useEventContext } from '@/hooks/useEventContext';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import './broadsheet.css';
+
+// Canvas card, browser-only: its own chunk, so it stays out of /home's first load.
+const ActivityDensityCard = dynamic(
+  () => import('@/components/home/ActivityDensityCard').then((m) => m.ActivityDensityCard),
+  { ssr: false, loading: () => <div className="adc-skel" aria-hidden="true" /> },
+);
 
 const HOLDINGS_PAGE_SIZE = 9;
 
@@ -1307,6 +1314,10 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          {/* Activity density (Nov 2026): a year of the user's activity on
+              Ezana. A login is the base colour; more activity, deeper colour.
+              Loaded on its own chunk so it stays out of /home's first load. */}
+          <ActivityDensityCard />
         </div>
       </section>
 

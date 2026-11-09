@@ -1884,3 +1884,12 @@ body.light-mode .bs-band + .bs-band {
     gap: 8px;
   }
 }
+
+/* Activity density card placeholder while its chunk loads (the card's own
+   styles live in components/home/activity-density.css). */
+.adc-skel {
+  margin-top: 28px;
+  height: 300px;
+  border: 1px solid var(--bs-border-rule);
+  background: var(--bs-bg-light);
+}
