@@ -2018,17 +2018,58 @@ export function SonarSection({
          boxes, which pad the icon by about 7px), relative to the band's own
          box. Off when either is missing (the landing and /datasets navs) or
          hidden (the phone nav puts logout in the drawer). */
-      const frameFor = () => {
-        const logo = document.querySelector(
+      /* Nov 8: the landing nav frames the band too. There the left anchor is
+         the Ezana logo's painted mark and the right anchor is the end of the
+         "Become a Partner" text, so the Sonar eyebrow, headline, subhead,
+         ping bar and research brief start under the logo, and the stock
+         chart card ends under the last letter of "Become a Partner".
+         The logo is drawn with object-fit: contain inside a fixed box, so
+         its painted box (not the <img> box) is the left edge. The link is
+         measured by its text (a Range), not its padded tap box. */
+      const paintedBox = (img) => {
+        const r = img.getBoundingClientRect();
+        const nw = img.naturalWidth;
+        const nh = img.naturalHeight;
+        if (!nw || !nh || !r.width || !r.height) return r;
+        const s = Math.min(r.width / nw, r.height / nh);
+        const w = nw * s;
+        const left = r.left + (r.width - w) / 2;
+        return { left, right: left + w, width: w };
+      };
+      const textBox = (el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const r = range.getBoundingClientRect();
+        range.detach?.();
+        return r;
+      };
+      const anchorsFor = () => {
+        const appLogo = document.querySelector(
           '#mainNav .nav-brand .nav-logo-img, #mainNav .nav-brand img',
         );
         const logout = document.querySelector('#mainNav .nav-logout-btn i');
-        if (!logo || !logout) return { vw: window.innerWidth, frame: null };
+        if (appLogo && logout) {
+          return { l: appLogo.getBoundingClientRect(), r: logout.getBoundingClientRect() };
+        }
+        const landingLogo = document.querySelector(
+          '.navbar .nav-container-centered .nav-brand img',
+        );
+        const partner = document.querySelector(
+          '.navbar .nav-container-centered .nav-sign-in-wrap a[href="/auth/partner/apply"]',
+        );
+        if (landingLogo && partner) {
+          return { l: paintedBox(landingLogo), r: textBox(partner) };
+        }
+        return null;
+      };
+      const frameFor = () => {
+        const a = anchorsFor();
+        if (!a) return { vw: window.innerWidth, frame: null };
         const b = band.getBoundingClientRect();
-        const l = logo.getBoundingClientRect();
-        const r = logout.getBoundingClientRect();
-        if (!l.width || !r.width) return { vw: window.innerWidth, frame: null };
-        return { vw: b.width, frame: { left: l.left - b.left, right: b.right - r.right } };
+        /* Hidden anchors (the phone nav moves sign-in into the drawer) report
+           zero width: fall back to the default box. */
+        if (!a.l.width || !a.r.width) return { vw: window.innerWidth, frame: null };
+        return { vw: b.width, frame: { left: a.l.left - b.left, right: b.right - a.r.right } };
       };
       const { vw, frame } = frameFor();
       const base = geometryFor(vw, budgetH, navPx, frame);
@@ -2125,16 +2166,27 @@ export function SonarSection({
     /* The nav frame moves without a window resize when the nav's own box
        changes (the logo image or a webfont loading, a scrollbar appearing),
        so the nav is watched too. */
-    const navNode = document.querySelector('#mainNav .nav-container');
+    const navNode = document.querySelector(
+      '#mainNav .nav-container, .navbar .nav-container-centered',
+    );
     const navWatch =
       navNode && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
     if (navWatch) navWatch.observe(navNode);
+    /* The "Become a Partner" text changes width when the webfont swaps in,
+       which resizes nothing the observer sees, so re-measure once fonts land. */
+    let alive = true;
+    document.fonts?.ready
+      ?.then(() => {
+        if (alive) schedule();
+      })
+      .catch(() => {});
     return () => {
       window.removeEventListener('resize', apply);
       window.removeEventListener('orientationchange', apply);
       if (raf) window.cancelAnimationFrame(raf);
       bannerWatch.disconnect();
       if (navWatch) navWatch.disconnect();
+      alive = false;
     };
   }, [isPage]);
 

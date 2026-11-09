@@ -3053,6 +3053,28 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   margin-right: 0;
 }
 
+/* Nov 9: the same frame before the takeover locks. On the landing page the
+   band frames to the marketing nav (logo mark to the end of "Become a
+   Partner"), and the unlocked band used to keep its flat 80px padding and
+   centred 1440px box, so the headline sat up to 52px off the logo and then
+   jumped on lock. The dossier still hangs 46px past the band edge, now
+   measured from the framed right gutter; at 1280 and below the columns stack
+   and the poke is off (responsive block above), so it is scoped wider. */
+.snr-band[data-nav-framed='on']:not(.snr-composed) {
+  padding-left: var(--snr-gutter);
+  padding-right: var(--snr-gutter-r, var(--snr-gutter));
+}
+.snr-band[data-nav-framed='on']:not(.snr-composed) .snr-inner {
+  width: var(--snr-content);
+  max-width: none;
+  margin: 0;
+}
+@media (min-width: 1281px) {
+  .snr-band[data-nav-framed='on']:not(.snr-composed) .snr-col-dossier {
+    margin-right: calc(-46px - var(--snr-gutter-r, 80px));
+  }
+}
+
 /* The zone stack. Gaps are explicit elements of the budget rather than a flex
    `gap`, because the budget names each one separately and they are not equal. */
 .snr-band.snr-composed .snr-inner {
