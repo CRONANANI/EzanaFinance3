@@ -47,7 +47,7 @@ export function CommunitySocialConnectCard({ variant = 'user' }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [connected, setConnected] = useState(() =>
-    Object.fromEntries(PLATFORMS.map((p) => [p.id, false]))
+    Object.fromEntries(PLATFORMS.map((p) => [p.id, false])),
   );
 
   const isPartner = variant === 'partner';
@@ -70,7 +70,7 @@ export function CommunitySocialConnectCard({ variant = 'user' }) {
         return { ...prev, [platformId]: next };
       });
     },
-    [user, toast]
+    [user, toast],
   );
 
   return (

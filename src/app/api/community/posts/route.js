@@ -8,6 +8,8 @@ import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { visibleTo, isBlockedPair } from '@/lib/moderation/blocks';
 import { communityTermsGate } from '@/lib/moderation/terms';
 
+import { validateTitle, normalizeTopic } from '@/lib/community/redesign';
+
 export const dynamic = 'force-dynamic';
 
 const admin = getLazyAdminClient();
@@ -516,6 +518,29 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
     }
 
+    /* Nov 2026 (Community redesign): every top-level post carries a title
+       (3 to 160 characters) and a topic from community_topics. Replies don't. */
+    let title = null;
+    let topic_slug = null;
+    if (!isComment) {
+      const t = validateTitle(sanitizeInput(typeof body.title === 'string' ? body.title : ''));
+      if (!t.ok) return NextResponse.json({ error: t.error }, { status: 400 });
+      title = t.value;
+      topic_slug = normalizeTopic(body.topic_slug ?? body.topic);
+      if (!topic_slug) {
+        return NextResponse.json({ error: 'Choose a topic for your post.' }, { status: 400 });
+      }
+      const { data: topicRow } = await admin
+        .from('community_topics')
+        .select('slug')
+        .eq('slug', topic_slug)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (!topicRow) {
+        return NextResponse.json({ error: 'Choose a topic for your post.' }, { status: 400 });
+      }
+    }
+
     const maxLen = isComment ? 500 : 1000;
     if (content.length > maxLen) {
       return NextResponse.json(
@@ -604,9 +629,10 @@ export async function POST(request) {
       ticker_embed: isComment ? null : ticker_embed,
       post_type,
       disclosure,
+      ...(isComment ? {} : { title, topic_slug }),
     };
     const returnCols =
-      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, parent_post_id';
+      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, parent_post_id, title, topic_slug';
     let { data: post, error } = await supabase
       .from('community_posts')
       .insert(quoted_post_id ? { ...insertRow, quoted_post_id } : insertRow)

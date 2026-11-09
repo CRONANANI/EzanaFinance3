@@ -256,6 +256,11 @@ export function EvoComposer({
   onToggle,
   quotedPost = null,
   onClearQuote,
+  /* Nov 2026 (Community redesign): every top-level post needs a title and a
+     topic; the API validates both too. */
+  topics = [],
+  defaultTopic = '',
+  autoFocusTitle = false,
 }) {
   const { user } = useAuth();
   const { ensureAccepted, termsModal } = useCommunityTerms();
@@ -272,6 +277,12 @@ export function EvoComposer({
   const [postType, setPostType] = useState(null);
   const [disclosure, setDisclosure] = useState('');
   const [uploadError, setUploadError] = useState('');
+  const [title, setTitle] = useState('');
+  const [topic, setTopic] = useState(defaultTopic || '');
+  const [formError, setFormError] = useState('');
+  useEffect(() => {
+    if (defaultTopic) setTopic(defaultTopic);
+  }, [defaultTopic]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -304,10 +315,16 @@ export function EvoComposer({
   const hasPoll = poll?.question?.trim() && pollOptions.length >= 2;
   const hasTicker = tickers.length > 0;
   const hasContent = text.trim().length > 0 || image || hasPoll || hasTicker || quoteMode;
-  const canPost = !!user && !posting && hasContent;
+  const titleOk = title.trim().length >= 3 && title.trim().length <= 160;
+  const canPost = !!user && !posting && hasContent && titleOk && Boolean(topic);
 
   const handlePost = async () => {
+    if (!titleOk || !topic) {
+      setFormError('Add a title of 3 to 160 characters and choose a topic.');
+      return;
+    }
     if (!canPost) return;
+    setFormError('');
     /* Community guidelines are agreed once, before the first post. */
     if (!(await ensureAccepted())) return;
     setUploadError('');
@@ -338,6 +355,8 @@ export function EvoComposer({
 
       const tickerMatch = content.match(/\$([A-Za-z]{1,5})\b/);
       const body = {
+        title: title.trim(),
+        topic_slug: topic,
         content,
         mentioned_ticker:
           tickers[0] || (tickerMatch ? tickerMatch[1] : extractTickerFromContent(content)),
@@ -364,7 +383,7 @@ export function EvoComposer({
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Failed to post');
+        setFormError(err.error || 'Your post could not be published.');
         return;
       }
 
@@ -380,6 +399,7 @@ export function EvoComposer({
       }
 
       setText('');
+      setTitle('');
       setMode(null);
       setImage(null);
       setPoll(null);
@@ -391,7 +411,7 @@ export function EvoComposer({
       onClearQuote?.();
       await onPosted?.();
     } catch (err) {
-      alert(err.message || 'Network error');
+      setFormError(err.message || 'Your post could not be published.');
     } finally {
       setPosting(false);
     }
@@ -433,6 +453,26 @@ export function EvoComposer({
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <Avatar author={author} size={36} />
         <div style={{ flex: 1 }}>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            aria-label="Post title"
+            maxLength={160}
+            disabled={!user}
+            autoFocus={autoFocusTitle}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-primary)',
+              fontSize: 16,
+              fontWeight: 700,
+              outline: 'none',
+              padding: '0 0 8px',
+            }}
+          />
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -587,6 +627,22 @@ export function EvoComposer({
               <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {uploadError}
             </div>
           )}
+          {formError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 8,
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--negative-border)',
+                background: 'var(--negative-bg)',
+                color: 'var(--negative)',
+                fontSize: 12,
+              }}
+            >
+              <i className="bi bi-exclamation-triangle" aria-hidden="true" /> {formError}
+            </div>
+          )}
           {mode === 'poll' && (
             <PollBody poll={poll ?? { question: '', options: ['', ''] }} setPoll={setPoll} />
           )}
@@ -680,7 +736,22 @@ export function EvoComposer({
                 disabled={!user || !quotedPost}
               />
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <select
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                aria-label="Post topic"
+                disabled={!user}
+                className="ez-btn ez-btn--ghost"
+                style={{ fontSize: 12, maxWidth: 200 }}
+              >
+                <option value="">Choose a topic</option>
+                {topics.map((t) => (
+                  <option key={t.slug} value={t.slug}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
               {onToggle && (
                 <button
                   type="button"
@@ -695,7 +766,7 @@ export function EvoComposer({
                 type="button"
                 onClick={handlePost}
                 data-haptic
-                disabled={!canPost}
+                disabled={!user || posting || !hasContent}
                 className="ez-btn ez-btn--primary"
                 style={{ fontSize: 13, opacity: canPost ? 1 : 0.5 }}
               >

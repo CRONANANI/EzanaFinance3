@@ -51,7 +51,9 @@ export default function CopyRequestInbox() {
             onClick={() => setActiveTab('incoming')}
           >
             Incoming
-            {incomingPending.length > 0 && <span className="cri-badge">{incomingPending.length}</span>}
+            {incomingPending.length > 0 && (
+              <span className="cri-badge">{incomingPending.length}</span>
+            )}
           </button>
           <button
             type="button"
@@ -102,10 +104,15 @@ export default function CopyRequestInbox() {
 
       {!loading && activeTab === 'outgoing' && (
         <ul className="cri-list">
-          {data.outgoing.length === 0 && <li className="cri-empty">You haven&apos;t sent any requests</li>}
+          {data.outgoing.length === 0 && (
+            <li className="cri-empty">You haven&apos;t sent any requests</li>
+          )}
           {data.outgoing.map((r) => (
             <li key={r.id} className="cri-row">
-              <Link href={profileHref(r.target_username, r.target_user_id)} className="cri-row-name">
+              <Link
+                href={profileHref(r.target_username, r.target_user_id)}
+                className="cri-row-name"
+              >
                 {r.target_name}
               </Link>
               <span className="cri-row-status">{r.status}</span>

@@ -93,6 +93,22 @@ function fmtPostTime(v) {
 
 export default function PartnerCommunityPage() {
   const [newPost, setNewPost] = useState('');
+  /* Nov 2026: top-level posts need a title and a topic (validated by the API). */
+  const [newTitle, setNewTitle] = useState('');
+  const [newTopic, setNewTopic] = useState('');
+  const [topics, setTopics] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/community/topics', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { topics: [] }))
+      .then((d) => {
+        if (!cancelled) setTopics(Array.isArray(d.topics) ? d.topics : []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [activeTab, setActiveTab] = useState('feed');
   const [profile, setProfile] = useState(null);
   const [earnedBadges, setEarnedBadges] = useState([]);
@@ -166,7 +182,12 @@ export default function PartnerCommunityPage() {
 
   const submitPost = async () => {
     const content = newPost.trim();
+    const title = newTitle.trim();
     if (!content || posting) return;
+    if (title.length < 3 || !newTopic) {
+      setPostError('Add a title (at least 3 characters) and choose a topic.');
+      return;
+    }
     setPosting(true);
     setPostError(null);
     try {
@@ -174,11 +195,12 @@ export default function PartnerCommunityPage() {
       const res = await fetch('/api/community/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, title, topic_slug: newTopic }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Your post could not be published.');
       setNewPost('');
+      setNewTitle('');
       if (data.post) setPosts((prev) => [data.post, ...prev]);
       else await loadPosts();
     } catch (e) {
@@ -270,6 +292,16 @@ export default function PartnerCommunityPage() {
         <div className="ptr-row-2">
           <div className="ptr-card" style={{ flex: 1.5 }}>
             <div className="ptr-compose">
+              <input
+                type="text"
+                className="ptr-compose-input"
+                style={{ minHeight: 0, height: 40, marginBottom: 8 }}
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Title"
+                aria-label="Post title"
+                maxLength={160}
+              />
               <textarea
                 className="ptr-compose-input"
                 value={newPost}
@@ -280,6 +312,20 @@ export default function PartnerCommunityPage() {
               <div className="ptr-compose-actions">
                 <div className="ptr-compose-tools">
                   <EmojiPicker onPick={insertEmoji} anchorRef={emojiAnchorRef} />
+                  <select
+                    className="ptr-compose-input"
+                    style={{ minHeight: 0, height: 34, width: 'auto', padding: '0 8px' }}
+                    value={newTopic}
+                    onChange={(e) => setNewTopic(e.target.value)}
+                    aria-label="Post topic"
+                  >
+                    <option value="">Choose a topic</option>
+                    {topics.map((t) => (
+                      <option key={t.slug} value={t.slug}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="ptr-compose-right">
                   <span className={`ptr-char-count ${charClass}`}>
@@ -288,7 +334,7 @@ export default function PartnerCommunityPage() {
                   <button
                     type="button"
                     className="ptr-btn-primary"
-                    disabled={!newPost.trim() || posting}
+                    disabled={!newPost.trim() || newTitle.trim().length < 3 || !newTopic || posting}
                     onClick={submitPost}
                   >
                     {posting ? 'Posting…' : 'Post'}

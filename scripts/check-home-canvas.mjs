@@ -24,7 +24,7 @@ const PAGES = [
   {
     name: 'Community',
     page: 'src/app/(dashboard)/community/page.js',
-    root: 'src/components/community/redesign_v2/HubEvolutionary.jsx',
+    root: 'src/components/community/CommunityPage.jsx',
     shells: ['.ez-card', '.ledger-card', '.ledger-post'],
   },
   {
