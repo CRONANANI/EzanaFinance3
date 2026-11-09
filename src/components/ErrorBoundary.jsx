@@ -1,7 +1,10 @@
 'use client';
 
 import { Component } from 'react';
+import ErrorScreen from '@/components/errors/ErrorScreen';
 
+/** Catches render errors inside the dashboard shell and shows the branded
+    error screen inline; "Try again" re-renders the children. */
 export class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -13,25 +16,23 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
+    // eslint-disable-next-line no-console
     console.error('[ErrorBoundary]', error, info);
   }
 
   render() {
     if (this.state.hasError) {
+      const { error } = this.state;
       return (
-        <div style={{ padding: '3rem', textAlign: 'center' }}>
-          <h2 style={{ color: '#ef4444', marginBottom: '0.5rem' }}>Something went wrong</h2>
-          <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem' }}>
-            An unexpected error occurred. Please refresh the page.
-          </p>
-          <button
-            type="button"
-            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
-            style={{ padding: '0.5rem 1.5rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700 }}
-          >
-            Refresh Page
-          </button>
-        </div>
+        <ErrorScreen
+          variant="error"
+          layout="inline"
+          onRetry={() => this.setState({ hasError: false, error: null })}
+          digest={error?.digest}
+          homeHref="/home-dashboard"
+          homeLabel="Go to Dashboard"
+          details={error ? `${error.message || String(error)}\n\n${error.stack || ''}` : undefined}
+        />
       );
     }
     return this.props.children;

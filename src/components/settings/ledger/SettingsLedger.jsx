@@ -2,6 +2,7 @@
 
 import { SettingsLedgerShell, getVisibleNavKeys } from './SettingsLedgerShell';
 import { LEDGER_PANEL_MAP, LEDGER_PAGE_META, eyebrowFor } from './ledger-panels';
+import SectionBoundary from '@/components/errors/SectionBoundary';
 import '@/app/settings/settings-ledger.css';
 
 export function SettingsLedger({
@@ -48,7 +49,13 @@ export function SettingsLedger({
       backLabel={backLabel}
       backHref={backHref}
     >
-      {Panel ? <Panel {...panelProps} /> : <div className="sl-helper">Section not available.</div>}
+      {Panel ? (
+        <SectionBoundary key={activeTab} label={meta.title}>
+          <Panel {...panelProps} />
+        </SectionBoundary>
+      ) : (
+        <div className="sl-helper">Section not available.</div>
+      )}
 
       {!hideGlobalSave && activeTab !== 'privacy-data' ? (
         <div className="sl-savebar" style={{ marginTop: 32 }}>

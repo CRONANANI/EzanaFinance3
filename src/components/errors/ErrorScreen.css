@@ -1,5 +1,8 @@
 /* ============================================================
-   404 / Not Found: "Wandered off" (design C), LIGHT MODE
+   Error screens: "Wandered off" (design C). Used by ErrorScreen.jsx for the
+   404, the root and global error boundaries (full page, LIGHT MODE) and, as
+   .ez-404--inline, for section error boundaries inside the app shell, where
+   it follows the user's theme and leaves the navigation in place.
    Scoped under .ez-404 so nothing leaks into other routes.
    Every colour comes from a theme token. The light values are pinned by
    .force-light-theme in theme-variables.css, so the page renders light for
@@ -10,15 +13,15 @@
    phone sign-up bar (PublicMobileCta) on every route, and a 404 can occur at
    ANY path, so they cannot be suppressed by pathname. :has() hides them only
    while this page is mounted, in the SSR HTML, with no flash. */
-body:has(.ez-404) :is(.navbar, .main-nav, .pcta-bar) {
+body:has(.ez-404:not(.ez-404--inline)) :is(.navbar, .main-nav, .pcta-bar) {
   display: none !important;
 }
 
 /* Paint the whole viewport light behind the page, including overscroll.
    html/body:has(.ez-404) also receive the light tokens in theme-variables.css,
    so var(--bg-primary) resolves to the light value here even for dark-theme users. */
-html:has(.ez-404),
-body:has(.ez-404) {
+html:has(.ez-404:not(.ez-404--inline)),
+body:has(.ez-404:not(.ez-404--inline)) {
   background-color: var(--bg-primary) !important;
   color-scheme: light;
 }
@@ -233,6 +236,80 @@ body:has(.ez-404) {
   color: var(--text-muted);
 }
 
+/* ---------- Error variant ---------- */
+/* The orbit mark on its own (no digits) stands in for the 404 code. */
+.ez-404__code--solo {
+  gap: 0;
+}
+
+.ez-404__digest {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ez-404__digest span {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* Development only: the error message and stack. */
+.ez-404__details {
+  width: 100%;
+  max-height: 240px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------- Inline layout: inside the app shell ---------- */
+/* No logo header or footer, no viewport takeover; fills the page area. It
+   follows the user's theme, so the tokens below resolve dark or light. */
+.ez-404--inline {
+  min-height: 72vh;
+  padding: 16px;
+  background-color: transparent;
+}
+.ez-404--inline .ez-404__main {
+  padding: 24px 0;
+}
+.ez-404--inline .ez-404__content {
+  max-width: 620px;
+  gap: 20px;
+}
+.ez-404--inline .ez-404__digit {
+  font-size: 120px;
+}
+.ez-404--inline .ez-404__zero {
+  width: 116px;
+  height: 116px;
+}
+.ez-404--inline .ez-404__disc {
+  inset: 10px;
+}
+.ez-404--inline .ez-404__mark {
+  width: 72px;
+  height: 72px;
+}
+.ez-404--inline .ez-404__title {
+  font-size: 40px;
+}
+.ez-404--inline .ez-404__lead {
+  font-size: 16px;
+}
+.ez-404--inline .ez-404__btn--ghost {
+  background: transparent;
+}
+
 /* ---------- Motion ---------- */
 @keyframes ez404-orbit {
   to {
@@ -271,7 +348,8 @@ body:has(.ez-404) {
   .ez-404__code {
     gap: 10px;
   }
-  .ez-404__digit {
+  .ez-404__digit,
+  .ez-404--inline .ez-404__digit {
     font-size: 104px;
   }
   .ez-404__zero {
@@ -285,8 +363,9 @@ body:has(.ez-404) {
     width: 62px;
     height: 62px;
   }
-  .ez-404__title {
-    font-size: 36px;
+  .ez-404__title,
+  .ez-404--inline .ez-404__title {
+    font-size: 32px;
   }
   .ez-404__lead {
     font-size: 16px;

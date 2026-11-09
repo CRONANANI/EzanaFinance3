@@ -1,68 +1,39 @@
 'use client';
 
+/**
+ * Dashboard segment boundary: a page inside the app shell threw. Shows the
+ * branded error screen inline, so the navigation stays and the user can move
+ * on. In development the message and stack print on the screen as well.
+ */
 import { useEffect } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import * as Sentry from '@sentry/nextjs';
+import ErrorScreen from '@/components/errors/ErrorScreen';
+import { useRetry } from '@/components/errors/useRetry';
 
 export default function DashboardError({ error, reset }) {
+  const retry = useRetry(reset);
   const pathname = usePathname();
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const dashboardHref = isPartnerRoute ? '/partner-home' : '/home-dashboard';
-  const isDev = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
-    // Always log the real error + stack so future debugging is trivial.
-    // The previous boundary swallowed this, which was how a Rules-of-Hooks
-    // violation on the Learning Center course page stayed invisible for so long.
+    /* Always log the real error and stack: an earlier boundary swallowed them,
+       which kept a Rules-of-Hooks bug on the Learning Center invisible. */
     // eslint-disable-next-line no-console
-    console.error('[DashboardError]', error, {
-      digest: error?.digest,
-      pathname,
-    });
+    console.error('[DashboardError]', error, { digest: error?.digest, pathname });
+    Sentry.captureException(error);
   }, [error, pathname]);
 
-  const devMessage = error?.message || String(error || 'Unknown error');
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-      <div className="max-w-xl">
-        <h2 className="text-2xl font-bold text-foreground mb-2">We couldn&apos;t load this page</h2>
-        <p className="text-muted-foreground mb-4">
-          {isDev
-            ? 'A render-time error was caught below. Check the browser console for the full stack.'
-            : 'Something went wrong on our end. Try refreshing, or come back in a moment.'}
-        </p>
-
-        {isDev && (
-          <pre
-            className="text-xs text-left bg-muted/40 border border-border rounded-lg p-3 mb-4 overflow-auto max-h-60"
-            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-          >
-            {devMessage}
-            {error?.stack ? `\n\n${error.stack}` : ''}
-          </pre>
-        )}
-
-        {error?.digest && (
-          <p className="text-xs text-muted-foreground mb-4">Error ID: {error.digest}</p>
-        )}
-
-        <div className="flex flex-wrap gap-4 justify-center">
-          <button
-            type="button"
-            onClick={() => reset()}
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors"
-          >
-            Try again
-          </button>
-          <Link
-            href={dashboardHref}
-            className="px-6 py-3 bg-muted text-foreground rounded-xl font-medium hover:bg-muted/80 transition-colors"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
-      </div>
-    </div>
+    <ErrorScreen
+      variant="error"
+      layout="inline"
+      onRetry={retry}
+      digest={error?.digest}
+      homeHref={dashboardHref}
+      homeLabel="Go to Dashboard"
+      details={error ? `${error.message || String(error)}\n\n${error.stack || ''}` : undefined}
+    />
   );
 }

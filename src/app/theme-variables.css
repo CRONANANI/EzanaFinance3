@@ -724,14 +724,16 @@ body.light-mode {
      2. `html:has(.ez-404)` / `body:has(.ez-404)` — the 404 page also needs
         the viewport itself light (overscroll, the area behind the page), so
         the document root gets the same tokens only while the 404 is mounted.
+        The full-page error screen shares it; the inline error screen
+        (.ez-404--inline, inside the app shell) follows the user's theme.
         Scoped to .ez-404 on purpose: a small .force-light-theme wrapper
         elsewhere must not repaint a whole dark page.
    Last in the file so it wins over :root and the dark scopes.
    ═══════════════════════════════════════════════════════════ */
 .force-light-theme,
 body.light-mode .force-light-theme,
-html:has(.ez-404),
-body:has(.ez-404) {
+html:has(.ez-404:not(.ez-404--inline)),
+body:has(.ez-404:not(.ez-404--inline)) {
   color-scheme: light;
 
   /* Backgrounds and surfaces */

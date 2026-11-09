@@ -32,7 +32,7 @@ export function EmptyState({
  */
 export function ErrorState({
   icon = 'bi-exclamation-triangle',
-  title = 'Something went wrong',
+  title = "This couldn't load",
   description,
   action,
   ...rest

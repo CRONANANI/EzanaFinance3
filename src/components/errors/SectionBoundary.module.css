@@ -1,0 +1,65 @@
+/* Inline error card for one settings section (Nov 2026). Theme tokens only,
+   no hex; light mode follows body.light-mode through the same tokens.
+   TOKEN MAP: surface fills are mixes of the page ink into the page ground, so
+   the card reads on both themes without a border. */
+.card {
+  --s-surface: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  --s-surface-3: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --s-text: var(--text-primary);
+  --s-text-muted: var(--text-muted);
+  --s-accent: var(--emerald);
+  --s-accent-text: var(--emerald-text);
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--s-surface);
+  font-family: var(--font-sans);
+}
+
+.icon {
+  font-size: 18px;
+  color: var(--s-text-muted);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s-text);
+}
+
+.sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--s-text-muted);
+}
+
+.retry {
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--s-surface-3);
+  color: var(--s-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry:hover {
+  color: var(--s-accent-text);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--s-accent);
+  outline-offset: 2px;
+}

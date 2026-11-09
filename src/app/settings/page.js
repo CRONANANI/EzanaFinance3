@@ -18,6 +18,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
 import { SettingsLedger } from '@/components/settings/ledger/SettingsLedger';
+import SectionBoundary from '@/components/errors/SectionBoundary';
 import './settings.css';
 import './settings-partner.css';
 
@@ -408,7 +409,12 @@ function SettingsInner() {
         </aside>
 
         <main className="settings-content">
-          <ActivePanel {...panelProps} />
+          <SectionBoundary
+            key={activeTab}
+            label={SETTINGS_TABS.find((t) => t.key === activeTab)?.label}
+          >
+            <ActivePanel {...panelProps} />
+          </SectionBoundary>
         </main>
       </div>
 

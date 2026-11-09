@@ -12,8 +12,8 @@
     "sub-floor": 1
   },
   "src/app/(dashboard)/home/broadsheet.css": {
-    "sub-floor": 17,
-    "caps-tracking": 16
+    "sub-floor": 16,
+    "caps-tracking": 15
   },
   "src/app/(dashboard)/home/terminal.css": {
     "sub-floor": 9,
@@ -175,9 +175,6 @@
   "src/app/nav-notifications.css": {
     "sub-floor": 5
   },
-  "src/app/not-found.css": {
-    "heavy-weight": 1
-  },
   "src/app/pricing/pricing-standalone.css": {
     "sub-floor": 5,
     "caps-tracking": 6
@@ -243,6 +240,9 @@
   },
   "src/components/empire-ranking/er-cards.css": {
     "sub-floor": 2
+  },
+  "src/components/errors/ErrorScreen.css": {
+    "heavy-weight": 1
   },
   "src/components/ezanaql/company-card.css": {
     "sub-floor": 2
