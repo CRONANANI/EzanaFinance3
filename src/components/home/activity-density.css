@@ -10,9 +10,16 @@
    reads as more ink against the ground. */
 
 .adc {
-  --adc-l0: color-mix(in srgb, var(--bs-text-dark) 7%, var(--bs-bg-light));
-  --adc-l1: color-mix(in srgb, var(--emerald) 24%, var(--bs-bg-light));
-  --adc-l2: color-mix(in srgb, var(--emerald) 52%, var(--bs-bg-light));
+  /* Nov 2026: local aliases. On /home they resolve to the broadsheet's
+     --bs-* tokens; anywhere else (the profile page) to the app tokens. */
+  --adc-bg: var(--bs-bg-light, var(--app-bg));
+  --adc-ink: var(--bs-text-dark, var(--text-primary));
+  --adc-label: var(--bs-text-label, var(--text-muted));
+  --adc-rule: var(--bs-border-rule, var(--border-primary));
+  --adc-accent-text: var(--emerald-text);
+  --adc-l0: color-mix(in srgb, var(--adc-ink) 7%, var(--adc-bg));
+  --adc-l1: color-mix(in srgb, var(--emerald) 24%, var(--adc-bg));
+  --adc-l2: color-mix(in srgb, var(--emerald) 52%, var(--adc-bg));
   --adc-l3: var(--emerald-hover);
   --adc-l4: var(--emerald-dark);
   --adc-ease: cubic-bezier(0.65, 0, 0.35, 1);
@@ -26,15 +33,15 @@
   margin: 0;
   padding: 0;
   border: 0;
-  background: var(--bs-bg-light);
-  color: var(--bs-text-dark);
+  background: var(--adc-bg);
+  color: var(--adc-ink);
   font-family: var(--font-sans);
 }
 body:not(.light-mode) .adc {
-  --adc-l0: color-mix(in srgb, var(--bs-text-dark) 9%, var(--bs-bg-light));
-  --adc-l1: color-mix(in srgb, var(--emerald) 22%, var(--bs-bg-light));
-  --adc-l2: color-mix(in srgb, var(--emerald) 42%, var(--bs-bg-light));
-  --adc-l3: color-mix(in srgb, var(--emerald) 68%, var(--bs-bg-light));
+  --adc-l0: color-mix(in srgb, var(--adc-ink) 9%, var(--adc-bg));
+  --adc-l1: color-mix(in srgb, var(--emerald) 22%, var(--adc-bg));
+  --adc-l2: color-mix(in srgb, var(--emerald) 42%, var(--adc-bg));
+  --adc-l3: color-mix(in srgb, var(--emerald) 68%, var(--adc-bg));
   --adc-l4: var(--emerald);
 }
 
@@ -80,7 +87,7 @@ body:not(.light-mode) .adc {
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px 16px;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 .adc-head__text {
   min-width: 0;
@@ -95,7 +102,7 @@ body:not(.light-mode) .adc {
   font-weight: 700;
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--bs-text-label);
+  color: var(--adc-label);
   margin-bottom: 4px;
 }
 .adc-title {
@@ -103,10 +110,10 @@ body:not(.light-mode) .adc {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
-  color: var(--bs-text-dark);
+  color: var(--adc-ink);
 }
 .adc-title__note {
-  color: var(--bs-text-label);
+  color: var(--adc-label);
 }
 .adc-num {
   font-family: var(--font-mono);
@@ -119,7 +126,7 @@ body:not(.light-mode) .adc {
   position: relative;
   display: inline-flex;
   padding: 2px;
-  border: 1px solid var(--bs-border-rule);
+  border: 1px solid var(--adc-rule);
   border-radius: var(--radius-md);
 }
 .adc-toggle__thumb {
@@ -129,7 +136,7 @@ body:not(.light-mode) .adc {
   left: 2px;
   width: 34px;
   border-radius: var(--radius-sm);
-  background: var(--bs-text-dark);
+  background: var(--adc-ink);
   transition: transform 500ms var(--adc-ease);
 }
 .adc-toggle__thumb.is-3d {
@@ -146,13 +153,13 @@ body:not(.light-mode) .adc {
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--bs-text-label);
+  color: var(--adc-label);
   font-size: 13px;
   cursor: pointer;
   transition: color 500ms var(--adc-ease);
 }
 .adc-toggle__btn.is-on {
-  color: var(--bs-bg-light);
+  color: var(--adc-bg);
 }
 .adc-toggle__btn:focus-visible,
 .adc-legend__sw:focus-visible {
@@ -182,28 +189,91 @@ body:not(.light-mode) .adc {
   outline: none;
 }
 
-/* ---------- stats: four, centred across the card ---------- */
+/* ---------- split layout (Nov 2026, v2) ----------
+   Left: title, then the four stats as a 2x2 grid. Right: legend and toggle,
+   then the chart. Stacks under 1024px (title and stats first). */
+.adc--split {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 16px 40px;
+  align-items: start;
+}
+.adc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.adc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.adc-main .adc-head__tools {
+  justify-content: flex-end;
+}
+
+/* ---------- stats: 2x2 under the title ---------- */
 .adc-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.adc-stats__item {
+  display: flex;
+  min-width: 0;
 }
 .adc-stat {
+  position: relative;
+  flex: 1;
+  display: block;
   min-width: 0;
-  text-align: center;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--adc-ink) 3%, var(--adc-bg));
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+.adc-stat--link {
+  cursor: pointer;
+}
+.adc-stat--link:hover {
+  background: color-mix(in srgb, var(--emerald) 8%, var(--adc-bg));
+}
+.adc-stat--link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.adc-stat__go {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 12px;
+  color: var(--adc-label);
+  transition: color 150ms ease;
+}
+.adc-stat--link:hover .adc-stat__go,
+.adc-stat--link:focus-visible .adc-stat__go {
+  color: var(--adc-accent-text);
 }
 .adc-stat__label {
+  padding-right: 18px;
   font-size: 11.5px;
   line-height: 1.25;
-  color: var(--bs-text-label);
+  color: var(--adc-label);
 }
 .adc-stat__line {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 5px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .adc-stat__value {
   font-family: var(--font-mono);
@@ -212,20 +282,43 @@ body:not(.light-mode) .adc {
   font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--adc-l4);
-  transition: color 500ms ease;
+  color: var(--adc-accent-text);
 }
 .adc-stat__unit {
   font-size: 12.5px;
-  color: var(--bs-text-dark);
+  color: var(--adc-ink);
 }
 .adc-stat__sub {
   margin-top: 2px;
   font-size: 11px;
-  color: var(--bs-text-label);
+  color: var(--adc-label);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.adc-stat__rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 16px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--adc-accent-text);
+}
+.adc-stat__rank.is-empty {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  color: var(--adc-label);
+}
+.adc-stat__rank.is-pending {
+  width: 96px;
+  height: 12px;
+  min-height: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--adc-ink) 8%, var(--adc-bg));
 }
 
 /* ---------- tooltip ---------- */
@@ -236,8 +329,8 @@ body:not(.light-mode) .adc {
   z-index: 2;
   padding: 7px 10px;
   border-radius: var(--radius-sm);
-  background: var(--bs-text-dark);
-  color: var(--bs-bg-light);
+  background: var(--adc-ink);
+  color: var(--adc-bg);
   font-size: 12px;
   line-height: 1;
   white-space: nowrap;
@@ -262,13 +355,13 @@ body:not(.light-mode) .adc {
   margin-left: -5px;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid var(--bs-text-dark);
+  border-top: 5px solid var(--adc-ink);
 }
 
 /* ---------- legend (in the header) ---------- */
 .adc-legend {
   font-size: 11.5px;
-  color: var(--bs-text-label);
+  color: var(--adc-label);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -279,7 +372,7 @@ body:not(.light-mode) .adc {
   padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bs-text-dark) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--adc-ink) 10%, transparent);
   cursor: pointer;
   transition:
     transform 200ms ease,
@@ -289,10 +382,17 @@ body:not(.light-mode) .adc {
   transform: scale(1.25);
 }
 
-@media (max-width: 768px) {
-  .adc-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 10px;
+@media (max-width: 1024px) {
+  .adc--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 380px) {
+  .adc-stat {
+    padding: 10px 12px;
+  }
+  .adc-stat__value {
+    font-size: 19px;
   }
 }
 @media (max-width: 480px) {
@@ -305,6 +405,8 @@ body:not(.light-mode) .adc {
   .adc-toggle__thumb,
   .adc-toggle__btn,
   .adc-tip,
+  .adc-stat,
+  .adc-stat__go,
   .adc-stat__value,
   .adc-legend__sw {
     transition: none;

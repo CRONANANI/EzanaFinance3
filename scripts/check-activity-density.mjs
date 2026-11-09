@@ -16,6 +16,14 @@ import {
   parseCssColor,
   riseAt,
   barHeight,
+  ACTIVITY_STAT_KEYS,
+  monthlyActivity,
+  ordinal,
+  percentileLabel,
+  statValues,
+  topDays,
+  topStreaks,
+  weekdayActivity,
 } from '../src/lib/activity-density.js';
 
 const END = dayMs('2026-11-09');
@@ -123,10 +131,130 @@ test('wiring and token discipline', () => {
     assert.doesNotMatch(src, /lucide-react|tailwind|Math\.random/i, `${name}: stack rules`);
   }
   assert.match(css, /prefers-reduced-motion: reduce/);
-  assert.match(card, /fetch\('\/api\/activity-density\?days=371'/);
+  assert.match(card, /new URLSearchParams\(\{ days: '371' \}\)/);
+  assert.match(card, /fetch\(`\/api\/activity-density\?\$\{qs\}`/);
   assert.doesNotMatch(card, /generateContributions/, 'no generated sample year');
   assert.match(page, /import\('@\/components\/home\/ActivityDensityCard'\)/);
   assert.match(page, /<ActivityDensityCard \/>/);
   assert.match(route, /requireAuth: true/);
-  assert.match(route, /rpc\('user_activity_days'/);
+  const lib = fs.readFileSync('src/lib/activity-summary.js', 'utf8');
+  assert.match(route, /from '@\/lib\/activity-summary'/);
+  assert.match(lib, /rpc\('user_activity_days'/);
+  assert.match(lib, /rpc\('activity_stat_percentiles'/);
+  assert.match(lib, /privacy_show_activity === false/, 'other members respect activity privacy');
+});
+
+test('percentile labels: ordinals, clamped to 1st..99th, null when unranked', () => {
+  assert.equal(ordinal(1), '1st');
+  assert.equal(ordinal(2), '2nd');
+  assert.equal(ordinal(3), '3rd');
+  assert.equal(ordinal(11), '11th');
+  assert.equal(ordinal(12), '12th');
+  assert.equal(ordinal(13), '13th');
+  assert.equal(ordinal(22), '22nd');
+  assert.equal(ordinal(101), '101st');
+  assert.equal(percentileLabel(92.4), '92nd percentile');
+  assert.equal(percentileLabel(0), '1st percentile');
+  assert.equal(percentileLabel(100), '99th percentile');
+  assert.equal(percentileLabel(null), null);
+  assert.equal(percentileLabel(undefined), null);
+  assert.equal(percentileLabel('abc'), null);
+});
+
+test('stat keys line up with the card order and the profile anchors', () => {
+  assert.deepEqual(
+    ACTIVITY_STAT_KEYS.map((k) => k.anchor),
+    [
+      'activity-active-days',
+      'activity-busiest-day',
+      'activity-longest-streak',
+      'activity-current-streak',
+    ],
+  );
+  const days = [
+    { date: key(0), actions: 2, login: true },
+    { date: key(1), actions: 9, login: true },
+    { date: key(2), actions: 0, login: true },
+    { date: key(5), actions: 1, login: false },
+  ];
+  const v = statValues(computeStats(buildGrid(days, END, 0).cells));
+  assert.deepEqual(v, { activeDays: 4, busiestDay: 9, longestStreak: 3, currentStreak: 3 });
+  assert.deepEqual(statValues(null), {
+    activeDays: 0,
+    busiestDay: 0,
+    longestStreak: 0,
+    currentStreak: 0,
+  });
+});
+
+test('profile analytics: months, weekdays, top days and streaks', () => {
+  const days = [
+    { date: key(0), actions: 2, login: true },
+    { date: key(1), actions: 9, login: true },
+    { date: key(2), actions: 0, login: true },
+    { date: key(5), actions: 4, login: false },
+    { date: key(6), actions: 4, login: false },
+  ];
+  const { cells } = buildGrid(days, END, 0);
+
+  const months = monthlyActivity(cells);
+  assert.ok(months.length >= 12 && months.length <= 14, 'a year spans 12 to 14 calendar months');
+  assert.equal(
+    months.reduce((a, m) => a + m.days, 0),
+    cells.length,
+  );
+  assert.equal(
+    months.reduce((a, m) => a + m.activeDays, 0),
+    5,
+  );
+  assert.equal(
+    months.reduce((a, m) => a + m.actions, 0),
+    19,
+  );
+
+  const wk = weekdayActivity(cells);
+  assert.equal(wk.length, 7);
+  assert.equal(
+    wk.reduce((a, w) => a + w.actions, 0),
+    19,
+  );
+  assert.equal(
+    wk.reduce((a, w) => a + w.days, 0),
+    cells.length,
+  );
+
+  assert.deepEqual(
+    topDays(cells, 3).map((d) => [d.date, d.count]),
+    [
+      [key(1), 9],
+      [key(5), 4],
+      [key(6), 4],
+    ],
+    'most actions first, newer first on ties',
+  );
+
+  const runs = topStreaks(cells, 5);
+  assert.deepEqual(runs[0], { days: 3, start: key(2), end: key(0) });
+  assert.deepEqual(runs[1], { days: 2, start: key(6), end: key(5) });
+  assert.equal(runs.length, 2);
+});
+
+test('profile activity: wiring and token discipline', () => {
+  const comp = fs.readFileSync('src/components/profile/redesign/ProfileActivity.jsx', 'utf8');
+  const css = fs.readFileSync('src/components/profile/redesign/profile-activity.css', 'utf8');
+  const stripe = fs.readFileSync('src/components/profile/redesign/ProfilePageStripe.jsx', 'utf8');
+  for (const [name, src] of [
+    ['profile activity', comp],
+    ['profile activity css', css],
+  ]) {
+    assert.doesNotMatch(src, /#[0-9a-fA-F]{3,8}\b(?![\w-])/, `${name}: hex colour`);
+    assert.ok(!src.includes(String.fromCharCode(8212)), `${name}: em dash`);
+    assert.doesNotMatch(src, /lucide-react|tailwind|Math\.random/i, `${name}: stack rules`);
+  }
+  for (const { anchor } of ACTIVITY_STAT_KEYS) {
+    assert.match(comp, new RegExp(`id="${anchor}"`), `profile section for ${anchor}`);
+  }
+  assert.match(comp, /variant="profile"/);
+  assert.match(stripe, /<ProfileActivity userId=\{profile\.id\} isOwn=\{isOwn\} \/>/);
+  assert.match(stripe, /privacy_show_activity !== false/);
 });

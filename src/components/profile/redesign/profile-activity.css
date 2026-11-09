@@ -1,0 +1,209 @@
+/* Profile Activity section (Nov 2026): the home activity card plus the
+   analytics its four stats link to (#activity-active-days,
+   #activity-busiest-day, #activity-longest-streak, #activity-current-streak).
+   Page-scoped `pact-` classes, theme tokens only, cards with no outline,
+   border or shadow (profile rule). */
+
+.pact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+  scroll-margin-top: 96px;
+}
+.pact-card {
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.pact-skel {
+  height: 300px;
+}
+
+.pact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pact-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  scroll-margin-top: 96px;
+  transition: background-color 400ms ease;
+}
+.pact-section:target {
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
+}
+.pact-section__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pact-section__title {
+  margin: 0;
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pact-section__title:focus {
+  outline: none;
+}
+.pact-section__title:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.pact-section__value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.pact-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--emerald-text);
+}
+.pact-rank.is-empty {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.pact-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.pact-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.pact-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* vertical bars */
+.pact-bars {
+  margin: 0;
+}
+.pact-bars__plot {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+  height: 120px;
+}
+.pact-bars__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.pact-bars__track {
+  position: relative;
+  flex: 1;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  overflow: hidden;
+}
+.pact-bars__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+}
+.pact-bars__label {
+  font-size: 11px;
+  text-align: center;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ranked rows */
+.pact-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pact-rows__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.pact-rows__name {
+  min-width: 0;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pact-rows__track {
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  overflow: hidden;
+}
+.pact-rows__bar {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+}
+.pact-rows__value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.pact-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .pact-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .pact-card,
+  .pact-section {
+    padding: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pact-section {
+    transition: none;
+  }
+}

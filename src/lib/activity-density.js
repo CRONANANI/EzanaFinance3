@@ -236,3 +236,95 @@ export const parseCssColor = (s) => {
   }
   return null;
 };
+
+/* ------------------------------------------------------------------------
+ * Percentiles and profile analytics (Nov 2026). Still pure: the home card
+ * shows a percentile under each stat, and the profile Activity section
+ * breaks the same year down further.
+ * ---------------------------------------------------------------------- */
+
+/** The four stats, in card order, with the profile anchor each one links to. */
+export const ACTIVITY_STAT_KEYS = [
+  { key: 'activeDays', anchor: 'activity-active-days' },
+  { key: 'busiestDay', anchor: 'activity-busiest-day' },
+  { key: 'longestStreak', anchor: 'activity-longest-streak' },
+  { key: 'currentStreak', anchor: 'activity-current-streak' },
+];
+
+/** The live value of each stat, as the percentile RPC wants them. */
+export const statValues = (stats) => ({
+  activeDays: stats?.activeDays || 0,
+  busiestDay: stats?.busiest?.count || 0,
+  longestStreak: stats?.longest?.days || 0,
+  currentStreak: stats?.current?.days || 0,
+});
+
+/** 1 -> "1st", 22 -> "22nd", 13 -> "13th". */
+export const ordinal = (n) => {
+  const v = Math.abs(Math.trunc(n)) % 100;
+  const s = v >= 11 && v <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][v % 10] || 'th';
+  return `${Math.trunc(n)}${s}`;
+};
+
+/**
+ * A 0 to 100 percentile as a label, clamped to 1st..99th so nobody reads
+ * "0th" or "100th". null/undefined (not ranked) -> null.
+ */
+export const percentileLabel = (pct) => {
+  if (pct == null || !Number.isFinite(Number(pct))) return null;
+  const p = Math.min(99, Math.max(1, Math.round(Number(pct))));
+  return `${ordinal(p)} percentile`;
+};
+
+/** Per calendar month (UTC) in the grid: active days, actions, days covered. Oldest first. */
+export const monthlyActivity = (cells) => {
+  const map = new Map();
+  for (const c of cells || []) {
+    const k = c.date.slice(0, 7);
+    const m = map.get(k) || { month: k, activeDays: 0, actions: 0, days: 0 };
+    m.days += 1;
+    m.actions += c.count;
+    if (c.level > 0) m.activeDays += 1;
+    map.set(k, m);
+  }
+  return [...map.values()].sort((a, b) => (a.month < b.month ? -1 : 1));
+};
+
+/** Per weekday (0 = Sunday, UTC): active days, actions, and average actions per such day. */
+export const weekdayActivity = (cells) => {
+  const out = Array.from({ length: 7 }, (_, dow) => ({ dow, activeDays: 0, actions: 0, days: 0 }));
+  for (const c of cells || []) {
+    const w = out[new Date(dayMs(c.date)).getUTCDay()];
+    w.days += 1;
+    w.actions += c.count;
+    if (c.level > 0) w.activeDays += 1;
+  }
+  for (const w of out) w.avgActions = w.days ? w.actions / w.days : 0;
+  return out;
+};
+
+/** The n days with the most actions, most first (newer first on ties). */
+export const topDays = (cells, n = 5) =>
+  (cells || [])
+    .filter((c) => c.count > 0)
+    .sort((a, b) => b.count - a.count || (a.date < b.date ? 1 : -1))
+    .slice(0, n)
+    .map((c) => ({ date: c.date, count: c.count }));
+
+/** Every run of active days, longest first (newer first on ties), top n. */
+export const topStreaks = (cells, n = 3) => {
+  const runs = [];
+  let cur = null;
+  for (const c of cells || []) {
+    if (c.level > 0) {
+      if (!cur) cur = { days: 0, start: c.date, end: c.date };
+      cur.days += 1;
+      cur.end = c.date;
+    } else if (cur) {
+      runs.push(cur);
+      cur = null;
+    }
+  }
+  if (cur) runs.push(cur);
+  return runs.sort((a, b) => b.days - a.days || (a.end < b.end ? 1 : -1)).slice(0, n);
+};

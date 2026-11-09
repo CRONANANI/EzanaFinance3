@@ -14,6 +14,10 @@
       "schedule": "47 * * * *"
     },
     {
+      "path": "/api/cron/activity-percentiles",
+      "schedule": "19 5 * * *"
+    },
+    {
       "path": "/api/cron/platform-aggregates",
       "schedule": "31 6 * * *"
     },

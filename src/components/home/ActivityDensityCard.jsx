@@ -15,6 +15,14 @@
  * watchlist adds, completed lessons), the deeper the colour. No login and
  * no action leaves the day empty. Levels come from lib/activity-density.js.
  *
+ * Layout (Nov 2026, v2): the title and the four stats sit in a column on the
+ * left as a 2x2 grid; the legend, the 2D / 3D toggle and the chart fill the
+ * right. Each stat shows the member's percentile on Ezana and links to the
+ * matching analytics section of their profile (#activity-active-days,
+ * #activity-busiest-day, #activity-longest-streak, #activity-current-streak).
+ * The same card renders on the profile page (variant="profile"), where the
+ * stats jump to those sections in place.
+ *
  * Interaction: hover or tap a day for its record, arrow keys walk the grid,
  * hover a legend swatch to isolate that level, and in 3D drag to orbit
  * (double-click resets). The chosen view is remembered per browser.
@@ -26,8 +34,10 @@
  * new account shows an honest, mostly empty year.
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import {
+  ACTIVITY_STAT_KEYS,
   ELEV_3D,
   ELEV_RANGE,
   YAW_3D,
@@ -43,6 +53,7 @@ import {
   mixRGB,
   monthLabels,
   parseCssColor,
+  percentileLabel,
   project,
   riseAt,
   smoothstep,
@@ -101,16 +112,48 @@ const quadPath = (ctx, p, o, r) => {
 };
 
 /* One centred stat: label, value + unit, and a small date line. */
-function Stat({ label, value, unit, sub }) {
+function StatRank({ pct, pending }) {
+  if (pending) return <div className="adc-stat__rank is-pending" aria-hidden="true" />;
+  const label = percentileLabel(pct);
+  if (!label) return <div className="adc-stat__rank is-empty">Not ranked yet</div>;
   return (
-    <div className="adc-stat">
+    <div
+      className="adc-stat__rank"
+      title={`Higher than about ${Math.round(pct)}% of Ezana members`}
+    >
+      <i className="bi bi-bar-chart-line" aria-hidden="true" />
+      {label}
+    </div>
+  );
+}
+
+function Stat({ label, value, unit, sub, pct, pending, href }) {
+  const rank = percentileLabel(pct);
+  const body = (
+    <>
       <div className="adc-stat__label">{label}</div>
       <div className="adc-stat__line">
         <span className="adc-stat__value">{value}</span>
         <span className="adc-stat__unit">{unit}</span>
       </div>
       <div className="adc-stat__sub">{sub}</div>
-    </div>
+      <StatRank pct={pct} pending={pending} />
+      {href ? <i className="bi bi-arrow-up-right adc-stat__go" aria-hidden="true" /> : null}
+    </>
+  );
+  if (!href) return <div className="adc-stat">{body}</div>;
+  const aria = `${label}: ${value} ${unit}, ${sub}. ${
+    rank ? `${rank} on Ezana` : pending ? 'Percentile loading' : 'Not ranked yet'
+  }. Open activity analytics.`;
+  // In-page anchors on the profile; a route on home.
+  return href.startsWith('#') ? (
+    <a className="adc-stat adc-stat--link" href={href} aria-label={aria}>
+      {body}
+    </a>
+  ) : (
+    <Link className="adc-stat adc-stat--link" href={href} aria-label={aria}>
+      {body}
+    </Link>
   );
 }
 
@@ -123,37 +166,70 @@ function readView() {
   }
 }
 
-export function ActivityDensityCard({ className = '' }) {
-  const { user } = useAuth();
-  const [payload, setPayload] = useState({ status: 'loading', days: [], end: null });
+const EMPTY_PAYLOAD = {
+  days: [],
+  end: null,
+  percentiles: null,
+  profileSlug: null,
+  isOwn: true,
+  breakdown: null,
+  errorCode: null,
+};
 
-  // Fetch the year once per signed-in user. Login history for today is
-  // recorded by useLoginHistory on the same page, so a fresh login shows.
+/**
+ * @param {object}   props
+ * @param {string}   [props.className]
+ * @param {'home'|'profile'} [props.variant] home (default) links each stat to
+ *   the member's profile; profile links to the sections below it.
+ * @param {string}   [props.userId] whose activity (profile pages); defaults to the viewer.
+ * @param {(state: object) => void} [props.onData] receives
+ *   { status, model, percentiles, breakdown, isOwn, errorCode } whenever it changes.
+ */
+export function ActivityDensityCard({ className = '', variant = 'home', userId = null, onData }) {
+  const { user } = useAuth();
+  const [payload, setPayload] = useState({ status: 'loading', ...EMPTY_PAYLOAD });
+  const isProfile = variant === 'profile';
+
+  // Fetch the year once per signed-in user (and per profile). Login history
+  // for today is recorded by useLoginHistory on the same page, so a fresh
+  // login shows.
   useEffect(() => {
     if (!user) {
-      setPayload({ status: 'ready', days: [], end: null });
+      setPayload({ status: 'ready', ...EMPTY_PAYLOAD });
       return undefined;
     }
     let cancelled = false;
+    const qs = new URLSearchParams({ days: '371' });
+    if (userId) qs.set('userId', userId);
+    if (isProfile) qs.set('include', 'breakdown');
     (async () => {
       try {
-        const res = await fetch('/api/activity-density?days=371', { credentials: 'include' });
-        if (!res.ok) throw new Error(String(res.status));
+        const res = await fetch(`/api/activity-density?${qs}`, { credentials: 'include' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw Object.assign(new Error(String(res.status)), { code: err?.error || null });
+        }
         const data = await res.json();
         if (!cancelled)
           setPayload({
             status: 'ready',
             days: Array.isArray(data.days) ? data.days : [],
             end: data.end || null,
+            percentiles: data.percentiles || null,
+            profileSlug: data.profileSlug || null,
+            isOwn: data.isOwn !== false,
+            breakdown: Array.isArray(data.breakdown) ? data.breakdown : null,
+            errorCode: null,
           });
-      } catch {
-        if (!cancelled) setPayload({ status: 'error', days: [], end: null });
+      } catch (err) {
+        if (!cancelled)
+          setPayload({ status: 'error', ...EMPTY_PAYLOAD, errorCode: err?.code || null });
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, userId, isProfile]);
 
   const endKey = payload.end ? dayMs(payload.end) : dayMs(Date.now());
   const model = useMemo(() => {
@@ -164,6 +240,20 @@ export function ActivityDensityCard({ className = '' }) {
       months: monthLabels(grid.cells, grid.weeks, LOCALE),
     };
   }, [payload.days, endKey]);
+
+  // Hand the parsed year to the profile analytics (stable callback not required).
+  const onDataRef = useRef(onData);
+  onDataRef.current = onData;
+  useEffect(() => {
+    onDataRef.current?.({
+      status: payload.status,
+      model,
+      percentiles: payload.percentiles,
+      breakdown: payload.breakdown,
+      isOwn: payload.isOwn,
+      errorCode: payload.errorCode,
+    });
+  }, [model, payload]);
 
   const [view, setViewState] = useState('2d');
   useEffect(() => {
@@ -919,6 +1009,14 @@ export function ActivityDensityCard({ className = '' }) {
     return `${f.format(dayMs(a))} to ${f.format(dayMs(b))}`;
   };
   const is3d = view === '3d';
+  const pctPending = payload.status === 'loading';
+  const pct = payload.percentiles || {};
+  const statHref = (anchor) => {
+    if (isProfile) return `#${anchor}`;
+    return payload.profileSlug
+      ? `/profile/${encodeURIComponent(payload.profileSlug)}#${anchor}`
+      : null;
+  };
   const statBlocks = [
     {
       label: 'Active days',
@@ -944,7 +1042,10 @@ export function ActivityDensityCard({ className = '' }) {
       unit: stats.current.days === 1 ? 'day' : 'days',
       sub: range(stats.current.start, stats.current.end),
     },
-  ];
+  ].map((b, i) => {
+    const { key, anchor } = ACTIVITY_STAT_KEYS[i];
+    return { ...b, pct: pct[key] ?? null, pending: pctPending, href: statHref(anchor) };
+  });
   const hint = is3d
     ? 'Drag to orbit. Double-click to reset.'
     : 'Hover a day for details. Arrow keys to explore.';
@@ -953,7 +1054,7 @@ export function ActivityDensityCard({ className = '' }) {
   return (
     <section
       ref={rootRef}
-      className={`adc ${className}`.trim()}
+      className={`adc adc--split adc--${isProfile ? 'profile' : 'home'} ${className}`.trim()}
       aria-labelledby="adc-title"
       aria-busy={payload.status === 'loading'}
     >
@@ -964,20 +1065,38 @@ export function ActivityDensityCard({ className = '' }) {
         ))}
       </span>
 
-      {/* Header: title left; legend and the 2D / 3D toggle right. */}
-      <header className="adc-head">
-        <div className="adc-head__text">
-          <div className="adc-eyebrow">Your activity</div>
-          <h3 id="adc-title" className="adc-title">
-            <span className="adc-num">{nf.format(stats.activeDays)}</span> active{' '}
-            {stats.activeDays === 1 ? 'day' : 'days'} and{' '}
-            <span className="adc-num">{nf.format(stats.total)}</span>{' '}
-            {stats.total === 1 ? 'action' : 'actions'} in the last year
-            {payload.status === 'error' ? (
-              <span className="adc-title__note"> Activity could not be loaded.</span>
-            ) : null}
-          </h3>
-        </div>
+      {/* Left: title, then the four stats as a 2x2 grid. */}
+      <div className="adc-side">
+        <header className="adc-head">
+          <div className="adc-head__text">
+            <div className="adc-eyebrow">{payload.isOwn ? 'Your activity' : 'Activity'}</div>
+            <h3 id="adc-title" className="adc-title">
+              <span className="adc-num">{nf.format(stats.activeDays)}</span> active{' '}
+              {stats.activeDays === 1 ? 'day' : 'days'} and{' '}
+              <span className="adc-num">{nf.format(stats.total)}</span>{' '}
+              {stats.total === 1 ? 'action' : 'actions'} in the last year
+              {payload.status === 'error' ? (
+                <span className="adc-title__note">
+                  {payload.errorCode === 'activity_private'
+                    ? ' This member keeps their activity private.'
+                    : ' Activity could not be loaded.'}
+                </span>
+              ) : null}
+            </h3>
+          </div>
+        </header>
+
+        <ul className="adc-stats" aria-label="Activity stats">
+          {statBlocks.map((b) => (
+            <li key={b.label} className="adc-stats__item">
+              <Stat {...b} />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Right: legend and the 2D / 3D toggle, then the chart. */}
+      <div className="adc-main">
         <div className="adc-head__tools">
           <div className="adc-legend" onMouseLeave={() => setLegendLevel(-1)}>
             <span>Less</span>
@@ -1017,44 +1136,37 @@ export function ActivityDensityCard({ className = '' }) {
             ))}
           </div>
         </div>
-      </header>
 
-      <div className="adc-stagewrap">
-        <div ref={stageRef} className="adc-stage" style={{ height: H2_MAX }}>
-          <canvas
-            ref={canvasRef}
-            tabIndex={0}
-            role="img"
-            aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. ${hint}`}
-            title={hint}
-            className="adc-canvas"
-            style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
-          />
+        <div className="adc-stagewrap">
+          <div ref={stageRef} className="adc-stage" style={{ height: H2_MAX }}>
+            <canvas
+              ref={canvasRef}
+              tabIndex={0}
+              role="img"
+              aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. ${hint}`}
+              title={hint}
+              className="adc-canvas"
+              style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
+            />
+          </div>
+
+          <div
+            ref={tipRef}
+            role="tooltip"
+            aria-hidden={!activeCell}
+            className={`adc-tip${activeCell ? ' is-on' : ''}`}
+          >
+            {activeCell ? (
+              <>
+                <strong>{dayText(activeCell)}</strong>
+                <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
+              </>
+            ) : (
+              ' '
+            )}
+            <span className="adc-tip__arrow" aria-hidden="true" />
+          </div>
         </div>
-
-        <div
-          ref={tipRef}
-          role="tooltip"
-          aria-hidden={!activeCell}
-          className={`adc-tip${activeCell ? ' is-on' : ''}`}
-        >
-          {activeCell ? (
-            <>
-              <strong>{dayText(activeCell)}</strong>
-              <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
-            </>
-          ) : (
-            ' '
-          )}
-          <span className="adc-tip__arrow" aria-hidden="true" />
-        </div>
-      </div>
-
-      {/* The four stats, centred across the card. */}
-      <div className="adc-stats">
-        {statBlocks.map((b) => (
-          <Stat key={b.label} {...b} />
-        ))}
       </div>
 
       <p aria-live="polite" className="adc-sr">

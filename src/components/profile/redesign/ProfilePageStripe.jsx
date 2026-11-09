@@ -22,6 +22,7 @@ import { Achievements } from './Achievements';
 import { EloRatingCard } from './EloRatingCard';
 import { WaysToImprove } from './WaysToImprove';
 import { TradeNotesPanel } from './TradeNotesPanel';
+import { ProfileActivity } from './ProfileActivity';
 
 import {
   mapProfileUser,
@@ -533,6 +534,13 @@ export function ProfilePageStripe({ username }) {
           <TradeNotesPanel userId={profile.id} isOwn={isOwn} />
         </div>
       </div>
+
+      {/* Activity: the home activity card plus the analytics its stats link
+          to (/profile/<slug>#activity-...). Hidden on other members' profiles
+          when they turned activity off; the API enforces the same rule. */}
+      {(isOwn || profile.privacy_show_activity !== false) && (
+        <ProfileActivity userId={profile.id} isOwn={isOwn} />
+      )}
     </div>
   );
 }

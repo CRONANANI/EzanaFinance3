@@ -1842,8 +1842,9 @@ body.light-mode .bs-band + .bs-band {
 
 /* Activity density card placeholder while its chunk loads (the card's own
    styles live in components/home/activity-density.css). Borderless, the
-   card's own compact height. */
+   card's own height: since the 2x2 stats moved beside the chart (Nov 2026,
+   v2) the title and stats column sets it. */
 .adc-skel {
-  height: 232px;
+  height: 300px;
   background: var(--bs-bg-light);
 }
