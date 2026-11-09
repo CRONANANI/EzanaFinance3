@@ -463,8 +463,10 @@ test('nav icons: one box, one glyph size, badges anchored the same, imported las
   );
   assert.match(
     css,
-    /\.nn-badge,\s*#mainNav\.main-nav \.checklist-trigger-badge \{[^}]*top: var\(--nav-badge-inset\);[^}]*right: var\(--nav-badge-inset\);/s,
+    /\.nn-badge,\s*#mainNav\.main-nav \.checklist-trigger-badge \{[^}]*top: var\(--nav-badge-top\);[^}]*right: var\(--nav-badge-inset\);/s,
   );
+  /* Nov 2026: badges sit above the 22px glyph, never on it. */
+  assert.match(css, /--nav-badge-top: -6px/);
   assert.match(css, /border: 0;/);
   assert.doesNotMatch(css, /margin-top:\s*-|translateY\(/, 'no negative-margin or transform hacks');
   const nav = read('src/components/Layout/Navbar.js');

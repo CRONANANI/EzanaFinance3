@@ -79,7 +79,7 @@
 }
 
 /* Vibrating animation when unread — one shake burst every 30s */
-.nn-bell-btn.nn-has-unread i {
+.nn-bell-btn.nn-has-unread :is(i, .nn-bell-glyph) {
   animation: nnVibrate 30s ease-in-out infinite;
   transform-origin: top center;
 }
@@ -213,60 +213,6 @@
 
 .nn-mark-all:hover {
   background: color-mix(in srgb, var(--emerald) 10%, transparent);
-}
-
-/* ══════════════════════════════
-   FILTER TABS
-   ══════════════════════════════ */
-.nn-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.3rem;
-  padding: 0.625rem 1.25rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
-  flex-shrink: 0;
-  /* Allow all filter chips to stay inside the panel (no clipped horizontal row) */
-  overflow: visible;
-}
-
-.nn-filter {
-  padding: 0.3rem 0.55rem;
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: #6b7280;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  flex: 0 0 auto;
-}
-.nn-filter:hover {
-  color: #f0f6fc;
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
-}
-.nn-filter-active {
-  color: var(--emerald);
-  background: var(--emerald-bg-hover);
-  border-color: var(--emerald-glow);
-}
-
-.nn-filter-count {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-value-sm-size);
-  font-weight: var(--type-value-sm-weight);
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--negative);
-  padding: 0 4px;
-  border-radius: var(--radius-sm);
-  min-width: 14px;
-  text-align: center;
 }
 
 /* ══════════════════════════════
@@ -657,14 +603,6 @@ body.light-mode .nn-friend-decline {
   /* Mobile filters */
   .nn-mobile-filters {
     padding: 0.5rem 1rem;
-    gap: 0.4rem 0.35rem;
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-  .nn-mobile-filters .nn-filter {
-    min-height: 36px;
-    padding: 0.35rem 0.65rem;
-    font-size: 0.6875rem;
   }
 
   /* Mobile notification list */
@@ -684,7 +622,7 @@ body.light-mode .nn-friend-decline {
   }
 
   /* Bell: same 30s cadence as desktop */
-  .nn-bell-btn.nn-has-unread i {
+  .nn-bell-btn.nn-has-unread :is(i, .nn-bell-glyph) {
     animation: nnVibrateMobile 30s ease-in-out infinite;
     transform-origin: top center;
   }
@@ -764,15 +702,6 @@ body.light-mode .nn-item-content {
 }
 body.light-mode .nn-item:hover {
   background: rgba(16, 185, 129, 0.03);
-}
-body.light-mode .nn-filter {
-  color: #9ca3af;
-}
-body.light-mode .nn-filter:hover {
-  color: #111827;
-}
-body.light-mode .nn-filter-active {
-  color: var(--emerald);
 }
 
 @media (max-width: 768px) {
@@ -923,70 +852,6 @@ body .nn-dropdown.nnx-panel {
 .nnx-markall:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--emerald-glow);
-}
-
-/* Filter tabs */
-.nnx-tabs {
-  flex-shrink: 0;
-  display: flex;
-  gap: 4px;
-  padding: 10px 16px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  border-bottom: 1px solid var(--border-secondary);
-}
-.nnx-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-.nnx-tab:hover {
-  color: var(--text-primary);
-  background: var(--surface-card-hover);
-}
-.nnx-tab:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--emerald-glow);
-}
-.nnx-tab--active,
-.nnx-tab--active:hover {
-  color: var(--emerald);
-  background: var(--emerald-bg);
-  border-color: var(--emerald-border);
-}
-.nnx-tab-count {
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--bg-primary);
-  background: var(--emerald);
-}
-.nnx-tab:not(.nnx-tab--active) .nnx-tab-count {
-  color: var(--text-secondary);
-  background: var(--surface-card-hover);
 }
 
 /* Body */
@@ -1229,9 +1094,8 @@ body .nn-dropdown.nnx-panel {
   }
   .nnx-live,
   .nnx-row,
-  .nnx-tab,
   .nnx-markall,
-  .nn-bell-btn.nn-has-unread i {
+  .nn-bell-btn.nn-has-unread :is(i, .nn-bell-glyph) {
     animation: none;
     transition: none;
   }

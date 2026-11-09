@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
+import NavIcon from '@/components/nav/NavIcon';
+import NotificationFilterMenu from '@/components/nav/NotificationFilterMenu';
 
 /* Notification type → display category (label, Bootstrap icon). Oct 29: one
    accent (emerald, in nav-notifications.css) for every category tile instead
@@ -50,6 +52,8 @@ function isToday(ts) {
 
 // Filter keys reuse the real notification `type` values so filtering stays wired
 // to the existing feed.
+const FILTER_SESSION_KEY = 'ezana.notifications.filter';
+
 const FILTER_TABS = [
   { key: 'all', label: 'All' },
   { key: 'watchlist', label: 'Watchlist' },
@@ -205,12 +209,39 @@ export function NavNotifications() {
   const { user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [filter, setFilter] = useState('all');
+  /* The chosen filter survives reopening the panel and page changes for the
+     session (Nov 2026). */
+  const [filter, setFilterState] = useState('all');
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(FILTER_SESSION_KEY);
+      if (saved && FILTER_TABS.some((f) => f.key === saved)) setFilterState(saved);
+    } catch {
+      /* storage unavailable: default to All */
+    }
+  }, []);
+  const setFilter = (key) => {
+    setFilterState(key);
+    try {
+      window.sessionStorage.setItem(FILTER_SESSION_KEY, key);
+    } catch {
+      /* per-session nicety only */
+    }
+  };
   const [expandedId, setExpandedId] = useState(null);
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+  /* One list for the desktop panel and the mobile sheet: the same keys and
+     unread counts the pill row used. */
+  const filterOptions = FILTER_TABS.map((f) => ({
+    ...f,
+    count:
+      f.key === 'all'
+        ? unreadCount
+        : notifications.filter((n) => n.type === f.key && !n.read).length,
+  }));
 
   const filtered = notifications.filter((n) => {
     if (filter === 'all') return true;
@@ -428,39 +459,16 @@ export function NavNotifications() {
     };
   }, [isOpen]);
 
-  /* Close on Escape */
+  /* Close on Escape. An Esc the filter dropdown already handled (it calls
+     preventDefault) closes only the dropdown, not the whole panel. */
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
-      if (e.key === 'Escape') closePanel();
+      if (e.key === 'Escape' && !e.defaultPrevented) closePanel();
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, closePanel]);
-
-  /* ── Shared filter bar ── */
-  const FilterBar = ({ extraClass }) => (
-    <div className={`nn-filters ${extraClass || ''}`}>
-      {[
-        { key: 'all', label: 'All' },
-        { key: 'watchlist', label: 'Watchlist' },
-        { key: 'inside-the-capitol', label: 'Inside the Capitol' },
-        { key: 'market_news', label: 'Market' },
-        { key: 'portfolio_alerts', label: 'Portfolio' },
-        { key: 'community', label: 'Community' },
-        { key: 'learning', label: 'Learning' },
-      ].map((f) => (
-        <button
-          key={f.key}
-          className={`nn-filter ${filter === f.key ? 'nn-filter-active' : ''}`}
-          onClick={() => setFilter(f.key)}
-          type="button"
-        >
-          {f.label}
-        </button>
-      ))}
-    </div>
-  );
 
   /* ── Shared notification list ── */
   const NotifList = ({ className }) => (
@@ -496,8 +504,10 @@ export function NavNotifications() {
         type="button"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls={isOpen ? 'notifications-panel' : undefined}
       >
-        <i className={`bi bi-bell${isOpen ? '-fill' : ''}`} />
+        <NavIcon name="bell" size={22} className="nn-bell-glyph" />
         {unreadCount > 0 && (
           <span className="nn-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
         )}
@@ -507,6 +517,7 @@ export function NavNotifications() {
       {isOpen && (
         <div
           ref={dropdownRef}
+          id="notifications-panel"
           className="nn-dropdown nnx-panel"
           role="dialog"
           aria-label="Notifications"
@@ -527,26 +538,13 @@ export function NavNotifications() {
             )}
           </div>
 
-          {/* Fixed filter tabs */}
-          <div className="nnx-tabs">
-            {FILTER_TABS.map((f) => {
-              const c =
-                f.key === 'all'
-                  ? unreadCount
-                  : notifications.filter((n) => n.type === f.key && !n.read).length;
-              return (
-                <button
-                  key={f.key}
-                  type="button"
-                  className={`nnx-tab${filter === f.key ? ' nnx-tab--active' : ''}`}
-                  onClick={() => setFilter(f.key)}
-                >
-                  {f.label}
-                  {c > 0 && <span className="nnx-tab-count">{c}</span>}
-                </button>
-              );
-            })}
-          </div>
+          {/* Filter: a centred dropdown on its own row under the header */}
+          <NotificationFilterMenu
+            filters={filterOptions}
+            value={filter}
+            onChange={setFilter}
+            className="nnx-filter-row"
+          />
 
           {/* Scrolling body */}
           <div className="nnx-body">
@@ -626,7 +624,12 @@ export function NavNotifications() {
                 </div>
               </div>
 
-              <FilterBar extraClass="nn-mobile-filters" />
+              <NotificationFilterMenu
+                filters={filterOptions}
+                value={filter}
+                onChange={setFilter}
+                className="nn-mobile-filters"
+              />
               <NotifList className="nn-mobile-list" />
             </div>
           </div>,

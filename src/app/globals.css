@@ -932,35 +932,6 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
   display: block;
   line-height: 1;
 }
-/* Oct 29: the trigger is a progress ring around a check, previewing the
-   panel header's ring (ChecklistProgressIcon.js). */
-.cl2-trig-ring {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-}
-.cl2-trig-track {
-  fill: none;
-  stroke: color-mix(in srgb, currentColor 28%, transparent);
-  stroke-width: 2;
-}
-.cl2-trig-arc {
-  fill: none;
-  stroke: var(--emerald);
-  stroke-width: 2;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.3s ease-out;
-}
-.cl2-trig-check {
-  position: relative;
-  font-size: 0.8rem;
-  line-height: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cl2-trig-arc {
-    transition: none;
-  }
-}
 /* Same box as the bell's .nn-badge, in the emerald treatment. The numeral
    follows the app's text-on-emerald convention (--bg-primary), which is white
    in light mode. tabular-nums via the shared .cl2-mono class. */
@@ -3234,10 +3205,15 @@ html:has(.landing-page) .landing-footer button {
 /* ── Main nav sizing ─────────────────────────────────────────────
    One icon size across both clusters: profile / settings / logout render
    as bare glyphs at the bell + checklist size (1.35rem in a 44px tap box,
-   hover tint on the box). The logo sits just above that size. Scoped to
-   .main-nav so the landing, Echo and partner navs are unchanged. */
-.main-nav .nav-brand .nav-logo-img--wing {
-  max-height: 30px !important;
+   hover tint on the box). Scoped to .main-nav so the landing, Echo and
+   partner navs are unchanged. Nov 2026: the logo is no longer capped here;
+   every nav renders it at the landing page's size (54px tall). */
+/* Between the phone layout and 1280px the centre links leave no room for the
+   landing-size logo, so it keeps the compact 30px it had before (Nov 2026). */
+@media (min-width: 769px) and (max-width: 1279px) {
+  .main-nav .nav-brand .nav-logo-img--wing {
+    max-height: 30px !important;
+  }
 }
 .main-nav .nav-action-inner,
 .main-nav .nav-action-tap:hover .nav-action-inner {

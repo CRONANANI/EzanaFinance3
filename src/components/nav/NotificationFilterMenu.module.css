@@ -1,0 +1,168 @@
+/* Notification filter dropdown (Nov 2026). Theme tokens only, no hex; light
+   mode follows body.light-mode through the same tokens.
+   TOKEN MAP (the home page's tokens, src/app/theme-variables.css):
+     menu ground    --bg-secondary (the notifications panel's own surface),
+                    lifted with a mix of the page ink so it reads above it
+     washes         --text-primary mixed into the panel ground
+     text           --text-primary / --text-muted
+     accent         --emerald, --emerald-text, --emerald-bg-hover
+     shadow         --shadow-xl
+     numerals       --font-mono, tabular */
+.wrap {
+  --f-bg: color-mix(in srgb, var(--text-primary) 4%, var(--bg-secondary));
+  --f-surface-2: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --f-surface-3: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --f-text: var(--text-primary);
+  --f-text-muted: var(--text-muted);
+  --f-accent: var(--emerald);
+  --f-accent-text: var(--emerald-text);
+  --f-accent-soft: var(--emerald-bg-hover);
+  --f-shadow: var(--shadow-xl);
+  --f-font-mono: var(--font-mono);
+
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 2px 16px 10px;
+  font-family: var(--font-sans);
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  height: 34px;
+  padding: 0 12px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--f-surface-2);
+  color: var(--f-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.trigger:hover,
+.triggerOpen {
+  background: var(--f-surface-3);
+}
+
+.funnel {
+  font-size: 13px;
+  color: var(--f-text-muted);
+}
+
+.triggerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count,
+.optionCount {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--f-accent-soft);
+  color: var(--f-accent-text);
+  font-family: var(--f-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chev {
+  font-size: 11px;
+  color: var(--f-text-muted);
+  transition: transform 160ms ease;
+}
+
+.triggerOpen .chev {
+  transform: rotate(180deg);
+}
+
+.trigger:focus-visible,
+.option:focus-visible {
+  outline: 2px solid var(--f-accent);
+  outline-offset: 2px;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(260px, calc(100% - 32px));
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--radius-lg);
+  background: var(--f-bg);
+  box-shadow: var(--f-shadow);
+  animation: ezMenuIn 140ms ease-out;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  color: var(--f-text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.option:hover,
+.option:focus {
+  background: var(--f-surface-2);
+}
+
+.selected {
+  font-weight: 600;
+}
+
+.check {
+  font-size: 14px;
+  color: var(--f-accent-text);
+}
+
+.optionLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes ezMenuIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu {
+    animation: none;
+  }
+  .chev,
+  .trigger {
+    transition: none;
+  }
+}

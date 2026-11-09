@@ -6,10 +6,9 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { getTasksByStage, isStageUnlocked, CHECKLIST_STAGES } from '@/config/checklist';
 import { useOptionalActiveTaskContext } from '@/contexts/ActiveTaskContext';
 import './checklist-panel.css';
+import NavIcon from '@/components/nav/NavIcon';
 
 /* Trigger ring geometry (24px box). */
-const TRIG_R = 9.5;
-const TRIG_C = 2 * Math.PI * TRIG_R;
 
 /**
  * Getting-Started checklist dropdown — rebuilt per the Nav Dropdowns design
@@ -97,24 +96,16 @@ export function ChecklistProgressIcon() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         title={`${completedCount}/${totalTasks} tasks completed`}
-        aria-label={`Getting started checklist, ${completedCount} of ${totalTasks} tasks completed`}
+        aria-label={`Checklist, ${completedCount} of ${totalTasks} done`}
         className="checklist-trigger-btn"
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls={isOpen ? 'checklist-panel' : undefined}
       >
+        {/* Nov 2026: the summit glyph (a mask in the theme colour) replaces the
+            progress ring; progress reads from the corner badge. */}
         <span className="checklist-trigger-inner" aria-hidden="true">
-          <svg className="cl2-trig-ring" viewBox="0 0 24 24" width="24" height="24">
-            <circle className="cl2-trig-track" cx="12" cy="12" r={TRIG_R} />
-            <circle
-              className="cl2-trig-arc"
-              cx="12"
-              cy="12"
-              r={TRIG_R}
-              strokeDasharray={TRIG_C}
-              strokeDashoffset={TRIG_C * (1 - pct)}
-              transform="rotate(-90 12 12)"
-            />
-          </svg>
-          <i className="bi bi-check2 cl2-trig-check" />
+          <NavIcon name="summit" size={22} />
         </span>
         <span className="checklist-trigger-badge cl2-mono" aria-hidden="true">
           {completedCount}/{totalTasks}
@@ -129,7 +120,12 @@ export function ChecklistProgressIcon() {
             style={{ position: 'fixed', inset: 0, zIndex: 40 }}
           />
 
-          <div className="cl2-panel" role="dialog" aria-label="Getting started checklist">
+          <div
+            className="cl2-panel"
+            id="checklist-panel"
+            role="dialog"
+            aria-label="Getting started checklist"
+          >
             <span className="cl2-caret" aria-hidden />
 
             {/* ── Fixed header: ring + title + XP bar ── */}

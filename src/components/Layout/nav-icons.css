@@ -18,6 +18,8 @@
   --nav-icon-gap: 0.25rem;
   --nav-badge-size: 16px;
   --nav-badge-inset: 3px;
+  /* Badges sit just above the 22px glyph (11px to 33px in the box), never on it. */
+  --nav-badge-top: -6px;
   --nav-link-icon: 0.9375rem;
   --nav-link-gap: 0.375rem;
 }
@@ -36,7 +38,8 @@
 #mainNav.main-nav .nav-left-zone > .nav-brand {
   display: inline-flex;
   align-items: center;
-  height: var(--nav-icon-box);
+  /* Sized by the logo (the landing page's 54px), centred on the nav line. */
+  height: auto;
   margin-right: 0.5rem;
   padding: 0;
 }
@@ -104,23 +107,18 @@
   background: transparent;
 }
 #mainNav.main-nav .nn-bell-btn > i,
-#mainNav.main-nav .checklist-trigger-inner > i:not(.cl2-trig-check),
+#mainNav.main-nav .checklist-trigger-inner > i,
 #mainNav.main-nav .nav-action-inner > i {
   display: block;
   font-size: var(--nav-icon-glyph) !important;
   line-height: 1;
-}
-/* The checklist ring is drawn at the glyph's size so it reads as the same weight. */
-#mainNav.main-nav .cl2-trig-ring {
-  width: 24px;
-  height: 24px;
 }
 
 /* Badges: anchored to the 44px box, same inset and size for notifications and progress. */
 #mainNav.main-nav .nn-badge,
 #mainNav.main-nav .checklist-trigger-badge {
   position: absolute;
-  top: var(--nav-badge-inset);
+  top: var(--nav-badge-top);
   right: var(--nav-badge-inset);
   left: auto;
   bottom: auto;
