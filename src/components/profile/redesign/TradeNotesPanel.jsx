@@ -1,7 +1,6 @@
 'use client';
 
 import { ProfileTradeNotes } from '../ProfileTradeNotes';
-import { Caps } from './Caps';
 import { page, shape, density, type as typeTokens } from './profile-design-tokens';
 
 /**
@@ -15,16 +14,11 @@ export function TradeNotesPanel({ userId, isOwn = false }) {
       className="profile-stripe-trade-notes"
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.card,
         padding: density.cardPaddingY,
         fontFamily: typeTokens.sans,
       }}
     >
-      <div style={{ marginBottom: 10 }}>
-        <Caps>Trade Notes</Caps>
-      </div>
       <ProfileTradeNotes userId={userId} isOwn={isOwn} />
     </div>
   );

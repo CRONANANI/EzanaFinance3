@@ -289,9 +289,7 @@ export function CreatorTrackRecord({ creatorId, canCreate = false }) {
     <div
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.card,
         padding: 16,
         fontFamily: typeTokens.sans,
       }}

@@ -76,13 +76,14 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
 
   return (
     <div
+      className="profile-stripe-perf"
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.card,
         padding: density.cardPaddingY,
         fontFamily: typeTokens.sans,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div

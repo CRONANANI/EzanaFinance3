@@ -38,9 +38,7 @@ export function IdentityHero({ user }) {
       className="profile-stripe-hero"
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.hero,
         padding: density.cardPaddingY,
         display: 'flex',
         alignItems: 'center',

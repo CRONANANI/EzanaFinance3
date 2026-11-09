@@ -53,9 +53,7 @@ export function EloRatingCard({ user }) {
     <div
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.card,
         padding: density.cardPaddingY,
         fontFamily: typeTokens.sans,
       }}

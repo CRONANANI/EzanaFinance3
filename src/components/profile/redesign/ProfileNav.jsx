@@ -15,7 +15,7 @@ export function ProfileNav({
     <header
       style={{
         background: page.surface,
-        padding: '12px 28px',
+        padding: '12px 0',
         borderBottom: `1px solid ${page.border}`,
         display: 'flex',
         alignItems: 'center',

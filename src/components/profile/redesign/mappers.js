@@ -125,11 +125,22 @@ export function mapPerfStats(metrics) {
   });
 }
 
-const ACH_GLYPHS = {
-  trading: '$',
-  learning: '◆',
-  community: '✦',
+/* Bootstrap Icons per category, for achievements that don't name their own. */
+const ACH_ICONS = {
+  trading: 'bi-graph-up-arrow',
+  learning: 'bi-mortarboard',
+  community: 'bi-people',
 };
+
+/**
+ * Achievement progress as 0..1. useAchievements reports 0..100 (so a 93%
+ * badge used to render as "9300% progress"); a 0..1 value passes through.
+ */
+export function achievementProgress(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(1, n > 1 ? n / 100 : n);
+}
 
 export function mapAchievements(achievementsState) {
   const list = achievementsState?.list ?? achievementsState?.achievements ?? [];
@@ -137,10 +148,13 @@ export function mapAchievements(achievementsState) {
     key: a.id || a.key || a.slug,
     name: a.name || a.title || 'Achievement',
     category: (a.category || 'TRADING').toUpperCase(),
-    iconGlyph: a.iconGlyph || ACH_GLYPHS[(a.category || 'trading').toLowerCase()] || '★',
+    icon:
+      typeof a.icon === 'string' && a.icon.startsWith('bi-')
+        ? a.icon
+        : ACH_ICONS[(a.category || 'trading').toLowerCase()] || 'bi-award',
     earned: Boolean(a.earned ?? a.earnedAt ?? a.earned_at),
     earnedAt: a.earnedAt ?? a.earned_at ?? null,
-    progress: a.progress ?? 0,
+    progress: achievementProgress(a.progress),
   }));
 }
 

@@ -1,93 +1,51 @@
 'use client';
 
+/* Achievements collection (Nov 2026). No outline on the card; tiles flow in
+   a responsive grid (at least 118px each) so names and categories fit
+   instead of being squeezed into nine fixed columns. */
+
 import { AchievementCard } from './AchievementCard';
 import { page, shape, density, type as typeTokens } from './profile-design-tokens';
 
+const SLOTS = 9;
+
 export function Achievements({ achievements = [] }) {
-  const safeList = achievements.slice(0, 9);
-  while (safeList.length < 9) {
-    safeList.push({
-      key: `placeholder-${safeList.length}`,
-      name: '–',
+  const list = achievements.slice(0, SLOTS);
+  const earnedCount = list.filter((a) => a.earned ?? a.earnedAt).length;
+  const tiles = [
+    ...list,
+    ...Array.from({ length: SLOTS - list.length }, (_, i) => ({
+      key: `placeholder-${i}`,
+      placeholder: true,
       category: 'TRADING',
-      iconGlyph: '·',
+      icon: 'bi-lock',
       earned: false,
-      earnedAt: null,
       progress: 0,
-    });
-  }
-  const earnedCount = safeList.filter((a) => a.earned ?? a.earnedAt).length;
+    })),
+  ];
 
   return (
     <div
       style={{
         background: page.surface,
-        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadow.card,
         padding: density.cardPaddingY,
         fontFamily: typeTokens.sans,
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 14,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: shape.radius.chip,
-              background: 'var(--warning-bg, #fef3c7)',
-              color: 'var(--warning, #92400e)',
-              border: '1px solid var(--warning-bg, #fde68a)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-            aria-hidden
-          >
-            ♛
+      <div className="pach-head">
+        <div className="pach-head-id">
+          <span className="pach-head-icon" aria-hidden="true">
+            <i className="bi bi-trophy" />
           </span>
-          <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.1px', color: page.ink }}>
-            Achievements
-          </span>
-          <span
-            style={{
-              padding: '1px 7px',
-              fontSize: 'var(--type-micro-size)',
-              fontWeight: 600,
-              letterSpacing: 0.4,
-              color: page.inkSoft,
-              background: page.surfaceAlt,
-              border: `1px solid ${page.border}`,
-              borderRadius: shape.radius.chip,
-            }}
-          >
-            {earnedCount} / 9 EARNED
+          <h2 className="pach-head-title">Achievements</h2>
+          <span className="pach-head-count">
+            {earnedCount} / {SLOTS} earned
           </span>
         </div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--emerald, #15803d)' }}>
-          View all →
-        </span>
       </div>
-      <div
-        className="profile-stripe-achievements-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(9, 1fr)',
-          gap: 8,
-        }}
-      >
-        {safeList.map((a) => (
+      <div className="pach-grid">
+        {tiles.map((a) => (
           <AchievementCard key={a.key} achievement={a} />
         ))}
       </div>

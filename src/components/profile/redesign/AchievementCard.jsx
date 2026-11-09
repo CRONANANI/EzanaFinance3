@@ -1,25 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  page,
-  shape,
-  achievementCategoryAccents,
-  type as typeTokens,
-} from './profile-design-tokens';
+/* One achievement tile (Nov 2026 spacing pass). Stacked so nothing shares a
+   row with the icon: icon, category, name (two lines max), status, and a
+   progress bar while in progress. Styles live in profile-redesign.css
+   (`.pach-*`); the category colour comes in as --pach-accent. */
+
+import { achievementProgress } from './mappers';
+
+const CATEGORY_ACCENT = {
+  TRADING: 'var(--emerald)',
+  LEARNING: 'var(--purple)',
+  COMMUNITY: 'var(--blue)',
+};
+
+const CATEGORY_LABEL = {
+  TRADING: 'Trading',
+  LEARNING: 'Learning',
+  COMMUNITY: 'Community',
+};
 
 export function AchievementCard({ achievement }) {
   const earned = Boolean(achievement.earned ?? achievement.earnedAt);
-  const inProgress = !earned && (achievement.progress ?? 0) > 0;
-  const accent = achievementCategoryAccents[achievement.category] || page.inkMuted;
-
-  const [animBar, setAnimBar] = useState(0);
-  useEffect(() => {
-    if (inProgress) {
-      const id = requestAnimationFrame(() => setAnimBar(achievement.progress ?? 0));
-      return () => cancelAnimationFrame(id);
-    }
-  }, [inProgress, achievement.progress]);
+  const progress = achievementProgress(achievement.progress);
+  const inProgress = !earned && progress > 0;
+  const placeholder = Boolean(achievement.placeholder);
+  const pct = Math.round(progress * 100);
 
   /* Only a recorded date is shown (QA RET-17); live-derived badges have none. */
   const earnedDate =
@@ -30,93 +35,44 @@ export function AchievementCard({ achievement }) {
         })
       : '';
 
-  const surface = earned ? page.surface : page.surfaceMuted;
-  const opacity = !earned && (achievement.progress ?? 0) === 0 ? 0.55 : 1;
+  const status = earned
+    ? earnedDate
+      ? `Earned ${earnedDate}`
+      : 'Earned'
+    : inProgress
+      ? `${pct}% there`
+      : 'Locked';
+
+  const state = earned ? 'is-earned' : inProgress ? 'is-progress' : 'is-locked';
+  const label = CATEGORY_LABEL[achievement.category] || 'Trading';
 
   return (
     <div
       role="article"
-      aria-label={`${achievement.name} · ${earned ? 'earned' : inProgress ? `${Math.round((achievement.progress ?? 0) * 100)}% progress` : 'locked'}`}
-      style={{
-        background: surface,
-        border: `1px solid ${page.border}`,
-        borderRadius: shape.radius.inner,
-        padding: '12px 12px 10px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        opacity,
-        fontFamily: typeTokens.sans,
-        transition: 'transform 120ms ease-out, box-shadow 120ms ease-out',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-1px)';
-        e.currentTarget.style.boxShadow = shape.shadow.hero;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      aria-label={
+        placeholder ? 'More achievements to come' : `${achievement.name}, ${label}, ${status}`
+      }
+      className={`pach-tile ${state}`}
+      style={{ '--pach-accent': CATEGORY_ACCENT[achievement.category] || 'var(--text-muted)' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: shape.radius.chip,
-            background: earned ? `${accent}14` : page.surfaceAlt,
-            color: earned ? accent : page.inkMuted,
-            border: earned ? `1px solid ${accent}33` : `1px solid ${page.border}`,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 13,
-          }}
-          aria-hidden
-        >
-          {achievement.iconGlyph}
-        </span>
-        <span
-          style={{
-            fontSize: 'var(--type-micro-size)',
-            fontWeight: 600,
-            letterSpacing: 0.5,
-            color: accent,
-          }}
-        >
-          {achievement.category}
-        </span>
-      </div>
-      <div style={{ fontSize: 12.5, fontWeight: 600, color: page.ink, lineHeight: 1.2 }}>
-        {achievement.name}
-      </div>
-      <div style={{ fontSize: 11, color: page.inkMuted }}>
-        {earned
-          ? earnedDate
-            ? `Earned ${earnedDate}`
-            : 'Earned'
-          : inProgress
-            ? `${Math.round((achievement.progress ?? 0) * 100)}% progress`
-            : 'Locked'}
-      </div>
-      {inProgress && (
-        <div
-          style={{
-            height: 3,
-            background: page.surfaceAlt,
-            borderRadius: shape.radius.pill,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              width: `${animBar * 100}%`,
-              height: '100%',
-              background: accent,
-              transition: 'width 400ms ease-out',
-            }}
-          />
-        </div>
+      <span className="pach-icon" aria-hidden="true">
+        <i className={`bi ${earned || inProgress ? achievement.icon : 'bi-lock'}`} />
+      </span>
+      {placeholder ? (
+        <span className="pach-name pach-name--soon">More to come</span>
+      ) : (
+        <>
+          <span className="pach-cat">{label}</span>
+          <span className="pach-name" title={achievement.name}>
+            {achievement.name}
+          </span>
+          <span className="pach-status">{status}</span>
+          {inProgress ? (
+            <span className="pach-bar" aria-hidden="true">
+              <span className="pach-bar-fill" style={{ width: `${pct}%` }} />
+            </span>
+          ) : null}
+        </>
       )}
     </div>
   );

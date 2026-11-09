@@ -1,4 +1,13 @@
-/* Profile page Stripe-leaning redesign — global page styles + responsive */
+/* Profile page (Stripe-leaning redesign): page styles and responsive rules.
+
+   Nov 2026:
+   - Page canvas: no side padding of its own, so the outer cards run from the
+     Ezana logo's left edge to the logout icon's right edge (the dashboard
+     shell already carries the nav's envelope).
+   - Cards have no outline, border or shadow (set in each card component).
+   - The last card in each column grows, so the two columns end on the
+     same line (Performance vs. Platform and Trade Notes).
+   - Achievements: .pach-* tiles in a responsive grid. */
 
 .profile-stripe-wrap {
   font-family: var(--font-sans);
@@ -15,8 +24,9 @@
 
 .profile-stripe-body {
   display: flex;
+  align-items: stretch;
   gap: 16px;
-  padding: 20px 28px 40px;
+  padding: 20px 0 40px;
 }
 
 .profile-stripe-left {
@@ -35,9 +45,22 @@
   gap: 16px;
 }
 
+/* Bottom edges line up: the last card in each column takes the slack. */
+.profile-stripe-left > :last-child,
+.profile-stripe-right > :last-child {
+  flex: 1 0 auto;
+}
+/* The chart grows with its card instead of leaving a gap under it. */
+.profile-stripe-perf .perf-chart-wrap,
+.profile-stripe-perf .perf-empty {
+  flex: 1 1 240px;
+  height: auto;
+  min-height: 240px;
+}
+
 .profile-stripe-wrap button:focus-visible,
 .profile-stripe-wrap a:focus-visible {
-  outline: 2px solid #16a34a;
+  outline: 2px solid var(--emerald);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -52,7 +75,11 @@
 @media (max-width: 1099px) {
   .profile-stripe-body {
     flex-direction: column;
-    padding: 16px;
+    padding: 16px 0;
+  }
+  .profile-stripe-left > :last-child,
+  .profile-stripe-right > :last-child {
+    flex: 0 0 auto;
   }
   .profile-stripe-right {
     width: 100%;
@@ -74,16 +101,156 @@
   .profile-stripe-perfstats {
     grid-template-columns: repeat(2, 1fr) !important;
   }
-  .profile-stripe-achievements-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
 }
 
 @media (max-width: 480px) {
   .profile-stripe-perfstats {
     grid-template-columns: 1fr !important;
   }
-  .profile-stripe-achievements-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+}
+
+/* ── Achievements (.pach-*) ─────────────────────────────────────── */
+.pach-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.pach-head-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.pach-head-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-size: 12px;
+}
+.pach-head-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.pach-head-count {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Tiles: at least 118px wide, so on the desktop column they sit five or
+   more to a row and wrap, instead of nine squeezed columns. */
+.pach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px;
+}
+.pach-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  min-height: 108px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  font-family: var(--font-sans);
+}
+.pach-tile.is-earned {
+  background: color-mix(in srgb, var(--pach-accent) 7%, transparent);
+}
+.pach-tile.is-locked {
+  opacity: 0.6;
+}
+.pach-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  color: var(--text-muted);
+  font-size: 15px;
+}
+.pach-tile.is-earned .pach-icon,
+.pach-tile.is-progress .pach-icon {
+  background: color-mix(in srgb, var(--pach-accent) 14%, transparent);
+  color: var(--pach-accent);
+}
+.pach-cat {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-micro-size);
+  font-weight: 700;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--pach-accent);
+}
+.pach-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.pach-name--soon {
+  margin-top: auto;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.pach-status {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pach-tile.is-earned .pach-status {
+  color: var(--text-secondary);
+}
+.pach-bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.pach-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--pach-accent);
+  transition: width 400ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pach-bar-fill {
+    transition: none;
   }
 }
