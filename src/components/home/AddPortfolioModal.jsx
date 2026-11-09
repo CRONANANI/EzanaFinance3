@@ -320,7 +320,16 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
                     </span>
                   </div>
 
-                  <h2 className="apm-disc-title">
+                  {/* One line (Nov 2026): the size scales with the title's length
+                      (--apm-title-chars) so long broker names still fit. */}
+                  <h2
+                    className="apm-disc-title"
+                    title={`Ezana connects securely to your ${selected.displayName} account`}
+                    style={{
+                      '--apm-title-chars':
+                        `Ezana connects securely to your ${selected.displayName} account`.length,
+                    }}
+                  >
                     Ezana connects securely to your {selected.displayName} account
                   </h2>
 
@@ -430,30 +439,23 @@ function formatSnapTradeError(data, selected) {
     return `${selected.displayName} is already connected via another provider. Disconnect that one in Settings before switching.`;
   }
   if (code === 'broker_not_supported') {
-    return detail
-      ? `${selected.displayName} isn't available right now: ${detail}`
-      : `${selected.displayName} isn't available right now. Please pick a different institution.`;
+    return `${selected.displayName} isn't available right now. Please pick a different institution.`;
   }
   if (code === 'rate_limited') return 'Too many requests. Wait a moment and try again.';
-  if (code === 'snaptrade_not_configured') {
-    return 'Brokerage connections are not configured. Contact support, reference: SNAPTRADE_CREDS_MISSING.';
+  /* Nov 2026: server detail (env var names, provider errors) is logged, never
+     shown. It used to leak env var names and provider errors. */
+  if (detail && typeof console !== 'undefined') {
+    console.warn('[AddPortfolioModal] connect failed', { code, detail });
+  }
+  if (code === 'snaptrade_not_configured' || code === 'connection_unavailable') {
+    return 'Brokerage connections are temporarily unavailable. Please try again later.';
   }
   if (code === 'network_unreachable') {
-    return detail
-      ? `Could not reach our connection provider: ${String(detail).slice(0, 140)}`
-      : 'Could not reach our connection provider.';
+    return 'We could not reach the secure connection service. Please try again in a moment.';
   }
-  if (code === 'auth_failed') {
-    return detail
-      ? `Connection provider rejected the request: ${String(detail).slice(0, 140)}`
-      : 'Connection provider rejected the request.';
+  if (code === 'auth_failed' || code === 'init_failed') {
+    return 'We could not start your secure connection. Please try again in a moment.';
   }
-  if (code === 'init_failed') {
-    return detail
-      ? `Could not initialize your secure connection: ${String(detail).slice(0, 140)}`
-      : 'Could not initialize your secure connection.';
-  }
-  if (detail) return `We couldn't open the connection portal. (${String(detail).slice(0, 140)})`;
   return "We couldn't open the connection portal. Please try again in a moment.";
 }
 
@@ -484,8 +486,12 @@ async function launchPlaidLink({ token, institutionId, institutionName, onSucces
   });
   const tokenData = await tokenRes.json().catch(() => ({}));
   if (!tokenData.link_token) {
+    if (tokenData?.details)
+      console.warn('[AddPortfolioModal] link token failed', tokenData.details);
     onError(
-      `Could not start Plaid connection: ${tokenData?.details || tokenData?.error || 'unknown error'}`,
+      tokenData?.code === 'connection_unavailable'
+        ? 'Brokerage connections are temporarily unavailable. Please try again later.'
+        : 'We could not start your secure connection. Please try again in a moment.',
     );
     return;
   }

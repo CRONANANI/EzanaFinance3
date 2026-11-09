@@ -101,9 +101,11 @@ body:not(.light-mode) .apm-broker-logo-img {
 
 .apm-card--disclosure {
   width: 100%;
-  max-width: 440px;
+  max-width: 520px;
   padding: 32px 28px 24px;
   text-align: left;
+  /* The title sizes itself against this width (cqi) to stay on one line. */
+  container-type: inline-size;
 }
 
 .apm-close--disclosure {
@@ -132,7 +134,8 @@ body:not(.light-mode) .apm-broker-logo-img {
 }
 
 .apm-disc-logo--ezana {
-  border-color: var(--emerald-border);
+  /* Nov 2026: no ring around the Ezana mark. */
+  border: 0;
 }
 
 .apm-disc-arrow {
@@ -142,10 +145,25 @@ body:not(.light-mode) .apm-broker-logo-img {
 
 .apm-disc-title {
   margin: 0 0 22px;
-  font-size: 20px;
+  /* One line: 20px when it fits, otherwise scaled so the whole sentence
+     fits the card. Plus Jakarta Sans 700 averages about 0.5em per
+     character; 0.52 leaves a margin. Ellipsis is only a last resort for
+     very long names. */
+  font-size: max(12px, min(20px, calc(100cqi / (var(--apm-title-chars, 49) * 0.52))));
   font-weight: 700;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-primary);
+}
+/* Phones: one line would mean unreadably small type, so it wraps again. */
+@media (max-width: 480px) {
+  .apm-disc-title {
+    font-size: 18px;
+    white-space: normal;
+    text-wrap: balance;
+  }
 }
 
 .apm-disc-block {

@@ -14,12 +14,27 @@ import {
   PLAID_WEBHOOK_URL,
 } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/supabase';
+import { isTokenKeyConfigured } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
 
 export const POST = withApiGuard(
   async (request, user) => {
     try {
+      /* Nov 2026: check before Plaid Link opens. exchange-token already
+         refuses without the key, but only after the user has logged in to
+         their bank, which wastes the whole flow. */
+      if (!isTokenKeyConfigured()) {
+        console.error('[Plaid] create-link-token: TOKEN_ENCRYPTION_KEY missing or invalid');
+        return NextResponse.json(
+          {
+            error: 'Brokerage linking is temporarily unavailable. Please try again later.',
+            code: 'connection_unavailable',
+          },
+          { status: 503 },
+        );
+      }
+
       let body = {};
       try {
         body = await request.json();

@@ -5,7 +5,7 @@ import {
   upsertSnapTradePositions,
   upsertSnapTradeTransactions,
 } from '@/lib/portfolio/adapters/snaptrade';
-import { encryptToken, decryptToken } from '@/lib/crypto/token-cipher';
+import { encryptToken, decryptToken, isTokenKeyConfigured } from '@/lib/crypto/token-cipher';
 
 let _client = null;
 
@@ -53,6 +53,14 @@ export function readSnapTradeError(err) {
 }
 
 export async function ensureSnapTradeUser(ezanaUserId) {
+  /* Nov 2026: without the encryption key the new user's secret can't be
+     stored, which used to leave an orphaned user at SnapTrade on every click.
+     Fail before registering. */
+  if (!isTokenKeyConfigured()) {
+    const err = new Error('Token encryption key missing or invalid');
+    err.code = 'token_key_missing';
+    throw err;
+  }
   const supabase = getAdminClient();
 
   const { data: existing } = await supabase
@@ -68,7 +76,7 @@ export async function ensureSnapTradeUser(ezanaUserId) {
   const snapUserId = `ezana_${ezanaUserId}`;
 
   const persist = async (userSecret) => {
-    await supabase.from('snaptrade_users').upsert(
+    const { error: persistErr } = await supabase.from('snaptrade_users').upsert(
       {
         user_id: ezanaUserId,
         snaptrade_user_id: snapUserId,
@@ -77,6 +85,7 @@ export async function ensureSnapTradeUser(ezanaUserId) {
       },
       { onConflict: 'user_id' },
     );
+    if (persistErr) throw new Error(`Could not save SnapTrade user: ${persistErr.message}`);
   };
 
   const registerAndSave = async () => {

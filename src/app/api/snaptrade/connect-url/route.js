@@ -70,6 +70,16 @@ export async function POST(request) {
   try {
     creds = await ensureSnapTradeUser(user.id);
   } catch (err) {
+    if (err?.code === 'token_key_missing') {
+      console.error('[snaptrade/connect-url] TOKEN_ENCRYPTION_KEY missing or invalid');
+      return NextResponse.json(
+        {
+          error: 'Brokerage connections are temporarily unavailable.',
+          code: 'connection_unavailable',
+        },
+        { status: 503 },
+      );
+    }
     const info = readSnapTradeError(err);
     console.error('[snaptrade/connect-url] ensureUser failed', {
       userId: user.id,
