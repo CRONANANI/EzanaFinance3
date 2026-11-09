@@ -46,7 +46,7 @@ const PAGES = [
     name: 'Company & Portfolio Research',
     page: 'src/app/(dashboard)/company-research/page.js',
     root: 'src/app/(dashboard)/company-research/page.js',
-    shells: ['.rco', '.cr-news-chain-card', '.mcs-card', '.ai-analysis-card'],
+    shells: ['.rco', '.cr-news-chain-card', '.mcs-card', '.ai-analysis-card', '.rc-card'],
   },
 ];
 

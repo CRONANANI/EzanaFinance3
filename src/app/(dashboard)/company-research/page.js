@@ -5,14 +5,7 @@ import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
-import {
-  KeyMetrics,
-  AnalystRecommendations,
-  CompanyNews,
-  CompanyOverview,
-  EarningsCard,
-  CompetitorsCard,
-} from '@/components/research';
+import { CompanyNews, CompanyOverview, EarningsCard, CompetitorsCard } from '@/components/research';
 import { ViewToggle } from '@/components/research/dossier/ViewToggle';
 import { SectionTabs } from '@/components/research/dossier/SectionTabs';
 import { SectionStack } from '@/components/research/dossier/SectionStack';
@@ -20,7 +13,21 @@ import { useSectionStack } from '@/components/research/dossier/useSectionStack';
 import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
-import { getCarouselModels } from '@/lib/ai/analysis-prompts';
+import { resolveTool, sectionForTool, sectionHasTools } from '@/lib/research/company-research';
+import { useCompanyResearch } from '@/hooks/useCompanyResearch';
+import { CompanyHero } from '@/components/research/company/CompanyHero';
+import { ToolPicker } from '@/components/research/company/ToolPicker';
+import { DcfWorkbench } from '@/components/research/company/DcfWorkbench';
+import {
+  AnalystCard,
+  KeyMetricsCard,
+  NewsCard,
+  PinsCard,
+} from '@/components/research/company/ResearchRail';
+import {
+  IndustryResearchCard,
+  PortfolioToolsCard,
+} from '@/components/research/company/ResearchExtras';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useBeginnerLevelOptional } from '@/contexts/BeginnerLevelContext';
 import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
@@ -33,18 +40,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
-import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useOrg } from '@/contexts/OrgContext';
-
-/* StockPriceChart imports Recharts. Before this change Recharts was in the
-   initial bundle of /company-research (~342 kB First Load). The chart renders
-   below the ticker header, so deferring it keeps the critical path lean and
-   lets the browser paint the header/metrics faster. Fixed-height skeleton
-   keeps CLS at zero. */
-const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
-  ssr: false,
-  loading: () => <div style={{ height: 216 }} aria-hidden />,
-});
 const OrgSendToTeamModal = dynamic(
   () =>
     import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
@@ -65,59 +61,8 @@ import './company-research-theme.css';
 import './dossier.css';
 import './research-density.css';
 import '../org-trading/org-trading.css';
+import '@/components/research/company/research-company.css';
 import '@/styles/home-canvas.css';
-
-const CAROUSEL_MODELS = getCarouselModels();
-
-const EMPTY_QUOTE = {
-  name: null,
-  exchange: null,
-  sector: null,
-  industry: null,
-  logo: null,
-  change: null,
-  changePct: null,
-  asOf: null,
-};
-
-function formatAsOf(ts) {
-  if (!Number.isFinite(ts)) return null;
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(new Date(ts * 1000));
-  } catch {
-    return null;
-  }
-}
-
-/** Company logo with a ticker monogram fallback. Keyed by symbol at the call site. */
-function CompanyMark({ symbol, logo }) {
-  const [failed, setFailed] = useState(false);
-  if (logo && !failed) {
-    return (
-      <span className="crx-co-mark">
-        {/* eslint-disable-next-line @next/next/no-img-element -- remote issuer logo, sized by CSS */}
-        <img
-          src={logo}
-          alt=""
-          width={36}
-          height={36}
-          loading="lazy"
-          onError={() => setFailed(true)}
-        />
-      </span>
-    );
-  }
-  return (
-    <span className="crx-co-mark crx-co-mark--text" aria-hidden="true">
-      {(symbol || '').slice(0, 4)}
-    </span>
-  );
-}
 
 function ResearchPageHeader({ view, setView }) {
   return (
@@ -125,8 +70,8 @@ function ResearchPageHeader({ view, setView }) {
       <div className="crx-page-head-text">
         <h1 className="crx-page-title">Research</h1>
         <p className="crx-page-sub">
-          Analyze companies, industries, and portfolios using market data, financial models, and
-          AI-powered intelligence.
+          Analyze companies, industries, and portfolios with market data, financial models, and
+          Sonar-grade intelligence.
         </p>
       </div>
       <ViewToggle view={view} setView={setView} />
@@ -162,23 +107,26 @@ function CompanyResearchPageInner() {
   );
   const { completeTask } = useChecklist();
   const beginner = useBeginnerLevelOptional();
+  const [selectedStock, setSelectedStock] = useState(null);
+  /* Declared after selectedStock: reading it earlier threw for beginners
+     with no analyses yet (temporal dead zone). */
   const showBeginnerAnalysis =
     beginner?.band === 'beginner' &&
     beginner.analysesRun === 0 &&
     !selectedStock &&
     view === 'company';
-  const [selectedStock, setSelectedStock] = useState(null);
-  const [stats, setStats] = useState({
-    mcap: '--',
-    pe: '--',
-    divYield: '--',
-    eps: '--',
-    capType: '--',
-  });
-  const [livePrice, setLivePrice] = useState(null);
-  const [quote, setQuote] = useState(EMPTY_QUOTE);
   const [viewMode, setViewMode] = useState('heatmap');
-  const [activeModel, setActiveModel] = useState(null);
+  /* Tool per tab (Models, Valuation). The active tab's tool is mirrored to
+     ?tool= so pins, deep links and the back button land on it. */
+  const [tools, setTools] = useState(() => {
+    const t = searchParams.get('tool');
+    return {
+      models: resolveTool('models', t),
+      valuation: resolveTool('valuation', t),
+    };
+  });
+  /* One snapshot for every card: the same price, peers and metrics everywhere. */
+  const research = useCompanyResearch(selectedStock);
   const [wlModalOpen, setWlModalOpen] = useState(false);
   const [wlAddedMap, setWlAddedMap] = useState({});
   const [wlBusyId, setWlBusyId] = useState(null);
@@ -194,7 +142,7 @@ function CompanyResearchPageInner() {
   } = useWatchlists();
   const searchRef = useRef(null);
   /* Section tabs (Overview, Models, Valuation, Earnings, News, Peers):
-     in-place panels with pinning. activeModel and each card's data live
+     in-place panels with pinning. The tool choice and each card's data live
      above the stack, so a pinned section moves instead of remounting. */
   const {
     state: sectionState,
@@ -239,79 +187,16 @@ function CompanyResearchPageInner() {
       setQuery(sym);
       setViewMode('stock');
     }
+    /* Legacy ?model= links open the tab that holds that tool. */
     const m = searchParams.get('model');
-    if (m && CAROUSEL_MODELS.some((model) => model.id === m)) setActiveModel(m);
+    const legacySection = m ? sectionForTool(m) : null;
+    if (legacySection) setTools((prev) => ({ ...prev, [legacySection]: m }));
   }, [searchParams]);
 
+  const quoteReady = research?.quote.status === 'ready';
   useEffect(() => {
-    if (!selectedStock) return;
-    setStats({ mcap: '…', pe: '…', divYield: '…', eps: '…', capType: '…' });
-    setLivePrice(null);
-    setQuote(EMPTY_QUOTE);
-
-    fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(selectedStock)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!data) {
-          setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
-          setLivePrice(null);
-          setQuote(EMPTY_QUOTE);
-          return;
-        }
-        if (data.error) {
-          setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
-          setLivePrice(null);
-          setQuote(EMPTY_QUOTE);
-          return;
-        }
-        setStats({
-          mcap: data.mcap || '--',
-          pe: data.pe || '--',
-          divYield: data.divYield || '--',
-          eps: data.eps || '--',
-          capType: data.capType || '--',
-        });
-        if (data.price != null) setLivePrice(data.price);
-        setQuote({
-          name: data.name || null,
-          exchange: data.exchange || null,
-          sector: data.sector || null,
-          industry: data.industry || null,
-          logo: data.logo || null,
-          change: Number.isFinite(data.change) ? data.change : null,
-          changePct: Number.isFinite(data.changePct) ? data.changePct : null,
-          asOf: Number.isFinite(data.asOf) ? data.asOf : null,
-        });
-      })
-      .catch(() => {
-        setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
-        setLivePrice(null);
-        setQuote(EMPTY_QUOTE);
-      });
-  }, [selectedStock]);
-
-  const tickerMeta = useMemo(
-    () => (selectedStock ? getTickerMeta(selectedStock) : null),
-    [selectedStock],
-  );
-  const companyName = quote.name || tickerMeta?.name || selectedStock || '';
-  const companyMetaLine = useMemo(() => {
-    const parts = [];
-    const sector = quote.sector || tickerMeta?.sector;
-    if (sector) parts.push(sector);
-    if (quote.industry && quote.industry !== sector) parts.push(quote.industry);
-    if (stats.capType && stats.capType !== '--' && stats.capType !== '…') parts.push(stats.capType);
-    return parts.join(' · ');
-  }, [quote.sector, quote.industry, tickerMeta, stats.capType]);
-  const chgDir =
-    quote.change == null ? 'flat' : quote.change > 0 ? 'up' : quote.change < 0 ? 'down' : 'flat';
-  const asOfLabel = formatAsOf(quote.asOf);
-
-  useEffect(() => {
-    if (selectedStock && stats.mcap !== '--' && stats.mcap !== '…') {
-      completeTask('research_2');
-    }
-  }, [selectedStock, stats.mcap, completeTask]);
+    if (selectedStock && quoteReady) completeTask('research_2');
+  }, [selectedStock, quoteReady, completeTask]);
 
   const handleSelectStock = useCallback(
     (item, opts) => {
@@ -343,39 +228,41 @@ function CompanyResearchPageInner() {
     [handleSelectStock, setQuery, clearSuggestions],
   );
 
-  const handleModelClick = useCallback(
-    (modelId) => {
-      if (activeModel === modelId) {
-        setActiveModel(null);
-      } else {
-        setActiveModel(modelId);
-        /* With a ticker, the analysis opens in the Models section. */
-        if (selectedStock) openSection('models', 'Models');
-      }
+  /* Pick a tool inside the active tab (or the tab that offers it). */
+  const selectTool = useCallback(
+    (section, toolId) => {
+      setTools((prev) => ({ ...prev, [section]: resolveTool(section, toolId) }));
+      if (sectionState.active !== section) openSection(section);
     },
-    [activeModel, selectedStock, openSection],
+    [openSection, sectionState.active],
   );
 
-  const handleCloseAnalysis = useCallback(() => {
-    setActiveModel(null);
-  }, []);
-
-  /** DCF & Earnings (custom interactive) — gold accent on tiles (see company-research-theme.css). */
-  const PREMIUM_MODEL_IDS = useMemo(
-    () =>
-      new Set([
-        'grpv',
-        'dcf',
-        'earnings',
-        'comps',
-        'threestatement',
-        'lbo',
-        'ma',
-        'risk',
-        'montecarlo',
-      ]),
-    [],
+  /* ValuationMethodSelector can recommend another model. */
+  const handleOpenModel = useCallback(
+    (toolId) => {
+      const here = sectionState.active;
+      const target =
+        sectionHasTools(here) && resolveTool(here, toolId) === toolId
+          ? here
+          : sectionForTool(toolId);
+      if (target) selectTool(target, toolId);
+    },
+    [sectionState.active, selectTool],
   );
+
+  /* Mirror the active tab's tool into ?tool= (dropped on tabs without tools). */
+  useEffect(() => {
+    const active = sectionState.active;
+    const want = sectionHasTools(active) ? tools[active] : null;
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.delete('model');
+    if (want) sp.set('tool', want);
+    else sp.delete('tool');
+    const next = sp.toString();
+    if (next !== searchParams.toString()) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [sectionState.active, tools]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = (e) => {
@@ -385,11 +272,13 @@ function CompanyResearchPageInner() {
     return () => document.removeEventListener('click', handler);
   }, [clearSuggestions]);
 
-  const resetStats = () => {
-    setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
-    setLivePrice(null);
-    setQuote(EMPTY_QUOTE);
-  };
+  const backToHeatmap = useCallback(() => {
+    setViewMode('heatmap');
+    setSelectedStock(null);
+    try {
+      window.marketChartWidget?.showHeatmap?.();
+    } catch (_) {}
+  }, []);
 
   /* QA RET-5: adds go to the user's saved lists (/api/watchlists), not demo
      state, so the ticker is still there after a reload of /watchlist. */
@@ -451,48 +340,38 @@ function CompanyResearchPageInner() {
   const handleStartAppleAnalysis = useCallback(() => {
     handleSelectStock('AAPL');
     setViewMode('stock');
-    setActiveModel('grpv');
-  }, [handleSelectStock]);
+    selectTool('models', 'grpv');
+  }, [handleSelectStock, selectTool]);
 
-  const renderTools = () =>
-    CAROUSEL_MODELS.map((model) => {
-      const isPremium = PREMIUM_MODEL_IDS.has(model.id);
-      const isActive = activeModel === model.id;
-      const showModelTips = beginner?.showTips ?? false;
-      return (
-        <button
-          key={model.id}
-          type="button"
-          data-model={model.id}
-          aria-pressed={isActive}
-          className={`crx-tool${isPremium ? ' crx-tool--premium' : ''}${isActive ? ' is-active' : ''}`}
-          onClick={() => handleModelClick(model.id)}
-        >
-          {model.flagship ? (
-            <EzanaNavLogo
-              width={14}
-              height={16}
-              className="crx-tool-logo nav-logo-img nav-logo-img--wing"
-            />
-          ) : (
-            <i className={`bi ${model.icon} crx-tool-icon`} aria-hidden="true" />
-          )}
-          <span className="crx-tool-label">{model.name}</span>
-          {showModelTips && model.id === 'grpv' && (
-            <span className="beginner-model-chip">Start here</span>
-          )}
-          {showModelTips && model.id !== 'grpv' && isPremium && (
-            <span className="beginner-model-advanced">Advanced</span>
-          )}
-          {isPremium && (
-            <i className="bi bi-star-fill crx-tool-star" aria-label="Premium model" role="img" />
-          )}
-        </button>
-      );
-    });
+  /* Models and Valuation: the tool picker, then the selected tool. DCF uses
+     the redesigned workbench (K, L, M, N); every other tool keeps its
+     existing panel. */
+  const renderToolSection = (section) => {
+    const tool = resolveTool(section, tools[section]);
+    return (
+      <div className="rc-tool-section">
+        <ToolPicker section={section} tool={tool} onSelect={(id) => selectTool(section, id)} />
+        {tool === 'dcf' && research ? (
+          <DcfWorkbench
+            symbol={selectedStock}
+            price={research.quote.price}
+            peers={research.peers}
+          />
+        ) : (
+          <AIAnalysisPanel
+            key={`${section}-${tool}`}
+            modelId={tool}
+            symbol={selectedStock}
+            onClose={() => selectTool(section, null)}
+            onOpenModel={handleOpenModel}
+            showTips={beginner?.showTips}
+          />
+        )}
+      </div>
+    );
+  };
 
-  /* One body per section tab. Phase 1 reuses the existing research cards;
-     the redesigned cards replace them in later phases. */
+  /* One body per section tab. */
   const renderSection = (id) => {
     switch (id) {
       case 'overview':
@@ -511,26 +390,8 @@ function CompanyResearchPageInner() {
           </div>
         );
       case 'models':
-        return activeModel ? (
-          <AIAnalysisPanel
-            modelId={activeModel}
-            symbol={selectedStock}
-            onClose={handleCloseAnalysis}
-            onOpenModel={setActiveModel}
-            showTips={beginner?.showTips}
-          />
-        ) : (
-          <p className="crx-section-empty">
-            Pick a model from the strip above to run it on {selectedStock}.
-          </p>
-        );
       case 'valuation':
-        return (
-          <div className="crx-section-grid crx-section-grid--two">
-            <AnalystRecommendations symbol={selectedStock} />
-            <KeyMetrics symbol={selectedStock} />
-          </div>
-        );
+        return renderToolSection(id);
       case 'earnings':
         return <EarningsCard symbol={selectedStock} />;
       case 'news':
@@ -592,17 +453,6 @@ function CompanyResearchPageInner() {
           />
         </div>
 
-        {((selectedStock && viewMode === 'stock') || viewMode === 'heatmap') && (
-          <section className="crx-tools" aria-label="Research tools">
-            <span className="crx-tools-label" id="crx-tools-label">
-              Tools
-            </span>
-            <div className="crx-tools-row" role="group" aria-labelledby="crx-tools-label">
-              {renderTools()}
-            </div>
-          </section>
-        )}
-
         <section className="cr-market-chart-root" id="marketChartSection">
           <div
             id="heatmapView"
@@ -636,166 +486,55 @@ function CompanyResearchPageInner() {
               </PinnableCard>
             </div>
           </div>
-
-          <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
-            {selectedStock && (
-              <PinnableCard cardId="stock-chart-merged" section="research">
-                <div className="market-chart-section cr-db-card cr-stock-merged-card crx-co-card">
-                  <div className="crx-co-head">
-                    <div className="crx-co-id">
-                      <CompanyMark key={selectedStock} symbol={selectedStock} logo={quote.logo} />
-                      <div className="crx-co-names">
-                        <div className="crx-co-name-row">
-                          <h2 id="stockChartTitle" className="crx-co-name">
-                            {companyName}
-                          </h2>
-                          {companyName !== selectedStock && (
-                            <span className="crx-co-ticker">{selectedStock}</span>
-                          )}
-                          {quote.exchange && <span className="crx-co-exch">{quote.exchange}</span>}
-                        </div>
-                        {companyMetaLine && <p className="crx-co-meta">{companyMetaLine}</p>}
-                      </div>
-                    </div>
-                    <div className="crx-co-actions">
-                      <button
-                        type="button"
-                        className="crx-btn crx-btn--ghost back-to-heatmap-btn"
-                        id="backToHeatmap"
-                        onClick={() => {
-                          setViewMode('heatmap');
-                          setSelectedStock(null);
-                          resetStats();
-                          setActiveModel(null);
-                          try {
-                            window.marketChartWidget?.showHeatmap?.();
-                          } catch (_) {}
-                        }}
-                      >
-                        <i className="bi bi-grid-3x3-gap" aria-hidden="true" /> Heatmap
-                      </button>
-                      {isOrgUser && hasPermission('send_to_team') && (
-                        <button
-                          type="button"
-                          className="crx-btn crx-btn--ghost"
-                          onClick={() => setSendChartTicker(selectedStock)}
-                        >
-                          <i className="bi bi-send" aria-hidden="true" /> Send Chart
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="crx-btn crx-btn--accent"
-                        onClick={openWatchlistModal}
-                      >
-                        <i className="bi bi-plus-lg" aria-hidden="true" /> Add to Watchlist
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="crx-co-quote">
-                    <span className="crx-co-price">
-                      {livePrice != null
-                        ? `$${Number(livePrice).toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}`
-                        : stats.mcap === '…'
-                          ? '…'
-                          : 'Price unavailable'}
-                    </span>
-                    {quote.change != null && quote.changePct != null && (
-                      <span className={`crx-co-chg crx-co-chg--${chgDir}`}>
-                        <i
-                          className={`bi ${
-                            chgDir === 'up'
-                              ? 'bi-caret-up-fill'
-                              : chgDir === 'down'
-                                ? 'bi-caret-down-fill'
-                                : 'bi-dash'
-                          }`}
-                          aria-hidden="true"
-                        />
-                        {quote.change > 0 ? '+' : ''}
-                        {quote.change.toFixed(2)} ({quote.changePct > 0 ? '+' : ''}
-                        {quote.changePct.toFixed(2)}%)
-                        <span className="crx-visually-hidden">
-                          {chgDir === 'up' ? ' up' : chgDir === 'down' ? ' down' : ' unchanged'}{' '}
-                          today
-                        </span>
-                      </span>
-                    )}
-                    {(quote.change != null || asOfLabel) && (
-                      <span className="crx-co-asof">
-                        {quote.change != null ? 'Today' : null}
-                        {quote.change != null && asOfLabel ? ' · ' : null}
-                        {asOfLabel ? `As of ${asOfLabel}` : null}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="crx-co-chart">
-                    <StockPriceChart
-                      symbol={selectedStock}
-                      livePrice={livePrice}
-                      stats={stats}
-                      hideSymbol
-                      statsVariant="strip"
-                    />
-                  </div>
-                </div>
-              </PinnableCard>
-            )}
-          </div>
         </section>
 
-        {/* Heatmap: user opened a model before selecting a ticker */}
-        {activeModel && !selectedStock && (
-          <section
-            className="model-detail-section cr-model-detail-no-ticker crx-empty-panel"
-            id="modelDetailSectionHeatmap"
-            aria-labelledby="crx-empty-model-title"
-          >
-            <div className="crx-empty-panel-head">
-              <h3 id="crx-empty-model-title" className="crx-empty-panel-title">
-                {CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}
-              </h3>
-              <button
-                type="button"
-                className="crx-btn crx-btn--ghost"
-                onClick={handleCloseAnalysis}
-              >
-                <i className="bi bi-x-lg" aria-hidden="true" /> Close
-              </button>
-            </div>
-            <div className="crx-empty-panel-body">
-              <i className="bi bi-search" aria-hidden="true" />
-              <p>
-                Search for a company or select a stock from the heatmap above to run this analysis.
-              </p>
-            </div>
-          </section>
-        )}
+        {/* Company view: hero and tabs on the left, the rail on the right,
+            then industry and portfolio tools. Built on one snapshot
+            (useCompanyResearch) so every card quotes the same numbers. */}
+        {selectedStock && viewMode === 'stock' && research && (
+          <div className="rc-page">
+            <div className="rc-main">
+              <div className="rc-left">
+                <CompanyHero
+                  data={research}
+                  onHeatmap={backToHeatmap}
+                  onWatchlist={openWatchlistModal}
+                  onSendChart={
+                    isOrgUser && hasPermission('send_to_team')
+                      ? () => setSendChartTicker(selectedStock)
+                      : null
+                  }
+                />
+                {view === 'company' && <EducationTip topic="diversification" />}
+                <SectionTabs state={sectionState} onOpen={openSection} />
+                <SectionStack
+                  state={sectionState}
+                  order={sectionOrder}
+                  onPin={pinSection}
+                  renderSection={renderSection}
+                  titles={{
+                    models: `Run a model on ${selectedStock}`,
+                    valuation: 'Valuation',
+                  }}
+                />
+                <p className="crx-visually-hidden" aria-live="polite">
+                  {sectionAnnouncement}
+                </p>
+              </div>
 
-        {selectedStock && view === 'company' && <EducationTip topic="diversification" />}
+              <aside className="rc-right" aria-label={`${selectedStock} at a glance`}>
+                <AnalystCard analyst={research.analyst} price={research.quote.price} />
+                <KeyMetricsCard metrics={research.metrics} />
+                <NewsCard news={research.news} onViewAll={() => openSection('news', 'News')} />
+                <PinsCard pinned={sectionState.pinned} onOpen={openSection} />
+              </aside>
+            </div>
 
-        {selectedStock && (
-          <>
-            <SectionTabs state={sectionState} onOpen={openSection} />
-            <SectionStack
-              state={sectionState}
-              order={sectionOrder}
-              onPin={pinSection}
-              renderSection={renderSection}
-              titles={{
-                models: `Run a model on ${selectedStock}`,
-                valuation: 'Valuation and analyst view',
-              }}
-            />
-            <p className="crx-visually-hidden" aria-live="polite">
-              {sectionAnnouncement}
-            </p>
-          </>
+            <div className="rc-bottom">
+              <IndustryResearchCard profile={research.profile} peers={research.peers} />
+              <PortfolioToolsCard />
+            </div>
+          </div>
         )}
 
         <CoursePreviewSection
@@ -929,11 +668,6 @@ function CompanyResearchPageInner() {
           {
             targetSelector: '[data-task-target="research-search-bar"]',
             message: 'Search any ticker here. Try AAPL or your favorite company.',
-            position: 'bottom',
-          },
-          {
-            targetSelector: '[data-model="grpv"]',
-            message: 'Start with GRPV, our guided model for a quick fundamentals overview.',
             position: 'bottom',
           },
           {

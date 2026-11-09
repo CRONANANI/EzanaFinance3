@@ -86,6 +86,39 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
+/**
+ * End-of-series price tag (Nov 2026, research redesign): a pill on the right
+ * edge at the latest price. Rendered as a ReferenceLine label.
+ */
+function EndPriceTag({ viewBox, value }) {
+  if (!viewBox || !Number.isFinite(value)) return null;
+  const text = `$${Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+  const w = text.length * 6.6 + 12;
+  const x = viewBox.x + viewBox.width - w;
+  const y = viewBox.y - 9;
+  return (
+    <g aria-hidden="true">
+      <rect x={x} y={y} width={w} height={18} rx={4} style={{ fill: 'var(--emerald)' }} />
+      <text
+        x={x + w / 2}
+        y={y + 12.5}
+        textAnchor="middle"
+        style={{
+          fill: 'var(--color-on-primary)',
+          fontSize: 11,
+          fontWeight: 600,
+          fontFamily: 'var(--font-mono)',
+        }}
+      >
+        {text}
+      </text>
+    </g>
+  );
+}
+
 export default function StockPriceChart({
   symbol,
   livePrice = null,
@@ -96,6 +129,7 @@ export default function StockPriceChart({
   hideRangeButtons = false,
   hideSymbol = false,
   statsVariant = 'cards',
+  endTag = false,
 }) {
   const resolvedInitialRange = defaultRange || initialRange;
   const [range, setRange] = useState(resolvedInitialRange);
@@ -535,6 +569,14 @@ export default function StockPriceChart({
                     y={firstPrice}
                     stroke="rgba(128,128,128,0.2)"
                     strokeDasharray="3 4"
+                  />
+                )}
+                {endTag && Number.isFinite(displayPrice) && (
+                  <ReferenceLine
+                    y={displayPrice}
+                    stroke="transparent"
+                    ifOverflow="extendDomain"
+                    label={<EndPriceTag value={displayPrice} />}
                   />
                 )}
                 {isDragging && dragStart && dragEnd && (

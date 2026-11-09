@@ -28,7 +28,8 @@
    Tokens only: rules are colour-mixed from --text-primary, so they track
    the theme. Pages on it today: Dashboard (/home-dashboard), Community,
    Watchlist, Mock Portfolio (/trading/mock), Company & Portfolio
-   Research (/company-research). Guarded by scripts/check-home-canvas.mjs.
+   Research (/company-research, including the Nov 2026 Company view `rc-`
+   cards). Guarded by scripts/check-home-canvas.mjs.
    ═══════════════════════════════════════════════════════════════════ */
 
 .ez-canvas {
@@ -90,7 +91,9 @@ body:not(.light-mode) .ez-canvas {
     .cr-db-card,
     .market-chart-section,
     .research-card,
-    .company-info-panel
+    .company-info-panel,
+    /* Company view redesign (Nov 2026) */
+    .rc-card
   ) {
   background: transparent !important;
   border-color: transparent !important;
@@ -126,11 +129,13 @@ body:not(.light-mode) .ez-canvas {
     .rkm-head,
     .rec-head,
     .rcp-head,
+    .rc-card__head,
     .card-header
   ) {
   border-bottom: 1px solid var(--ez-rule);
 }
-.ez-canvas :is(.crx-section-head, .rco-head, .rar-head, .rkm-head, .rec-head, .rcp-head) {
+.ez-canvas
+  :is(.crx-section-head, .rco-head, .rar-head, .rkm-head, .rec-head, .rcp-head, .rc-card__head) {
   padding-bottom: 10px;
 }
 .ez-canvas .ledger-card .cardhdr {
@@ -144,13 +149,21 @@ body:not(.light-mode) .ez-canvas {
 }
 
 /* Side columns split off by a vertical hairline (`.bs-hero-r`). */
-.ez-canvas :is(.wl-side, .mock-trade-panel) {
+.ez-canvas :is(.wl-side, .mock-trade-panel, .rc-right) {
   border-left: 1px solid var(--ez-rule) !important;
   padding-left: 1.5rem;
 }
 /* Each page's own single-column breakpoint: the rule moves to the top. */
 @media (max-width: 768px) {
   .ez-canvas .wl-side {
+    border-left-color: transparent !important;
+    border-top: 1px solid var(--ez-rule) !important;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+@media (max-width: 1279px) {
+  .ez-canvas .rc-right {
     border-left-color: transparent !important;
     border-top: 1px solid var(--ez-rule) !important;
     padding-left: 0;
