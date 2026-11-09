@@ -1,0 +1,550 @@
+/* ------------------------------------------------------------------
+   "Connect your brokerage" picker (Nov 2026). Theme tokens only, no hex.
+
+   TOKEN MAP: the modal renders in a portal on document.body, outside the
+   home page's .bs-shell, so it reads the global theme tokens the home page
+   is built on (src/app/theme-variables.css). They switch with
+   body.light-mode, so light mode needs no overrides here.
+   The two tile surfaces are mixes of the page ink into the elevated
+   ground: in dark mode --bg-elev, --bg-secondary and --bg-tertiary are
+   the same colour, so a raw surface token would leave tiles invisible.
+   ------------------------------------------------------------------ */
+.overlay {
+  --m-scrim: var(--bg-overlay);
+  --m-bg: var(--bg-elev);
+  --m-surface-2: color-mix(in srgb, var(--text-primary) 4%, var(--bg-elev));
+  --m-surface-3: color-mix(in srgb, var(--text-primary) 8%, var(--bg-elev));
+  --m-logo-bg: color-mix(in srgb, var(--text-primary) 6%, var(--bg-elev));
+  --m-text: var(--text-primary);
+  --m-text-muted: var(--text-muted);
+  --m-text-faint: var(--text-faint);
+  --m-divider: var(--border-primary);
+  --m-accent: var(--emerald);
+  --m-accent-text: var(--emerald-text);
+  --m-accent-hover: var(--emerald-hover);
+  --m-accent-soft: var(--emerald-bg-hover);
+  --m-on-accent: var(--bg-elev);
+  --m-shadow: var(--shadow-xl);
+  --m-font-sans: var(--font-sans);
+  --m-font-mono: var(--font-mono);
+
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--m-scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: cbmFade 160ms ease-out;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(720px, 100%);
+  max-height: min(760px, calc(100dvh - 48px));
+  background: var(--m-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--m-shadow);
+  overflow: hidden;
+  font-family: var(--m-font-sans);
+  color: var(--m-text);
+  animation: cbmRise 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- Header ---------- */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 0;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--m-text);
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--m-text-muted);
+}
+
+.num {
+  font-family: var(--m-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.close {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--m-surface-2);
+  color: var(--m-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.close:hover {
+  background: var(--m-surface-3);
+  color: var(--m-text);
+}
+
+/* ---------- Search ---------- */
+.searchWrap {
+  flex: 0 0 auto;
+  padding: 20px 24px 16px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px 0 16px;
+  border-radius: var(--radius-lg);
+  background: var(--m-surface-2);
+  transition:
+    box-shadow 140ms ease,
+    background 140ms ease;
+  cursor: text;
+}
+
+.search:focus-within {
+  background: var(--m-bg);
+  box-shadow:
+    inset 0 0 0 1.5px var(--m-accent),
+    0 0 0 4px var(--m-accent-soft);
+}
+
+.searchIcon {
+  font-size: 15px;
+  color: var(--m-text-faint);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--m-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.search input::placeholder {
+  color: var(--m-text-faint);
+}
+
+.search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--m-text-faint);
+  cursor: pointer;
+}
+
+.clear:hover {
+  color: var(--m-text);
+}
+
+/* ---------- Scroll body ---------- */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 4px 24px 24px;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+/* ---------- Tile ---------- */
+.tile {
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--m-surface-2);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.tile:hover {
+  background: var(--m-surface-3);
+}
+
+.tile:active {
+  transform: scale(0.99);
+}
+
+.tile:hover .chev,
+.tile:focus-visible .chev {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--m-accent-text);
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--m-logo-bg);
+}
+
+.logo img,
+.logo svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logoFallback {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--m-text-muted);
+}
+
+.meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--m-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--m-surface-3);
+  color: var(--m-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tag i {
+  font-size: 11px;
+}
+
+.tagAccent {
+  background: var(--m-accent-soft);
+  color: var(--m-accent-text);
+}
+
+.country {
+  font-family: var(--m-font-mono);
+  font-size: 11px;
+  color: var(--m-text-faint);
+}
+
+.chev {
+  font-size: 12px;
+  color: var(--m-text-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    color 140ms ease;
+}
+
+.more {
+  margin: 14px 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: var(--m-text-muted);
+}
+
+/* ---------- Loading / empty ---------- */
+.skeleton {
+  height: 72px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--m-surface-2) 0%,
+    var(--m-surface-3) 50%,
+    var(--m-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: cbmShimmer 1.2s linear infinite;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 16px;
+  gap: 8px;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--m-accent-soft);
+  color: var(--m-accent-text);
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m-text);
+  overflow-wrap: anywhere;
+}
+
+.emptyText {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--m-text-muted);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  background: var(--m-bg);
+  box-shadow: 0 -1px 0 var(--m-divider);
+}
+
+.footNote {
+  font-size: 13px;
+  color: var(--m-text-muted);
+}
+
+.primary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.primary {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+
+.primary:hover {
+  background: var(--m-accent-hover);
+}
+
+.ghost {
+  background: var(--m-accent-soft);
+  color: var(--m-accent-text);
+}
+
+.ghost:hover {
+  background: var(--m-surface-3);
+}
+
+/* ---------- Focus ---------- */
+.close:focus-visible,
+.clear:focus-visible,
+.tile:focus-visible,
+.primary:focus-visible,
+.ghost:focus-visible {
+  outline: 2px solid var(--m-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Mobile: bottom sheet ---------- */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0;
+    place-items: end stretch;
+  }
+
+  .dialog {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    animation-name: cbmSheet;
+  }
+
+  .header {
+    padding: 20px 16px 0;
+  }
+
+  .searchWrap {
+    padding: 16px 16px 12px;
+  }
+
+  .body {
+    padding: 4px 16px 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .footNote {
+    text-align: center;
+  }
+
+  .primary {
+    width: 100%;
+  }
+}
+
+/* ---------- Motion ---------- */
+@keyframes cbmFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cbmRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cbmSheet {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes cbmShimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog,
+  .skeleton {
+    animation: none;
+  }
+
+  .tile,
+  .chev {
+    transition: none;
+  }
+}

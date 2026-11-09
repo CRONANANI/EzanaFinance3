@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Script from 'next/script';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase-browser';
@@ -8,10 +9,31 @@ import { BrandMark, brandColor, resolveBrandKey } from './brokerage-brand-marks'
 import { CountryFlag, inferCountry } from './brokerage-country-flags';
 import { ProviderMark } from './provider-brand-marks';
 import './add-portfolio-modal.css';
+import ConnectBrokerageModal from './ConnectBrokerageModal';
 import { useIsNativeApp } from '@/components/native/useIsNativeApp';
 
 const EZANA_LOGO = '/logo-tight.png';
 const PLAID_LINK_SCRIPT = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+/* The picker renders at most this many tiles; the rest are reached by searching. */
+const GRID_CAP = 60;
+
+/* Old institution objects -> the picker's tile shape (the data layer is unchanged). */
+function toTile(inst) {
+  const readOnly = Boolean(
+    inst.snaptradeAllowsTrading === false ||
+    inst.category === 'crypto_exchange' ||
+    (!inst.snaptradeSlug && inst.plaidInstitutionId),
+  );
+  return {
+    id: inst.id,
+    name: inst.displayName,
+    logoUrl: inst.logoUrl || null,
+    country: inferCountry(inst) || null,
+    readOnly,
+    providerCount: inst.providers?.length || 0,
+    raw: inst,
+  };
+}
 
 function InstitutionLogo({ inst, size = 56 }) {
   const [imgFailed, setImgFailed] = useState(false);
@@ -178,251 +200,198 @@ function AddPortfolioModalInner({ open, onClose, onConnected }) {
     }
   };
 
-  const filteredInstitutions = institutions.filter((inst) => {
+  const matches = institutions.filter((inst) => {
     if (!search) return true;
     return inst.displayName.toLowerCase().includes(search.toLowerCase());
   });
+  const tiles = matches.slice(0, GRID_CAP).map(toTile);
 
   return (
     <>
       <Script src={PLAID_LINK_SCRIPT} strategy="lazyOnload" />
-      <div className="apm-overlay" onClick={onClose}>
-        {step === 'grid' && (
-          <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
-            <div className="apm-grid-head">
-              <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
-                <i className="bi bi-x-lg" aria-hidden="true" />
-              </button>
-              <h2 className="apm-grid-title">Connect your brokerage</h2>
-            </div>
+      <ConnectBrokerageModal
+        open={step === 'grid'}
+        onClose={onClose}
+        institutions={tiles}
+        totalCount={institutions.length}
+        moreCount={Math.max(0, matches.length - tiles.length)}
+        loading={loadingList}
+        query={search}
+        onQueryChange={setSearch}
+        onSelect={(tile) => pickInstitution(tile.raw)}
+        onAddManually={handleManual}
+        renderLogo={(tile) => <InstitutionLogo inst={tile.raw} size={40} />}
+      />
+      {step !== 'grid' && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="apm-overlay" onClick={onClose}>
+              {step === 'provider-choice' && selected && (
+                <div className="apm-card apm-card--choice" onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
+                    <i className="bi bi-x-lg" aria-hidden="true" />
+                  </button>
 
-            <input
-              type="text"
-              className="apm-search"
-              placeholder={
-                institutions.length > 100
-                  ? `Search ${institutions.length.toLocaleString()} institutions…`
-                  : 'Search institutions…'
-              }
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+                  <div className="apm-choice-header">
+                    <div className="apm-choice-broker-logo">
+                      <InstitutionLogo inst={selected} size={72} />
+                    </div>
+                    <div className="apm-choice-broker-text">
+                      <div className="apm-choice-eyebrow">Connect your account</div>
+                      <h2 className="apm-choice-title">{selected.displayName}</h2>
+                    </div>
+                  </div>
 
-            {loadingList ? (
-              <div className="apm-broker-grid-loading">Loading institutions…</div>
-            ) : filteredInstitutions.length === 0 ? (
-              <div className="apm-broker-grid-loading">
-                {search
-                  ? `No institutions match "${search}".`
-                  : "We couldn't load institutions. Please refresh and try again."}
-              </div>
-            ) : (
-              <div className="apm-broker-grid">
-                {filteredInstitutions.slice(0, 60).map((inst) => {
-                  const readOnly =
-                    inst.snaptradeAllowsTrading === false ||
-                    inst.category === 'crypto_exchange' ||
-                    (!inst.snaptradeSlug && inst.plaidInstitutionId);
-                  const country = inferCountry(inst);
-                  return (
-                    <button
-                      key={inst.id}
-                      type="button"
-                      className={`apm-broker-tile ${selected?.id === inst.id ? 'apm-broker-tile--active' : ''}`}
-                      onClick={() => pickInstitution(inst)}
-                      style={{ '--brand-accent': brandColor(resolveBrandKey(inst)) }}
-                      title={`${inst.displayName}${readOnly ? ' (read-only)' : ''}${country ? ` · ${country}` : ''}`}
-                    >
-                      {inst.providers.length === 2 ? (
-                        <span className="apm-broker-tag apm-broker-tag--multi">2 providers</span>
-                      ) : readOnly ? (
-                        <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
-                      ) : null}
-                      {country ? (
-                        <span className="apm-broker-flag-wrap">
-                          <CountryFlag code={country} size={18} />
-                        </span>
-                      ) : null}
-                      <div className="apm-broker-logo-wrap">
-                        <InstitutionLogo inst={inst} size={56} />
+                  <p className="apm-choice-sub">
+                    Both providers connect your account securely. Pick the support team you&apos;d
+                    rather work with if something goes wrong. You can disconnect and switch at any
+                    time.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="apm-provider-btn"
+                    onClick={() => pickProvider('snaptrade')}
+                  >
+                    <div className="apm-provider-btn-logo">
+                      <ProviderMark provider="snaptrade" size={44} />
+                    </div>
+                    <div className="apm-provider-btn-body">
+                      <div className="apm-provider-btn-head">
+                        <strong>SnapTrade</strong>
+                        <span className="apm-provider-btn-tag">Recommended</span>
                       </div>
-                      <div className="apm-broker-name" title={inst.displayName}>
-                        {inst.displayName}
+                      <p className="apm-provider-btn-desc">
+                        {selected.snaptradeAllowsTrading
+                          ? 'Place trades from Ezana. Holdings sync multiple times per day with near-real-time pricing. SOC 2 Type II certified.'
+                          : 'Read-only holdings with updates throughout the day. Faster sync than Plaid. SOC 2 Type II certified.'}
+                      </p>
+                    </div>
+                    <div className="apm-provider-btn-arrow" aria-hidden>
+                      →
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="apm-provider-btn"
+                    onClick={() => pickProvider('plaid')}
+                  >
+                    <div className="apm-provider-btn-logo">
+                      <ProviderMark provider="plaid" size={44} />
+                    </div>
+                    <div className="apm-provider-btn-body">
+                      <div className="apm-provider-btn-head">
+                        <strong>Plaid</strong>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      <p className="apm-provider-btn-desc">
+                        Read-only holdings, refreshed once per day (end-of-day data). Trusted by
+                        8,000+ financial apps including Venmo and Robinhood. Useful if you already
+                        have Plaid connections elsewhere.
+                      </p>
+                    </div>
+                    <div className="apm-provider-btn-arrow" aria-hidden>
+                      →
+                    </div>
+                  </button>
 
-            <button type="button" className="apm-manual-btn" onClick={handleManual}>
-              Add investments manually
-            </button>
-          </div>
-        )}
-
-        {step === 'provider-choice' && selected && (
-          <div className="apm-card apm-card--choice" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
-              <i className="bi bi-x-lg" aria-hidden="true" />
-            </button>
-
-            <div className="apm-choice-header">
-              <div className="apm-choice-broker-logo">
-                <InstitutionLogo inst={selected} size={72} />
-              </div>
-              <div className="apm-choice-broker-text">
-                <div className="apm-choice-eyebrow">Connect your account</div>
-                <h2 className="apm-choice-title">{selected.displayName}</h2>
-              </div>
-            </div>
-
-            <p className="apm-choice-sub">
-              Both providers connect your account securely. Pick the support team you&apos;d rather
-              work with if something goes wrong. You can disconnect and switch at any time.
-            </p>
-
-            <button
-              type="button"
-              className="apm-provider-btn"
-              onClick={() => pickProvider('snaptrade')}
-            >
-              <div className="apm-provider-btn-logo">
-                <ProviderMark provider="snaptrade" size={44} />
-              </div>
-              <div className="apm-provider-btn-body">
-                <div className="apm-provider-btn-head">
-                  <strong>SnapTrade</strong>
-                  <span className="apm-provider-btn-tag">Recommended</span>
+                  <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>
+                    ← Choose a different institution
+                  </button>
                 </div>
-                <p className="apm-provider-btn-desc">
-                  {selected.snaptradeAllowsTrading
-                    ? 'Place trades from Ezana. Holdings sync multiple times per day with near-real-time pricing. SOC 2 Type II certified.'
-                    : 'Read-only holdings with updates throughout the day. Faster sync than Plaid. SOC 2 Type II certified.'}
-                </p>
-              </div>
-              <div className="apm-provider-btn-arrow" aria-hidden>
-                →
-              </div>
-            </button>
+              )}
 
-            <button
-              type="button"
-              className="apm-provider-btn"
-              onClick={() => pickProvider('plaid')}
-            >
-              <div className="apm-provider-btn-logo">
-                <ProviderMark provider="plaid" size={44} />
-              </div>
-              <div className="apm-provider-btn-body">
-                <div className="apm-provider-btn-head">
-                  <strong>Plaid</strong>
+              {step === 'disclosure' && selected && chosenProvider && (
+                <div className="apm-card apm-card--disclosure" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="apm-close apm-close--disclosure"
+                    onClick={onClose}
+                    aria-label="Close"
+                  >
+                    <i className="bi bi-x-lg" aria-hidden="true" />
+                  </button>
+                  <div className="apm-disc-logos">
+                    <span className="apm-disc-logo apm-disc-logo--ezana">
+                      <Image src={EZANA_LOGO} alt="Ezana" width={48} height={48} />
+                    </span>
+                    <span className="apm-disc-arrow">⇄</span>
+                    <span className="apm-disc-logo apm-disc-logo--broker">
+                      <InstitutionLogo inst={selected} size={48} />
+                    </span>
+                  </div>
+
+                  <h2 className="apm-disc-title">
+                    Ezana connects securely to your {selected.displayName} account
+                  </h2>
+
+                  <div className="apm-disc-block">
+                    <div className="apm-disc-icon">
+                      <i className="bi bi-key" />
+                    </div>
+                    <div>
+                      <div className="apm-disc-block-title">Your data belongs to you</div>
+                      <p className="apm-disc-block-text">
+                        Ezana never sells your personal information and only uses it with your
+                        permission.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="apm-disc-block">
+                    <div className="apm-disc-icon">
+                      <i className="bi bi-lock" />
+                    </div>
+                    <div>
+                      <div className="apm-disc-block-title">
+                        {chosenProvider === 'snaptrade'
+                          ? 'Connect securely via SnapTrade'
+                          : 'Connect securely via Plaid'}
+                      </div>
+                      <p className="apm-disc-block-text">
+                        {chosenProvider === 'snaptrade'
+                          ? 'We use SnapTrade, an SOC 2 Type II certified connectivity provider, to handle the OAuth handshake. Ezana never sees your login credentials.'
+                          : 'We use Plaid, used by 8,000+ financial apps including Venmo and Robinhood, to securely connect your account. Ezana never sees your login credentials.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <AccessLevelBlock provider={chosenProvider} selected={selected} />
+
+                  {error ? <p className="apm-disc-error">{error}</p> : null}
+
+                  <p className="apm-disc-terms">
+                    By continuing, you agree to the{' '}
+                    <a href="/legal/terms" target="_blank" rel="noopener noreferrer">
+                      Ezana Terms &amp; Conditions
+                    </a>
+                    .
+                  </p>
+
+                  <button
+                    type="button"
+                    className="apm-continue-btn"
+                    onClick={handleContinue}
+                    disabled={loading}
+                  >
+                    {loading ? 'Opening secure portal…' : 'Continue'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="apm-back-link"
+                    onClick={() => {
+                      if (selected.providers.length > 1) setStep('provider-choice');
+                      else setStep('grid');
+                    }}
+                  >
+                    ← Back
+                  </button>
                 </div>
-                <p className="apm-provider-btn-desc">
-                  Read-only holdings, refreshed once per day (end-of-day data). Trusted by 8,000+
-                  financial apps including Venmo and Robinhood. Useful if you already have Plaid
-                  connections elsewhere.
-                </p>
-              </div>
-              <div className="apm-provider-btn-arrow" aria-hidden>
-                →
-              </div>
-            </button>
-
-            <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>
-              ← Choose a different institution
-            </button>
-          </div>
-        )}
-
-        {step === 'disclosure' && selected && chosenProvider && (
-          <div className="apm-card apm-card--disclosure" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="apm-close apm-close--disclosure"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              <i className="bi bi-x-lg" aria-hidden="true" />
-            </button>
-            <div className="apm-disc-logos">
-              <span className="apm-disc-logo apm-disc-logo--ezana">
-                <Image src={EZANA_LOGO} alt="Ezana" width={48} height={48} />
-              </span>
-              <span className="apm-disc-arrow">⇄</span>
-              <span className="apm-disc-logo apm-disc-logo--broker">
-                <InstitutionLogo inst={selected} size={48} />
-              </span>
-            </div>
-
-            <h2 className="apm-disc-title">
-              Ezana connects securely to your {selected.displayName} account
-            </h2>
-
-            <div className="apm-disc-block">
-              <div className="apm-disc-icon">
-                <i className="bi bi-key" />
-              </div>
-              <div>
-                <div className="apm-disc-block-title">Your data belongs to you</div>
-                <p className="apm-disc-block-text">
-                  Ezana never sells your personal information and only uses it with your permission.
-                </p>
-              </div>
-            </div>
-
-            <div className="apm-disc-block">
-              <div className="apm-disc-icon">
-                <i className="bi bi-lock" />
-              </div>
-              <div>
-                <div className="apm-disc-block-title">
-                  {chosenProvider === 'snaptrade'
-                    ? 'Connect securely via SnapTrade'
-                    : 'Connect securely via Plaid'}
-                </div>
-                <p className="apm-disc-block-text">
-                  {chosenProvider === 'snaptrade'
-                    ? 'We use SnapTrade, an SOC 2 Type II certified connectivity provider, to handle the OAuth handshake. Ezana never sees your login credentials.'
-                    : 'We use Plaid, used by 8,000+ financial apps including Venmo and Robinhood, to securely connect your account. Ezana never sees your login credentials.'}
-                </p>
-              </div>
-            </div>
-
-            <AccessLevelBlock provider={chosenProvider} selected={selected} />
-
-            {error ? <p className="apm-disc-error">{error}</p> : null}
-
-            <p className="apm-disc-terms">
-              By continuing, you agree to the{' '}
-              <a href="/legal/terms" target="_blank" rel="noopener noreferrer">
-                Ezana Terms &amp; Conditions
-              </a>
-              .
-            </p>
-
-            <button
-              type="button"
-              className="apm-continue-btn"
-              onClick={handleContinue}
-              disabled={loading}
-            >
-              {loading ? 'Opening secure portal…' : 'Continue'}
-            </button>
-
-            <button
-              type="button"
-              className="apm-back-link"
-              onClick={() => {
-                if (selected.providers.length > 1) setStep('provider-choice');
-                else setStep('grid');
-              }}
-            >
-              ← Back
-            </button>
-          </div>
-        )}
-      </div>
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

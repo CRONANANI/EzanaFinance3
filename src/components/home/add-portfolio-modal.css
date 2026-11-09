@@ -87,53 +87,6 @@ body:not(.light-mode) .apm-card {
   color: var(--text-primary);
 }
 
-.apm-broker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.apm-broker-tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  min-height: 124px;
-  padding: 14px 12px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--background);
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    transform 0.1s,
-    box-shadow 0.15s;
-  overflow: hidden;
-}
-
-.apm-broker-tile:hover {
-  border-color: var(--brand-accent, #111);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
-}
-
-.apm-broker-tile--active {
-  border-color: var(--brand-accent, #111);
-  box-shadow: 0 0 0 2px var(--brand-accent, #111) inset;
-}
-
-.apm-broker-logo-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 56px;
-}
-
 .apm-broker-logo-img {
   max-width: 100%;
   max-height: 100%;
@@ -142,86 +95,8 @@ body:not(.light-mode) .apm-card {
   object-fit: contain;
 }
 
-.apm-broker-name {
-  width: 100%;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--text-primary);
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.005em;
-}
-
-.apm-broker-tag {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  font-size: var(--type-micro-size);
-  font-weight: 700;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--emerald-bg-hover);
-  color: var(--emerald-dark);
-}
-
-.apm-broker-tag--readonly {
-  background: rgba(212, 168, 83, 0.12);
-  color: var(--bs-amber, #b08038);
-  border: 1px solid rgba(212, 168, 83, 0.28);
-}
-
-.apm-broker-flag-wrap {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-}
-
-.apm-broker-grid-loading {
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--muted-foreground);
-  font-size: 14px;
-}
-
-body:not(.light-mode) .apm-broker-tile {
-  background: var(--surface-card);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-body:not(.light-mode) .apm-broker-tag {
-  background: rgba(16, 185, 129, 0.18);
-  color: var(--positive-bright);
-}
-
 body:not(.light-mode) .apm-broker-logo-img {
   filter: brightness(0.95);
-}
-
-body:not(.light-mode) .apm-broker-name {
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.apm-manual-btn {
-  margin: 4px 20px 0;
-  padding: 14px;
-  border: none;
-  border-radius: 999px;
-  background: var(--emerald);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.apm-manual-btn:hover {
-  background: var(--emerald-hover);
 }
 
 .apm-card--disclosure {
@@ -362,43 +237,6 @@ body:not(.light-mode) .apm-broker-name {
 
 .apm-back-link:hover {
   color: var(--emerald);
-}
-
-@media (max-width: 640px) {
-  .apm-broker-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .apm-broker-tile {
-    min-height: 116px;
-    padding: 12px 10px 10px;
-  }
-  .apm-broker-name {
-    font-size: 11.5px;
-  }
-}
-
-.apm-search {
-  width: calc(100% - 40px);
-  padding: 0.625rem 0.875rem;
-  margin: 0 20px 1rem;
-  background: var(--surface-input);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
-  color: inherit;
-  font-size: 0.875rem;
-  font-family: var(--font-sans);
-}
-.apm-search:focus {
-  outline: none;
-  border-color: var(--emerald);
-  background: var(--surface-input);
-}
-
-.apm-broker-tag--multi {
-  background: var(--emerald-bg-hover);
-  color: var(--emerald);
-  border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
 }
 
 .apm-card--choice {
