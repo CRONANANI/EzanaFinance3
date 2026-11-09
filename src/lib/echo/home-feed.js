@@ -122,6 +122,7 @@ export function toStory(card) {
     id: card.id,
     title: card.title || '',
     dek: card.excerpt || '',
+    author: card.author || 'Ezana Editorial',
     tag,
     section: card.category,
     date: shortDate(card.publishedAt),

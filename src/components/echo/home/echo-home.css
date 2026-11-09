@@ -1,8 +1,10 @@
 /* ══════════════════════════════════════════════════════════════
    Ezana Echo home: newspaper-style front page (echo-home-redesign
-   handoff, Oct 2026). Prefix ech-. No photo renders wider than 640px:
-   every image box has a fixed aspect-ratio and a max-width cap that
-   matches the `sizes` string in EchoHome.jsx.
+   handoff, Oct 2026; layout redesign Nov 2026). Prefix ech-. No photo
+   renders wider than 640px: every image box has a fixed aspect-ratio and a
+   max-width cap that matches the `sizes` string in EchoHome.jsx. The ONE
+   exception is the full-bleed Article of the Month (.ech-hero), whose
+   photo spans the viewport behind the text.
    Every colour is an --ech-* token mapped onto theme-variables.css;
    the only literals are the deep tile's light-mode green and the
    white/mint ink that sits on it. The app's default theme is dark;
@@ -53,6 +55,10 @@
   --ech-pill-fg: var(--text-muted);
   --ech-btn-primary-bg: var(--emerald);
   --ech-btn-primary-fg: var(--bg-primary);
+  /* solid emerald chips, active section pill, hero arrow: dark ink on emerald
+     in both themes (white on the light theme's emerald is only 3.8:1) */
+  --ech-chip-bg: var(--emerald);
+  --ech-chip-fg: var(--bg-primary);
 
   --ech-hero-card-shadow: 0 30px 60px color-mix(in srgb, #000 22%, transparent);
   --ech-card-shadow: 0 1px 2px color-mix(in srgb, black 18%, transparent);
@@ -99,6 +105,7 @@ body.light-mode .ech-page {
   --ech-rank-n: color-mix(in srgb, var(--text-primary) 16%, transparent);
   /* 40px emerald text on white needs the darker emerald to clear 3:1 */
   --ech-emerald-display: var(--emerald-text);
+  --ech-chip-fg: var(--text-primary);
   /* light theme: the brief stays transparent, with normal ink */
   --ech-brief-bg: transparent;
   --ech-brief-border: var(--ech-hair);
@@ -327,7 +334,7 @@ body.light-mode .ech-page {
 
 /* ---------- Most read ---------- */
 .ech-most {
-  margin-top: 40px;
+  margin-top: 56px;
 }
 .ech-most__strip {
   list-style: none;
@@ -399,33 +406,26 @@ body.light-mode .ech-page {
   flex-wrap: wrap;
   gap: 6px;
 }
-/* Section pills, region and time range on one row (Nov 8). The pills scroll
-   sideways instead of wrapping when the row is tight; below 1024px the two
-   groups stack, left-aligned. */
-.ech-filterbar {
+/* Latest Stories (Nov 2026 redesign): title left and section pills right on
+   one row; region, time range and search on a quieter row under the pills,
+   right-aligned. Below 1024px the pills scroll sideways under the title. */
+.ech-latest__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 16px 24px;
+  flex-wrap: wrap;
 }
-.ech-filterbar > .ech-tabs {
-  flex: 1 1 auto;
-  min-width: 0;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  overflow-x: auto;
-  scrollbar-width: none;
-  /* room for the focus ring inside the scroll box */
-  padding: 2px;
-  margin: -2px;
+.ech-latest__title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ech-ink);
 }
-.ech-filterbar > .ech-tabs::-webkit-scrollbar {
-  display: none;
-}
-.ech-filterbar > .ech-controls {
-  flex: 0 0 auto;
+.ech-latest__head > .ech-tabs {
   justify-content: flex-end;
-  flex-wrap: nowrap;
 }
 .ech-seg__opt {
   font: inherit;
@@ -433,7 +433,7 @@ body.light-mode .ech-page {
 }
 .ech-tabs .ech-seg__opt {
   flex-shrink: 0;
-  height: 40px;
+  height: 36px;
   padding: 0 16px;
   border-radius: var(--ech-r-pill);
   border: 1px solid var(--ech-hair-strong);
@@ -448,14 +448,14 @@ body.light-mode .ech-page {
   border-color: var(--ech-hair-hover);
 }
 .ech-tabs .ech-seg__opt.is-on {
-  background: var(--ech-tint);
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
-  color: var(--ech-positive);
+  background: var(--ech-chip-bg);
+  border-color: var(--ech-chip-bg);
+  color: var(--ech-chip-fg);
 }
 .ech-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -1189,15 +1189,23 @@ body.light-mode .ech-page {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
-  .ech-filterbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  .ech-latest__head > .ech-tabs {
+    flex: 1 1 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* room for the focus ring inside the scroll box */
+    padding: 2px;
+    margin: -2px;
   }
-  .ech-filterbar > .ech-controls,
+  .ech-latest__head > .ech-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .ech-controls,
   .ech-controls__left {
     justify-content: flex-start;
-    flex-wrap: wrap;
   }
   .ech-aotm__img {
     order: -1;
@@ -1276,7 +1284,8 @@ body.light-mode .ech-page {
     border-radius: var(--radius-lg);
     background: var(--ech-neutral);
   }
-  .ech-sechead__title--lg {
+  .ech-sechead__title--lg,
+  .ech-latest__title {
     font-size: 26px;
   }
   .ech-tabs .ech-seg__opt {
@@ -1380,4 +1389,408 @@ body.light-mode .ech-page {
 .ech-aotm__title a {
   font: inherit;
   color: inherit;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 2026 redesign: full-bleed Article of the Month, bylines, feature
+   block (stories 1-4) and row of three (stories 5-7).
+   ══════════════════════════════════════════════════════════════ */
+
+/* The hero breaks out of the shell gutters; clip the page's horizontal
+   overflow so 100vw (which includes a classic scrollbar) never adds a
+   sideways scroll. `clip`, not `hidden`: it creates no scroll container, so
+   sticky elements keep working. */
+html:has(.ech-hero),
+html:has(.ech-hero) > body {
+  overflow-x: clip;
+}
+
+/* ---------- shared bits ---------- */
+.ech-chip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--ech-chip-bg);
+  color: var(--ech-chip-fg);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+.ech-chip--sm {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+.ech-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ech-positive);
+}
+.ech-byline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--ech-mute);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ech-byline .ech-mono {
+  font-size: 0.92em;
+}
+.ech-byline--sm {
+  font-size: 12.5px;
+}
+.ech-byline--xs {
+  font-size: 12px;
+  gap: 4px 6px;
+}
+.ech-byline strong {
+  color: var(--ech-ink);
+  font-weight: 600;
+}
+.ech-byline__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+.ech-byline__sep {
+  color: var(--ech-faint);
+}
+
+/* ---------- Article of the Month: full-bleed ---------- */
+.ech-hero {
+  position: relative;
+  /* Break out to the viewport edges, then pad back in by the same amount:
+     padding percentages resolve against the containing block (the page
+     column), so the text starts exactly on the page's left edge, in line
+     with the masthead, dateline and Latest Stories. */
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(50vw - 50%);
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--ech-image-bg);
+  border-bottom: 1px solid var(--ech-hair);
+}
+.ech-hero__media {
+  position: absolute;
+  inset: 0;
+}
+.ech-hero__scrim {
+  position: absolute;
+  inset: 0;
+  /* Left-to-right scrim keyed to the text column (max 640px from the page
+     edge): at least 86% page ground behind every line of text, so ink stays
+     above 4.5:1 even over a bright photo; the right side shows the photo. */
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ech-bg) 94%, transparent) 0%,
+    color-mix(in srgb, var(--ech-bg) 86%, transparent) max(45%, 760px),
+    transparent max(78%, 1180px)
+  );
+}
+.ech-hero__inner {
+  position: relative;
+  width: 100%;
+  padding: 56px 0 64px;
+}
+.ech-hero__text {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+.ech-hero__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.ech-hero__title {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ech-ink);
+  text-wrap: balance;
+}
+.ech-hero__title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+.ech-hero__dek {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.5;
+  /* ink, not mute: muted grey over a photo cannot hold 4.5:1 */
+  color: color-mix(in srgb, var(--ech-ink) 86%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ech-hero .ech-byline {
+  color: color-mix(in srgb, var(--ech-ink) 80%, transparent);
+}
+.ech-hero .ech-byline__sep {
+  color: color-mix(in srgb, var(--ech-ink) 55%, transparent);
+}
+.ech-hero__go {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ech-r-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ech-chip-bg);
+  color: var(--ech-chip-fg);
+  font-size: 20px;
+  transition: filter 0.15s ease-out;
+}
+.ech-hero__go:hover {
+  filter: brightness(1.08);
+}
+.ech-hero--skel {
+  background: var(--ech-bg);
+}
+
+/* ---------- Feature block: story 1 + side list of 2-4 ---------- */
+/* The lead column is capped at 640px so its photo fills the card without
+   breaking the 640px rule; the side list takes the remaining width. */
+.ech-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 32px;
+}
+.ech-feature__card,
+.ech-row3__card {
+  position: relative;
+  border: 1px solid var(--ech-hair);
+  border-radius: var(--ech-r-card);
+  overflow: hidden;
+  background: var(--ech-bg);
+  transition: border-color 0.15s ease-out;
+}
+.ech-feature__card:hover,
+.ech-row3__card:hover {
+  border-color: var(--ech-hair-hover);
+}
+.ech-feature__link,
+.ech-row3__link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+}
+.ech-feature__img {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 640px; /* 640px cap */
+  background: var(--ech-image-bg);
+}
+.ech-feature__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 28px 28px;
+}
+.ech-feature__title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ech-ink);
+  text-wrap: balance;
+}
+.ech-feature__dek {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ech-mute);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ech-side {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ech-side__row {
+  position: relative;
+  border-bottom: 1px solid var(--ech-hair);
+}
+.ech-side__row:first-child .ech-side__link {
+  padding-top: 0;
+}
+.ech-side__row:last-child {
+  border-bottom: 0;
+}
+.ech-side__link {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px 0;
+  color: inherit;
+}
+.ech-side__img {
+  display: block;
+  position: relative;
+  flex: 0 0 150px;
+  width: 150px;
+  height: 108px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--ech-image-bg);
+}
+.ech-side__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ech-side__title,
+.ech-row3__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ech-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ech-side__link:hover .ech-side__title,
+.ech-row3__link:hover .ech-row3__title,
+.ech-feature__link:hover .ech-feature__title {
+  color: var(--ech-positive);
+}
+/* Side rows carry no border, so the admin archive button sits on the row's
+   right edge instead of over a photo corner. */
+.ech-side__row .ech-card__archive {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+.ech-side__row:first-child .ech-card__archive {
+  top: calc(50% - 10px);
+}
+
+/* ---------- Row of three: stories 5-7 ---------- */
+.ech-row3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+.ech-row3__img {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 640px; /* 640px cap */
+  background: var(--ech-image-bg);
+}
+.ech-row3__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 20px;
+}
+.ech-row3__dek {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ech-mute);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- More stories (the bento, from story 8) ---------- */
+.ech-more-stories {
+  margin-top: 56px;
+}
+.ech-more-stories .ech-grid {
+  margin-top: 20px;
+}
+
+@media (max-width: 1023px) {
+  .ech-hero__title {
+    font-size: 38px;
+  }
+  .ech-feature {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ech-feature__card {
+    max-width: 640px;
+  }
+}
+@media (max-width: 767px) {
+  .ech-hero {
+    min-height: 0;
+  }
+  .ech-hero__inner {
+    padding: 40px 0 44px;
+  }
+  .ech-hero__title {
+    font-size: 30px;
+  }
+  .ech-hero__dek {
+    font-size: 17px;
+  }
+  /* one even scrim on phones: the text covers the full width */
+  .ech-hero__scrim {
+    background: color-mix(in srgb, var(--ech-bg) 86%, transparent);
+  }
+  .ech-feature {
+    gap: 24px;
+  }
+  .ech-feature__body {
+    padding: 18px 18px 20px;
+  }
+  .ech-feature__title {
+    font-size: 22px;
+  }
+  .ech-side__link {
+    gap: 14px;
+    padding: 16px 0;
+  }
+  .ech-side__img {
+    flex-basis: 96px;
+    width: 96px;
+    height: 72px;
+  }
+  .ech-side__title,
+  .ech-row3__title {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ech-feature__card,
+  .ech-row3__card,
+  .ech-hero__go {
+    transition: none;
+  }
 }

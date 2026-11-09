@@ -41,7 +41,7 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  height: 44px;
+  height: 40px;
   padding: 0 14px;
   border-radius: var(--radius-pill, 9999px);
   border: 1px solid var(--border-input);
@@ -68,37 +68,148 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   padding: 1px 8px;
 }
 
-/* Masthead = this route's top bar. Same height and vertical centering as the
-   landing nav (.navbar, --navbar-height 64px, items centered), so the brand and
-   Login / Become a Partner sit at the same Y as the landing page's nav items. The
-   "Publish to the Echo →" note hangs BELOW the partner button (out of flow). */
+/* Masthead = this route's top bar (Nov 2026 redesign): one row, bottom
+   hairline. Logo + "Ezana Echo" wordmark left, the six section links in the
+   middle, then search, Archived (admins), Login and the Subscribe pill. It
+   spans the page canvas (logo edge to logout edge) like every other page. */
 .eth-masthead {
-  position: relative; /* anchors the absolutely-centered wordmark */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  height: var(--navbar-height, 64px);
+  gap: 12px 24px;
+  min-height: var(--navbar-height, 64px);
   padding: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
-/* Centered hub wordmark: typography comes from .nav-echo-wordmark
-   (globals.css, shared with the article nav); this class only centers it.
-   Hidden at small widths where it would collide with the logo/auth cluster. */
-.eth-nav-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  /* Page-scoped size bump: the shared .nav-echo-wordmark stays 1.05rem for
-     the article nav crossfade; the Echo hub masthead alone runs 50% larger. */
+.eth-masthead-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.eth-masthead-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.eth-wordmark {
   font-family: var(--font-sans);
-  font-size: 40px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.eth-wordmark span {
+  color: var(--emerald);
 }
 /* Display-size emerald: the darker emerald on light grounds clears 3:1. */
-body.light-mode .eth-nav-center span {
+body.light-mode .eth-wordmark span {
   color: var(--emerald-text);
+}
+
+/* Section links: real <button>s that filter the feed (?section=) and scroll
+   to Latest Stories. One line, never wrapping: if a font or an extra admin
+   pill makes the row tight, it scrolls sideways instead (and below 1366px it
+   moves to its own row under the brand). */
+.eth-sections {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.eth-sections::-webkit-scrollbar {
+  display: none;
+}
+.eth-section {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.14s ease;
+}
+.eth-section:hover,
+.eth-section.is-on {
+  color: var(--emerald);
+}
+body.light-mode .eth-section:hover,
+body.light-mode .eth-section.is-on {
+  color: var(--emerald-text);
+}
+.eth-section:focus-visible,
+.eth-subscribe:focus-visible,
+.eth-login:focus-visible,
+.eth-archived-btn:focus-visible,
+.eth-wordmark:focus-visible,
+.eth-masthead-logo:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+
+.eth-masthead-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+/* Login: a quiet text link with a 44px hit area. */
+.eth-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.14s ease;
+}
+.eth-login:hover {
+  color: var(--text-primary);
+}
+/* Subscribe: scrolls to The Evening Brief. Dark ink on emerald in both
+   themes (white on the light theme's emerald is only 3.8:1). */
+.eth-subscribe {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.14s ease;
+}
+body.light-mode .eth-subscribe {
+  color: var(--text-primary);
+}
+.eth-subscribe:hover {
+  filter: brightness(1.06);
 }
 
 /* Dateline under the masthead row. */
@@ -113,97 +224,11 @@ body.light-mode .eth-nav-center span {
   letter-spacing: 0.12em;
   color: var(--text-muted);
 }
-@media (max-width: 640px) {
-  .eth-nav-center {
-    font-size: 27px;
-  }
-}
-.eth-masthead-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-.eth-masthead-auth {
-  display: inline-flex;
-  align-items: center; /* Login centers on the partner BUTTON — no flex-end hacks */
-  gap: 20px;
-}
-/* 44px tall hit areas on the masthead links. The visual weight is unchanged;
-   only the box grows, and the flex centering keeps the labels on the bar's
-   optical center line. */
-.eth-login {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.14s ease;
-}
-.eth-login:hover {
-  color: var(--emerald);
-}
-/* The button is the flow item (perfectly centered in the 64px bar); the
-   "Publish to the Echo →" note hangs just BELOW it, out of flow, so it can
-   never push the button off-center or clip against the top of the page. */
-.eth-partner-stack {
-  position: relative;
-  display: inline-flex;
-}
-.eth-partner-note {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 5px;
-  font-size: 11px;
-  line-height: 1.2;
-  text-align: right;
-  color: var(--emerald);
-  white-space: nowrap;
-  text-decoration: none;
-}
-.eth-partner-note:hover {
-  text-decoration: underline;
-}
-/* Out-of-flow, so a taller box cannot disturb the masthead: it gets the full
-   44px touch target unconditionally. */
-.eth-partner-note {
-  display: inline-flex;
-  gap: 5px;
-  align-items: flex-start;
-  justify-content: flex-end;
-  min-height: 44px;
-  padding-top: 6px;
-}
-.eth-partner-btn {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: var(--emerald);
-  color: var(--bg-primary);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: filter 0.14s ease;
-}
-.eth-partner-btn:hover {
-  filter: brightness(1.06);
-}
 
 /* Search Echo: opens the search field in the Latest row. */
 .eth-search-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
   background: transparent;
@@ -227,63 +252,59 @@ body.light-mode .eth-nav-center span {
   outline-offset: 3px;
 }
 
-@media (max-width: 720px) {
-  .eth-masthead {
-    padding: 0;
+/* The admin Archived pill drops its label (icon + count stay) until there is
+   room for it beside all six section links. */
+@media (max-width: 1599px) {
+  .eth-archived-label {
+    display: none;
   }
-  .eth-masthead-auth {
-    gap: 12px;
+  .eth-archived-btn {
+    gap: 7px;
+    padding: 0 12px;
   }
 }
 
-/* Phone masthead: logo, wordmark and search on the first row; "Publish to
-   the Echo" left with Login and Become a Partner right on the second. The
-   auth cluster and partner stack dissolve (display: contents) so their
-   children can be ordered into the two rows. */
-@media (max-width: 640px) {
+/* Below 1366px the six section links no longer fit beside the brand and the
+   actions: logo, wordmark and actions stay on the first row and the links
+   drop to their own horizontally scrolling row (no page scroll). */
+@media (max-width: 1365px) {
   .eth-masthead {
-    height: auto;
     flex-wrap: wrap;
-    row-gap: 6px;
-    column-gap: 10px;
-    padding: 10px 0 8px;
+    gap: 4px 12px;
+    padding: 10px 0 0;
   }
-  .eth-masthead::after {
-    content: '';
-    order: 4;
-    flex-basis: 100%;
-  }
-  .eth-masthead-brand {
-    order: 1;
-  }
-  .eth-nav-center {
-    order: 2;
-    position: static;
-    transform: none;
-    flex: 1;
-    text-align: center;
-  }
-  .eth-masthead-auth,
-  .eth-partner-stack {
-    display: contents;
-  }
-  .eth-search-btn {
+  .eth-sections {
     order: 3;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin: 0 -2px;
+    padding: 2px 2px 6px;
   }
-  .eth-partner-note {
-    order: 5;
-    position: static;
-    margin: 0 auto 0 0;
-    padding-top: 0;
-    align-items: center;
+  .eth-section:first-child {
+    padding-left: 0;
+  }
+}
+/* Phones: tighter actions so brand + search + Login + Subscribe hold one row
+   at 390px. */
+@media (max-width: 480px) {
+  .eth-wordmark {
+    font-size: 22px;
+  }
+  .eth-masthead-logo {
+    display: none;
+  }
+  .eth-masthead-auth {
+    gap: 4px;
   }
   .eth-archived-btn {
-    order: 6;
+    padding: 0 10px;
   }
   .eth-login {
-    order: 7;
+    padding: 0;
+    font-size: 13px;
   }
-  .eth-partner-btn {
-    order: 8;
+  .eth-subscribe {
+    padding: 0 12px;
+    font-size: 13px;
   }
 }

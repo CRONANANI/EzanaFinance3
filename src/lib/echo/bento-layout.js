@@ -28,6 +28,10 @@
 
 export const PAGE_SIZE = 9;
 
+/** Stories 1-7 of the filtered list fill the home's feature block (1 + 3 side
+ *  rows) and row of three; packTiles only ever sees the stories after them. */
+export const TOP_STORIES = 7;
+
 export const PATTERN = [
   { slot: 1, kind: 'lead' },
   { slot: 2, kind: 'chart' },

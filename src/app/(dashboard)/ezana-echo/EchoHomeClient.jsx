@@ -11,7 +11,8 @@
  *   - /api/echo/article-statuses: admins only (the View archived count)
  *   - filters live in the URL (?section=&region=&range=&q=, defaults omitted,
  *     replaceState) and apply to the bento only, never the hero or Most read
- *   - paging is client-side over the hub payload, PAGE_SIZE stories a page
+ *   - paging is client-side over the hub payload: the top TOP_STORIES fill the
+ *     feature block and the row of three, then PAGE_SIZE stories a bento page
  *   - The Evening Brief posts to /api/newsletter/marketing/subscribe (double opt-in)
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,9 +21,10 @@ import { useAuth } from '@/components/AuthProvider';
 import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import EchoHome from '@/components/echo/home/EchoHome';
-import { PAGE_SIZE } from '@/lib/echo/bento-layout';
+import { PAGE_SIZE, TOP_STORIES } from '@/lib/echo/bento-layout';
 import {
   DEFAULT_FILTERS,
+  SECTIONS,
   filterStories,
   filtersToSearch,
   isDefaultFilters,
@@ -190,7 +192,12 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
       ),
     [stories, hero, filters, nowMs],
   );
-  const visible = useMemo(() => filtered.slice(0, pages * PAGE_SIZE), [filtered, pages]);
+  // Stories 1-7 fill the feature block and the row of three; the bento then
+  // gets full PAGE_SIZE pages from story 8 on.
+  const visible = useMemo(
+    () => filtered.slice(0, TOP_STORIES + pages * PAGE_SIZE),
+    [filtered, pages],
+  );
   // The chart is an editorial pick for the unfiltered front page; a filtered
   // grid shows only stories that match.
   const chart =
@@ -214,11 +221,29 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   };
 
+  const smooth = () =>
+    typeof window !== 'undefined' &&
+    !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ? 'smooth'
+      : 'auto';
+
+  // Masthead section links filter the feed and bring the reader to it.
+  const goToSection = (section) => {
+    onFiltersChange({ section });
+    document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
+  };
+
+  // Subscribe: scroll to The Evening Brief and put the cursor in its email field.
+  const goToBrief = () => {
+    document.getElementById('brief')?.scrollIntoView({ behavior: smooth(), block: 'start' });
+    document.getElementById('ech-brief-email')?.focus({ preventScroll: true });
+  };
+
   const openSearch = () => {
     const next = !searchOpen;
     setSearchOpen(next);
     if (next)
-      document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
     else onFiltersChange({ q: '' });
   };
 
@@ -236,24 +261,35 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   return (
     <>
       {/* The Echo masthead is this route's top bar (the marketing nav is
-          suppressed here): logo left, centred wordmark, search + Login +
-          Become a Partner right, with "Publish to the Echo" hanging below
-          the partner button. */}
+          suppressed here): logo + wordmark left, the six section links in the
+          middle, then search, Archived (admins), Login and Subscribe right.
+          Below 768px the section links drop to their own scrolling row. */}
       <header className="eth-masthead">
-        <Link href="/" className="eth-masthead-brand" aria-label="Ezana home">
-          <EzanaNavLogo width={47} height={54} priority />
-        </Link>
-        <Link href="/ezana-echo" className="nav-echo-wordmark eth-nav-center">
-          Ezana <span>Echo</span>
-        </Link>
+        <div className="eth-masthead-brand">
+          <Link href="/" className="eth-masthead-logo" aria-label="Ezana home">
+            <EzanaNavLogo width={36} height={41} priority />
+          </Link>
+          <Link href="/ezana-echo" className="eth-wordmark">
+            Ezana <span>Echo</span>
+          </Link>
+        </div>
+        <nav className="eth-sections" aria-label="Echo sections">
+          {SECTIONS.map((s) => {
+            const on = filters.section === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                className={`eth-section${on ? ' is-on' : ''}`}
+                aria-current={on ? 'true' : undefined}
+                onClick={() => goToSection(s.id)}
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </nav>
         <div className="eth-masthead-auth">
-          {isAdmin && (
-            <Link href="/ezana-echo/archived" className="eth-archived-btn">
-              <i className="bi bi-archive" aria-hidden="true" />
-              Archived
-              <span className="eth-archived-count">{archivedSet.size}</span>
-            </Link>
-          )}
           <button
             type="button"
             className="eth-search-btn"
@@ -264,17 +300,23 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
           >
             <i className="bi bi-search" aria-hidden="true" />
           </button>
+          {isAdmin && (
+            <Link
+              href="/ezana-echo/archived"
+              className="eth-archived-btn"
+              aria-label={`Archived articles (${archivedSet.size})`}
+            >
+              <i className="bi bi-archive" aria-hidden="true" />
+              <span className="eth-archived-label">Archived</span>
+              <span className="eth-archived-count">{archivedSet.size}</span>
+            </Link>
+          )}
           <a href="/auth/login" className="eth-login">
             Login
           </a>
-          <div className="eth-partner-stack">
-            <a href="/auth/partner/apply" className="eth-partner-btn">
-              Become a Partner
-            </a>
-            <a href="/auth/partner/apply" className="eth-partner-note">
-              Publish to the Echo <i className="bi bi-arrow-right" aria-hidden="true" />
-            </a>
-          </div>
+          <button type="button" className="eth-subscribe" onClick={goToBrief}>
+            Subscribe
+          </button>
         </div>
       </header>
       <div className="eth-dateline">

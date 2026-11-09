@@ -7,19 +7,24 @@
  * pick and admin actions, and passes them in. Grid tiles come only from
  * packTiles().
  *
- * Order: Article of the Month, Most read, Latest header and controls, story
- * grid, Load more, The Evening Brief, footer. The masthead stays in the route.
+ * Order (Nov 2026 redesign): Article of the Month (full-bleed), Latest
+ * Stories header and filters, feature block (stories 1-4), row of three
+ * (stories 5-7), Most read, More stories (packTiles bento from story 8, with
+ * Chart of the Week), Load more, The Evening Brief, footer. The masthead
+ * stays in the route.
  *
- * Image rule this layout exists for: no photo renders wider than 640px. Every
- * image box has a fixed aspect ratio, a max-width cap in echo-home.css and a
- * `sizes` string that matches the cap, so next/image never fetches or
- * upscales past it.
+ * Image rule: no photo renders wider than 640px. Every image box has a fixed
+ * aspect ratio, a max-width cap in echo-home.css and a `sizes` string that
+ * matches the cap, so next/image never fetches or upscales past it.
+ * The ONE exception is the full-bleed Article of the Month (HeroBleed):
+ * `fill`, `sizes="100vw"`, `priority`. An inset hero (`imageInset`) or a hero
+ * without a photo keeps the capped split/text-only Hero.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HOME_IMAGES_ENABLED } from '@/lib/echo/home-card-images';
-import { packTiles } from '@/lib/echo/bento-layout';
+import { packTiles, TOP_STORIES } from '@/lib/echo/bento-layout';
 import { SECTIONS, REGIONS, RANGES, DEFAULT_FILTERS, emptyMessage } from '@/lib/echo/home-feed';
 import { NEWSLETTER_CONSENT_TEXT } from '@/lib/newsletter/config';
 import './echo-home.css';
@@ -33,6 +38,12 @@ const SIZES = {
   aotm: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 640px, 560px',
   lead: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 320px, 384px',
   standard: '(max-width: 640px) 96px, (max-width: 1023px) 240px, 300px',
+  /* redesign boxes (640px cap still applies) */
+  feature: '(max-width: 640px) calc(100vw - 32px), 640px',
+  thumb: '(max-width: 767px) 96px, 150px',
+  row: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 50vw, 480px',
+  /* the single full-bleed exception */
+  bleed: '100vw',
 };
 
 /**
@@ -78,7 +89,10 @@ export default function EchoHome({
   onArchive,
   archivingId = null,
 }) {
-  const tiles = useMemo(() => packTiles(stories, { chart }), [stories, chart]);
+  // Stories 1-7: feature block + row of three. The bento only gets the rest.
+  const top = stories.slice(0, TOP_STORIES);
+  const rest = useMemo(() => stories.slice(TOP_STORIES), [stories]);
+  const tiles = useMemo(() => packTiles(rest, { chart }), [rest, chart]);
 
   // Load more: focus moves to the first new card's primary link.
   const gridRef = useRef(null);
@@ -114,22 +128,21 @@ export default function EchoHome({
   return (
     <main className="ech-page">
       {hero ? (
-        <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+        hero.image && !hero.imageInset ? (
+          <HeroBleed hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+        ) : (
+          <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+        )
       ) : status === 'loading' ? (
         <HeroSkeleton />
       ) : null}
 
-      {status === 'loading' ? <MostReadSkeleton /> : <MostRead items={mostRead} />}
-
       <section className="ech-latest" id="latest" aria-labelledby="ech-latest-h">
-        <div className="ech-sechead">
-          <h2 id="ech-latest-h" className="ech-sechead__title ech-sechead__title--lg">
-            Latest
+        {/* Row 1: title left, section pills right. Row 2: region, range, search. */}
+        <div className="ech-latest__head">
+          <h2 id="ech-latest-h" className="ech-latest__title">
+            Latest Stories
           </h2>
-          <span className="ech-mono ech-sechead__note">NEWEST FIRST</span>
-        </div>
-        {/* One filter row: section pills on the left, region and time range on the right. */}
-        <div className="ech-filterbar">
           <Segmented
             className="ech-tabs"
             label="Section"
@@ -140,56 +153,62 @@ export default function EchoHome({
             value={filters.section}
             onChange={(section) => onFiltersChange?.({ section })}
           />
-          <div className="ech-controls">
-            <div className="ech-controls__left">
-              <RegionMenu
-                value={filters.region}
-                onChange={(region) => onFiltersChange?.({ region })}
-              />
-              <Segmented
-                label="Time range"
-                mono
-                options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
-                value={filters.range}
-                onChange={(range) => onFiltersChange?.({ range })}
-              />
-            </div>
-            {showSearch && (
-              <div className="ech-controls__right">
-                <div className="ech-search">
-                  <label htmlFor="ech-search" className="ech-sr">
-                    Search Echo
-                  </label>
-                  <i className="bi bi-search" aria-hidden="true" />
-                  <input
-                    ref={searchRef}
-                    id="ech-search"
-                    type="search"
-                    className="ds-search-input"
-                    placeholder="Search stories, tickers, topics"
-                    value={filters.q}
-                    maxLength={80}
-                    onChange={(e) => onFiltersChange?.({ q: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') closeSearch();
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="ech-iconbtn"
-                  aria-label="Close search"
-                  onClick={closeSearch}
-                >
-                  <i className="bi bi-x-lg" aria-hidden="true" />
-                </button>
-              </div>
-            )}
+        </div>
+        <div className="ech-controls">
+          <div className="ech-controls__left">
+            <RegionMenu
+              value={filters.region}
+              onChange={(region) => onFiltersChange?.({ region })}
+            />
+            <Segmented
+              label="Time range"
+              mono
+              options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
+              value={filters.range}
+              onChange={(range) => onFiltersChange?.({ range })}
+            />
           </div>
+          {showSearch && (
+            <div className="ech-controls__right">
+              <div className="ech-search">
+                <label htmlFor="ech-search" className="ech-sr">
+                  Search Echo
+                </label>
+                <i className="bi bi-search" aria-hidden="true" />
+                <input
+                  ref={searchRef}
+                  id="ech-search"
+                  type="search"
+                  className="ds-search-input"
+                  placeholder="Search stories, tickers, topics"
+                  value={filters.q}
+                  maxLength={80}
+                  onChange={(e) => onFiltersChange?.({ q: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') closeSearch();
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className="ech-iconbtn"
+                aria-label="Close search"
+                onClick={closeSearch}
+              >
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
-      {status === 'loading' && <GridSkeleton />}
+      {status === 'loading' && (
+        <>
+          <FeatureSkeleton />
+          <RowOfThreeSkeleton />
+          <MostReadSkeleton />
+        </>
+      )}
       {status === 'error' && (
         <div className="ech-state ech-state--error" role="alert">
           <span className="ech-state__icon" aria-hidden="true">
@@ -202,7 +221,7 @@ export default function EchoHome({
           </button>
         </div>
       )}
-      {status === 'ready' && tiles.length === 0 && (
+      {status === 'ready' && stories.length === 0 && (
         <div className="ech-state" role="status">
           <span className="ech-state__icon" aria-hidden="true">
             <i className="bi bi-globe2" />
@@ -217,18 +236,42 @@ export default function EchoHome({
           </button>
         </div>
       )}
-      {status === 'ready' && tiles.length > 0 && (
-        <div className="ech-grid" ref={gridRef}>
-          {tiles.map((t) => (
-            <Card
-              key={t.key}
-              tile={t}
-              isAdmin={isAdmin}
-              onArchive={onArchive}
-              archiving={Boolean(t.story && archivingId === t.story.id)}
-            />
-          ))}
-        </div>
+      {status === 'ready' && stories.length > 0 && (
+        <>
+          <FeatureBlock
+            stories={top.slice(0, 4)}
+            isAdmin={isAdmin}
+            onArchive={onArchive}
+            archivingId={archivingId}
+          />
+          <RowOfThree
+            stories={top.slice(4, TOP_STORIES)}
+            isAdmin={isAdmin}
+            onArchive={onArchive}
+            archivingId={archivingId}
+          />
+          <MostRead items={mostRead} />
+          {tiles.length > 0 && (
+            <section className="ech-more-stories" aria-labelledby="ech-more-h">
+              <div className="ech-sechead">
+                <h2 id="ech-more-h" className="ech-sechead__title">
+                  More stories
+                </h2>
+              </div>
+              <div className="ech-grid" ref={gridRef}>
+                {tiles.map((t) => (
+                  <Card
+                    key={t.key}
+                    tile={t}
+                    isAdmin={isAdmin}
+                    onArchive={onArchive}
+                    archiving={Boolean(t.story && archivingId === t.story.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {status === 'ready' && hasMore && (
@@ -278,7 +321,56 @@ export default function EchoHome({
   );
 }
 
-/* ---------- Article of the Month ---------- */
+/* ---------- Article of the Month, full-bleed ----------
+   The photo spans the viewport behind the text (the one exception to the
+   640px cap). The section breaks out of the shell gutters with a negative
+   margin and pads back in by the same amount, so the text column starts on
+   the page's own left edge, in line with the masthead and Latest Stories. */
+function HeroBleed({ hero, options, month, onChange }) {
+  const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
+  return (
+    <section className="ech-hero" aria-labelledby="ech-aotm-title">
+      <div className="ech-hero__media" aria-hidden="true">
+        <Image
+          src={hero.image}
+          alt=""
+          fill
+          priority
+          sizes={SIZES.bleed}
+          quality={80}
+          style={{ objectFit: 'cover', objectPosition: hero.imagePosition || 'center' }}
+          unoptimized={/^https?:/.test(hero.image)}
+        />
+        <span className="ech-hero__scrim" />
+      </div>
+      <div className="ech-hero__inner">
+        <div className="ech-hero__text">
+          <div className="ech-hero__top">
+            <span className="ech-kicker ech-hero__kicker">{hero.kicker}</span>
+            {options.length >= 1 && onChange ? (
+              <PastPicks options={options} month={month} onChange={onChange} />
+            ) : null}
+          </div>
+          {short ? <span className="ech-chip">{short}</span> : null}
+          <h1 id="ech-aotm-title" className="ech-hero__title">
+            <Link href={hero.href}>{hero.title}</Link>
+          </h1>
+          {hero.dek ? <p className="ech-hero__dek">{hero.dek}</p> : null}
+          <Byline story={hero} />
+          <Link
+            href={hero.href}
+            className="ech-hero__go"
+            aria-label="Read the Article of the Month"
+          >
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Article of the Month: split / text-only (inset or no photo) ---------- */
 function Hero({ hero, options, month, onChange }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
   const image = Boolean(hero.image);
@@ -323,11 +415,26 @@ function Hero({ hero, options, month, onChange }) {
 }
 
 function HeroSkeleton() {
+  if (HOME_IMAGES_ENABLED) {
+    return (
+      <div className="ech-hero ech-hero--skel" aria-hidden="true">
+        <div className="ech-hero__inner">
+          <div className="ech-hero__text">
+            <span className="ech-skel ech-skel--line" style={{ width: 160 }} />
+            <span className="ech-skel ech-skel--line" style={{ width: 110 }} />
+            <span className="ech-skel ech-skel--head" />
+            <span className="ech-skel ech-skel--head" style={{ width: '72%' }} />
+            <span className="ech-skel ech-skel--line" style={{ width: '90%' }} />
+            <span className="ech-skel ech-skel--line" style={{ width: '80%' }} />
+            <span className="ech-skel ech-skel--line" style={{ width: 260 }} />
+            <span className="ech-skel ech-skel--dot" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div
-      className={`ech-aotm ech-aotm--skel${HOME_IMAGES_ENABLED ? '' : ' is-noimg'}`}
-      aria-hidden="true"
-    >
+    <div className="ech-aotm ech-aotm--skel is-noimg" aria-hidden="true">
       <div className="ech-aotm__text">
         <span className="ech-skel ech-skel--line" style={{ width: '42%' }} />
         <span className="ech-skel ech-skel--head" />
@@ -339,7 +446,6 @@ function HeroSkeleton() {
           <span className="ech-skel ech-skel--dot" />
         </div>
       </div>
-      {HOME_IMAGES_ENABLED ? <span className="ech-aotm__img ech-skel" /> : null}
     </div>
   );
 }
@@ -379,6 +485,174 @@ function PastPicks({ options, month, onChange }) {
       onChoose={(v) => onChange(v)}
       align="right"
     />
+  );
+}
+
+/* ---------- Byline ---------- */
+function Byline({ story, size = 'md' }) {
+  return (
+    <span className={`ech-byline ech-byline--${size}`}>
+      {size === 'md' ? (
+        <i className="bi bi-person-circle ech-byline__icon" aria-hidden="true" />
+      ) : null}
+      <span>
+        By <strong>{story.author || 'Ezana Editorial'}</strong>
+      </span>
+      {story.date ? (
+        <>
+          <span className="ech-byline__sep" aria-hidden="true">
+            |
+          </span>
+          <span className="ech-mono">{story.date}</span>
+        </>
+      ) : null}
+      <span className="ech-byline__sep" aria-hidden="true">
+        &bull;
+      </span>
+      <span className="ech-mono">{story.mins} min read</span>
+    </span>
+  );
+}
+
+/* ---------- Feature block: story 1 + side list of stories 2-4 ---------- */
+function FeatureBlock({ stories, isAdmin, onArchive, archivingId }) {
+  const [lead, ...side] = stories;
+  if (!lead) return null;
+  const admin = isAdmin && onArchive;
+  return (
+    <div className="ech-feature">
+      <article className={`ech-feature__card${lead.image ? '' : ' is-noimg'}`}>
+        <Link href={lead.href} className="ech-tile__link ech-feature__link">
+          {lead.image ? (
+            <Picture
+              src={lead.image}
+              className="ech-feature__img"
+              alt={lead.imageAlt || ''}
+              position={lead.imagePosition}
+              sizes={SIZES.feature}
+            />
+          ) : null}
+          <span className="ech-feature__body">
+            {tagOf(lead) ? <span className="ech-chip ech-chip--sm">{tagOf(lead)}</span> : null}
+            <h3 className="ech-feature__title">{lead.title}</h3>
+            {lead.dek ? <span className="ech-feature__dek">{lead.dek}</span> : null}
+            <Byline story={lead} size="sm" />
+          </span>
+        </Link>
+        {admin ? (
+          <ArchiveButton story={lead} onArchive={onArchive} archiving={archivingId === lead.id} />
+        ) : null}
+      </article>
+
+      {side.length ? (
+        <ul className="ech-side">
+          {side.slice(0, 3).map((s) => (
+            <li key={s.id} className={`ech-side__row${s.image ? '' : ' is-noimg'}`}>
+              <Link href={s.href} className="ech-tile__link ech-side__link">
+                {s.image ? (
+                  <Picture
+                    src={s.image}
+                    className="ech-side__img"
+                    alt={s.imageAlt || ''}
+                    position={s.imagePosition}
+                    sizes={SIZES.thumb}
+                  />
+                ) : null}
+                <span className="ech-side__body">
+                  {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
+                  <h3 className="ech-side__title">{s.title}</h3>
+                  <Byline story={s} size="xs" />
+                </span>
+              </Link>
+              {admin ? (
+                <ArchiveButton story={s} onArchive={onArchive} archiving={archivingId === s.id} />
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- Row of three: stories 5-7 ---------- */
+function RowOfThree({ stories, isAdmin, onArchive, archivingId }) {
+  if (!stories.length) return null;
+  const admin = isAdmin && onArchive;
+  return (
+    <div className="ech-row3">
+      {stories.map((s) => (
+        <article key={s.id} className={`ech-row3__card${s.image ? '' : ' is-noimg'}`}>
+          <Link href={s.href} className="ech-tile__link ech-row3__link">
+            {s.image ? (
+              <Picture
+                src={s.image}
+                className="ech-row3__img"
+                alt={s.imageAlt || ''}
+                position={s.imagePosition}
+                sizes={SIZES.row}
+              />
+            ) : null}
+            <span className="ech-row3__body">
+              {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
+              <h3 className="ech-row3__title">{s.title}</h3>
+              {!s.image && s.dek ? <span className="ech-row3__dek">{s.dek}</span> : null}
+              <Byline story={s} size="xs" />
+            </span>
+          </Link>
+          {admin ? (
+            <ArchiveButton story={s} onArchive={onArchive} archiving={archivingId === s.id} />
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function FeatureSkeleton() {
+  return (
+    <div className="ech-feature" aria-hidden="true">
+      <div className="ech-feature__card">
+        {HOME_IMAGES_ENABLED ? <span className="ech-feature__img ech-skel" /> : null}
+        <span className="ech-feature__body">
+          <span className="ech-skel ech-skel--line" style={{ width: 110 }} />
+          <span className="ech-skel ech-skel--head" />
+          <span className="ech-skel ech-skel--line" style={{ width: '85%' }} />
+          <span className="ech-skel ech-skel--line" style={{ width: 220 }} />
+        </span>
+      </div>
+      <div className="ech-side">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="ech-side__row">
+            <span className="ech-side__link">
+              {HOME_IMAGES_ENABLED ? <span className="ech-side__img ech-skel" /> : null}
+              <span className="ech-side__body">
+                <span className="ech-skel ech-skel--line" style={{ width: 90 }} />
+                <span className="ech-skel ech-skel--line" />
+                <span className="ech-skel ech-skel--line" style={{ width: '60%' }} />
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RowOfThreeSkeleton() {
+  return (
+    <div className="ech-row3" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="ech-row3__card">
+          {HOME_IMAGES_ENABLED ? <span className="ech-row3__img ech-skel" /> : null}
+          <span className="ech-row3__body">
+            <span className="ech-skel ech-skel--line" style={{ width: 90 }} />
+            <span className="ech-skel ech-skel--line" />
+            <span className="ech-skel ech-skel--line" style={{ width: '70%' }} />
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -828,29 +1102,6 @@ function Picture({ src, className, alt, eager = false, sizes, position = null })
   );
 }
 
-function GridSkeleton() {
-  const kinds = ['lead', 'chart', 'standard', 'standard', 'standard', 'standard'];
-  return (
-    <div className="ech-grid" aria-hidden="true">
-      {kinds.map((k, i) => (
-        <div
-          key={i}
-          className={`ech-card ech-card--${k} ${HOME_IMAGES_ENABLED ? 'has-img' : 'is-noimg'} ech-card--skel`}
-        >
-          {HOME_IMAGES_ENABLED && k !== 'chart' ? (
-            <span className="ech-card__img ech-skel" />
-          ) : null}
-          <span className="ech-card__body">
-            <span className="ech-skel ech-skel--line" style={{ width: 70 }} />
-            <span className="ech-skel ech-skel--line" />
-            <span className="ech-skel ech-skel--line" style={{ width: '75%' }} />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ---------- The Evening Brief ---------- */
 function EveningBrief({ onSubscribe }) {
   const [email, setEmail] = useState('');
@@ -879,7 +1130,7 @@ function EveningBrief({ onSubscribe }) {
   };
   const errored = state === 'invalid' || state === 'error' || state === 'consent';
   return (
-    <section className="ech-brief" aria-labelledby="ech-brief-h">
+    <section className="ech-brief" id="brief" aria-labelledby="ech-brief-h">
       <div className="ech-brief__copy">
         <span className="ech-kicker ech-brief__kicker">NEWSLETTER · WEEKDAYS, 6 PM ET</span>
         <h2 id="ech-brief-h" className="ech-brief__title">

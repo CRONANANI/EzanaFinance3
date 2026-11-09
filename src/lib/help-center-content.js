@@ -2727,7 +2727,7 @@ export const PARTNER_ARTICLES = {
     title: 'How to Become an Ezana Partner',
     category: 'Partner Onboarding',
     content: wrap([
-      'To become a partner, select <strong>Become a Partner</strong> (on the pricing page or the Ezana Echo header), or go to <code>/auth/partner/apply</code>. The application takes about five minutes. Have your LinkedIn profile and credentials ready, then work through the steps below.',
+      'To become a partner, select <strong>Become a Partner</strong> on the pricing page or <strong>Write for Echo</strong> in the Ezana Echo footer, or go to <code>/auth/partner/apply</code>. The application takes about five minutes. Have your LinkedIn profile and credentials ready, then work through the steps below.',
       '<h3>Step-by-step</h3>',
       '<ol><li><strong>Screening form</strong>: your full legal name and email (required), phone, country, partner type (Trader, Content Creator, Affiliate, or Financial Advisor), years of experience, current role, firm, LinkedIn, trading style, assets under management, markets traded, and certifications.</li><li><strong>Your plans</strong>: why you want to become a partner (required), what you plan to share, and how you heard about Ezana.</li><li><strong>Email verification</strong>: open the verification link. It is valid for 72 hours.</li><li><strong>Identity &amp; documents</strong>: upload a government-issued ID and proof of financial activity. Both are required.</li><li><strong>Review &amp; approval</strong>: the team reviews your application.</li></ol>',
       '<h3>Eligibility</h3>',

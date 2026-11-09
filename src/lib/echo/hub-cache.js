@@ -26,6 +26,7 @@ function slim(card) {
     id: card.id,
     title: card.title,
     excerpt: card.excerpt,
+    author: card.author || null,
     category: card.category,
     subcategory: card.subcategory || null,
     readTime: card.readTime,
@@ -62,6 +63,8 @@ export const getEchoHubCached = unstable_cache(
       chart: chart && !archivedIds.has(chart.slug) ? chart : null,
     };
   },
-  ['echo-hub-v1'],
+  // v2 (Nov 2026): cards carry `author` for the home bylines; the new key
+  // keeps an old cached payload without it from being served after deploy.
+  ['echo-hub-v2'],
   { revalidate: 300, tags: [ECHO_HUB_TAG] },
 );
