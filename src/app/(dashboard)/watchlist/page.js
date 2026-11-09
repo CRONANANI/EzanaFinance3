@@ -35,6 +35,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './watchlist.css';
 import '../org-trading/org-trading.css';
+import '@/styles/home-canvas.css';
 
 const OrgSendToTeamModal = dynamic(
   () =>
@@ -960,7 +961,7 @@ export default function WatchlistPage() {
 
   if (!selected) {
     return (
-      <div className="wl-page dashboard-page-inset">
+      <div className="wl-page dashboard-page-inset ez-canvas">
         <p style={{ color: '#8b949e', padding: '2rem 0', textAlign: 'center' }}>
           No watchlist items to display.
         </p>
@@ -969,7 +970,7 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="wl-page dashboard-page-inset">
+    <div className="wl-page dashboard-page-inset ez-canvas">
       <EducationTip topic="diversification" />
       {activeHolder && selected?.type === 'stock' && (
         <HolderPopup

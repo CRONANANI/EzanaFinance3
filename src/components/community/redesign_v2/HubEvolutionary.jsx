@@ -123,8 +123,8 @@ export function HubEvolutionary() {
 
   return (
     <div
-      className="ezana-theme evo-hub dashboard-page-inset db-page"
-      style={{ minHeight: '100%', background: 'var(--bg-primary)' }}
+      className="ezana-theme evo-hub dashboard-page-inset db-page ez-canvas"
+      style={{ minHeight: '100%' }}
     >
       <header className="phead">
         <div>

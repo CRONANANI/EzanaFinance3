@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Home canvas (Nov 2026). The /home broadsheet is the template for the
+   app's look; this file carries that look to other pages.
+
+   Add `ez-canvas` to a page's root element and import this file last in
+   the page. It applies four rules from /home (home/broadsheet.css):
+
+     1. One ground. The page and its cards sit on the app canvas: no card
+        fill, no outline or border, no shadow, no rounded panel.
+     2. Hairline rules, not boxes. A card is defined by its header, which
+        gets a hairline beneath it (as `.bs-band-head` does on /home).
+        Side columns are split off by a vertical hairline (`.bs-hero-r`).
+     3. Home type. Card titles take the `.bs-sub-title` size and weight;
+        eyebrows and stat labels take the small uppercase label; tables take
+        `.bs-th` / `.bs-tr` (label-caps head over a solid rule, dotted rows).
+     4. Stat strips read like `.bs-hero-stats`: ruled top and bottom,
+        centred cells split by hairlines, mono numbers.
+
+   Overlays keep their own surfaces: nothing here touches modals, menus,
+   dropdowns, tooltips or popovers, so they stay solid and readable.
+
+   Why !important on the card shells: the pages' own light-mode rules
+   (`body.light-mode .db-card`, `.cr-page .research-card`, and the legacy
+   research stylesheets) already use higher specificity or !important.
+   The flat canvas has to win in both themes, so the shell rules do too.
+   Nothing else in this file uses it.
+
+   Tokens only: rules are colour-mixed from --text-primary, so they track
+   the theme. Pages on it today: Dashboard (/home-dashboard), Community,
+   Watchlist, Mock Portfolio (/trading/mock), Company & Portfolio
+   Research (/company-research). Guarded by scripts/check-home-canvas.mjs.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ez-canvas {
+  /* The /home broadsheet's ink, label and rule values, as theme tokens. */
+  --ez-ink: var(--text-primary);
+  --ez-body: var(--text-secondary);
+  --ez-label: var(--text-muted);
+  --ez-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --ez-rule-subtle: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --ez-hover: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
+  --ez-title-size: 18px;
+
+  background: transparent;
+  color: var(--ez-ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.008em;
+}
+body:not(.light-mode) .ez-canvas {
+  --ez-rule: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  --ez-rule-subtle: color-mix(in srgb, var(--text-primary) 4.5%, transparent);
+  --ez-hover: color-mix(in srgb, var(--text-primary) 3%, transparent);
+}
+
+/* ── 1. Card shells: flat on the canvas ─────────────────────────────── */
+.ez-canvas :is(
+    /* Dashboard */
+    .db-card,
+    .db-hero-card,
+    .db-holding-card,
+    .db-skel-card,
+    /* Community (the post menu and loading shimmer keep their fills) */
+    .ez-card:not(.evo-post-menu):not(.ez-shimmer),
+    .ledger-card,
+    .ledger-post,
+    /* Watchlist */
+    .wl-chart-panel,
+    .wl-side,
+    .wl-strip-card,
+    .wl-chart-box,
+    .wl-cmp,
+    .wl-comp-table,
+    .component-card,
+    /* Mock Portfolio */
+    .mock-card,
+    .mock-stat-card,
+    .mock-trade-panel,
+    /* Company & Portfolio Research */
+    .rco,
+    .rar,
+    .rkm,
+    .rec,
+    .rcp,
+    .cr-news-chain-card,
+    .crx-section-empty,
+    .crx-empty-panel,
+    .mcs-card,
+    .ai-analysis-card,
+    .dcf-interactive-root,
+    .cr-db-card,
+    .market-chart-section,
+    .research-card,
+    .company-info-panel
+  ) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+}
+
+/* No hover lift or glow on a flat card; clickable tiles get the /home row
+   wash (`.bs-tr:hover`) instead. */
+.ez-canvas :is(.component-card, .mcs-card, .ai-analysis-card, .dcf-interactive-root):hover {
+  transform: none;
+}
+.ez-canvas :is(.db-holding-card, .wl-strip-card, .ledger-post):hover,
+.ez-canvas .wl-strip-card.active {
+  background: var(--ez-hover) !important;
+}
+
+/* ── 2. Hairline rules ──────────────────────────────────────────────── */
+
+/* Card headers: a hairline under the title, as under a /home band head. */
+.ez-canvas
+  :is(
+    .db-card-header,
+    .db-hero-card-header,
+    .mock-card-header,
+    .mock-trade-panel-header,
+    .crx-section-head,
+    .crx-empty-panel-head,
+    .cr-news-chain-header,
+    .rco-head,
+    .rar-head,
+    .rkm-head,
+    .rec-head,
+    .rcp-head,
+    .card-header
+  ) {
+  border-bottom: 1px solid var(--ez-rule);
+}
+.ez-canvas :is(.crx-section-head, .rco-head, .rar-head, .rkm-head, .rec-head, .rcp-head) {
+  padding-bottom: 10px;
+}
+.ez-canvas .ledger-card .cardhdr {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ez-rule);
+}
+
+/* Community feed: posts are divided by hairlines, not boxed. */
+.ez-canvas .ledger-post {
+  border-bottom: 1px solid var(--ez-rule-subtle) !important;
+}
+
+/* Side columns split off by a vertical hairline (`.bs-hero-r`). */
+.ez-canvas :is(.wl-side, .mock-trade-panel) {
+  border-left: 1px solid var(--ez-rule) !important;
+  padding-left: 1.5rem;
+}
+/* Each page's own single-column breakpoint: the rule moves to the top. */
+@media (max-width: 768px) {
+  .ez-canvas .wl-side {
+    border-left-color: transparent !important;
+    border-top: 1px solid var(--ez-rule) !important;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+@media (max-width: 900px) {
+  .ez-canvas .mock-trade-panel {
+    border-left-color: transparent !important;
+    border-top: 1px solid var(--ez-rule) !important;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+
+/* Watchlist strip cards: the active one keeps its coloured top bar; a
+   hairline separates neighbours instead of a box around each. */
+.ez-canvas .wl-top-strip {
+  gap: 0;
+}
+.ez-canvas .wl-strip-card + .wl-strip-card {
+  border-left: 1px solid var(--ez-rule-subtle) !important;
+}
+
+/* ── 3. Home type ───────────────────────────────────────────────────── */
+
+/* Card and section titles: `.bs-sub-title`. */
+.ez-canvas
+  :is(
+    .db-card-header h3,
+    .db-hero-card-title,
+    .mock-card-header h3,
+    .mock-trade-panel-header h3,
+    .crx-section-title,
+    .card-header h3
+  ) {
+  font-size: var(--ez-title-size);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--ez-ink);
+}
+
+/* Stat labels: the /home small uppercase label. */
+.ez-canvas .mock-stat-label {
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--ez-label);
+}
+
+/* Tables: `.bs-th` heads over a solid ink rule, dotted `.bs-tr` rows. */
+.ez-canvas table th {
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ez-label);
+  background: transparent;
+  border-bottom: 1px solid var(--ez-ink);
+}
+.ez-canvas table tbody tr {
+  border-bottom: 1px dotted var(--ez-rule);
+}
+.ez-canvas table tbody tr:hover {
+  background: var(--ez-hover);
+}
+
+/* ── 4. Stat strips: `.bs-hero-stats` ───────────────────────────────── */
+.ez-canvas .mock-portfolio-strip {
+  gap: 0;
+  border-top: 1px solid var(--ez-rule);
+  border-bottom: 1px solid var(--ez-rule);
+}
+.ez-canvas .mock-portfolio-strip .mock-stat-card {
+  align-items: center;
+  text-align: center;
+  padding: 10px 0.75rem;
+  border-right: 1px solid var(--ez-rule-subtle) !important;
+}
+.ez-canvas .mock-portfolio-strip .mock-stat-card:last-child {
+  border-right-color: transparent !important;
+}
+@media (max-width: 380px) {
+  .ez-canvas .mock-portfolio-strip .mock-stat-card {
+    border-right-color: transparent !important;
+    border-bottom: 1px solid var(--ez-rule-subtle) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ez-canvas :is(.db-holding-card, .wl-strip-card, .ledger-post) {
+    transition: none;
+  }
+}

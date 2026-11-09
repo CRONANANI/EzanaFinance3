@@ -2,6 +2,7 @@
 
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './community.css';
+import '@/styles/home-canvas.css';
 import { HubEvolutionary } from '@/components/community/redesign_v2/HubEvolutionary';
 
 export default function CommunityPage() {

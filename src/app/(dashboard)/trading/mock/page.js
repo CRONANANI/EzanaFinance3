@@ -36,6 +36,7 @@ const ResetPortfolioModal = dynamic(() => import('@/components/trading/ResetPort
 });
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
+import '@/styles/home-canvas.css';
 
 /* ──────────────────────────────────────────
    CONSTANTS
@@ -709,7 +710,7 @@ function MockTradingPageInner() {
   const quoteChangePct = quoteData?.changesPercentage ?? quoteData?.changePercentage ?? 0;
 
   return (
-    <div className="mock-page dashboard-page-inset">
+    <div className="mock-page dashboard-page-inset ez-canvas">
       <div className="mock-header">
         <div className="mock-header-left">
           <Link

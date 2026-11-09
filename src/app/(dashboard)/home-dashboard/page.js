@@ -15,6 +15,7 @@ import './home-dashboard.css';
 import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
 import { MetricInfo } from '@/components/beginner/MetricInfo';
 import '@/components/beginner/beginner.css';
+import '@/styles/home-canvas.css';
 
 /** 9 holdings per page = 3 columns × 3 rows. Was 6 (3×2); tighter per-card
     sizing in home-dashboard.css keeps total height similar to before. */
@@ -693,7 +694,7 @@ export default function HomeDashboardPage() {
           : 'is-muted';
 
   return (
-    <div className="db-page dashboard-page-inset">
+    <div className="db-page dashboard-page-inset ez-canvas">
       {isInitialLoading ? (
         <DashboardSkeleton />
       ) : (

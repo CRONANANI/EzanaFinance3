@@ -65,6 +65,7 @@ import './company-research-theme.css';
 import './dossier.css';
 import './research-density.css';
 import '../org-trading/org-trading.css';
+import '@/styles/home-canvas.css';
 
 const CAROUSEL_MODELS = getCarouselModels();
 
@@ -548,7 +549,7 @@ function CompanyResearchPageInner() {
 
   if (view === 'industry' || view === 'portfolio') {
     return (
-      <div className="dashboard-page-inset cr-page">
+      <div className="dashboard-page-inset cr-page ez-canvas">
         <div className="crx-canvas">
           <ResearchPageHeader view={view} setView={setView} />
           <MarketPortfolioView section={view} />
@@ -558,7 +559,7 @@ function CompanyResearchPageInner() {
   }
 
   return (
-    <div className="dashboard-page-inset cr-page">
+    <div className="dashboard-page-inset cr-page ez-canvas">
       <div className="crx-canvas">
         <ResearchPageHeader view={view} setView={setView} />
         {showBeginnerAnalysis && (

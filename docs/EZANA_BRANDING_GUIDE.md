@@ -220,9 +220,23 @@ Charts use the `--echo-chart-*` palette: blue neutral, green positive/live, oran
 
 ---
 
-## 7. The "Ezana standard card" pattern
+## 7. The home canvas: the template (Nov 2026)
 
-Every component card in the app follows this skeleton. Both light and dark modes work automatically because everything uses tokens. New pages give their cards a page-scoped class prefix (`bs-`, `sl-`, `lpd-`, `ppo-`, `am2-`, `lc-` are existing examples) and route buttons, inputs, badges, tabs and numerics through `@/components/ds` rather than hand-rolling them.
+**The /home broadsheet (`src/app/(dashboard)/home/broadsheet.css`) is the reference design for the app.** New pages and redesigns copy its grammar, not the boxed card in 7b:
+
+1. **One ground.** Cards sit on the app canvas: no fill, no outline or border, no shadow, no rounded panel. The page root paints no background of its own.
+2. **Hairline rules, not boxes.** A card is defined by its header and the hairline under it (`.bs-band-head`). Side columns are split off by a vertical hairline (`.bs-hero-r`). Lists divide rows with hairlines (`.bs-tr`), not gaps between boxes.
+3. **Home type.** Band titles are 24px/700 (`.bs-band-label`); card titles 18px/600, -0.015em (`.bs-sub-title`); eyebrows and stat labels 9.5px/700 uppercase, 0.14 to 0.16em tracking (`.bs-eyebrow`, `.bs-hero-stat-label`); table heads 10px uppercase over a solid ink rule (`.bs-th`). Numbers are mono and tabular.
+4. **Stat strips** are ruled top and bottom, with centred cells split by hairlines (`.bs-hero-stats`).
+5. **Nested fills stay subtle.** Chips, inputs, segmented-control tracks and inner tiles may keep a faint wash; top-level cards never do.
+
+To put an existing page on the canvas, add `ez-canvas` to its root and import `src/styles/home-canvas.css` last. That file holds the shared rules and the list of each page's card shells. Pages on it: Dashboard, Community, Watchlist, Mock Portfolio, Company & Portfolio Research (guard: `scripts/check-home-canvas.mjs`). A new page should be written flat from the start rather than relying on the override list.
+
+Overlays (modals, menus, dropdowns, tooltips, popovers) are the exception: they keep a solid surface and a shadow, per 7b, so they stay readable over content.
+
+## 7b. The "Ezana standard card" pattern (overlays, and pages not yet on the canvas)
+
+Modals, menus, dropdowns, tooltips and popovers follow this skeleton, as do pages not yet moved onto the home canvas (section 7). Both light and dark modes work automatically because everything uses tokens. New pages give their cards a page-scoped class prefix (`bs-`, `sl-`, `lpd-`, `ppo-`, `am2-`, `lc-` are existing examples) and route buttons, inputs, badges, tabs and numerics through `@/components/ds` rather than hand-rolling them.
 
 ```css
 .ezana-card {
@@ -448,6 +462,7 @@ Avoid bouncy/overshoot animations, spinning loaders (use shimmer skeletons), and
 - Never use bright/saturated reds outside negative-state indicators.
 - Never put more than 2 weight levels of emphasis in a single card.
 - Never use em dashes in UI copy, labels, tooltips or empty states.
+- Never box a top-level card (fill, border, shadow) on a page; follow the home canvas (section 7).
 - Never name backend infrastructure in user-visible copy; attribute only the public data source.
 - No Tailwind utility classes, no TypeScript, no shadcn.
 
@@ -460,7 +475,8 @@ Avoid bouncy/overshoot animations, spinning loaders (use shimmer skeletons), and
 | All design tokens           | `src/app/theme-variables.css`                                                           |
 | Global CSS / overrides      | `src/app/globals.css`                                                                   |
 | Design-system components    | `src/components/ds/`                                                                    |
-| Standard card examples      | `src/app/(dashboard)/home-dashboard/home-dashboard.css`                                 |
+| Home canvas (the template)  | `src/app/(dashboard)/home/broadsheet.css`, shared rules in `src/styles/home-canvas.css` |
+| Standard card examples      | `src/app/(dashboard)/home-dashboard/home-dashboard.css` (now flat via the canvas)       |
 | Reference dataset pages     | `src/components/datasets/politician-tracker/`, `src/app/datasets/government/contracts/` |
 | Font files and `@font-face` | `scripts/build-fonts.mjs`, `public/fonts/site/`, `src/app/fonts.css` (generated)        |
 | Canvas font helper          | `src/lib/font-stack.js`                                                                 |
