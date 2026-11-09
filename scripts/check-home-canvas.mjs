@@ -18,8 +18,10 @@ const PAGES = [
   {
     name: 'Dashboard',
     page: 'src/app/(dashboard)/home-dashboard/page.js',
-    root: 'src/app/(dashboard)/home-dashboard/page.js',
-    shells: ['.db-card', '.db-hero-card'],
+    root: 'src/components/dashboard/home/DashboardPage.jsx',
+    // Nov 2026 redesign: cards come from dashboard.module.css (tinted, no
+    // outline), so there are no shared shells to flatten.
+    shells: [],
   },
   {
     name: 'Community',

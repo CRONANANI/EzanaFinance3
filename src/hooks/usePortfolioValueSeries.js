@@ -103,7 +103,7 @@ export function usePortfolioValueSeries(range) {
   /** Points for `range` only (no cross-range keep). Use for $ / % delta for the selected window. */
   const dataForCurrentRange = cache[range];
 
-  return { points: displayPoints, dataForCurrentRange, isLoading, error };
+  return { points: displayPoints, dataForCurrentRange, isLoading, error, reload: runFetch };
 }
 
 /**
