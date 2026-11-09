@@ -3,8 +3,9 @@
 
    Order A to I: greeting and actions, KPI strip, portfolio snapshot,
    holdings and watchlist, then profits, sectors and transactions.
-   Cards have no outline: a faint accent tint and the system shadow set
-   them off the canvas. Inner dividers stay hairlines. The accent is
+   Cards sit flat on the canvas (the ez-canvas rule): transparent
+   background, no border, outline, shadow or rounded panel. Inner dividers
+   stay hairlines. The accent is
    --emerald, which turns gold in the partner scope; gains and losses use
    --positive and --negative and always carry their sign.
 
@@ -21,7 +22,6 @@
   --db-ink: var(--text-primary);
   --db-body: var(--text-secondary);
   --db-muted: var(--text-muted);
-  --db-card: color-mix(in srgb, var(--emerald) 4%, var(--bg-primary));
   --db-well: color-mix(in srgb, var(--emerald) 10%, transparent);
   --db-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
   --db-rule-soft: color-mix(in srgb, var(--text-primary) 5%, transparent);
@@ -310,9 +310,12 @@
   gap: 14px;
   min-width: 0;
   padding: 20px 22px;
-  border-radius: var(--radius-lg);
-  background: var(--db-card);
-  box-shadow: var(--shadow-sm);
+  /* Flat on the canvas: no fill, outline, border, shadow or radius. */
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
 .cardHead {
   display: flex;

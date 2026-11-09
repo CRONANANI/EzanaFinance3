@@ -19,8 +19,9 @@ const PAGES = [
     name: 'Dashboard',
     page: 'src/app/(dashboard)/home-dashboard/page.js',
     root: 'src/components/dashboard/home/DashboardPage.jsx',
-    // Nov 2026 redesign: cards come from dashboard.module.css (tinted, no
-    // outline), so there are no shared shells to flatten.
+    // Nov 2026 redesign: cards come from dashboard.module.css, which lays
+    // them flat itself (see the module-card test below), so there are no
+    // shared shells to flatten here.
     shells: [],
   },
   {
@@ -95,4 +96,19 @@ test('community root no longer paints its own ground', () => {
     read('src/components/community/redesign_v2/HubEvolutionary.jsx'),
     /background: 'var\(--bg-primary\)'/,
   );
+});
+
+test('Dashboard: module cards are flat (transparent, no border, no shadow, no radius)', () => {
+  const mod = read('src/app/(dashboard)/home-dashboard/dashboard.module.css');
+  const m = mod.match(/\n\.card \{([^}]*)\}/);
+  assert.ok(m, '.card rule exists');
+  const body = m[1];
+  for (const decl of [
+    'background: transparent',
+    'border: 0',
+    'box-shadow: none',
+    'border-radius: 0',
+  ])
+    assert.ok(body.includes(decl), `.card has ${decl}`);
+  assert.ok(!/--db-card\b/.test(mod), 'the --db-card tint is gone');
 });
