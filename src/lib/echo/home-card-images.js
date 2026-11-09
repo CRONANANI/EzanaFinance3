@@ -3,8 +3,9 @@
  * by the Echo home hero (Article of the Month) and bento cards. Article pages
  * keep their own heroImage from the article module and are never affected.
  *
- * Every article has a reserved file name, public/images/ezana-echo/<slug>-card.webp
- * (1600x1000, 16:10, WebP). Upload a file under that exact name and the card
+ * Every article has a reserved file name, public/images/ezana-echo/<slug>-card.<ext>
+ * (about 1600x1000, 16:10), where <ext> is webp, avif, jpg, jpeg or png (first
+ * found wins, in that order). One extension only: `x-card.webp.jpg` won't match. Upload a file under that exact name and the card
  * picks it up on the next deploy: the build regenerates
  * src/lib/echo/public-images.json, and an entry is only used once its file is
  * in that manifest. Until then the card falls back to the article's own
@@ -18,7 +19,17 @@
 import PUBLIC_IMAGES from '@/lib/echo/public-images.json';
 
 const PRESENT = new Set(PUBLIC_IMAGES);
+const CARD_EXTS = ['webp', 'avif', 'jpg', 'jpeg', 'png'];
 const card = (slug) => `/images/ezana-echo/${slug}-card.webp`;
+
+/** The uploaded card file for a slug, in whichever allowed format exists, or null. */
+function cardSrc(slug) {
+  for (const ext of CARD_EXTS) {
+    const p = `/images/ezana-echo/${slug}-card.${ext}`;
+    if (PRESENT.has(p)) return p;
+  }
+  return null;
+}
 
 export const HOME_CARD_IMAGES = {
   // The Cow Is the Collateral
@@ -161,8 +172,7 @@ export const HOME_IMAGES_ENABLED = true;
 
 /** True when a home card file for this slug has been uploaded to public/. */
 export function hasHomeCardImage(slug) {
-  const img = HOME_CARD_IMAGES[slug];
-  return Boolean(img && PRESENT.has(img.src));
+  return Boolean(HOME_CARD_IMAGES[slug] && cardSrc(slug));
 }
 
 /** The home image for a story: none while disabled, else the uploaded card file, else its own. */
@@ -171,5 +181,10 @@ export function withHomeImage(story) {
   if (!HOME_IMAGES_ENABLED) return { ...story, image: null, imageAlt: '', imagePosition: null };
   if (!hasHomeCardImage(story.id)) return story;
   const img = HOME_CARD_IMAGES[story.id];
-  return { ...story, image: img.src, imageAlt: img.alt || '', imagePosition: img.position || null };
+  return {
+    ...story,
+    image: cardSrc(story.id),
+    imageAlt: img.alt || '',
+    imagePosition: img.position || null,
+  };
 }
