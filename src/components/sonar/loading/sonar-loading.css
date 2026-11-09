@@ -45,97 +45,17 @@
   max-width: var(--app-shell-max);
 }
 
-/* ---------- top bar: estimate, timer, cancel ---------- */
-.sonar-loading .sl-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-}
-.sonar-loading .sl-estimate {
-  font-size: 12px;
-  color: var(--sl-text-muted);
-}
-.sonar-loading .sl-clock {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  font-variant-numeric: tabular-nums;
-  color: var(--sl-text-muted);
-}
-.sonar-loading .sl-live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--sl-accent);
-  animation: sl-blink 1.4s ease-in-out infinite;
-}
-.sonar-loading .sl-cancel {
-  height: 36px;
-  min-width: 44px;
-  padding: 0 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid color-mix(in srgb, var(--sl-accent) 20%, transparent);
-  background: transparent;
-  color: var(--sl-text-secondary);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 200ms ease-out,
-    border-color 200ms ease-out;
-}
-.sonar-loading .sl-cancel:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--sl-accent) 8%, transparent);
-  border-color: color-mix(in srgb, var(--sl-accent) 35%, transparent);
-}
-.sonar-loading .sl-cancel:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--sl-accent) 60%, transparent);
-  outline-offset: 2px;
-}
-.sonar-loading .sl-cancel:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-/* ---------- query: a tinted surface, no outline ---------- */
-.sonar-loading .sl-query {
-  width: 100%;
-  max-width: 880px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--sl-accent) 5%, transparent);
-}
-.sonar-loading .sl-query .bi {
-  flex: none;
-  font-size: 16px;
-  color: var(--sl-text-muted);
-}
-.sonar-loading .sl-query p {
-  margin: 0;
-  flex: 1;
-  min-width: 0;
-  font-size: 15px;
-  line-height: 1.45;
-  color: var(--sl-text);
-  overflow-wrap: anywhere;
-}
-
-/* ---------- body: cube, then dimensions and the deep research card ---------- */
+/* ---------- body: the cube, then the seven dimensions ----------
+   Nov 8, 2026: the top bar (estimate, clock, Cancel), the query pill and the
+   deep research card are gone, so the body fills the overlay and sits in
+   its vertical middle. */
 .sonar-loading .sl-body {
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
   gap: 48px;
   align-items: center;
+  align-content: center;
 }
 .sonar-loading .sl-engine {
   display: flex;
@@ -149,14 +69,17 @@
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+  /* Centre the dimension cards on the CUBE, not on cube + ticker: lift the
+     column by the ticker row under the cube (24px min-height + 4px gap). */
+  margin-bottom: 28px;
 }
 
 .sonar-loading .sl-cube {
   position: relative;
   width: 100%;
   /* As large as the design allows (680px) while the ticker under it stays
-     in view: the overlay height less the top bar, the query and the ticker. */
-  max-width: min(680px, max(320px, calc(100dvh - var(--navbar-height, 64px) - 230px)));
+     in view: the overlay height less the padding and the ticker. */
+  max-width: min(680px, max(320px, calc(100dvh - var(--navbar-height, 64px) - 120px)));
   aspect-ratio: 1 / 1;
 }
 .sonar-loading .sl-cube__halo {
@@ -280,10 +203,6 @@
   background: var(--dim-color);
 }
 
-.sonar-loading .sl-aside {
-  min-width: 0;
-}
-
 /* ---------- motion ---------- */
 @keyframes sl-fade-up {
   from {
@@ -293,15 +212,6 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-@keyframes sl-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
   }
 }
 
@@ -314,6 +224,9 @@
   .sonar-loading .sl-engine {
     align-self: center;
     width: 100%;
+  }
+  .sonar-loading .sl-side {
+    margin-bottom: 0;
   }
   .sonar-loading .sl-cube {
     max-width: 560px;
@@ -354,14 +267,10 @@
   .sonar-loading .sl-ticker {
     font-size: 13px;
   }
-  .sonar-loading .sl-cancel {
-    height: 44px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sonar-loading,
-  .sonar-loading .sl-live-dot,
   .sonar-loading .sl-ticker__phrase,
   .sonar-loading .sl-dim,
   .sonar-loading .sl-dim__dot,

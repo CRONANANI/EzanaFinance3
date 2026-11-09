@@ -838,9 +838,9 @@ export function SonarExperience({
                 onBack={leavePing}
               />
             ) : (
-              /* Nov 2026: the Sonar research loading state (the cube and
-                 the seven dimensions), with the deep research card beside
-                 it (below it on smaller screens). */
+              /* Nov 2026: the Sonar research loading state, the cube and
+                 the seven dimensions only (Nov 8: no query pill, clock,
+                 Cancel button or deep research card; Escape still cancels). */
               <SonarLoadingState
                 key={loader.query}
                 query={loader.query}
@@ -849,21 +849,6 @@ export function SonarExperience({
                 dismissed={loader.leaving && loader.phase === 'sweeping'}
                 onCancel={cancelPing}
                 onExited={clearLoader}
-                aside={
-                  estimateFor(loader.query)?.deep?.blocked === 'disabled' ? null : (
-                    <DeepResearchCard
-                      query={loader.query}
-                      estimate={estimateFor(loader.query)}
-                      placement="progress"
-                      onRun={(st) =>
-                        chooseDeep(loader.query, {
-                          supersede: loader.phase === 'sweeping',
-                          signup: st.blocked === 'signup',
-                        })
-                      }
-                    />
-                  )
-                }
               />
             )}
           </div>

@@ -412,19 +412,8 @@ export function createSonarCube(canvas, options = {}) {
       ctx.stroke();
     }
     ctx.setLineDash([]);
-    ctx.lineWidth = 1.6;
-    for (let i = 0; i < 8; i++) {
-      const v = V[i];
-      ctx.strokeStyle = `rgba(${SH},${(0.3 + 0.6 * dn01(v[2])).toFixed(3)})`;
-      ctx.beginPath();
-      for (const e of CUBE_E) {
-        if (e[0] !== i && e[1] !== i) continue;
-        const o = V[e[0] === i ? e[1] : e[0]];
-        ctx.moveTo(v[0], v[1]);
-        ctx.lineTo(v[0] + (o[0] - v[0]) * 0.1, v[1] + (o[1] - v[1]) * 0.1);
-      }
-      ctx.stroke();
-    }
+    // (Nov 8, 2026) The bright corner brackets that were drawn here are gone;
+    // the shell is the faces and the thin edges above.
     // sonar sweep plane (9 s period)
     const sy = Math.sin(T * 0.0007) * 0.86;
     const q = [
