@@ -169,6 +169,44 @@
     grid-column: 1 / -1;
   }
 }
+/* Nov 9, 2026: chart-first answers (SonarPingBoard lead). The notice sits above the chart,
+   the deep research action and free pings below it; until the cards land, a quiet
+   placeholder holds the chart's height. No outlines. */
+.snr-board .snr-pb-visual--lead .snr-pb-lead-actions {
+  margin-top: 4px;
+  padding-top: 0;
+}
+.snr-board .snr-pb-lead-wait {
+  min-height: 560px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    100deg,
+    var(--snr-row) 30%,
+    color-mix(in srgb, var(--snr-text) 6%, var(--snr-row)) 50%,
+    var(--snr-row) 70%
+  );
+  background-size: 200% 100%;
+  animation: snr-pb-lead-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes snr-pb-lead-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snr-board .snr-pb-lead-wait {
+    animation: none;
+  }
+}
+@media (max-width: 560px) {
+  .snr-board .snr-pb-lead-wait {
+    min-height: 460px;
+  }
+}
+
 .snr-band .snr-board .snr-pb-visual-body .snr-fund,
 .snr-band .snr-board .snr-pb-visual-body .snr-news {
   flex: none;

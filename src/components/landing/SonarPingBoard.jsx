@@ -6,11 +6,15 @@
  * industry, flows, sanctions, a commodity, an open question). The same rows as the country
  * board and the research board (docs/sonar/answer-templates), filled from the ping:
  *
+ *   Nov 9, 2026: an answer whose chart is the answer (leadsWithVisual: the insider-buying
+ *   race) opens on row 4, full width, in place of row 1; its brief stays readable to screen
+ *   readers and its notice, deep research action and free pings sit with the chart.
+ *
  *   1. Executive answer (the brief, deep research, the dossier link) | Top matches
  *      Nov 2026, one listed company: an equity research brief (identity, headline, summary,
  *      three takeaways, a sources footer) | Valuation snapshot (its multiples against its own
  *      history) in place of Top matches, which stay in Evidence from Ezana datasets
- *   2. KPI strip (a company's valuation, else what the ping drew on)
+ *   2. KPI strip (a company's valuation; nothing when there is none, Nov 9)
  *   3. Evidence from Ezana datasets | Source coverage
  *   4. Charts and data: the ping's own cards (price chart, portfolio, value chain, news),
  *      laid two across
@@ -35,6 +39,7 @@ import {
   splitCitations,
   briefFooter,
   exploreValuationAction,
+  leadsWithVisual,
 } from '@/lib/sonar/ping-board';
 import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
 import { ValuationSnapshot, fmtDate } from '@/components/sonar/valuation/ValuationSnapshot';
@@ -241,9 +246,8 @@ function Matches({ live }) {
   );
 }
 
-function Kpis({ live }) {
-  const tiles = pingKpis(live);
-  if (!tiles.length) return null;
+function Kpis({ tiles }) {
+  if (!tiles?.length) return null;
   return (
     <ul className="snr-pb-kpis" aria-label="Key measures" style={{ '--pb-kpis': tiles.length }}>
       {tiles.map((t) => (
@@ -260,19 +264,46 @@ function Kpis({ live }) {
   );
 }
 
-function Visual({ visual }) {
+/* Nov 9, 2026: `lead` is the chart-first layout. The answer's question stays the section's
+   accessible heading, the brief stays readable to screen readers, and the notice sits above
+   the chart with the deep research action and free pings below it. Until the cards land
+   (the band's stage 2), a quiet placeholder holds the chart's place so the desk summary
+   never flashes in first. */
+function Visual({ visual, lead = false, live = null, notice = null, deepAction = null }) {
   const id = useId();
+  const paras = lead ? answerParagraphs(live?.answer) : [];
   return (
     <section
       id={VISUAL_ID}
       tabIndex={-1}
-      className="snr-bd-section snr-pb-visual"
+      className={`snr-bd-section snr-pb-visual${lead ? ' snr-pb-visual--lead' : ''}`}
       aria-labelledby={id}
     >
       <Eyebrow icon="bi-bar-chart-line" id={id}>
         Charts and data
       </Eyebrow>
-      <div className="snr-pb-visual-body">{visual}</div>
+      {lead ? (
+        <VisuallyHidden as="div">
+          <h2>{live?.query}</h2>
+          {paras.map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
+        </VisuallyHidden>
+      ) : null}
+      {lead ? notice : null}
+      <div className="snr-pb-visual-body">
+        {visual || (lead ? <div className="snr-pb-lead-wait" aria-hidden="true" /> : null)}
+      </div>
+      {lead && (deepAction || typeof live?.remaining === 'number') ? (
+        <div className="snr-bd-actions snr-pb-lead-actions">
+          {deepAction}
+          {typeof live?.remaining === 'number' ? (
+            <span className="snr-bd-cite">
+              ({live.remaining} free ping{live.remaining === 1 ? '' : 's'} left)
+            </span>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -325,19 +356,35 @@ export function SonarPingBoard({
   const identity = companyIdentity(live);
   const equity = isEquityAnswer({ ticker: live?.dossier?.ticker, kind: live?.dossier?.kind });
   const snapshot = identity ? live.dossier.valuation : null;
-  const right = snapshot?.rows?.length ? 'valuation' : matches ? 'matches' : null;
+  /* Nov 9, 2026: chart-first answers drop the desk summary and top matches. */
+  const lead = leadsWithVisual(live);
+  const right = lead ? null : snapshot?.rows?.length ? 'valuation' : matches ? 'matches' : null;
+  const kpiTiles = pingKpis(live);
   const cells = [
-    {
-      id: 'exec',
-      section: 'answer',
-      span: right ? 7 : 12,
-      min: right ? 6 : 12,
-      node: identity ? (
-        <CompanyExecutive live={live} identity={identity} deepAction={deepAction} notice={notice} />
-      ) : (
-        <Executive live={live} answer={answer} deepAction={deepAction} notice={notice} />
-      ),
-    },
+    lead
+      ? {
+          id: 'visual',
+          section: 'charts',
+          span: 12,
+          min: 12,
+          node: <Visual visual={visual} lead live={live} notice={notice} deepAction={deepAction} />,
+        }
+      : {
+          id: 'exec',
+          section: 'answer',
+          span: right ? 7 : 12,
+          min: right ? 6 : 12,
+          node: identity ? (
+            <CompanyExecutive
+              live={live}
+              identity={identity}
+              deepAction={deepAction}
+              notice={notice}
+            />
+          ) : (
+            <Executive live={live} answer={answer} deepAction={deepAction} notice={notice} />
+          ),
+        },
     right === 'valuation'
       ? {
           id: 'valuation',
@@ -359,14 +406,17 @@ export function SonarPingBoard({
     right === 'matches'
       ? { id: 'matches', section: 'answer', span: 5, min: 5, node: <Matches live={live} /> }
       : null,
-    { id: 'kpis', section: 'metrics', span: 12, min: 12, node: <Kpis live={live} /> },
+    /* Nov 9: only when there are measures to show (no empty row, no "Key metrics" nav item). */
+    kpiTiles.length
+      ? { id: 'kpis', section: 'metrics', span: 12, min: 12, node: <Kpis tiles={kpiTiles} /> }
+      : null,
     matches
       ? { id: 'evidence', section: 'findings', span: 7, min: 6, node: <Evidence live={live} /> }
       : null,
     sourceCoverage(live).length
       ? { id: 'coverage', section: 'sources', span: 5, min: 4, node: <Coverage live={live} /> }
       : null,
-    visual
+    visual && !lead
       ? { id: 'visual', section: 'charts', span: 12, min: 12, node: <Visual visual={visual} /> }
       : null,
     (live.webSources || []).length

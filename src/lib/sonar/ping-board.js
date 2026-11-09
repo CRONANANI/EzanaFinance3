@@ -7,7 +7,7 @@
  * coverage, the charts and data, then sources. No I/O; tested in
  * scripts/check-sonar-ping-board.mjs.
  */
-import { datasetEvidence, hostOf } from './country-board.js';
+import { datasetEvidence } from './country-board.js';
 
 const num = (v) => typeof v === 'number' && Number.isFinite(v);
 
@@ -28,8 +28,10 @@ export function answerParagraphs(answer, max = 4) {
 }
 
 /**
- * The KPI strip: a company's valuation tiles when the dossier has fundamentals, else what the
- * ping drew on (datasets matched, records cited, web pages read, news stories).
+ * The KPI strip: a company's valuation tiles when the dossier has fundamentals, else nothing.
+ * Nov 9, 2026: the fallback tiles that counted what the ping drew on (datasets matched,
+ * records cited, web pages read, news stories) are gone from every Sonar answer; the counts
+ * said nothing about the answer, and the evidence and sources rows already list the records.
  * -> [{ id, icon, value, label, sub }]
  */
 export function pingKpis(live) {
@@ -131,54 +133,17 @@ export function pingKpis(live) {
     ].filter(Boolean);
     if (tiles.length >= 2) return tiles.slice(0, 4);
   }
-  const ev = datasetEvidence(live);
-  const web = (live?.webSources || []).length;
-  const news = (live?.newsColumns || []).reduce((n, c) => n + (c?.items?.length || 0), 0);
-  const cited = (live?.evidence || []).length;
-  return [
-    {
-      id: 'datasets',
-      icon: 'bi-database',
-      value: String(ev.length),
-      label: 'Ezana datasets matched',
-      sub:
-        ev
-          .slice(0, 3)
-          .map((r) => r.dataset)
-          .join(', ') || null,
-    },
-    cited
-      ? {
-          id: 'records',
-          icon: 'bi-file-earmark-text',
-          value: String(cited),
-          label: 'Records cited',
-          sub: 'From Ezana datasets',
-        }
-      : null,
-    web
-      ? {
-          id: 'web',
-          icon: 'bi-globe2',
-          value: String(web),
-          label: 'Web pages read',
-          sub:
-            [...new Set((live.webSources || []).map((w) => hostOf(w.url)))]
-              .slice(0, 2)
-              .join(', ') || null,
-        }
-      : null,
-    news
-      ? {
-          id: 'news',
-          icon: 'bi-newspaper',
-          value: String(news),
-          label: 'News stories',
-          sub: 'Around this question',
-        }
-      : null,
-  ].filter(Boolean);
+  return [];
 }
+
+/**
+ * Nov 9, 2026: answers whose chart IS the answer. For these the board opens on "Charts and
+ * data" (full width) in place of the desk summary and top matches; the brief still reaches
+ * screen readers and the evidence rows stay below. Add a dossier kind here to give it the
+ * same layout.
+ */
+export const LEAD_VISUAL_KINDS = new Set(['insider_buying']);
+export const leadsWithVisual = (live) => LEAD_VISUAL_KINDS.has(live?.dossier?.kind);
 
 /** The top matches snapshot: the first five dataset evidence rows, compact. */
 export function topMatches(live, n = 5) {

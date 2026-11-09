@@ -148,17 +148,24 @@ test('the ping board: paragraphs, KPI tiles and top matches', () => {
       ['ev', '13.40'],
     ],
   );
+  /* Nov 9, 2026: no fundamentals, no strip (the datasets matched / records cited / web pages
+     / news count tiles are gone from every answer). */
   const noFund = { ...live, dossier: { kind: 'politician', matches: {} } };
-  assert.deepEqual(
-    P.pingKpis(noFund).map((t) => [t.id, t.value]),
-    [
-      ['datasets', '1'],
-      ['records', '1'],
-      ['web', '1'],
-      ['news', '1'],
-    ],
-  );
+  assert.deepEqual(P.pingKpis(noFund), []);
   assert.equal(P.topMatches(live)[0].title, 'Award');
+});
+
+test('chart-first answers: the insider-buying race replaces the desk summary', () => {
+  assert.equal(P.leadsWithVisual({ dossier: { kind: 'insider_buying' } }), true);
+  assert.equal(P.leadsWithVisual(live), false);
+  assert.equal(P.leadsWithVisual(null), false);
+  const src = read('src/components/landing/SonarPingBoard.jsx');
+  assert.match(src, /const lead = leadsWithVisual\(live\)/);
+  assert.match(src, /const right = lead \? null/, 'no top matches beside a chart-first answer');
+  assert.match(src, /visual && !lead/, 'the chart is not repeated lower down');
+  assert.match(src, /kpiTiles\.length\s*\?/, 'no empty KPI row');
+  const pb = read('src/lib/sonar/ping-board.js');
+  assert.ok(!/Ezana datasets matched|Records cited/.test(pb), 'count tiles removed');
 });
 
 /* ------------------------------------------------------------------ wiring */
