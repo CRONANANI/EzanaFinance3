@@ -229,3 +229,84 @@ export function filingUrl({ accession, issuerCik }) {
   const cik = String(parseInt(String(issuerCik).replace(/\D/g, ''), 10));
   return `https://www.sec.gov/Archives/edgar/data/${cik}/${String(accession).replace(/-/g, '')}/${accession}-index.htm`;
 }
+
+/* ── Long windows (Nov 9, 2026) ─────────────────────────────────────── */
+
+/**
+ * One row from sonar_insider_buys_window().groups (grouped in SQL, the same rules as
+ * groupTransactions) -> the buy shape groupBuys returns.
+ */
+export function buyFromGroupRow(r) {
+  const shares = num(r?.shares) || 0;
+  const value = num(r?.value) || 0;
+  const g = {
+    accession: r?.accession_no,
+    formType: r?.form_type || '4',
+    filedAt: r?.filed_at || null,
+    ticker: cleanTicker(r?.ticker) || String(r?.ticker || ''),
+    issuerCik: r?.issuer_cik || null,
+    name: titleCase(r?.issuer_name) || r?.ticker,
+    reporterCik: r?.reporter_cik || null,
+    reporter: titleCase(r?.reporter_name) || 'Undisclosed reporter',
+    title: r?.reporter_title || null,
+    isDirector: Boolean(r?.is_director),
+    isOfficer: Boolean(r?.is_officer),
+    isTenPct: Boolean(r?.is_ten_pct_owner),
+    indirect: Boolean(r?.indirect),
+    shares,
+    value,
+    lines: Number(r?.lines) || 1,
+    firstDate: r?.first_date || r?.last_date || null,
+    date: r?.last_date || null,
+  };
+  return { ...g, price: shares ? value / shares : null, role: roleOf(g) };
+}
+
+const TIER_KEYS = ['exec', 'director', 'officer', 'owner', 'other'];
+
+/**
+ * The headline figures for a long window: totals, median, roles and the smallest buy from
+ * the SQL stats (every buy in the window), the largest and the quoted share from the top
+ * buys that came back with it. Same shape as summarizeBuys.
+ */
+export function summaryFromStats(stats, buys) {
+  const st = stats || {};
+  const list = buys || [];
+  const tiers = Object.fromEntries(TIER_KEYS.map((k) => [k, Number(st.tiers?.[k]) || 0]));
+  const tierValue = Object.fromEntries(TIER_KEYS.map((k) => [k, Number(st.tierValue?.[k]) || 0]));
+  const top = Object.entries(st.roles || {})
+    .map(([label, count]) => ({ label, count: Number(count) || 0 }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))[0];
+  const sm = st.smallest || null;
+  const known = list.filter((b) => Number.isFinite(b.sincePct));
+  return {
+    count: Number(st.count) || 0,
+    total: Number(st.total) || 0,
+    companies: Number(st.companies) || 0,
+    insiders: Number(st.insiders) || 0,
+    median: num(st.median),
+    largest: [...list].sort((a, b) => b.value - a.value)[0] || null,
+    smallest: sm
+      ? {
+          ticker: sm.ticker,
+          name: titleCase(sm.name) || sm.ticker,
+          reporter: titleCase(sm.reporter) || 'Undisclosed reporter',
+          role: { label: sm.role || 'Insider' },
+          value: Number(sm.value) || 0,
+          date: sm.date || null,
+        }
+      : null,
+    topRole: top || null,
+    tiers,
+    tierValue,
+    quoted: known.length,
+    upCount: known.filter((b) => b.sincePct > 0).length,
+  };
+}
+
+/** A role label inside a sentence, with its article: "a director", "an officer", "a CEO". */
+export function roleInSentence(label) {
+  const l = String(label || 'Insider');
+  const word = /^[A-Z]{2,}$|&/.test(l) ? l : l.replace(/^10% Owner$/, '10% owner').toLowerCase();
+  return `${/^[aeiou]/i.test(word) ? 'an' : 'a'} ${word}`;
+}

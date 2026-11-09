@@ -1894,7 +1894,8 @@ const PROFILES = {
       lobbying: 4_000,
       flows: 3_000,
       activity: 3_000,
-      insider: 4_000,
+      /* Nov 9, 2026: a year window adds two small database calls before the quotes. */
+      insider: 5_000,
       resolve: 2_500,
       retrieveCap: 6_000,
       retriever: 4_000,
@@ -1942,7 +1943,7 @@ const PROFILES = {
       lobbying: 6_000,
       flows: 4_000,
       activity: 4_000,
-      insider: 5_000,
+      insider: 6_000,
       resolve: 6_000,
       retrieveCap: 18_000,
       retriever: 15_000,
@@ -2542,7 +2543,7 @@ export async function runLandingPipeline(
             : q;
   /* What the synthesis is told the ping resolved to. */
   const resolvedNote = insiderPing
-    ? ` (understood as an insider-buying question: open-market purchases insiders made of their own companies' stock ${insiderAsk.window.replace('_', ' ')}; answer from the (insider) snippets only, which are Ezana's own Form 4 groupings)`
+    ? ` (understood as an insider-buying question: open-market purchases insiders made of their own companies' stock for ${insiderAsk.said}; answer from the (insider) snippets only, which are Ezana's own Form 4 groupings)`
     : activityPing
       ? ` (understood as a congressional activity question: how disclosed STOCK Act trading changed over the last ${activityAsk.years} years, by chamber and side; answer from the (congress) snippets only, which are Ezana's own counts)`
       : flowsPing

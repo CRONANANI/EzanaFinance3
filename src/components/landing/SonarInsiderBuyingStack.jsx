@@ -34,6 +34,7 @@ import {
   filingUrl,
   decadeFmt,
 } from '@/lib/sec/insider-buys';
+import { monthYear } from '@/lib/sonar/insider-windows';
 import './sonar-insider-buying.css';
 
 const STEP_MS = { intro: 2600, spot: 3200, plain: 1250 };
@@ -189,7 +190,8 @@ function HowToRead() {
 
 function OneFrame({ d }) {
   const s = d.summary;
-  const unit = d.window.word.replace(/^(this|last)\s+/, '');
+  /* Nov 9: week, month, quarter, year, or "period" for a rolling window or a range. */
+  const unit = d.window.unit || d.window.word.replace(/^(this|last)\s+/, '');
   return (
     <div className="snr-ib-detail is-plain">
       <p className="snr-ib-eyebrow is-warm">The {unit} in one frame</p>
@@ -505,10 +507,24 @@ function RaceCard({ d, jump }) {
           {d.fallback.askedCount === 1 ? '' : 's'} filed so far; showing {d.window.word}.
         </p>
       ) : null}
+      {d.coverage?.note === 'partial' ? (
+        <p className="snr-ib-note">
+          Ezana&apos;s insider purchase records start in {monthYear(d.coverage.coveredFrom)}; this
+          covers {d.window.noun} from then on.
+        </p>
+      ) : null}
       {d.truncated ? (
         <p className="snr-ib-note">
-          The race plays the {d.truncated.shown} largest of {d.truncated.total} buys; the ledger
-          lists every one.
+          The race plays the {d.truncated.shown} largest of{' '}
+          {d.truncated.total.toLocaleString('en-US')} buys;{' '}
+          {d.ledgerTruncated
+            ? `the ledger lists the ${d.ledgerTruncated.shown} largest.`
+            : 'the ledger lists every one.'}
+        </p>
+      ) : null}
+      {d.capped ? (
+        <p className="snr-ib-note">
+          This window holds more filings than one answer reads; totals cover the first part of it.
         </p>
       ) : null}
       <p className="snr-ib-source">
@@ -521,6 +537,9 @@ function RaceCard({ d, jump }) {
 
 function LedgerCard({ d, onJump }) {
   const titleId = useId();
+  /* Nov 9: dates carry the year when the window is not inside the current year. */
+  const thisYear = String(d.asof || '').slice(0, 4);
+  const withYear = d.window.from.slice(0, 4) !== thisYear || d.window.to.slice(0, 4) !== thisYear;
   const [all, setAll] = useState(false);
   const rows = all ? d.ledger : d.ledger.slice(0, 12);
   const raceIndex = useMemo(() => {
@@ -532,7 +551,9 @@ function LedgerCard({ d, onJump }) {
     <div className="snr-news snr-sec-card snr-ib-card" aria-labelledby={titleId}>
       <div className="snr-card-head">
         <span className="snr-panel-title" id={titleId}>
-          Every buy, largest first
+          {d.ledgerTruncated
+            ? `The ${d.ledgerTruncated.shown} largest buys`
+            : 'Every buy, largest first'}
         </span>
         <span className="snr-rule-soft" aria-hidden="true" />
       </div>
@@ -572,7 +593,7 @@ function LedgerCard({ d, onJump }) {
                     <RolePill role={{ label: r.role, tier: r.tier }} small />
                   </td>
                   <td className="is-num">{usdTight(r.value)}</td>
-                  <td className="is-num">{dayFmt(r.date, { year: false })}</td>
+                  <td className="is-num">{dayFmt(r.date, { year: withYear })}</td>
                   <td className="is-num">
                     <Since pct={r.sincePct} />
                   </td>
@@ -584,7 +605,11 @@ function LedgerCard({ d, onJump }) {
       </div>
       {d.ledger.length > 12 ? (
         <button type="button" className="snr-ib-more" onClick={() => setAll((v) => !v)}>
-          {all ? 'Show the top 12' : `Show all ${d.ledger.length}`}
+          {all
+            ? 'Show the top 12'
+            : d.ledgerTruncated
+              ? `Show the ${d.ledger.length} largest`
+              : `Show all ${d.ledger.length}`}
         </button>
       ) : null}
     </div>
@@ -681,8 +706,11 @@ export function SonarInsiderBuyingStack({
         <div className="snr-news snr-sec-card snr-ib-card snr-ib-span">
           <p className="snr-ib-kicker">Insider buying · SEC Form 4</p>
           <p className="snr-ib-copy">
-            No open-market insider purchases are on file for {d.window?.word}. Form 4s arrive up to
-            two business days after the trade.
+            {d.coverage?.note === 'future'
+              ? `${String(d.window?.noun || '').replace(/^./, (c) => c.toUpperCase())} has not started yet.`
+              : d.coverage?.note === 'before'
+                ? `Ezana's insider purchase records start in ${monthYear(d.coverage.coveredFrom)}, so ${d.window?.noun} is not covered yet.`
+                : `No open-market insider purchases are on file for ${d.window?.noun || d.window?.word}. Form 4s arrive up to two business days after the trade.`}
           </p>
         </div>
         {newsSlot}

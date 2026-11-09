@@ -10,8 +10,9 @@
  * and P/E, and the stack plays them smallest to largest
  * (SonarInsiderBuyingStack.jsx).
  *
- *   detectInsiderBuyingPing(text)    { window } or null
- *   insiderWindow(id, now)           the date range a window id means
+ *   detectInsiderBuyingPing(text)    { window, said } or null
+ *   insiderWindow(spec, now)         the dates and words a window spec means
+ *                                    (src/lib/sonar/insider-windows.js)
  *   buildInsiderBuyingDossier(opts)  the dossier the stack renders (kind 'insider_buying')
  *   insiderBuyingEvidence(dossier)   the snippets the brief reads and cites
  *   insiderBuyingBrief(dossier)      the answer-first paragraph (no model call)
@@ -24,6 +25,12 @@
  *     are incomplete; the copy says so.
  *   - "This week" with fewer than MIN_BUYS filed so far shows last week and
  *     says it did.
+ *   - Nov 9, 2026: any window the ping names (a year, quarter, month, "last 90
+ *     days", "since 2025"), never quietly this week. A window that has not
+ *     started, or that Ezana's records do not reach, says so; one they reach
+ *     part of says where coverage starts. Windows over LONG_DAYS are grouped in
+ *     the database (sonar_insider_buys_window) and the ledger lists the
+ *     LEDGER_TOP largest.
  * Findings only: no motive, no signal claim, no advice.
  */
 import { FmpAPI } from '@/lib/services/fmp';
@@ -31,6 +38,9 @@ import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import {
   groupBuys,
   summarizeBuys,
+  summaryFromStats,
+  buyFromGroupRow,
+  roleInSentence,
   usdTight,
   usdSpoken,
   pctSigned,
@@ -38,6 +48,7 @@ import {
   rangeFmt,
   num,
 } from '@/lib/sec/insider-buys';
+import { windowSpec, resolveWindow, windowDays, monthYear } from '@/lib/sonar/insider-windows';
 
 export const MIN_BUYS = 5;
 /* The race plays at most this many buys (the largest, in ascending order). */
@@ -45,6 +56,11 @@ export const MAX_RACE = 30;
 const SPOTLIGHTS = 5;
 const QUOTE_CAP = 40;
 const QUOTE_MS = 2800;
+/* Windows longer than this are grouped in the database, not paged into the ping. */
+export const LONG_DAYS = 62;
+/* A long window's ledger lists this many of its largest buys. */
+export const LEDGER_TOP = 200;
+const COVERAGE_TTL_MS = 6 * 60 * 60 * 1000;
 
 /* ── Detection ──────────────────────────────────────────────────────── */
 
@@ -55,17 +71,6 @@ const WHO_RE =
 const BUY_RE = /\b(buy\w*|bought|purchas\w*|accumulat\w*|add(?:ed|ing)\s+to)\b/i;
 /* "directors" alone is common in other pings; require a stock word with it. */
 const STOCK_RE = /\b(stock|shares?|equity|own\s+company|insider|form\s*4)\b/i;
-
-function windowAsked(t) {
-  if (/\blast\s+month\b|\bprevious\s+month\b|\bin\s+(?:october|september|august)\b/i.test(t))
-    return 'last_month';
-  if (
-    /\b(this|past|the\s+last)\s+month\b|\blast\s+30\s+days\b|\bmonth\s+to\s+date\b|\bmtd\b/i.test(t)
-  )
-    return 'month';
-  if (/\blast\s+week\b|\bprevious\s+week\b/i.test(t)) return 'last_week';
-  return 'week';
-}
 
 /**
  * An insider-buying ping names insiders (or says "their own stock") and a
@@ -79,68 +84,15 @@ export function detectInsiderBuyingPing(text) {
   /* Institutions and Congress have their own pings. */
   if (!own && /\b(hedge\s+funds?|institutions?|13f|congress\w*|senators?|lawmakers?)\b/i.test(t))
     return null;
-  return { window: windowAsked(t) };
+  const spec = windowSpec(t);
+  return { window: spec, said: resolveWindow(spec).noun };
 }
 
 /* ── Windows (New York calendar days) ───────────────────────────────── */
 
-const nyDate = (now) =>
-  new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
-const addDays = (iso, n) =>
-  new Date(Date.parse(`${iso}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
-
-export function insiderWindow(id, now = new Date()) {
-  const today = nyDate(now);
-  const dow = (new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7; // Monday = 0
-  const monday = addDays(today, -dow);
-  const monthStart = `${today.slice(0, 8)}01`;
-  const prevMonthEnd = addDays(monthStart, -1);
-  const prevMonthStart = `${prevMonthEnd.slice(0, 8)}01`;
-  const lastWeek = {
-    id: 'last_week',
-    from: addDays(monday, -7),
-    to: addDays(monday, -1),
-    word: 'last week',
-    label: 'Last week',
-  };
-  const lastMonth = {
-    id: 'last_month',
-    from: prevMonthStart,
-    to: prevMonthEnd,
-    word: 'last month',
-    label: 'Last month',
-  };
-  switch (id) {
-    case 'last_week':
-      return { ...lastWeek, today };
-    case 'last_month':
-      return { ...lastMonth, today };
-    case 'month':
-      return {
-        id,
-        from: monthStart,
-        to: today,
-        word: 'this month',
-        label: 'This month',
-        prev: lastMonth,
-        today,
-      };
-    default:
-      return {
-        id: 'week',
-        from: monday,
-        to: today,
-        word: 'this week',
-        label: 'This week',
-        prev: lastWeek,
-        today,
-      };
-  }
+/** The dates and words a window spec means (see src/lib/sonar/insider-windows.js). */
+export function insiderWindow(spec, now = new Date()) {
+  return resolveWindow(spec, now);
 }
 
 /* ── Quotes: price, market cap, P/E (fail soft, capped) ─────────────── */
@@ -192,9 +144,10 @@ async function quotesFor(tickers) {
 const SELECT =
   'accession_no, table_kind, line_no, form_type, filed_at, issuer_cik, issuer_name, issuer_ticker, reporter_cik, reporter_name, reporter_title, is_director, is_officer, is_ten_pct_owner, transaction_date, transaction_code, acquired_disposed, shares, price, value_usd, direct_indirect';
 
-async function readPurchases(admin, from, to) {
+async function readPurchases(admin, from, to, cap = 10000) {
   const rows = [];
-  for (let start = 0; start < 10000; start += 1000) {
+  let capped = false;
+  for (let start = 0; start < cap; start += 1000) {
     // eslint-disable-next-line no-await-in-loop
     const { data, error } = await admin
       .from('sec_insider_transactions')
@@ -204,54 +157,131 @@ async function readPurchases(admin, from, to) {
       .gte('transaction_date', from)
       .lte('transaction_date', to)
       .order('transaction_date', { ascending: true })
+      .order('accession_no', { ascending: true })
+      .order('line_no', { ascending: true })
       .range(start, start + 999);
     if (error) throw new Error(error.message);
     rows.push(...(data || []));
     if (!data || data.length < 1000) break;
+    if (start + 1000 >= cap) capped = true;
   }
-  return rows;
+  return { rows, capped };
+}
+
+/* Where reliable coverage starts (the first month with a full month's purchases), cached
+   per instance; null when the function is missing or the read fails (no coverage note). */
+let coverageCache = { at: 0, value: null };
+async function readCoverage(admin) {
+  if (coverageCache.value && Date.now() - coverageCache.at < COVERAGE_TTL_MS)
+    return coverageCache.value;
+  try {
+    const { data, error } = await admin.rpc('sonar_insider_coverage', { p_min_rows: 50 });
+    if (error) return null;
+    const value = { coveredFrom: data?.coveredFrom || null, latest: data?.latest || null };
+    coverageCache = { at: Date.now(), value };
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+/* A long window, grouped in the database: { stats, buys } or null (function missing). */
+async function readWindowSql(admin, from, to) {
+  try {
+    const { data, error } = await admin.rpc('sonar_insider_buys_window', {
+      p_from: from,
+      p_to: to,
+      p_top: LEDGER_TOP,
+    });
+    if (error || !data) return null;
+    return { stats: data, buys: (data.groups || []).map(buyFromGroupRow) };
+  } catch {
+    return null;
+  }
 }
 
 const inRange = (b, w) => b.date >= w.from && b.date <= w.to;
 
+const windowOut = (w) => ({
+  id: w.spec,
+  label: w.label,
+  word: w.word,
+  noun: w.noun,
+  unit: w.unit,
+  from: w.from,
+  to: w.to,
+});
+
 export async function buildInsiderBuyingDossier({ admin, window = 'week', now = new Date() }) {
   if (!admin) return null;
   const asked = insiderWindow(window, now);
-  const earliest = asked.prev ? asked.prev.from : asked.from;
-  const raw = await readPurchases(admin, earliest, asked.to);
-  const all = groupBuys(raw);
+  const base = {
+    kind: 'insider_buying',
+    name: 'Insider open-market buying',
+    ticker: null,
+    asof: asked.today,
+    matches: { insiderBuys: [] },
+    fundamentals: null,
+    spark: [],
+    news: [],
+    echo: [],
+  };
+  const empty = (w, extra = {}) => ({
+    ...base,
+    window: windowOut(w),
+    empty: true,
+    buys: [],
+    race: [],
+    ledger: [],
+    summary: summarizeBuys([]),
+    ...extra,
+  });
 
-  let w = asked;
-  let buys = all.filter((b) => inRange(b, asked));
-  let fallback = null;
-  if (buys.length < MIN_BUYS && asked.prev) {
-    const prev = all.filter((b) => inRange(b, asked.prev));
-    if (prev.length > buys.length) {
-      fallback = { askedLabel: asked.label, askedCount: buys.length };
-      w = { ...asked.prev, today: asked.today };
-      buys = prev;
+  /* A window that has not started is said, not swapped for another. */
+  if (asked.future) return empty(asked, { coverage: { note: 'future' } });
+
+  /* Coverage: before Ezana's records, say so; part-way, read from where they start. */
+  const span = { from: asked.from, to: asked.to };
+  let coverage = null;
+  const cov = await readCoverage(admin);
+  if (cov?.coveredFrom) {
+    if (asked.to < cov.coveredFrom)
+      return empty(asked, { coverage: { note: 'before', coveredFrom: cov.coveredFrom } });
+    if (asked.from < cov.coveredFrom) {
+      span.from = cov.coveredFrom;
+      coverage = { note: 'partial', coveredFrom: cov.coveredFrom };
     }
   }
-  if (!buys.length) {
-    return {
-      kind: 'insider_buying',
-      name: 'Insider open-market buying',
-      ticker: null,
-      window: { id: w.id, label: w.label, word: w.word, from: w.from, to: w.to },
-      fallback,
-      empty: true,
-      buys: [],
-      race: [],
-      summary: summarizeBuys([]),
-      matches: { insiderBuys: [] },
-      fundamentals: null,
-      spark: [],
-      news: [],
-      echo: [],
-    };
-  }
 
-  /* Quotes for the largest buys' companies first (the cap keeps a busy month inside budget). */
+  let w = asked;
+  let buys = null;
+  let stats = null;
+  let fallback = null;
+  let capped = false;
+  const long = windowDays(span) > LONG_DAYS;
+  if (long) {
+    const sql = await readWindowSql(admin, span.from, span.to);
+    if (sql) ({ stats, buys } = sql);
+  }
+  if (!buys) {
+    /* Short windows, or a long one before the migration is applied (capped read). */
+    const earliest = asked.prev ? asked.prev.from : span.from;
+    const read = await readPurchases(admin, earliest, span.to, long ? 20000 : 10000);
+    capped = read.capped;
+    const all = groupBuys(read.rows);
+    buys = all.filter((b) => inRange(b, span));
+    if (buys.length < MIN_BUYS && asked.prev) {
+      const prev = all.filter((b) => inRange(b, asked.prev));
+      if (prev.length > buys.length) {
+        fallback = { askedLabel: asked.label, askedCount: buys.length };
+        w = { ...asked.prev, today: asked.today };
+        buys = prev;
+      }
+    }
+  }
+  if (!buys.length) return empty(w, { fallback, coverage });
+
+  /* Quotes for the largest buys' companies first (the cap keeps a busy window inside budget). */
   const tickers = [...new Set([...buys].sort((a, b) => b.value - a.value).map((b) => b.ticker))];
   const quotes = await quotesFor(tickers);
   for (const b of buys) {
@@ -262,7 +292,8 @@ export async function buildInsiderBuyingDossier({ admin, window = 'week', now = 
     b.sincePct = b.priceNow && b.price ? (b.priceNow / b.price - 1) * 100 : null;
   }
 
-  const summary = summarizeBuys(buys);
+  const summary = stats ? summaryFromStats(stats, buys) : summarizeBuys(buys);
+  const total = stats ? summary.count : buys.length;
 
   /* The race: the MAX_RACE largest buys, played smallest to largest. */
   const race = [...buys]
@@ -311,11 +342,13 @@ export async function buildInsiderBuyingDossier({ admin, window = 'week', now = 
     .filter(Boolean)
     .sort();
   const latestFiled =
+    stats?.latestFiled ||
     buys
       .map((b) => b.filedAt)
       .filter(Boolean)
       .sort()
-      .pop() || null;
+      .pop() ||
+    null;
   const strip = (b) => ({
     ticker: b.ticker,
     name: b.name,
@@ -324,17 +357,20 @@ export async function buildInsiderBuyingDossier({ admin, window = 'week', now = 
     value: b.value,
     date: b.date,
   });
+  const byValue = [...buys].sort((a, b) => b.value - a.value);
 
   return {
-    kind: 'insider_buying',
-    name: 'Insider open-market buying',
-    ticker: null,
-    asof: asked.today,
-    window: { id: w.id, label: w.label, word: w.word, from: w.from, to: w.to },
+    ...base,
+    window: windowOut(w),
     fallback,
-    rangeLabel: rangeFmt(dates[0], dates[dates.length - 1]),
+    coverage,
+    capped,
+    rangeLabel: stats
+      ? rangeFmt(stats.firstDate, stats.lastDate)
+      : rangeFmt(dates[0], dates[dates.length - 1]),
     latestFiled,
-    truncated: buys.length > race.length ? { shown: race.length, total: buys.length } : null,
+    truncated: total > race.length ? { shown: race.length, total } : null,
+    ledgerTruncated: total > buys.length ? { shown: buys.length, total } : null,
     summary: {
       ...summary,
       largest: summary.largest ? strip(summary.largest) : null,
@@ -342,28 +378,17 @@ export async function buildInsiderBuyingDossier({ admin, window = 'week', now = 
       spotlights: spot.size,
     },
     race: raceOut,
-    /* Every buy, largest first, for the ledger. */
-    ledger: [...buys]
-      .sort((a, b) => b.value - a.value)
-      .map((b) => ({
-        ...strip(b),
-        tier: b.role.tier,
-        price: b.price,
-        shares: b.shares,
-        sincePct: b.sincePct,
-        accession: b.accession,
-        issuerCik: b.issuerCik,
-      })),
-    matches: {
-      insiderBuys: [...buys]
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5)
-        .map(strip),
-    },
-    fundamentals: null,
-    spark: [],
-    news: [],
-    echo: [],
+    /* Every buy (a long window: its LEDGER_TOP largest), largest first, for the ledger. */
+    ledger: byValue.map((b) => ({
+      ...strip(b),
+      tier: b.role.tier,
+      price: b.price,
+      shares: b.shares,
+      sincePct: b.sincePct,
+      accession: b.accession,
+      issuerCik: b.issuerCik,
+    })),
+    matches: { insiderBuys: byValue.slice(0, 5).map(strip) },
   };
 }
 
@@ -413,25 +438,37 @@ export function insiderBuyingEvidence(d) {
  */
 export function insiderBuyingBrief(d) {
   if (!d || d.kind !== 'insider_buying') return null;
+  const noun = d.window.noun || d.window.word;
+  if (d.coverage?.note === 'future') {
+    return `${noun.replace(/^./, (c) => c.toUpperCase())} has not started yet, so there are no insider purchases to show.`;
+  }
+  if (d.coverage?.note === 'before') {
+    return `Ezana's insider purchase records start in ${monthYear(d.coverage.coveredFrom)}, so ${noun} is not covered yet. Ask about a window from ${monthYear(d.coverage.coveredFrom)} onward.`;
+  }
   if (d.empty) {
-    return `No open-market insider purchases are on file for ${d.window.word} (${rangeFmt(d.window.from, d.window.to)}). Form 4s are due two business days after a trade, so the latest days fill in over the next few days.`;
+    return `No open-market insider purchases are on file for ${noun} (${rangeFmt(d.window.from, d.window.to)}). Form 4s are due two business days after a trade, so the latest days fill in over the next few days.`;
   }
   const s = d.summary;
   const parts = [];
+  if (d.coverage?.note === 'partial') {
+    parts.push(
+      `Ezana's insider purchase records start in ${monthYear(d.coverage.coveredFrom)}, so this covers ${noun} from then on.`,
+    );
+  }
   if (d.fallback) {
     parts.push(
       `${d.fallback.askedLabel} has ${d.fallback.askedCount} open-market insider buy${d.fallback.askedCount === 1 ? '' : 's'} filed so far, so this shows ${d.window.word}.`,
     );
   }
   parts.push(
-    `Insiders made ${s.count} open-market purchases of their own companies' stock worth ${usdSpoken(s.total)} ${d.window.word} (${d.rangeLabel}), across ${s.companies} companies.`,
+    `Insiders made ${s.count.toLocaleString('en-US')} open-market purchase${s.count === 1 ? '' : 's'} of their own companies' stock worth ${usdSpoken(s.total)} ${d.window.word} (${d.rangeLabel}), across ${s.companies.toLocaleString('en-US')} compan${s.companies === 1 ? 'y' : 'ies'}.`,
   );
   parts.push(
     `The largest was ${s.largest.name}, where ${s.largest.reporter} (${s.largest.role}) bought ${usdSpoken(s.largest.value)}; the smallest was ${s.smallest.ticker} at ${usdSpoken(s.smallest.value)}, and the median buy was ${usdSpoken(s.median)}.`,
   );
   if (s.topRole) {
     parts.push(
-      `The most common buyer was a ${s.topRole.label === '10% Owner' ? '10% owner' : s.topRole.label} (${s.topRole.count} of ${s.count})${s.quoted ? `, and ${s.upCount} of ${s.quoted} quoted buys are above the price paid` : ''}.`,
+      `The most common buyer was ${roleInSentence(s.topRole.label)} (${s.topRole.count} of ${s.count})${s.quoted ? `, and ${s.upCount} of ${s.quoted} quoted buys are above the price paid` : ''}.`,
     );
   }
   parts.push(
@@ -441,6 +478,6 @@ export function insiderBuyingBrief(d) {
 }
 
 export const INSIDER_BUYING_ADDENDUM = `
-This ping asks which company insiders bought their own stock in a window. The (insider) snippets are Ezana's own grouping of SEC Form 4 open-market purchases (code P), computed in code and shown beside the brief as a playable bar chart and a ledger. Answer first, in one paragraph of 70 to 110 words: the count and total, the largest and smallest buy with who made them, the most common role, and how many quoted buys are above the price paid. Then one sentence of limits. Never state a figure the snippets do not give. Never call a purchase a signal or say what an insider knows. No advice.`;
+This ping asks which company insiders bought their own stock in a window (a week, month, quarter, year or a range; the snippets name it). The (insider) snippets are Ezana's own grouping of SEC Form 4 open-market purchases (code P), computed in code and shown beside the brief as a playable bar chart and a ledger. Answer first, in one paragraph of 70 to 110 words: the count and total, the largest and smallest buy with who made them, the most common role, and how many quoted buys are above the price paid. Then one sentence of limits. Never state a figure the snippets do not give. Never call a purchase a signal or say what an insider knows. No advice.`;
 
 export const insiderFormat = { usdTight, usdSpoken, pctSigned, dayFmt, rangeFmt };
