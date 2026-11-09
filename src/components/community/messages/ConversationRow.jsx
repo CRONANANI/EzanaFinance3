@@ -1,25 +1,12 @@
 'use client';
 
-import { CheckCheck } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { chatTime } from '@/lib/messages/requests';
 
 function getInitials(name) {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/).slice(0, 2);
   return parts.map((p) => p.charAt(0).toUpperCase()).join('') || '?';
-}
-
-function timeAgo(iso) {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 /**
@@ -44,6 +31,8 @@ function Highlight({ text, term }) {
   );
 }
 
+/* One chat row: avatar, name and relative time on top, the last message
+   and a green unread count underneath. Hairline dividers come from CSS. */
 export function ConversationRow({
   conversation,
   selected,
@@ -55,36 +44,33 @@ export function ConversationRow({
   const name = conversation.other_user?.name || 'Member';
   const defaultPreview = conversation.last_message?.content || '';
   const isMine = conversation.last_message?.is_mine;
-  const time = timeAgo(conversation.last_message_at);
+  const time = chatTime(conversation.last_message_at);
   const unread = conversation.unread_count || 0;
+  const outgoing = Boolean(conversation.is_outgoing_request);
+  const incoming = Boolean(conversation.is_incoming_request);
 
-  const matchedFirst =
-    highlightTerm && contentMatches?.length > 0 ? contentMatches[0] : null;
+  const matchedFirst = highlightTerm && contentMatches?.length > 0 ? contentMatches[0] : null;
   const previewText = matchedFirst ? matchedFirst.content : defaultPreview;
-  const showYouPrefix = matchedFirst
-    ? matchedFirst.sender_id === user?.id
-    : Boolean(isMine);
+  const showYouPrefix = matchedFirst ? matchedFirst.sender_id === user?.id : Boolean(isMine);
   const hasPreview = Boolean(conversation.last_message || matchedFirst);
 
   return (
-    <li>
+    <li className="m-rows__item">
       <button
         type="button"
         onClick={onClick}
-        className={`m-row${selected ? ' is-selected' : ''}`}
+        className={`m-row${selected ? ' is-selected' : ''}${unread > 0 ? ' is-unread' : ''}`}
         aria-pressed={selected}
-        aria-label={`Conversation with ${name}`}
+        aria-label={`Chat with ${name}${unread > 0 ? `, ${unread} unread` : ''}${
+          incoming ? ', message request' : ''
+        }`}
       >
         <div className="m-row__avatar-wrap">
           {conversation.other_user?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={conversation.other_user.avatar_url}
-              alt=""
-              className="m-row__avatar"
-            />
+            <img src={conversation.other_user.avatar_url} alt="" className="m-row__avatar" />
           ) : (
-            <div className="m-row__avatar-fallback" aria-hidden>
+            <div className="m-row__avatar-fallback" aria-hidden="true">
               {getInitials(name)}
             </div>
           )}
@@ -95,14 +81,10 @@ export function ConversationRow({
             <span className="m-row__name">
               <Highlight text={name} term={highlightTerm} />
             </span>
-            {time && <span className="m-row__time">{time}</span>}
+            {time ? <span className="m-row__time">{time}</span> : null}
           </div>
           <div className="m-row__bottom">
-            <span
-              className={`m-row__preview${
-                isMine && unread === 0 ? ' m-row__preview--mine' : ''
-              }`}
-            >
+            <span className="m-row__preview">
               {hasPreview ? (
                 <>
                   {showYouPrefix ? 'You: ' : ''}
@@ -112,19 +94,13 @@ export function ConversationRow({
                 <em>No messages yet</em>
               )}
             </span>
-            <span className="m-row__trail">
-              {unread > 0 ? (
-                <span className="m-unread" aria-label={`${unread} unread`}>
-                  {unread > 99 ? '99+' : unread}
-                </span>
-              ) : conversation.last_message?.is_mine ? (
-                <CheckCheck
-                  size={14}
-                  className="m-read-receipt"
-                  aria-label="Delivered"
-                />
-              ) : null}
-            </span>
+            {unread > 0 ? (
+              <span className="m-unread" aria-hidden="true">
+                {unread > 99 ? '99+' : unread}
+              </span>
+            ) : outgoing ? (
+              <span className="m-row__tag">Request sent</span>
+            ) : null}
           </div>
         </div>
       </button>

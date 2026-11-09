@@ -1,15 +1,13 @@
 'use client';
 
+/* Chats column (Nov 2026 redesign): "Chats" title with a round new-message
+   button, a pill search, All / Unread / Requests filters, then rows split
+   by hairlines. Incoming message requests live under Requests until the
+   member accepts them; requests you sent stay in All, marked as sent. */
+
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, X, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase-browser';
 import { ConversationRow } from './ConversationRow';
-import { OnlineNowStrip } from './OnlineNowStrip';
-
-const TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'unread', label: 'Unread' },
-];
 
 async function authedFetch(url, options = {}) {
   const {
@@ -33,7 +31,6 @@ export function ConversationList({
   selectedId,
   onSelect,
   onNewMessage,
-  onlineUsers = [],
   onSearchMatchesChange,
 }) {
   const [search, setSearch] = useState('');
@@ -93,42 +90,91 @@ export function ConversationList({
     };
   }, [search, onSearchMatchesChange]);
 
+  const requestCount = useMemo(
+    () => (conversations || []).filter((c) => c.is_incoming_request).length,
+    [conversations],
+  );
+  const unreadCount = useMemo(
+    () =>
+      (conversations || []).filter((c) => !c.is_incoming_request && (c.unread_count || 0) > 0)
+        .length,
+    [conversations],
+  );
+
+  /* Back to All once the last request is answered. */
+  useEffect(() => {
+    if (tab === 'requests' && requestCount === 0) setTab('all');
+  }, [tab, requestCount]);
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim().toLowerCase().replace(/^@+/, '');
     return (conversations || []).filter((c) => {
-      if (tab === 'unread' && (c.unread_count || 0) === 0) return false;
+      if (tab === 'requests') {
+        if (!c.is_incoming_request) return false;
+      } else {
+        if (c.is_incoming_request) return false;
+        if (tab === 'unread' && (c.unread_count || 0) === 0) return false;
+      }
       if (!q) return true;
 
       const name = (c.other_user?.name || '').toLowerCase();
       if (name.includes(q)) return true;
+      const handle = (c.other_user?.username || '').toLowerCase();
+      if (handle && handle.includes(q)) return true;
 
       const preview = (c.last_message?.content || '').toLowerCase();
       if (preview.includes(q)) return true;
 
-      if (contentMatches[c.id]?.length > 0) return true;
-
-      return false;
+      return contentMatches[c.id]?.length > 0;
     });
   }, [conversations, search, tab, contentMatches]);
 
   const highlightTerm = useMemo(() => search.trim(), [search]);
 
+  const tabs = [
+    { id: 'all', label: 'All' },
+    { id: 'unread', label: 'Unread', count: unreadCount },
+    ...(requestCount > 0 ? [{ id: 'requests', label: 'Requests', count: requestCount }] : []),
+  ];
+
+  const emptyText = search
+    ? `No chats match "${search}"`
+    : tab === 'unread'
+      ? 'Nothing unread.'
+      : tab === 'requests'
+        ? 'No message requests.'
+        : 'No chats yet. Start one with the + button.';
+
   return (
     <div className="m-list">
+      <div className="m-chats-head">
+        <h1 className="m-chats-title">Chats</h1>
+        <button
+          type="button"
+          className="m-chats-new"
+          onClick={onNewMessage}
+          aria-label="New message"
+          title="New message"
+        >
+          <i className="bi bi-plus-lg" aria-hidden="true" />
+        </button>
+      </div>
+
       <div className="m-search-wrap">
         <div className="m-search">
-          <span className="m-search__icon" aria-hidden>
-            <Search size={14} />
+          <span className="m-search__icon" aria-hidden="true">
+            <i className="bi bi-search" />
           </span>
           <input
             ref={inputRef}
             type="text"
-            className="m-search__input ds-search-input"
-            placeholder="Search messages and conversations..."
+            className="m-search__input"
+            placeholder="Search chats..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search conversations and messages"
+            aria-label="Search chats and messages"
           />
+          {searching ? <span className="m-search__spinner" aria-label="Searching" /> : null}
           {search ? (
             <button
               type="button"
@@ -136,61 +182,37 @@ export function ConversationList({
               onClick={() => setSearch('')}
               aria-label="Clear search"
             >
-              <X size={12} />
+              <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
-          ) : (
-            <kbd className="m-search__kbd" aria-hidden>
-              ⌘/
-            </kbd>
-          )}
-          {searching ? <span className="m-search__spinner" aria-label="Searching" /> : null}
+          ) : null}
         </div>
       </div>
 
-      <OnlineNowStrip users={onlineUsers} />
-
-      <div className="m-tabs">
-        <div className="m-tabs__group" role="tablist" aria-label="Filter conversations">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => setTab(t.id)}
-              className={`m-tab${tab === t.id ? ' is-active' : ''}`}
-            >
-              {t.label}
-            </button>
-          ))}
+      <div className="m-filters" role="tablist" aria-label="Filter chats">
+        {tabs.map((t) => (
           <button
+            key={t.id}
             type="button"
-            className="m-tab m-tab-new"
-            onClick={onNewMessage}
-            aria-label="Start a new message"
-            title="Start a new message"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={`m-filter${tab === t.id ? ' is-active' : ''}`}
           >
-            <span className="m-tab-new__label">New</span>
-            <Pencil size={12} className="m-tab-new__icon" aria-hidden />
+            {t.label}
+            {t.count ? <span className="m-filter__count">{t.count}</span> : null}
           </button>
-        </div>
+        ))}
       </div>
 
       <div className="m-rows-wrap">
         {loading && (conversations?.length ?? 0) === 0 ? (
-          <div className="m-list__skeleton" aria-hidden>
+          <div className="m-list__skeleton" aria-hidden="true">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="m-skeleton-row" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="m-list__empty">
-            {search
-              ? `No results for "${search}"`
-              : tab === 'unread'
-                ? 'Nothing unread.'
-                : 'No messages yet. Connect with investors from the Community page to start a conversation.'}
-          </div>
+          <div className="m-list__empty">{emptyText}</div>
         ) : (
           <ul className="m-rows">
             {filtered.map((c) => (

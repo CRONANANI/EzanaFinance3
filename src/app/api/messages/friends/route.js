@@ -38,7 +38,7 @@ export const GET = withApiGuard(
 
       const { data: profiles } = await admin
         .from('profiles')
-        .select('id, full_name, avatar_url, user_settings')
+        .select('id, full_name, username, avatar_url, user_settings')
         .in('id', friendIds);
 
       const { data: existingConvos } = await admin
@@ -61,6 +61,7 @@ export const GET = withApiGuard(
           return {
             id: p.id,
             name: displayName,
+            username: p.username || null,
             avatar_url: p.avatar_url || null,
             conversation_id: convoByFriend.get(p.id) || null,
           };

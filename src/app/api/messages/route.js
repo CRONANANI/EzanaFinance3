@@ -1,5 +1,8 @@
 /**
- * GET /api/messages — list conversations. POST /api/messages — send message (friend-gated).
+ * GET /api/messages: list conversations, with each one's request state.
+ * POST /api/messages: send a message. Friends (mutual follows) go straight
+ * to the inbox; anyone else opens a message request the recipient accepts
+ * or declines (rules in src/lib/messages/requests.js).
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
@@ -7,6 +10,7 @@ import { getCurrentUser, getLazyAdminClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { isBlockedPair, blockedBothWays } from '@/lib/moderation/blocks';
+import { decideSend, viewFor, STATUS } from '@/lib/messages/requests';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +46,9 @@ export const GET = withApiGuard(
 
       const { data: convos, error: convErr } = await admin
         .from('conversations')
-        .select('id, participant_a, participant_b, last_message_at, created_at')
+        .select(
+          'id, participant_a, participant_b, last_message_at, created_at, status, requested_by',
+        )
         .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
         .order('last_message_at', { ascending: false, nullsFirst: false })
         .limit(limit);
@@ -63,7 +69,7 @@ export const GET = withApiGuard(
 
       const { data: profiles } = await admin
         .from('profiles')
-        .select('id, full_name, avatar_url, user_settings')
+        .select('id, full_name, username, avatar_url, user_settings')
         .in('id', uniqueOtherIds);
 
       const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));
@@ -111,7 +117,9 @@ export const GET = withApiGuard(
         .filter(
           (c) => !blocked.has(c.participant_a === user.id ? c.participant_b : c.participant_a),
         )
+        .filter((c) => !viewFor(c, user.id).hidden)
         .map((c) => {
+          const view = viewFor(c, user.id);
           const otherId = c.participant_a === user.id ? c.participant_b : c.participant_a;
           const prof = profileMap[otherId];
           const displayName =
@@ -123,8 +131,12 @@ export const GET = withApiGuard(
             other_user: {
               id: otherId,
               name: displayName,
+              username: prof?.username || null,
               avatar_url: prof?.avatar_url || null,
             },
+            status: view.status,
+            is_incoming_request: view.is_incoming_request,
+            is_outgoing_request: view.is_outgoing_request,
             last_message: lastMsg
               ? {
                   content:
@@ -182,46 +194,71 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'You cannot message this member.' }, { status: 403 });
       }
 
-      const mutual = await areMutualFollows(user.id, toUserId);
-      if (!mutual) {
-        return NextResponse.json(
-          {
-            error: 'You can only message friends (mutual followers). Follow each other first.',
-          },
-          { status: 403 },
-        );
+      const { data: recipient } = await admin
+        .from('profiles')
+        .select('id')
+        .eq('id', toUserId)
+        .maybeSingle();
+      if (!recipient) {
+        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
       }
+
+      const mutual = await areMutualFollows(user.id, toUserId);
 
       const [pA, pB] = orderedPair(user.id, toUserId);
       const now = new Date().toISOString();
+      const convoCols = 'id, status, requested_by';
 
       let { data: convo } = await admin
         .from('conversations')
-        .select('id')
+        .select(convoCols)
         .eq('participant_a', pA)
         .eq('participant_b', pB)
         .maybeSingle();
 
-      if (!convo) {
+      /* Messages already sent on the sender's own open request (capped). */
+      let pendingSent = 0;
+      if (convo?.status === STATUS.REQUEST && convo.requested_by === user.id) {
+        const { count } = await admin
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', convo.id)
+          .eq('sender_id', user.id);
+        pendingSent = count || 0;
+      }
+
+      let plan = decideSend({ convo, senderId: user.id, mutual, pendingSent });
+      if (!plan.ok) {
+        return NextResponse.json({ error: plan.error }, { status: plan.code });
+      }
+
+      if (plan.create) {
         const { data: newConvo, error: createErr } = await admin
           .from('conversations')
           .insert({
             participant_a: pA,
             participant_b: pB,
             last_message_at: now,
+            status: plan.status,
+            requested_by: plan.requestedBy,
           })
-          .select('id')
+          .select(convoCols)
           .single();
 
         if (createErr) {
           if (createErr.code === '23505') {
+            /* Raced another send: re-read and re-plan against the row that won. */
             const { data: retry } = await admin
               .from('conversations')
-              .select('id')
+              .select(convoCols)
               .eq('participant_a', pA)
               .eq('participant_b', pB)
               .maybeSingle();
             convo = retry;
+            plan = decideSend({ convo, senderId: user.id, mutual, pendingSent: 0 });
+            if (!plan.ok) {
+              return NextResponse.json({ error: plan.error }, { status: plan.code });
+            }
           } else {
             console.error('[messages POST] conversation create error:', createErr);
             return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 });
@@ -233,6 +270,17 @@ export const POST = withApiGuard(
 
       if (!convo?.id) {
         return NextResponse.json({ error: 'Failed to resolve conversation' }, { status: 500 });
+      }
+
+      if (plan.activate) {
+        const { error: actErr } = await admin
+          .from('conversations')
+          .update({ status: STATUS.ACTIVE, responded_at: now })
+          .eq('id', convo.id);
+        if (actErr) {
+          console.error('[messages POST] activate error:', actErr);
+          return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+        }
       }
 
       const { data: msg, error: msgErr } = await admin
@@ -263,7 +311,7 @@ export const POST = withApiGuard(
           .eq('user_id', toUserId)
           .maybeSingle();
         const prefs = prefRow?.notification_prefs || {};
-        if (prefs.message_notifications !== false) {
+        if (plan.notify !== 'none' && prefs.message_notifications !== false) {
           let senderName = 'Someone';
           const { data: senderProfile } = await admin
             .from('profiles')
@@ -279,7 +327,10 @@ export const POST = withApiGuard(
           await insertNotificationAndPush(admin, {
             user_id: toUserId,
             type: 'community',
-            title: `New message from ${senderName}`,
+            title:
+              plan.notify === 'request'
+                ? `New message request from ${senderName}`
+                : `New message from ${senderName}`,
             content: content.length > 80 ? `${content.slice(0, 80)}…` : content,
           });
         }
@@ -296,6 +347,11 @@ export const POST = withApiGuard(
           created_at: msg.created_at,
           read_at: msg.read_at,
           is_mine: true,
+        },
+        conversation: {
+          id: convo.id,
+          status: plan.status,
+          is_outgoing_request: plan.status === STATUS.REQUEST,
         },
       });
     } catch (e) {

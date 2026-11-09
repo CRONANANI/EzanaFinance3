@@ -1,16 +1,16 @@
 'use client';
 
 /* ============================================================================
- * Messages Page — Ezana brand tokens
+ * Messages page (Community). Nov 2026 redesign.
  * ----------------------------------------------------------------------------
- *   Page bg:        var(--app-bg)              (bg-app)
- *   Card surface:   var(--surface-card)         (.m-panel)
- *   Accent:         var(--emerald)              (own-message bubble, CTA)
- *   Own bubble:     var(--emerald) + #fff
- *   Received:       var(--surface-card-hover) + var(--text-primary)
- *   Borders:        var(--border-primary) / --border-secondary
- *   Muted text:     var(--text-muted) / --text-faint
- *   Selected row:   var(--emerald-bg) + 2px border-left var(--emerald)
+ *   Canvas:      transparent; the dashboard ground shows through. No panel
+ *                fills, borders or shadows.
+ *   Left:        "Chats" column (ConversationList): title + round new-message
+ *                button, pill search, All / Unread / Requests, hairline rows.
+ *   Right:       the open chat (MessageThread) or the empty state.
+ *   New message: search any member by name or @username (NewMessageDialog).
+ *                Friends (mutual follows) land in the inbox; anyone else gets
+ *                a message request to accept or decline.
  * All classes prefixed `.m-*` live in messages.css.
  * ==========================================================================*/
 
@@ -18,8 +18,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase-browser';
-import { MessagesHeader } from '@/components/community/messages/MessagesHeader';
+import { handleOf } from '@/lib/messages/requests';
 import { ConversationList } from '@/components/community/messages/ConversationList';
 import { MessageThread } from '@/components/community/messages/MessageThread';
 import { EmptyConversationState } from '@/components/community/messages/EmptyConversationState';
@@ -48,14 +47,16 @@ export default function MessagesPageClient() {
     loadFriends,
     loadMore,
     broadcastTyping,
+    respondToRequest,
   } = useMessages();
 
   const [showNewMessage, setShowNewMessage] = useState(false);
-  const [pendingFriend, setPendingFriend] = useState(null);
+  /* A member picked in New message who has no chat with you yet. */
+  const [pendingRecipient, setPendingRecipient] = useState(null);
   const [composerText, setComposerText] = useState('');
   const [mobileView, setMobileView] = useState('list');
-  const [onlineIds, setOnlineIds] = useState([]);
   const [activeSearch, setActiveSearch] = useState({ query: '', matches: {} });
+  const [responding, setResponding] = useState(false);
 
   const initialConvoId = searchParams.get('conversation');
 
@@ -67,35 +68,15 @@ export default function MessagesPageClient() {
   }, [initialConvoId, activeConvoId, openConversation]);
 
   useEffect(() => {
-    if (activeConvoId || pendingFriend) setMobileView('thread');
-  }, [activeConvoId, pendingFriend]);
+    if (activeConvoId || pendingRecipient) setMobileView('thread');
+  }, [activeConvoId, pendingRecipient]);
 
   useEffect(() => {
     loadFriends();
   }, [loadFriends]);
 
-  // Presence: track which users are currently on the messages page
-  useEffect(() => {
-    if (!user?.id) return undefined;
-    const ch = supabase.channel('community:presence', {
-      config: { presence: { key: user.id } },
-    });
-    ch.on('presence', { event: 'sync' }, () => {
-      const state = ch.presenceState();
-      setOnlineIds(Object.keys(state));
-    });
-    ch.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await ch.track({ online_at: new Date().toISOString() });
-      }
-    });
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [user?.id]);
-
   const handleSelect = (id) => {
-    setPendingFriend(null);
+    setPendingRecipient(null);
     openConversation(id);
     setMobileView('thread');
     setComposerText('');
@@ -109,13 +90,14 @@ export default function MessagesPageClient() {
     setShowNewMessage(true);
   };
 
-  const handlePickFriend = (friend) => {
+  const handlePick = (person) => {
     setShowNewMessage(false);
-    if (friend.conversation_id) {
-      openConversation(friend.conversation_id);
+    if (person.conversation_id) {
+      setPendingRecipient(null);
+      openConversation(person.conversation_id);
     } else {
       closeConversation();
-      setPendingFriend(friend);
+      setPendingRecipient(person);
     }
     setMobileView('thread');
     setComposerText('');
@@ -124,39 +106,62 @@ export default function MessagesPageClient() {
   const handleSend = async () => {
     const text = composerText.trim();
     if (!text) return;
-    const toId = pendingFriend?.id || otherUser?.id;
+    const toId = pendingRecipient?.id || otherUser?.id;
     if (!toId) return;
     const result = await sendMessage(toId, text);
     if (result.ok) {
       setComposerText('');
-      if (pendingFriend && result.message?.conversation_id) {
+      if (pendingRecipient && result.message?.conversation_id) {
         openConversation(result.message.conversation_id);
-        setPendingFriend(null);
+        setPendingRecipient(null);
       }
     }
   };
 
-  const partnerName = pendingFriend?.name || otherUser?.name || 'Conversation';
-  const partnerAvatarUrl = pendingFriend?.avatar_url || otherUser?.avatar_url || null;
+  const handleRespond = async (action) => {
+    if (!activeConvoId || responding) return;
+    setResponding(true);
+    const result = await respondToRequest(activeConvoId, action);
+    setResponding(false);
+    if (result.ok && action === 'decline') {
+      closeConversation();
+      setMobileView('list');
+    }
+  };
 
-  const hasActive = Boolean(activeConvoId || pendingFriend);
+  const activeConvo = useMemo(
+    () => (conversations || []).find((c) => c.id === activeConvoId) || null,
+    [conversations, activeConvoId],
+  );
+
+  let requestState = null;
+  if (activeConvo?.is_incoming_request) requestState = 'incoming';
+  else if (activeConvo?.is_outgoing_request) requestState = 'outgoing';
+  else if (pendingRecipient && !pendingRecipient.is_friend) requestState = 'new';
+
+  const partnerName = pendingRecipient?.name || otherUser?.name || activeConvo?.other_user?.name;
+  const partnerAvatarUrl =
+    pendingRecipient?.avatar_url ||
+    otherUser?.avatar_url ||
+    activeConvo?.other_user?.avatar_url ||
+    null;
+  const partnerHandle = handleOf(
+    pendingRecipient?.username || activeConvo?.other_user?.username || '',
+  );
+
+  const hasActive = Boolean(activeConvoId || pendingRecipient);
   const listHiddenOnMobile = hasActive && mobileView === 'thread';
   const threadHiddenOnMobile = !hasActive || mobileView === 'list';
 
-  const onlineUsers = useMemo(() => {
-    const set = new Set(onlineIds);
-    return friends.filter((f) => set.has(f.id)).slice(0, 8);
-  }, [friends, onlineIds]);
+  const firstName = (partnerName || '').split(/\s+/)[0] || 'them';
 
   return (
     <div className="m-page dashboard-page-inset">
-      <MessagesHeader />
-
       <div className="m-body">
         <div className="m-grid">
           <aside
             className={`m-panel m-panel--list${listHiddenOnMobile ? ' is-hidden-mobile' : ''}`}
-            aria-label="Conversations"
+            aria-label="Chats"
           >
             <ConversationList
               conversations={conversations}
@@ -164,19 +169,19 @@ export default function MessagesPageClient() {
               selectedId={activeConvoId}
               onSelect={handleSelect}
               onNewMessage={handleOpenNewMessage}
-              onlineUsers={onlineUsers}
               onSearchMatchesChange={setActiveSearch}
             />
           </aside>
 
           <main
             className={`m-panel m-panel--thread${threadHiddenOnMobile ? ' is-hidden-mobile' : ''}`}
-            aria-label="Conversation"
+            aria-label="Chat"
           >
             {hasActive ? (
               <MessageThread
                 conversationId={activeConvoId}
-                partnerName={partnerName}
+                partnerName={partnerName || 'Member'}
+                partnerHandle={partnerHandle}
                 partnerAvatarUrl={partnerAvatarUrl}
                 currentUserId={user?.id}
                 messages={messages}
@@ -191,10 +196,14 @@ export default function MessagesPageClient() {
                 sending={sending}
                 error={error}
                 onTyping={broadcastTyping}
-                canSend={Boolean(pendingFriend?.id || otherUser?.id)}
+                canSend={Boolean(pendingRecipient?.id || otherUser?.id)}
                 composerPlaceholder={
-                  pendingFriend ? `Say hi to ${pendingFriend.name}…` : 'Type message'
+                  pendingRecipient ? `Say hi to ${firstName}...` : 'Type a message'
                 }
+                requestState={requestState}
+                responding={responding}
+                onAcceptRequest={() => handleRespond('accept')}
+                onDeclineRequest={() => handleRespond('decline')}
                 highlightTerm={activeSearch.query}
                 highlightedMessageIds={
                   activeConvoId && activeSearch.matches[activeConvoId]
@@ -212,9 +221,11 @@ export default function MessagesPageClient() {
       <NewMessageDialog
         open={showNewMessage}
         friends={friends}
+        conversations={conversations}
+        currentUserId={user?.id}
         loading={friendsLoading}
         onClose={() => setShowNewMessage(false)}
-        onPickFriend={handlePickFriend}
+        onPick={handlePick}
       />
     </div>
   );

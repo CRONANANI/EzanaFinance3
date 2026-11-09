@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft, Phone, Video, MoreHorizontal } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { DateSeparator } from './DateSeparator';
 import { MessageComposer } from './MessageComposer';
@@ -25,9 +24,60 @@ function groupByDay(messages) {
   }));
 }
 
+/* Message requests (Nov 2026):
+     incoming  the other member wrote first and you aren't friends: their
+               messages show, the composer is swapped for Accept / Decline.
+     outgoing  you sent the request: a note says it's waiting on them.
+     new       you're about to message someone who isn't a friend yet. */
+function RequestNotice({ state, firstName, responding, onAccept, onDecline, error }) {
+  if (state === 'incoming') {
+    return (
+      <div className="m-request" role="region" aria-label="Message request">
+        <p className="m-request__text">
+          <strong>{firstName} wants to message you.</strong> Accept to move this chat to your inbox
+          and reply. If you decline, it disappears from your chats.
+        </p>
+        {error ? (
+          <p className="m-composer__error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <div className="m-request__actions">
+          <button
+            type="button"
+            className="m-request__btn m-request__btn--ghost"
+            onClick={onDecline}
+            disabled={responding}
+          >
+            Decline
+          </button>
+          <button
+            type="button"
+            className="m-request__btn m-request__btn--accept"
+            onClick={onAccept}
+            disabled={responding}
+          >
+            Accept
+          </button>
+        </div>
+      </div>
+    );
+  }
+  const text =
+    state === 'outgoing'
+      ? `Message request sent. ${firstName} will see it under Requests and can accept or decline.`
+      : `You and ${firstName} aren't friends yet, so your first message goes to their message requests.`;
+  return (
+    <p className="m-request-note">
+      <i className="bi bi-envelope-paper" aria-hidden="true" /> {text}
+    </p>
+  );
+}
+
 export function MessageThread({
   conversationId,
   partnerName,
+  partnerHandle = '',
   partnerAvatarUrl,
   currentUserId,
   messages,
@@ -46,6 +96,10 @@ export function MessageThread({
   composerPlaceholder,
   highlightTerm = '',
   highlightedMessageIds = [],
+  requestState = null,
+  responding = false,
+  onAcceptRequest,
+  onDeclineRequest,
 }) {
   const scrollRef = useRef(null);
   const prevCount = useRef(0);
@@ -57,8 +111,7 @@ export function MessageThread({
     const el = scrollRef.current;
     if (!el) return;
     const grew = ascMessages.length !== prevCount.current;
-    const shouldScroll =
-      prevCount.current === 0 || ascMessages.length - prevCount.current <= 3;
+    const shouldScroll = prevCount.current === 0 || ascMessages.length - prevCount.current <= 3;
     if (grew && shouldScroll) {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     }
@@ -66,6 +119,7 @@ export function MessageThread({
   }, [ascMessages.length]);
 
   const someoneTyping = (typingUserIds || []).length > 0;
+  const firstName = (partnerName || '').split(/\s+/)[0] || 'This member';
 
   return (
     <div className="m-thread">
@@ -77,15 +131,11 @@ export function MessageThread({
             onClick={onBack}
             aria-label="Back to conversations"
           >
-            <ArrowLeft size={16} />
+            <i className="bi bi-arrow-left" aria-hidden="true" />
           </button>
           {partnerAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={partnerAvatarUrl}
-              alt=""
-              className="m-thread__avatar"
-            />
+            <img src={partnerAvatarUrl} alt="" className="m-thread__avatar" />
           ) : (
             <div className="m-thread__avatar-fallback" aria-hidden>
               {getInitials(partnerName)}
@@ -93,23 +143,31 @@ export function MessageThread({
           )}
           <div className="m-thread__ident">
             <div className="m-thread__name">{partnerName || 'Conversation'}</div>
-            <div
-              className={`m-thread__meta${someoneTyping ? ' m-thread__meta--typing' : ''}`}
-            >
-              {someoneTyping ? 'Typing…' : 'Direct message'}
+            <div className={`m-thread__meta${someoneTyping ? ' m-thread__meta--typing' : ''}`}>
+              {someoneTyping ? 'Typing...' : partnerHandle || 'Direct message'}
             </div>
           </div>
         </div>
 
         <div className="m-thread__actions">
-          <button type="button" className="m-thread__action" aria-label="Voice call" title="Voice call">
-            <Phone size={16} />
+          <button
+            type="button"
+            className="m-thread__action"
+            aria-label="Voice call"
+            title="Voice call"
+          >
+            <i className="bi bi-telephone" aria-hidden="true" />
           </button>
-          <button type="button" className="m-thread__action" aria-label="Video call" title="Video call">
-            <Video size={16} />
+          <button
+            type="button"
+            className="m-thread__action"
+            aria-label="Video call"
+            title="Video call"
+          >
+            <i className="bi bi-camera-video" aria-hidden="true" />
           </button>
           <button type="button" className="m-thread__action" aria-label="More options" title="More">
-            <MoreHorizontal size={16} />
+            <i className="bi bi-three-dots" aria-hidden="true" />
           </button>
         </div>
       </header>
@@ -136,7 +194,9 @@ export function MessageThread({
           </div>
         ) : ascMessages.length === 0 ? (
           <div className="m-list__empty" style={{ marginTop: '2rem' }}>
-            Start the conversation! Say hi below.
+            {requestState === 'incoming'
+              ? 'No messages to show.'
+              : 'Start the conversation. Say hi below.'}
           </div>
         ) : (
           groups.map((g) => {
@@ -181,16 +241,30 @@ export function MessageThread({
         )}
       </div>
 
-      <MessageComposer
-        value={composerValue}
-        onChange={onComposerChange}
-        onSend={onSend}
-        sending={sending}
-        disabled={!canSend}
-        error={error}
-        onTyping={onTyping}
-        placeholder={composerPlaceholder}
-      />
+      {requestState === 'incoming' ? (
+        <RequestNotice
+          state="incoming"
+          firstName={firstName}
+          responding={responding}
+          onAccept={onAcceptRequest}
+          onDecline={onDeclineRequest}
+          error={error}
+        />
+      ) : (
+        <>
+          {requestState ? <RequestNotice state={requestState} firstName={firstName} /> : null}
+          <MessageComposer
+            value={composerValue}
+            onChange={onComposerChange}
+            onSend={onSend}
+            sending={sending}
+            disabled={!canSend}
+            error={error}
+            onTyping={onTyping}
+            placeholder={composerPlaceholder}
+          />
+        </>
+      )}
     </div>
   );
 }

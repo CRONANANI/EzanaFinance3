@@ -277,12 +277,44 @@ export function useMessages() {
           });
         }
         loadConversations();
-        return { ok: true, message: data.message };
+        return { ok: true, message: data.message, conversation: data.conversation || null };
       } catch (e) {
         setError(e?.message || 'Failed to send');
         return { ok: false, error: e?.message };
       } finally {
         setSending(false);
+      }
+    },
+    [loadConversations],
+  );
+
+  /** Recipient answers a message request: 'accept' | 'decline'. */
+  const respondToRequest = useCallback(
+    async (convoId, action) => {
+      if (!convoId) return { ok: false };
+      setError(null);
+      try {
+        const res = await authedFetch(`/api/messages/${convoId}/request`, {
+          method: 'POST',
+          body: JSON.stringify({ action }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError(data?.error || `HTTP ${res.status}`);
+          return { ok: false, error: data?.error };
+        }
+        setConversations((prev) =>
+          action === 'decline'
+            ? prev.filter((c) => c.id !== convoId)
+            : prev.map((c) =>
+                c.id === convoId ? { ...c, status: 'active', is_incoming_request: false } : c,
+              ),
+        );
+        loadConversations();
+        return { ok: true, status: data?.conversation?.status };
+      } catch (e) {
+        setError(e?.message || 'Failed to update request');
+        return { ok: false, error: e?.message };
       }
     },
     [loadConversations],
@@ -342,6 +374,7 @@ export function useMessages() {
     loadFriends,
     loadMore,
     broadcastTyping,
+    respondToRequest,
     refreshConversations: loadConversations,
   };
 }
