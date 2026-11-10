@@ -1,7 +1,10 @@
 /**
  * POST /api/watchlists/[listId]/items
- * Add an item (stock, crypto, commodity, politician) to a watchlist.
- * Body: { type: 'stock' | 'crypto' | 'commodity' | 'politician', ticker: string, name?: string, sector?: string, metadata?: object }
+ * Add an item (stock, bond ETF, crypto, commodity, politician) to a watchlist.
+ * Body: { type: 'stock' | 'bond_etf' | 'crypto' | 'commodity' | 'politician', ticker: string, name?: string, sector?: string, metadata?: object }
+ *
+ * PATCH /api/watchlists/[listId]/items
+ * Star or unstar an item (Nov 2026). Body: { type, ticker, starred: boolean }
  *
  * DELETE /api/watchlists/[listId]/items?ticker=<ticker>&type=<type>
  * Remove an item from a watchlist. ticker and type identify the row.
@@ -14,7 +17,7 @@ import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/ap
 
 export const dynamic = 'force-dynamic';
 
-const VALID_TYPES = new Set(['stock', 'crypto', 'commodity', 'politician']);
+const VALID_TYPES = new Set(['stock', 'bond_etf', 'crypto', 'commodity', 'politician']);
 
 async function assertListOwnedByUser(supabase, listId, userId) {
   const { data, error } = await supabase
@@ -158,6 +161,51 @@ export const DELETE = withApiGuard(
       return NextResponse.json({ success: true });
     } catch (e) {
       return exceptionResponse('watchlist items DELETE', e);
+    }
+  },
+  { requireAuth: true },
+);
+
+export const PATCH = withApiGuard(
+  async (request, user, context) => {
+    const params = context?.params ?? {};
+    try {
+      const { supabase } = await getAuthContext(request);
+      if (!supabase) {
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+      }
+      const listId = params.listId;
+      if (!listId) return validationResponse('listId is required.');
+
+      const body = await request.json().catch(() => ({}));
+      const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
+      const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
+      if (!VALID_TYPES.has(type)) {
+        return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
+      }
+      if (!ticker) return validationResponse('ticker is required.');
+      if (typeof body?.starred !== 'boolean')
+        return validationResponse('starred must be true or false.');
+
+      const { data, error } = await supabase
+        .from('user_watchlist_items')
+        .update({ starred_at: body.starred ? new Date().toISOString() : null })
+        .eq('list_id', listId)
+        .eq('user_id', user.id)
+        .eq('type', type)
+        .eq('ticker', ticker)
+        .select('id, starred_at')
+        .maybeSingle();
+
+      if (error) {
+        return dbErrorResponse('watchlist items PATCH', error, {
+          fallback: 'Failed to update the star.',
+        });
+      }
+      if (!data) return NextResponse.json({ error: 'Item not found.' }, { status: 404 });
+      return NextResponse.json({ item: { id: data.id, starredAt: data.starred_at } });
+    } catch (e) {
+      return exceptionResponse('watchlist items PATCH', e);
     }
   },
   { requireAuth: true },

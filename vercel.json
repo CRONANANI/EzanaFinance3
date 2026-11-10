@@ -18,6 +18,10 @@
       "schedule": "19 5 * * *"
     },
     {
+      "path": "/api/cron/smart-watchlists",
+      "schedule": "17 * * * *"
+    },
+    {
       "path": "/api/cron/platform-aggregates",
       "schedule": "31 6 * * *"
     },

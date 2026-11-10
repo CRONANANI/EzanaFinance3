@@ -1,40 +1,62 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+/**
+ * Watchlist: the Market Monitor (Nov 2026 redesign) plus Smart Watchlists.
+ *
+ * Everything on the page is the user's own data: the active watchlist's items
+ * per asset class with live quotes, the selected asset's chart and holders,
+ * insights computed from the visible items, the latest 'watchlist'
+ * notifications, and the smart watchlist rules with their auto-adds.
+ *
+ * URL state: ?list=<id>&class=stocks&symbol=AAPL&range=1M (defaults dropped).
+ * Flat home canvas: root keeps `ez-canvas`, home-canvas.css stays the last
+ * CSS import, and the shells check-home-canvas expects (.wl-chart-panel,
+ * .wl-side, .wl-strip-card) stay in place.
+ */
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { PinnableCard } from '@/components/ui/PinnableCard';
-import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useChecklist } from '@/hooks/useChecklist';
 import { EducationTip } from '@/components/beginner/EducationTip';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { useWatchlists } from '@/hooks/useWatchlists';
-import { getTickerMeta } from '@/lib/tickerSearchData';
-import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
-import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
-import { HolderPopup } from '@/components/watchlist/HolderPopup';
-import { getAssetIcon } from '@/components/watchlist/asset-icons';
-import { ChevronDown, Check } from 'lucide-react';
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { CHART } from '@/lib/chart-theme';
-import { DateSelector } from '@/components/ui/DateSelector';
-import '../../../../app-legacy/assets/css/theme.css';
-import '../../../../app-legacy/assets/css/unified-component-cards.css';
-import '../../../../app-legacy/assets/css/pages-common.css';
-import '../../../../app-legacy/assets/css/light-mode-fixes.css';
-import '../../../../app-legacy/components/learning/learning-opportunities.css';
+  useInstitutions,
+  usePoliticians,
+  useQuotes,
+  useSmartWatchlists,
+  useSparklines,
+  useWatchlistAlerts,
+} from '@/hooks/useWatchlistMonitor';
+import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
+import { CLASS_BY_ID, classIdOfType, isPriced } from '@/lib/watchlist/asset-classes';
+import {
+  classCounts,
+  computeInsights,
+  itemsForClass,
+  readUrlState,
+  writeUrlState,
+} from '@/lib/watchlist/watchlist-view';
+import {
+  AlsoInWatchlist,
+  ClassTabs,
+  CoursesCard,
+  EmptyClass,
+  InsightsCard,
+  QuoteStrip,
+  RecentAlertsCard,
+} from '@/components/watchlist/monitor/MonitorParts';
+import {
+  AddAssetDialog,
+  AssetDetail,
+  MyWatchlistsCard,
+} from '@/components/watchlist/monitor/MonitorPanels';
+import {
+  SmartWatchlistCard,
+  SmartWatchlistDialog,
+} from '@/components/watchlist/monitor/SmartWatchlist';
 import './watchlist.css';
-import '../org-trading/org-trading.css';
 import '@/styles/home-canvas.css';
 
 const OrgSendToTeamModal = dynamic(
@@ -43,1482 +65,497 @@ const OrgSendToTeamModal = dynamic(
   { ssr: false, loading: () => null },
 );
 
-const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
-  ssr: false,
-});
+const PREFS_KEY = 'ezana.watchlistPrefs';
+const itemKey = (i) => `${i.type}:${i.ticker}`;
 
-/* ── Helpers ── */
-function slugify(s) {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-function fmtPrice(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '–';
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
-  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-function fmtSmall(n) {
-  return n >= 1000
-    ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : n.toFixed(2);
-}
-function fmtChg(n) {
-  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
-}
-function fmtPct(n) {
-  const x = Number(n);
-  if (n == null || Number.isNaN(x)) return '–';
-  return `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
-}
-
-function mergeFinnhubQuote(item, quoteMap) {
-  if (!item) return item;
-  if (item.type === 'politician' || item.type === 'institution') return item;
-  const sym = item.quoteSymbol || item.ticker;
-  if (!sym || !quoteMap?.[sym]) return item;
-  const q = quoteMap[sym];
-  return { ...item, price: q.price, pct: q.changePercent, change: q.change };
-}
-
-/** Scale YTD portfolio return % to selected chart period (modeled cumulative return). */
-const RETURN_RANGE_MULT = {
-  '1D': 0.012,
-  '5D': 0.048,
-  '1M': 0.19,
-  YTD: 1,
-  '6M': 0.64,
-  '1Y': 1.05,
-  '5Y': 2.75,
-  MAX: 3.9,
-};
-
-function rangeEndReturnPct(returnYtd, timeRange) {
-  const y = Number(returnYtd);
-  if (Number.isNaN(y)) return 0;
-  const m = RETURN_RANGE_MULT[timeRange] ?? 1;
-  return y * m;
-}
-
-function genReturnPctPts(seed, n, endPct) {
-  const pts = [];
-  const safe = Math.abs(endPct) < 0.005 ? (endPct >= 0 ? 0.01 : -0.01) : endPct;
-  for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
-    const base = safe * t;
-    const wobble =
-      Math.sin(seed * 0.07 + i * 0.35) * Math.abs(safe) * 0.09 +
-      Math.sin(seed + i * 0.22) * Math.abs(safe) * 0.05;
-    pts.push(base + wobble);
+function readPrefs() {
+  try {
+    return JSON.parse(window.localStorage.getItem(PREFS_KEY) || '{}') || {};
+  } catch {
+    return {};
   }
-  pts[n - 1] = endPct;
-  return pts;
 }
-
-/* ── Stocks (quotes loaded via /api/market/batch-quotes) ── */
-const STOCKS = [
-  {
-    id: 'stk-aapl',
-    type: 'stock',
-    name: 'Apple Inc.',
-    ticker: 'AAPL',
-    quoteSymbol: 'AAPL',
-    topAssets: ['iPhone', 'Services', 'Mac', 'Wearables'],
-  },
-  {
-    id: 'stk-msft',
-    type: 'stock',
-    name: 'Microsoft',
-    ticker: 'MSFT',
-    quoteSymbol: 'MSFT',
-    topAssets: ['Azure', 'Office', 'LinkedIn', 'Gaming'],
-  },
-  {
-    id: 'stk-nvda',
-    type: 'stock',
-    name: 'NVIDIA',
-    ticker: 'NVDA',
-    quoteSymbol: 'NVDA',
-    topAssets: ['Data Center', 'Gaming', 'Auto', 'Pro Vis'],
-  },
-  {
-    id: 'stk-googl',
-    type: 'stock',
-    name: 'Alphabet',
-    ticker: 'GOOGL',
-    quoteSymbol: 'GOOGL',
-    topAssets: ['Search', 'YouTube', 'Cloud', 'Android'],
-  },
-  {
-    id: 'stk-amzn',
-    type: 'stock',
-    name: 'Amazon',
-    ticker: 'AMZN',
-    quoteSymbol: 'AMZN',
-    topAssets: ['AWS', 'Retail', 'Prime', 'Ads'],
-  },
-  {
-    id: 'stk-meta',
-    type: 'stock',
-    name: 'Meta',
-    ticker: 'META',
-    quoteSymbol: 'META',
-    topAssets: ['Ads', 'Reality Labs', 'WhatsApp', 'Instagram'],
-  },
-  {
-    id: 'stk-tsla',
-    type: 'stock',
-    name: 'Tesla',
-    ticker: 'TSLA',
-    quoteSymbol: 'TSLA',
-    topAssets: ['EVs', 'Energy', 'Autopilot', 'Robotaxi'],
-  },
-  {
-    id: 'stk-jpm',
-    type: 'stock',
-    name: 'JPMorgan',
-    ticker: 'JPM',
-    quoteSymbol: 'JPM',
-    topAssets: ['IB', 'Consumer', 'Asset Mgmt', 'Treasury'],
-  },
-  {
-    id: 'stk-xom',
-    type: 'stock',
-    name: 'Exxon Mobil',
-    ticker: 'XOM',
-    quoteSymbol: 'XOM',
-    topAssets: ['Upstream', 'Downstream', 'Chemicals', 'LNG'],
-  },
-  {
-    id: 'stk-brk-b',
-    type: 'stock',
-    name: 'Berkshire B',
-    ticker: 'BRK.B',
-    quoteSymbol: 'BRK.B',
-    topAssets: ['Insurance', 'Railway', 'Energy', 'Equity Holdings'],
-  },
-];
-
-/* ── Bond ETFs (trade like stocks at dollar price per share) ── */
-const BONDS = [
-  {
-    id: 'bnd-tlt',
-    type: 'bond',
-    name: '20+ Year Treasury',
-    ticker: 'TLT',
-    quoteSymbol: 'TLT',
-    topAssets: ['Long Duration', 'Treasury', 'Rate Sensitive', 'Hedge'],
-  },
-  {
-    id: 'bnd-ief',
-    type: 'bond',
-    name: '7-10 Year Treasury',
-    ticker: 'IEF',
-    quoteSymbol: 'IEF',
-    topAssets: ['Mid Duration', 'Treasury', 'Income', 'Defensive'],
-  },
-  {
-    id: 'bnd-shy',
-    type: 'bond',
-    name: '1-3 Year Treasury',
-    ticker: 'SHY',
-    quoteSymbol: 'SHY',
-    topAssets: ['Short Duration', 'Cash Alt', 'Treasury', 'Stable'],
-  },
-  {
-    id: 'bnd-agg',
-    type: 'bond',
-    name: 'Aggregate Bond',
-    ticker: 'AGG',
-    quoteSymbol: 'AGG',
-    topAssets: ['Diversified', 'Investment Grade', 'Income', 'Core'],
-  },
-  {
-    id: 'bnd-lqd',
-    type: 'bond',
-    name: 'Investment Grade Corp',
-    ticker: 'LQD',
-    quoteSymbol: 'LQD',
-    topAssets: ['Corporate', 'IG Credit', 'Income', 'Spread'],
-  },
-  {
-    id: 'bnd-hyg',
-    type: 'bond',
-    name: 'High Yield Corp',
-    ticker: 'HYG',
-    quoteSymbol: 'HYG',
-    topAssets: ['HY Credit', 'Risk-On', 'Income', 'Spread'],
-  },
-  {
-    id: 'bnd-tip',
-    type: 'bond',
-    name: 'TIPS',
-    ticker: 'TIP',
-    quoteSymbol: 'TIP',
-    topAssets: ['Inflation', 'Treasury', 'Real Yield', 'Defensive'],
-  },
-  {
-    id: 'bnd-emb',
-    type: 'bond',
-    name: 'Emerging Markets',
-    ticker: 'EMB',
-    quoteSymbol: 'EMB',
-    topAssets: ['EM Credit', 'USD-Denom', 'Spread', 'Diversification'],
-  },
-];
-
-/* ── Politicians ── */
-const POLITICIANS_LIST = [
-  {
-    id: 'pol-pelosi',
-    type: 'politician',
-    name: 'Nancy Pelosi',
-    returnYtd: 18.4,
-    slug: 'nancy-pelosi',
-    party: 'Democrat',
-    topAssets: ['NVDA', 'AAPL', 'RBLX', 'MSFT'],
-  },
-  {
-    id: 'pol-tuberville',
-    type: 'politician',
-    name: 'Tommy Tuberville',
-    returnYtd: -4.2,
-    slug: 'tommy-tuberville',
-    party: 'Republican',
-    topAssets: ['KMB', 'HPQ', 'CLX', 'PG'],
-  },
-  {
-    id: 'pol-crenshaw',
-    type: 'politician',
-    name: 'Dan Crenshaw',
-    returnYtd: 11.2,
-    slug: 'dan-crenshaw',
-    party: 'Republican',
-    topAssets: ['AAPL', 'MSFT', 'AMZN', 'XOM'],
-  },
-  {
-    id: 'pol-warren',
-    type: 'politician',
-    name: 'Elizabeth Warren',
-    returnYtd: 6.4,
-    slug: 'elizabeth-warren',
-    party: 'Democrat',
-    topAssets: ['Treasury', 'Index Funds', 'BRK.B', 'VTI'],
-  },
-  {
-    id: 'pol-mcconnell',
-    type: 'politician',
-    name: 'Mitch McConnell',
-    returnYtd: 5.1,
-    slug: 'mitch-mcconnell',
-    party: 'Republican',
-    topAssets: ['Treasury', 'Vanguard', 'BRK.B', 'MUNI'],
-  },
-  {
-    id: 'pol-aoc',
-    type: 'politician',
-    name: 'Alexandria Ocasio-Cortez',
-    returnYtd: 0.0,
-    slug: 'alexandria-ocasio-cortez',
-    party: 'Democrat',
-    topAssets: ['No Holdings'],
-  },
-  {
-    id: 'pol-cruz',
-    type: 'politician',
-    name: 'Ted Cruz',
-    returnYtd: 9.7,
-    slug: 'ted-cruz',
-    party: 'Republican',
-    topAssets: ['XOM', 'GS', 'CVX', 'JPM'],
-  },
-  {
-    id: 'pol-schumer',
-    type: 'politician',
-    name: 'Chuck Schumer',
-    returnYtd: 7.8,
-    slug: 'chuck-schumer',
-    party: 'Democrat',
-    topAssets: ['Index Funds', 'Treasury', 'Muni', 'BRK.B'],
-  },
-];
-
-/* ── Commodities (no crypto) ── */
-const COMMODITIES_ONLY = [
-  {
-    id: 'cmd-gold',
-    type: 'commodity',
-    name: 'Gold',
-    ticker: 'GC=F',
-    quoteSymbol: 'GC=F',
-    topAssets: ['Mining', 'Central Banks', 'ETFs', 'Jewelry'],
-  },
-  {
-    id: 'cmd-silver',
-    type: 'commodity',
-    name: 'Silver',
-    ticker: 'SI=F',
-    quoteSymbol: 'SI=F',
-    topAssets: ['Industrial', 'Solar', 'ETFs', 'Jewelry'],
-  },
-  {
-    id: 'cmd-platinum',
-    type: 'commodity',
-    name: 'Platinum',
-    ticker: 'PL=F',
-    quoteSymbol: 'PL=F',
-    topAssets: ['Auto', 'Industrial', 'Jewelry', 'Investment'],
-  },
-  {
-    id: 'cmd-palladium',
-    type: 'commodity',
-    name: 'Palladium',
-    ticker: 'PA=F',
-    quoteSymbol: 'PA=F',
-    topAssets: ['Auto Catalysts', 'Electronics', 'Chemical', 'Dental'],
-  },
-  {
-    id: 'cmd-copper',
-    type: 'commodity',
-    name: 'Copper',
-    ticker: 'HG=F',
-    quoteSymbol: 'HG=F',
-    topAssets: ['Construction', 'Electronics', 'Transport', 'Industrial'],
-  },
-  {
-    id: 'cmd-oil',
-    type: 'commodity',
-    name: 'Oil (WTI)',
-    ticker: 'CL=F',
-    quoteSymbol: 'CL=F',
-    topAssets: ['Transport', 'Plastics', 'Heating', 'Chemical'],
-  },
-  {
-    id: 'cmd-natgas',
-    type: 'commodity',
-    name: 'Nat Gas',
-    ticker: 'NG=F',
-    quoteSymbol: 'NG=F',
-    topAssets: ['Heating', 'Power Gen', 'Chemical', 'LNG'],
-  },
-  {
-    id: 'cmd-wheat',
-    type: 'commodity',
-    name: 'Wheat',
-    ticker: 'ZW=F',
-    quoteSymbol: 'ZW=F',
-    topAssets: ['Food', 'Feed', 'Ethanol', 'Export'],
-  },
-  {
-    id: 'cmd-corn',
-    type: 'commodity',
-    name: 'Corn',
-    ticker: 'ZC=F',
-    quoteSymbol: 'ZC=F',
-    topAssets: ['Feed', 'Ethanol', 'Food', 'Export'],
-  },
-];
-
-/* ── Crypto ──
-   FMP expects crypto pairs as `BTCUSD` (no dash). `ticker`/`quoteSymbol` are
-   the API-side identifiers; `displayTicker` is the short label shown in the
-   UI so users see "BTC" instead of "BTCUSD". */
-const CRYPTO = [
-  {
-    id: 'cry-btc',
-    type: 'crypto',
-    name: 'Bitcoin',
-    ticker: 'BTCUSD',
-    quoteSymbol: 'BTCUSD',
-    displayTicker: 'BTC',
-    topAssets: ['Store of Value', 'DeFi', 'Mining', 'Payments'],
-  },
-  {
-    id: 'cry-eth',
-    type: 'crypto',
-    name: 'Ethereum',
-    ticker: 'ETHUSD',
-    quoteSymbol: 'ETHUSD',
-    displayTicker: 'ETH',
-    topAssets: ['DeFi', 'NFTs', 'Layer 2', 'Staking'],
-  },
-  {
-    id: 'cry-sol',
-    type: 'crypto',
-    name: 'Solana',
-    ticker: 'SOLUSD',
-    quoteSymbol: 'SOLUSD',
-    displayTicker: 'SOL',
-    topAssets: ['DeFi', 'NFTs', 'Payments', 'Gaming'],
-  },
-  {
-    id: 'cry-bnb',
-    type: 'crypto',
-    name: 'BNB',
-    ticker: 'BNBUSD',
-    quoteSymbol: 'BNBUSD',
-    displayTicker: 'BNB',
-    topAssets: ['Exchange', 'BSC', 'DeFi', 'Staking'],
-  },
-  {
-    id: 'cry-xrp',
-    type: 'crypto',
-    name: 'XRP',
-    ticker: 'XRPUSD',
-    quoteSymbol: 'XRPUSD',
-    displayTicker: 'XRP',
-    topAssets: ['Cross-Border', 'Payments', 'Banking', 'Liquidity'],
-  },
-  {
-    id: 'cry-ada',
-    type: 'crypto',
-    name: 'Cardano',
-    ticker: 'ADAUSD',
-    quoteSymbol: 'ADAUSD',
-    displayTicker: 'ADA',
-    topAssets: ['PoS', 'Smart Contracts', 'Identity', 'DeFi'],
-  },
-  {
-    id: 'cry-dot',
-    type: 'crypto',
-    name: 'Polkadot',
-    ticker: 'DOTUSD',
-    quoteSymbol: 'DOTUSD',
-    displayTicker: 'DOT',
-    topAssets: ['Parachains', 'Interop', 'Governance', 'Staking'],
-  },
-  {
-    id: 'cry-link',
-    type: 'crypto',
-    name: 'Chainlink',
-    ticker: 'LINKUSD',
-    quoteSymbol: 'LINKUSD',
-    displayTicker: 'LINK',
-    topAssets: ['Oracles', 'CCIP', 'DeFi', 'Real World Assets'],
-  },
-];
-
-/* ── Asset class catalog ── */
-const ASSET_CLASSES = [
-  { id: 'Stocks', label: 'Stocks', icon: 'bi-graph-up', data: STOCKS },
-  { id: 'Bonds', label: 'Bond ETFs', icon: 'bi-bank', data: BONDS },
-  { id: 'Commodities', label: 'Commodities', icon: 'bi-droplet-half', data: COMMODITIES_ONLY },
-  { id: 'Politicians', label: 'Politicians', icon: 'bi-person-badge', data: POLITICIANS_LIST },
-  { id: 'Crypto', label: 'Crypto', icon: 'bi-currency-bitcoin', data: CRYPTO },
-];
-
-const TIME_RANGES = ['1D', '5D', '1M', 'YTD', '6M', '1Y', '5Y', 'MAX'];
-
-/* ── Chart point generator ── */
-function genPts(seed, n = 100, up = true) {
-  const pts = [];
-  let v = 50;
-  for (let i = 0; i < n; i++) {
-    v +=
-      Math.sin(i * 0.3 + seed) * 2.5 +
-      (up ? 0.12 : -0.08) +
-      Math.sin(i * 0.7 + seed * 2) * 1.2 +
-      (Math.random() - 0.5) * 0.8;
-    v = Math.max(4, Math.min(96, v));
-    pts.push(v);
+function writePrefs(prefs) {
+  try {
+    window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    /* storage blocked: the toggle just will not persist */
   }
-  return pts;
 }
 
-/* ── Mini sparkline SVG ── */
-function Spark({ seed, up, w = 64, h = 22 }) {
-  const pts = useMemo(() => genPts(seed, 24, up), [seed, up]);
-  const d = pts.map((y, i) => `${(i / (pts.length - 1)) * w},${h - (y / 100) * h}`).join(' ');
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
-      <polyline
-        points={d}
-        fill="none"
-        stroke={up ? 'var(--emerald)' : 'var(--negative)'}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
+/** One toast at a time, with an optional action (Undo). */
+function useToast() {
+  const [toast, setToast] = useState(null);
+  const timer = useRef(null);
+  const show = useCallback((text, action) => {
+    clearTimeout(timer.current);
+    setToast({ text, action, id: Date.now() });
+    timer.current = setTimeout(() => setToast(null), action ? 6000 : 3500);
+  }, []);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return { toast, show, hide: () => setToast(null) };
 }
 
-function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
-  const pts = useMemo(() => genReturnPctPts(seed, 24, returnYtd ?? 0), [seed, returnYtd]);
-  const minV = Math.min(0, ...pts);
-  const maxV = Math.max(...pts, minV + 0.01);
-  const up = (returnYtd ?? 0) >= 0;
-  const d = pts
-    .map((v, i) => `${(i / (pts.length - 1)) * w},${h - ((v - minV) / (maxV - minV)) * h}`)
-    .join(' ');
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
-      <polyline
-        points={d}
-        fill="none"
-        stroke={up ? 'var(--emerald)' : 'var(--negative)'}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
+function WatchlistMonitor() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const url = useMemo(() => readUrlState(searchParams), [searchParams]);
 
-/**
- * Tooltip — same idea as StockPriceChart CustomTooltip: compact label + value.
- */
-function WlChartTooltip({ active, payload, isPortfolio }) {
-  if (!active || !payload?.length) return null;
-  const p = payload[0].payload;
-  return (
-    <div className="wl-chart-tooltip">
-      <div className="wl-chart-tooltip-label">{p.label}</div>
-      <div className="wl-chart-tooltip-value">
-        {isPortfolio ? `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%` : `${p.value.toFixed(2)}`}
-      </div>
-    </div>
-  );
-}
-
-/* ── Main chart component ── */
-function Chart({ item, timeRange }) {
-  const seed = useMemo(
-    () => (item ? item.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42),
-    [item],
-  );
-  const isPortfolio = item?.type === 'politician' || item?.type === 'institution';
-
-  const { data, lineColour, gradientId, startValue } = useMemo(() => {
-    if (!item) {
-      return {
-        data: [],
-        lineColour: 'var(--emerald)',
-        gradientId: 'wl-cg-empty',
-        startValue: null,
-      };
-    }
-    if (isPortfolio) {
-      const ytd = item.returnYtd ?? 0;
-      const end = rangeEndReturnPct(ytd, timeRange);
-      const pts = genReturnPctPts(seed, 140, end);
-      const arr = pts.map((v, i) => ({
-        label: `Pt ${i + 1}`,
-        value: v,
-      }));
-      return {
-        data: arr,
-        lineColour: end >= 0 ? 'var(--emerald)' : 'var(--negative)',
-        gradientId: `wl-cg-${seed}-pf`,
-        startValue: pts[0],
-      };
-    }
-    const up = (item.change ?? 0) >= 0;
-    const pts = genPts(seed, 140, up);
-    const arr = pts.map((v, i) => ({
-      label: `Pt ${i + 1}`,
-      value: v,
-    }));
-    return {
-      data: arr,
-      lineColour: up ? 'var(--emerald)' : 'var(--negative)',
-      gradientId: `wl-cg-${seed}`,
-      startValue: pts[0],
-    };
-  }, [item, seed, timeRange, isPortfolio]);
-
-  return (
-    <div className="wl-chart-box">
-      {isPortfolio && (
-        <div className="wl-chart-y-label" aria-hidden>
-          Return %
-        </div>
-      )}
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColour} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid
-            strokeDasharray={CHART.gridDash}
-            stroke={CHART.gridStroke}
-            vertical={false}
-          />
-          <XAxis
-            dataKey="label"
-            tick={CHART.tick}
-            axisLine={false}
-            tickLine={false}
-            interval="preserveStartEnd"
-            minTickGap={50}
-          />
-          <YAxis
-            domain={['auto', 'auto']}
-            tick={CHART.tick}
-            axisLine={false}
-            tickLine={false}
-            width={40}
-            tickFormatter={(v) =>
-              isPortfolio
-                ? `${v >= 0 ? '+' : ''}${Number(v).toFixed(1)}%`
-                : `${Number(v).toFixed(1)}`
-            }
-          />
-          <Tooltip
-            content={(tooltipProps) => (
-              <WlChartTooltip {...tooltipProps} isPortfolio={isPortfolio} />
-            )}
-            cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }}
-          />
-          {data.length > 0 && startValue != null && Number.isFinite(startValue) && (
-            <ReferenceLine y={startValue} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />
-          )}
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={lineColour}
-            strokeWidth={1.5}
-            fill={`url(#${gradientId})`}
-            dot={false}
-            activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* ── Type badge helper ── */
-function TypeIcon({ item }) {
-  if (item.type === 'institution') {
-    return (
-      <span className="wl-strip-badge inst">
-        <i className="bi bi-building" />
-      </span>
-    );
-  }
-  return <span className="wl-strip-badge has-svg-icon">{getAssetIcon(item)}</span>;
-}
-
-export default function WatchlistPage() {
   const { completeTask } = useChecklist();
-  const { isOrgUser, orgRole, orgData, hasPermission } = useOrg();
-  const addedStockRef = useRef(false);
-  /** User-picked row; effective selection is derived so first paint always has a valid `selected`. */
-  const [manualSelected, setManualSelected] = useState(null);
-  const [assetClass, setAssetClass] = useState('Stocks');
-  const [assetClassMenuOpen, setAssetClassMenuOpen] = useState(false);
-  const [quoteMap, setQuoteMap] = useState({});
-  const [timeRange, setTimeRange] = useState('YTD');
-  const [sideTab, setSideTab] = useState('All');
-  const [search, setSearch] = useState('');
-  const {
-    watchlists: mockWatchlists,
-    loading: watchlistsLoading,
-    addItem: addWatchlistItem,
-    createList,
-  } = useWatchlists();
+  const { isOrgUser, hasPermission } = useOrg();
+  const { watchlists, loading, addItem, removeItem, createList, refresh, toggleStar, authedFetch } =
+    useWatchlists();
+  const smart = useSmartWatchlists(authedFetch);
+  const alerts = useWatchlistAlerts(3);
+  const { toast, show: notify, hide: hideToast } = useToast();
 
-  const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
-  const [newWatchlistOpen, setNewWatchlistOpen] = useState(false);
+  const [newListOpen, setNewListOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [smartDialog, setSmartDialog] = useState({ open: false, rule: null });
+  const [sendTicker, setSendTicker] = useState(null);
+  const [prefs, setPrefs] = useState({});
+  useEffect(() => setPrefs(readPrefs()), []);
 
-  useEffect(() => {
-    if (!watchlistsLoading && mockWatchlists.length > 0) {
-      if (!selectedWatchlistId || !mockWatchlists.some((w) => w.id === selectedWatchlistId)) {
-        setSelectedWatchlistId(mockWatchlists[0].id);
-      }
-    }
-  }, [watchlistsLoading, mockWatchlists, selectedWatchlistId]);
-  const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
-  const wlDropdownRef = useRef(null);
-  const [activeHolder, setActiveHolder] = useState(null);
-  const [holderList, setHolderList] = useState([]);
-  const [sendWatchlistTicker, setSendWatchlistTicker] = useState(null);
-
-  const orgTeamId = useMemo(() => {
-    if (!isOrgUser || orgRole === 'executive') return null;
-    return orgData?.member?.team_id || null;
-  }, [isOrgUser, orgRole, orgData?.member?.team_id]);
-
-  const orgTeamName = useMemo(
-    () => (orgData?.teams || []).find((t) => t.id === orgTeamId)?.name || null,
-    [orgData?.teams, orgTeamId],
+  /* ---------------- URL state ---------------- */
+  const setUrl = useCallback(
+    (patch) => {
+      const qs = writeUrlState(searchParams, { ...url, ...patch });
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams, url],
   );
 
-  // Real team sleeve suggestions come from the Team Hub summary (same loader as
-  // the org fund surfaces). Fetched only for non-exec org members; a suggestion
-  // strip, so a missing/empty row falls back to the generic default list.
-  const [orgSummary, setOrgSummary] = useState(null);
+  const activeList = useMemo(
+    () => watchlists.find((w) => w.id === url.listId) || watchlists[0] || null,
+    [watchlists, url.listId],
+  );
+  const classId = url.classId;
+  const cls = CLASS_BY_ID[classId];
+
+  /* ---------------- data ---------------- */
+  const pricedSymbols = useMemo(
+    () =>
+      (activeList?.stocks || [])
+        .filter((i) => isPriced(i.type))
+        .map((i) => String(i.ticker).toUpperCase()),
+    [activeList],
+  );
+  const { quotes } = useQuotes(pricedSymbols);
+  const sparks = useSparklines(pricedSymbols);
+  const politicianIds = useMemo(
+    () => (activeList?.stocks || []).filter((i) => i.type === 'politician').map((i) => i.ticker),
+    [activeList],
+  );
+  const { byId: politicians } = usePoliticians(politicianIds);
+
+  const items = useMemo(
+    () => itemsForClass(activeList, classId, quotes),
+    [activeList, classId, quotes],
+  );
+  const counts = useMemo(() => classCounts(activeList), [activeList]);
+  const insights = useMemo(() => computeInsights(items, classId), [items, classId]);
+
+  const selected = useMemo(
+    () => items.find((i) => String(i.ticker).toUpperCase() === url.symbol) || items[0] || null,
+    [items, url.symbol],
+  );
+  const selectedKey = selected ? itemKey(selected) : null;
+  const inst = useInstitutions(selected?.type === 'stock' ? selected.ticker : null);
+
+  const alsoIn = useMemo(() => {
+    if (!activeList) return [];
+    const others = ['stocks', 'bonds', 'commodities', 'crypto'].flatMap((c) =>
+      itemsForClass(activeList, c, quotes),
+    );
+    return others.filter((i) => itemKey(i) !== selectedKey).slice(0, 6);
+  }, [activeList, quotes, selectedKey]);
+
+  const existing = useMemo(() => new Set((activeList?.stocks || []).map(itemKey)), [activeList]);
+
+  /* ---------------- courses ---------------- */
+  const courses = useMemo(() => getCoursesForWatchlistPreview(4), []);
+  const [bookmarked, setBookmarked] = useState(() => new Set());
   useEffect(() => {
-    if (!isOrgUser || orgRole === 'executive') {
-      setOrgSummary(null);
-      return undefined;
-    }
     let alive = true;
-    fetch('/api/org/team-hub/summary', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (alive) setOrgSummary(d);
-      })
+    authedFetch('/api/learning/bookmarks')
+      .then((r) => (r.ok ? r.json() : { bookmarks: [] }))
+      .then((d) => alive && setBookmarked(new Set((d.bookmarks || []).map((b) => b.course_id))))
       .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [isOrgUser, orgRole]);
-
-  const orgSleeveTickers = useMemo(() => {
-    if (!isOrgUser || orgRole === 'executive') return null;
-    const row = (orgSummary?.sectors || []).find((s) => s.teamId === orgTeamId);
-    const tickers = row?.tickers || [];
-    return tickers.length ? tickers : null;
-  }, [isOrgUser, orgRole, orgSummary, orgTeamId]);
-
-  const activeClassItems = useMemo(() => {
-    const cls = ASSET_CLASSES.find((c) => c.id === assetClass);
-    return cls?.data ?? [];
-  }, [assetClass]);
-
-  useEffect(() => {
-    if (!assetClassMenuOpen) return;
-    const onMouseDown = (e) => {
-      if (!e.target.closest('[data-wl-class-switcher]')) {
-        setAssetClassMenuOpen(false);
-      }
-    };
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') setAssetClassMenuOpen(false);
-    };
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [assetClassMenuOpen]);
-
-  const stripItems = useMemo(() => {
-    // Non-exec org members get a "your team" suggestion sleeve of real tickers;
-    // execs and non-org users get the standard asset-class strip.
-    if (isOrgUser && orgRole !== 'executive' && assetClass === 'Stocks') {
-      const tickers = orgSleeveTickers || ['NVDA', 'AAPL', 'MSFT', 'META'];
-      return tickers.map((tk) => ({
-        id: `org-${tk}`,
-        type: 'stock',
-        name: tk,
-        ticker: tk,
-        quoteSymbol: tk,
-        topAssets: [],
-      }));
-    }
-
-    return activeClassItems;
-  }, [isOrgUser, orgRole, orgSleeveTickers, activeClassItems, assetClass]);
-
-  const ALL_SELECTABLE = useMemo(() => ASSET_CLASSES.flatMap((c) => c.data), []);
-
-  const selected = useMemo(() => {
-    if (!ALL_SELECTABLE.length) return null;
-    if (manualSelected && ALL_SELECTABLE.some((i) => i.id === manualSelected.id)) {
-      return manualSelected;
-    }
-    return stripItems[0] ?? ALL_SELECTABLE[0] ?? null;
-  }, [stripItems, manualSelected, ALL_SELECTABLE]);
-
-  useEffect(() => {
-    function closeWlDrop(e) {
-      if (wlDropdownRef.current && !wlDropdownRef.current.contains(e.target)) {
-        setWlDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', closeWlDrop);
-    return () => document.removeEventListener('mousedown', closeWlDrop);
-  }, []);
-
-  const watchlistTickerSymbols = useMemo(
-    () =>
-      isOrgUser ? [] : [...new Set(mockWatchlists.flatMap((w) => w.stocks.map((s) => s.ticker)))],
-    [isOrgUser, mockWatchlists],
-  );
-
-  useEffect(() => {
-    const symbols = [
-      ...new Set([...stripItems.map((i) => i.quoteSymbol || i.ticker), ...watchlistTickerSymbols]),
-    ].filter(Boolean);
-    let cancelled = false;
-    const load = () => {
-      fetch(`/api/market/batch-quotes?symbols=${symbols.join(',')}`)
-        .then((r) => (r.ok ? r.json() : {}))
-        .then((d) => {
-          if (!cancelled) setQuoteMap(d.quotes || {});
-        })
-        .catch(() => {});
-    };
-    load();
-    const id = setInterval(load, 60000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [stripItems, isOrgUser, watchlistTickerSymbols]);
-
-  const onAddStock = useCallback(
-    (ticker, watchlistId) => {
-      const meta = getTickerMeta(ticker);
-      if (!meta) return;
-      addWatchlistItem(watchlistId, {
-        type: 'stock',
-        ticker,
-        name: meta.name,
-        sector: meta.sector,
+  }, [authedFetch]);
+  const toggleBookmark = useCallback(
+    async (courseId, add) => {
+      setBookmarked((s) => {
+        const n = new Set(s);
+        if (add) n.add(courseId);
+        else n.delete(courseId);
+        return n;
       });
+      const r = await authedFetch('/api/learning/bookmarks', {
+        method: 'POST',
+        body: JSON.stringify({ courseId, action: add ? 'add' : 'remove' }),
+      }).catch(() => null);
+      if (!r?.ok) {
+        setBookmarked((s) => {
+          const n = new Set(s);
+          if (add) n.delete(courseId);
+          else n.add(courseId);
+          return n;
+        });
+        notify('Could not update the bookmark.');
+      }
     },
-    [addWatchlistItem],
+    [authedFetch, notify],
   );
 
-  const sideItems = useMemo(() => {
-    if (isOrgUser) {
-      let items = stripItems;
-      if (sideTab === 'Stocks') items = items.filter((i) => i.type === 'stock');
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        items = items.filter(
-          (i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q),
-        );
-      }
-      return items;
-    }
-    const wl = mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0];
-    let items = (wl?.stocks || []).map((s) => ({
-      id: s.ticker,
-      type: 'stock',
-      name: s.name,
-      ticker: s.ticker,
-      price: s.price,
-      change: s.change,
-      pct: s.changePct,
-      topAssets: [s.sector],
-    }));
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      items = items.filter(
-        (i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q),
-      );
-    }
-    return items;
-  }, [search, isOrgUser, stripItems, mockWatchlists, selectedWatchlistId, sideTab]);
-
-  const selectAny = useCallback(
+  /* ---------------- actions ---------------- */
+  const stockSelectedOnce = useRef(false);
+  const select = useCallback(
     (item) => {
-      setManualSelected(item);
-      if (item?.type === 'stock' && !addedStockRef.current) {
-        addedStockRef.current = true;
+      setUrl({ symbol: String(item.ticker).toUpperCase() });
+      if (item.type === 'stock' && !stockSelectedOnce.current) {
+        stockSelectedOnce.current = true;
         completeTask('watchlist_1');
       }
     },
-    [completeTask],
+    [setUrl, completeTask],
   );
 
-  const selectedMerged = useMemo(
-    () => (selected ? mergeFinnhubQuote(selected, quoteMap) : null),
-    [selected, quoteMap],
+  const changeClass = (id) => setUrl({ classId: id, symbol: null });
+  const changeList = (id) => {
+    setUrl({ listId: id, symbol: null });
+    completeTask('watchlist_2');
+  };
+
+  const star = useCallback(
+    async (item, on) => {
+      if (!activeList) return;
+      const r = await toggleStar(activeList.id, { type: item.type, ticker: item.ticker }, on);
+      if (r && r.ok === false) notify('Could not update the star.');
+    },
+    [activeList, toggleStar, notify],
   );
 
-  const portfolioReturn =
-    selected && (selected.type === 'politician' || selected.type === 'institution')
-      ? rangeEndReturnPct(selected.returnYtd, timeRange)
-      : null;
+  const payloadOf = (item) => ({
+    type: item.type,
+    ticker: item.ticker,
+    name: item.name,
+    sector: item.sector,
+    metadata: item.metadata,
+  });
 
-  const isUp = portfolioReturn != null ? portfolioReturn >= 0 : (selectedMerged?.change ?? 0) >= 0;
+  const remove = useCallback(
+    async (item) => {
+      if (!activeList) return;
+      const listId = activeList.id;
+      const r = await removeItem(listId, { type: item.type, ticker: item.ticker });
+      if (r && r.ok === false) {
+        notify('Could not remove it. Try again.');
+        return;
+      }
+      notify(
+        `Removed ${item.type === 'politician' ? item.name : item.ticker} from ${activeList.label}`,
+        {
+          label: 'Undo',
+          run: () => addItem(listId, payloadOf(item)),
+        },
+      );
+    },
+    [activeList, removeItem, addItem, notify],
+  );
 
-  useEffect(() => {
-    setActiveHolder(null);
-  }, [selected?.id, selected?.ticker]);
+  const move = useCallback(
+    async (item, toId) => {
+      if (!activeList) return;
+      const target = watchlists.find((w) => w.id === toId);
+      const add = await addItem(toId, payloadOf(item));
+      if (add && add.ok === false) {
+        notify('Could not move it. Try again.');
+        return;
+      }
+      await removeItem(activeList.id, { type: item.type, ticker: item.ticker });
+      notify(`Moved to ${target?.label || 'watchlist'}`);
+    },
+    [activeList, watchlists, addItem, removeItem, notify],
+  );
 
-  useEffect(() => {
-    if (selected?.type !== 'stock' || !selected.ticker) {
-      setHolderList([]);
+  const addAsset = useCallback(
+    async (asset) => {
+      if (!activeList) return;
+      const r = await addItem(activeList.id, asset);
+      if (r && r.ok === false) {
+        notify(r.reason || 'Could not add it.');
+        return;
+      }
+      notify(`Added ${asset.type === 'politician' ? asset.name : asset.ticker}`);
+      if (asset.type === 'stock') completeTask('watchlist_1');
+      const assetClass = classIdOfType(asset.type);
+      if (assetClass !== classId)
+        setUrl({ classId: assetClass, symbol: String(asset.ticker).toUpperCase() });
+    },
+    [activeList, addItem, notify, completeTask, classId, setUrl],
+  );
+
+  const alertsOn = !!(activeList && prefs[activeList.id]?.alertsEnabled);
+  const setAlertsOn = (on) => {
+    if (!activeList) return;
+    const next = {
+      ...readPrefs(),
+      [activeList.id]: { ...(readPrefs()[activeList.id] || {}), alertsEnabled: on },
+    };
+    writePrefs(next);
+    setPrefs(next);
+    notify(
+      on
+        ? `Big-move alerts on for ${activeList.label}`
+        : `Big-move alerts off for ${activeList.label}`,
+    );
+  };
+
+  const afterSmartChange = useCallback(async () => {
+    await Promise.all([refresh?.(), alerts.reload()]);
+  }, [refresh, alerts]);
+
+  const onSmartSaved = async (out, created) => {
+    setSmartDialog({ open: false, rule: null });
+    await smart.reload();
+    await afterSmartChange();
+    if (out?.removed) {
+      notify('Smart rule turned off. The list and its items stay.');
       return;
     }
-    const tk = selected.ticker;
-    let cancelled = false;
-    fetch(`/api/watchlist/holders?ticker=${encodeURIComponent(tk)}&limit=10`, {
-      credentials: 'same-origin',
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => {
-        if (!cancelled) setHolderList(d.holders || []);
-      })
-      .catch(() => {
-        if (!cancelled) setHolderList([]);
+    const n = out?.added?.length || 0;
+    if (created && out?.watchlist?.id)
+      setUrl({
+        listId: out.watchlist.id,
+        symbol: null,
+        classId: classIdOfType(out.rule.assetClass),
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [selected?.type, selected?.id, selected?.ticker]);
-
-  const watchlistCourses = useMemo(() => getCoursesForWatchlistPreview(4), []);
-
-  if (!selected) {
-    return (
-      <div className="wl-page dashboard-page-inset ez-canvas">
-        <p style={{ color: '#8b949e', padding: '2rem 0', textAlign: 'center' }}>
-          No watchlist items to display.
-        </p>
-      </div>
+    notify(
+      n
+        ? `Saved. ${n} added now; new matches will keep coming.`
+        : 'Saved. Nothing matches yet; it checks every hour.',
     );
-  }
+  };
 
+  const canSend = isOrgUser && typeof hasPermission === 'function' && hasPermission('send_to_team');
+
+  /* ---------------- render ---------------- */
   return (
-    <div className="wl-page dashboard-page-inset ez-canvas">
+    <div className="wl-page wlm-page dashboard-page-inset ez-canvas">
       <EducationTip topic="diversification" />
-      {activeHolder && selected?.type === 'stock' && (
-        <HolderPopup
-          holder={activeHolder}
-          ticker={selected.ticker}
-          currentPrice={selectedMerged?.price ?? 0}
-          onClose={() => setActiveHolder(null)}
-        />
-      )}
 
-      {/* ═══ ROW 1 with ASSET CLASS SWITCHER on the left ═══ */}
-      <div className="wl-row-1">
-        <div className="wl-class-switcher" data-wl-class-switcher>
-          <button
-            type="button"
-            className="wl-class-btn"
-            aria-label={`Asset class: ${assetClass}`}
-            title={`Asset class: ${assetClass}`}
-            onClick={() => setAssetClassMenuOpen((v) => !v)}
-            aria-haspopup="menu"
-            aria-expanded={assetClassMenuOpen}
-          >
-            <i
-              className={`bi ${ASSET_CLASSES.find((c) => c.id === assetClass)?.icon || 'bi-grid'}`}
-              aria-hidden
-            />
-            <span className="wl-class-btn-label">{assetClass}</span>
-            <i
-              className={`bi ${assetClassMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'} wl-class-btn-caret`}
-              aria-hidden
-            />
-          </button>
-
-          {assetClassMenuOpen && (
-            <div className="wl-class-menu" role="menu" aria-label="Asset class">
-              {ASSET_CLASSES.map((cls) => (
-                <button
-                  key={cls.id}
-                  type="button"
-                  className={`wl-class-menu-item ${assetClass === cls.id ? 'is-active' : ''}`}
-                  role="menuitemradio"
-                  aria-checked={assetClass === cls.id}
-                  onClick={() => {
-                    setAssetClass(cls.id);
-                    setAssetClassMenuOpen(false);
-                    setManualSelected(null);
-                  }}
-                >
-                  <i className={`bi ${cls.icon}`} aria-hidden />
-                  <span className="wl-class-menu-item-label">{cls.label}</span>
-                  {assetClass === cls.id && (
-                    <i className="bi bi-check2 wl-class-menu-check" aria-hidden />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+      <header className="wlm-top">
+        <div className="wlm-top__titles">
+          <span className="wlm-eyebrow">Market monitor</span>
+          <h1 className="wlm-title">
+            {activeList?.label || 'Watchlist'}
+            {activeList?.smart ? (
+              <span className="wlm-badge">
+                <i className="bi bi-stars" aria-hidden="true" /> Smart
+              </span>
+            ) : null}
+          </h1>
         </div>
+        <ClassTabs value={classId} counts={counts} onChange={changeClass} />
+      </header>
 
-        <div className="wl-top-strip">
-          {stripItems.length === 0 ? (
-            <div className="wl-strip-empty">No {assetClass.toLowerCase()} available right now.</div>
-          ) : (
-            stripItems.map((raw) => {
-              const item = mergeFinnhubQuote(raw, quoteMap);
-              const active = selected?.id === item.id;
-              const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`wl-strip-card ${item.type} ${active ? 'active' : ''}`}
-                  onClick={() => selectAny(raw)}
-                >
-                  <div className="wl-strip-top">
-                    <TypeIcon item={item} />
-                    <div className="wl-strip-info">
-                      <span className="wl-strip-name">{item.name}</span>
-                      <span className="wl-strip-sub">
-                        {item.type === 'politician' && (
-                          <>
-                            <span className={`wl-dot ${item.party?.toLowerCase()}`} />
-                            {item.party} · Portfolio
-                          </>
-                        )}
-                        {item.type === 'institution' && <>{item.revenue || '13F'} · Portfolio</>}
-                        {item.type === 'index' && <>{item.ticker}</>}
-                        {(item.type === 'stock' ||
-                          item.type === 'bond' ||
-                          item.type === 'commodity' ||
-                          item.type === 'crypto') && <>{item.displayTicker || item.ticker}</>}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="wl-strip-bottom">
-                    <div>
-                      {isPF ? (
-                        <>
-                          <span className="wl-strip-price">{fmtPct(item.returnYtd)}</span>
-                          <span className="wl-strip-chg wl-strip-ytd-label">YTD</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="wl-strip-price">{fmtPrice(item.price)}</span>
-                          <span className={`wl-strip-chg ${up ? 'up' : 'dn'}`}>
-                            {fmtPct(item.pct)}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    {isPF ? (
-                      <SparkPortfolio
-                        seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)}
-                        returnYtd={item.returnYtd}
-                      />
-                    ) : (
-                      <Spark
-                        seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)}
-                        up={up}
-                      />
-                    )}
-                  </div>
-                  <div className="wl-strip-assets">
-                    {(item.topAssets || []).slice(0, 3).map((a) => (
-                      <span key={a} className="wl-strip-asset">
-                        {a}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
+      <div className="wl-strip-card wlm-strip-card">
+        {loading ? (
+          <div className="wlm-strip" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="wlm-skel wlm-skel--card" />
+            ))}
+          </div>
+        ) : items.length ? (
+          <QuoteStrip
+            items={items}
+            selectedKey={selectedKey}
+            sparks={sparks}
+            politicians={politicians}
+            onSelect={select}
+          />
+        ) : (
+          <EmptyClass cls={cls} onAdd={() => setAddOpen(true)} />
+        )}
       </div>
 
-      {/* ═══ MAIN: Chart + Sidebar ═══ */}
-      <div className="wl-main">
-        {/* ── LEFT: Chart ── */}
-        <div className="wl-chart-panel">
-          <div className="wl-bc">
-            <span className="wl-bc-home">HOME</span>
-            <i className="bi bi-chevron-right" />
-            <span className="wl-bc-cur">{selected.name}</span>
-            {(selected.type === 'politician' || selected.type === 'institution') && (
-              <span className={`wl-bc-tag ${selected.type}`}>
-                {selected.type === 'politician' ? 'PORTFOLIO' : '13F'}
-              </span>
-            )}
-            {selected.type === 'politician' && selected.slug && (
-              <Link href={`/inside-the-capitol/${selected.slug}`} className="wl-bc-link">
-                <i className="bi bi-box-arrow-up-right" /> View Profile
-              </Link>
-            )}
-          </div>
-
-          <div className={`wl-price-row ${selected.type === 'stock' ? 'wl-price-row--stock' : ''}`}>
-            <div className="wl-price-title-block">
-              {selected.type === 'stock' && (
-                <div className="wl-ticker-name-line">
-                  <span className="wl-ticker-strong">
-                    {selected.displayTicker || selected.ticker}
-                  </span>
-                  <span className="wl-ticker-sep">–</span>
-                  <span className="wl-co-full-name">{selected.name}</span>
-                </div>
-              )}
-              {(selected.type === 'politician' || selected.type === 'institution') && (
-                <>
-                  <div className="wl-big-price">{fmtPct(portfolioReturn)}</div>
-                  <div className="wl-price-meta">
-                    {selected.name} · {timeRange} return (modeled)
-                  </div>
-                </>
-              )}
-              {selected.type !== 'stock' &&
-                selected.type !== 'politician' &&
-                selected.type !== 'institution' && (
-                  <>
-                    <div className="wl-big-price">
-                      {fmtPrice(selectedMerged.price)}
-                      {selectedMerged.type === 'bond' && (
-                        <span
-                          className="wl-bond-etf-note"
-                          title="This is a bond ETF traded on a stock exchange. The price shown is the dollar price per share of the ETF, not the percentage-of-par price of the underlying bonds."
-                          aria-label="Bond ETF pricing note"
-                        >
-                          <i className="bi bi-info-circle" />
-                        </span>
-                      )}
-                    </div>
-                    <div className="wl-price-meta">
-                      {selected.name} · {selected.displayTicker || selected.ticker}
-                    </div>
-                  </>
-                )}
-            </div>
-            <div className="wl-price-right-cluster">
-              {selected.type !== 'stock' &&
-                selected.type !== 'politician' &&
-                selected.type !== 'institution' && (
-                  <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
-                    <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
-                    {fmtPct(selectedMerged.pct)}
-                  </div>
-                )}
-              {(selected.type === 'politician' || selected.type === 'institution') && (
-                <div className="wl-portfolio-hint">Based on disclosed positions</div>
-              )}
-              {selected.type === 'stock' && holderList.length > 0 && (
-                <div className="wl-holders-block">
-                  <div className="wl-holder-bubbles" aria-label="Investors holding this stock">
-                    {holderList.map((h) => (
-                      <button
-                        key={h.userId + h.initials}
-                        type="button"
-                        onClick={() => setActiveHolder(h)}
-                        className={`wl-holder-chip ${h.partner ? 'wl-holder-chip--partner' : ''}`}
-                        title={`${h.name}${h.partner ? ' · Partner' : ''}`}
-                        aria-label={`View ${h.name}'s position`}
-                      >
-                        {h.initials}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {(selected?.type === 'stock' || selected?.type === 'crypto') && selected?.ticker ? (
-            <div style={{ width: '100%' }}>
-              <StockPriceChart symbol={selected.ticker} livePrice={selectedMerged?.price ?? null} />
-            </div>
-          ) : (
-            <>
-              <DateSelector
-                ranges={TIME_RANGES}
-                value={timeRange}
-                onChange={setTimeRange}
-                size="xs"
-                style={{ marginBottom: '0.5rem' }}
+      <div className="wlm-grid">
+        <div className="wlm-main">
+          {selected ? (
+            <AssetDetail
+              item={selected}
+              listLabel={activeList?.label || 'Watchlist'}
+              politician={selected.type === 'politician' ? politicians[selected.ticker] : null}
+              inst={inst}
+              range={url.range}
+              onRange={(range) => setUrl({ range })}
+              onStar={star}
+              onRemove={remove}
+              onSendToTeam={canSend ? (it) => setSendTicker(it.ticker) : null}
+            >
+              <AlsoInWatchlist
+                items={alsoIn}
+                sparks={sparks}
+                onSelect={(it) =>
+                  setUrl({
+                    classId: classIdOfType(it.type),
+                    symbol: String(it.ticker).toUpperCase(),
+                  })
+                }
               />
-              <Chart item={selectedMerged} timeRange={timeRange} />
-            </>
+            </AssetDetail>
+          ) : (
+            <section className="wl-chart-panel wlm-detail wlm-detail--empty">
+              <i className="bi bi-binoculars" aria-hidden="true" />
+              <p className="wlm-strong">Pick something to monitor</p>
+              <p className="wlm-sm wlm-muted">
+                Add {cls.label.toLowerCase()} to {activeList?.label || 'a watchlist'}, or let a
+                smart watchlist find them for you.
+              </p>
+              <div className="wlm-row">
+                <button
+                  type="button"
+                  className="wlm-btn wlm-btn--accent"
+                  onClick={() => setAddOpen(true)}
+                >
+                  <i className="bi bi-plus-lg" aria-hidden="true" /> Add {cls.singular}
+                </button>
+                <button
+                  type="button"
+                  className="wlm-btn"
+                  onClick={() => setSmartDialog({ open: true, rule: null })}
+                >
+                  <i className="bi bi-stars" aria-hidden="true" /> New smart watchlist
+                </button>
+              </div>
+            </section>
           )}
 
-          <div className="wl-cmp">
-            <div className="wl-cmp-hdr">
-              <span />
-              <span>Name</span>
-              <span>Value</span>
-              <span>Change</span>
-              <span>Type</span>
-              <span />
-            </div>
-            {stripItems
-              .filter((i) => i.id !== selected.id)
-              .slice(0, 5)
-              .map((raw) => {
-                const item = mergeFinnhubQuote(raw, quoteMap);
-                const isPF = item.type === 'politician' || item.type === 'institution';
-                const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className="wl-cmp-row"
-                    onClick={() => selectAny(raw)}
-                  >
-                    <TypeIcon item={item} />
-                    <span className="wl-cmp-name">{item.name}</span>
-                    <span className="wl-cmp-val">
-                      {isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}
-                    </span>
-                    <span className={`wl-cmp-chg ${up ? 'up' : 'dn'}`}>
-                      {isPF ? 'YTD' : fmtPct(item.pct)}
-                    </span>
-                    <span className={`wl-cmp-type ${item.type}`}>
-                      {item.type === 'index'
-                        ? 'Index'
-                        : item.type === 'politician'
-                          ? 'Congress'
-                          : item.type === 'institution'
-                            ? '13F Fund'
-                            : item.type === 'bond'
-                              ? 'Bond'
-                              : item.type === 'commodity'
-                                ? 'Commodity'
-                                : item.type === 'crypto'
-                                  ? 'Crypto'
-                                  : item.type === 'stock'
-                                    ? 'Stock'
-                                    : '–'}
-                    </span>
-                    {isPF ? (
-                      <SparkPortfolio
-                        seed={item.id.charCodeAt(0) * 3}
-                        returnYtd={item.returnYtd}
-                        w={48}
-                        h={16}
-                      />
-                    ) : (
-                      <Spark seed={item.id.charCodeAt(0) * 3} up={up} w={48} h={16} />
-                    )}
-                  </button>
-                );
-              })}
+          <div className="wlm-duo">
+            <InsightsCard insights={insights} classId={classId} />
+            <RecentAlertsCard alerts={alerts} />
           </div>
         </div>
 
-        {/* ── RIGHT: Sidebar ── */}
-        <aside className="wl-side">
-          <div className="wl-side-hdr">
-            <div>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}
-              >
-                <h3>
-                  {isOrgUser
-                    ? orgRole === 'executive'
-                      ? 'Council Watchlist'
-                      : `${orgTeamName || 'Team'} Watchlist`
-                    : 'My Watchlist'}
-                </h3>
-                {!isOrgUser && (
-                  <button
-                    type="button"
-                    onClick={() => setNewWatchlistOpen(true)}
-                    className="wl-new-list-btn"
-                  >
-                    + New List
-                  </button>
-                )}
-              </div>
-              {!isOrgUser && (
-                <p
-                  style={{
-                    fontSize: 'var(--type-micro-size)',
-                    color: 'var(--muted-foreground, #6b7280)',
-                    margin: '1px 0 0',
-                    fontWeight: 500,
-                  }}
-                >
-                  Defaults: All Stocks · Politicians
-                </p>
-              )}
-            </div>
-            <span className="wl-side-cnt">{sideItems.length}</span>
-          </div>
-
-          {!isOrgUser ? (
-            <>
-              <div ref={wlDropdownRef} className="wl-wl-dropdown">
-                <button
-                  type="button"
-                  className="wl-wl-trigger"
-                  onClick={() => setWlDropdownOpen((o) => !o)}
-                  aria-expanded={wlDropdownOpen}
-                >
-                  <span>
-                    {(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0])
-                      ?.label ?? 'My Watchlist'}
-                  </span>
-                  <ChevronDown
-                    size={14}
-                    className={wlDropdownOpen ? 'wl-wl-chev-open' : ''}
-                    style={{ flexShrink: 0, opacity: 0.8 }}
-                  />
-                </button>
-                {wlDropdownOpen && (
-                  <div className="wl-wl-panel" role="listbox">
-                    {mockWatchlists.map((list) => (
-                      <button
-                        key={list.id}
-                        type="button"
-                        role="option"
-                        aria-selected={selectedWatchlistId === list.id}
-                        className={`wl-wl-opt ${selectedWatchlistId === list.id ? 'on' : ''}`}
-                        onClick={() => {
-                          setSelectedWatchlistId(list.id);
-                          setWlDropdownOpen(false);
-                          completeTask('watchlist_2');
-                        }}
-                      >
-                        <span>{list.label}</span>
-                        <span className="wl-wl-meta">
-                          {list.stocks.length} stocks
-                          {selectedWatchlistId === list.id ? (
-                            <Check size={12} style={{ marginLeft: 6 }} />
-                          ) : null}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <WatchlistSearch
-                query={search}
-                onQueryChange={setSearch}
-                mockWatchlists={mockWatchlists}
-                onAddStock={onAddStock}
-              />
-            </>
-          ) : (
-            <div className="wl-side-search">
-              <i className="bi bi-search" />
-              <input
-                type="text"
-                className="ds-search-input"
-                placeholder="Search stocks, portfolios, funds…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          )}
-
-          {isOrgUser && (
-            <div className="wl-side-tabs">
-              {['All', 'Stocks'].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`wl-st ${sideTab === t ? 'on' : ''}`}
-                  data-task-target={t === 'Stocks' ? 'watchlist-create-list' : undefined}
-                  onClick={() => {
-                    setSideTab(t);
-                    if (t !== 'All') completeTask('watchlist_2');
-                  }}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="wl-side-list">
-            {sideItems.map((raw) => {
-              const item = mergeFinnhubQuote(raw, quoteMap);
-              const act = selected.id === item.id;
-              const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
-              const sym = item.quoteSymbol || item.ticker;
-              return (
-                <div key={item.id} className="wl-si-wrap">
-                  <button
-                    type="button"
-                    className={`wl-si ${act ? 'act' : ''} ${item.type}`}
-                    style={{ flex: 1, minWidth: 0 }}
-                    onClick={() => selectAny(raw)}
-                  >
-                    <div className="wl-si-left">
-                      {item.type === 'stock' && <span className="wl-si-tk">{item.ticker}</span>}
-                      {item.type === 'politician' && (
-                        <span className={`wl-si-av ${item.party?.toLowerCase()}`}>
-                          {item.name
-                            .split(' ')
-                            .map((w) => w[0])
-                            .join('')}
-                        </span>
-                      )}
-                      {item.type === 'institution' && (
-                        <span className="wl-si-inst">
-                          <i className="bi bi-building" />
-                        </span>
-                      )}
-                      <div className="wl-si-info">
-                        <span className="wl-si-name">{item.name}</span>
-                        <span className="wl-si-sub">
-                          {item.type === 'stock' && item.ticker}
-                          {item.type === 'politician' && `${item.party} · Portfolio`}
-                          {item.type === 'institution' && `${item.revenue || '13F'} · Portfolio`}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="wl-si-right">
-                      <span className="wl-si-price">
-                        {isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}
-                      </span>
-                      <span className={`wl-si-chg ${up ? 'up' : 'dn'}`}>
-                        {isPF ? 'YTD' : fmtPct(item.pct)}
-                      </span>
-                    </div>
-                  </button>
-                  {isOrgUser && hasPermission('send_to_team') && item.type === 'stock' && sym && (
-                    <button
-                      type="button"
-                      className="ot-position-flag-btn"
-                      style={{ alignSelf: 'center', flexShrink: 0, padding: '6px 8px' }}
-                      title="Send to team"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSendWatchlistTicker(sym);
-                      }}
-                    >
-                      <i className="bi bi-send" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {!isOrgUser && (
-            <button
-              type="button"
-              className="wl-add"
-              data-task-target="watchlist-add-button"
-              onClick={() => {
-                completeTask('watchlist_1');
-              }}
-            >
-              <i className="bi bi-plus-lg" /> Add to Watchlist
-            </button>
-          )}
+        <aside className="wl-side wlm-side" aria-label="Watchlists">
+          <MyWatchlistsCard
+            lists={watchlists}
+            activeList={activeList}
+            onListChange={changeList}
+            items={items}
+            sparks={sparks}
+            selectedKey={selectedKey}
+            onSelect={select}
+            onStar={star}
+            onMove={move}
+            onRemove={remove}
+            onNewList={() => setNewListOpen(true)}
+            onAdd={() => setAddOpen(true)}
+            alertsOn={alertsOn}
+            onAlertsChange={setAlertsOn}
+            loading={loading}
+          />
+          <SmartWatchlistCard
+            smart={smart}
+            notify={notify}
+            onCreate={() => setSmartDialog({ open: true, rule: null })}
+            onEdit={(rule) => setSmartDialog({ open: true, rule })}
+            onOpenList={(listId) => {
+              const rule = smart.rules.find((r) => r.listId === listId);
+              setUrl({
+                listId,
+                symbol: null,
+                classId: rule ? classIdOfType(rule.assetClass) : classId,
+              });
+            }}
+            onChanged={afterSmartChange}
+          />
         </aside>
       </div>
 
-      {sendWatchlistTicker && (
+      <CoursesCard courses={courses} bookmarked={bookmarked} onToggle={toggleBookmark} />
+
+      <NewWatchlistDialog
+        open={newListOpen}
+        onOpenChange={setNewListOpen}
+        createList={createList}
+        addItem={addItem}
+        onCreated={(id) => {
+          setPrefs(readPrefs());
+          if (id) setUrl({ listId: id, symbol: null });
+        }}
+      />
+      <AddAssetDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        initialClass={classId}
+        listLabel={activeList?.label}
+        existing={existing}
+        onAdd={addAsset}
+      />
+      <SmartWatchlistDialog
+        open={smartDialog.open}
+        rule={smartDialog.rule}
+        smart={smart}
+        onClose={() => setSmartDialog({ open: false, rule: null })}
+        onSaved={onSmartSaved}
+      />
+      {sendTicker ? (
         <OrgSendToTeamModal
-          onClose={() => setSendWatchlistTicker(null)}
+          onClose={() => setSendTicker(null)}
           attachment={{
             kind: 'watchlist_ticker',
-            ref: JSON.stringify({ ticker: sendWatchlistTicker }),
-            label: `${sendWatchlistTicker} (watchlist)`,
+            ref: JSON.stringify({ ticker: sendTicker }),
+            label: `${sendTicker} (watchlist)`,
             meta: { page: 'watchlist' },
           }}
         />
-      )}
+      ) : null}
 
-      <CoursePreviewSection
-        title="Recommended Courses"
-        subtitle="Stock fundamentals, portfolio construction & core skills"
-        courses={watchlistCourses}
-        viewAllHref="/learning-center?track=stocks"
-      />
-
-      <NewWatchlistDialog
-        open={newWatchlistOpen}
-        onOpenChange={setNewWatchlistOpen}
-        createList={createList}
-        addItem={addWatchlistItem}
-        onCreated={(listId) => {
-          setSelectedWatchlistId(listId);
-          completeTask('watchlist_2');
-        }}
-      />
+      <div className="wlm-toast-region" role="status" aria-live="polite">
+        {toast ? (
+          <div key={toast.id} className="wlm-toast">
+            <span>{toast.text}</span>
+            {toast.action ? (
+              <button
+                type="button"
+                className="wlm-link"
+                onClick={() => {
+                  toast.action.run();
+                  hideToast();
+                }}
+              >
+                {toast.action.label}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="wlm-icon-btn wlm-icon-btn--sm"
+              aria-label="Dismiss"
+              onClick={hideToast}
+            >
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+/* useSearchParams needs a Suspense boundary in the App Router. */
+export default function WatchlistPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="wl-page wlm-page dashboard-page-inset ez-canvas" aria-busy="true" />
+      }
+    >
+      <WatchlistMonitor />
+    </Suspense>
   );
 }

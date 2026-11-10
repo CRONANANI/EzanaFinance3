@@ -81,9 +81,11 @@ export const GET = withApiGuard(
       const listIds = (lists || []).map((l) => l.id);
       let items = [];
       if (listIds.length > 0) {
+        /* '*' so the page keeps working whether or not the Nov 2026
+           columns (starred_at, added_by, added_reason) are present. */
         const { data: itemRows, error: itemsErr } = await supabase
           .from('user_watchlist_items')
-          .select('id, list_id, type, ticker, name, sector, metadata, created_at')
+          .select('*')
           .eq('user_id', user.id)
           .in('list_id', listIds)
           .order('created_at', { ascending: true });
@@ -105,6 +107,10 @@ export const GET = withApiGuard(
           name: item.name || item.ticker,
           sector: item.sector || '',
           metadata: item.metadata || {},
+          createdAt: item.created_at || null,
+          starredAt: item.starred_at || null,
+          addedBy: item.added_by || 'user',
+          addedReason: item.added_reason || null,
           price: 0,
           change: 0,
           changePct: 0,
@@ -113,10 +119,35 @@ export const GET = withApiGuard(
         });
       }
 
+      /* Smart watchlist rules (Nov 2026). A missing table just means none. */
+      const smartByList = new Map();
+      if (listIds.length > 0) {
+        const { data: rules, error: rulesErr } = await supabase
+          .from('smart_watchlist_rules')
+          .select(
+            'id, list_id, asset_class, match, conditions, enabled, last_run_at, last_run_added',
+          )
+          .eq('user_id', user.id);
+        if (!rulesErr) {
+          for (const r of rules || []) {
+            smartByList.set(r.list_id, {
+              id: r.id,
+              assetClass: r.asset_class,
+              match: r.match,
+              conditions: r.conditions,
+              enabled: r.enabled,
+              lastRunAt: r.last_run_at,
+              lastRunAdded: r.last_run_added,
+            });
+          }
+        }
+      }
+
       const result = (lists || []).map((l) => ({
         id: l.id,
         label: l.label,
         stocks: itemsByList.get(l.id) || [],
+        smart: smartByList.get(l.id) || null,
       }));
 
       return NextResponse.json({ watchlists: result });

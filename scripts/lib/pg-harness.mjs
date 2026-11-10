@@ -196,6 +196,25 @@ create table public.sonar_queries (
   grounded boolean not null, created_at timestamptz not null default now(),
   is_guest boolean not null default false, ip_hash text
 );
+create table public.user_watchlists (
+  id uuid primary key default gen_random_uuid(), user_id uuid not null, label text not null,
+  sort_order integer not null default 0, created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table public.user_watchlist_items (
+  id uuid primary key default gen_random_uuid(),
+  list_id uuid not null references public.user_watchlists(id) on delete cascade,
+  user_id uuid not null,
+  type text not null check (type in ('stock', 'crypto', 'commodity', 'politician')),
+  ticker text not null, name text, sector text, metadata jsonb default '{}'::jsonb,
+  created_at timestamptz not null default now(), unique (list_id, type, ticker)
+);
+create table public.user_notifications (
+  id uuid primary key default gen_random_uuid(), user_id uuid not null, title text not null,
+  content text, type text, read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.user_notifications enable row level security;
 `;
 
 export async function startPg({ migrations = [], extraSchema = '' } = {}) {

@@ -130,6 +130,8 @@ export default function StockPriceChart({
   hideSymbol = false,
   statsVariant = 'cards',
   endTag = false,
+  ranges = RANGES,
+  onRangeChange,
 }) {
   const resolvedInitialRange = defaultRange || initialRange;
   const [range, setRange] = useState(resolvedInitialRange);
@@ -385,7 +387,15 @@ export default function StockPriceChart({
         </div>
 
         {!hideRangeButtons && (
-          <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />
+          <DateSelector
+            ranges={ranges}
+            value={range}
+            onChange={(r) => {
+              setRange(r);
+              onRangeChange?.(r);
+            }}
+            size="xs"
+          />
         )}
       </div>
 

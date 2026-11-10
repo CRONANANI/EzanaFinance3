@@ -323,3 +323,77 @@ test('latest_messages: one newest row per conversation', (t) => {
     'new,only',
   );
 });
+
+test('smart watchlists: RLS keeps rules, events and notifications to their owner', (t) => {
+  if (skip(t)) return;
+  const L1 = '55555555-5555-4555-8555-555555555551';
+  const L2 = '55555555-5555-4555-8555-555555555552';
+  pg.sql(
+    `insert into user_watchlists (id, user_id, label) values ('${L1}', '${U1}', 'Mine'), ('${L2}', '${U2}', 'Theirs')`,
+  );
+  const as = (uid, text) =>
+    `begin; set local role authenticated; set local request.jwt.claims = '${JSON.stringify({ sub: uid, role: 'authenticated' })}'; ${text}; commit;`;
+  const cond = `'[{"type":"price","min":10,"max":null}]'::jsonb`;
+  pg.sql(
+    as(
+      U1,
+      `insert into smart_watchlist_rules (user_id, list_id, asset_class, conditions) values ('${U1}', '${L1}', 'stock', ${cond})`,
+    ),
+  );
+  assert.throws(
+    () =>
+      pg.sql(
+        as(
+          U1,
+          `insert into smart_watchlist_rules (user_id, list_id, asset_class, conditions) values ('${U1}', '${L2}', 'stock', ${cond})`,
+        ),
+      ),
+    /row-level security/,
+    'a rule on someone else’s list is refused',
+  );
+  assert.throws(
+    () =>
+      pg.sql(
+        as(
+          U1,
+          `insert into smart_watchlist_events (user_id, list_id, item_type, ticker) values ('${U1}', '${L1}', 'stock', 'AAPL')`,
+        ),
+      ),
+    /row-level security|permission/,
+    'events are written by the server only',
+  );
+  assert.equal(
+    pg
+      .sql(as(U2, `select count(*) from smart_watchlist_rules`))
+      .split('\n')
+      .find((l) => /^\d+$/.test(l)),
+    '0',
+  );
+  pg.sql(
+    as(
+      U1,
+      `insert into user_notifications (user_id, title, type) values ('${U1}', 'AAPL up 6%', 'watchlist')`,
+    ),
+  );
+  assert.throws(
+    () =>
+      pg.sql(
+        as(
+          U1,
+          `insert into user_notifications (user_id, title, type) values ('${U1}', 'x', 'system')`,
+        ),
+      ),
+    /row-level security/,
+    'only watchlist notifications may be self-inserted',
+  );
+  assert.throws(
+    () =>
+      pg.sql(
+        as(
+          U1,
+          `insert into user_watchlist_items (list_id, user_id, type, ticker, added_by) values ('${L1}', '${U1}', 'stock', 'X', 'robot')`,
+        ),
+      ),
+    /added_by_check/,
+  );
+});

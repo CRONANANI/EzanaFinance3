@@ -17,6 +17,8 @@ import { supabase } from '@/lib/supabase-browser';
  *   renameList(listId, label): renames a list
  *   deleteList(listId): deletes a list and all its items
  *   refresh(): force a full re-fetch
+ *   toggleStar(listId, { type, ticker }, starred): star or unstar an item
+ *   authedFetch(url, options): fetch with the session token (smart watchlist API)
  */
 export function useWatchlists() {
   const { user, isAuthenticated } = useAuth();
@@ -279,6 +281,40 @@ export function useWatchlists() {
     [authedFetch, watchlists],
   );
 
+  /** Star or unstar an item (Nov 2026). Optimistic; rolls back on failure. */
+  const toggleStar = useCallback(
+    async (listId, { type, ticker }, starred) => {
+      if (!listId || !ticker || !type) return { ok: false, reason: 'invalid' };
+      const prevState = watchlists;
+      const stamp = starred ? new Date().toISOString() : null;
+      setWatchlists((prev) =>
+        prev.map((l) =>
+          l.id !== listId
+            ? l
+            : {
+                ...l,
+                stocks: (l.stocks || []).map((s) =>
+                  s.ticker === ticker && s.type === type ? { ...s, starredAt: stamp } : s,
+                ),
+              },
+        ),
+      );
+      try {
+        const res = await authedFetch(`/api/watchlists/${listId}/items`, {
+          method: 'PATCH',
+          body: JSON.stringify({ type, ticker, starred }),
+        });
+        if (!res.ok) throw await readServerError(res);
+        return { ok: true };
+      } catch (e) {
+        console.error('[useWatchlists] toggleStar error:', e?.message);
+        setWatchlists(prevState);
+        return { ok: false, reason: e?.message };
+      }
+    },
+    [authedFetch, watchlists],
+  );
+
   return {
     watchlists,
     loading,
@@ -289,5 +325,8 @@ export function useWatchlists() {
     renameList,
     deleteList,
     refresh,
+    toggleStar,
+    /* Authenticated fetch for sibling endpoints (smart watchlists). */
+    authedFetch,
   };
 }

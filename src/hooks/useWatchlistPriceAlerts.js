@@ -90,6 +90,8 @@ function groupSymbolsByWatchlist(watchlists, prefs) {
     if (!enabled) continue;
     const label = wl.label || 'Watchlist';
     for (const s of wl.stocks || []) {
+      // Politicians are followed, not priced (their ticker is a bioguide id).
+      if (s.type === 'politician') continue;
       const sym = (s.ticker || s.symbol || '').toUpperCase();
       if (!sym) continue;
       if (!out.has(sym)) out.set(sym, []);

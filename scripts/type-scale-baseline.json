@@ -47,9 +47,6 @@
   "src/app/(dashboard)/trading/trading.css": {
     "sub-floor": 1
   },
-  "src/app/(dashboard)/watchlist/watchlist.css": {
-    "sub-floor": 1
-  },
   "src/app/account-locked/account-locked.css": {
     "caps-tracking": 1
   },
