@@ -1,0 +1,1016 @@
+/* ══════════════════════════════════════════════════════════
+   LEARNING CENTER HUB (Nov 2026 redesign)
+   Tokens only, flat home canvas: cards are separated by a
+   hairline and spacing, not a surface. Tier colours come from
+   --tier-*; text on tier tints stays --text-primary so Silver
+   and Platinum keep contrast in both themes. Overlays (tooltip,
+   toast) keep a surface.
+   ══════════════════════════════════════════════════════════ */
+
+.lh-page {
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-primary);
+}
+
+/* ── Atoms ──────────────────────────────────────────────── */
+.lh-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.lh-strong {
+  font-weight: var(--weight-strong);
+  color: var(--text-primary);
+}
+.lh-muted {
+  color: var(--text-muted);
+}
+.lh-accent {
+  color: var(--emerald-text);
+}
+.lh-gold {
+  color: var(--gold);
+}
+.lh-xs {
+  font-size: var(--type-caption-size);
+}
+.lh-sm {
+  font-size: var(--type-value-sm-size);
+}
+.lh-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lh-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.lh-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.lh-eyebrow--accent {
+  color: var(--emerald-text);
+}
+.lh-meta {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.lh-empty {
+  margin: 0;
+  padding: 0.75rem 0;
+  font-size: var(--type-value-sm-size);
+  color: var(--text-muted);
+}
+.lh-foot {
+  margin: auto 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ez-rule-subtle);
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.lh-tone.is-up {
+  color: var(--positive);
+}
+.lh-tone.is-down {
+  color: var(--negative);
+}
+
+/* Buttons and links */
+.lh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ez-rule);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.lh-btn:hover {
+  background: var(--ez-hover);
+}
+.lh-btn--primary {
+  border-color: var(--btn-primary-bg);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+.lh-btn--primary:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.lh-btn--sm {
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--type-caption-size);
+}
+.lh-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.lh-icon-btn:hover {
+  background: var(--ez-hover);
+  color: var(--text-primary);
+}
+.lh-icon-btn[aria-pressed='true'] {
+  color: var(--emerald-text);
+}
+.lh-icon-btn--solid {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+.lh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--emerald-text);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.lh-link:hover,
+.lh-link-strong:hover {
+  text-decoration: underline;
+}
+.lh-link-strong {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.lh-btn:focus-visible,
+.lh-icon-btn:focus-visible,
+.lh-link:focus-visible,
+.lh-link-strong:focus-visible,
+.lh-seg__btn:focus-visible,
+.lh-track:focus-visible,
+.lh-level:focus-visible,
+.lh-course__link:focus-visible,
+.lh-saved__link:focus-visible,
+.lh-task input:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Chips, bars, tier gems */
+.lh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+.lh-chip.is-up {
+  background: var(--positive-bg);
+  color: var(--positive);
+}
+.lh-chip.is-down {
+  background: var(--negative-bg);
+  color: var(--negative);
+}
+.lh-chip.is-flat {
+  background: var(--ez-hover);
+  color: var(--text-muted);
+}
+.lh-bar {
+  display: block;
+  flex: 1;
+  min-width: 2rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: var(--ez-rule);
+  overflow: hidden;
+}
+.lh-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--emerald);
+}
+.lh-tier--bronze {
+  --lh-tier: var(--tier-bronze);
+}
+.lh-tier--silver {
+  --lh-tier: var(--tier-silver);
+}
+.lh-tier--gold {
+  --lh-tier: var(--tier-gold);
+}
+.lh-tier--platinum {
+  --lh-tier: var(--tier-platinum);
+}
+.lh-tier--diamond {
+  --lh-tier: var(--tier-diamond);
+}
+.lh-tier__gem {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  transform: rotate(45deg);
+  border-radius: var(--radius-sm);
+  background: var(--lh-tier);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 25%, transparent);
+}
+.lh-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--lh-tier) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lh-tier) 18%, transparent);
+  color: var(--text-primary);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+.lh-tier--md {
+  padding: 0.125rem 0.625rem;
+  font-size: var(--type-caption-size);
+}
+.lh-tier--lg {
+  padding: 0.375rem 0.875rem;
+  font-size: var(--type-value-sm-size);
+}
+
+/* Skeletons */
+.lh-skel {
+  display: block;
+  border-radius: var(--radius-md);
+  background: var(--ez-rule);
+  animation: lh-pulse 1.2s ease-in-out infinite;
+}
+.lh-skel--hero {
+  flex: 1 1 24rem;
+  height: 13rem;
+}
+.lh-skel--card {
+  flex: 1 1 16rem;
+  height: 15rem;
+}
+.lh-skel--chart {
+  height: 10rem;
+}
+.lh-skel--rows {
+  height: 8rem;
+}
+@keyframes lh-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.lh-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.lh-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+.lh-slot {
+  display: flex;
+  min-width: 0;
+}
+.lh-slot > .lh-card {
+  flex: 1;
+}
+.lh-o-hero {
+  flex: 1 1 24rem;
+}
+.lh-o-elo {
+  flex: 1.4 1 30rem;
+}
+.lh-o-history {
+  flex: 2 1 26rem;
+}
+.lh-o-tiers {
+  flex: 1 1 15rem;
+}
+.lh-o-quest {
+  flex: 1.2 1 19rem;
+}
+.lh-o-tracks {
+  flex: 1 1 16rem;
+  align-self: flex-start;
+}
+.lh-o-path {
+  flex: 2.2 1 30rem;
+}
+.lh-side {
+  flex: 1 1 17rem;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.lh-row--3 {
+  align-items: flex-start;
+}
+
+/* A card on the flat canvas: a hairline on top and a heading. */
+.lh-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ez-rule);
+}
+.lh-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.lh-card__title {
+  margin: 0;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  line-height: var(--type-card-title-leading);
+}
+
+/* ── Hero ───────────────────────────────────────────────── */
+.lh-hero {
+  justify-content: center;
+}
+.lh-hero__title {
+  margin: 0;
+  font-size: var(--type-display-size);
+  font-weight: var(--type-display-weight);
+  letter-spacing: var(--type-display-tracking);
+  line-height: var(--type-display-leading);
+}
+.lh-hero__sub {
+  margin: 0;
+  max-width: 34rem;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  color: var(--text-secondary);
+}
+.lh-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+/* ── LearningELO ────────────────────────────────────────── */
+.lh-elo__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.lh-elo__figure {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.375rem;
+}
+.lh-elo__rating {
+  font-size: var(--type-value-xl-size);
+  font-weight: var(--weight-strong);
+  line-height: 1;
+}
+.lh-elo__meta,
+.lh-elo__track {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.lh-elo__meta {
+  margin-top: 0.5rem;
+}
+.lh-elo__track {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+.lh-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.lh-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 0.875rem;
+  border-left: 1px solid var(--ez-rule-subtle);
+}
+.lh-stat:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.lh-stat dt {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.lh-stat dd {
+  margin: 0;
+}
+.lh-stat__v {
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--weight-strong);
+}
+.lh-stat__sub {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+/* ── Rating history ─────────────────────────────────────── */
+.lh-seg {
+  display: inline-flex;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  border-radius: var(--radius-md);
+  background: var(--ez-hover);
+}
+.lh-seg__btn {
+  min-width: 2.5rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  cursor: pointer;
+}
+.lh-seg__btn.is-on {
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-weight: var(--weight-strong);
+}
+.lh-chart {
+  min-width: 0;
+}
+.lh-tip {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-md);
+  font-size: var(--type-caption-size);
+  max-width: 16rem;
+}
+.lh-tip__date {
+  color: var(--text-muted);
+}
+.lh-tip__v {
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--weight-strong);
+}
+.lh-tip__why {
+  color: var(--text-secondary);
+}
+
+/* ── Tiers ──────────────────────────────────────────────── */
+.lh-tiers__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-tiers__row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: var(--type-value-sm-size);
+}
+.lh-tiers__row.is-on {
+  background: color-mix(in srgb, var(--lh-tier) 16%, transparent);
+  font-weight: var(--weight-strong);
+}
+.lh-tiers__name {
+  flex: 1;
+}
+.lh-tiers__range {
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.lh-you {
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-size: var(--type-micro-size);
+  font-weight: var(--weight-strong);
+}
+
+/* ── Daily quest ────────────────────────────────────────── */
+.lh-quest__lesson {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-tinted);
+}
+.lh-quest__play {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+.lh-quest__lesson-txt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-size: var(--type-value-sm-size);
+}
+.lh-quest__tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-task {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: var(--type-value-sm-size);
+  cursor: default;
+}
+.lh-task input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--emerald);
+  cursor: default;
+}
+.lh-task__label {
+  flex: 1;
+  min-width: 0;
+}
+.lh-task.is-done .lh-task__label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+.lh-task__reward {
+  font-size: var(--type-caption-size);
+}
+.lh-quest__done {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+}
+.lh-quest__done > .bi {
+  color: var(--emerald-text);
+  font-size: var(--type-card-title-size);
+}
+.lh-quest__done p,
+.lh-quest__note {
+  margin: 0;
+}
+
+/* ── Tracks ─────────────────────────────────────────────── */
+.lh-tracks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-track {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lh-track:hover {
+  background: var(--ez-hover);
+}
+.lh-track.is-on {
+  background: var(--emerald-bg);
+  box-shadow: inset 3px 0 0 var(--emerald);
+}
+.lh-track__icon,
+.lh-reco__cover {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--lh-accent) 16%, transparent);
+  color: var(--lh-accent);
+}
+.lh-track__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.lh-track__name {
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--weight-strong);
+}
+.lh-track__line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Active path ────────────────────────────────────────── */
+.lh-path__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.lh-path__head p {
+  margin: 0.25rem 0 0;
+}
+.lh-path__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+  min-width: 10rem;
+}
+.lh-path__total .lh-bar {
+  width: 100%;
+  flex: none;
+}
+.lh-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.lh-level {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--ez-rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+.lh-level:hover {
+  background: var(--ez-hover);
+}
+.lh-level.is-ahead {
+  color: var(--text-muted);
+}
+.lh-level.is-on {
+  border-color: var(--btn-primary-bg);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+.lh-path__start {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-tinted);
+}
+.lh-path__start p {
+  margin: 0;
+}
+.lh-courses {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-course {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.lh-course__link {
+  display: grid;
+  grid-template-columns: auto 2.25rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.375rem 0.5rem 0.375rem 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.lh-course__link:hover {
+  background: var(--ez-hover);
+}
+.lh-course__code {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.lh-course__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-value-sm-size);
+}
+.lh-course.is-next .lh-course__title {
+  font-weight: var(--weight-strong);
+}
+.lh-course.is-completed .lh-course__title {
+  color: var(--text-secondary);
+}
+.lh-course__status {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 5.5rem;
+}
+.lh-mark {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--ez-rule);
+  border-radius: 50%;
+  font-size: var(--type-caption-size);
+}
+.lh-mark.is-done {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: var(--color-on-primary);
+}
+.lh-mark.is-next {
+  border-color: var(--emerald);
+  color: var(--emerald-text);
+}
+
+/* ── Progress + recommended ─────────────────────────────── */
+.lh-grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+.lh-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.lh-cell:nth-child(odd) {
+  padding-left: 0;
+  border-right: 1px solid var(--ez-rule-subtle);
+}
+.lh-cell:nth-child(n + 3) {
+  border-bottom: 0;
+}
+.lh-cell dt {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.lh-cell dd {
+  margin: 0;
+}
+.lh-cell__v {
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
+}
+.lh-reco__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-reco__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.lh-reco__cover {
+  width: 3rem;
+  height: 3rem;
+}
+.lh-reco__txt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  font-size: var(--type-value-sm-size);
+}
+
+/* ── Saved dialog, error, toast ─────────────────────────── */
+.lh-saved {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lh-saved__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.lh-saved__link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  padding: 0.625rem 0;
+  color: inherit;
+  text-decoration: none;
+  font-size: var(--type-value-sm-size);
+}
+.lh-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+.lh-error p {
+  margin: 0;
+}
+.lh-beginner {
+  min-width: 0;
+}
+.lh-toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 60;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 2rem);
+}
+.lh-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--type-value-sm-size);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .lh-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lh-stat:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .lh-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--ez-rule-subtle);
+  }
+  .lh-course__link {
+    grid-template-columns: auto 2rem minmax(0, 1fr) auto;
+  }
+  .lh-course__mins {
+    display: none;
+  }
+}
+
+/* Phones: one column in priority order (hero, ELO, quest, path, tracks,
+   progress, history, tiers, recommended). */
+@media (max-width: 640px) {
+  .lh-row,
+  .lh-side {
+    display: contents;
+  }
+  .lh-slot,
+  .lh-side > div {
+    display: flex;
+    flex: none;
+  }
+  .lh-side > div > .lh-card {
+    flex: 1;
+  }
+  .lh-o-hero {
+    order: 1;
+  }
+  .lh-o-elo {
+    order: 2;
+  }
+  .lh-o-quest {
+    order: 3;
+  }
+  .lh-o-path {
+    order: 4;
+  }
+  .lh-o-tracks {
+    order: 5;
+  }
+  .lh-o-progress {
+    order: 6;
+  }
+  .lh-o-history {
+    order: 7;
+  }
+  .lh-o-tiers {
+    order: 8;
+  }
+  .lh-o-reco {
+    order: 9;
+  }
+  .lh-beginner {
+    order: 3;
+  }
+  .lh-hero__title {
+    font-size: var(--type-page-title-size);
+  }
+  .lh-elo__top {
+    flex-direction: column-reverse;
+  }
+  .lh-path__total {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .lh-course__status {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-skel,
+  .lh-btn {
+    animation: none;
+    transition: none;
+  }
+}

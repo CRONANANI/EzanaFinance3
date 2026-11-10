@@ -215,6 +215,23 @@ create table public.user_notifications (
   created_at timestamptz not null default now()
 );
 alter table public.user_notifications enable row level security;
+create table public.user_daily_quests (
+  user_id uuid not null, quest_date date not null, primary_course_id text,
+  bonus_quests jsonb not null default '[]'::jsonb, created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(), primary key (user_id, quest_date)
+);
+alter table public.user_daily_quests enable row level security;
+create policy "users manage own quests" on public.user_daily_quests for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create table public.user_learning_streaks (
+  user_id uuid primary key, current_streak integer not null default 0,
+  longest_streak integer not null default 0, last_activity_date date,
+  days_this_week jsonb not null default '[false,false,false,false,false,false,false]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.user_learning_streaks enable row level security;
+create policy "users manage own streak" on public.user_learning_streaks for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
 `;
 
 export async function startPg({ migrations = [], extraSchema = '' } = {}) {

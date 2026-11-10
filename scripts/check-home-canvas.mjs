@@ -43,6 +43,14 @@ const PAGES = [
     shells: ['.mock-card', '.mock-trade-panel'],
   },
   {
+    name: 'Learning Center',
+    page: 'src/app/(dashboard)/learning-center/page.js',
+    root: 'src/components/learning/hub/LearningHub.jsx',
+    // Nov 2026 redesign: the hub's cards lay themselves flat (hairline, no
+    // surface) in learning-hub.css, so there are no shared shells here.
+    shells: [],
+  },
+  {
     name: 'Company & Portfolio Research',
     page: 'src/app/(dashboard)/company-research/page.js',
     root: 'src/app/(dashboard)/company-research/page.js',

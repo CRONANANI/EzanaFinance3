@@ -397,3 +397,39 @@ test('smart watchlists: RLS keeps rules, events and notifications to their owner
     /added_by_check/,
   );
 });
+
+test('learning hub: quests and streaks are owner read-only (server writes them)', (t) => {
+  if (skip(t)) return;
+  pg.sql(`insert into user_daily_quests (user_id, quest_date) values ('${U1}', '2026-11-09');
+          insert into user_learning_streaks (user_id, current_streak) values ('${U1}', 3);`);
+  const as = (uid, text) =>
+    `begin; set local role authenticated; set local request.jwt.claims = '${JSON.stringify({ sub: uid, role: 'authenticated' })}'; ${text}; commit;`;
+  const one = (out) => out.split('\n').find((l) => /^\d+$/.test(l));
+  assert.equal(one(pg.sql(as(U1, 'select count(*) from user_daily_quests'))), '1');
+  assert.equal(one(pg.sql(as(U2, 'select count(*) from user_daily_quests'))), '0');
+  assert.equal(one(pg.sql(as(U1, 'select current_streak from user_learning_streaks'))), '3');
+  pg.sql(as(U1, `update user_learning_streaks set current_streak = 999 where user_id = '${U1}'`));
+  pg.sql(
+    as(U1, `update user_daily_quests set bonus_quests = '[{"done":true}]' where user_id = '${U1}'`),
+  );
+  assert.equal(
+    pg.sql(`select current_streak from user_learning_streaks where user_id = '${U1}'`),
+    '3',
+    'a user cannot inflate a streak',
+  );
+  assert.equal(
+    pg.sql(`select bonus_quests::text from user_daily_quests where user_id = '${U1}'`),
+    '[]',
+    'a user cannot tick a quest',
+  );
+  assert.throws(
+    () =>
+      pg.sql(
+        as(
+          U1,
+          `insert into user_learning_streaks (user_id, current_streak) values ('${U1}', 50) on conflict (user_id) do nothing`,
+        ),
+      ),
+    /row-level security/,
+  );
+});
