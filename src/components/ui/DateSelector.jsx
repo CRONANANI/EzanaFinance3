@@ -93,6 +93,7 @@ function SingleDateField({
  * Props
  * - mode:               'range' (default) | 'single'      — pill/range picker vs a single-date field
  * - ranges:             string[]                          — preset labels (range mode)
+ * - disabledRanges:     string[]                          — presets shown but not selectable
  * - value:              string                            — selected label (range) or ISO date (single)
  * - onChange:           (range: string) => void  |  (isoDate: string) => void
  * - size:               'xs' | 'sm' | 'md' | 'lg'         — accepted but ignored in range mode (one pill size)
@@ -117,6 +118,8 @@ export function DateSelector({
   numberOfMonths = 1,
   showMonthYearDropdowns = false,
   disabled = false,
+  disabledRanges = [],
+  disabledTitle = 'Longer than this history',
   placeholder,
   className,
   style,
@@ -176,17 +179,22 @@ export function DateSelector({
     >
       {ranges.map((r) => {
         const on = value === r;
+        /* Nov 2026: ranges longer than the data (e.g. 10Y on a new account). */
+        const off = disabledRanges.includes(r);
         return (
           <button
             key={r}
             type="button"
-            onClick={() => onChange(r)}
+            onClick={() => !off && onChange(r)}
             aria-pressed={on}
+            disabled={off}
+            title={off ? disabledTitle : undefined}
             style={{
               ...pill,
               border: '1px solid transparent',
               background: on ? accent : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
               color: on ? '#fff' : inactiveColor,
+              ...(off ? { opacity: 0.4, cursor: 'not-allowed' } : null),
             }}
           >
             {r}

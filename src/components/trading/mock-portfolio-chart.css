@@ -15,17 +15,72 @@
 
 .mpc-header-left {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+/* Nov 2026: headline under the header (compact value, signed change, caption). */
+.mpc-headline {
+  display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 2px;
+}
+.mpc-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.mpc-stat-change.is-flat {
+  color: var(--text-secondary);
+}
+.mpc-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.mpc-tooltip-row .mpc-tooltip-value {
+  font-size: 12px;
+}
+.mpc-tooltip-value.is-up {
+  color: color-mix(in srgb, var(--positive) 78%, var(--text-primary));
+}
+.mpc-tooltip-value.is-down {
+  color: color-mix(in srgb, var(--negative) 80%, var(--text-primary));
+}
+.mpc-skel {
+  height: 240px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mpc-skel {
+    animation: mpc-pulse 1.4s ease-in-out infinite;
+  }
+}
+@keyframes mpc-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+.mpc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .mpc-title {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 18px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  color: var(--text-muted);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
 .mpc-stats {
@@ -36,7 +91,7 @@
 
 .mpc-stat-value {
   font-family: var(--font-mono);
-  font-size: var(--type-value-lg-size);
+  font-size: 30px;
   font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -86,10 +141,18 @@
 }
 
 .mpc-chart-wrap {
+  position: relative;
   width: 100%;
   height: 240px;
   flex: 1;
   min-height: 0;
+}
+/* The wrap's height comes from flex, which a child's height: 100% cannot
+   resolve against (it computed to 0, so the chart never drew). Pinning the
+   chart's responsive container to the wrap gives it a definite height. */
+.mpc-chart-wrap > .recharts-responsive-container {
+  position: absolute;
+  inset: 0;
 }
 
 .mpc-axis-tick {
@@ -164,9 +227,6 @@ body.light-mode .mpc-axis-tick {
 }
 
 /* Light mode */
-body.light-mode .mpc-title {
-  color: #64748b;
-}
 body.light-mode .mpc-stat-value {
   color: #0f172a;
 }

@@ -12,6 +12,15 @@ import {
 } from 'recharts';
 import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
+import {
+  disabledRanges,
+  fmtCompactUSD,
+  fmtSignedPct,
+  fmtSignedUSD,
+  fmtUSD,
+  rangeCaption,
+  signOf,
+} from '@/lib/trading/mock-ticket';
 import './mock-portfolio-chart.css';
 
 const RANGES = ['1M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
@@ -31,9 +40,11 @@ function formatDateLabel(iso, range) {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-function CustomTooltip({ active, payload }) {
+/* Date, portfolio value and (with a starting balance) all-time P&L. */
+function CustomTooltip({ active, payload, startingCash }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
+  const pl = Number.isFinite(startingCash) && startingCash > 0 ? p.value - startingCash : null;
   return (
     <div className="mpc-tooltip">
       <div className="mpc-tooltip-date">
@@ -43,13 +54,32 @@ function CustomTooltip({ active, payload }) {
           year: 'numeric',
         })}
       </div>
-      <div className="mpc-tooltip-value">{formatUSD(p.value)}</div>
+      <div className="mpc-tooltip-row">
+        <span>Portfolio value</span>
+        <span className="mpc-tooltip-value">{fmtUSD(p.value)}</span>
+      </div>
+      {pl != null && (
+        <div className="mpc-tooltip-row">
+          <span>All-time P&amp;L</span>
+          <span className={`mpc-tooltip-value is-${signOf(pl)}`}>
+            {fmtSignedUSD(pl)} ({fmtSignedPct((pl / startingCash) * 100)})
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function MockPortfolioChart() {
+/**
+ * @param {object} props
+ * @param {number} [props.startingCash] enables all-time P&L in the tooltip
+ * @param {import('react').ReactNode} [props.headerExtra] rendered beside the title
+ *   (the Mock Trading page puts its Portfolio / Selected asset switch here)
+ */
+export default function MockPortfolioChart({ startingCash = null, headerExtra = null } = {}) {
   const [range, setRange] = useState('ALL'); // 'ALL' = since inception (default)
+  /* First trade date, kept across range changes, so longer ranges can be disabled. */
+  const [startedAt, setStartedAt] = useState(null);
   const [customRange, setCustomRange] = useState(null);
   const [data, setData] = useState({ points: [], source: 'loading' });
   const [loading, setLoading] = useState(true);
@@ -101,6 +131,7 @@ export default function MockPortfolioChart() {
             note: d.note || null,
             startedAt: d.startedAt || null,
           });
+          if (d.startedAt) setStartedAt(d.startedAt);
         }
         setLoading(false);
       } catch (e) {
@@ -144,16 +175,8 @@ export default function MockPortfolioChart() {
     <div className="mpc-root">
       <div className="mpc-header">
         <div className="mpc-header-left">
-          <h3 className="mpc-title">Portfolio Performance</h3>
-          {stats && (
-            <div className="mpc-stats">
-              <span className="mpc-stat-value">{formatUSD(stats.end)}</span>
-              <span className={`mpc-stat-change ${stats.isPositive ? 'is-up' : 'is-down'}`}>
-                {stats.isPositive ? '+' : ''}
-                {formatUSD(stats.change)} ({stats.changePct.toFixed(2)}%)
-              </span>
-            </div>
-          )}
+          <h2 className="mpc-title">Portfolio performance</h2>
+          {headerExtra}
         </div>
         <DateSelector
           ranges={RANGES}
@@ -161,6 +184,8 @@ export default function MockPortfolioChart() {
           onChange={setRange}
           size="xs"
           variant="default"
+          disabledRanges={disabledRanges(startedAt)}
+          disabledTitle="Longer than your account history"
           showCustomDateButton={true}
           onCustomDateChange={(custom) => {
             if (custom?.start && custom?.end) {
@@ -171,21 +196,33 @@ export default function MockPortfolioChart() {
         />
       </div>
 
-      {loading && <div className="mpc-loading">Loading portfolio history…</div>}
+      {stats && (
+        <div className="mpc-headline">
+          <div className="mpc-stats">
+            <span className="mpc-stat-value">{fmtCompactUSD(stats.end)}</span>
+            <span className={`mpc-stat-change is-${signOf(stats.change)}`}>
+              {fmtSignedUSD(stats.change)} ({fmtSignedPct(stats.changePct)})
+            </span>
+          </div>
+          <span className="mpc-caption">{rangeCaption(range, customRange)}</span>
+        </div>
+      )}
+
+      {loading && (
+        <div className="mpc-skel" aria-busy="true">
+          <span className="mpc-sr">Loading portfolio history</span>
+        </div>
+      )}
 
       {!loading && isEmpty && (
         <div className="mpc-empty">
           <i className="bi bi-graph-up mpc-empty-icon" />
           <p>
-            {data.source === 'no-portfolio' &&
-              'No portfolio activity yet, place a trade to start tracking performance.'}
-            {data.source === 'no-trades' &&
-              'Your portfolio has cash but no trades yet. Place a trade to see performance over time.'}
             {data.source === 'empty-portfolio' &&
               'Your portfolio is empty. Add some starting cash to begin.'}
             {data.source === 'error' && 'Unable to load portfolio history.'}
-            {!['no-portfolio', 'no-trades', 'empty-portfolio', 'error'].includes(data.source) &&
-              'Start trading to see your portfolio performance over time.'}
+            {!['empty-portfolio', 'error'].includes(data.source) &&
+              'Your performance chart will appear after your first trade.'}
           </p>
         </div>
       )}
@@ -194,7 +231,7 @@ export default function MockPortfolioChart() {
         <>
           <div className="mpc-chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 24, left: 4, bottom: 0 }}>
                 <defs>
                   <linearGradient id="mpc-gradient-up" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={CHART.primaryStroke} stopOpacity={0.4} />
@@ -218,12 +255,13 @@ export default function MockPortfolioChart() {
                   tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
-                  width={50}
+                  width={60}
                   tickFormatter={(v) => formatUSD(v)}
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip startingCash={startingCash} />}
+                  allowEscapeViewBox={{ x: false, y: false }}
                   cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
                 />
                 <Area

@@ -8,9 +8,6 @@
   "src/app/(dashboard)/home-dashboard/home-dashboard.css": {
     "sub-floor": 3
   },
-  "src/app/(dashboard)/home-dashboard/page.js": {
-    "sub-floor": 1
-  },
   "src/app/(dashboard)/home/broadsheet.css": {
     "sub-floor": 16,
     "caps-tracking": 15
@@ -46,9 +43,6 @@
   },
   "src/app/(dashboard)/terminal/page.js": {
     "sub-floor": 4
-  },
-  "src/app/(dashboard)/trading/mock/page.js": {
-    "sub-floor": 1
   },
   "src/app/(dashboard)/trading/trading.css": {
     "sub-floor": 1

@@ -149,7 +149,7 @@ body:not(.light-mode) .ez-canvas {
 }
 
 /* Side columns split off by a vertical hairline (`.bs-hero-r`). */
-.ez-canvas :is(.wl-side, .mock-trade-panel, .rc-right) {
+.ez-canvas :is(.wl-side, .mock-right-col, .rc-right) {
   border-left: 1px solid var(--ez-rule) !important;
   padding-left: 1.5rem;
 }
@@ -170,8 +170,9 @@ body:not(.light-mode) .ez-canvas {
     padding-top: 1rem;
   }
 }
-@media (max-width: 900px) {
-  .ez-canvas .mock-trade-panel {
+/* Mock Trading (Nov 2026 redesign): the order column stacks at 1024px. */
+@media (max-width: 1024px) {
+  .ez-canvas .mock-right-col {
     border-left-color: transparent !important;
     border-top: 1px solid var(--ez-rule) !important;
     padding-left: 0;
@@ -197,6 +198,7 @@ body:not(.light-mode) .ez-canvas {
     .db-hero-card-title,
     .mock-card-header h3,
     .mock-trade-panel-header h3,
+    .mock-card-title,
     .crx-section-title,
     .card-header h3
   ) {

@@ -7,7 +7,6 @@ import {
   useCallback,
   useRef,
   useMemo,
-  Fragment,
   Suspense,
 } from 'react';
 import dynamic from 'next/dynamic';
@@ -18,18 +17,27 @@ import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { useChecklist } from '@/hooks/useChecklist';
 
-/* Both StockPriceChart (Recharts) and ResetPortfolioModal are not on the
-   critical path for the mock-trading dashboard — the chart renders inside a
-   tab panel, the modal only after a confirm click. Lazy chunks keep the
-   initial 268 kB bundle smaller. */
-const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
-  ssr: false,
-  loading: () => <div style={{ height: 360 }} aria-hidden />,
-});
-const MockPortfolioChart = dynamic(() => import('@/components/trading/MockPortfolioChart'), {
-  ssr: false,
-  loading: () => <div style={{ height: 320 }} aria-hidden />,
-});
+import {
+  ActivityCard,
+  ClosePositionModal,
+  MarketMoversCard,
+  MockKpiRow,
+  PerformanceCard,
+  PositionsCard,
+} from '@/components/trading/mock/MockSections';
+import { OrderTicket } from '@/components/trading/mock/OrderTicket';
+import {
+  fmtQty,
+  parseAmount,
+  positionRow,
+  relativeTime,
+  sortPositions,
+  summarizePortfolio,
+  ticketState,
+} from '@/lib/trading/mock-ticket';
+
+/* The reset modal only renders after a click: its own lazy chunk. The charts
+   load lazily inside PerformanceCard. */
 const ResetPortfolioModal = dynamic(() => import('@/components/trading/ResetPortfolioModal'), {
   ssr: false,
   loading: () => null,
@@ -57,11 +65,6 @@ function fmtUSD(n) {
   return `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function fmtChange(n) {
-  const sign = n >= 0 ? '+' : '';
-  return `${sign}${fmtUSD(n)}`;
-}
-
 function resolveOpenedAt(pos, history) {
   if (pos.openedAt) return pos.openedAt;
   // Fallback for legacy positions saved before openedAt was stamped:
@@ -72,17 +75,6 @@ function resolveOpenedAt(pos, history) {
     .filter(Boolean)
     .sort();
   return buys[0] || null;
-}
-
-function formatOpenedDate(iso) {
-  if (!iso) return '–';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '–';
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 /** Normalize live quote entries (numbers or numeric strings from API). */
@@ -103,29 +95,6 @@ function chunkSymbols(arr, size) {
   return out;
 }
 
-/** Position with highest market value (qty × current price), for default chart symbol. */
-function getLargestPositionByValue(positions, livePrices) {
-  const list = Object.values(positions || {});
-  if (list.length === 0) return null;
-  let best = null;
-  let bestVal = -Infinity;
-  let bestSym = '';
-  for (const pos of list) {
-    const sym = String(pos.symbol || '')
-      .trim()
-      .toUpperCase();
-    const livePx = resolveLivePrice(livePrices[sym]);
-    const px = livePx ?? pos.currentPrice ?? pos.avgCost;
-    const val = Number(px) * Number(pos.qty);
-    if (val > bestVal || (val === bestVal && sym < bestSym)) {
-      bestVal = val;
-      best = pos;
-      bestSym = sym;
-    }
-  }
-  return best;
-}
-
 const MOCK_QUOTE_CHUNK = 45;
 
 /* ──────────────────────────────────────────
@@ -135,15 +104,33 @@ function MockTradingPageInner() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
-  /* Portfolio state — backed by Supabase via useMockPortfolio */
+  /* Portfolio state: backed by the mock portfolio API via useMockPortfolio */
   const {
     portfolio: portfolioFromHook,
     setPortfolio,
     placeTrade,
     resetPortfolio,
     syncing,
+    isLoading: portfolioLoading,
   } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
+  const [dbTradesLoaded, setDbTradesLoaded] = useState(false);
+  /* Chart subject (Portfolio | Selected asset) and the close confirmation. */
+  const [chartSubject, setChartSubject] = useState('portfolio');
+  const [closeRow, setCloseRow] = useState(null);
+  /* Autosave status: the time of the last finished save in this visit. */
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [, setClock] = useState(0);
+  const wasSyncing = useRef(false);
+  useEffect(() => {
+    if (wasSyncing.current && !syncing) setLastSavedAt(Date.now());
+    wasSyncing.current = syncing;
+  }, [syncing]);
+  useEffect(() => {
+    if (!lastSavedAt) return undefined;
+    const t = setInterval(() => setClock((c) => c + 1), 15_000);
+    return () => clearInterval(t);
+  }, [lastSavedAt]);
   /* Double-submit guard: one trade request in flight at a time. */
   const [tradePending, setTradePending] = useState(false);
   const tradePendingRef = useRef(false);
@@ -191,6 +178,9 @@ function MockTradingPageInner() {
       })
       .catch(() => {
         if (!cancelled) setDbTrades([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDbTradesLoaded(true);
       });
     return () => {
       cancelled = true;
@@ -381,25 +371,18 @@ function MockTradingPageInner() {
   };
 
   const executeTrade = async () => {
-    if (!selectedSymbol) {
-      showToast('Search for a ticker to trade.', 'error');
+    const dollarAmount = parseAmount(amount);
+    const check = ticketState({
+      side,
+      amount: dollarAmount,
+      cash: portfolio.cash,
+      price: quoteData?.price ?? null,
+      symbol: selectedSymbol,
+      position: portfolio.positions[selectedSymbol] || null,
+    });
+    if (!check.canSubmit) {
+      showToast(check.reason || 'Check the order.', 'error');
       return;
-    }
-    const dollarAmount = parseFloat(amount);
-    if (!dollarAmount || dollarAmount <= 0) {
-      showToast('Enter a valid amount.', 'error');
-      return;
-    }
-    if (side === 'buy' && dollarAmount > portfolio.cash) {
-      showToast('Insufficient funds.', 'error');
-      return;
-    }
-    if (side === 'sell') {
-      const pos = portfolio.positions[selectedSymbol];
-      if (!pos || pos.qty <= 0) {
-        showToast(`No ${selectedSymbol} position to sell.`, 'error');
-        return;
-      }
     }
     const r = await submitTrade({
       ticker: selectedSymbol,
@@ -414,23 +397,29 @@ function MockTradingPageInner() {
       return;
     }
     const verb = side === 'buy' ? 'Bought' : 'Sold';
+    const qty = Number(r.trade?.quantity);
+    const px = Number(r.trade?.price);
     showToast(
-      `✓ ${verb} ${fmtUSD(r.trade?.total ?? dollarAmount)} of ${selectedSymbol} @ ${fmtUSD(r.trade?.price)}`,
+      Number.isFinite(qty) && Number.isFinite(px)
+        ? `${verb} ${fmtQty(qty)} ${selectedSymbol} at ${fmtUSD(px)}`
+        : `${verb} ${fmtUSD(r.trade?.total ?? dollarAmount)} of ${selectedSymbol}`,
     );
     completeTask('action_2');
     setAmount('');
   };
 
-  const closePosition = async (sym) => {
-    const pos = portfolio.positions[sym];
-    if (!pos) return;
-    const r = await submitTrade({ ticker: sym, side: 'sell', close: true });
+  /* Close = full market sell of the position, after the confirmation modal. */
+  const confirmClose = async () => {
+    const row = closeRow;
+    if (!row) return;
+    const r = await submitTrade({ ticker: row.symbol, side: 'sell', close: true });
+    setCloseRow(null);
     if (!r) return;
     if (!r.ok) {
       showToast(r.error || 'Could not close position.', 'error');
       return;
     }
-    showToast(`✓ Closed ${sym} position for ${fmtUSD(r.trade?.total)}`);
+    showToast(`Closed ${row.symbol} for ${fmtUSD(r.trade?.total)}`);
   };
 
   const mergedActivity = useMemo(() => {
@@ -472,85 +461,30 @@ function MockTradingPageInner() {
 
   const positionsList = Object.values(portfolio.positions || {});
 
-  const sortedPositions = useMemo(() => {
-    const list = [...positionsList];
-    if (!posSort.key) return list;
-
-    list.sort((a, b) => {
-      let aVal, bVal;
-
-      switch (posSort.key) {
-        case 'opened': {
-          const aDate = resolveOpenedAt(a, portfolio.history) || '';
-          const bDate = resolveOpenedAt(b, portfolio.history) || '';
-          aVal = aDate;
-          bVal = bDate;
-          return posSort.dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        }
-        case 'qty':
-          aVal = Number(a.qty) || 0;
-          bVal = Number(b.qty) || 0;
-          break;
-        case 'avgCost':
-          aVal = Number(a.avgCost) || 0;
-          bVal = Number(b.avgCost) || 0;
-          break;
-        case 'current': {
-          const aLive = resolveLivePrice(
-            livePrices[
-              String(a.symbol || '')
-                .trim()
-                .toUpperCase()
-            ],
-          );
-          const bLive = resolveLivePrice(
-            livePrices[
-              String(b.symbol || '')
-                .trim()
-                .toUpperCase()
-            ],
-          );
-          aVal = aLive ?? a.currentPrice ?? a.avgCost ?? 0;
-          bVal = bLive ?? b.currentPrice ?? b.avgCost ?? 0;
-          break;
-        }
-        case 'pnl': {
-          const aSym = String(a.symbol || '')
-            .trim()
-            .toUpperCase();
-          const bSym = String(b.symbol || '')
-            .trim()
-            .toUpperCase();
-          const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
-          const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
-          aVal = (aCur - a.avgCost) * a.qty;
-          bVal = (bCur - b.avgCost) * b.qty;
-          break;
-        }
-        case 'value': {
-          const aSym = String(a.symbol || '')
-            .trim()
-            .toUpperCase();
-          const bSym = String(b.symbol || '')
-            .trim()
-            .toUpperCase();
-          const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
-          const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
-          aVal = aCur * a.qty;
-          bVal = bCur * b.qty;
-          break;
-        }
-        default:
-          return 0;
-      }
-
-      if (aVal < bVal) return posSort.dir === 'asc' ? -1 : 1;
-      if (aVal > bVal) return posSort.dir === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return list;
-  }, [positionsList, posSort, livePrices, portfolio.history]);
+  /* One row model for the table, the KPIs and the close modal. */
+  const positionRows = useMemo(
+    () =>
+      positionsList.map((pos) => {
+        const sym = String(pos.symbol || '')
+          .trim()
+          .toUpperCase();
+        const livePx = resolveLivePrice(livePrices[sym]);
+        return positionRow({
+          symbol: sym,
+          name: pos.name || sym,
+          type: pos.type,
+          qty: Number(pos.qty),
+          avgCost: Number(pos.avgCost),
+          currentPrice: livePx ?? pos.currentPrice ?? pos.avgCost,
+          openedAt: resolveOpenedAt(pos, portfolio.history),
+        });
+      }),
+    [positionsList, livePrices, portfolio.history],
+  );
+  const sortedPositions = useMemo(
+    () => sortPositions(positionRows, posSort.key, posSort.dir),
+    [positionRows, posSort],
+  );
 
   const togglePosSort = useCallback((key) => {
     setPosSort((prev) => ({
@@ -574,18 +508,12 @@ function MockTradingPageInner() {
   // The chart now defaults to MockPortfolioChart (portfolio-value time series).
   // selectedSymbol stays null until the user explicitly searches or clicks a position.
   // Clicking a position sets userExplicitChartPickRef=true via selectAsset(...).
-  const totalPositionValue = positionsList.reduce((s, p) => {
-    const sym = String(p.symbol || '')
-      .trim()
-      .toUpperCase();
-    const livePx = resolveLivePrice(livePrices[sym]);
-    const px = livePx ?? p.currentPrice ?? p.avgCost;
-    return s + px * p.qty;
-  }, 0);
-  const totalPortfolioValue = portfolio.cash + totalPositionValue;
   const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
-  const totalPnl = totalPortfolioValue - effectiveStart;
-  const totalPnlPct = effectiveStart > 0 ? (totalPortfolioValue / effectiveStart - 1) * 100 : 0;
+  const summary = summarizePortfolio({
+    cash: portfolio.cash,
+    startingCash: effectiveStart,
+    positions: positionRows,
+  });
 
   useEffect(() => {
     const symbols = [
@@ -700,610 +628,131 @@ function MockTradingPageInner() {
   }, [openPositionSymbolsKey]);
 
   const currentPrice = quoteData?.price ?? 0;
-  const dollarAmount = parseFloat(amount) || 0;
-  const estimatedQty = currentPrice > 0 ? dollarAmount / currentPrice : 0;
-
-  const currentPosition = portfolio.positions[selectedSymbol];
-  const canSell = currentPosition && currentPosition.qty > 0;
-
-  const quoteChange = quoteData?.change ?? 0;
-  const quoteChangePct = quoteData?.changesPercentage ?? quoteData?.changePercentage ?? 0;
+  const savedLabel = syncing
+    ? 'Saving…'
+    : lastSavedAt
+      ? `Auto-saved ${relativeTime(lastSavedAt)}`
+      : null;
 
   return (
     <div className="mock-page dashboard-page-inset ez-canvas">
-      <div className="mock-header">
-        <div className="mock-header-left">
-          <Link
-            href="/trading"
-            style={{
-              color: '#6b7280',
-              textDecoration: 'none',
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.375rem',
-            }}
-          >
-            <i className="bi bi-arrow-left" /> Trading
+      <header className="mock-head">
+        <div className="mock-head__left">
+          <Link href="/trading" className="mock-back">
+            <i className="bi bi-arrow-left" aria-hidden="true" /> Trading
           </Link>
-          <span style={{ color: '#374151' }}>/</span>
+          <span className="mock-head__slash" aria-hidden="true">
+            /
+          </span>
           <h1 className="mock-title">Mock Trading</h1>
-          <span className="mock-badge">
-            <i className="bi bi-controller" /> Paper Account
+          <span className="mock-paper">
+            <i className="bi bi-layers" aria-hidden="true" /> Paper account
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {syncing && (
-            <span
-              style={{
-                fontSize: '0.7rem',
-                color: '#6b7280',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.375rem',
-              }}
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                style={{ animation: 'mock-portfolio-spin 0.9s linear infinite' }}
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  opacity="0.25"
-                />
-                <path
-                  d="M12 2a10 10 0 0 1 10 10"
-                  stroke="#10b981"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Saving…
+        <div className="mock-head__right">
+          {savedLabel ? (
+            <span className="mock-saved" role="status">
+              <span className={`mock-dot${syncing ? ' is-busy' : ' is-up'}`} aria-hidden="true" />
+              {savedLabel}
             </span>
-          )}
-          <button className="mock-reset-btn" type="button" onClick={() => setResetModalOpen(true)}>
-            <i className="bi bi-arrow-counterclockwise" /> Reset Portfolio
+          ) : null}
+          <button className="mock-btn" type="button" onClick={() => setResetModalOpen(true)}>
+            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset portfolio
           </button>
+        </div>
+      </header>
 
-          <ResetPortfolioModal
-            open={resetModalOpen}
-            onClose={() => setResetModalOpen(false)}
-            onConfirm={async (startingAmount) => {
-              const r = await resetPortfolio(startingAmount);
-              if (!r.ok) {
-                showToast(r.error || 'Reset failed.', 'error');
-                return;
-              }
-              userExplicitChartPickRef.current = false;
-              void refreshDbTrades();
-              showToast(`Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`);
-            }}
-            portfolio={{ ...portfolio, history: mergedActivity }}
-            enrichedPositions={enrichedPositions}
-          />
-        </div>
-      </div>
+      <ResetPortfolioModal
+        open={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={async (startingAmount) => {
+          const r = await resetPortfolio(startingAmount);
+          if (!r.ok) {
+            showToast(r.error || 'Reset failed.', 'error');
+            return;
+          }
+          userExplicitChartPickRef.current = false;
+          void refreshDbTrades();
+          showToast(`Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`);
+        }}
+        portfolio={{ ...portfolio, history: mergedActivity }}
+        enrichedPositions={enrichedPositions}
+      />
 
-      <div className="mock-portfolio-strip">
-        <div className="mock-stat-card">
-          <span className="mock-stat-label">Total Value</span>
-          <span className="mock-stat-value">{fmtUSD(totalPortfolioValue)}</span>
-          <span className="mock-stat-sub">Cash + Positions</span>
-        </div>
-        <div className="mock-stat-card">
-          <span className="mock-stat-label">Cash Available</span>
-          <span className="mock-stat-value">{fmtUSD(portfolio.cash)}</span>
-          <span className="mock-stat-sub">Ready to deploy</span>
-        </div>
-        <div className="mock-stat-card">
-          <span className="mock-stat-label">Total P&amp;L</span>
-          <span className={`mock-stat-value ${totalPnl >= 0 ? 'positive' : 'negative'}`}>
-            {fmtChange(totalPnl)}
-          </span>
-          <span className="mock-stat-sub">
-            {totalPnlPct >= 0 ? '+' : ''}
-            {totalPnlPct.toFixed(2)}% vs{' '}
-            {effectiveStart >= 1000
-              ? `$${(effectiveStart / 1000).toFixed(0)}K`
-              : `$${effectiveStart.toLocaleString('en-US')}`}
-          </span>
-        </div>
-        <div className="mock-stat-card">
-          <span className="mock-stat-label">Open Positions</span>
-          <span className="mock-stat-value">{positionsList.length}</span>
-          <span className="mock-stat-sub">{fmtUSD(totalPositionValue)} invested</span>
-        </div>
-      </div>
+      <MockKpiRow summary={summary} />
 
       <div className="mock-layout">
         <div className="mock-left-col">
-          <div className="mock-card">
-            <div className="mock-card-body" style={{ paddingTop: '1.125rem' }}>
-              {/* Default view: portfolio performance chart. Single-ticker chart only when
-                  user explicitly searches/picks a position. */}
-              {!selectedSymbol && <MockPortfolioChart />}
-
-              {selectedSymbol && (
-                <>
-                  <div className="mock-chart-back-row">
-                    <button
-                      type="button"
-                      className="mock-chart-back-btn"
-                      onClick={() => {
-                        userExplicitChartPickRef.current = false;
-                        setSelectedSymbol(null);
-                        setSelectedName('');
-                        setSelectedType('Stock');
-                        setQuoteData(null);
-                        setSearchQuery('');
-                        clearSuggestions();
-                      }}
-                    >
-                      <i className="bi bi-arrow-left" /> Back to Portfolio
-                    </button>
-                    <div className="mock-chart-symbol-label">
-                      <span className="mock-chart-symbol-ticker">{selectedSymbol}</span>
-                      {selectedName && selectedName !== selectedSymbol && (
-                        <span className="mock-chart-symbol-name">{selectedName}</span>
-                      )}
-                    </div>
-                  </div>
-                  <StockPriceChart symbol={selectedSymbol} livePrice={currentPrice || null} />
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="mock-card">
-            <div className="mock-card-header">
-              <h3>
-                <i className="bi bi-briefcase" /> Open Positions
-              </h3>
-              {priceFetchError && (
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    color: '#ef4444',
-                    background: 'rgba(239, 68, 68, 0.08)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    marginLeft: '8px',
-                  }}
-                  title="Live prices failed to load. Showing cost basis as fallback."
-                >
-                  ⚠ {priceFetchError}
-                </span>
-              )}
-              <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                {positionsList.length} position{positionsList.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <div className="mock-card-body" style={{ padding: '0 1.25rem 1rem' }}>
-              {positionsList.length === 0 ? (
-                <div className="mock-empty-state">
-                  <i className="bi bi-inbox" />
-                  <p>No open positions. Search for an asset and place your first trade.</p>
-                </div>
-              ) : (
-                <table className="mock-positions-table">
-                  <thead>
-                    <tr>
-                      <th>Asset</th>
-                      {[
-                        { key: 'opened', label: 'Opened' },
-                        { key: 'qty', label: 'Qty' },
-                        { key: 'avgCost', label: 'Avg Cost' },
-                        { key: 'current', label: 'Current' },
-                        { key: 'pnl', label: 'P&L' },
-                        { key: 'value', label: 'Current Value' },
-                      ].map((col) => (
-                        <th
-                          key={col.key}
-                          onClick={() => togglePosSort(col.key)}
-                          style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                        >
-                          {col.label}{' '}
-                          <span
-                            style={{
-                              fontSize: '0.6rem',
-                              opacity: posSort.key === col.key ? 1 : 0.3,
-                            }}
-                          >
-                            {posSort.key === col.key ? (posSort.dir === 'desc' ? '▼' : '▲') : '▼'}
-                          </span>
-                        </th>
-                      ))}
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedPositions.map((pos) => {
-                      const sym = String(pos.symbol || '')
-                        .trim()
-                        .toUpperCase();
-                      const livePx = resolveLivePrice(livePrices[sym]);
-                      const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
-                      const pnl = (curPrice - pos.avgCost) * pos.qty;
-                      const pnlPct = (curPrice / pos.avgCost - 1) * 100;
-
-                      return (
-                        <Fragment key={pos.symbol}>
-                          <tr>
-                            <td>
-                              <button
-                                className="mock-pos-ticker"
-                                type="button"
-                                onClick={() => selectAsset(pos.symbol, pos.name, pos.type)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  padding: 0,
-                                  font: 'inherit',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                {pos.symbol}
-                              </button>
-                              <span className="mock-pos-name">{pos.name}</span>
-                            </td>
-                            <td
-                              style={{
-                                color: 'var(--foreground, #f0f6fc)',
-                                fontVariantNumeric: 'tabular-nums',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {formatOpenedDate(resolveOpenedAt(pos, portfolio.history))}
-                            </td>
-                            <td
-                              style={{
-                                color: 'var(--foreground, #f0f6fc)',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {pos.qty < 1 ? pos.qty.toFixed(4) : pos.qty.toFixed(2)}
-                            </td>
-                            <td
-                              style={{
-                                color: 'var(--foreground, #f0f6fc)',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {fmtUSD(pos.avgCost)}
-                            </td>
-                            <td
-                              style={{
-                                color: 'var(--foreground, #f0f6fc)',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {fmtUSD(curPrice)}
-                            </td>
-                            <td>
-                              <span className={`mock-pnl ${pnl >= 0 ? 'positive' : 'negative'}`}>
-                                {pnl >= 0 ? '+' : ''}
-                                {fmtUSD(pnl)}
-                                <br />
-                                <span
-                                  style={{ fontSize: 'var(--type-micro-size)', fontWeight: 500 }}
-                                >
-                                  {pnlPct >= 0 ? '+' : ''}
-                                  {pnlPct.toFixed(2)}%
-                                </span>
-                              </span>
-                            </td>
-                            <td
-                              style={{
-                                color: 'var(--foreground, #f0f6fc)',
-                                fontVariantNumeric: 'tabular-nums',
-                                fontWeight: 600,
-                              }}
-                            >
-                              {fmtUSD(pos.qty * curPrice)}
-                            </td>
-                            <td>
-                              <button
-                                className="mock-close-pos-btn"
-                                type="button"
-                                onClick={() => closePosition(pos.symbol)}
-                                disabled={tradePending}
-                              >
-                                Close
-                              </button>
-                            </td>
-                          </tr>
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
-
-          {mergedActivity.length > 0 && (
-            <div className="mock-card">
-              <div className="mock-card-header">
-                <h3>
-                  <i className="bi bi-clock-history" /> Recent Activity
-                </h3>
-                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  {mergedActivity.length} trade{mergedActivity.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="mock-card-body" style={{ padding: '0 1.25rem 1rem' }}>
-                <div className="mock-activity-list">
-                  {mergedActivity.slice(0, 12).map((h) => (
-                    <div className="mock-activity-item" key={h.id || `${h.ts}-${h.symbol}`}>
-                      <div className={`mock-activity-dot ${h.side}`} />
-                      <div className="mock-activity-body">
-                        <div className="mock-activity-label">
-                          {h.side === 'buy' ? 'Bought' : 'Sold'} {h.symbol}
-                        </div>
-                        <div className="mock-activity-meta">
-                          {h.qty < 1 ? h.qty.toFixed(4) : h.qty.toFixed(2)} shares @{' '}
-                          {fmtUSD(h.price)} ·{' '}
-                          {new Date(h.ts).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </div>
-                      </div>
-                      <div className="mock-activity-amount">{fmtUSD(h.total)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          <PerformanceCard
+            subject={chartSubject}
+            onSubject={setChartSubject}
+            startingCash={effectiveStart}
+            symbol={selectedSymbol}
+            name={selectedName}
+            livePrice={currentPrice}
+          />
+          <PositionsCard
+            rows={sortedPositions}
+            loading={portfolioLoading && positionRows.length === 0}
+            sort={posSort}
+            onSort={togglePosSort}
+            onSelect={(r) => selectAsset(r.symbol, r.name, r.type)}
+            onClose={(r) => setCloseRow(r)}
+            pending={tradePending}
+            priceNote={priceFetchError}
+          />
+          <ActivityCard
+            items={mergedActivity}
+            loading={Boolean(user?.id) && !dbTradesLoaded && mergedActivity.length === 0}
+          />
         </div>
 
-        <div className="mock-trade-panel">
-          <div className="mock-trade-panel-header">
-            <i className="bi bi-graph-up-arrow" style={{ color: 'var(--emerald)' }} />
-            <h3>Place Order</h3>
-          </div>
-          <div className="mock-trade-body">
-            <div className="mock-field">
-              <div className="mock-search-wrap" ref={searchRef}>
-                <input
-                  type="text"
-                  className="mock-search-input ds-search-input"
-                  placeholder="Search company or ticker"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchQuery.trim()) {
-                      e.preventDefault();
-                      submitSearchAsTicker();
-                    }
-                  }}
-                  autoComplete="off"
-                  style={{ fontSize: '16px' }}
-                />
-                {(searchResults.length > 0 ||
-                  (searchQuery.trim().length >= 2 && searchLoading)) && (
-                  <div className="mock-search-results">
-                    {searchLoading && (
-                      <div
-                        style={{
-                          padding: '0.75rem 0.875rem',
-                          color: '#6b7280',
-                          fontSize: '0.8125rem',
-                        }}
-                      >
-                        Searching…
-                      </div>
-                    )}
-                    {searchResults.map((r) => (
-                      <div
-                        key={r.symbol}
-                        className="mock-search-result-item"
-                        onMouseDown={() => selectAsset(r.symbol, r.name, r.type)}
-                        role="presentation"
-                      >
-                        <div>
-                          <div className="mock-result-symbol">{r.symbol}</div>
-                          <div className="mock-result-name">{r.name}</div>
-                        </div>
-                        <span className="mock-result-type">{normalizeAssetType(r.type)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mock-asset-selected">
-              <div className="mock-asset-left">
-                <span className="mock-asset-ticker">{selectedSymbol || '–'}</span>
-                <span className="mock-asset-name">
-                  {selectedName || 'Search to select an asset'}
-                </span>
-              </div>
-              <div className="mock-asset-right">
-                {quoteLoading ? (
-                  <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>Loading…</span>
-                ) : currentPrice > 0 ? (
-                  <>
-                    <div className="mock-asset-price">{fmtUSD(currentPrice)}</div>
-                    <span
-                      className={`mock-asset-change ${quoteChange >= 0 ? 'positive' : 'negative'}`}
-                    >
-                      {quoteChange >= 0 ? '+' : ''}
-                      {fmtUSD(quoteChange)} ({quoteChangePct >= 0 ? '+' : ''}
-                      {Number(quoteChangePct).toFixed(2)}%)
-                    </span>
-                  </>
-                ) : (
-                  <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>No price data</span>
-                )}
-              </div>
-            </div>
-
-            <div className="mock-side-tabs">
-              <button
-                className={`mock-side-tab buy ${side === 'buy' ? 'active' : ''}`}
-                type="button"
-                onClick={() => setSide('buy')}
-              >
-                Buy
-              </button>
-              <button
-                className={`mock-side-tab sell ${side === 'sell' ? 'active' : ''}`}
-                type="button"
-                onClick={() => setSide('sell')}
-                disabled={!canSell}
-                style={{ opacity: !canSell ? 0.4 : 1 }}
-              >
-                Sell
-              </button>
-            </div>
-
-            <div className="mock-field">
-              <label>Amount (USD)</label>
-              <div className="mock-amount-wrap">
-                <span className="mock-amount-prefix">$</span>
-                <input
-                  type="number"
-                  className="mock-input with-prefix"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="1"
-                  step="any"
-                  style={{ fontSize: '16px' }}
-                />
-              </div>
-              <div className="mock-quick-btns">
-                {[100, 500, 1000, 5000].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    className="mock-quick-btn"
-                    onClick={() => setAmount(String(v))}
-                  >
-                    ${v.toLocaleString()}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="mock-quick-btn"
-                  onClick={() =>
-                    setAmount(
-                      side === 'buy'
-                        ? Math.floor(portfolio.cash).toString()
-                        : currentPosition
-                          ? String(
-                              Math.round(
-                                currentPosition.qty *
-                                  (currentPosition.currentPrice ?? currentPosition.avgCost) *
-                                  100,
-                              ) / 100,
-                            )
-                          : '',
-                    )
-                  }
-                >
-                  Max
-                </button>
-              </div>
-            </div>
-
-            {dollarAmount > 0 && currentPrice > 0 && (
-              <div className="mock-order-summary">
-                <div className="mock-order-row">
-                  <span>Est. shares</span>
-                  <span>
-                    {estimatedQty < 1 ? estimatedQty.toFixed(4) : estimatedQty.toFixed(2)}
-                  </span>
-                </div>
-                <div className="mock-order-row">
-                  <span>Price per share</span>
-                  <span>{fmtUSD(currentPrice)}</span>
-                </div>
-                {side === 'buy' && (
-                  <div className="mock-order-row">
-                    <span>Cash after</span>
-                    <span
-                      style={{
-                        color: portfolio.cash - dollarAmount < 0 ? '#ef4444' : undefined,
-                      }}
-                    >
-                      {fmtUSD(Math.max(0, portfolio.cash - dollarAmount))}
-                    </span>
-                  </div>
-                )}
-                <div
-                  className="mock-order-row total"
-                  style={{
-                    borderTop: '1px solid rgba(16,185,129,0.08)',
-                    paddingTop: '4px',
-                    marginTop: '2px',
-                  }}
-                >
-                  <span>Order total</span>
-                  <span>{fmtUSD(dollarAmount)}</span>
-                </div>
-              </div>
-            )}
-
-            <button
-              className={`mock-submit-btn ${side}`}
-              type="button"
-              data-task-target="mock-trade-submit"
-              onClick={executeTrade}
-              aria-busy={tradePending}
-              disabled={
-                tradePending ||
-                !selectedSymbol ||
-                !currentPrice ||
-                !dollarAmount ||
-                dollarAmount <= 0 ||
-                (side === 'buy' && dollarAmount > portfolio.cash)
-              }
-            >
-              {side === 'buy' ? `Buy ${selectedSymbol || '…'}` : `Sell ${selectedSymbol || '…'}`}
-            </button>
-
-            {side === 'buy' && dollarAmount > portfolio.cash && (
-              <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#ef4444', margin: 0 }}>
-                Insufficient funds, available: {fmtUSD(portfolio.cash)}
-              </p>
-            )}
-
-            <p
-              style={{
-                textAlign: 'center',
-                fontSize: 'var(--type-micro-size)',
-                color: '#4b5563',
-                margin: 0,
-                lineHeight: 1.5,
+        <aside className="mock-right-col" aria-label="Trade">
+          <div ref={searchRef} className="mock-ticket-wrap">
+            <OrderTicket
+              search={{
+                query: searchQuery,
+                setQuery: setSearchQuery,
+                results: searchResults,
+                loading: searchLoading,
+                onPick: (r) => selectAsset(r.symbol, r.name, r.type),
+                onSubmitTicker: submitSearchAsTicker,
               }}
-            >
-              Paper trading only. No real money involved. Prices are real-time via FMP.
-            </p>
+              symbol={selectedSymbol}
+              name={selectedName}
+              quote={{
+                price: currentPrice || null,
+                change: Number(quoteData?.change ?? 0),
+                changePct: Number(quoteData?.changesPercentage ?? quoteData?.changePercentage ?? 0),
+                loading: quoteLoading,
+              }}
+              side={side}
+              onSide={setSide}
+              amount={amount}
+              onAmount={setAmount}
+              cash={portfolio.cash}
+              position={selectedSymbol ? portfolio.positions[selectedSymbol] || null : null}
+              pending={tradePending}
+              onSubmit={executeTrade}
+            />
           </div>
-        </div>
+          <MarketMoversCard onSelect={(sym, nm) => selectAsset(sym, nm, 'Stock')} />
+        </aside>
       </div>
 
+      <ClosePositionModal
+        row={closeRow}
+        pending={tradePending}
+        onCancel={() => setCloseRow(null)}
+        onConfirm={confirmClose}
+      />
+
       {toast && (
-        <div className={`mock-toast ${toast.type}`}>
-          {toast.type === 'success' ? (
-            <i className="bi bi-check-circle-fill" style={{ color: '#10b981' }} />
-          ) : (
-            <i className="bi bi-x-circle-fill" style={{ color: '#ef4444' }} />
-          )}
+        <div className={`mock-toast is-${toast.type}`} role="status" aria-live="polite">
+          <i
+            className={`bi ${toast.type === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}`}
+            aria-hidden="true"
+          />
           {toast.msg}
         </div>
       )}
@@ -1314,14 +763,7 @@ function MockTradingPageInner() {
 export default function MockTradingPage() {
   return (
     <Suspense
-      fallback={
-        <div
-          className="mock-page dashboard-page-inset"
-          style={{ padding: '2rem', color: '#94a3b8' }}
-        >
-          Loading…
-        </div>
-      }
+      fallback={<div className="mock-page dashboard-page-inset mock-loading">Loading…</div>}
     >
       <MockTradingPageInner />
     </Suspense>
