@@ -143,6 +143,23 @@
   white-space: nowrap;
 }
 
+/* Nov 2026: the app nav's Research and Trading dropdowns centre their text.
+   The icons stay in a left-hand column; the title and description are
+   centred in the rest of the row, and a spacer the width of the icon
+   column on the right keeps them centred in the panel as a whole. Scoped
+   to the app nav (.main-nav:not(.partner-nav)), so the partner portal's
+   dropdowns are unchanged. */
+.main-nav:not(.partner-nav) .animated-nav-dropdown-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  text-align: center;
+}
+.main-nav:not(.partner-nav) .animated-nav-dropdown-item > i + .animated-nav-dropdown-text {
+  /* icon width (20px) + the row gap, mirrored on the right */
+  padding-right: calc(20px + 0.75rem);
+}
+
 /* Premium research highlights (match Centaur / Kairos brand gold) */
 .animated-nav-dropdown-item--gold > i {
   color: var(--gold-champagne);
