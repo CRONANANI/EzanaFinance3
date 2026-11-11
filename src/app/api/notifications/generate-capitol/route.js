@@ -107,6 +107,7 @@ async function run() {
           type: 'inside-the-capitol',
           title: `${emoji} ${representative} · ${typeLabel}${symbol ? ` ($${symbol})` : ''}`,
           content: `Congressional trade disclosure${symbol ? ` for $${symbol}` : ''}. Check Inside the Capitol for details.`,
+          tickers: symbol ? [symbol] : [],
         });
         if (insErr) {
           await releaseDelivery(admin, profile.user_id, fingerprint);

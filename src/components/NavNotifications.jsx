@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 import NavIcon from '@/components/nav/NavIcon';
 import NotificationFilterMenu from '@/components/nav/NotificationFilterMenu';
+import { IconButton, Skeleton } from '@/components/ds';
 
 /* Notification type → display category (label, Bootstrap icon). Oct 29: one
    accent (emerald, in nav-notifications.css) for every category tile instead
@@ -31,9 +32,9 @@ function severityMeta(priority) {
 }
 
 /* Presentation only: stored titles carry 🔴/🟡-style emoji that encode the
-   priority (mapDbNotification still reads them, unchanged). The panel renders
-   the app's status-dot convention instead (.nnx-status-dot), so the emoji is
-   stripped from the DISPLAYED title only. */
+   priority (mapDbNotification still reads them, unchanged). The panel shows
+   the priority as one chip per card instead, so the emoji is stripped from
+   the DISPLAYED title only. */
 function displayTitle(title) {
   return String(title || '')
     .replace(/[\u{1F534}\u{1F7E1}\u{1F7E2}\u{1F7E0}\u{26AA}\u{26AB}]️?\s*/gu, '')
@@ -53,6 +54,13 @@ function isToday(ts) {
 // Filter keys reuse the real notification `type` values so filtering stays wired
 // to the existing feed.
 const FILTER_SESSION_KEY = 'ezana.notifications.filter';
+/* All / Unread view of the desktop panel (Nov 2026), kept for the session. */
+const VIEW_SESSION_KEY = 'ezana.notifications.view';
+const VIEWS = [
+  { key: 'all', label: 'All' },
+  { key: 'unread', label: 'Unread' },
+];
+const MAX_TICKERS = 3;
 
 const FILTER_TABS = [
   { key: 'all', label: 'All' },
@@ -64,11 +72,17 @@ const FILTER_TABS = [
   { key: 'learning', label: 'Learning' },
 ];
 
-/* Redesigned notification row (desktop panel, spec 1b). */
-function NotifRowNew({ n, onOpen, onFriendRespond }) {
+/* Notification card (desktop panel, Nov 2026 redesign). Tile, divider, then
+   the meta line (category, time, unread dot), title, summary, friend-request
+   buttons and the chip row (priority, tickers). On hover or keyboard focus
+   the time and dot give way to Mark as read (unread only) and Dismiss. */
+function NotifRowNew({ n, onOpen, onFriendRespond, onMarkRead, onDismiss }) {
   const cat = categoryMeta(n.type);
   const sev = severityMeta(n.priority);
   const unread = !n.read;
+  const tickers = Array.isArray(n.tickers) ? n.tickers : [];
+  const shown = tickers.slice(0, MAX_TICKERS);
+  const more = tickers.length - shown.length;
   return (
     <div
       className={`nnx-row${unread ? ' nnx-row--unread' : ''}`}
@@ -76,6 +90,7 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
       tabIndex={0}
       onClick={() => onOpen(n)}
       onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onOpen(n);
@@ -85,14 +100,44 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
       <span className="nnx-tile" aria-hidden="true">
         <i className={`bi ${cat.icon}`} />
       </span>
+      <span className="nnx-divider" aria-hidden="true" />
       <span className="nnx-main">
-        <span className="nnx-cat">{cat.label}</span>
-        <span className="nnx-title">
-          {sev.key !== 'fyi' && (
-            <i className={`nnx-status-dot nnx-status-dot--${sev.key}`} aria-hidden />
-          )}
-          {displayTitle(n.title)}
+        <span className="nnx-meta">
+          <span className="nnx-cat">{cat.label}</span>
+          <span className="nnx-meta-r">
+            <span className="nnx-stamp">
+              <span className="nnx-time">{getTimeAgo(n.time)}</span>
+              {unread && <span className="nnx-udot" aria-hidden="true" />}
+            </span>
+            <span className="nnx-actions">
+              {unread && onMarkRead && (
+                <IconButton
+                  icon="bi-check2"
+                  label="Mark as read"
+                  size="sm"
+                  className="nnx-act"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMarkRead(n.id);
+                  }}
+                />
+              )}
+              {onDismiss && (
+                <IconButton
+                  icon="bi-x-lg"
+                  label="Dismiss notification"
+                  size="sm"
+                  className="nnx-act"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDismiss(n, e);
+                  }}
+                />
+              )}
+            </span>
+          </span>
         </span>
+        <span className="nnx-title">{displayTitle(n.title)}</span>
         {n.content && <span className="nnx-desc">{n.content}</span>}
         {n.friendRequestId && onFriendRespond && (
           <span className="nnx-friend" onClick={(e) => e.stopPropagation()}>
@@ -112,12 +157,43 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
             </button>
           </span>
         )}
-        <span className={`nnx-sev nnx-sev--${sev.key}`}>{sev.label}</span>
+        <span className="nnx-chips">
+          <span className={`nnx-sev nnx-sev--${sev.key}`}>{sev.label}</span>
+          {shown.length > 0 && (
+            <span className="nnx-tickers">
+              {shown.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && (
+                    <span className="nnx-tsep" aria-hidden="true">
+                      ·
+                    </span>
+                  )}
+                  {t}
+                </span>
+              ))}
+              {more > 0 && <span className="nnx-tmore">+{more}</span>}
+            </span>
+          )}
+        </span>
       </span>
-      <span className="nnx-right">
-        <span className="nnx-time">{getTimeAgo(n.time)}</span>
-        {unread && <span className="nnx-udot" />}
-      </span>
+    </div>
+  );
+}
+
+/* Three shimmer cards while the first fetch is in flight. */
+function NotifSkeleton() {
+  return (
+    <div className="nnx-skel" aria-busy="true" aria-label="Loading notifications">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="nnx-skel-card">
+          <Skeleton width={44} height={44} radius="var(--radius-md)" />
+          <div className="nnx-skel-lines">
+            <Skeleton height={12} width="40%" />
+            <Skeleton height={14} width="85%" />
+            <Skeleton height={12} width="65%" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -177,6 +253,7 @@ function mapDbNotification(row) {
     icon,
     badge,
     priority,
+    tickers: Array.isArray(row.tickers) ? row.tickers.filter(Boolean) : [],
   };
 }
 
@@ -228,8 +305,32 @@ export function NavNotifications() {
       /* per-session nicety only */
     }
   };
+  /* All / Unread (desktop panel), kept for the session like the filter. */
+  const [view, setViewState] = useState('all');
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(VIEW_SESSION_KEY);
+      if (saved && VIEWS.some((v) => v.key === saved)) setViewState(saved);
+    } catch {
+      /* storage unavailable: default to All */
+    }
+  }, []);
+  /* Ids read while the panel is open stay in the Unread view until it closes
+     or the view changes, so a row never vanishes under the cursor. */
+  const [readThisSession, setReadThisSession] = useState(() => new Set());
+  const setView = (key) => {
+    setViewState(key);
+    setReadThisSession(new Set());
+    try {
+      window.sessionStorage.setItem(VIEW_SESSION_KEY, key);
+    } catch {
+      /* per-session nicety only */
+    }
+  };
+  const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const dropdownRef = useRef(null);
+  const viewTabRefs = useRef([]);
   const bellRef = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -243,21 +344,26 @@ export function NavNotifications() {
         : notifications.filter((n) => n.type === f.key && !n.read).length,
   }));
 
+  /* Mobile overlay: category only (unchanged). */
   const filtered = notifications.filter((n) => {
     if (filter === 'all') return true;
     return n.type === filter;
   });
+  /* Desktop panel: category and All / Unread combine. */
+  const panelItems = filtered.filter((n) => view === 'all' || !n.read || readThisSession.has(n.id));
 
   // TODAY / EARLIER grouping for the redesigned desktop panel.
-  const todayItems = filtered.filter((n) => isToday(n.time));
-  const earlierItems = filtered.filter((n) => !isToday(n.time));
+  const todayItems = panelItems.filter((n) => isToday(n.time));
+  const earlierItems = panelItems.filter((n) => !isToday(n.time));
 
   const toggleOpen = useCallback(() => {
     setIsOpen((prev) => !prev);
     setExpandedId(null);
+    setReadThisSession(new Set());
   }, []);
 
   const markAsRead = useCallback(async (id) => {
+    setReadThisSession((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     if (String(id).startsWith('fr-')) return;
     try {
@@ -268,7 +374,14 @@ export function NavNotifications() {
   }, []);
 
   const markAllRead = useCallback(async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => {
+      setReadThisSession((ids) => {
+        const next = new Set(ids);
+        prev.forEach((n) => !n.read && next.add(n.id));
+        return next;
+      });
+      return prev.map((n) => ({ ...n, read: true }));
+    });
     if (!user?.id) return;
     try {
       await supabase.from('user_notifications').update({ read: true }).eq('user_id', user.id);
@@ -321,6 +434,7 @@ export function NavNotifications() {
   const closePanel = useCallback(() => {
     setIsOpen(false);
     setExpandedId(null);
+    setReadThisSession(new Set());
   }, []);
 
   // Redesigned-row click: mark read (clears rail/wash/dot + decrements counts)
@@ -357,6 +471,7 @@ export function NavNotifications() {
   useEffect(() => {
     if (!isAuthenticated || !user) {
       setNotifications([]);
+      setLoading(false);
       return;
     }
     let cancelled = false;
@@ -383,6 +498,7 @@ export function NavNotifications() {
           icon: 'bi-person-plus',
           badge: 'Community',
           priority: 'medium',
+          tickers: [],
           friendRequestId: r.id,
         }));
         const rows = dbRes.data;
@@ -391,6 +507,8 @@ export function NavNotifications() {
         setNotifications([...frNotifs, ...dbNotifs]);
       } catch {
         if (!cancelled) setNotifications([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -524,7 +642,7 @@ export function NavNotifications() {
         >
           <span className="nnx-caret" aria-hidden />
 
-          {/* Fixed header */}
+          {/* Fixed header: live dot, title, "N new", divider, Mark all read */}
           <div className="nnx-header">
             <div className="nnx-header-l">
               <span className="nnx-live" aria-hidden />
@@ -532,26 +650,65 @@ export function NavNotifications() {
               {unreadCount > 0 && <span className="nnx-new-pill">{unreadCount} new</span>}
             </div>
             {unreadCount > 0 && (
-              <button className="nnx-markall" onClick={markAllRead} type="button">
-                <i className="bi bi-check2-all" aria-hidden="true" /> Mark all read
-              </button>
+              <>
+                <span className="nnx-h-div" aria-hidden="true" />
+                <button className="nnx-markall" onClick={markAllRead} type="button">
+                  <i className="bi bi-check2-all" aria-hidden="true" /> Mark all read
+                </button>
+              </>
             )}
           </div>
 
-          {/* Filter: a centred dropdown on its own row under the header */}
-          <NotificationFilterMenu
-            filters={filterOptions}
-            value={filter}
-            onChange={setFilter}
-            className="nnx-filter-row"
-          />
+          {/* All / Unread, then the category menu as a compact funnel */}
+          <div className="nnx-controls">
+            <div className="nnx-seg" role="tablist" aria-label="Show notifications">
+              {VIEWS.map((v, i) => (
+                <button
+                  key={v.key}
+                  ref={(el) => {
+                    viewTabRefs.current[i] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={view === v.key}
+                  tabIndex={view === v.key ? 0 : -1}
+                  className="nnx-seg-btn"
+                  onClick={() => setView(v.key)}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                    e.preventDefault();
+                    const next = VIEWS[(i + 1) % VIEWS.length];
+                    setView(next.key);
+                    viewTabRefs.current[VIEWS.indexOf(next)]?.focus();
+                  }}
+                >
+                  {v.label}
+                  {v.key === 'unread' && unreadCount > 0 && (
+                    <span className="nnx-seg-count">{unreadCount}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <NotificationFilterMenu
+              filters={filterOptions}
+              value={filter}
+              onChange={setFilter}
+              compact
+              className="nnx-funnel"
+            />
+          </div>
 
           {/* Scrolling body */}
           <div className="nnx-body">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <NotifSkeleton />
+            ) : panelItems.length === 0 ? (
               <div className="nnx-empty">
-                <i className="bi bi-bell-slash" aria-hidden="true" />
-                <p>You&apos;re all caught up.</p>
+                <span className="nnx-empty-tile" aria-hidden="true">
+                  <i className="bi bi-check2-all" />
+                </span>
+                <p className="nnx-empty-title">You&apos;re all caught up</p>
+                <p className="nnx-empty-line">New alerts on your watchlist will appear here.</p>
               </div>
             ) : (
               <>
@@ -564,19 +721,23 @@ export function NavNotifications() {
                         n={n}
                         onOpen={openNotification}
                         onFriendRespond={respondFriendRequest}
+                        onMarkRead={markAsRead}
+                        onDismiss={dismissNotification}
                       />
                     ))}
                   </>
                 )}
                 {earlierItems.length > 0 && (
                   <>
-                    <div className="nnx-group">EARLIER</div>
+                    <div className="nnx-group nnx-group--earlier">EARLIER</div>
                     {earlierItems.map((n) => (
                       <NotifRowNew
                         key={n.id}
                         n={n}
                         onOpen={openNotification}
                         onFriendRespond={respondFriendRequest}
+                        onMarkRead={markAsRead}
+                        onDismiss={dismissNotification}
                       />
                     ))}
                   </>

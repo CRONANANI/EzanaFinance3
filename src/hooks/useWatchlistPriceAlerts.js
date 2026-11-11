@@ -146,6 +146,7 @@ export function useWatchlistPriceAlerts() {
             type: 'watchlist',
             title: `${sym} ${titleDir} ${Math.abs(change).toFixed(2)}%`,
             content: `On your watchlist${plural}: ${listPart}.${price > 0 ? ` Currently $${price.toFixed(2)}.` : ''}`,
+            tickers: [sym],
           });
           fired[key] = new Date().toISOString();
         }

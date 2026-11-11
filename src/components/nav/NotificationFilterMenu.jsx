@@ -9,11 +9,20 @@
  *   filters   Array<{ key, label, count }>
  *   value     selected key
  *   onChange  (key) => void
+ *   compact   funnel-and-chevron trigger (desktop notifications panel,
+ *             Nov 2026): no label or count, a dot when a category other
+ *             than All is active, menu right-aligned under the button
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import styles from './NotificationFilterMenu.module.css';
 
-export default function NotificationFilterMenu({ filters = [], value, onChange, className = '' }) {
+export default function NotificationFilterMenu({
+  filters = [],
+  value,
+  onChange,
+  className = '',
+  compact = false,
+}) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const rootRef = useRef(null);
@@ -77,7 +86,10 @@ export default function NotificationFilterMenu({ filters = [], value, onChange, 
   };
 
   return (
-    <div className={`${styles.wrap} ${className}`.trim()} ref={rootRef}>
+    <div
+      className={`${styles.wrap} ${compact ? styles.compact : ''} ${className}`.trim()}
+      ref={rootRef}
+    >
       <button
         ref={triggerRef}
         type="button"
@@ -85,9 +97,13 @@ export default function NotificationFilterMenu({ filters = [], value, onChange, 
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
-        aria-label={`Filter notifications: ${selected?.label ?? 'All'}${
-          selected?.count > 0 ? `, ${selected.count} unread` : ''
-        }`}
+        aria-label={
+          compact
+            ? `Filter by category: ${selected?.label ?? 'All'}`
+            : `Filter notifications: ${selected?.label ?? 'All'}${
+                selected?.count > 0 ? `, ${selected.count} unread` : ''
+              }`
+        }
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -97,8 +113,16 @@ export default function NotificationFilterMenu({ filters = [], value, onChange, 
         }}
       >
         <i className={`bi bi-funnel ${styles.funnel}`} aria-hidden="true" />
-        <span className={styles.triggerLabel}>{selected?.label ?? 'All'}</span>
-        {selected?.count > 0 ? <span className={styles.count}>{selected.count}</span> : null}
+        {compact ? (
+          value && value !== 'all' ? (
+            <span className={styles.activeDot} aria-hidden="true" />
+          ) : null
+        ) : (
+          <>
+            <span className={styles.triggerLabel}>{selected?.label ?? 'All'}</span>
+            {selected?.count > 0 ? <span className={styles.count}>{selected.count}</span> : null}
+          </>
+        )}
         <i className={`bi bi-chevron-down ${styles.chev}`} aria-hidden="true" />
       </button>
 

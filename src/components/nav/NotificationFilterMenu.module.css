@@ -166,3 +166,51 @@
     transition: none;
   }
 }
+
+/* Compact trigger (desktop notifications panel, Nov 2026): funnel and
+   chevron only, beside the All / Unread control; the menu opens
+   right-aligned under it. */
+.compact {
+  padding: 0;
+}
+.compact .trigger {
+  position: relative;
+  height: 46px;
+  min-width: 68px;
+  padding: 0 14px;
+  justify-content: center;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+}
+.compact .trigger:hover,
+.compact .triggerOpen {
+  background: var(--surface-card-hover);
+}
+.compact .menu {
+  top: calc(100% + 6px);
+  left: auto;
+  right: 0;
+  width: 240px;
+  transform: none;
+  animation-name: ezMenuInRight;
+}
+@keyframes ezMenuInRight {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.activeDot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
