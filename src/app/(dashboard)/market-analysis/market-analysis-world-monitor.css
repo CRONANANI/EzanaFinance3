@@ -354,7 +354,9 @@
   width: 100%;
   height: 100%;
   position: relative;
-  will-change: transform;
+  /* Not GPU-promoted (no will-change): the dots are a canvas redrawn per
+     frame, and this layer holds vector pins that must re-rasterise crisply
+     after a zoom. */
 }
 
 .world-map-wrapper {
@@ -2734,10 +2736,16 @@ body.light-mode .sentinel-related-markets-toggle:hover {
   /* White canvas like the landing-page map. */
   background: #ffffff;
   color: #0f172a;
+  /* The page's own light toggle sits under the forced-dark tokens, so it
+     carries the light map tokens itself (values match body.light-mode). */
+  --map-dot-alpha: 0.7;
+  --map-dot-muted: #cfd8d4;
+  --map-power-bg: #eef3f1;
 }
-/* Map canvas: white behind the emerald continent dots. */
-.ma-fullscreen.ma-theme-light .world-map-wrapper {
-  background-color: #ffffff !important;
+/* Map ground: white behind the emerald continent dots. On the container,
+   not the wrapper: the wrapper sits above the dot canvas and would hide it. */
+.ma-fullscreen.ma-theme-light .world-map-container {
+  background-color: #ffffff;
 }
 
 /* View-toggle buttons */

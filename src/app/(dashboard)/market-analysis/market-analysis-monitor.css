@@ -52,7 +52,9 @@ body.sidebar-open .ma-fullscreen {
   width: 100%;
   height: 100%;
   position: relative;
-  will-change: transform;
+  /* Not GPU-promoted (no will-change): the dots are a canvas redrawn per
+     frame, and this layer holds vector pins that must re-rasterise crisply
+     after a zoom. */
 }
 
 .world-map-image {

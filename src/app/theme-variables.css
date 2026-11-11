@@ -70,6 +70,11 @@
   --emerald-bg: rgba(16, 185, 129, 0.08);
   --emerald-bg-hover: rgba(16, 185, 129, 0.12);
   --emerald-bg-subtle: rgba(16, 185, 129, 0.04);
+  /* Dotted world map (Market Analysis canvas): dot alpha over --emerald,
+     unscored land under a heat layer, and the power-map ground. */
+  --map-dot-alpha: 0.55;
+  --map-dot-muted: #2b323b;
+  --map-power-bg: #141a21;
   --emerald-border: rgba(16, 185, 129, 0.15);
   --emerald-glow: rgba(16, 185, 129, 0.25);
   --emerald-text: #34d399; /* Emerald that reads as text on dark */
@@ -459,6 +464,10 @@ body.light-mode {
   --emerald-bg: rgba(16, 185, 129, 0.06);
   --emerald-bg-hover: rgba(16, 185, 129, 0.1);
   --emerald-bg-subtle: rgba(16, 185, 129, 0.03);
+  /* Dotted world map (see the dark block). */
+  --map-dot-alpha: 0.7;
+  --map-dot-muted: #cfd8d4;
+  --map-power-bg: #eef3f1;
   --emerald-border: rgba(16, 185, 129, 0.2);
   --emerald-glow: rgba(16, 185, 129, 0.15);
   --emerald-text: #047857;
@@ -624,6 +633,11 @@ body.light-mode .force-dark-theme {
   --card-bg: #0f1519;
   --card-bg-hover: #131b21;
   --card-border: transparent;
+  /* Dotted world map (Market Analysis canvas): dot alpha over --emerald,
+     unscored land under a heat layer, and the power-map ground. */
+  --map-dot-alpha: 0.55;
+  --map-dot-muted: #2b323b;
+  --map-power-bg: #141a21;
 }
 
 /* Public legal / policy pages (/privacy-policy, /terms-of-service,

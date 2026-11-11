@@ -2212,9 +2212,8 @@ export default function MarketAnalysisPage() {
               <WorldMap
                 ref={mapRef}
                 lineColor="#10b981"
-                /* Light theme: emerald continent dots on white (landing-page
-                   palette). Dark theme keeps the default white @ 25%. */
-                dotColor={isLightTheme ? '#10b98159' : undefined}
+                /* Dot colour comes from the theme tokens (--emerald at
+                   --map-dot-alpha), so both themes read like the landing map. */
                 selectedPanelId={selectedDot}
                 onDotClick={handleCenterClick}
                 onPowerCountryClick={handlePowerCountryClick}

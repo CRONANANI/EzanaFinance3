@@ -9,12 +9,21 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import DottedMap from 'dotted-map';
-import Image from 'next/image';
-import proj4 from 'proj4';
 import type { CountryScore } from '@/hooks/useGlobalPowerMap';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
-import { latLngToAlpha2Cached } from '@/lib/latLngToCountryAlpha2';
+import { buildWorld } from '@/lib/geo/dotted-world';
+import worldData from '@/lib/geo/dotted-world-data.json';
+import {
+  DottedWorldRenderer,
+  type DottedWorld,
+  type MapView,
+} from '@/components/ui/dotted-world-renderer';
+
+/* The dotted world (land mask, dot to country table, projection) is
+   precomputed by scripts/generate-dotted-map.mjs; rebuilding it here is a
+   cheap typed-array pass, done once per page load. */
+let WORLD: DottedWorld | null = null;
+const getWorld = (): DottedWorld => (WORLD ??= buildWorld(worldData));
 
 const NE_COUNTRIES_GEOJSON =
   'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
@@ -126,17 +135,6 @@ let neCountriesGeoJsonCache: {
     geometry: { type: string; coordinates: unknown };
   }>;
 } | null = null;
-
-type DottedMapInternals = {
-  points: Record<string, { x: number; y: number }>;
-  X_MIN: number;
-  Y_MAX: number;
-  X_RANGE: number;
-  Y_RANGE: number;
-  width: number;
-  height: number;
-  proj4String: string;
-};
 
 /**
  * Lava-style heatmap color palette inspired by NASA Black Marble visualizations.
@@ -412,9 +410,8 @@ export type WorldMapHandle = {
 type WorldMapProps = {
   lineColor?: string;
   /**
-   * Color of the base dotted-continent map. Defaults to white @ 25%
-   * (`#FFFFFF40`), the market-analysis look. The landing hero passes an
-   * emerald so the same real-continent shapes render emerald-on-dark.
+   * Override for the dot colour (any CSS colour, alpha included). By default
+   * the canvas reads the theme tokens: `--emerald` at `--map-dot-alpha`.
    */
   dotColor?: string;
   onDotClick?: (center: FinancialCenter) => void;
@@ -460,7 +457,7 @@ const ISR_SEVERITY_COLOR: Record<string, string> = {
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
   {
     lineColor = '#10b981',
-    dotColor = '#FFFFFF40',
+    dotColor,
     onDotClick,
     selectedPanelId = null,
     hideControls = false,
@@ -475,6 +472,13 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<DottedWorldRenderer | null>(null);
+  /** What is on screen right now (the animation's current frame). */
+  const viewRef = useRef<MapView>({ x: 0, y: 0, scale: 1 });
+  const animRef = useRef<number | null>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -494,54 +498,8 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     score: number | null;
   } | null>(null);
 
-  const { map, svgMap, width, height, baseDots } = useMemo(() => {
-    const m = new DottedMap({ height: 170, grid: 'diagonal' });
-    const dm = m as unknown as DottedMapInternals;
-    const svg = m.getSVG({
-      radius: 0.18,
-      color: dotColor,
-      shape: 'circle',
-      backgroundColor: 'transparent',
-    });
-    const pts = Object.values(dm.points);
-    const dots = pts.map((p, idx) => {
-      const inverse = proj4(dm.proj4String, 'WGS84', [
-        (p.x * dm.X_RANGE) / dm.width + dm.X_MIN,
-        dm.Y_MAX - (p.y * dm.Y_RANGE) / dm.height,
-      ]) as [number, number];
-      const [lng, lat] = inverse;
-      return { x: p.x, y: p.y, lng, lat, idx };
-    });
-    return { map: m, svgMap: svg, width: dm.width, height: dm.height, baseDots: dots };
-  }, [dotColor]);
-
-  const [dotIsos, setDotIsos] = useState<(string | null)[] | null>(null);
-
-  useEffect(() => {
-    if (baseDots.length === 0) return;
-    setDotIsos(null);
-    let cancelled = false;
-    const out: (string | null)[] = new Array(baseDots.length);
-    let i = 0;
-    const CHUNK = 200;
-    const tick = () => {
-      const end = Math.min(i + CHUNK, baseDots.length);
-      for (; i < end; i++) {
-        const d = baseDots[i];
-        out[i] = latLngToAlpha2Cached(d.lng, d.lat);
-      }
-      if (cancelled) return;
-      if (i >= baseDots.length) {
-        setDotIsos(out);
-        return;
-      }
-      requestAnimationFrame(tick);
-    };
-    tick();
-    return () => {
-      cancelled = true;
-    };
-  }, [baseDots]);
+  const world = useMemo(getWorld, []);
+  const { width, height } = world;
 
   const isPowerMapActive = powerCountryScores.length > 0;
   const scoreByIso = useMemo(() => {
@@ -559,12 +517,147 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
 
   const projectPoint = useCallback(
     (lat: number, lng: number) => {
-      const pin = map.getPin({ lat, lng });
+      const pin = world.getPin(lat, lng);
       if (!pin) return { x: width / 2, y: height / 2 };
       return { x: pin.x, y: pin.y };
     },
-    [map, width, height],
+    [world, width, height],
   );
+
+  /* ---- Canvas dot layer ------------------------------------------------
+     Pan and zoom are applied to the canvas coordinates (a redraw) and, in
+     the same frame, to the SVG overlay's transform, so pins and dots never
+     drift apart. Nothing raster is CSS-scaled. */
+  const applyView = useCallback((v: MapView) => {
+    viewRef.current = v;
+    if (innerRef.current) {
+      innerRef.current.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+    }
+    rendererRef.current?.draw(v);
+  }, []);
+
+  const measure = useCallback(() => {
+    const r = rendererRef.current;
+    const c = containerRef.current;
+    const inner = innerRef.current;
+    const wrap = wrapperRef.current;
+    if (!r || !c || !inner || !wrap) return;
+    r.setLayout({
+      width: c.clientWidth,
+      height: c.clientHeight,
+      innerLeft: inner.offsetLeft,
+      innerTop: inner.offsetTop,
+      wrapLeft: wrap.offsetLeft,
+      wrapTop: wrap.offsetTop,
+      wrapWidth: wrap.offsetWidth,
+      wrapHeight: wrap.offsetHeight,
+    });
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const c = containerRef.current;
+    if (!canvas || !c) return;
+    const r = new DottedWorldRenderer(canvas, world);
+    rendererRef.current = r;
+    r.setStyle(c, dotColor);
+    measure();
+    r.draw(viewRef.current);
+
+    const redraw = () => {
+      measure();
+      r.requestDraw(viewRef.current);
+    };
+    const ro = new ResizeObserver(redraw);
+    ro.observe(c);
+
+    // DPR changes (moving between screens, browser zoom).
+    let mq: MediaQueryList | null = null;
+    const onDpr = () => {
+      mq?.removeEventListener('change', onDpr);
+      mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      mq.addEventListener('change', onDpr);
+      redraw();
+    };
+    mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    mq.addEventListener('change', onDpr);
+
+    // Theme changes: re-read the colour tokens when a class flips on the
+    // body or any ancestor (light-mode, the page's own theme toggle).
+    const mo = new MutationObserver(() => {
+      r.setStyle(c, r.colorOverride);
+      r.requestDraw(viewRef.current);
+    });
+    for (let el: HTMLElement | null = c; el; el = el.parentElement) {
+      mo.observe(el, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    }
+
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      mq?.removeEventListener('change', onDpr);
+      r.destroy();
+      rendererRef.current = null;
+    };
+  }, [world, measure]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const r = rendererRef.current;
+    const c = containerRef.current;
+    if (!r || !c) return;
+    r.setStyle(c, dotColor);
+    r.requestDraw(viewRef.current);
+  }, [dotColor]);
+
+  // Heat layer: colour the same dots by each cell's country score.
+  useEffect(() => {
+    const r = rendererRef.current;
+    if (!r) return;
+    if (!isPowerMapActive) {
+      r.setHeat(null, false);
+    } else {
+      const { cellIso } = world;
+      r.setHeat((cell) => {
+        const iso = cellIso[cell];
+        return iso ? scoreByIso[iso] || null : null;
+      }, true);
+    }
+    r.requestDraw(viewRef.current);
+  }, [isPowerMapActive, scoreByIso, world]);
+
+  // Animate toward the target transform (150 ms ease-out), or jump when
+  // dragging or when the user prefers reduced motion.
+  useEffect(() => {
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    const from = viewRef.current;
+    const to = transform;
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isDragging || reduce || (from.x === to.x && from.y === to.y && from.scale === to.scale)) {
+      animRef.current = requestAnimationFrame(() => {
+        animRef.current = null;
+        applyView(to);
+      });
+      return;
+    }
+    const start = performance.now();
+    const D = 150;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / D);
+      const e = 1 - (1 - t) ** 3;
+      applyView({
+        x: from.x + (to.x - from.x) * e,
+        y: from.y + (to.y - from.y) * e,
+        scale: from.scale + (to.scale - from.scale) * e,
+      });
+      animRef.current = t < 1 ? requestAnimationFrame(step) : null;
+    };
+    animRef.current = requestAnimationFrame(step);
+    return () => {
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+    };
+  }, [transform, isDragging, applyView]);
 
   useEffect(() => {
     if (!isPowerMapActive || powerCountryScores.length === 0) {
@@ -693,9 +786,56 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     [transform.x, transform.y],
   );
 
+  /* Country under the pointer from the dot to country table, so hover and
+     click work anywhere inside a country (the SVG border hit areas only
+     answer along the borders, and need the outline file to have loaded). */
+  const canvasHoverRef = useRef(false);
+  const countryAtPointer = useCallback(
+    (clientX: number, clientY: number) => {
+      const r = rendererRef.current;
+      const c = containerRef.current;
+      if (!r || !c) return null;
+      const rect = c.getBoundingClientRect();
+      const g = r.screenToGrid(clientX - rect.left, clientY - rect.top);
+      if (!g) return null;
+      const cell = world.cellAt(g.x, g.y);
+      const iso = cell >= 0 ? world.cellIso[cell] : null;
+      if (!iso || !scoreByIso[iso]) return null;
+      const feat = borderFeatures.find((f) => f.iso === iso);
+      const [lng, lat] = feat ? [feat.centroid.lng, feat.centroid.lat] : world.unproject(g.x, g.y);
+      return {
+        iso,
+        name: feat?.name || powerCountryScores.find((c2) => c2.iso === iso)?.name || iso,
+        score: scoreByIso[iso].score,
+        lng,
+        lat,
+      };
+    },
+    [world, scoreByIso, borderFeatures, powerCountryScores],
+  );
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!isDragging) return;
+      if (!isDragging) {
+        if (!isPowerMapActive) return;
+        const hit = isInteractiveTarget(e.target) ? null : countryAtPointer(e.clientX, e.clientY);
+        if (hit) {
+          canvasHoverRef.current = true;
+          setCountryHover({
+            clientX: e.clientX,
+            clientY: e.clientY,
+            name: hit.name,
+            iso: hit.iso,
+            score: hit.score,
+          });
+          setHoveredCountry(hit.iso);
+        } else if (canvasHoverRef.current) {
+          canvasHoverRef.current = false;
+          setCountryHover(null);
+          setHoveredCountry(null);
+        }
+        return;
+      }
       const nx = e.clientX - dragStart.x;
       const ny = e.clientY - dragStart.y;
       const d = Math.hypot(
@@ -709,12 +849,33 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
         y: ny,
       }));
     },
-    [isDragging, dragStart],
+    [isDragging, dragStart, isPowerMapActive, countryAtPointer, setHoveredCountry],
   );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsDragging(false);
+    if (canvasHoverRef.current) {
+      canvasHoverRef.current = false;
+      setCountryHover(null);
+      setHoveredCountry(null);
+    }
+  }, [setHoveredCountry]);
+
+  const handleMapClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isPowerMapActive || dragMovedRef.current || isInteractiveTarget(e.target)) return;
+      const hit = countryAtPointer(e.clientX, e.clientY);
+      if (!hit) return; // empty map: let the page's click-to-clear run
+      e.stopPropagation();
+      setClickedCountry(hit.iso);
+      onPowerCountryClick?.({ iso: hit.iso, name: hit.name, lng: hit.lng, lat: hit.lat });
+    },
+    [isPowerMapActive, countryAtPointer, setClickedCountry, onPowerCountryClick],
+  );
 
   const lastTouchRef = useRef<TouchList | null>(null);
 
@@ -781,8 +942,6 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
   }, []);
 
   const resetZoom = () => setTransform({ x: 0, y: 0, scale: 1 });
-
-  const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`;
 
   const handleDotClick = (center: FinancialCenter, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -865,7 +1024,8 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleMapClick}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -889,40 +1049,26 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
         </div>
       )}
 
-      <div
-        className="world-map-inner"
-        style={{
-          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-          transformOrigin: '0 0',
-          transition: isDragging ? 'none' : 'transform 0.15s ease-out',
-          // Promote the map to its own GPU layer so dot centers are composited
-          // on whole device pixels — removes the sub-pixel banding at default zoom.
-          willChange: 'transform',
-          backfaceVisibility: 'hidden',
-        }}
-      >
+      {/* Dot field (and heat layer) on a canvas; drawn, never CSS-scaled. */}
+      <canvas
+        ref={canvasRef}
+        className="world-map-canvas"
+        aria-hidden="true"
+        style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
+      />
+
+      {/* Interactive overlay (pins, ISR markers, country hit areas). Its
+          transform is written by applyView in the same frame as the canvas. */}
+      <div ref={innerRef} className="world-map-inner" style={{ transformOrigin: '0 0' }}>
         <div
+          ref={wrapperRef}
           className="world-map-wrapper"
           style={{
             position: 'relative',
             width: '100%',
             height: '100%',
-            backgroundColor: isPowerMapActive ? '#2a2a2a' : 'transparent',
-            transition: 'background-color 250ms ease',
           }}
         >
-          {!(isPowerMapActive && dotIsos) && (
-            <Image
-              src={dataUrl}
-              className="world-map-image"
-              alt=""
-              height={height}
-              width={width}
-              draggable={false}
-              unoptimized
-              style={{ objectFit: 'contain' }}
-            />
-          )}
           <svg
             viewBox={`0 0 ${width} ${height}`}
             className="world-map-svg world-map-svg--interactive"
@@ -940,68 +1086,6 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               height: '100%',
             }}
           >
-            <defs>
-              {/* Lava heatmap glow — top-tier (score ≥ 90): white-hot bloom */}
-              <filter id="lava-glow-strong" x="-200%" y="-200%" width="500%" height="500%">
-                <feGaussianBlur stdDeviation="0.8" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="lava-glow-medium" x="-150%" y="-150%" width="400%" height="400%">
-                <feGaussianBlur stdDeviation="0.4" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            {isPowerMapActive && dotIsos
-              ? baseDots.map((d, i) => {
-                  const iso = dotIsos[i];
-                  const data = iso ? scoreByIso[iso] : undefined;
-
-                  if (!data) {
-                    return (
-                      <circle
-                        key={`pd-${d.idx}`}
-                        cx={d.x}
-                        cy={d.y}
-                        r={0.18}
-                        fill="#1a1a1a"
-                        fillOpacity={0.55}
-                        pointerEvents="none"
-                      />
-                    );
-                  }
-
-                  const filterId =
-                    data.score >= 90
-                      ? 'url(#lava-glow-strong)'
-                      : data.glow
-                        ? 'url(#lava-glow-medium)'
-                        : undefined;
-
-                  // Radii scaled down by ~0.82 (0.18/0.22) to match the higher
-                  // 170-row grid resolution so dots stay crisp and separated.
-                  const radius = data.score >= 90 ? 0.26 : data.score >= 70 ? 0.21 : 0.18;
-
-                  return (
-                    <circle
-                      key={`pd-${d.idx}`}
-                      cx={d.x}
-                      cy={d.y}
-                      r={radius}
-                      fill={data.color}
-                      fillOpacity={data.opacity}
-                      filter={filterId}
-                      pointerEvents="none"
-                    />
-                  );
-                })
-              : null}
             {isPowerMapActive && borderFeatures.length > 0 && (
               <g pointerEvents="auto">
                 {borderFeatures.map((feat) => (
