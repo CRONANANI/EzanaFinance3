@@ -24,10 +24,10 @@ import { DateSelector } from '@/components/ui/DateSelector';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
-import { useWatchlists } from '@/hooks/useWatchlists';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
-import { useEventContext } from '@/hooks/useEventContext';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
+import { NewsCenter } from '@/components/home/NewsCenter';
+import { WIRE_NAME } from '@/lib/home/news-center';
 import './broadsheet.css';
 
 // Canvas card, browser-only: its own chunk, so it stays out of /home's first load.
@@ -35,33 +35,6 @@ const ActivityDensityCard = dynamic(
   () => import('@/components/home/ActivityDensityCard').then((m) => m.ActivityDensityCard),
   { ssr: false, loading: () => <div className="adc-skel" aria-hidden="true" /> },
 );
-
-const HOLDINGS_PAGE_SIZE = 9;
-
-const SECTOR_COLORS = {
-  Technology: '#3b82f6',
-  Healthcare: 'var(--emerald)',
-  Finance: '#a78bfa',
-  Financials: '#a78bfa',
-  'Financial Services': '#a78bfa',
-  Defense: '#f59e0b',
-  Energy: '#f97316',
-  Consumer: '#ec4899',
-  ETF: '#06b6d4',
-  Crypto: '#fbbf24',
-  Commodity: '#84cc16',
-  'Communication Services': '#8b5cf6',
-  'Real Estate': '#14b8a6',
-  Industrials: '#f97316',
-  Materials: '#78716c',
-  Utilities: '#22d3ee',
-  Other: '#6b7280',
-};
-
-function sectorColor(sectorName) {
-  if (!sectorName) return '#6b7280';
-  return SECTOR_COLORS[sectorName] ?? '#6b7280';
-}
 
 const INDEX_COLORS = {
   'S&P 500': '#94928a',
@@ -104,7 +77,7 @@ function formatTickByRange(at, range) {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-/* Schedule (Band IV) category metadata — colours/labels mirror the
+/* Schedule calendar (Band II aside) category metadata — colours/labels mirror the
    /api/market-data/upcoming-events feed so dots, chips and event accents
    stay consistent. */
 const EVENT_CATEGORY_META = {
@@ -145,6 +118,18 @@ const DEFAULT_CAL_LEGEND = [
   { key: 'economic', label: 'Economic', color: '#6366f1' },
   { key: 'inside-the-capitol', label: 'Capitol', color: '#f97316' },
 ];
+
+/* Agenda under the calendar (Band II): how many events show before the
+   "N more" line, and the short day label for each row. */
+const AGENDA_LIMIT = 6;
+function agendaDay(fullDate) {
+  const [y, m, d] = String(fullDate || '')
+    .slice(0, 10)
+    .split('-')
+    .map(Number);
+  if (!y || !m || !d) return '';
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 const RANGE_BUTTONS = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
@@ -313,57 +298,6 @@ function formatBriefLabel() {
   return 'The Evening Brief';
 }
 
-/* Smooth SVG path from values array */
-function pathFromValues(values, w, h, padY = 4) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1;
-  const stepX = w / (values.length - 1);
-  const pts = values.map((v, i) => [i * stepX, h - padY - ((v - min) / range) * (h - padY * 2)]);
-  let d = `M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1];
-    const [x1, y1] = pts[i];
-    const cx = (x0 + x1) / 2;
-    d += ` C ${cx.toFixed(2)} ${y0.toFixed(2)}, ${cx.toFixed(2)} ${y1.toFixed(2)}, ${x1.toFixed(2)} ${y1.toFixed(2)}`;
-  }
-  return { d, pts };
-}
-
-/* Deterministic series generator for placeholder charts */
-function genSeries(seed, n = 40, drift = 0.5, vol = 1) {
-  let x = seed;
-  const out = [];
-  let v = 50;
-  for (let i = 0; i < n; i++) {
-    x = (x * 9301 + 49297) % 233280;
-    const r = x / 233280;
-    v += (r - 0.5) * vol + drift * 0.02;
-    out.push(v);
-  }
-  return out;
-}
-
-/* Inline sparkline SVG */
-function Spark({ values, w = 96, h = 28, color, fill = false, strokeWidth = 1.5 }) {
-  const resolvedColor = color || 'var(--bs-green)';
-  const { d, pts } = pathFromValues(values, w, h, 3);
-  const areaD = d + ` L ${pts[pts.length - 1][0].toFixed(2)} ${h} L ${pts[0][0].toFixed(2)} ${h} Z`;
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
-      {fill && <path d={areaD} fill={resolvedColor} fillOpacity="0.12" />}
-      <path
-        d={d}
-        fill="none"
-        stroke={resolvedColor}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 /* Band header component (Bands I-V) */
 function BandHeader({ number, label, meta, dark = false, centered = false }) {
   if (centered) {
@@ -488,7 +422,7 @@ export default function HomePage() {
   const [timeframe, setTimeframe] = useState('1W');
   const seriesRange = portfolioSeriesRange(timeframe);
 
-  // ─── Schedule (Band IV): live, now-anchored events ───────────────
+  // ─── Schedule calendar (Band II aside): live, now-anchored events ─
   // Personalised feed (today → end of month) from the shared upcoming-events
   // route; replaces the old hardcoded May events + static calendar.
   const scheduleRelevance = useUserRelevanceSet();
@@ -496,7 +430,6 @@ export default function HomePage() {
     relevance: scheduleRelevance,
   });
   const [eventFilter, setEventFilter] = useState('all');
-  const [expandedEventId, setExpandedEventId] = useState(null);
   const [calSel, setCalSel] = useState(null); // { start, end } day-of-month numbers
   const selectCalendarDay = useCallback((day) => {
     setCalSel((prev) => {
@@ -599,12 +532,11 @@ export default function HomePage() {
     };
   }, [liveScheduleEvents, eventFilter, calSel]);
 
-  // News-article / market-implications enrichment for the visible schedule.
-  const visibleScheduleEvents = useMemo(
+  // Agenda under the calendar: the same window as the calendar selection.
+  const agendaItems = useMemo(
     () => scheduleData.dayGroups.flatMap((g) => g.items),
     [scheduleData.dayGroups],
   );
-  const { contextById } = useEventContext(visibleScheduleEvents);
 
   const availableScheduleFilters = useMemo(
     () =>
@@ -627,9 +559,6 @@ export default function HomePage() {
     isLoading: valueSeriesLoading,
     error: valueSeriesError,
   } = usePortfolioValueSeries(seriesRange);
-  const [liveQuotes, setLiveQuotes] = useState({});
-  const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
-  const [holdingsPage, setHoldingsPage] = useState(0);
 
   const [indices, setIndices] = useState([]);
   const [sectorData, setSectorData] = useState({ top: [], bottom: [] });
@@ -640,13 +569,9 @@ export default function HomePage() {
   const [indexSeries, setIndexSeries] = useState({});
   const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
   const [pulseRange, setPulseRange] = useState('1D');
-  const [sectorDrilldown, setSectorDrilldown] = useState(null);
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
   const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
-
-  const { watchlists: userWatchlists } = useWatchlists();
-  const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
@@ -819,124 +744,6 @@ export default function HomePage() {
     return out;
   }, [sparklinePoints, activeIndices, indexSeries, timeframe, extraChartSeries]);
 
-  /* Existing holdings normalization (preserve from current page.js) */
-  const useLiveHoldings =
-    !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
-
-  const normalizedHoldings = useMemo(() => {
-    if (useMock && mock.enrichedPositions.length > 0) {
-      return mock.enrichedPositions.map((pos) => ({
-        ticker: pos.symbol,
-        name: pos.name,
-        qty: pos.qty,
-        price: pos.currentPrice,
-        positionValue: pos.posValue,
-        change: pos.dayChangePct,
-        sector: pos.sector || 'Other',
-      }));
-    }
-    if (useLiveHoldings) {
-      return (plaidHoldingsPayload.aggregated || [])
-        .map((h) => {
-          const ticker = h.ticker;
-          const q = liveQuotes[ticker];
-          const qty = Number(h.totalQuantity) || 0;
-          const price = q?.price ?? Number(h.lastPrice) ?? 0;
-          const positionValue = price * qty || Number(h.totalValue) || 0;
-          const ch = q?.changePercent ?? 0;
-          return {
-            ticker,
-            name: h.name || ticker,
-            qty,
-            price,
-            positionValue,
-            change: ch,
-            sector: h.sector || 'Other',
-            freshness: h.freshness || 'realtime',
-          };
-        })
-        .sort((a, b) => b.positionValue - a.positionValue);
-    }
-    return [];
-  }, [useMock, mock.enrichedPositions, useLiveHoldings, plaidHoldingsPayload, liveQuotes]);
-
-  const sectorDrilldownHoldings = useMemo(() => {
-    if (!sectorDrilldown) return [];
-    return normalizedHoldings.filter((h) => (h.sector || 'Other') === sectorDrilldown);
-  }, [sectorDrilldown, normalizedHoldings]);
-
-  const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
-  const pagedHoldings = useMemo(
-    () =>
-      normalizedHoldings.slice(
-        holdingsPage * HOLDINGS_PAGE_SIZE,
-        (holdingsPage + 1) * HOLDINGS_PAGE_SIZE,
-      ),
-    [normalizedHoldings, holdingsPage],
-  );
-
-  const totalPortfolioValue =
-    currentValue || normalizedHoldings.reduce((s, h) => s + h.positionValue, 0);
-
-  const sectorRows = useMemo(() => {
-    if (useMock && mock.sectorData.length > 0) return mock.sectorData;
-    const map = {};
-    for (const h of normalizedHoldings) {
-      const s = h.sector || 'Other';
-      map[s] = (map[s] || 0) + h.positionValue;
-    }
-    const total = Object.values(map).reduce((a, b) => a + b, 0) || 1;
-    return Object.entries(map)
-      .map(([name, value]) => ({
-        name,
-        value,
-        pct: Math.round((value / total) * 100),
-        color: sectorColor(name),
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [useMock, mock.sectorData, normalizedHoldings]);
-
-  const profitBars = useMemo(() => {
-    if (useMock && mock.enrichedPositions.length > 0) {
-      return [...mock.enrichedPositions]
-        .sort((a, b) => Math.abs(b.pnl) - Math.abs(a.pnl))
-        .slice(0, 6)
-        .map((p) => ({
-          symbol: p.symbol,
-          pnl: p.pnl,
-          color: p.color || sectorColor(p.sector),
-        }));
-    }
-    if (normalizedHoldings.length > 0) {
-      return [...normalizedHoldings]
-        .sort((a, b) => b.positionValue - a.positionValue)
-        .slice(0, 6)
-        .map((h) => ({
-          symbol: h.ticker,
-          pnl: null,
-          weightPct: totalPortfolioValue > 0 ? (h.positionValue / totalPortfolioValue) * 100 : 0,
-          color: sectorColor(h.sector),
-        }));
-    }
-    return [];
-  }, [useMock, mock.enrichedPositions, normalizedHoldings, totalPortfolioValue]);
-
-  const activeWatchlist = useMemo(() => {
-    if (!userWatchlists.length) return null;
-    return userWatchlists.find((w) => w.id === selectedWatchlistId) || userWatchlists[0];
-  }, [userWatchlists, selectedWatchlistId]);
-
-  const watchlistRows = useMemo(() => {
-    const stocks = activeWatchlist?.stocks;
-    if (!stocks?.length) return [];
-    return stocks.map((s) => ({
-      ticker: s.ticker,
-      name: s.name || s.ticker,
-      price: typeof s.price === 'number' ? s.price : 0,
-      change: s.changePct ?? s.change ?? 0,
-    }));
-  }, [activeWatchlist]);
-
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.user_metadata?.name?.split(' ')[0] ||
@@ -945,16 +752,6 @@ export default function HomePage() {
   const displayValue = Number.isFinite(currentValue) ? currentValue : 0;
   const changePct = valueWindowFromApi?.changePct ?? 0;
   const changeAbs = valueWindowFromApi?.changeAbs ?? 0;
-
-  useEffect(() => {
-    if (userWatchlists.length > 0 && !selectedWatchlistId) {
-      setSelectedWatchlistId(userWatchlists[0].id);
-    }
-  }, [userWatchlists, selectedWatchlistId]);
-
-  useEffect(() => {
-    setHoldingsPage(0);
-  }, [timeframe, normalizedHoldings.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1102,59 +899,10 @@ export default function HomePage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('connected') === '1') {
-      fetch('/api/portfolio/holdings', { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (d) setPlaidHoldingsPayload(d);
-        });
       refreshPlaidSummary();
       window.history.replaceState({}, '', '/home');
     }
   }, [refreshPlaidSummary]);
-
-  /* Fetch unified holdings (SnapTrade preferred, Plaid fallback) */
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/portfolio/holdings', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setPlaidHoldingsPayload(data);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  /* Live quotes: portfolio holdings + watchlist */
-  useEffect(() => {
-    const holdingTickers = normalizedHoldings.map((h) => h.ticker).filter(Boolean);
-    const watchTickers = userWatchlists
-      .flatMap((w) => (w.stocks || []).map((s) => s.ticker))
-      .filter(Boolean);
-    const tickers = [...new Set([...holdingTickers, ...watchTickers])];
-    if (!tickers.length) return;
-    let cancelled = false;
-    const load = () => {
-      fetch(`/api/market/batch-quotes?symbols=${tickers.join(',')}`)
-        .then((r) => (r.ok ? r.json() : {}))
-        .then((d) => {
-          if (!cancelled) setLiveQuotes(d.quotes || {});
-        })
-        .catch(() => {});
-    };
-    load();
-    const id = setInterval(load, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [normalizedHoldings.length, userWatchlists]);
 
   return (
     <div className="bs-shell">
@@ -1438,218 +1186,103 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ BAND II — POSITIONS & PROGRESS ═══ */}
+      {/* ═══ BAND II: THE WIRE (News Center) ═══
+          Echo articles, market news and community posts ranked by the
+          reader's interests; the schedule calendar sits top right. */}
       <section className="bs-band bs-band--light">
         <div className="bs-page-inner">
-          <BandHeader number="II" label="Positions &amp; progress" meta="Holdings · streak · ELO" />
-          <div className="bs-pos-row">
-            <div className="bs-pos-l">
-              <div className="bs-sub-head">
-                <h3 className="bs-sub-title">Holdings</h3>
-                <span className="bs-sub-meta bs-sub-meta--paged">
-                  {normalizedHoldings.length === 0
-                    ? 'No positions'
-                    : `Page ${holdingsPage + 1} of ${holdingsPageCount} · ${normalizedHoldings.length} total`}
-                  {holdingsPageCount > 1 && (
-                    <span className="bs-holdings-pager">
-                      <button
-                        type="button"
-                        className="bs-holdings-pager-btn"
-                        disabled={holdingsPage === 0}
-                        onClick={() => setHoldingsPage((p) => p - 1)}
-                        aria-label="Previous holdings page"
-                      >
-                        ← Prev
-                      </button>
-                      <button
-                        type="button"
-                        className="bs-holdings-pager-btn"
-                        disabled={holdingsPage >= holdingsPageCount - 1}
-                        onClick={() => setHoldingsPage((p) => p + 1)}
-                        aria-label="Next holdings page"
-                      >
-                        Next →
-                      </button>
-                    </span>
-                  )}
-                </span>
-              </div>
-              {pagedHoldings.length === 0 ? (
-                <p className="bs-holdings-empty">
-                  {useMock
-                    ? 'No mock positions yet, open Mock Trading to build a portfolio.'
-                    : plaidConnected
-                      ? 'Holdings sync in progress…'
-                      : 'Link a brokerage or try Mock Trading to see positions here.'}
-                </p>
-              ) : (
-                <table className="bs-table">
-                  <thead>
-                    <tr>
-                      <th className="bs-th bs-th--l">Symbol</th>
-                      <th className="bs-th bs-th--l">Name</th>
-                      <th className="bs-th bs-th--r">Day</th>
-                      <th className="bs-th bs-th--r">Value</th>
-                      <th className="bs-th bs-th--r">Weight</th>
-                      <th className="bs-th bs-th--r">7-day</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedHoldings.map((h, i) => {
-                      const q = liveQuotes[h.ticker];
-                      const ch = q?.changePercent ?? h.change ?? 0;
-                      const weight =
-                        totalPortfolioValue > 0 ? (h.positionValue / totalPortfolioValue) * 100 : 0;
-                      const up = ch >= 0;
-                      return (
-                        <tr key={h.ticker} className="bs-tr">
-                          <td className="bs-td-sym">
-                            {h.ticker}
-                            {h.freshness === 'end_of_day' && (
-                              <span className="hpg-eod-badge" title="End-of-day data (via Plaid)">
-                                EOD
-                              </span>
-                            )}
-                          </td>
-                          <td className="bs-td-name">{h.name}</td>
-                          <td className={`bs-td-r ${up ? 'bs-td-r--up' : 'bs-td-r--down'}`}>
-                            {fmtPct(ch)}
-                          </td>
-                          <td className="bs-td-r">
-                            ${h.positionValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </td>
-                          <td className="bs-td-r">{weight.toFixed(1)}%</td>
-                          <td className="bs-td-spark">
-                            <Spark
-                              values={genSeries(7 + i * 11, 28, up ? 0.6 : -0.3, 1.2)}
-                              color={up ? 'var(--bs-green)' : 'var(--bs-red)'}
-                              fill
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-            <div className="bs-pos-r">
-              {sectorRows.length > 0 && (
-                <div className="bs-sector-panel">
-                  <div className="bs-prog-label">Sector breakdown</div>
-                  {sectorRows.slice(0, 5).map((s) => (
+          <BandHeader number="II" label={WIRE_NAME} meta="Echo · news · community" />
+          <NewsCenter
+            tickers={scheduleRelevance.tickers}
+            aside={
+              <>
+                <MiniCalendar
+                  cells={scheduleData.cells}
+                  dayToCategories={scheduleData.dayToCategories}
+                  today={scheduleData.today}
+                  monthTitle={scheduleData.monthTitle}
+                  legend={[]}
+                  selection={calSel}
+                  onSelectDay={selectCalendarDay}
+                />
+                <div
+                  className="bs-sched-filters"
+                  role="tablist"
+                  aria-label="Filter calendar by event category"
+                >
+                  {availableScheduleFilters.map((f) => (
                     <button
-                      key={s.name}
+                      key={f.key}
                       type="button"
-                      className="bs-sector-row bs-sector-row--btn"
-                      onClick={() => setSectorDrilldown(s.name)}
+                      role="tab"
+                      aria-selected={eventFilter === f.key}
+                      className={`bs-sched-chip${eventFilter === f.key ? ' is-active' : ''}`}
+                      onClick={() => setEventFilter(f.key)}
                     >
-                      <span className="bs-sector-name">
-                        <span className="bs-sector-dot" style={{ background: s.color }} />
-                        {s.name}
-                      </span>
-                      <div className="bs-sector-bar">
-                        <div
-                          className="bs-sector-bar-fill"
-                          style={{ width: `${s.pct}%`, background: s.color }}
+                      {f.key !== 'all' && (
+                        <span
+                          className="bs-sched-chip-dot"
+                          style={{ background: eventCategoryColor(f.key) }}
                         />
-                      </div>
-                      <span className="bs-sector-pct">{s.pct}%</span>
+                      )}
+                      {f.label}
                     </button>
                   ))}
                 </div>
-              )}
-              {profitBars.length > 0 && (
-                <div className="bs-profits-panel">
-                  <div className="bs-prog-label">Position P&amp;L</div>
-                  {(() => {
-                    const maxMag =
-                      profitBars.reduce(
-                        (m, r) =>
-                          Math.max(
-                            m,
-                            typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0,
-                          ),
-                        0,
-                      ) || 1;
-                    return profitBars.map((r) => {
-                      const mag = typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0;
-                      const positive = typeof r.pnl === 'number' ? r.pnl >= 0 : true;
-                      const barColor =
-                        typeof r.pnl === 'number'
-                          ? positive
-                            ? 'var(--positive-bright)'
-                            : '#f87171'
-                          : r.color;
-                      return (
-                        <div key={r.symbol} className="bs-profits-bar-row">
-                          <span className="bs-profits-sym">{r.symbol}</span>
-                          <div className="bs-profits-track">
-                            <div
-                              className="bs-profits-fill"
-                              style={{
-                                width: `${(mag / maxMag) * 100}%`,
-                                background: barColor,
-                              }}
-                            />
-                          </div>
-                          <span className="bs-profits-val" style={{ color: barColor }}>
-                            {typeof r.pnl === 'number'
-                              ? `${positive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                              : `${(r.weightPct || 0).toFixed(0)}%`}
-                          </span>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              )}
-              <div className="bs-watchlist-panel">
-                <div className="bs-sub-head">
-                  <h3 className="bs-sub-title">Watchlist</h3>
-                  {userWatchlists.length > 1 && (
-                    <select
-                      value={selectedWatchlistId || ''}
-                      onChange={(e) => setSelectedWatchlistId(e.target.value)}
-                      className="bs-watchlist-select"
-                    >
-                      {userWatchlists.map((wl) => (
-                        <option key={wl.id} value={wl.id}>
-                          {wl.label}
-                        </option>
-                      ))}
-                    </select>
+                <div>
+                  <div className="nwc-agenda-head">
+                    <span className="nwc-agenda-title" role="status">
+                      {scheduleData.selectionLabel || 'Next 7 days'}
+                    </span>
+                    {calSel && (
+                      <button
+                        type="button"
+                        className="nwc-agenda-clear"
+                        onClick={() => setCalSel(null)}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {scheduleLoading && scheduleData.totalWindow === 0 ? (
+                    <p className="nwc-agenda-note">Loading upcoming events…</p>
+                  ) : agendaItems.length === 0 ? (
+                    <p className="nwc-agenda-note">
+                      {calSel
+                        ? calSel.start === calSel.end
+                          ? `No events on ${scheduleData.selectionLabel}.`
+                          : `No events between ${scheduleData.selectionLabel}.`
+                        : 'No upcoming events in the next week. Releases for your region and events for the companies, politicians and assets you follow will appear here.'}
+                    </p>
+                  ) : (
+                    <>
+                      <ul className="nwc-agenda">
+                        {agendaItems.slice(0, AGENDA_LIMIT).map((ev) => (
+                          <li
+                            key={ev.id}
+                            className="nwc-agenda-item"
+                            style={{
+                              '--nwc-ev-color': ev.color || eventCategoryColor(ev.category),
+                            }}
+                            title={[ev.title, ev.subtitle, ev.time].filter(Boolean).join(' · ')}
+                          >
+                            <span className="nwc-agenda-dot" aria-hidden="true" />
+                            <span className="nwc-agenda-when">{agendaDay(ev.fullDate)}</span>
+                            <span className="nwc-agenda-what">{ev.title}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {agendaItems.length > AGENDA_LIMIT && (
+                        <p className="nwc-agenda-note">
+                          {agendaItems.length - AGENDA_LIMIT} more. Select a day to narrow the list.
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
-                {watchlistRows.length === 0 ? (
-                  <p className="bs-watchlist-empty">
-                    Empty watchlist, add symbols to track live prices.
-                  </p>
-                ) : (
-                  watchlistRows.map((w) => {
-                    const q = liveQuotes[w.ticker];
-                    const px = q?.price ?? w.price;
-                    const ch = q?.changePercent ?? w.change;
-                    return (
-                      <div key={w.ticker} className="bs-watchlist-row">
-                        <span className="bs-watchlist-ticker">{w.ticker}</span>
-                        <span className="bs-watchlist-name">{w.name}</span>
-                        <span className="bs-watchlist-price">
-                          ${Number(px).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </span>
-                        <span
-                          className={`bs-watchlist-chg ${ch >= 0 ? 'bs-pulse-pct--up' : 'bs-pulse-pct--down'}`}
-                        >
-                          {ch >= 0 ? '+' : ''}
-                          {Number(ch).toFixed(2)}%
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
+              </>
+            }
+          />
         </div>
       </section>
 
@@ -1739,163 +1372,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ BAND IV — THE SCHEDULE ═══ */}
-      <section className="bs-band bs-band--cream">
-        <div className="bs-page-inner">
-          <BandHeader number="IV" label="The schedule" meta="Events, releases &amp; filings" />
-          <div
-            className="bs-sched-filters"
-            role="tablist"
-            aria-label="Filter schedule by event category"
-          >
-            {availableScheduleFilters.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                role="tab"
-                aria-selected={eventFilter === f.key}
-                className={`bs-sched-chip${eventFilter === f.key ? ' is-active' : ''}`}
-                onClick={() => setEventFilter(f.key)}
-              >
-                {f.key !== 'all' && (
-                  <span
-                    className="bs-sched-chip-dot"
-                    style={{ background: eventCategoryColor(f.key) }}
-                  />
-                )}
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <div className="bs-sched-row">
-            <div className="bs-sched-events">
-              {scheduleData.selectionLabel && (
-                <div className="bs-sched-selection" role="status">
-                  <span>Showing {scheduleData.selectionLabel}</span>
-                  <button
-                    type="button"
-                    className="bs-sched-selection-clear"
-                    onClick={() => setCalSel(null)}
-                  >
-                    Clear
-                  </button>
-                </div>
-              )}
-              {scheduleLoading && scheduleData.totalWindow === 0 ? (
-                <div className="bs-sched-empty">Loading upcoming events…</div>
-              ) : scheduleData.dayGroups.length === 0 ? (
-                <div className="bs-sched-empty">
-                  {calSel
-                    ? calSel.start === calSel.end
-                      ? `No events on ${scheduleData.selectionLabel}.`
-                      : `No events between ${scheduleData.selectionLabel}.`
-                    : scheduleData.totalWindow === 0
-                      ? 'No upcoming events in the next week. Economic releases for your region and events for the companies, politicians and assets you follow will appear here.'
-                      : `No ${(
-                          SCHEDULE_FILTERS.find((f) => f.key === eventFilter)?.label || ''
-                        ).toLowerCase()} events in the next week.`}
-                </div>
-              ) : (
-                scheduleData.dayGroups.map((group) => (
-                  <div key={group.day} className="bs-event-day-block">
-                    <div className="bs-event-day-head">
-                      <span className="bs-event-day-label">{group.label}</span>
-                      <span className="bs-event-day-count">
-                        {group.items.length} {group.items.length === 1 ? 'event' : 'events'}
-                      </span>
-                    </div>
-                    <div className="bs-event-grid">
-                      {group.items.map((ev) => {
-                        const color = ev.color || eventCategoryColor(ev.category);
-                        const open = expandedEventId === ev.id;
-                        const detailId = `bs-ev-${String(ev.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
-                        const catLabel = EVENT_CATEGORY_META[ev.category]?.label || ev.category;
-                        const ctx = contextById[ev.id];
-                        return (
-                          <div
-                            key={ev.id}
-                            className={`bs-event-item${open ? ' is-open' : ''}`}
-                            style={{ '--bs-ev-color': color }}
-                          >
-                            <button
-                              type="button"
-                              className="bs-event-toggle"
-                              aria-expanded={open}
-                              aria-controls={detailId}
-                              onClick={() => setExpandedEventId(open ? null : ev.id)}
-                              title={ev.subtitle || ev.title}
-                            >
-                              <span className="bs-event-dot" aria-hidden="true" />
-                              <span className="bs-event-compact-time">{ev.time || catLabel}</span>
-                              <span className="bs-event-compact-title">{ev.title}</span>
-                              {ev.impact === 'High' && <span className="bs-event-flag">HIGH</span>}
-                              <i
-                                className={`bi bi-chevron-${open ? 'up' : 'down'} bs-event-chev`}
-                                aria-hidden="true"
-                              />
-                            </button>
-                            {open && (
-                              <div id={detailId} className="bs-event-detail">
-                                <div className="bs-event-date" style={{ color }}>
-                                  {catLabel}
-                                  {ev.time ? ` · ${ev.time}` : ''}
-                                </div>
-                                <div className="bs-event-title">{ev.title}</div>
-                                <div className="bs-event-meta-row">
-                                  <span>{ev.subtitle || ev.symbol || ''}</span>
-                                </div>
-                                {ctx?.article ? (
-                                  <a
-                                    href={ctx.article.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bs-event-article"
-                                  >
-                                    <i
-                                      className="bi bi-newspaper bs-event-article-icon"
-                                      aria-hidden="true"
-                                    />
-                                    <span className="bs-event-article-text">
-                                      {ctx.article.headline}
-                                      <span className="bs-event-article-src">
-                                        {' '}
-                                        · {ctx.article.source}
-                                      </span>
-                                    </span>
-                                  </a>
-                                ) : ctx?.blurb ? (
-                                  <div className="bs-event-implication">
-                                    <span className="bs-event-implication-label">
-                                      Market implications
-                                    </span>
-                                    <p className="bs-event-implication-text">{ctx.blurb}</p>
-                                  </div>
-                                ) : null}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="bs-sched-aside">
-              <MiniCalendar
-                cells={scheduleData.cells}
-                dayToCategories={scheduleData.dayToCategories}
-                today={scheduleData.today}
-                monthTitle={scheduleData.monthTitle}
-                legend={scheduleData.legend}
-                selection={calSel}
-                onSelectDay={selectCalendarDay}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ═══ COLOPHON ═══ */}
       <div className="bs-band bs-band--dark">
         <div className="bs-page-inner">
@@ -1914,64 +1390,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      {sectorDrilldown && (
-        <div className="bs-sector-modal-overlay" onClick={() => setSectorDrilldown(null)}>
-          <div className="bs-sector-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="bs-sector-modal-head">
-              <div>
-                <div className="bs-sector-modal-eyebrow">Sector breakdown</div>
-                <div className="bs-sector-modal-title">{sectorDrilldown}</div>
-              </div>
-              <button
-                type="button"
-                className="bs-sector-modal-close"
-                onClick={() => setSectorDrilldown(null)}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-            {sectorDrilldownHoldings.length === 0 ? (
-              <p className="bs-sector-modal-empty">No holdings in this sector.</p>
-            ) : (
-              <table className="bs-sector-modal-table">
-                <thead>
-                  <tr>
-                    <th className="bs-th bs-th--l">Symbol</th>
-                    <th className="bs-th bs-th--l">Name</th>
-                    <th className="bs-th bs-th--r">Day</th>
-                    <th className="bs-th bs-th--r">Value</th>
-                    <th className="bs-th bs-th--r">Weight</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sectorDrilldownHoldings.map((h) => {
-                    const q = liveQuotes[h.ticker];
-                    const ch = q?.changePercent ?? h.change ?? 0;
-                    const weight =
-                      totalPortfolioValue > 0 ? (h.positionValue / totalPortfolioValue) * 100 : 0;
-                    const up = ch >= 0;
-                    return (
-                      <tr key={h.ticker} className="bs-tr">
-                        <td className="bs-td-sym">{h.ticker}</td>
-                        <td className="bs-td-name">{h.name}</td>
-                        <td className={`bs-td-r ${up ? 'bs-td-r--up' : 'bs-td-r--down'}`}>
-                          {fmtPct(ch)}
-                        </td>
-                        <td className="bs-td-r">
-                          ${h.positionValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                        </td>
-                        <td className="bs-td-r">{weight.toFixed(1)}%</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
 
       <AddPortfolioModal
         open={addPortfolioOpen}

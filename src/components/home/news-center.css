@@ -1,0 +1,360 @@
+/* /home Band II: the News Center ("The Wire"). Scoped `nwc-`. Renders inside
+   .bs-shell, so it reads the broadsheet's --bs-* palette and adds no colour
+   of its own. No card fills and no outlines: hairline rules only. */
+.nwc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 48px;
+  align-items: start;
+}
+.nwc-main {
+  min-width: 0;
+}
+.nwc-aside {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Tabs */
+.nwc-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.nwc-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.nwc-tab {
+  padding: 6px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bs-text-label);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.nwc-tab:hover {
+  color: var(--bs-text-dark);
+}
+.nwc-tab.is-active {
+  color: var(--bs-text-dark);
+  border-bottom-color: var(--emerald);
+}
+.nwc-tab:focus-visible,
+.nwc-lead:focus-visible,
+.nwc-row-link:focus-visible,
+.nwc-more:focus-visible,
+.nwc-agenda-clear:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.nwc-basis {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label-caps);
+}
+
+/* Shared bits */
+.nwc-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label-caps);
+}
+.nwc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.nwc-meta-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.nwc-why {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bs-green);
+}
+.nwc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Lead story */
+.nwc-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--bs-border-rule);
+  color: inherit;
+  text-decoration: none;
+}
+.nwc-lead--text {
+  grid-template-columns: minmax(0, 1fr);
+}
+.nwc-lead-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--bs-cream-card-bg);
+}
+.nwc-lead-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.nwc-lead-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.375rem, 1rem + 1vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: var(--bs-text-dark);
+  text-wrap: balance;
+  transition: color 0.15s ease;
+}
+.nwc-lead-dek {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bs-text-body);
+}
+.nwc-lead:hover .nwc-lead-title,
+.nwc-row-link:hover .nwc-row-title {
+  color: var(--emerald);
+}
+
+/* List */
+.nwc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+}
+.nwc-row {
+  border-bottom: 1px solid var(--bs-border-subtle);
+}
+.nwc-row-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 14px 0;
+  color: inherit;
+  text-decoration: none;
+}
+.nwc-row-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--bs-text-dark);
+  transition: color 0.15s ease;
+}
+.nwc-ext {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--bs-text-label);
+}
+.nwc-row-dek {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--bs-text-body);
+}
+.nwc-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald);
+  text-decoration: none;
+}
+.nwc-empty {
+  margin: 0;
+  padding: 28px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bs-text-label);
+}
+
+/* Loading */
+.nwc-skel-lead,
+.nwc-skel-row {
+  border-radius: var(--radius-sm);
+  background: var(--bs-cream-card-bg);
+  animation: nwc-shimmer 1.5s ease-in-out infinite;
+}
+.nwc-skel-lead {
+  height: 200px;
+  margin-bottom: 16px;
+}
+.nwc-skel-row {
+  height: 44px;
+  margin-bottom: 10px;
+}
+@keyframes nwc-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Aside: calendar filter chips and the agenda under the calendar. The
+   calendar itself keeps its .bs-cal-* rules from broadsheet.css. */
+.nwc-aside .bs-sched-filters {
+  margin-bottom: 0;
+}
+.nwc-agenda-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bs-border-rule);
+}
+.nwc-agenda-title {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label-caps);
+}
+.nwc-agenda-clear {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald);
+  cursor: pointer;
+}
+.nwc-agenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nwc-agenda-item {
+  display: grid;
+  grid-template-columns: 8px 52px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bs-border-subtle);
+  font-size: 13px;
+  color: var(--bs-text-dark);
+}
+.nwc-agenda-dot {
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--nwc-ev-color, var(--bs-text-label));
+}
+.nwc-agenda-when {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--bs-text-label);
+}
+.nwc-agenda-what {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.nwc-agenda-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bs-text-label);
+}
+
+@media (max-width: 1279px) {
+  .nwc {
+    gap: 32px;
+  }
+  .nwc-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 959px) {
+  .nwc {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Calendar first on small screens: it is the shorter block. */
+  .nwc-aside {
+    order: -1;
+  }
+}
+@media (max-width: 639px) {
+  .nwc-lead {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .nwc-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nwc-tab,
+  .nwc-lead-title,
+  .nwc-row-title {
+    transition: none;
+  }
+  .nwc-skel-lead,
+  .nwc-skel-row {
+    animation: none;
+  }
+}
