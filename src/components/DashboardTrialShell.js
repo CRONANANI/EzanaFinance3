@@ -38,6 +38,40 @@ function shouldSkipTrialCheck(pathname, isPartner) {
    the calls failed or stalled. */
 let trialVerdictCache = null; // { userId, blocked, needsOnboarding }
 
+/* Perf (Nov 2026): the verdict is also kept in sessionStorage, so a full page
+   load (refresh, new tab, typed URL) applies the last verdict straight after
+   hydration instead of holding the whole page behind a spinner for three
+   database round trips. It is still re-resolved in the background on every
+   load, exactly as on a client-side navigation, so a stale or edited value
+   lasts for one request. This is a display gate; RLS protects the data. */
+const VERDICT_STORAGE_KEY = 'ezana.trial-verdict.v1';
+
+function readStoredVerdict() {
+  try {
+    const raw = window.sessionStorage.getItem(VERDICT_STORAGE_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw);
+    if (!v || typeof v !== 'object') return null;
+    return {
+      userId: typeof v.userId === 'string' ? v.userId : null,
+      blocked: v.blocked === true,
+      needsOnboarding: v.needsOnboarding === true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function setVerdictCache(verdict) {
+  trialVerdictCache = verdict;
+  try {
+    if (verdict) window.sessionStorage.setItem(VERDICT_STORAGE_KEY, JSON.stringify(verdict));
+    else window.sessionStorage.removeItem(VERDICT_STORAGE_KEY);
+  } catch {
+    /* sessionStorage unavailable: the in-memory cache still works */
+  }
+}
+
 const VERDICT_TIMEOUT_MS = 8000;
 
 function verdictTimeout() {
@@ -62,63 +96,55 @@ async function resolveTrialVerdict() {
     return { userId: null, blocked: false, needsOnboarding: false };
   }
 
-  // Source of truth: org_members — never apply consumer trial/plan gate to council users
-  const { data: orgMember } = await supabase
-    .from('org_members')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle();
-
-  if (orgMember) {
-    const { data: orgProfile } = await supabase
+  /* Perf (Nov 2026): the three reads below are independent, so they run
+     together (one wait, not three in a row). The decisions that follow are
+     unchanged and in the same order. The profile select is the superset the
+     org and consumer branches used. A failed rewards read still just means
+     "no reward". */
+  const nowIso = new Date().toISOString();
+  const [{ data: orgMember }, { data: profile }, rewardsRes] = await Promise.all([
+    // Source of truth: org_members. Never apply the consumer trial/plan gate to council users.
+    supabase
+      .from('org_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle(),
+    supabase
       .from('profiles')
-      .select('onboarding_completed, investor_questionnaire_completed')
+      .select(
+        'subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end, onboarding_completed, investor_questionnaire_completed',
+      )
       .eq('id', user.id)
-      .maybeSingle();
-
-    return {
-      userId: user.id,
-      blocked: false,
-      needsOnboarding:
-        orgProfile?.onboarding_completed === true &&
-        orgProfile?.investor_questionnaire_completed !== true,
-    };
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select(
-      'subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end, onboarding_completed, investor_questionnaire_completed',
-    )
-    .eq('id', user.id)
-    .maybeSingle();
+      .maybeSingle(),
+    /* An active referral reward (a month of Personal, or a year of Personal
+       Advanced) is access too. RLS lets a user read their own rewards; any
+       error (for example before the referrals migration) just means none. */
+    Promise.resolve(
+      supabase
+        .from('referral_rewards')
+        .select('id')
+        .eq('user_id', user.id)
+        .lte('starts_at', nowIso)
+        .gt('ends_at', nowIso)
+        .limit(1),
+    ).catch(() => ({ data: null, error: true })),
+  ]);
 
   const needsOnboarding =
     profile?.onboarding_completed === true && profile?.investor_questionnaire_completed !== true;
+
+  if (orgMember) {
+    return { userId: user.id, blocked: false, needsOnboarding };
+  }
 
   if (hasActiveSubscription(profile)) {
     return { userId: user.id, blocked: false, needsOnboarding };
   }
 
-  /* An active referral reward (a month of Personal, or a year of Personal
-     Advanced) is access too. RLS lets a user read their own rewards; any
-     error (for example before the referrals migration) just means none. */
-  try {
-    const nowIso = new Date().toISOString();
-    const { data: rewards, error: rewardsError } = await supabase
-      .from('referral_rewards')
-      .select('id')
-      .eq('user_id', user.id)
-      .lte('starts_at', nowIso)
-      .gt('ends_at', nowIso)
-      .limit(1);
-    if (!rewardsError && rewards?.length) {
-      return { userId: user.id, blocked: false, needsOnboarding };
-    }
-  } catch {
-    /* fall through to the trial check */
+  if (!rewardsRes?.error && rewardsRes?.data?.length) {
+    return { userId: user.id, blocked: false, needsOnboarding };
   }
 
   const trial = getTrialStatus(profile, user.created_at);
@@ -133,7 +159,7 @@ export function DashboardTrialShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isPartner } = usePartner();
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
   const authUserId = authUser?.id ?? null;
   const prevPathnameRef = useRef(null);
   const [ready, setReady] = useState(
@@ -150,11 +176,15 @@ export function DashboardTrialShell({ children }) {
     // can't bounce the user straight back to /onboarding.
     const cameFromOnboarding = prevPathnameRef.current?.startsWith('/onboarding') && !onOnboarding;
     prevPathnameRef.current = path;
-    if (cameFromOnboarding) trialVerdictCache = null;
+    if (cameFromOnboarding) setVerdictCache(null);
 
-    // Sign-out / account switch invalidates the cached verdict.
-    if (trialVerdictCache && trialVerdictCache.userId !== authUserId) {
-      trialVerdictCache = null;
+    // Full page load: pick up the verdict stored earlier in this tab.
+    if (!trialVerdictCache && !cameFromOnboarding) trialVerdictCache = readStoredVerdict();
+
+    // Sign-out / account switch invalidates the cached verdict. While auth is
+    // still resolving, authUserId is null and says nothing yet.
+    if (!authLoading && trialVerdictCache && trialVerdictCache.userId !== authUserId) {
+      setVerdictCache(null);
     }
 
     if (shouldSkipTrialCheck(path, isPartner)) {
@@ -181,7 +211,7 @@ export function DashboardTrialShell({ children }) {
         const verdict = await Promise.race([resolveTrialVerdict(), verdictTimeout()]);
         if (cancelled) return;
 
-        if (verdict) trialVerdictCache = verdict;
+        if (verdict) setVerdictCache(verdict);
 
         // Timed out → fail open for this navigation; the uncached verdict is
         // re-resolved on the next one.
@@ -207,7 +237,7 @@ export function DashboardTrialShell({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, isPartner, authUserId, router]);
+  }, [pathname, isPartner, authUserId, authLoading, router]);
 
   if (!ready && !shouldSkipTrialCheck(pathname ?? '', isPartner)) {
     return (

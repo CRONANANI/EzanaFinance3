@@ -229,17 +229,34 @@ async function handle(request, requestId) {
     },
   );
 
-  const authRes = await withTimeout(
-    supabase.auth.getUser(),
-    pathname.startsWith('/api/') ? T_AUTH_API_MS : T_AUTH_MS,
-    'auth.getUser',
-  );
+  /* Perf (Nov 2026). A page view fires many /api calls, and each one paid a
+     getUser() round trip from the edge to the auth server here before the
+     route ran. On /api the session only feeds the rate-limit key and the
+     account-lock read, and withApiGuard / requireUser verify the session
+     again inside the route, so the token is checked with getClaims():
+     signature and expiry verified against the project's public signing key,
+     no network hop. On a project still signing with the legacy shared
+     secret, getClaims() falls back to getUser() by itself, so this is never
+     weaker than before. Page requests keep getUser(): their gates below
+     (profile, MFA) run once per navigation and want the live user. */
+  const isApiRequest = pathname.startsWith('/api/');
+  const authRes = isApiRequest
+    ? await withTimeout(supabase.auth.getClaims(), T_AUTH_API_MS, 'auth.getClaims')
+    : await withTimeout(supabase.auth.getUser(), T_AUTH_MS, 'auth.getUser');
   /* A timed-out or failed lookup is "unknown", treated as signed out below:
      protected pages send the visitor to sign in (reason=timeout), API routes
      pass through to withApiGuard, which authenticates on its own. */
   const authUnknown = !authRes.ok;
   if (authUnknown) warnTimeout(authRes, pathname, requestId);
-  const user = authRes.ok ? (authRes.value?.data?.user ?? null) : null;
+  let user = null;
+  if (authRes.ok) {
+    if (isApiRequest) {
+      const sub = authRes.value?.data?.claims?.sub;
+      user = typeof sub === 'string' && sub ? { id: sub } : null;
+    } else {
+      user = authRes.value?.data?.user ?? null;
+    }
+  }
 
   /** OAuth / PKCE callback — session is established client-side; do not gate */
   if (pathname === '/auth/callback' || pathname.startsWith('/auth/callback/')) {
@@ -261,7 +278,19 @@ async function handle(request, requestId) {
     /* Global API rate limit. Signed-in callers are keyed by verified user id
        (300/min), so a campus or office NAT no longer pools a whole SMIF onto
        one IP bucket. Anonymous callers keep 100/min per IP. Runs after
-       getUser(), which every /api request already pays for. */
+       the session check, which every /api request already pays for. */
+    /* Perf (Nov 2026): the account-lock read does not depend on the rate
+       limit, so it starts now and the two run side by side (one wait, not
+       two). It is awaited where it always was, below. withTimeout never
+       rejects, so leaving it unawaited on a 429 is safe. */
+    const apiProfilePromise =
+      user && !pathname.startsWith('/api/auth/')
+        ? withTimeout(
+            supabase.from('profiles').select('is_disabled').eq('id', user.id).maybeSingle(),
+            T_DB_MS,
+            'profiles.is_disabled',
+          )
+        : null;
     const RL_SKIP = [
       '/api/auth/',
       '/api/webhooks/',
@@ -336,12 +365,8 @@ async function handle(request, requestId) {
       response = apiNext;
     }
 
-    if (user && !pathname.startsWith('/api/auth/')) {
-      const apiProfileRes = await withTimeout(
-        supabase.from('profiles').select('is_disabled').eq('id', user.id).maybeSingle(),
-        T_DB_MS,
-        'profiles.is_disabled',
-      );
+    if (apiProfilePromise) {
+      const apiProfileRes = await apiProfilePromise;
       /* Fail open: route handlers still authorise every request. */
       if (!apiProfileRes.ok) warnTimeout(apiProfileRes, pathname, requestId);
       const apiProfile = apiProfileRes.ok ? apiProfileRes.value?.data : null;
@@ -361,6 +386,23 @@ async function handle(request, requestId) {
   /* Org (university) members use Team Hub as their dashboard, never the regular
      member home. Redirect them server-side so /home never renders for an org
      user (avoids the regular-home flash before the client-side bounce). */
+  /* Perf (Nov 2026): on /home the profile gate read below does not depend on
+     the org lookup, so it starts here and the two run side by side. Same
+     query, same timeout, awaited where it always was. */
+  const homeProfileGatePromise =
+    user && pathname === '/home' && matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES)
+      ? withTimeout(
+          supabase
+            .from('profiles')
+            .select(
+              'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
+            )
+            .eq('id', user.id)
+            .maybeSingle(),
+          T_DB_MS,
+          'profiles.gates',
+        )
+      : null;
   if (user && pathname === '/home') {
     const orgRes = await withTimeout(
       supabase
@@ -435,17 +477,19 @@ async function handle(request, requestId) {
   /** Dashboard / partner / trading (under USER_DASHBOARD_ROUTES): account lock, then verification + deletion */
   let profileGate = null;
   if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
-    profileGate = await withTimeout(
-      supabase
-        .from('profiles')
-        .select(
-          'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
-        )
-        .eq('id', user.id)
-        .maybeSingle(),
-      T_DB_MS,
-      'profiles.gates',
-    );
+    profileGate = homeProfileGatePromise
+      ? await homeProfileGatePromise
+      : await withTimeout(
+          supabase
+            .from('profiles')
+            .select(
+              'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
+            )
+            .eq('id', user.id)
+            .maybeSingle(),
+          T_DB_MS,
+          'profiles.gates',
+        );
     /* Fail open: skip every profile gate below rather than guess (a missing
        profile would otherwise send a verified user to /auth/verify-email).
        The page's own server gate still runs. */

@@ -15,6 +15,7 @@ export function createServerClient() {
   return {
     auth: {
       getUser: never,
+      getClaims: never,
       signOut: never,
       mfa: { getAuthenticatorAssuranceLevel: never },
     },
