@@ -15,9 +15,12 @@
  * watchlist adds, completed lessons), the deeper the colour. No login and
  * no action leaves the day empty. Levels come from lib/activity-density.js.
  *
- * Layout (Nov 2026, v2): the title and the four stats sit in a column on the
- * left as a 2x2 grid; the legend, the 2D / 3D toggle and the chart fill the
- * right. Each stat shows the member's percentile on Ezana and links to the
+ * Layout (Nov 2026, v3): the title sits over the four stats, which run on
+ * one line as compact, transparent tiles exactly as tall as the flat heat
+ * map beside them (the canvas publishes its flat height as --adc-flat-h).
+ * The legend, the 2D / 3D toggle and the chart fill the right, and the flat
+ * grid is right-aligned so its last week lines up with the page's right
+ * edge (the same edge as the logout icon in the top nav). Each stat shows the member's percentile on Ezana and links to the
  * matching analytics section of their profile (#activity-active-days,
  * #activity-busiest-day, #activity-longest-streak, #activity-current-streak).
  * The same card renders on the profile page (variant="profile"), where the
@@ -493,6 +496,11 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
       const natural = ((b3.maxy - b3.miny) / (b3.maxx - b3.minx)) * (W - 40) + 40;
       H3 = Math.max(Math.min(natural, W * 0.32, H3_MAX), Math.min(natural, 180));
       Hmax = Math.ceil(Math.max(H2, H3));
+      // The stats beside the chart line up with the flat grid's cells: they
+      // start under the month labels (top pad 2 + label row 20) and end at
+      // the last weekday row (bottom pad 2). draw() uses the same pads at e=0.
+      root.style.setProperty('--adc-grid-top', '22px');
+      root.style.setProperty('--adc-flat-h', `${Math.max(0, Math.round(H2 - 24))}px`);
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(Hmax * dpr);
       canvas.style.width = `${W}px`;
@@ -515,12 +523,15 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
       const pad = lerp(2, 20, e);
       const left = pad + gutter * (1 - e);
       const top = pad + 20 * (1 - e);
-      const aw = W - left - pad;
+      // Flush right when flat (the grid's last week meets the page edge);
+      // centred in the 3D skyline.
+      const padR = lerp(0, 20, e);
+      const aw = W - left - padR;
       const ah = Hc - top - pad;
       const bw = Math.max(1e-6, b.maxx - b.minx);
       const bh = Math.max(1e-6, b.maxy - b.miny);
       const s = Math.min(aw / bw, ah / bh);
-      const ox = left + (aw - bw * s) / 2 - b.minx * s;
+      const ox = left + (aw - bw * s) * lerp(1, 0.5, e) - b.minx * s;
       const oy = top + (ah - bh * s) / 2 - b.miny * s;
       const { cs, sn, se, ce } = cam;
       const px = (x, y) => ox + (x * cs - y * sn) * s;
@@ -1065,106 +1076,108 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
         ))}
       </span>
 
-      {/* Left: title, then the four stats as a 2x2 grid. */}
-      <div className="adc-side">
-        <header className="adc-head">
-          <div className="adc-head__text">
-            <div className="adc-eyebrow">{payload.isOwn ? 'Your activity' : 'Activity'}</div>
-            <h3 id="adc-title" className="adc-title">
-              <span className="adc-num">{nf.format(stats.activeDays)}</span> active{' '}
-              {stats.activeDays === 1 ? 'day' : 'days'} and{' '}
-              <span className="adc-num">{nf.format(stats.total)}</span>{' '}
-              {stats.total === 1 ? 'action' : 'actions'} in the last year
-              {payload.status === 'error' ? (
-                <span className="adc-title__note">
-                  {payload.errorCode === 'activity_private'
-                    ? ' This member keeps their activity private.'
-                    : ' Activity could not be loaded.'}
-                </span>
-              ) : null}
-            </h3>
-          </div>
-        </header>
+      <div className="adc-grid">
+        {/* Left: title, then the four stats on one line, as tall as the chart. */}
+        <div className="adc-side">
+          <header className="adc-head">
+            <div className="adc-head__text">
+              <div className="adc-eyebrow">{payload.isOwn ? 'Your activity' : 'Activity'}</div>
+              <h3 id="adc-title" className="adc-title">
+                <span className="adc-num">{nf.format(stats.activeDays)}</span> active{' '}
+                {stats.activeDays === 1 ? 'day' : 'days'} and{' '}
+                <span className="adc-num">{nf.format(stats.total)}</span>{' '}
+                {stats.total === 1 ? 'action' : 'actions'} in the last year
+                {payload.status === 'error' ? (
+                  <span className="adc-title__note">
+                    {payload.errorCode === 'activity_private'
+                      ? ' This member keeps their activity private.'
+                      : ' Activity could not be loaded.'}
+                  </span>
+                ) : null}
+              </h3>
+            </div>
+          </header>
 
-        <ul className="adc-stats" aria-label="Activity stats">
-          {statBlocks.map((b) => (
-            <li key={b.label} className="adc-stats__item">
-              <Stat {...b} />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Right: legend and the 2D / 3D toggle, then the chart. */}
-      <div className="adc-main">
-        <div className="adc-head__tools">
-          <div className="adc-legend" onMouseLeave={() => setLegendLevel(-1)}>
-            <span>Less</span>
-            {LEVEL_NAMES.map((name, i) => (
-              <button
-                key={name}
-                type="button"
-                className={`adc-sw adc-sw--${i} adc-legend__sw`}
-                aria-label={`Highlight days with ${name.toLowerCase()}`}
-                aria-pressed={legendLevel === i}
-                title={name}
-                onMouseEnter={() => setLegendLevel(i)}
-                onFocus={() => setLegendLevel(i)}
-                onBlur={() => setLegendLevel(-1)}
-                onClick={() => setLegendLevel((l) => (l === i ? -1 : i))}
-              />
+          <ul className="adc-stats" aria-label="Activity stats">
+            {statBlocks.map((b) => (
+              <li key={b.label} className="adc-stats__item">
+                <Stat {...b} />
+              </li>
             ))}
-            <span>More</span>
-          </div>
-          <div className="adc-toggle" role="group" aria-label="Chart view">
-            <span className={`adc-toggle__thumb${is3d ? ' is-3d' : ''}`} aria-hidden="true" />
-            {['2d', '3d'].map((v) => (
-              <button
-                key={v}
-                type="button"
-                className={`adc-toggle__btn${view === v ? ' is-on' : ''}`}
-                aria-pressed={view === v}
-                aria-label={v === '2d' ? 'Flat heat map' : '3D skyline'}
-                title={v === '2d' ? 'Flat heat map' : '3D skyline'}
-                onClick={() => setView(v)}
-              >
-                <i
-                  className={`bi ${v === '2d' ? 'bi-grid-3x3-gap-fill' : 'bi-box'}`}
-                  aria-hidden="true"
-                />
-              </button>
-            ))}
-          </div>
+          </ul>
         </div>
 
-        <div className="adc-stagewrap">
-          <div ref={stageRef} className="adc-stage" style={{ height: H2_MAX }}>
-            <canvas
-              ref={canvasRef}
-              tabIndex={0}
-              role="img"
-              aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. ${hint}`}
-              title={hint}
-              className="adc-canvas"
-              style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
-            />
+        {/* Right: legend and the 2D / 3D toggle, then the chart. */}
+        <div className="adc-main">
+          <div className="adc-head__tools">
+            <div className="adc-legend" onMouseLeave={() => setLegendLevel(-1)}>
+              <span>Less</span>
+              {LEVEL_NAMES.map((name, i) => (
+                <button
+                  key={name}
+                  type="button"
+                  className={`adc-sw adc-sw--${i} adc-legend__sw`}
+                  aria-label={`Highlight days with ${name.toLowerCase()}`}
+                  aria-pressed={legendLevel === i}
+                  title={name}
+                  onMouseEnter={() => setLegendLevel(i)}
+                  onFocus={() => setLegendLevel(i)}
+                  onBlur={() => setLegendLevel(-1)}
+                  onClick={() => setLegendLevel((l) => (l === i ? -1 : i))}
+                />
+              ))}
+              <span>More</span>
+            </div>
+            <div className="adc-toggle" role="group" aria-label="Chart view">
+              <span className={`adc-toggle__thumb${is3d ? ' is-3d' : ''}`} aria-hidden="true" />
+              {['2d', '3d'].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`adc-toggle__btn${view === v ? ' is-on' : ''}`}
+                  aria-pressed={view === v}
+                  aria-label={v === '2d' ? 'Flat heat map' : '3D skyline'}
+                  title={v === '2d' ? 'Flat heat map' : '3D skyline'}
+                  onClick={() => setView(v)}
+                >
+                  <i
+                    className={`bi ${v === '2d' ? 'bi-grid-3x3-gap-fill' : 'bi-box'}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div
-            ref={tipRef}
-            role="tooltip"
-            aria-hidden={!activeCell}
-            className={`adc-tip${activeCell ? ' is-on' : ''}`}
-          >
-            {activeCell ? (
-              <>
-                <strong>{dayText(activeCell)}</strong>
-                <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
-              </>
-            ) : (
-              ' '
-            )}
-            <span className="adc-tip__arrow" aria-hidden="true" />
+          <div className="adc-stagewrap">
+            <div ref={stageRef} className="adc-stage" style={{ height: H2_MAX }}>
+              <canvas
+                ref={canvasRef}
+                tabIndex={0}
+                role="img"
+                aria-label={`${nf.format(stats.activeDays)} active days and ${actionsText(stats.total)} between ${range(stats.first, stats.last, true)}, shown as a ${is3d ? '3D skyline' : 'heat map'}. ${hint}`}
+                title={hint}
+                className="adc-canvas"
+                style={{ touchAction: is3d ? 'pan-y' : 'auto' }}
+              />
+            </div>
+
+            <div
+              ref={tipRef}
+              role="tooltip"
+              aria-hidden={!activeCell}
+              className={`adc-tip${activeCell ? ' is-on' : ''}`}
+            >
+              {activeCell ? (
+                <>
+                  <strong>{dayText(activeCell)}</strong>
+                  <span className="adc-tip__date"> on {dfy.format(dayMs(activeCell.date))}</span>
+                </>
+              ) : (
+                ' '
+              )}
+              <span className="adc-tip__arrow" aria-hidden="true" />
+            </div>
           </div>
         </div>
       </div>

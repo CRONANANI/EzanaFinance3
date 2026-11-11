@@ -1845,6 +1845,8 @@ body.light-mode .bs-band + .bs-band {
    card's own height: since the 2x2 stats moved beside the chart (Nov 2026,
    v2) the title and stats column sets it. */
 .adc-skel {
-  height: 300px;
+  /* Matches the loaded card (title row + the 124px flat heat map) so the
+     brief below does not jump when the activity chunk arrives. */
+  height: 176px;
   background: var(--bs-bg-light);
 }

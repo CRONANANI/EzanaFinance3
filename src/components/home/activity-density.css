@@ -24,15 +24,17 @@
   --adc-l4: var(--emerald-dark);
   --adc-ease: cubic-bezier(0.65, 0, 0.35, 1);
 
-  /* Nov 2026: first thing on /home, borderless and about half its first
-     height: header, a capped heat map centred in the band, then the four
-     stats centred under it. */
+  /* Nov 2026: first thing on /home, borderless: the title and four stats
+     on the left, the heat map flush to the right edge. */
   position: relative;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: 0;
+  /* The layout answers to the card's own width (home band or profile
+     column), not the viewport. */
+  container: adc / inline-size;
   background: var(--adc-bg);
   color: var(--adc-ink);
   font-family: var(--font-sans);
@@ -189,62 +191,90 @@ body:not(.light-mode) .adc {
   outline: none;
 }
 
-/* ---------- split layout (Nov 2026, v2) ----------
-   Left: title, then the four stats as a 2x2 grid. Right: legend and toggle,
-   then the chart. Stacks under 1024px (title and stats first). */
+/* ---------- split layout (Nov 2026, v3) ----------
+   Two rows on one grid so the halves line up:
+     row 1: title (left)        | legend + 2D / 3D toggle (right)
+     row 2: four stats, 1 line  | chart
+   The stats span exactly the flat grid's rows (--adc-grid-top and
+   --adc-flat-h, published by the canvas), and the chart column runs to the page's right edge, the
+   same edge as the logout icon in the top nav. Stacks when the card is
+   narrower than 900px. */
 .adc--split {
+  --adc-grid-top: 22px;
+  --adc-flat-h: 100px;
+}
+.adc--split .adc-grid {
   display: grid;
-  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
-  gap: 16px 40px;
-  align-items: start;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'head  tools'
+    'stats chart';
+  gap: 8px 32px;
+  align-items: end;
 }
-.adc-side {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-}
+.adc-side,
 .adc-main {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: contents;
+}
+.adc-head {
+  grid-area: head;
   min-width: 0;
+}
+.adc-stats {
+  grid-area: stats;
 }
 .adc-main .adc-head__tools {
+  grid-area: tools;
   justify-content: flex-end;
 }
+.adc-stagewrap {
+  grid-area: chart;
+  align-self: start;
+  min-width: 0;
+}
 
-/* ---------- stats: 2x2 under the title ---------- */
+/* ---------- stats: one line, compact, transparent ---------- */
 .adc-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
+  grid-template-columns: repeat(4, minmax(132px, 148px));
+  align-self: start;
+  height: var(--adc-flat-h);
+  margin: var(--adc-grid-top) 0 0;
   padding: 0;
   list-style: none;
 }
 .adc-stats__item {
   display: flex;
   min-width: 0;
+  border-left: 1px solid var(--adc-rule);
+}
+.adc-stats__item:first-child {
+  border-left: 0;
 }
 .adc-stat {
   position: relative;
   flex: 1;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
   min-width: 0;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--adc-ink) 3%, var(--adc-bg));
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: inherit;
   text-align: left;
   text-decoration: none;
   transition: background-color 150ms ease;
 }
+.adc-stats__item:first-child .adc-stat {
+  padding-left: 0;
+}
 .adc-stat--link {
   cursor: pointer;
 }
 .adc-stat--link:hover {
-  background: color-mix(in srgb, var(--emerald) 8%, var(--adc-bg));
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .adc-stat--link:focus-visible {
   outline: 2px solid var(--emerald);
@@ -252,32 +282,38 @@ body:not(.light-mode) .adc {
 }
 .adc-stat__go {
   position: absolute;
-  top: 10px;
-  right: 12px;
-  font-size: 12px;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
   color: var(--adc-label);
-  transition: color 150ms ease;
+  opacity: 0;
+  transition:
+    color 150ms ease,
+    opacity 150ms ease;
 }
 .adc-stat--link:hover .adc-stat__go,
 .adc-stat--link:focus-visible .adc-stat__go {
+  opacity: 1;
   color: var(--adc-accent-text);
 }
 .adc-stat__label {
-  padding-right: 18px;
-  font-size: 11.5px;
+  padding-right: 14px;
+  font-size: 11px;
   line-height: 1.25;
   color: var(--adc-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .adc-stat__line {
   display: flex;
   align-items: baseline;
   justify-content: flex-start;
-  gap: 5px;
-  margin-top: 4px;
+  gap: 4px;
 }
 .adc-stat__value {
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -285,11 +321,10 @@ body:not(.light-mode) .adc {
   color: var(--adc-accent-text);
 }
 .adc-stat__unit {
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--adc-ink);
 }
 .adc-stat__sub {
-  margin-top: 2px;
   font-size: 11px;
   color: var(--adc-label);
   white-space: nowrap;
@@ -299,13 +334,16 @@ body:not(.light-mode) .adc {
 .adc-stat__rank {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  min-height: 16px;
-  margin-top: 8px;
+  gap: 4px;
+  min-height: 14px;
+  margin-top: 2px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
   color: var(--adc-accent-text);
 }
 .adc-stat__rank.is-empty {
@@ -314,8 +352,8 @@ body:not(.light-mode) .adc {
   color: var(--adc-label);
 }
 .adc-stat__rank.is-pending {
-  width: 96px;
-  height: 12px;
+  width: 80px;
+  height: 11px;
   min-height: 0;
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--adc-ink) 8%, var(--adc-bg));
@@ -382,17 +420,40 @@ body:not(.light-mode) .adc {
   transform: scale(1.25);
 }
 
-@media (max-width: 1024px) {
-  .adc--split {
+/* Narrow cards: title, stats, then the legend row and the chart, full width. */
+@container adc (max-width: 900px) {
+  .adc--split .adc-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'stats'
+      'tools'
+      'chart';
+    align-items: start;
+  }
+  .adc-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    height: auto;
+    min-height: 0;
+    margin-top: 0;
   }
 }
-@media (max-width: 380px) {
-  .adc-stat {
-    padding: 10px 12px;
+/* Phones: the four stats fold to 2 x 2. */
+@container adc (max-width: 520px) {
+  .adc-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .adc-stat__value {
-    font-size: 19px;
+  .adc-stats__item:nth-child(3) {
+    border-left: 0;
+  }
+  .adc-stats__item:nth-child(3) .adc-stat {
+    padding-left: 0;
+  }
+  .adc-stat {
+    padding: 8px 10px;
+  }
+  .adc-stat__go {
+    opacity: 1;
   }
 }
 @media (max-width: 480px) {
