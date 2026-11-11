@@ -1850,3 +1850,390 @@ body.light-mode .bs-band + .bs-band {
   height: 176px;
   background: var(--bs-bg-light);
 }
+
+/* ═══ Home layout v3 (Nov 10 2026) ═══════════════════════════════════
+   1. Masthead: the greeting is the page headline, above the activity card.
+   2. Hero: My Portfolio on the left, the ELO season card on the right.
+   3. Chart: the My Portfolio chip is a split control with a series menu. */
+
+/* ── 1. Masthead ── */
+.bs-masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--bs-border-rule);
+}
+.bs-masthead .bs-hero-greet {
+  margin: 0;
+}
+.bs-masthead-date {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label);
+  white-space: nowrap;
+}
+
+/* ── 2. Hero: portfolio left, ELO season right ── */
+@media (min-width: 960px) {
+  .bs-hero-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+}
+.bs-hero-l .bs-hero-stats {
+  margin-top: auto;
+  width: 100%;
+}
+
+.bs-season {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.bs-season-head,
+.bs-season-wins-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.bs-season-meta {
+  display: inline-flex;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--bs-text-label);
+  white-space: nowrap;
+}
+.bs-season-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.bs-season-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(28px, 3.2vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--bs-text-dark);
+}
+.bs-season-cap {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bs-text-label);
+}
+.bs-season-deltas {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+}
+.bs-season-tier {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bs-green) 12%, transparent);
+  color: var(--bs-green);
+  font-size: 11px;
+  font-weight: 700;
+}
+.bs-season-delta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bs-text-label);
+}
+.bs-season-delta em {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 400;
+  color: var(--bs-text-label);
+}
+.bs-season-delta--up {
+  color: var(--bs-green);
+}
+.bs-season-delta--down {
+  color: var(--bs-red);
+}
+.bs-season-spark {
+  flex: 0 0 auto;
+  color: var(--bs-green);
+}
+.bs-season-track {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bs-elo-track-bg);
+  overflow: hidden;
+}
+.bs-season-fill {
+  height: 100%;
+  min-width: 6px;
+  border-radius: 99px;
+  background: var(--bs-green);
+  transition: width 0.4s ease;
+}
+.bs-season-marks {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--bs-text-label);
+}
+.bs-season-marks-next {
+  font-weight: 600;
+  color: var(--bs-text-dark);
+}
+.bs-season-wins {
+  padding-top: 12px;
+  border-top: 1px solid var(--bs-border-rule);
+}
+.bs-season-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.bs-season-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--bs-border-rule);
+  font-size: 13px;
+  color: var(--bs-text-body);
+  text-decoration: none;
+}
+.bs-season-list li:last-child .bs-season-row {
+  border-bottom: 0;
+}
+.bs-season-row:hover .bs-season-row-label {
+  color: var(--bs-green);
+}
+.bs-season-row:focus-visible {
+  outline: 2px solid var(--bs-green);
+  outline-offset: 2px;
+}
+.bs-season-row-ico {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--bs-text-label);
+}
+.bs-season-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bs-season-row-prog,
+.bs-season-row-elo {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.bs-season-row-prog {
+  color: var(--bs-text-label);
+}
+.bs-season-row-elo {
+  min-width: 64px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--bs-green);
+}
+.bs-season-row--done .bs-season-row-ico {
+  color: var(--bs-green);
+}
+.bs-season-row--done .bs-season-row-label {
+  color: var(--bs-text-label);
+  text-decoration: line-through;
+}
+.bs-season-row--done .bs-season-row-elo {
+  font-weight: 500;
+  color: var(--bs-text-label);
+}
+
+/* ── 3. Chart series menu (split My Portfolio chip) ── */
+.bs-series {
+  position: relative;
+  display: inline-flex;
+}
+.bs-series-chip {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--bs-border-rule);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bs-text-label);
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.bs-series-chip--active {
+  background: var(--bs-text-dark);
+  border-color: var(--bs-text-dark);
+  color: var(--bs-bg-light);
+}
+.bs-series-chip:not(.bs-series-chip--active):hover {
+  border-color: var(--bs-text-dark);
+  color: var(--bs-text-dark);
+}
+.bs-series-main,
+.bs-series-caret {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.bs-series-main {
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 999px 0 0 999px;
+}
+.bs-series-caret {
+  padding: 0 10px 0 8px;
+  border-left: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 0 999px 999px 0;
+  font-size: 11px;
+}
+.bs-series-main:focus-visible,
+.bs-series-caret:focus-visible,
+.bs-series-item:focus-visible {
+  outline: 2px solid var(--bs-green);
+  outline-offset: 2px;
+}
+.bs-series-count {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.bs-series-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  width: 280px;
+  padding: 6px;
+  border: 1px solid var(--bs-border-rule);
+  border-radius: var(--radius-lg);
+  background: var(--bs-bg-light);
+  box-shadow: var(--shadow-lg);
+  text-align: left;
+}
+.bs-series-group {
+  padding: 8px 10px 4px;
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--bs-text-label);
+}
+.bs-series-group:not(:first-child) {
+  margin-top: 6px;
+  border-top: 1px solid var(--bs-border-subtle);
+  padding-top: 12px;
+}
+.bs-series-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--bs-text-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.bs-series-item:hover {
+  background: color-mix(in srgb, var(--bs-text-dark) 6%, transparent);
+}
+.bs-series-item-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.bs-series-item-ico {
+  flex: 0 0 auto;
+  width: 8px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.bs-series-item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bs-series-item-pct {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.bs-series-item-check {
+  flex: 0 0 14px;
+  color: var(--bs-green);
+}
+.bs-series-item--action {
+  color: var(--bs-text-body);
+}
+.bs-series-empty {
+  margin: 0;
+  padding: 4px 10px 6px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+
+@media (max-width: 959px) {
+  /* The chip strip scrolls sideways here, which would clip a dropdown, so
+     the menu becomes a sheet pinned to the bottom of the screen. */
+  .bs-series-menu {
+    position: fixed;
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .bs-season-top {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bs-season-fill,
+  .bs-series-chip {
+    transition: none;
+  }
+}

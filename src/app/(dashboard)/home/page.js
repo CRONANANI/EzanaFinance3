@@ -18,13 +18,13 @@ import {
 import { CHART } from '@/lib/chart-theme';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
+import { EloSeasonCard } from '@/components/home/EloSeasonCard';
+import { PortfolioSeriesMenu } from '@/components/home/PortfolioSeriesMenu';
 import { DateSelector } from '@/components/ui/DateSelector';
-import { useElo } from '@/hooks/useElo';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
-import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useEventContext } from '@/hooks/useEventContext';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
@@ -195,7 +195,7 @@ function asOf(entries, ymd) {
   return hit;
 }
 
-function buildSessionAlignedChart({ portfolioPoints, indexSeries, activeKeys }) {
+function buildSessionAlignedChart({ portfolioPoints, indexSeries, activeKeys, extraSeries = [] }) {
   // Portfolio: last value per New York calendar day.
   const pfByDay = new Map();
   for (const p of portfolioPoints) {
@@ -247,6 +247,24 @@ function buildSessionAlignedChart({ portfolioPoints, indexSeries, activeKeys }) 
   const pfBase = rows.find((r) => r.value != null)?.value;
   for (const r of rows) {
     if (r.value != null && pfBase > 0) r.portfolio = ((r.value - pfBase) / pfBase) * 100;
+  }
+
+  // Extra portfolio or strategy lines (chart series menu): the same
+  // carry-forward and anchor rules as every other line.
+  for (const { key, points } of extraSeries) {
+    const byDay = new Map();
+    for (const p of points || []) {
+      if (p?.at && Number.isFinite(p.value)) byDay.set(nyYmd(p.at), p.value);
+    }
+    const vals = [...byDay.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    if (!vals.length) continue;
+    let base = null;
+    for (const r of rows) {
+      const v = asOf(vals, r.at.slice(0, 10));
+      if (v == null) continue;
+      if (base == null) base = v;
+      if (base > 0) r[key] = ((v - base) / base) * 100;
+    }
   }
 
   for (const key of activeKeys) {
@@ -625,16 +643,81 @@ export default function HomePage() {
   const [sectorDrilldown, setSectorDrilldown] = useState(null);
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
-  const { streakDays } = useLoginHistory(30);
-  const [streakMultiplier, setStreakMultiplier] = useState(false);
   const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
-  const { rating: eloRating, tierLabel: eloTier } = useElo(user?.id);
 
   const { watchlists: userWatchlists } = useWatchlists();
   const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
+
+  /* Chart series menu (Nov 10 2026): lines the user can plot beside the main
+     portfolio. The mock portfolio is its own line only when a brokerage is
+     linked; otherwise the main line already is the mock portfolio. Saved
+     strategies join `chartSources` once they are stored per user. */
+  const mockIsExtra = useMock && plaidConnected;
+  const [extraSeriesOn, setExtraSeriesOn] = useState(() => new Set());
+  const [mockSeries, setMockSeries] = useState({ points: [], loading: false });
+  const mockSeriesOn = mockIsExtra && extraSeriesOn.has('mock');
+  const toggleExtraSeries = useCallback((id) => {
+    setExtraSeriesOn((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    if (!mockSeriesOn) return undefined;
+    let cancelled = false;
+    setMockSeries((s) => ({ ...s, loading: true }));
+    fetch(`/api/portfolio/mock-value-series?range=${encodeURIComponent(seriesRange)}`, {
+      cache: 'no-store',
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        setMockSeries({ points: Array.isArray(d?.points) ? d.points : [], loading: false });
+      })
+      .catch(() => {
+        if (!cancelled) setMockSeries({ points: [], loading: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mockSeriesOn, seriesRange]);
+  const extraChartSeries = useMemo(
+    () =>
+      mockSeriesOn
+        ? [
+            {
+              key: 'mock',
+              label: 'Mock Portfolio',
+              color: 'var(--chart-cat-3)',
+              points: mockSeries.points,
+            },
+          ]
+        : [],
+    [mockSeriesOn, mockSeries.points],
+  );
+  const chartSources = useMemo(() => {
+    if (!mockIsExtra) return [];
+    const pts = mockSeries.points;
+    const first = pts[0]?.value;
+    const last = pts[pts.length - 1]?.value;
+    const pct =
+      mockSeriesOn && pts.length > 1 && first > 0 ? fmtPct(((last - first) / first) * 100) : null;
+    return [
+      {
+        id: 'mock',
+        group: 'portfolio',
+        label: 'Mock Portfolio',
+        color: 'var(--chart-cat-3)',
+        pct,
+        loading: mockSeriesOn && mockSeries.loading,
+      },
+    ];
+  }, [mockIsExtra, mockSeriesOn, mockSeries]);
 
   const currentValue = useMock
     ? mock.totalValue
@@ -673,6 +756,7 @@ export default function HomePage() {
         portfolioPoints: sparklinePoints || [],
         indexSeries,
         activeKeys: [...activeIndices].map((l) => INDEX_API_KEYS[l]).filter(Boolean),
+        extraSeries: extraChartSeries,
       });
     }
     const portfolioPts = (sparklinePoints || []).map((p) => ({
@@ -718,8 +802,22 @@ export default function HomePage() {
         if (typeof pct === 'number') row[apiKey] = pct;
       }
     }
+    // 1D: extra lines are matched by time, last value carried forward.
+    for (const { key, points } of extraChartSeries) {
+      const vals = (points || [])
+        .filter((p) => p?.at && Number.isFinite(p.value))
+        .map((p) => [new Date(p.at).getTime(), p.value])
+        .sort((a, b) => a[0] - b[0]);
+      let base = null;
+      for (const row of out) {
+        const v = asOf(vals, row.label);
+        if (v == null) continue;
+        if (base == null) base = v;
+        if (base > 0) row[key] = ((v - base) / base) * 100;
+      }
+    }
     return out;
-  }, [sparklinePoints, activeIndices, indexSeries, timeframe]);
+  }, [sparklinePoints, activeIndices, indexSeries, timeframe, extraChartSeries]);
 
   /* Existing holdings normalization (preserve from current page.js) */
   const useLiveHoldings =
@@ -1058,21 +1156,6 @@ export default function HomePage() {
     };
   }, [normalizedHoldings.length, userWatchlists]);
 
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    fetch('/api/leaderboard/me')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (cancelled || !d || d.error) return;
-        setStreakMultiplier(Boolean(d.multiplier_active));
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
   return (
     <div className="bs-shell">
       {/* ═══ YOUR ACTIVITY (Nov 2026) ═══
@@ -1082,6 +1165,15 @@ export default function HomePage() {
           out of /home's first load. */}
       <section className="bs-band bs-band--light bs-band--activity">
         <div className="bs-page-inner">
+          {/* Masthead (Nov 10 2026): the greeting is the page headline, on
+              the logo's left edge, with the date on the logout edge. The
+              activity summary below reads as its subline. */}
+          <header className="bs-masthead">
+            <h1 className="bs-hero-greet">
+              {getGreeting()}, {firstName}.
+            </h1>
+            <span className="bs-masthead-date">{formatLongDate()}</span>
+          </header>
           <ActivityDensityCard />
         </div>
       </section>
@@ -1112,69 +1204,6 @@ export default function HomePage() {
         <div className="bs-page-inner">
           <div className="bs-hero-row">
             <div className="bs-hero-l">
-              <div className="bs-eyebrow">
-                {formatBriefLabel()} · {formatLongDate()}
-              </div>
-              <h1 className="bs-hero-greet">
-                {getGreeting()}, {firstName}.
-              </h1>
-              <p className="bs-hero-lede">
-                Markets closed higher. Your portfolio outpaced the S&amp;P 500 by{' '}
-                <strong className="bs-strong">1.24%</strong> today, led by{' '}
-                <button
-                  type="button"
-                  className="bs-ticker-link"
-                  onClick={() => setTickerModal('TSLA')}
-                >
-                  TSLA
-                </button>{' '}
-                and{' '}
-                <button
-                  type="button"
-                  className="bs-ticker-link"
-                  onClick={() => setTickerModal('AVGO')}
-                >
-                  AVGO
-                </button>
-                . Watch the <strong className="bs-strong">PCE print</strong> Thursday.
-              </p>
-              <div className="bs-hero-progress">
-                <div className="bs-prog-card bs-prog-card--compact">
-                  <div className="bs-prog-label">
-                    Day streak
-                    {streakMultiplier ? (
-                      <span className="bs-streak-mult"> · 1.5× ELO active</span>
-                    ) : null}
-                  </div>
-                  <div className="bs-prog-num">
-                    {streakDays}
-                    <span className="bs-prog-slash">/30</span>
-                  </div>
-                  <div className="bs-streak-bars">
-                    {Array.from({ length: 30 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={`bs-streak-bar ${i < streakDays ? 'bs-streak-bar--filled' : ''}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="bs-prog-card bs-prog-card--compact">
-                  <div className="bs-prog-label">ELO rating · {eloTier}</div>
-                  <div className="bs-prog-num">
-                    {eloRating.toLocaleString()}
-                    <span className="bs-prog-slash">/10,000</span>
-                  </div>
-                  <div className="bs-elo-track">
-                    <div
-                      className="bs-elo-fill"
-                      style={{ width: `${Math.min(100, (eloRating / 10000) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bs-hero-r">
               <div className="bs-hero-r-head">
                 <div className="bs-section-label">
                   {isOrgUser && orgData?.name ? `${orgData.name} portfolio` : 'My Portfolio'}
@@ -1210,6 +1239,9 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="bs-hero-r">
+              <EloSeasonCard userId={user?.id} />
             </div>
           </div>
         </div>
@@ -1297,6 +1329,19 @@ export default function HomePage() {
                         animationDuration={CHART.animationDuration}
                       />
                     )}
+                    {extraChartSeries.map((s) => (
+                      <Area
+                        key={s.key}
+                        type="monotone"
+                        dataKey={s.key}
+                        name={s.label}
+                        stroke={s.color}
+                        strokeWidth={2}
+                        fill="transparent"
+                        isAnimationActive={false}
+                        connectNulls
+                      />
+                    ))}
                     {Array.from(activeIndices).map((label) => {
                       const apiKey = INDEX_API_KEYS[label];
                       if (!apiKey) return null;
@@ -1339,32 +1384,18 @@ export default function HomePage() {
                   );
                 }
                 return (
-                  <button
-                    type="button"
-                    className={`bs-index-chip bs-index-chip--portfolio ${showPortfolio ? 'bs-index-chip--active' : ''}`}
-                    aria-pressed={showPortfolio}
-                    onClick={() => setShowPortfolio((v) => !v)}
-                  >
-                    <span
-                      className="bs-index-chip-dot"
-                      style={{
-                        background: showPortfolio ? 'var(--bs-green)' : 'var(--bs-border-rule)',
-                      }}
-                    />
-                    <span>My Portfolio</span>
-                    <span
-                      className="bs-index-chip-pct"
-                      style={{
-                        color: showPortfolio
-                          ? 'inherit'
-                          : changePct >= 0
-                            ? 'var(--bs-green)'
-                            : 'var(--bs-red)',
-                      }}
-                    >
-                      {fmtPct(changePct)}
-                    </span>
-                  </button>
+                  <PortfolioSeriesMenu
+                    label="My Portfolio"
+                    pctLabel={fmtPct(changePct)}
+                    pctUp={changePct >= 0}
+                    primaryOn={showPortfolio}
+                    onTogglePrimary={() => setShowPortfolio((v) => !v)}
+                    sources={chartSources}
+                    active={extraSeriesOn}
+                    onToggleSource={toggleExtraSeries}
+                    onAddPortfolio={() => setAddPortfolioOpen(true)}
+                    hasMockPortfolio={useMock}
+                  />
                 );
               })()}
               {indices.map((idx) => {
