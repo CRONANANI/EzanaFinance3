@@ -192,7 +192,7 @@ function SettingsInner() {
     }
   }, [dashboardPath]);
 
-  const { settings, loading, saving, saved, error, updateSetting, saveSettings } =
+  const { settings, loading, loadError, saving, saved, error, updateSetting, saveSettings } =
     useUserSettings();
 
   useEffect(() => {
@@ -301,6 +301,50 @@ function SettingsInner() {
       return <div className="settings-ledger">{loadingEl}</div>;
     }
     return <div className="settings-page">{loadingEl}</div>;
+  }
+
+  /* The load failed or timed out. Do not render the forms: they would show
+     default values, and saving would overwrite the user's real settings. A
+     full reload starts a fresh auth client, which clears a stuck session. */
+  if (loadError) {
+    return (
+      <div className={USE_LEDGER ? 'settings-ledger' : 'settings-page'}>
+        <div
+          role="alert"
+          style={{
+            maxWidth: 420,
+            margin: '0 auto',
+            padding: '3rem 1.5rem',
+            textAlign: 'center',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <i
+            className="bi bi-exclamation-circle"
+            aria-hidden="true"
+            style={{ fontSize: 28, color: 'var(--text-muted)' }}
+          />
+          <h1 style={{ margin: '12px 0 6px', fontSize: 18, fontWeight: 600 }}>
+            Your settings did not load
+          </h1>
+          <p style={{ margin: '0 0 18px', fontSize: 14, color: 'var(--text-muted)' }}>
+            Nothing was changed. Reload the page to try again.
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className={USE_LEDGER ? 'sl-btn sl-btn-pri' : 'settings-btn-primary'}
+              onClick={() => window.location.reload()}
+            >
+              Reload page
+            </button>
+            <Link href={backPath} className={USE_LEDGER ? 'sl-btn' : 'settings-back-btn'}>
+              Back to {backLabel}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (USE_LEDGER) {

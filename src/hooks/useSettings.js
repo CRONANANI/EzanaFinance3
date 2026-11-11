@@ -20,17 +20,27 @@ function buildMergedSettings(profileUserSettings, user) {
   };
 }
 
+/* A settings load that has not answered in this long is treated as failed, so
+   the page can offer a reload instead of sitting on "Loading settings…". */
+const LOAD_TIMEOUT_MS = 10000;
+
 /** Loads/saves `profiles.user_settings`. Used by `SettingsProvider`; app code should use `useUserSettings`. */
 export function useSettings() {
   const [settings, setSettings] = useState(() => getDefaultUserSettings());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
-    try {
+    setLoadError(false);
+    let timer = null;
+    const deadline = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Settings load timed out')), LOAD_TIMEOUT_MS);
+    });
+    const load = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -52,9 +62,18 @@ export function useSettings() {
       }
 
       setSettings(buildMergedSettings(profile?.user_settings, user));
+      /* A slow answer that lands after the deadline still wins. */
+      setLoadError(false);
+    };
+    try {
+      await Promise.race([load(), deadline]);
     } catch (err) {
       console.error('Failed to load settings:', err);
+      /* Timed out or threw: the settings on screen would be defaults, not the
+         user's. Flag it so nothing renders (or saves) them as if they were. */
+      setLoadError(true);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, []);
@@ -138,6 +157,7 @@ export function useSettings() {
   return {
     settings,
     loading,
+    loadError,
     saving,
     saved,
     error,

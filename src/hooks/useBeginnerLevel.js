@@ -144,7 +144,16 @@ export function useBeginnerLevel() {
     window.addEventListener('checklist-updated', onSync);
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => refresh());
+    } = supabase.auth.onAuthStateChange(() => {
+      /* Never return (or await) a promise that calls supabase.auth.* from this
+         callback. Token refreshes notify listeners while the auth lock is
+         held and wait for each callback; refresh() calls getUser(), which
+         waits for that same lock. Returning it deadlocked the lock for the
+         rest of the tab's life: every later getUser() / getSession() hung,
+         which left /settings on "Loading settings…" forever. Deferring to the
+         next task lets the notification finish first. */
+      setTimeout(() => refresh(), 0);
+    });
     return () => {
       window.removeEventListener('beginner-level-updated', onSync);
       window.removeEventListener('checklist-updated', onSync);

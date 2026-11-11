@@ -37,12 +37,14 @@ export function SettingsProvider({ children }) {
  */
 function ThemeSyncFromSettings() {
   const pathname = usePathname();
-  const { settings, loading } = useUserSettings();
+  const { settings, loading, loadError } = useUserSettings();
   const { theme, setTheme } = useTheme();
   const wasMarketAnalysis = useRef(false);
 
   useEffect(() => {
-    if (loading) return;
+    /* A failed load leaves the default settings in place; applying their
+       theme would flip a dark-mode user to light. Keep the server's theme. */
+    if (loading || loadError) return;
 
     const onMarketAnalysis = !!pathname?.startsWith(MARKET_ANALYSIS_PREFIX);
 
@@ -69,7 +71,7 @@ function ThemeSyncFromSettings() {
     if (theme !== desired) {
       setTheme(desired, { persist: false });
     }
-  }, [loading, settings?.theme, pathname, theme, setTheme]);
+  }, [loading, loadError, settings?.theme, pathname, theme, setTheme]);
 
   return null;
 }
