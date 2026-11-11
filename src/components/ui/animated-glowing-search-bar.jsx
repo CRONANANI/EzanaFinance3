@@ -1,10 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
 
 /**
  * Search bar with controlled value, onChange, and optional suggestions dropdown.
+ *
+ * `trailing` renders inside the pill at the right edge, just left of the
+ * filter icon (the research page puts its Company / Industry / Portfolio
+ * toggle there). The right side is a flex cluster rather than absolutely
+ * positioned, so the input text never runs underneath it.
  */
 export function AnimatedGlowingSearchBar({
   value = '',
@@ -19,6 +23,7 @@ export function AnimatedGlowingSearchBar({
   inputRef,
   className = '',
   loading = false,
+  trailing = null,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && value.trim()) {
@@ -28,39 +33,33 @@ export function AnimatedGlowingSearchBar({
 
   return (
     <div className={`relative flex items-center w-full ${className}`}>
-      <div className="relative flex items-center w-full">
-        {/* Input container */}
-        <div className="relative w-full flex-1">
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            placeholder={placeholder}
-            autoComplete="off"
-            className="ds-search-input w-full h-[56px] rounded-lg pl-12 pr-14 text-base placeholder:text-gray-400"
-            style={{ color: 'var(--text-primary)' }}
-          />
-          {/*
-           * Filter icon: `top-1/2 -translate-y-1/2` vertically centers it
-           * against the input's full height regardless of input size or
-           * icon size — replaces the previous `top-2` which pinned it to
-           * the top of the 56px input and left it visually too high.
-           */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-[2]">
-            <SlidersHorizontal className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
+      <div className="agsb-field relative flex items-center w-full">
+        <i
+          className="agsb-search-icon bi bi-search absolute left-4 top-1/2 -translate-y-1/2"
+          aria-hidden="true"
+        />
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          autoComplete="off"
+          aria-label="Search company or ticker"
+          className="ds-search-input flex-1 min-w-0 h-[56px] rounded-lg pl-12 pr-3 text-base placeholder:text-gray-400"
+          style={{ color: 'var(--text-primary)' }}
+        />
+        {loading && (
+          <div className="flex-none mr-3" aria-hidden="true">
+            <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           </div>
-          <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <Search className="w-5 h-5 text-gray-400" strokeWidth={2} />
-          </div>
-          {loading && (
-            <div className="absolute right-14 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
-            </div>
-          )}
+        )}
+        <div className="agsb-trailing flex flex-none items-center gap-3 pr-4 z-[2]">
+          {trailing}
+          <i className="agsb-filter-icon bi bi-sliders" aria-hidden="true" />
         </div>
       </div>
 

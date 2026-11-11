@@ -64,21 +64,6 @@ import '../org-trading/org-trading.css';
 import '@/components/research/company/research-company.css';
 import '@/styles/home-canvas.css';
 
-function ResearchPageHeader({ view, setView }) {
-  return (
-    <header className="crx-page-head">
-      <div className="crx-page-head-text">
-        <h1 className="crx-page-title">Research</h1>
-        <p className="crx-page-sub">
-          Analyze companies, industries, and portfolios with market data, financial models, and
-          Sonar-grade intelligence.
-        </p>
-      </div>
-      <ViewToggle view={view} setView={setView} />
-    </header>
-  );
-}
-
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -201,6 +186,8 @@ function CompanyResearchPageInner() {
   const handleSelectStock = useCallback(
     (item, opts) => {
       const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
+      /* The search pill shows on every view; a ticker always opens Company. */
+      if (view !== 'company') setView('company');
       setSelectedStock(sym);
       setViewMode('stock');
       setQuery('');
@@ -208,7 +195,7 @@ function CompanyResearchPageInner() {
       completeTask('research_1');
       if (opts?.fromPeer) completeTask('research_3');
     },
-    [setQuery, clearSuggestions, completeTask],
+    [view, setView, setQuery, clearSuggestions, completeTask],
   );
 
   const handleSearchInput = useCallback(
@@ -408,11 +395,38 @@ function CompanyResearchPageInner() {
     }
   };
 
+  /* Search pill (Nov 10 2026): the page title and subtitle are gone; the
+     Company / Industry / Portfolio toggle sits inside the pill, left of the
+     filter icon, on every view. The h1 stays for screen readers only. */
+  const searchPill = (
+    <>
+      <h1 className="crx-visually-hidden">Company and Portfolio Research</h1>
+      <div
+        className="company-search-wrapper crx-search"
+        ref={searchRef}
+        data-task-target="research-search-bar"
+      >
+        <AnimatedGlowingSearchBar
+          value={query}
+          onChange={handleSearchInput}
+          onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
+          placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
+          suggestions={suggestions}
+          onSelectSuggestion={handleSelectSuggestion}
+          showSuggestions={showSuggestions}
+          onFocus={() => {}}
+          loading={searchLoading}
+          trailing={<ViewToggle view={view} setView={setView} />}
+        />
+      </div>
+    </>
+  );
+
   if (view === 'industry' || view === 'portfolio') {
     return (
       <div className="dashboard-page-inset cr-page ez-canvas">
         <div className="crx-canvas">
-          <ResearchPageHeader view={view} setView={setView} />
+          {searchPill}
           <MarketPortfolioView section={view} />
         </div>
       </div>
@@ -422,7 +436,6 @@ function CompanyResearchPageInner() {
   return (
     <div className="dashboard-page-inset cr-page ez-canvas">
       <div className="crx-canvas">
-        <ResearchPageHeader view={view} setView={setView} />
         {showBeginnerAnalysis && (
           <div className="beginner-first-analysis">
             <p>
@@ -435,23 +448,7 @@ function CompanyResearchPageInner() {
           </div>
         )}
 
-        <div
-          className="company-search-wrapper crx-search"
-          ref={searchRef}
-          data-task-target="research-search-bar"
-        >
-          <AnimatedGlowingSearchBar
-            value={query}
-            onChange={handleSearchInput}
-            onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
-            placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
-            suggestions={suggestions}
-            onSelectSuggestion={handleSelectSuggestion}
-            showSuggestions={showSuggestions}
-            onFocus={() => {}}
-            loading={searchLoading}
-          />
-        </div>
+        {searchPill}
 
         <section className="cr-market-chart-root" id="marketChartSection">
           <div
