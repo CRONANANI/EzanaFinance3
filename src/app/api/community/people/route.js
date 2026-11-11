@@ -2,11 +2,15 @@
 import { NextResponse } from 'next/server';
 import { withSession, PRIVATE } from '@/lib/community/route-session';
 import { displayNameOf } from '@/lib/community/redesign';
+import { isCommunityDemoViewer, DEMO_PEOPLE } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
-  return withSession(request, 'people', async ({ supabase }) => {
+  return withSession(request, 'people', async ({ user, supabase }) => {
+    if (isCommunityDemoViewer(user)) {
+      return NextResponse.json({ rows: DEMO_PEOPLE }, { headers: PRIVATE });
+    }
     const { data, error } = await supabase.rpc('community_people_to_follow', { p_limit: 2 });
     if (error) throw new Error(error.message);
     const rows = (data || []).map((r) => ({

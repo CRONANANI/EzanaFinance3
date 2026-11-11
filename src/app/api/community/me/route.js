@@ -5,6 +5,7 @@
  */
 import { NextResponse } from 'next/server';
 import { withSession, PRIVATE } from '@/lib/community/route-session';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,8 @@ export async function GET(request) {
         friends: friends.count || 0,
         /* A missing table or column must not break the sidebar: no dot. */
         has_unread_messages: !unread.error && (unread.count || 0) > 0,
+        /* Master admin and demo accounts see sample data on this page. */
+        demo: isCommunityDemoViewer(user),
       },
       { headers: PRIVATE },
     );

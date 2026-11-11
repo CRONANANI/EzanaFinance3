@@ -11,9 +11,11 @@ import { SectionCard, Avatar, DeltaValue } from './primitives';
 import { useCommunityResource } from './useCommunityResource';
 
 function LbRow({ r, me = false }) {
-  const href = r.username
-    ? `/profile/${encodeURIComponent(r.username)}`
-    : `/community/profile/${r.user_id}`;
+  const href = r.is_demo
+    ? '/leaderboard'
+    : r.username
+      ? `/profile/${encodeURIComponent(r.username)}`
+      : `/community/profile/${r.user_id}`;
   return (
     <li>
       <Link href={href} className={`${s.row} ${s.rowLink} ${s.lbRow} ${me ? s.meRow : ''}`}>

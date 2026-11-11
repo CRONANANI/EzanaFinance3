@@ -6,11 +6,12 @@
 import { NextResponse } from 'next/server';
 import { withSession, authorsFor, PRIVATE } from '@/lib/community/route-session';
 import { normalizeTab, normalizeTopic, excerpt, FEED_PAGE } from '@/lib/community/redesign';
+import { isCommunityDemoViewer, demoFeedPosts, mergeFeed } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
-  return withSession(request, 'feed', async ({ supabase }) => {
+  return withSession(request, 'feed', async ({ user, supabase }) => {
     const sp = new URL(request.url).searchParams;
     const tab = normalizeTab(sp.get('tab')) || 'latest';
     const topic = normalizeTopic(sp.get('topic'));
@@ -67,6 +68,18 @@ export async function GET(request) {
         : tab === 'trending'
           ? { offset: offset + rows.length }
           : { before: last?.created_at };
+
+    /* Master admin and demo accounts: sample posts join the first page (real
+       posts stay, so a post the viewer writes still shows). Later pages are
+       real rows only, so nothing repeats. */
+    if (!beforeIso && offset === 0 && isCommunityDemoViewer(user)) {
+      const { data: topicRows } = await supabase.from('community_topics').select('slug, label');
+      const demo = demoFeedPosts({ tab, topic, topics: topicRows || [] });
+      return NextResponse.json(
+        { tab, topic, posts: mergeFeed(tab, posts, demo), next },
+        { headers: PRIVATE },
+      );
+    }
     return NextResponse.json({ tab, topic, posts, next }, { headers: PRIVATE });
   });
 }

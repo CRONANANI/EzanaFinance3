@@ -17,12 +17,16 @@ function Person({ p, onFollowed }) {
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const href = p.username
-    ? `/profile/${encodeURIComponent(p.username)}`
-    : `/community/profile/${p.user_id}`;
+  const href = p.is_demo
+    ? '/community'
+    : p.username
+      ? `/profile/${encodeURIComponent(p.username)}`
+      : `/community/profile/${p.user_id}`;
   const toggle = async () => {
     const next = !following;
     setFollowing(next);
+    /* Sample people (admin and demo accounts only): the follow stays local. */
+    if (p.is_demo) return;
     setBusy(true);
     setErr('');
     try {

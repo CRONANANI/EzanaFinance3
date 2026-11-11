@@ -157,6 +157,7 @@ export function CommunityPage() {
       <div className={s.page}>
         <CommunityHeader
           hasUnreadMessages={Boolean(me.data?.has_unread_messages)}
+          demo={Boolean(me.data?.demo)}
           onNewPost={() => setComposerOpen(true)}
           onOpenPost={openPost}
         />

@@ -1,8 +1,10 @@
 'use client';
 
 /**
- * Community page header (Nov 2026): eyebrow, title, subtitle, search with a
- * Cmd/Ctrl K shortcut, Messages (with an unread dot) and New Post.
+ * Community page header (Nov 2026): search with a Cmd/Ctrl K shortcut,
+ * Messages (with an unread dot) and New Post. The eyebrow, title and subtitle
+ * were removed (Nov 10); the h1 stays for screen readers only. Master admin
+ * and demo accounts get a "Sample data" tag.
  * Search is debounced (250ms) against /api/community/search/all and shows
  * People and Posts, five each, with arrow-key navigation; Esc closes.
  */
@@ -214,18 +216,18 @@ function CommunitySearch({ onOpenPost }) {
   );
 }
 
-export function CommunityHeader({ hasUnreadMessages, onNewPost, onOpenPost }) {
+export function CommunityHeader({ hasUnreadMessages, onNewPost, onOpenPost, demo = false }) {
   return (
     <header className={s.header}>
-      <div className={s.headText}>
-        <p className={s.eyebrow}>Ezana Community</p>
-        <h1 className={s.title}>Community</h1>
-        <p className={s.subtitle}>
-          Connect with investors, share research and discuss markets with the Ezana community.
-        </p>
-      </div>
+      <h1 className={s.srOnly}>Community</h1>
       <div className={s.headTools}>
         <CommunitySearch onOpenPost={onOpenPost} />
+        {demo ? (
+          <span className={s.sampleTag} title="Only admin accounts see this sample activity.">
+            <i className="bi bi-eye" aria-hidden="true" />
+            Sample data
+          </span>
+        ) : null}
         <Link href="/community/messages" className={`${s.btn} ${s.btnSecondary}`}>
           <i className="bi bi-chat" aria-hidden="true" />
           Messages

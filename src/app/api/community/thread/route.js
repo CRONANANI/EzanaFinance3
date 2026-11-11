@@ -7,13 +7,18 @@
 import { NextResponse } from 'next/server';
 import { withSession, authorsFor, PRIVATE } from '@/lib/community/route-session';
 import { excerpt } from '@/lib/community/redesign';
+import { isCommunityDemoViewer, isDemoPostId, demoThread } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(request) {
-  return withSession(request, 'thread', async ({ supabase }) => {
+  return withSession(request, 'thread', async ({ user, supabase }) => {
     const id = new URL(request.url).searchParams.get('post') || '';
+    if (isDemoPostId(id) && isCommunityDemoViewer(user)) {
+      const thread = demoThread(id);
+      if (thread) return NextResponse.json(thread, { headers: PRIVATE });
+    }
     if (!UUID.test(id))
       return NextResponse.json({ error: 'Post not found' }, { status: 404, headers: PRIVATE });
     const [{ data: post, error }, { data: replies, error: rErr }] = await Promise.all([

@@ -87,9 +87,14 @@ export function FeedPostCard({ post, myId, onTopic, onDeleted, onBlocked, defaul
   const [threadOpen, setThreadOpen] = useState(defaultOpen);
   const [flash, setFlash] = useState('');
   const own = myId && post.author?.id === myId;
-  const profileHref = post.author?.username
-    ? `/profile/${encodeURIComponent(post.author.username)}`
-    : `/community/profile/${post.author?.id}`;
+  /* Sample posts (admin and demo accounts only) have no profile page, and
+     their likes and saves stay on this screen. */
+  const isDemo = Boolean(post.is_demo);
+  const profileHref = isDemo
+    ? '/community'
+    : post.author?.username
+      ? `/profile/${encodeURIComponent(post.author.username)}`
+      : `/community/profile/${post.author?.id}`;
 
   const say = (msg) => {
     setFlash(msg);
@@ -100,6 +105,7 @@ export function FeedPostCard({ post, myId, onTopic, onDeleted, onBlocked, defaul
     const next = !liked;
     setLiked(next);
     setLikes((n) => Math.max(0, n + (next ? 1 : -1)));
+    if (isDemo) return;
     try {
       await sendJson('/api/community/posts/like', {
         body: { post_id: post.id, action: next ? 'like' : 'unlike' },
@@ -114,6 +120,7 @@ export function FeedPostCard({ post, myId, onTopic, onDeleted, onBlocked, defaul
   const toggleSave = async () => {
     const next = !saved;
     setSaved(next);
+    if (isDemo) return;
     try {
       await sendJson('/api/community/posts/save', {
         body: { post_id: post.id, action: next ? 'save' : 'unsave' },

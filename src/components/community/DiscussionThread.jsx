@@ -30,6 +30,25 @@ export function DiscussionThread({ postId, onReplied }) {
     e.preventDefault();
     const content = text.trim();
     if (!content || busy) return;
+    /* Sample discussions (admin and demo accounts only): the reply is added
+       on this screen and never sent. */
+    if (data?.post?.is_demo) {
+      setText('');
+      setData((d) => ({
+        ...(d || {}),
+        replies: [
+          ...((d && d.replies) || []),
+          {
+            id: `local-${((d && d.replies) || []).length + 1}`,
+            content,
+            created_at: new Date().toISOString(),
+            author: { name: 'You' },
+          },
+        ],
+      }));
+      onReplied?.();
+      return;
+    }
     if (!(await ensureAccepted())) return;
     setBusy(true);
     setFormError('');

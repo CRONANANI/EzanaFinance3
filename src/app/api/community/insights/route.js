@@ -6,6 +6,12 @@
 import { NextResponse } from 'next/server';
 import { withSession, ttlCache, PRIVATE } from '@/lib/community/route-session';
 import { FmpAPI } from '@/lib/services/fmp';
+import {
+  isCommunityDemoViewer,
+  DEMO_MOST_DISCUSSED,
+  demoTrendingTopics,
+  demoSentiment,
+} from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 const cache = ttlCache(60_000);
@@ -32,9 +38,37 @@ async function quotesFor(symbols) {
 }
 
 export async function GET(request) {
-  return withSession(request, 'insights', async ({ supabase }) => {
+  return withSession(request, 'insights', async ({ user, supabase }) => {
     const v = new URL(request.url).searchParams.get('view');
     const view = VIEWS.includes(v) ? v : 'most-discussed';
+
+    /* Sample data for master admin and demo accounts. Answered before the
+       shared cache is read or written, so it can never reach another member.
+       Most Discussed still takes names and day changes from live quotes. */
+    if (isCommunityDemoViewer(user)) {
+      if (view === 'most-discussed') {
+        const quotes = await quotesFor(DEMO_MOST_DISCUSSED.map((r) => r.ticker));
+        return NextResponse.json(
+          {
+            view,
+            rows: DEMO_MOST_DISCUSSED.map((r) => ({
+              ...r,
+              name: quotes.get(r.ticker)?.name || null,
+              change_pct: quotes.get(r.ticker)?.change_pct ?? null,
+            })),
+          },
+          { headers: PRIVATE },
+        );
+      }
+      if (view === 'trending-topics') {
+        const { data: topicRows } = await supabase.from('community_topics').select('slug, label');
+        return NextResponse.json(
+          { view, rows: demoTrendingTopics(topicRows || []) },
+          { headers: PRIVATE },
+        );
+      }
+      return NextResponse.json({ view, sentiment: demoSentiment() }, { headers: PRIVATE });
+    }
     const hit = cache.get(view);
     if (hit) return NextResponse.json(hit, { headers: { 'Cache-Control': 'private, max-age=60' } });
 

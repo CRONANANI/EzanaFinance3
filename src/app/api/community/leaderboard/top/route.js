@@ -7,11 +7,15 @@
 import { NextResponse } from 'next/server';
 import { withSession, PRIVATE } from '@/lib/community/route-session';
 import { LEADERBOARD_PERIOD, displayNameOf } from '@/lib/community/redesign';
+import { isCommunityDemoViewer, demoLeaderboard } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
-  return withSession(request, 'leaderboard', async ({ supabase }) => {
+  return withSession(request, 'leaderboard', async ({ user, supabase }) => {
+    if (isCommunityDemoViewer(user)) {
+      return NextResponse.json(demoLeaderboard(user, LEADERBOARD_PERIOD), { headers: PRIVATE });
+    }
     const { data, error } = await supabase.rpc('community_leaderboard', {
       p_period: LEADERBOARD_PERIOD,
       p_limit: 3,

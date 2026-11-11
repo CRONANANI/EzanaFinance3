@@ -2,12 +2,14 @@
 import { NextResponse } from 'next/server';
 import { withSession, ttlCache, PRIVATE } from '@/lib/community/route-session';
 import { LEADERBOARD_PERIOD } from '@/lib/community/redesign';
+import { isCommunityDemoViewer, DEMO_STATS } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 const cache = ttlCache(60_000);
 
 export async function GET(request) {
   return withSession(request, 'stats', async ({ user, supabase }) => {
+    if (isCommunityDemoViewer(user)) return NextResponse.json(DEMO_STATS, { headers: PRIVATE });
     let stats = cache.get(user.id);
     if (!stats) {
       const { data, error } = await supabase.rpc('community_page_stats', {
