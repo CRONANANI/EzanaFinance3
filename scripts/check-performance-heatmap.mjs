@@ -12,7 +12,6 @@ import {
   HEATMAP_MAX_TILES,
   heatmapTiles,
   mixPct,
-  onStrong,
   squarify,
   tileTone,
   topPerformers,
@@ -89,10 +88,10 @@ test('colour: the best performer is the strongest tile; sign picks the tone', ()
   assert.equal(best.strength, 1);
   assert.equal(best.tone, 'up');
   assert.equal(tiles.find((t) => t.ticker === 'C').tone, 'down');
-  assert.equal(mixPct(0), 22);
-  assert.equal(mixPct(1), 78);
-  assert.equal(onStrong(1), true);
-  assert.equal(onStrong(0.2), false);
+  assert.equal(mixPct(0), 0);
+  assert.equal(mixPct(0.5), 50);
+  assert.equal(mixPct(1), 100);
+  assert.equal(mixPct(7), 100);
 });
 
 test('wiring: heat map in My Portfolio from real positions; no rules around the hero figures', () => {
@@ -118,8 +117,47 @@ test('wiring: heat map in My Portfolio from real positions; no rules around the 
   );
   const comp = read('src/components/home/PerformanceHeatmap.jsx');
   assert.ok(!comp.includes('—'), 'no em dash');
-  const start = css.indexOf('Top performers heat map');
+  const start = css.indexOf('── Top performers heat map (My Portfolio) ──');
+  assert.ok(start > 0, 'found the heat map section');
   const section = css.slice(start, css.indexOf('.bs-heat-tile {\n    transition: none;', start));
   assert.ok(section.length > 500, 'found the heat map styles');
   assert.doesNotMatch(section, /#[0-9a-f]{3,8}\b|rgba?\(/i, 'tokens only');
+});
+
+test('Nov 11 refresh: deep heat scale with one ink, compact top of /home', () => {
+  const css = read('src/app/(dashboard)/home/broadsheet.css');
+  const page = read('src/app/(dashboard)/home/page.js');
+  // The scale's stops live in the broadsheet token blocks, for both themes.
+  for (const t of ['up-lo', 'up-hi', 'down-lo', 'down-hi', 'flat', 'ink']) {
+    assert.equal(
+      css.split(`--bs-heat-${t}:`).length - 1,
+      2,
+      `--bs-heat-${t} set for light and dark`,
+    );
+  }
+  // Every stop clears 4.5:1 against the tile ink (white), so one text colour works.
+  const lum = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const f = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  };
+  const stops = [
+    ...css.matchAll(
+      /--bs-heat-(?:up|down)-(?:lo|hi): (#[0-9a-f]{6});|--bs-heat-flat: (#[0-9a-f]{6});/g,
+    ),
+  ];
+  assert.equal(stops.length, 10);
+  for (const m of stops) {
+    const hex = m[1] || m[2];
+    assert.ok(1.05 / (lum(hex) + 0.05) >= 4.5, `${hex} is dark enough for white text`);
+  }
+  assert.match(css, /\.bs-heat-tile \{[^}]*color: var\(--bs-heat-ink\)/);
+  assert.doesNotMatch(read('src/components/home/PerformanceHeatmap.jsx'), /is-strong|bs-heat-note/);
+  // Compaction hooks.
+  assert.match(page, /bs-band--hero/);
+  assert.match(page, /bs-band--chart/);
+  assert.match(css, /\.bs-band--hero \.bs-page-inner \{\s*padding: 14px 0 16px;/);
+  assert.match(read('src/components/home/ActivityDensityCard.jsx'), /const H2_MAX = 108;/);
+  // The figures stay on one line, label and value on one baseline.
+  assert.match(css, /\.bs-hero-stat \{[^}]*align-items: baseline/);
 });

@@ -131,11 +131,13 @@ export function tileTone(pct, maxAbs) {
   return { tone: pct > 0 ? 'up' : 'down', strength };
 }
 
-/** The colour-mix percentage for a strength: 22% (faint) to 78% (full). */
-export const mixPct = (strength) => Math.round(22 + 56 * Math.max(0, Math.min(1, strength)));
-
-/** Light text on strong tiles, dark text on faint ones. */
-export const onStrong = (strength) => strength >= 0.55;
+/**
+ * How far a tile sits between the scale's two ends, as a colour-mix
+ * percentage: 0% is the muted end (--bs-heat-*-lo), 100% the deep end
+ * (--bs-heat-*-hi). Both ends are dark enough for the light tile ink
+ * (--bs-heat-ink), so every tile uses the same text colour.
+ */
+export const mixPct = (strength) => Math.round(100 * Math.max(0, Math.min(1, strength)));
 
 export const fmtSignedPct = (v) =>
   fin(v) ? `${v > 0 ? '+' : v < 0 ? '-' : ''}${Math.abs(v).toFixed(2)}%` : 'N/A';

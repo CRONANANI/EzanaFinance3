@@ -5,7 +5,8 @@
    the hidden .adc-sw swatches, so these tokens are the single source.
 
    Levels: 0 no activity, 1 logged in (the base colour), 2-4 deeper with
-   more activity. Light theme: a pale emerald deepening to dark emerald.
+   more activity. Nov 11 2026: levels 1 and 2 were deepened so a login-only
+   day no longer reads as empty. Light theme: emerald deepening to dark emerald.
    Dark theme: a dim emerald strengthening to full emerald, so "more" always
    reads as more ink against the ground. */
 
@@ -18,8 +19,8 @@
   --adc-rule: var(--bs-border-rule, var(--border-primary));
   --adc-accent-text: var(--emerald-text);
   --adc-l0: color-mix(in srgb, var(--adc-ink) 7%, var(--adc-bg));
-  --adc-l1: color-mix(in srgb, var(--emerald) 24%, var(--adc-bg));
-  --adc-l2: color-mix(in srgb, var(--emerald) 52%, var(--adc-bg));
+  --adc-l1: color-mix(in srgb, var(--emerald) 38%, var(--adc-bg));
+  --adc-l2: color-mix(in srgb, var(--emerald) 68%, var(--adc-bg));
   --adc-l3: var(--emerald-hover);
   --adc-l4: var(--emerald-dark);
   --adc-ease: cubic-bezier(0.65, 0, 0.35, 1);
@@ -41,9 +42,9 @@
 }
 body:not(.light-mode) .adc {
   --adc-l0: color-mix(in srgb, var(--adc-ink) 9%, var(--adc-bg));
-  --adc-l1: color-mix(in srgb, var(--emerald) 22%, var(--adc-bg));
-  --adc-l2: color-mix(in srgb, var(--emerald) 42%, var(--adc-bg));
-  --adc-l3: color-mix(in srgb, var(--emerald) 68%, var(--adc-bg));
+  --adc-l1: color-mix(in srgb, var(--emerald) 30%, var(--adc-bg));
+  --adc-l2: color-mix(in srgb, var(--emerald) 52%, var(--adc-bg));
+  --adc-l3: color-mix(in srgb, var(--emerald) 76%, var(--adc-bg));
   --adc-l4: var(--emerald);
 }
 
@@ -91,7 +92,12 @@ body:not(.light-mode) .adc {
   gap: 8px 16px;
   margin-bottom: 0;
 }
+/* Nov 11 2026: the eyebrow and the summary share one line. */
 .adc-head__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 14px;
   min-width: 0;
 }
 .adc-head__tools {
@@ -105,11 +111,11 @@ body:not(.light-mode) .adc {
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--adc-label);
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 .adc-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.4;
   color: var(--adc-ink);
@@ -201,7 +207,7 @@ body:not(.light-mode) .adc {
    narrower than 900px. */
 .adc--split {
   --adc-grid-top: 22px;
-  --adc-flat-h: 100px;
+  --adc-flat-h: 84px;
 }
 .adc--split .adc-grid {
   display: grid;
@@ -209,8 +215,8 @@ body:not(.light-mode) .adc {
   grid-template-areas:
     'head  tools'
     'stats chart';
-  gap: 8px 32px;
-  align-items: end;
+  gap: 2px 32px;
+  align-items: center;
 }
 .adc-side,
 .adc-main {
@@ -239,6 +245,9 @@ body:not(.light-mode) .adc {
   grid-template-columns: repeat(4, minmax(132px, 148px));
   align-self: start;
   height: var(--adc-flat-h);
+  /* Never shorter than the four lines of a tile, even when a narrow chart
+     column makes the flat map shorter than that. */
+  min-height: 80px;
   margin: var(--adc-grid-top) 0 0;
   padding: 0;
   list-style: none;

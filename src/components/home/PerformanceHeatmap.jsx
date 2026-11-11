@@ -4,9 +4,14 @@
  * Home: "Top performers" heat map, under the My Portfolio figures (Nov 2026).
  *
  * The user's best positions as a treemap: each tile's area is the position's
- * value and its colour strength is its return (All time or Today), so the
- * strongest green is always the best performer. Tiles open the company in
+ * value and its colour depth is its return (All time or Today), so the
+ * deepest green is always the best performer. Tiles open the company in
  * Research. Layout and colour logic: src/lib/home/performance-heatmap.js.
+ *
+ * Nov 11 2026 refresh: a deeper scale with one light ink on every tile
+ * (--bs-heat-* in broadsheet.css), labels set top-left, and the one-line
+ * key moved into the header so the map itself can be shorter. The map grows
+ * to fill the column, so both hero columns end on the same line.
  */
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -15,7 +20,6 @@ import {
   fmtSignedPct,
   heatmapTiles,
   mixPct,
-  onStrong,
 } from '@/lib/home/performance-heatmap';
 
 export function PerformanceHeatmap({ status, positions, onAddPortfolio }) {
@@ -53,7 +57,7 @@ export function PerformanceHeatmap({ status, positions, onAddPortfolio }) {
     body = (
       <ul className="bs-heat-map" aria-label={`Top performers, ${metricLabel.toLowerCase()}`}>
         {tiles.map((t) => {
-          const small = t.w < 14 || t.h < 30;
+          const small = t.w < 14 || t.h < 34;
           const style = {
             left: `${t.x}%`,
             top: `${t.y}%`,
@@ -65,7 +69,7 @@ export function PerformanceHeatmap({ status, positions, onAddPortfolio }) {
             <li key={t.ticker} className="bs-heat-cell" style={style}>
               <Link
                 href={`/company-research?ticker=${encodeURIComponent(t.ticker)}`}
-                className={`bs-heat-tile is-${t.tone}${onStrong(t.strength) ? ' is-strong' : ''}${small ? ' is-small' : ''}`}
+                className={`bs-heat-tile is-${t.tone}${small ? ' is-small' : ''}`}
                 title={`${t.ticker}${t.name ? ` · ${t.name}` : ''}: ${fmtSignedPct(t.pct)}`}
               >
                 <span className="bs-heat-sym">{t.ticker}</span>
@@ -83,6 +87,9 @@ export function PerformanceHeatmap({ status, positions, onAddPortfolio }) {
     <div className="bs-heat">
       <div className="bs-heat-head">
         <div className="bs-heat-title">Top performers</div>
+        {status === 'ready' && tiles.length ? (
+          <span className="bs-heat-key">Size is position value, colour is return</span>
+        ) : null}
         <div className="bs-heat-seg" role="group" aria-label="Return period">
           {HEATMAP_METRICS.map((m) => (
             <button
@@ -98,9 +105,6 @@ export function PerformanceHeatmap({ status, positions, onAddPortfolio }) {
         </div>
       </div>
       {body}
-      {status === 'ready' && tiles.length ? (
-        <p className="bs-heat-note">Tile size is position value; colour is return.</p>
-      ) : null}
     </div>
   );
 }

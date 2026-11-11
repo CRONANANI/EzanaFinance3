@@ -66,7 +66,7 @@ import './activity-density.css';
 const VIEW_KEY = 'ezana.home.activityView';
 const DURATION = 1300;
 /* Canvas heights (px): the flat heat map, and the 3D skyline when toggled. */
-const H2_MAX = 124;
+const H2_MAX = 108;
 const H3_MAX = 260;
 const LOCALE = 'en-US';
 const FG_FALLBACK = [23, 23, 23];

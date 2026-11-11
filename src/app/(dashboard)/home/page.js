@@ -952,7 +952,7 @@ export default function HomePage() {
       )}
 
       {/* ═══ BAND 0 — HERO ═══ */}
-      <section className="bs-band bs-band--light">
+      <section className="bs-band bs-band--light bs-band--hero">
         <div className="bs-page-inner">
           <div className="bs-hero-row">
             <div className="bs-hero-l">
@@ -987,7 +987,11 @@ export default function HomePage() {
                 ].map(([l, v]) => (
                   <div key={l} className="bs-hero-stat">
                     <div className="bs-hero-stat-label">{l}</div>
-                    <div className="bs-hero-stat-val">{v}</div>
+                    <div
+                      className={`bs-hero-stat-val${v.startsWith('+') ? ' is-up' : v.startsWith('-') ? ' is-down' : ''}`}
+                    >
+                      {v}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1005,7 +1009,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ BAND I — LATELY ON EZANA ═══ */}
-      <section className="bs-band bs-band--cream">
+      <section className="bs-band bs-band--cream bs-band--chart">
         <div className="bs-page-inner">
           <div className="bs-chart-block">
             <div className="bs-chart-range-row">
