@@ -337,21 +337,180 @@ body.light-mode .bs-band--activity + .bs-band {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+/* Nov 2026: no rules around or between the 1W / 1M / YTD / Beta figures;
+   spacing alone separates them. */
 .bs-hero-stats {
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  border-top: 1px solid var(--bs-border-rule);
-  border-bottom: 1px solid var(--bs-border-rule);
 }
 .bs-hero-stat {
   text-align: center;
   padding: 10px 0;
-  border-right: 1px solid var(--bs-border-subtle);
 }
-.bs-hero-stat:last-child {
-  border-right: none;
+
+/* ── Top performers heat map (My Portfolio, Nov 2026) ──
+   Treemap of the best positions: area = value, colour strength = return.
+   Tiles mix the up/down token into the page background, so both themes
+   work without new colours. */
+.bs-heat {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bs-heat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bs-heat-title {
+  font-size: 11px;
+  color: var(--bs-text-label);
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.bs-heat-seg {
+  display: inline-flex;
+  gap: 2px;
+}
+.bs-heat-seg-btn {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--bs-text-label);
+  font: 600 11px var(--font-mono);
+  cursor: pointer;
+}
+.bs-heat-seg-btn:hover {
+  color: var(--bs-text-dark);
+}
+.bs-heat-seg-btn.is-on {
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
+  color: var(--emerald-text);
+}
+.bs-heat-map {
+  position: relative;
+  height: 168px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bs-heat-cell {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 1px;
+}
+.bs-heat-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  color: var(--bs-text-dark);
+  text-decoration: none;
+  text-align: center;
+  transition: filter 0.15s ease;
+}
+.bs-heat-tile.is-up {
+  background: color-mix(in srgb, var(--positive) var(--bs-heat-mix, 40%), var(--bg-primary));
+}
+.bs-heat-tile.is-down {
+  background: color-mix(in srgb, var(--negative) var(--bs-heat-mix, 40%), var(--bg-primary));
+}
+.bs-heat-tile.is-flat {
+  background: color-mix(in srgb, var(--text-primary) 8%, var(--bg-primary));
+}
+/* Strong tiles are bright green or red, so they take dark ink in both
+   themes (the dark theme's page colour is near black). */
+.bs-heat-tile.is-strong {
+  color: var(--bg-primary);
+}
+body.light-mode .bs-heat-tile.is-strong {
+  color: var(--bs-text-dark);
+}
+.bs-heat-tile:hover {
+  filter: brightness(1.08);
+}
+.bs-heat-tile:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+.bs-heat-sym {
+  font: 700 13px var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.bs-heat-pct {
+  font: 600 11px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.bs-heat-tile.is-small .bs-heat-pct {
+  display: none;
+}
+.bs-heat-tile.is-small .bs-heat-sym {
+  font-size: 11px;
+}
+.bs-heat-skel {
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, var(--bg-primary));
+  animation: bs-heat-pulse 1.2s ease-in-out infinite;
+}
+@keyframes bs-heat-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.bs-heat-empty,
+.bs-heat-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.bs-heat-empty {
+  padding: 24px 0;
+}
+.bs-heat-note {
+  font-size: 11px;
+}
+.bs-heat-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--emerald-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bs-heat-link:hover {
+  text-decoration: underline;
+}
+.bs-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bs-heat-skel {
+    animation: none;
+  }
+  .bs-heat-tile {
+    transition: none;
+  }
 }
 .bs-hero-stat-label {
   font-size: 9.5px;
@@ -958,8 +1117,13 @@ body.light-mode .bs-band + .bs-band {
   .bs-page-inner--tight {
     padding: 0;
   }
+  /* The 1W / 1M / YTD / Beta figures stay on one line on phones too;
+     tighter gaps and a smaller figure keep all four in. */
   .bs-hero-stats {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+  .bs-hero-stat-val {
+    font-size: 13px;
   }
 }
 

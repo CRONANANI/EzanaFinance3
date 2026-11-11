@@ -20,10 +20,12 @@ import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
 import { EloSeasonCard } from '@/components/home/EloSeasonCard';
 import { PortfolioSeriesMenu } from '@/components/home/PortfolioSeriesMenu';
+import { PerformanceHeatmap } from '@/components/home/PerformanceHeatmap';
 import { DateSelector } from '@/components/ui/DateSelector';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { usePortfolioPositions } from '@/hooks/usePortfolioPositions';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import { NewsCenter } from '@/components/home/NewsCenter';
@@ -575,6 +577,8 @@ export default function HomePage() {
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
+  // Positions for the "Top performers" heat map (same source as the figure).
+  const heat = usePortfolioPositions({ mock, linked: plaidConnected, user });
 
   /* Chart series menu (Nov 10 2026): lines the user can plot beside the main
      portfolio. The mock portfolio is its own line only when a brokerage is
@@ -987,6 +991,11 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+              <PerformanceHeatmap
+                status={heat.status}
+                positions={heat.positions}
+                onAddPortfolio={() => setAddPortfolioOpen(true)}
+              />
             </div>
             <div className="bs-hero-r">
               <EloSeasonCard userId={user?.id} />

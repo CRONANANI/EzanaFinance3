@@ -13,8 +13,9 @@
      3. Home type. Card titles take the `.bs-sub-title` size and weight;
         eyebrows and stat labels take the small uppercase label; tables take
         `.bs-th` / `.bs-tr` (label-caps head over a solid rule, dotted rows).
-     4. Stat strips read like `.bs-hero-stats`: ruled top and bottom,
-        centred cells split by hairlines, mono numbers.
+     4. Stat strips: ruled top and bottom, centred cells split by
+        hairlines, mono numbers. (The /home hero strip itself dropped its
+        rules in Nov 2026; the other pages' strips keep them.)
 
    Overlays keep their own surfaces: nothing here touches modals, menus,
    dropdowns, tooltips or popovers, so they stay solid and readable.
@@ -235,7 +236,7 @@ body:not(.light-mode) .ez-canvas {
   background: var(--ez-hover);
 }
 
-/* ── 4. Stat strips: `.bs-hero-stats` ───────────────────────────────── */
+/* ── 4. Stat strips ─────────────────────────────────────────────────── */
 .ez-canvas .mock-portfolio-strip {
   gap: 0;
   border-top: 1px solid var(--ez-rule);
