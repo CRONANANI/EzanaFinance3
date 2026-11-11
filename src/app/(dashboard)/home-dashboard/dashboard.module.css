@@ -414,7 +414,25 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+}
+/* Nov 2026: Deposit funds, Rebalance and Trade are about 35% shorter
+   (44px to 29px). The invisible ::before keeps a 45px tap target, so
+   touch users lose nothing. */
+.actions .btn {
+  min-height: 29px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 13px;
+}
+.actions .btnPrimary {
+  padding: 0 16px;
+}
+.actions .btn::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
 }
 
 /* ── C · KPI strip ───────────────────────────────────────────────── */
@@ -756,11 +774,11 @@
 .holdings {
   flex: 999 1 640px;
 }
-.watch {
+/* Sector distribution sits beside Holdings (where the Watchlist was). */
+.sectors {
   flex: 1 1 340px;
 }
-.profits,
-.sectors {
+.profits {
   flex: 1 1 340px;
 }
 .txns {
@@ -971,7 +989,6 @@
     flex-basis: 100%;
   }
   .holdings,
-  .watch,
   .profits,
   .sectors,
   .txns {

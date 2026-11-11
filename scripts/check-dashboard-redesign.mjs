@@ -158,13 +158,19 @@ test('wiring: one snapshot, tokens only, copy rules', () => {
   const page = read('src/components/dashboard/home/DashboardPage.jsx');
   assert.match(page, /buildDashboardData\(/);
   assert.match(page, /className="ez-canvas"/);
-  for (const hook of [
-    'useMockPortfolio',
-    'usePlaidPortfolioSummary',
-    'useWatchlists',
-    'usePortfolioValueSeries',
-  ])
+  for (const hook of ['useMockPortfolio', 'usePlaidPortfolioSummary', 'usePortfolioValueSeries'])
     assert.match(page, new RegExp(hook), `${hook} still feeds the page`);
+  // Nov 2026: Sector distribution replaces the Watchlist card beside Holdings.
+  assert.doesNotMatch(page, /WatchlistCard|useWatchlists/, 'no watchlist on the dashboard');
+  assert.match(
+    page,
+    /<div className=\{s\.row2\}>[\s\S]*<HoldingsCard[\s\S]*<SectorCard[\s\S]*<\/div>\s*<div className=\{s\.row3\}>/,
+    'Sector distribution sits beside Holdings',
+  );
+  const actions = read('src/app/(dashboard)/home-dashboard/dashboard.module.css').match(
+    /\.actions \.btn \{[^}]*\}/,
+  );
+  assert.match(actions?.[0] || '', /min-height: 29px/, 'action buttons are about 35% shorter');
   const css = read('src/app/(dashboard)/home-dashboard/dashboard.module.css').replace(
     /\/\*[\s\S]*?\*\//g,
     '',

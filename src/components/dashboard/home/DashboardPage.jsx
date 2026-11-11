@@ -3,9 +3,11 @@
 /**
  * Home dashboard (Nov 2026 redesign, DASHBOARD_REDESIGN_HANDOFF.md).
  *
- * Data sources are unchanged: the mock portfolio (useMockPortfolio), linked
- * accounts (usePlaidPortfolioSummary + /api/plaid/holdings + batch quotes),
- * watchlists (useWatchlists) and the value series (usePortfolioValueSeries).
+ * Data sources: the mock portfolio (useMockPortfolio), linked accounts
+ * (usePlaidPortfolioSummary + /api/plaid/holdings + batch quotes) and the
+ * value series (usePortfolioValueSeries). Nov 2026: the Watchlist card was
+ * removed; Sector distribution takes its place beside Holdings, and the
+ * watchlist lives on /watchlist.
  * They are folded into one snapshot by buildDashboardData, which every card
  * reads, so no number disagrees with itself. Every card holds its size while
  * loading, so the page never shifts when data arrives.
@@ -15,7 +17,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
-import { useWatchlists } from '@/hooks/useWatchlists';
 import { supabase } from '@/lib/supabase-browser';
 import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
 import s from '@/app/(dashboard)/home-dashboard/dashboard.module.css';
@@ -34,7 +35,6 @@ import {
   ProfitsCard,
   SectorCard,
   TransactionsCard,
-  WatchlistCard,
 } from './sections';
 
 const num = (v) => (v == null || v === '' ? null : Number.isFinite(Number(v)) ? Number(v) : null);
@@ -96,7 +96,6 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const mock = useMockPortfolio();
   const plaid = usePlaidPortfolioSummary();
-  const wl = useWatchlists();
 
   const [range, setRange] = useState('1M');
   const [custom, setCustom] = useState(null);
@@ -113,19 +112,9 @@ export default function DashboardPage() {
 
   const linkedHoldings = useLinkedHoldings(user, linked);
 
-  const [watchId, setWatchId] = useState(null);
-  const lists = useMemo(() => wl.watchlists || [], [wl.watchlists]);
-  useEffect(() => {
-    if (lists.length && !lists.some((l) => l.id === watchId)) setWatchId(lists[0].id);
-  }, [lists, watchId]);
-  const activeList = lists.find((l) => l.id === watchId) || lists[0] || null;
-
   const quoteTickers = useMemo(
-    () => [
-      ...(activeList?.stocks || []).map((x) => x.ticker),
-      ...(linkedHoldings.data?.aggregated || []).map((h) => h.ticker),
-    ],
-    [activeList, linkedHoldings.data],
+    () => (linkedHoldings.data?.aggregated || []).map((h) => h.ticker),
+    [linkedHoldings.data],
   );
   const quotes = useQuotes(quoteTickers);
 
@@ -191,16 +180,6 @@ export default function DashboardPage() {
       fallbackValue = num(plaid.summary?.totalValue);
     }
 
-    const watchlist = (activeList?.stocks || []).map((x) => {
-      const q = quotes[x.ticker];
-      return {
-        ticker: x.ticker,
-        company: x.name && x.name !== x.ticker ? x.name : '',
-        price: num(q?.price) ?? (num(x.price) || null),
-        dayChangePct: q ? num(q.changePercent) : num(x.changePct ?? x.change),
-      };
-    });
-
     return buildDashboardData({
       holdings,
       cash,
@@ -208,7 +187,6 @@ export default function DashboardPage() {
       totalPnl,
       totalReturnPct,
       fallbackValue,
-      watchlist,
       transactions,
     });
   }, [
@@ -221,7 +199,6 @@ export default function DashboardPage() {
     mock.portfolio?.history,
     linkedHoldings.data,
     plaid.summary,
-    activeList,
     quotes,
   ]);
 
@@ -282,19 +259,10 @@ export default function DashboardPage() {
             }}
             mode={mode}
           />
-          <WatchlistCard
-            lists={lists}
-            selectedId={activeList?.id}
-            onSelect={setWatchId}
-            rows={data.watchlist}
-            loading={wl.loading && !lists.length}
-            error={wl.error && !lists.length}
-            onRetry={wl.refresh}
-          />
+          <SectorCard data={data} loading={holdingsLoading} />
         </div>
         <div className={s.row3}>
           <ProfitsCard data={data} loading={holdingsLoading} />
-          <SectorCard data={data} loading={holdingsLoading} />
           <TransactionsCard data={data} loading={loading} mode={mode} />
         </div>
       </div>

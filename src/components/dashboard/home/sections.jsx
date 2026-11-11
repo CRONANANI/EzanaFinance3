@@ -15,7 +15,6 @@ import {
   NA,
   SNAPSHOT_RANGES,
   TXN_ROWS,
-  WATCHLIST_ROWS,
   diversificationBadge,
   fmtCompactMoney,
   fmtDate,
@@ -464,102 +463,6 @@ export function HoldingsCard({ data, loading, error, onRetry, range, onRange, mo
       }
     >
       {body}
-    </Card>
-  );
-}
-
-/* ── F · Watchlist ──────────────────────────────────────────────────── */
-
-export function WatchlistCard({ lists, selectedId, onSelect, rows, loading, error, onRetry }) {
-  const shown = rows.slice(0, WATCHLIST_ROWS);
-  let body;
-  if (loading) body = <Skeleton rows={5} height={20} gap={16} />;
-  else if (error) body = <ErrorState onRetry={onRetry} />;
-  else if (!shown.length)
-    body = (
-      <EmptyState
-        icon="bi-bookmark"
-        message="No symbols yet"
-        action={
-          <Link href="/watchlist" className={s.btn}>
-            <i className="bi bi-plus-lg" aria-hidden="true" />
-            Add
-          </Link>
-        }
-      />
-    );
-  else
-    body = (
-      <div className={s.tableWrap}>
-        <table className={s.table}>
-          <caption className={s.srOnly}>Watchlist symbols</caption>
-          <thead>
-            <tr>
-              <th scope="col">Ticker</th>
-              <th scope="col">Company</th>
-              <th scope="col" className={s.r}>
-                Price
-              </th>
-              <th scope="col" className={s.r}>
-                Daily move
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {shown.map((w) => (
-              <tr key={w.ticker}>
-                <td className={s.ticker}>
-                  <Link href={tradeHref(w.ticker)}>{w.ticker}</Link>
-                </td>
-                <td className={s.company}>{w.company}</td>
-                <td className={cx(s.r, s.num)}>{w.price == null ? NA : fmtMoney(w.price)}</td>
-                <td className={cx(s.r, s.num, s[tone(w.dayChangePct)])}>
-                  {fmtSignedPct(w.dayChangePct)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-
-  return (
-    <Card
-      title="Watchlist"
-      className={s.watch}
-      tools={
-        <>
-          {lists.length > 0 ? (
-            <label>
-              <span className={s.srOnly}>Choose a watchlist</span>
-              <select
-                className={s.select}
-                value={selectedId || ''}
-                onChange={(e) => onSelect(e.target.value)}
-              >
-                {lists.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.label || l.name || 'Watchlist'}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          <Link href="/watchlist" className={s.iconBtn} aria-label="Add to watchlist">
-            <i className="bi bi-plus-lg" aria-hidden="true" />
-          </Link>
-        </>
-      }
-    >
-      {body}
-      {shown.length ? (
-        <div className={s.cardFoot}>
-          <Link href="/watchlist" className={s.link}>
-            View watchlist
-            <i className="bi bi-arrow-right" aria-hidden="true" />
-          </Link>
-        </div>
-      ) : null}
     </Card>
   );
 }
