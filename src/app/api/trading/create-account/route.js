@@ -4,7 +4,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { alpaca } from '@/lib/alpaca';
 import { claimBrokerageAccount, isDefiniteRejection } from '@/lib/trading/idempotent';
 import { getClientIp } from '@/lib/client-ip';
-import { checklistGate, gateMessage } from '@/lib/trading/checklist-gate';
+import { liveTradingGate } from '@/lib/onboarding/completeTask';
 
 import { awardELO } from '@/lib/elo';
 
@@ -71,15 +71,11 @@ export const POST = withApiGuard(
     try {
       const kycData = await request.json();
 
-      /* Computed server-side from the task list and the user's records,
-         not the browser-written checklist_completed flag (RET-13). */
-      const gate = await checklistGate(getAdminClient(), user.id);
-      if (!gate.ok) {
-        return NextResponse.json(
-          { error: gateMessage(gate.missing), missing: gate.missing },
-          { status: 403 },
-        );
-      }
+      /* Getting Started checklist gate (Nov 2026), computed server-side from
+         onboarding_task_completions and the user's own records, never a
+         browser-written flag (RET-13). */
+      const gate = await liveTradingGate(user.id);
+      if (gate) return NextResponse.json(gate.body, { status: gate.status });
 
       /* Claim first: only the request that inserts the 'creating' row calls
          Alpaca, so racing submits cannot open two brokerage accounts. */

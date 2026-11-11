@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { liveTradingGate } from '@/lib/onboarding/completeTask';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { alpaca } from '@/lib/alpaca';
@@ -23,6 +24,9 @@ export const POST = withApiGuard(
         { status: 400 },
       );
     }
+    /* Live orders require the Getting Started checklist (Nov 2026). */
+    const gate = await liveTradingGate(user.id);
+    if (gate) return NextResponse.json(gate.body, { status: gate.status });
     try {
       let body;
       try {

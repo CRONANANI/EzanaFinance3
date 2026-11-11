@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { completeChecklistTask } from '@/lib/onboarding/completeTask';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, getUserClient } from '@/lib/supabase';
 import { listMockTrades } from '@/lib/trading/mock-trades';
@@ -40,6 +41,9 @@ export const POST = withApiGuard(
       const { status, body } = await executeMockTrade(admin, user.id, payload, {
         getQuote: getServerQuote,
       });
+      if (status >= 200 && status < 300) {
+        await completeChecklistTask(user.id, 'mock.first_trade');
+      }
       return NextResponse.json(body, { status });
     } catch (e) {
       return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });

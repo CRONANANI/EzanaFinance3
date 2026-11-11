@@ -9,7 +9,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { clearLocalAuth } from '@/lib/clear-auth';
 import { NavNotifications } from '@/components/NavNotifications';
-import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
+import GettingStartedChecklist from '@/components/onboarding/GettingStartedChecklist';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
@@ -985,7 +985,7 @@ export function Navbar() {
           <div className="nn-wrapper">
             <NavNotifications />
           </div>
-          {isAuthenticated && <ChecklistProgressIcon />}
+          {isAuthenticated && <GettingStartedChecklist />}
         </div>
 
         <AnimatedNav

@@ -81,6 +81,7 @@ import '../../../../../app-legacy/pages/home-dashboard.css';
 import '../ezana-echo.css';
 import '@/components/echo/echo-article-layout.css';
 import '@/components/echo/figures/echo-figures.css';
+import { markChecklistView } from '@/lib/onboarding/markView';
 
 function getEraForYear(year) {
   return (
@@ -2712,6 +2713,11 @@ export default function EchoArticleClient({
   // Globe rail placement: 3rd sticky column ≥1280px, inline in the body below.
   // Default true so SSR + first client render agree (desktop-first), then correct.
   const [grailWide, setGrailWide] = useState(true);
+  /* Getting Started checklist: 30 seconds on an article counts as a read. */
+  useEffect(() => {
+    const t = setTimeout(() => markChecklistView('explore.read_echo'), 30000);
+    return () => clearTimeout(t);
+  }, []);
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(min-width: 1280px)');

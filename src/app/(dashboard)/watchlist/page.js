@@ -58,6 +58,7 @@ import {
 } from '@/components/watchlist/monitor/SmartWatchlist';
 import './watchlist.css';
 import '@/styles/home-canvas.css';
+import { markChecklistView } from '@/lib/onboarding/markView';
 
 const OrgSendToTeamModal = dynamic(
   () =>
@@ -155,6 +156,10 @@ function WatchlistMonitor() {
   );
   const counts = useMemo(() => classCounts(activeList), [activeList]);
   const insights = useMemo(() => computeInsights(items, classId), [items, classId]);
+  /* Getting Started checklist: the insights card shows sector exposure. */
+  useEffect(() => {
+    if (items.length) markChecklistView('watchlist.sector_exposure');
+  }, [items.length]);
 
   const selected = useMemo(
     () => items.find((i) => String(i.ticker).toUpperCase() === url.symbol) || items[0] || null,

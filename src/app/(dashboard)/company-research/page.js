@@ -63,6 +63,7 @@ import './research-density.css';
 import '../org-trading/org-trading.css';
 import '@/components/research/company/research-company.css';
 import '@/styles/home-canvas.css';
+import { markChecklistView } from '@/lib/onboarding/markView';
 
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
@@ -180,7 +181,10 @@ function CompanyResearchPageInner() {
 
   const quoteReady = research?.quote.status === 'ready';
   useEffect(() => {
-    if (selectedStock && quoteReady) completeTask('research_2');
+    if (selectedStock && quoteReady) {
+      completeTask('research_2');
+      markChecklistView('explore.company_profile');
+    }
   }, [selectedStock, quoteReady, completeTask]);
 
   const handleSelectStock = useCallback(
@@ -193,7 +197,10 @@ function CompanyResearchPageInner() {
       setQuery('');
       clearSuggestions();
       completeTask('research_1');
-      if (opts?.fromPeer) completeTask('research_3');
+      if (opts?.fromPeer) {
+        completeTask('research_3');
+        markChecklistView('watchlist.compare_two');
+      }
     },
     [view, setView, setQuery, clearSuggestions, completeTask],
   );

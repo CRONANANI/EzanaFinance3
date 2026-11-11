@@ -27,6 +27,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './inside-the-capitol.css';
 import { LobbyingToLegislationCard } from '@/components/congress/LobbyingToLegislationCard';
+import { markChecklistView } from '@/lib/onboarding/markView';
 
 /* ── Helpers ── */
 function slugify(name) {
@@ -322,6 +323,12 @@ function InsideTheCapitolContent() {
   const partyFilter = searchParams.get('party');
   const stateFilter = searchParams.get('state');
   const { completeTask } = useChecklist();
+  /* Opening a member's trades: the old guided task and the Getting Started
+     checklist's page-view task. */
+  const openMemberTask = () => {
+    completeTask('capitol_1');
+    markChecklistView('explore.view_member_trades');
+  };
 
   const [typeFilter, setTypeFilter] = useState('All');
   const [activePartyFilter, setActivePartyFilter] = useState(null);
@@ -679,7 +686,7 @@ function InsideTheCapitolContent() {
         className="itc-pinnable-fill"
       >
         <div className="itc-card">
-          <TopPerformingPoliticiansCard onOpenPolitician={() => completeTask('capitol_1')} />
+          <TopPerformingPoliticiansCard onOpenPolitician={() => openMemberTask()} />
         </div>
       </PinnableCard>
 
@@ -798,7 +805,7 @@ function InsideTheCapitolContent() {
                     <Link
                       href={`/inside-the-capitol/${slugify(t.member)}`}
                       className="itc-tr-mem"
-                      onClick={() => completeTask('capitol_1')}
+                      onClick={() => openMemberTask()}
                       data-task-target={ti === 0 ? 'capitol-politician-name' : undefined}
                     >
                       <span className="itc-tr-mem-name">{t.member}</span>
@@ -979,7 +986,7 @@ function InsideTheCapitolContent() {
                       <Link
                         href={`/inside-the-capitol/${slugify(pol.name)}`}
                         className={`itc-avatar-lg ${pol.party.toLowerCase()}`}
-                        onClick={() => completeTask('capitol_1')}
+                        onClick={() => openMemberTask()}
                       >
                         {pol.initials}
                       </Link>
@@ -987,7 +994,7 @@ function InsideTheCapitolContent() {
                         <Link
                           href={`/inside-the-capitol/${slugify(pol.name)}`}
                           className="itc-pol-name"
-                          onClick={() => completeTask('capitol_1')}
+                          onClick={() => openMemberTask()}
                         >
                           {pol.name}
                         </Link>

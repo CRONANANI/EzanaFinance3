@@ -9,6 +9,7 @@ import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
 import '@/app/(dashboard)/partner.css';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
+import GettingStartedChecklist from '@/components/onboarding/GettingStartedChecklist';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
@@ -76,6 +77,7 @@ export function PartnerNavbar() {
             <i className="bi bi-patch-check-fill" />
             <span>Partner</span>
           </div>
+          <GettingStartedChecklist variant="partner" />
         </div>
 
         <AnimatedNav items={partnerNavItems} accentColor="#d4a853" />

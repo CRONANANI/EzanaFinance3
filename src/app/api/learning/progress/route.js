@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { completeChecklistTasks } from '@/lib/onboarding/completeTask';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
@@ -302,6 +303,12 @@ export const POST = withApiGuard(
         let oldRating;
         let newTier;
         if (passed) {
+          /* Getting Started checklist: a passed quiz completes the course. */
+          await completeChecklistTasks(user.id, [
+            'basics.first_quiz',
+            courseId === 'stocks-basic-1' && 'basics.first_lesson',
+            courseId === 'stocks-basic-7' && 'basics.risk_diversification',
+          ]);
           brokerageFlagOk = await updateBrokerageFlags(admin, user.id, courseId);
           badges = await syncTrackAndBadges(admin, user.id, course);
 

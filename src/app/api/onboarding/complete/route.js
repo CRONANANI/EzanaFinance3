@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { completeChecklistTask } from '@/lib/onboarding/completeTask';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 
@@ -107,6 +108,7 @@ export const POST = withApiGuard(async (request, user) => {
     .maybeSingle();
 
   const completed = check?.investor_questionnaire_completed === true;
+  if (completed) await completeChecklistTask(user.id, 'basics.investor_profile');
   if (!completed) {
     console.error(
       '[api/onboarding/complete] verification failed:',

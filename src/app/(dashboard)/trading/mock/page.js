@@ -45,6 +45,7 @@ const ResetPortfolioModal = dynamic(() => import('@/components/trading/ResetPort
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 import '@/styles/home-canvas.css';
+import { markChecklistView } from '@/lib/onboarding/markView';
 
 /* ──────────────────────────────────────────
    CONSTANTS
@@ -104,6 +105,10 @@ function MockTradingPageInner() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
+  /* Getting Started checklist: opening the paper portfolio reviews its P&L. */
+  useEffect(() => {
+    markChecklistView('mock.review_pnl');
+  }, []);
   /* Portfolio state: backed by the mock portfolio API via useMockPortfolio */
   const {
     portfolio: portfolioFromHook,

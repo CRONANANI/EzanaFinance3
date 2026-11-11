@@ -10,6 +10,7 @@
  * Remove an item from a watchlist. ticker and type identify the row.
  */
 import { NextResponse } from 'next/server';
+import { reconcileChecklist } from '@/lib/onboarding/completeTask';
 import { withApiGuard } from '@/lib/api-guard';
 
 import { getAdminClient, getAuthContext } from '@/lib/supabase';
@@ -89,6 +90,11 @@ export const POST = withApiGuard(
         event_data: { ticker: data.ticker, watchlist_id: listId },
       });
       if (bcErr) console.warn('[watchlist items] breadcrumb', bcErr.message);
+
+      /* Getting Started checklist: 3 stocks watched, or a member followed. */
+      await reconcileChecklist(user.id, {
+        only: ['watchlist.add_three', 'explore.follow_member'],
+      }).catch(() => {});
 
       return NextResponse.json({
         item: {
