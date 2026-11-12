@@ -1,0 +1,673 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Quant Lab landing section. Companion to QuantLabSection.jsx.
+   Scoped prefix: `qls-`. Tokens only, no raw hex.
+
+   BOTH SHELLS. Every colour resolves from a platform token that flips with
+   the theme. The wireframe was dark only, so the tones that a straight token
+   swap left under contrast in light mode (secondary text, the dots) are set
+   again in the light block directly below.
+
+   The header reuses the shared landing eyebrow (.section-eyebrow) and the
+   2rem / 700 title every other landing section uses. The button reuses the
+   hero's .lp-btn-primary. Vertical rhythm is the shared --landing-gap.
+
+   No borders or outlines on the panes: they separate from the page by
+   surface only. The two thin lines on the scatter are chart axes.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.qls-section {
+  --qls-bg: var(--bg-primary);
+  /* Pane surface, one step off the page in either shell. */
+  --qls-card: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+  --qls-inset: var(--bg-primary);
+  --qls-text: var(--text-primary);
+  --qls-muted: var(--text-muted);
+  /* Pending rules and excluded tickers. Holds 4.5:1 on the pane. */
+  --qls-dim: color-mix(in srgb, var(--text-primary) 50%, var(--bg-primary));
+  --qls-accent: var(--emerald);
+  --qls-accent-text: var(--emerald-text);
+  --qls-held: var(--emerald-text);
+  --qls-passing: color-mix(in srgb, var(--emerald) 62%, var(--bg-primary));
+  --qls-accent-tint: color-mix(in srgb, var(--emerald) 12%, transparent);
+  --qls-neutral: color-mix(in srgb, var(--text-primary) 42%, var(--bg-primary));
+  --qls-off: color-mix(in srgb, var(--text-primary) 16%, var(--bg-primary));
+  --qls-neg: var(--negative);
+  --qls-line: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --qls-grid: color-mix(in srgb, var(--text-primary) 6%, transparent);
+
+  width: 100%;
+  box-sizing: border-box;
+  padding: calc(var(--landing-gap, 80px) / 2) clamp(16px, 2.8vw, 40px);
+  background: var(--qls-bg);
+  color: var(--qls-text);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  /* The top nav's Quant link lands here, below the sticky bar. */
+  scroll-margin-top: 80px;
+}
+
+html.light-mode .qls-section,
+body.light-mode .qls-section {
+  --qls-muted: color-mix(in srgb, var(--text-primary) 68%, var(--bg-primary));
+  --qls-dim: color-mix(in srgb, var(--text-primary) 62%, var(--bg-primary));
+  --qls-passing: color-mix(in srgb, var(--emerald) 88%, var(--bg-primary));
+  --qls-accent-tint: color-mix(in srgb, var(--emerald) 8%, transparent);
+  --qls-neutral: color-mix(in srgb, var(--text-primary) 52%, var(--bg-primary));
+  --qls-off: color-mix(in srgb, var(--text-primary) 20%, var(--bg-primary));
+}
+
+.qls-section *,
+.qls-section *::before,
+.qls-section *::after {
+  box-sizing: border-box;
+}
+
+.qls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: var(--marketing-shell-max);
+  margin: 0 auto;
+}
+
+/* ── header ─────────────────────────────────────────────────────────── */
+
+.qls-header {
+  max-width: 62ch;
+  margin: 0 auto;
+  text-align: center;
+}
+.qls-title {
+  margin: 10px 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--qls-text);
+  text-wrap: balance;
+}
+.qls-lead {
+  max-width: 62ch;
+  margin: 12px auto 0;
+  font-size: clamp(14px, 1.15vw, 17px);
+  line-height: 1.65;
+  color: var(--qls-muted);
+  text-wrap: pretty;
+}
+
+/* ── stepper ────────────────────────────────────────────────────────── */
+
+.qls-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.qls-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+.qls-steps {
+  display: flex;
+  flex: 999 1 560px;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.qls-step {
+  display: flex;
+  flex: 1 1 110px;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 0 6px;
+  font: inherit;
+  text-align: left;
+  color: var(--qls-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.qls-step:hover,
+.qls-step.is-active {
+  color: var(--qls-text);
+}
+.qls-step-track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--qls-line);
+}
+.qls-step-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--qls-accent);
+  transform-origin: left center;
+}
+.qls-step-fill.is-running {
+  animation: qls-fill 2.8s linear both;
+}
+.qls-step-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.qls-step-num {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--qls-muted);
+}
+.qls-step.is-reached .qls-step-num {
+  color: var(--qls-accent-text);
+}
+.qls-step-name {
+  font-size: var(--type-body-size);
+  font-weight: 600;
+}
+.qls-run {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  font: inherit;
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  color: var(--qls-accent-text);
+  background: color-mix(in srgb, var(--emerald) 15%, transparent);
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.qls-run:hover {
+  background: color-mix(in srgb, var(--emerald) 22%, transparent);
+}
+.qls-step:focus-visible,
+.qls-run:focus-visible,
+.qls-cta:focus-visible {
+  outline: 2px solid var(--qls-accent);
+  outline-offset: 3px;
+}
+
+/* ── panes: no border or outline, surface only ──────────────────────── */
+
+.qls-panes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 16px;
+}
+.qls-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  background: var(--qls-card);
+}
+.qls-pane-rules {
+  flex: 1 1 400px;
+}
+.qls-pane-stage {
+  flex: 999 1 520px;
+  min-height: 600px;
+}
+.qls-pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--qls-muted);
+}
+
+/* ── rules ──────────────────────────────────────────────────────────── */
+
+.qls-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-sm-size);
+  line-height: 1.6;
+}
+.qls-rule {
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--qls-text);
+  transition: background 0.3s ease-out;
+}
+.qls-rule-key {
+  flex: none;
+  width: 11ch;
+  color: var(--qls-muted);
+}
+.qls-rule-val {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.qls-rule.is-comment {
+  color: var(--qls-muted);
+}
+.qls-rule.is-pending,
+.qls-rule.is-pending .qls-rule-key {
+  color: var(--qls-dim);
+}
+.qls-rule.is-active {
+  background: var(--qls-accent-tint);
+}
+.qls-rule.is-active .qls-rule-key {
+  color: var(--qls-accent-text);
+}
+.qls-caret {
+  flex: none;
+  align-self: center;
+  width: 8px;
+  height: 15px;
+  margin-left: 4px;
+  background: var(--qls-accent);
+  animation: qls-blink 1s step-end infinite;
+}
+
+.qls-note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Fits the longest note, so the pane does not jump between steps. */
+  min-height: 160px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: var(--qls-inset);
+}
+.qls-note-tag {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--qls-accent-text);
+}
+.qls-note-text {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--qls-text);
+  text-wrap: pretty;
+}
+
+/* ── stat tiles (also the result metrics) ───────────────────────────── */
+
+.qls-tiles,
+.qls-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.qls-tiles {
+  margin-top: auto;
+}
+.qls-tile {
+  display: flex;
+  flex: 1 1 150px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--qls-inset);
+}
+.qls-metrics .qls-tile {
+  flex-basis: 120px;
+}
+.qls-tile-label {
+  font-size: var(--type-caption-size);
+  color: var(--qls-muted);
+}
+.qls-tile-value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--qls-text);
+}
+.qls-tile-value.is-pending {
+  color: var(--qls-dim);
+}
+.qls-tile-value.is-pos {
+  color: var(--qls-accent-text);
+}
+.qls-tile-value.is-neg {
+  color: var(--qls-neg);
+}
+
+/* ── scatter plot ───────────────────────────────────────────────────── */
+
+.qls-plot-wrap {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 14px;
+}
+.qls-plot-row {
+  display: flex;
+  flex-grow: 1;
+  align-items: stretch;
+  gap: 10px;
+}
+.qls-axis-y {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--type-caption-size);
+  color: var(--qls-muted);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.qls-axis-x {
+  font-size: var(--type-caption-size);
+  text-align: center;
+  color: var(--qls-muted);
+}
+.qls-plot {
+  position: relative;
+  flex-grow: 1;
+  min-height: 400px;
+  /* Room for the right-most ticker labels, which hang off their dots. */
+  margin-right: 56px;
+  border-bottom: 1px solid var(--qls-line);
+  border-left: 1px solid var(--qls-line);
+}
+.qls-cutoff {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--qls-neutral);
+  animation: qls-fade 0.4s ease-out both;
+}
+.qls-cutoff span {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  white-space: nowrap;
+  color: var(--qls-muted);
+}
+.qls-dot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-7px, -50%);
+}
+.qls-dot-mark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--qls-neutral);
+  transition:
+    background 0.4s ease-out,
+    transform 0.4s ease-out;
+}
+.qls-dot-label {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  color: var(--qls-muted);
+  transition: color 0.4s ease-out;
+}
+.qls-dot.is-excluded .qls-dot-mark {
+  background: var(--qls-off);
+  transform: scale(0.8);
+}
+.qls-dot.is-excluded .qls-dot-label {
+  color: var(--qls-dim);
+}
+.qls-dot.is-passing .qls-dot-mark {
+  background: var(--qls-passing);
+}
+.qls-dot.is-held .qls-dot-mark {
+  background: var(--qls-held);
+  transform: scale(1.3);
+}
+.qls-dot.is-passing .qls-dot-label,
+.qls-dot.is-held .qls-dot-label {
+  color: var(--qls-text);
+}
+.qls-dot.is-held .qls-dot-label {
+  font-weight: 700;
+}
+.qls-dot-cost {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--qls-neg);
+  animation: qls-fade 0.4s ease-out both;
+}
+
+.qls-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.8125rem;
+  color: var(--qls-muted);
+}
+.qls-legend span,
+.qls-holdings-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.qls-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--qls-neutral);
+}
+.qls-key.is-excluded {
+  background: var(--qls-off);
+}
+.qls-key.is-passing {
+  background: var(--qls-passing);
+}
+.qls-key.is-held {
+  background: var(--qls-held);
+}
+.qls-swatch {
+  width: 16px;
+  height: 2px;
+  background: var(--qls-accent);
+}
+.qls-swatch.is-dashed {
+  height: 0;
+  background: none;
+  border-top: 2px dashed var(--qls-neutral);
+}
+
+/* ── result ─────────────────────────────────────────────────────────── */
+
+.qls-result {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 16px;
+  animation: qls-fade 0.5s ease-out both;
+}
+.qls-chart {
+  position: relative;
+  flex-grow: 1;
+  min-height: 220px;
+}
+.qls-chart svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.qls-chart path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+.qls-chart-grid {
+  stroke: var(--qls-grid);
+  stroke-width: 1;
+}
+.qls-chart path.qls-chart-area {
+  fill: color-mix(in srgb, var(--emerald) 8%, transparent);
+  stroke: none;
+}
+.qls-chart-bench {
+  stroke: var(--qls-neutral);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.qls-chart-line {
+  stroke: var(--qls-accent);
+  stroke-width: 2;
+}
+.qls-holdings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--qls-inset);
+}
+.qls-holdings-label {
+  font-size: 0.8125rem;
+  color: var(--qls-muted);
+}
+.qls-holdings-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-sm-size);
+}
+.qls-holdings-weight {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-sm-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--qls-muted);
+}
+
+/* ── footer ─────────────────────────────────────────────────────────── */
+
+.qls-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+/* Colours, radius and hover come from the hero's .lp-btn-primary. */
+.qls-cta {
+  min-height: 44px;
+}
+.qls-legal {
+  max-width: 100%;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--qls-muted);
+}
+
+@media (max-width: 1140px) {
+  .qls-legal {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  .qls-section {
+    scroll-margin-top: 72px;
+  }
+  .qls-container {
+    gap: 28px;
+  }
+  .qls-pane {
+    padding: 20px;
+  }
+  .qls-pane-stage {
+    min-height: 520px;
+  }
+  .qls-plot {
+    min-height: 340px;
+  }
+}
+
+/* Phones: twenty labels crowd a narrow plot, so the excluded ones go. */
+@media (max-width: 480px) {
+  .qls-pane {
+    padding: 16px;
+  }
+  .qls-plot {
+    margin-right: 44px;
+  }
+  .qls-dot.is-excluded .qls-dot-label {
+    display: none;
+  }
+  .qls-rule-key {
+    width: 10ch;
+  }
+}
+
+@keyframes qls-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes qls-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes qls-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qls-section *,
+  .qls-section *::before,
+  .qls-section *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -50,6 +50,13 @@ const DimensionScrollSection = dynamic(
     })),
   { loading: sectionFallback('900px') },
 );
+const QuantLabSection = dynamic(
+  () =>
+    import('@/components/landing/QuantLabSection').then((m) => ({
+      default: m.QuantLabSection,
+    })),
+  { loading: sectionFallback('1000px') },
+);
 const Faq1 = dynamic(() => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })), {
   loading: sectionFallback('400px'),
 });
@@ -125,6 +132,12 @@ export default function HomePage() {
           Why Ezana Finance grid. */}
       <LandingErrorBoundary name="DimensionScrollSection">
         <DimensionScrollSection />
+      </LandingErrorBoundary>
+
+      {/* Quant Lab: one strategy narrowed rule by rule into a portfolio, then
+          its backtest. The top nav's Quant link lands here (#quant). */}
+      <LandingErrorBoundary name="QuantLabSection">
+        <QuantLabSection />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="WhyEzanaSection">
