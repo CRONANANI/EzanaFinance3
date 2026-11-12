@@ -15,6 +15,7 @@ import {
   tone,
   tradesCsv,
 } from './lab-format';
+import { RunRiskSection } from './RunRiskSection';
 
 const W = 960;
 const H_EQUITY = 260;
@@ -376,6 +377,8 @@ export function BacktestReport({ run }) {
           </>
         )}
       </div>
+
+      <RunRiskSection results={results} />
 
       <div className="ql-two">
         <div className="ql-section">

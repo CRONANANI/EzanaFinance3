@@ -4,13 +4,9 @@ import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  LEADERBOARD,
-  RISK_ANALYTICS,
-  TRENDING_MARKETS,
-  BETTING_ANALYTICS,
-} from '@/lib/for-the-quants-mock-data';
+import { LEADERBOARD, TRENDING_MARKETS, BETTING_ANALYTICS } from '@/lib/for-the-quants-mock-data';
 import { QuantLabWorkbench } from '@/components/quants/lab/QuantLabWorkbench';
+import { PortfolioRiskCard } from '@/components/quants/lab/PortfolioRiskCard';
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
 import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
 import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
@@ -51,6 +47,7 @@ import RelationshipGraphCard from './RelationshipGraphCard';
 import './simulation-visuals.css';
 import './model-library.css';
 import './quant-lab.css';
+import './quant-risk.css';
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -163,66 +160,7 @@ export default function ForTheQuantsPage() {
           </div>
         </div>
 
-        <div className="db-card">
-          <div className="db-card-header">
-            <h3 className="ftq-section-title">
-              <i className="bi bi-exclamation-triangle" aria-hidden />
-              Risk Analytics
-            </h3>
-            <span className="ql-tag">Sample data</span>
-          </div>
-          <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-            <div className="ftq-bt-row" style={{ marginBottom: '0.25rem' }}>
-              <span className="ftq-bt-label">Portfolio Beta</span>
-              <span className="ftq-bt-value">{RISK_ANALYTICS.beta}</span>
-            </div>
-            <div className="ftq-risk-bar">
-              <div
-                className="ftq-risk-bar-fill"
-                style={{ width: `${RISK_ANALYTICS.betaBarPct}%` }}
-              />
-            </div>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
-              vs S&amp;P 500
-            </p>
-
-            <p className="ftq-bt-label" style={{ marginBottom: '0.25rem' }}>
-              Value at Risk (95%)
-            </p>
-            <p
-              style={{ fontSize: '1rem', fontWeight: 700, color: '#f87171', margin: '0 0 0.25rem' }}
-            >
-              {RISK_ANALYTICS.var95}
-            </p>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
-              Max potential 1-day loss
-            </p>
-
-            <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>
-              Sector Concentration
-            </p>
-            {RISK_ANALYTICS.sectors.map((s) => (
-              <div key={s.label} className="ftq-sector-row">
-                <div className="ftq-sector-top">
-                  <span className="ftq-sector-label">{s.label}</span>
-                  <span className="ftq-sector-pct">{s.pct}%</span>
-                </div>
-                <div className="ftq-sector-bar">
-                  <div className="ftq-sector-bar-fill" style={{ width: `${s.pct}%` }} />
-                </div>
-              </div>
-            ))}
-
-            <div className="ftq-bt-row" style={{ marginTop: '0.75rem' }}>
-              <span className="ftq-bt-label">Correlation to Market</span>
-              <span className="ftq-bt-value">{RISK_ANALYTICS.correlation}</span>
-            </div>
-            <div className="ftq-bt-row">
-              <span className="ftq-bt-label">Volatility (30d)</span>
-              <span className="ftq-bt-value">{RISK_ANALYTICS.vol30d}</span>
-            </div>
-          </div>
-        </div>
+        <PortfolioRiskCard />
       </div>
 
       <div className="ftq-row-50">
