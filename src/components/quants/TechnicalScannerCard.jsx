@@ -5,6 +5,8 @@ const SIGNAL_COLORS = {
   buy: { bg: 'rgba(16,185,129,0.12)', text: '#10b981', label: 'Buy' },
   sell: { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: 'Sell' },
   neutral: { bg: 'rgba(107,114,128,0.12)', text: '#9ca3af', label: 'Neutral' },
+  /* Trend strength only (ADX): no direction, so it is not a buy or a sell. */
+  trend: { bg: 'rgba(212,175,55,0.12)', text: '#d4af37', label: 'Trending' },
 };
 
 export function TechnicalScannerCard() {
@@ -75,7 +77,7 @@ export function TechnicalScannerCard() {
             </div>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               {data.indicators.map((ind) => {
-                const sc = SIGNAL_COLORS[ind.signal];
+                const sc = SIGNAL_COLORS[ind.signal] || SIGNAL_COLORS.neutral;
                 return (
                   <div
                     key={ind.name}

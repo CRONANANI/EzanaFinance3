@@ -100,8 +100,8 @@ export function CorrelationMatrixCard() {
               </tbody>
             </table>
             <p style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: '0.5rem' }}>
-              Based on {data.days}-day daily returns. Green = positively correlated, Red =
-              negatively correlated.
+              Daily returns on {data.observations} sessions that every ticker traded, {data.from} to{' '}
+              {data.to}. Green = positively correlated, Red = negatively correlated.
             </p>
           </div>
         )}

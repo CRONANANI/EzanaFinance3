@@ -117,7 +117,8 @@ export const GET = withApiGuard(
           name: 'ADX (14)',
           value: adx,
           formatted: adx?.toFixed(1),
-          signal: adx > 25 ? 'buy' : 'neutral',
+          /* ADX measures trend strength, not direction: it is never a buy or a sell. */
+          signal: adx > 25 ? 'trend' : 'neutral',
           detail:
             adx > 40
               ? 'Very strong trend'
@@ -150,7 +151,9 @@ export const GET = withApiGuard(
           aggregate,
           buyCount,
           sellCount,
-          neutralCount: indicators.length - buyCount - sellCount,
+          neutralCount: indicators.filter((i) => i.signal === 'neutral').length,
+          /* Non-directional readings (ADX). Excluded from the aggregate above. */
+          trendCount: indicators.filter((i) => i.signal === 'trend').length,
           raw: {
             rsi,
             macdVal,

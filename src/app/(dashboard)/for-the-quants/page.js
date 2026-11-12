@@ -5,15 +5,12 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  FTQ_STAT_CARDS,
-  MY_STRATEGIES,
   LEADERBOARD,
   RISK_ANALYTICS,
   TRENDING_MARKETS,
   BETTING_ANALYTICS,
-  STRATEGY_TEMPLATES,
 } from '@/lib/for-the-quants-mock-data';
-import { VisualStrategyBuilder } from '@/components/quants/VisualStrategyBuilder';
+import { QuantLabWorkbench } from '@/components/quants/lab/QuantLabWorkbench';
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
 import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
 import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
@@ -21,16 +18,9 @@ import { PairsTradingCard } from '@/components/quants/PairsTradingCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesForQuantsPreview } from '@/lib/learning-curriculum';
 
-/* BacktestResultsCard and StrategyComparisonCard both render Recharts charts
-   and sit well below the fold on this long page. Defer them so Recharts leaves
-   the route's critical bundle; reserved heights ≈ each card's footprint. */
-const BacktestResultsCard = dynamic(
-  () =>
-    import('@/components/quants/BacktestResultsCard').then((m) => ({
-      default: m.BacktestResultsCard,
-    })),
-  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 460, width: '100%' }} /> },
-);
+/* StrategyComparisonCard renders Recharts charts and sits well below the fold
+   on this long page. Defer it so Recharts leaves the route's critical bundle;
+   the reserved height ≈ the card's footprint. */
 const StrategyComparisonCard = dynamic(
   () =>
     import('@/components/quants/StrategyComparisonCard').then((m) => ({
@@ -60,6 +50,7 @@ import TailProbabilityRidgeCard from './TailProbabilityRidgeCard';
 import RelationshipGraphCard from './RelationshipGraphCard';
 import './simulation-visuals.css';
 import './model-library.css';
+import './quant-lab.css';
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -75,8 +66,6 @@ function VolumeBars() {
 export default function ForTheQuantsPage() {
   const router = useRouter();
   const quantsCourses = useMemo(() => getCoursesForQuantsPreview(4), []);
-  const [builderTab, setBuilderTab] = useState('mine');
-  const [showBuilder, setShowBuilder] = useState(false);
   const [pmQuery, setPmQuery] = useState('');
   const [leaderPeriod, setLeaderPeriod] = useState('month');
   const [simSeed, setSimSeed] = useState(7); // re-roll → new simulated backtest run
@@ -89,181 +78,11 @@ export default function ForTheQuantsPage() {
   return (
     <div className="dashboard-page-inset ftq-page">
       <header className="ftq-header">
-        <h1 className="ftq-title">For The Quants</h1>
-        <p className="ftq-subtitle">Build, test, and deploy quantitative trading strategies</p>
+        <h1 className="ftq-title">Ezana Quant Lab</h1>
+        <p className="ftq-subtitle">Research. Validate. Deploy.</p>
       </header>
 
-      <div className="ftq-stat-grid">
-        {FTQ_STAT_CARDS.map((s) => (
-          <div key={s.id} className="ftq-stat-card">
-            <div className="ftq-stat-icon" aria-hidden>
-              <div className="ftq-stat-icon-inner">
-                <i className={`bi ${s.biClass}`} />
-              </div>
-            </div>
-            <div className="ftq-stat-label">{s.label}</div>
-            <div className="ftq-stat-value">{s.value}</div>
-            <div className={`ftq-stat-sub ${s.sub.includes('+') ? 'positive' : ''}`}>{s.sub}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="ftq-row-60-40">
-        <div className="db-card">
-          <div className="db-card-header">
-            <h3 className="ftq-section-title">
-              <i className="bi bi-tools" aria-hidden />
-              Strategy Builder
-            </h3>
-          </div>
-          <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-            <div className="ftq-tabs">
-              {[
-                { id: 'mine', label: 'My Strategies' },
-                { id: 'templates', label: 'Templates' },
-                { id: 'community', label: 'Community' },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`ftq-tab ${builderTab === t.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setBuilderTab(t.id);
-                    if (t.id !== 'mine') setShowBuilder(false);
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {builderTab === 'mine' && (
-              <>
-                {showBuilder ? (
-                  <VisualStrategyBuilder
-                    onSave={() => {
-                      setShowBuilder(false);
-                    }}
-                  />
-                ) : (
-                  <div className="ftq-strategy-list">
-                    {MY_STRATEGIES.map((st) => (
-                      <div key={st.id} className="ftq-strategy-row">
-                        <h4 className="ftq-strategy-name">
-                          <i
-                            className={`bi ${st.biClass}`}
-                            style={{ marginRight: '0.35rem' }}
-                            aria-hidden
-                          />
-                          {st.name}
-                          <span className="ftq-version-badge">v{st.version ?? 1}</span>
-                        </h4>
-                        <p className="ftq-strategy-detail">{st.detail}</p>
-                        <div className="ftq-strategy-meta">
-                          {st.lastRun ? <>Last run: {st.lastRun} · </> : null}
-                          Status: <span className={`ftq-status ${st.statusTone}`}>{st.status}</span>
-                        </div>
-                        <div className="ftq-row-actions">
-                          <button
-                            type="button"
-                            className="ftq-btn-ghost"
-                            onClick={() => setShowBuilder(true)}
-                          >
-                            Edit
-                          </button>
-                          <button type="button" className="ftq-btn-ghost">
-                            Backtest
-                          </button>
-                          {st.statusTone !== 'draft' ? (
-                            <button type="button" className="ftq-btn-ghost">
-                              Deploy
-                            </button>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="ftq-btn-ghost"
-                            title="Version history"
-                            aria-label="Version history"
-                          >
-                            <i className="bi bi-clock-history" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {builderTab === 'templates' && (
-              <div className="ftq-template-grid">
-                {STRATEGY_TEMPLATES.map((tmpl) => (
-                  <div key={tmpl.id} className="ftq-template-card">
-                    <div className="ftq-template-icon">
-                      <i className={`bi ${tmpl.icon}`} />
-                    </div>
-                    <div className="ftq-template-body">
-                      <h4 className="ftq-template-name">{tmpl.name}</h4>
-                      <p className="ftq-template-desc">{tmpl.description}</p>
-                      <div className="ftq-template-meta">
-                        <span className="ftq-template-cat">{tmpl.category}</span>
-                        <span className="ftq-template-ret">{tmpl.expectedReturn}</span>
-                        <span className="ftq-template-sharpe">Sharpe {tmpl.sharpe}</span>
-                      </div>
-                      {tmpl.datasets.length > 0 && (
-                        <div className="ftq-template-datasets">
-                          Requires: {tmpl.datasets.join(', ')}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="ftq-btn-ghost ftq-template-clone"
-                      onClick={() => {
-                        setBuilderTab('mine');
-                        setShowBuilder(true);
-                      }}
-                    >
-                      <i className="bi bi-copy" /> Clone & Edit
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {builderTab === 'community' && (
-              <p style={{ color: '#8b949e', fontSize: '0.875rem', margin: 0 }}>
-                Browse community strategies below or open the leaderboard to subscribe to a creator.
-              </p>
-            )}
-
-            <button
-              type="button"
-              className="ftq-btn-primary"
-              onClick={() => {
-                if (showBuilder) {
-                  setShowBuilder(false);
-                } else {
-                  setBuilderTab('mine');
-                  setShowBuilder(true);
-                }
-              }}
-            >
-              {showBuilder ? (
-                <>
-                  <i className="bi bi-arrow-left" /> Back to List
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-plus-circle" /> Create New Strategy
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        <BacktestResultsCard />
-      </div>
+      <QuantLabWorkbench />
 
       {/* ===== Strategy Simulation (animated) ===== */}
       <section className="ftq-sim-section" aria-label="Strategy simulation visuals">
@@ -272,6 +91,7 @@ export default function ForTheQuantsPage() {
             <i className="bi bi-activity" aria-hidden />
             Strategy Simulation
           </h3>
+          <span className="ql-tag">Sample data</span>
           <button type="button" className="ftq-btn-ghost" onClick={() => setSimSeed((s) => s + 1)}>
             <i className="bi bi-shuffle" /> New run
           </button>
@@ -290,6 +110,7 @@ export default function ForTheQuantsPage() {
               <i className="bi bi-trophy" aria-hidden />
               Community Strategy Leaderboard
             </h3>
+            <span className="ql-tag">Sample data</span>
             <select
               className="ftq-select"
               value={leaderPeriod}
@@ -333,9 +154,6 @@ export default function ForTheQuantsPage() {
                   >
                     <i className="bi bi-copy" /> Clone
                   </button>
-                  <button type="button" className="ftq-btn-ghost ftq-lb-side">
-                    <i className="bi bi-bell" /> Subscribe
-                  </button>
                 </div>
               </div>
             ))}
@@ -351,6 +169,7 @@ export default function ForTheQuantsPage() {
               <i className="bi bi-exclamation-triangle" aria-hidden />
               Risk Analytics
             </h3>
+            <span className="ql-tag">Sample data</span>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <div className="ftq-bt-row" style={{ marginBottom: '0.25rem' }}>

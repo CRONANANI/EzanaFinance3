@@ -1,0 +1,651 @@
+/* Quant Lab workbench: strategy builder, run history and backtest report.
+   Page-scoped (ql-), tokens only. Follows the /home canvas: flat transparent
+   surfaces separated by hairline rules, no filled cards. */
+
+.ql-root {
+  --ql-accent: var(--emerald);
+  --ql-rule: var(--border-primary);
+  margin-bottom: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ---- Shared type ---- */
+
+.ql-eyebrow {
+  margin: 0;
+  padding: 0;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ql-eyebrow--spaced {
+  margin-top: 1.5rem;
+}
+
+.ql-label {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+.ql-hint {
+  margin: 0.4rem 0;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.ql-plain {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: var(--type-value-sm-size);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.ql-plain li + li {
+  margin-top: 0.3rem;
+}
+
+/* ---- Rail ---- */
+
+.ql-rail-head,
+.ql-section-head,
+.ql-report-head,
+.ql-chart-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ql-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ql-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ql-rule);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+
+.ql-list-item:hover {
+  background: var(--surface-card-hover);
+}
+
+.ql-list-item.is-active {
+  border-left-color: var(--ql-accent);
+}
+
+.ql-list-name {
+  font-size: var(--type-value-sm-size);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ql-list-meta {
+  font-size: var(--type-caption-size);
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+/* ---- Builder ---- */
+
+.ql-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.ql-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.ql-row--tight {
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.ql-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.ql-field--grow {
+  flex: 1 1 14rem;
+}
+
+.ql-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ql-suffix {
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+
+.ql-input {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: var(--type-value-sm-size);
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--ql-rule);
+  border-radius: var(--radius-md);
+}
+
+.ql-input:focus-visible,
+.ql-btn:focus-visible,
+.ql-link:focus-visible,
+.ql-seg-btn:focus-visible,
+.ql-icon-btn:focus-visible,
+.ql-list-item:focus-visible {
+  outline: 2px solid var(--ql-accent);
+  outline-offset: 2px;
+}
+
+.ql-input--num {
+  width: 6.5rem;
+  font-family: var(--font-mono);
+}
+
+.ql-input--short {
+  width: 7rem;
+}
+
+.ql-block {
+  margin: 0;
+  padding: 1rem 0 0;
+  min-width: 0;
+  border: 0;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-block > legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 0.6rem;
+}
+
+.ql-block > legend + * {
+  clear: both;
+}
+
+.ql-seg {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.ql-seg-btn {
+  padding: 0.3rem 0.7rem;
+  font-family: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--ql-rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.ql-seg-btn.is-active {
+  color: var(--emerald-text);
+  border-color: var(--ql-accent);
+}
+
+.ql-conds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.ql-cond {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.ql-cond > .ql-input {
+  flex: 1 1 14rem;
+  width: auto;
+}
+
+.ql-param {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+
+.ql-param .ql-input {
+  width: 6rem;
+}
+
+.ql-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--ql-rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.ql-icon-btn:hover {
+  color: var(--negative);
+}
+
+.ql-link {
+  padding: 0;
+  font-family: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--emerald-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.ql-link:hover {
+  text-decoration: underline;
+}
+
+.ql-link:disabled {
+  color: var(--text-ghost);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.ql-details {
+  padding-top: 1rem;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-details > summary {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ql-explain {
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-errors,
+.ql-warnings {
+  margin: 0;
+  padding: 0.75rem 0 0.75rem 1rem;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  list-style: none;
+  border-left: 2px solid var(--negative);
+  color: var(--text-secondary);
+}
+
+.ql-errors p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ql-errors ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1rem;
+}
+
+.ql-warnings {
+  margin: 1rem 0;
+  border-left-color: var(--warning);
+}
+
+.ql-warnings li + li {
+  margin-top: 0.3rem;
+}
+
+.ql-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: var(--type-value-sm-size);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--ql-rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.ql-btn:hover:not(:disabled) {
+  border-color: var(--ql-accent);
+}
+
+.ql-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ql-btn--primary {
+  color: var(--emerald-text);
+  border-color: var(--ql-accent);
+  background: var(--surface-card-hover);
+}
+
+.ql-btn--quiet {
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.ql-notice {
+  font-size: var(--type-caption-size);
+  color: var(--emerald-text);
+}
+
+/* ---- History, tables ---- */
+
+.ql-history,
+.ql-report,
+.ql-empty {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-table-wrap {
+  margin-top: 0.6rem;
+  overflow-x: auto;
+}
+
+.ql-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.ql-table th,
+.ql-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--ql-rule);
+}
+
+.ql-table thead th {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ql-table tbody th {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ql-table tr.is-active td {
+  background: var(--surface-card-hover);
+}
+
+.ql-table .ql-num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ql-strong {
+  font-weight: 700;
+}
+
+.ql-root .positive {
+  color: var(--positive);
+}
+
+.ql-root .negative {
+  color: var(--negative);
+}
+
+.ql-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+
+/* ---- Report ---- */
+
+.ql-report-title {
+  margin: 0;
+  font-size: var(--type-section-size);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ql-tag {
+  padding: 0.2rem 0.55rem;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 1px solid var(--ql-rule);
+  border-radius: var(--radius-sm);
+}
+
+.ql-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0;
+  margin: 1.25rem 0 0;
+  border-top: 1px solid var(--ql-rule);
+}
+
+.ql-stat {
+  padding: 0.85rem 0.75rem 0.85rem 0;
+  border-bottom: 1px solid var(--ql-rule);
+}
+
+.ql-stat dt,
+.ql-stat dd {
+  margin: 0;
+}
+
+.ql-stat-value {
+  margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.ql-stat-hint {
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+
+.ql-chart {
+  margin: 1.75rem 0 0;
+}
+
+.ql-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.5rem;
+  border-bottom: 1px solid var(--ql-rule);
+}
+
+.ql-line {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.ql-line--strategy {
+  stroke: var(--ql-accent);
+}
+
+.ql-line--bench {
+  stroke: var(--text-faint);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.ql-area--dd {
+  fill: var(--negative);
+  fill-opacity: 0.22;
+  stroke: var(--negative);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.ql-legend,
+.ql-axis {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+
+.ql-axis {
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-family: var(--font-mono);
+}
+
+.ql-key {
+  display: inline-block;
+  width: 1rem;
+  height: 0;
+  border-top: 2px solid var(--ql-accent);
+}
+
+.ql-key--bench {
+  margin-left: 0.6rem;
+  border-top: 2px dashed var(--text-faint);
+}
+
+.ql-section {
+  margin-top: 1.75rem;
+  min-width: 0;
+}
+
+.ql-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.ql-kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0.6rem 0 0;
+  font-size: var(--type-caption-size);
+}
+
+.ql-kv-row {
+  display: contents;
+}
+
+.ql-kv dt {
+  color: var(--text-muted);
+}
+
+.ql-kv dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.ql-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--text-faint);
+}
+
+.ql-empty p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--type-value-sm-size);
+  line-height: 1.55;
+}
+
+.ql-disclaimer {
+  margin: 1.5rem 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+
+@media (max-width: 900px) {
+  .ql-grid,
+  .ql-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ql-btn,
+  .ql-list-item,
+  .ql-seg-btn {
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+}

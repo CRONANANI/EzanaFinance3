@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getStrategyDetail } from '@/lib/for-the-quants-mock-data';
-import { useCreatorSubscriptions, FREE_CREATOR_SUBSCRIPTION_LIMIT } from '@/hooks/useCreatorSubscriptions';
+import {
+  useCreatorSubscriptions,
+  FREE_CREATOR_SUBSCRIPTION_LIMIT,
+} from '@/hooks/useCreatorSubscriptions';
 
 import '../../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -54,9 +57,15 @@ function StrategyEquityChart({ seed }) {
   const benchLine = pointsToPath(bench, w, h);
   return (
     <div style={{ marginTop: '1rem' }}>
-      <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>Equity curve (mock)</p>
+      <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>
+        Equity curve (mock)
+      </p>
       <div className="ftq-mini-chart-wrap" style={{ height: 200 }}>
-        <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block' }}>
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          preserveAspectRatio="none"
+          style={{ width: '100%', height: '100%', display: 'block' }}
+        >
           <defs>
             <linearGradient id="ftqEqGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
@@ -65,7 +74,13 @@ function StrategyEquityChart({ seed }) {
           </defs>
           <path d={area} fill="url(#ftqEqGrad)" />
           <path d={line} fill="none" stroke="#10b981" strokeWidth="2.5" />
-          <path d={benchLine} fill="none" stroke="#f97316" strokeWidth="1.75" strokeDasharray="5 4" />
+          <path
+            d={benchLine}
+            fill="none"
+            stroke="#f97316"
+            strokeWidth="1.75"
+            strokeDasharray="5 4"
+          />
         </svg>
       </div>
       <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.35rem' }}>
@@ -83,13 +98,8 @@ export default function StrategyDetailPage() {
   const strategyId = params?.strategyId;
   const detail = typeof strategyId === 'string' ? getStrategyDetail(strategyId) : null;
 
-  const {
-    subscribeToCreator,
-    isSubscribedToCreator,
-    freeSlotsRemaining,
-    freeUsed,
-    freeLimit,
-  } = useCreatorSubscriptions();
+  const { subscribeToCreator, isSubscribedToCreator, freeSlotsRemaining, freeUsed, freeLimit } =
+    useCreatorSubscriptions();
 
   const [paramsState, setParamsState] = useState({});
 
@@ -114,17 +124,17 @@ export default function StrategyDetailPage() {
       setToast(
         res.already
           ? 'Already subscribed to this creator.'
-          : `Subscribed (${res.kind === 'free' ? 'free slot' : 'paid'}).`
+          : `Subscribed (${res.kind === 'free' ? 'free slot' : 'paid'}).`,
       );
     } else if (res.reason === 'free_exhausted') {
       setToast(
-        `Free creator subscriptions used (${freeLimit}). Upgrade to a paid plan to follow more creators.`
+        `Free creator subscriptions used (${freeLimit}). Upgrade to a paid plan to follow more creators.`,
       );
     }
   };
 
   const handleDeploy = () => {
-    setToast('Deploy queued (mock). Connect execution API to go live.');
+    setToast('This is a sample strategy. Live deployment is not available.');
   };
 
   if (!detail) {
@@ -155,6 +165,7 @@ export default function StrategyDetailPage() {
           ← Back
         </button>
         <h1 className="ftq-title">{detail.name}</h1>
+        <p className="ftq-subtitle">Sample strategy. The figures on this page are illustrative.</p>
         <p className="ftq-subtitle">
           by {detail.creator} · {detail.creatorHandle}
         </p>
@@ -163,7 +174,12 @@ export default function StrategyDetailPage() {
       {toast && (
         <div
           className="db-card"
-          style={{ padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#d1d5db' }}
+          style={{
+            padding: '0.75rem 1rem',
+            marginBottom: '1rem',
+            fontSize: '0.875rem',
+            color: '#d1d5db',
+          }}
         >
           {toast}
         </div>
@@ -174,7 +190,9 @@ export default function StrategyDetailPage() {
           <h3>Overview</h3>
         </div>
         <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-          <p style={{ fontSize: '0.875rem', color: '#9ca3af', lineHeight: 1.6, margin: 0 }}>{detail.description}</p>
+          <p style={{ fontSize: '0.875rem', color: '#9ca3af', lineHeight: 1.6, margin: 0 }}>
+            {detail.description}
+          </p>
           <div className="ftq-bt-grid" style={{ marginTop: '1rem' }}>
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">6mo return</span>
@@ -186,7 +204,9 @@ export default function StrategyDetailPage() {
             </div>
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">Max DD</span>
-              <span className="ftq-bt-value" style={{ color: '#f87171' }}>{detail.performance.maxDd}</span>
+              <span className="ftq-bt-value" style={{ color: '#f87171' }}>
+                {detail.performance.maxDd}
+              </span>
             </div>
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">Win rate</span>
@@ -203,7 +223,11 @@ export default function StrategyDetailPage() {
         <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
           {detail.parameters.map((p) => (
             <div key={p.key} style={{ marginBottom: '1rem' }}>
-              <label className="ftq-bt-label" style={{ display: 'block', marginBottom: '0.35rem' }} htmlFor={p.key}>
+              <label
+                className="ftq-bt-label"
+                style={{ display: 'block', marginBottom: '0.35rem' }}
+                htmlFor={p.key}
+              >
                 {p.label}
               </label>
               <input
@@ -233,7 +257,9 @@ export default function StrategyDetailPage() {
           <h3>Backtest results</h3>
         </div>
         <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-          <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.75rem' }}>Period: {detail.backtest.period}</p>
+          <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.75rem' }}>
+            Period: {detail.backtest.period}
+          </p>
           <div className="ftq-bt-grid">
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">Return</span>
@@ -245,7 +271,9 @@ export default function StrategyDetailPage() {
             </div>
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">Max DD</span>
-              <span className="ftq-bt-value" style={{ color: '#f87171' }}>{detail.backtest.maxDd}</span>
+              <span className="ftq-bt-value" style={{ color: '#f87171' }}>
+                {detail.backtest.maxDd}
+              </span>
             </div>
             <div className="ftq-bt-row">
               <span className="ftq-bt-label">Trades</span>
@@ -260,7 +288,9 @@ export default function StrategyDetailPage() {
               <span className="ftq-bt-value positive">{detail.backtest.alpha}</span>
             </div>
           </div>
-          <StrategyEquityChart seed={strategyId.split('').reduce((a, c) => a + c.charCodeAt(0), 0)} />
+          <StrategyEquityChart
+            seed={strategyId.split('').reduce((a, c) => a + c.charCodeAt(0), 0)}
+          />
         </div>
       </div>
 
@@ -268,7 +298,12 @@ export default function StrategyDetailPage() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
           {!subscribed ? (
             <>
-              <button type="button" className="ftq-btn-primary" style={{ width: 'auto', margin: 0 }} onClick={handleSubscribe}>
+              <button
+                type="button"
+                className="ftq-btn-primary"
+                style={{ width: 'auto', margin: 0 }}
+                onClick={handleSubscribe}
+              >
                 Subscribe to Creator
               </button>
               <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
@@ -276,7 +311,9 @@ export default function StrategyDetailPage() {
               </span>
             </>
           ) : (
-            <p style={{ fontSize: '0.8125rem', color: '#10b981', margin: 0 }}>You are subscribed to this creator.</p>
+            <p style={{ fontSize: '0.8125rem', color: '#10b981', margin: 0 }}>
+              You are subscribed to this creator.
+            </p>
           )}
           <button
             type="button"
@@ -295,7 +332,9 @@ export default function StrategyDetailPage() {
         </div>
         {!canDeploy && (
           <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.75rem 0 0' }}>
-            Deploy unlocks after you subscribe to {detail.creator}. You get {FREE_CREATOR_SUBSCRIPTION_LIMIT} free creator subscriptions; beyond that, a paid plan is required (mock).
+            Deploy unlocks after you subscribe to {detail.creator}. You get{' '}
+            {FREE_CREATOR_SUBSCRIPTION_LIMIT} free creator subscriptions; beyond that, a paid plan
+            is required (mock).
           </p>
         )}
       </div>
