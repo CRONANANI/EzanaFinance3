@@ -8,7 +8,7 @@ export const SECTION_NAMES = {
   capitol: 'Inside the Capitol',
   research: 'Company & Portfolio Research',
   betting: 'Betting Markets',
-  quants: 'For the Quants',
+  quants: 'Quant Lab',
   watchlist: 'Watchlist',
   community: 'Community',
   learning: 'Learning Center',
@@ -89,7 +89,7 @@ export const CARD_TITLES = {
   'line-movement': 'Line Movement Tracker',
   'resolved-markets': 'Recently Resolved Markets',
 
-  // For the Quants
+  // Quant Lab
   'quant-model': 'Quant Model Lab',
   'backtesting-engine': 'Backtesting Engine',
   'statistical-analysis': 'Statistical Analysis',
@@ -107,7 +107,7 @@ export const CARD_TITLES = {
   'my-friends': 'My Friends',
   'friends-activity': 'Friends Activity',
   'active-discussions': 'Active Discussions',
-  'leaderboard': 'Leaderboard',
+  leaderboard: 'Leaderboard',
   'community-insights': 'Community Insights',
 
   // Learning

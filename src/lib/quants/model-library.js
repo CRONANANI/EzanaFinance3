@@ -1,5 +1,5 @@
 // src/lib/quants/model-library.js
-// The For The Quants Model Library: the thirteen models on the tier board,
+// The Quant Lab Model Library: the thirteen models on the tier board,
 // the Ezana rubric that ranks them, and the helpers that turn rubric scores or
 // community votes into tiers. Pure data and pure functions (client and server).
 

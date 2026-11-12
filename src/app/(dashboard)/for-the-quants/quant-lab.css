@@ -677,3 +677,1008 @@
 .ql-table tr.is-active th {
   background: var(--surface-card-hover);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Quant Lab shell (Nov 2026 redesign, stage 1). The layout root is
+   <div class="ez-canvas ql-app">, so the home canvas tokens (--ez-rule,
+   --ez-rule-subtle, --ez-hover) resolve here in both themes.
+
+   Grammar is the home canvas: one ground, no boxed sections. A section is
+   its header plus a hairline, columns are split by vertical hairlines, stat
+   strips are ruled top and bottom, table heads sit over a solid rule. Sans
+   for text, mono for numbers.
+
+   These rules use the qlx- prefix on purpose. The handoff's class names
+   (ql-section-head, ql-row, ql-btn, ql-tag, ql-link, ql-axis, ql-legend,
+   ql-notice, ql-kv) already exist above with different definitions, and the
+   components still mounted from before the redesign depend on them. As each
+   workspace is rebuilt, its old ql- rules are deleted and the matching qlx-
+   rule takes the ql- name.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ql-app {
+  /* Solid rule under table heads (the home canvas ink rule). */
+  --ql-ink-rule: color-mix(in srgb, var(--text-primary) 30%, transparent);
+  --ql-nav-w: 13rem;
+  --ql-nav-w-collapsed: 3.5rem;
+  --ql-gutter: 1.75rem;
+  --ql-col-pad: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.ql-app :focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+.qlx-main {
+  flex: 999 1 560px;
+  min-width: 0;
+  padding: 1.25rem 0 3rem var(--ql-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ql-gutter);
+}
+
+/* ---- Sidebar ---- */
+
+.qlx-side {
+  flex: 0 0 var(--ql-nav-w);
+  position: sticky;
+  top: calc(var(--nav-height, 64px) + 0.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.125rem 0.75rem 1.5rem 0;
+  border-right: 1px solid var(--ez-rule);
+  color: var(--text-muted);
+}
+
+.qlx-side[data-collapsed='true'] {
+  flex-basis: var(--ql-nav-w-collapsed);
+}
+
+.qlx-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.625rem;
+}
+
+.qlx-side-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.qlx-side-brand i {
+  color: var(--emerald);
+}
+
+.qlx-side-nav,
+.qlx-side-more {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qlx-side-more {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ez-rule);
+}
+
+.qlx-side-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  height: 2.125rem;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.qlx-side-link:hover {
+  background: var(--ez-hover);
+  color: var(--text-primary);
+}
+
+.qlx-side-link[aria-current='page'] {
+  font-weight: 600;
+  color: var(--emerald);
+  background: var(--emerald-bg-hover);
+}
+
+.qlx-side-link--minor {
+  height: 1.75rem;
+}
+
+.qlx-side[data-collapsed='true'] .qlx-side-label,
+.qlx-side[data-collapsed='true'] .qlx-side-more {
+  display: none;
+}
+
+.qlx-side[data-collapsed='true'] .qlx-side-head {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ---- Type ---- */
+
+.qlx-eyebrow {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qlx-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.qlx-h4 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qlx-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.qlx-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.qlx-val--sm {
+  font-size: 1.0625rem;
+}
+
+.qlx-sub,
+.qlx-note {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.qlx-ink {
+  color: var(--text-primary);
+}
+
+.qlx-muted {
+  color: var(--text-muted);
+}
+
+.qlx-up {
+  color: var(--positive);
+}
+
+.qlx-down {
+  color: var(--negative);
+}
+
+.qlx-r {
+  text-align: right;
+  justify-self: end;
+}
+
+.qlx-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--emerald);
+  text-decoration: none;
+}
+
+.qlx-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Panel = header + hairline ---- */
+
+.qlx-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid var(--ez-rule);
+}
+
+.qlx-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.625rem;
+}
+
+.qlx-row--between {
+  justify-content: space-between;
+}
+
+.qlx-band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem 0;
+}
+
+.qlx-col {
+  min-width: 0;
+  padding: 0 var(--ql-col-pad);
+  border-left: 1px solid var(--ez-rule);
+}
+
+.qlx-col:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.qlx-col:last-child {
+  padding-right: 0;
+}
+
+.qlx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* ---- Buttons ---- */
+
+.qlx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.qlx-btn:hover {
+  border-color: var(--border-hover);
+  background: var(--ez-hover);
+}
+
+.qlx-btn--primary {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
+.qlx-btn--primary:hover {
+  background: var(--emerald-hover);
+  border-color: var(--emerald-hover);
+}
+
+.qlx-btn--sm {
+  height: 1.625rem;
+  padding: 0 0.5625rem;
+  font-size: 0.75rem;
+}
+
+.qlx-btn--icon {
+  width: 2rem;
+  padding: 0;
+}
+
+.qlx-btn--icon.qlx-btn--sm {
+  width: 1.625rem;
+}
+
+.qlx-btn--bare {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.qlx-btn[disabled],
+.qlx-btn[aria-disabled='true'] {
+  color: var(--text-ghost);
+  background: transparent;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.qlx-btn[aria-pressed='true'] {
+  border-color: var(--border-focus);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
+}
+
+/* ---- Inputs ---- */
+
+.qlx-select {
+  height: 2rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.78125rem;
+  font-weight: 500;
+}
+
+.qlx-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ---- Segmented control and tabs ---- */
+
+.qlx-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--ez-hover);
+}
+
+.qlx-seg button {
+  height: 1.625rem;
+  padding: 0 0.625rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qlx-seg button[aria-pressed='true'] {
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
+}
+
+.qlx-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.375rem;
+  border-bottom: 1px solid var(--ez-rule);
+}
+
+.qlx-tabs button {
+  padding: 0.5625rem 0;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qlx-tabs button[aria-selected='true'] {
+  color: var(--text-primary);
+  border-bottom-color: var(--emerald);
+}
+
+/* ---- Tags ---- */
+
+.qlx-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  height: 1.25rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--ez-rule);
+  background: var(--ez-hover);
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.qlx-tag--ok {
+  background: var(--positive-bg);
+  border-color: transparent;
+  color: var(--positive);
+}
+
+.qlx-tag--info {
+  background: var(--info-bg);
+  border-color: transparent;
+  color: var(--info);
+}
+
+.qlx-tag--warn {
+  background: var(--warning-bg);
+  border-color: transparent;
+  color: var(--warning);
+}
+
+.qlx-tag--bad {
+  background: var(--negative-bg);
+  border-color: transparent;
+  color: var(--negative);
+}
+
+.qlx-tag--plan {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--ql-ink-rule);
+}
+
+.qlx-dot {
+  display: inline-block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Stat strip ---- */
+
+.qlx-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11.25rem, 100%), 1fr));
+  border-top: 1px solid var(--ez-rule);
+  border-bottom: 1px solid var(--ez-rule);
+}
+
+.qlx-strip--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 0;
+  margin-bottom: 0.875rem;
+}
+
+.qlx-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border-left: 1px solid var(--ez-rule);
+}
+
+.qlx-cell:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.qlx-strip--four .qlx-cell {
+  padding-top: 0;
+}
+
+/* ---- Tables as grids ---- */
+
+.qlx-tw {
+  overflow-x: auto;
+}
+
+.qlx-th,
+.qlx-tr {
+  display: grid;
+  align-items: center;
+  column-gap: 0.75rem;
+}
+
+.qlx-th {
+  padding: 0 0 0.4375rem;
+  border-bottom: 1px solid var(--ql-ink-rule);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qlx-tr {
+  min-height: 2.3125rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 0.78125rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.qlx-tr:hover {
+  background: var(--ez-hover);
+}
+
+.qlx-tr > *,
+.qlx-th > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qlx-tr > .qlx-menu-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+.qlx-cols-strategies {
+  grid-template-columns: minmax(0, 1fr) 4rem 3rem 3.75rem 5.5rem 1.625rem;
+}
+
+.qlx-cols-runs {
+  grid-template-columns: 4rem minmax(0, 1fr) 9rem 4rem 3.25rem 5.75rem;
+  min-width: 32.5rem;
+}
+
+.qlx-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.qlx-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.qlx-name > :first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qlx-kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4375rem 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 0.78125rem;
+}
+
+.qlx-kv > :first-child {
+  color: var(--text-muted);
+}
+
+/* ---- Chart ---- */
+
+.qlx-chart {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.qlx-axis {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.qlx-axis--y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 15rem;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.qlx-axis--x {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.375rem;
+}
+
+.qlx-plot {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.qlx-plot svg {
+  display: block;
+  width: 100%;
+}
+
+.qlx-svg-main {
+  height: 15rem;
+}
+
+.qlx-svg-dd {
+  height: 3.5rem;
+  margin-top: 0.375rem;
+  border-top: 1px solid var(--ez-rule);
+}
+
+.qlx-grid {
+  fill: none;
+  stroke: var(--ez-rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.qlx-area {
+  fill: var(--emerald);
+  fill-opacity: 0.1;
+  stroke: none;
+}
+
+.qlx-line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.qlx-line--strategy {
+  stroke: var(--emerald);
+  stroke-width: 1.75;
+}
+
+.qlx-line--bench {
+  stroke: var(--text-muted);
+  stroke-width: 1.25;
+}
+
+.qlx-dd {
+  fill: var(--echo-chart-red);
+  fill-opacity: 0.22;
+  stroke: var(--echo-chart-red);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.qlx-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.qlx-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--emerald);
+}
+
+.qlx-swatch--bench {
+  background: var(--text-muted);
+}
+
+.qlx-legend-row {
+  gap: 0.375rem 1.125rem;
+  padding: 0.625rem 0 0 3.125rem;
+}
+
+/* ---- Planned and empty states ---- */
+
+.qlx-slot {
+  padding: 0.875rem;
+  border: 1px dashed var(--ql-ink-rule);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.qlx-slot ul {
+  margin: 0 0 0.375rem;
+  padding-left: 1rem;
+}
+
+.qlx-empty {
+  padding: 1rem 0;
+  font-size: 0.78125rem;
+  color: var(--text-muted);
+}
+
+.qlx-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---- Row menu (an overlay keeps a solid surface and a shadow) ---- */
+
+.qlx-menu {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 11.25rem;
+  padding: 0.375rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hover);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-md);
+}
+
+.qlx-menu a,
+.qlx-menu button {
+  display: flex;
+  align-items: center;
+  height: 1.875rem;
+  padding: 0 0.625rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.78125rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.qlx-menu a:hover,
+.qlx-menu button:hover:not([disabled]) {
+  background: var(--emerald-bg);
+}
+
+.qlx-menu button[disabled] {
+  color: var(--text-ghost);
+  cursor: not-allowed;
+}
+
+/* ---- Activity and quick actions ---- */
+
+.qlx-activity {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+
+.qlx-activity:hover {
+  background: var(--ez-hover);
+}
+
+.qlx-activity-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.qlx-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(6.5rem, 100%), 1fr));
+  gap: 0.625rem;
+}
+
+.qlx-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.875rem;
+  border-radius: var(--radius-md);
+  background: var(--ez-hover);
+  color: inherit;
+  text-decoration: none;
+}
+
+.qlx-action i {
+  font-size: 1.125rem;
+  color: var(--emerald);
+}
+
+.qlx-action:hover {
+  background: var(--emerald-bg);
+}
+
+.qlx-action[aria-disabled='true'] {
+  background: transparent;
+  border: 1px dashed var(--ql-ink-rule);
+}
+
+.qlx-action[aria-disabled='true'] i,
+.qlx-action[aria-disabled='true'] .qlx-ink {
+  color: var(--text-muted);
+}
+
+/* ---- Components still mounted from before the redesign ---- */
+
+.qlx-main .ql-root {
+  margin-bottom: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.qlx-main .db-card,
+.qlx-main .qe-card {
+  margin-bottom: 0;
+}
+
+.qlx-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 2rem;
+}
+
+@media (max-width: 1023px) {
+  .qlx-side,
+  .qlx-side[data-collapsed='true'] {
+    position: static;
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--ez-rule);
+    /* The menu opens below the strip, so the strip itself must not clip. */
+    overflow: visible;
+  }
+
+  /* Only the workspace links scroll; the More menu stays in reach. */
+  .qlx-side-nav {
+    flex: 1 1 auto;
+    flex-direction: row;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .qlx-side-more,
+  .qlx-side-head {
+    display: none;
+  }
+
+  .qlx-side .qlx-side-menu {
+    display: block;
+    flex: none;
+    margin-left: 0.5rem;
+  }
+
+  .qlx-side[data-collapsed='true'] .qlx-side-label {
+    display: inline;
+  }
+
+  .qlx-main {
+    padding-left: 0;
+  }
+
+  .qlx-col {
+    flex-basis: 100%;
+    padding: 0;
+    border-left: 0;
+  }
+
+  .qlx-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qlx-strip--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* The lower sidebar group, as a menu on the narrow strip. */
+.qlx-side-menu {
+  display: none;
+  position: relative;
+}
+
+.qlx-side-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.qlx-side-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.qlx-side-menu .qlx-menu {
+  top: 2.375rem;
+}
+
+.qlx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem 1rem;
+}
+
+.qlx-minor-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qlx-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ql-gutter);
+}
+
+@media (max-width: 639px) {
+  .qlx-side-link:not([aria-current='page']) .qlx-side-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ql-app * {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* A collapsed band: closed by default, its summary is the only control. */
+.ql-app .qlx-fold > summary {
+  display: inline-flex;
+  list-style: none;
+  cursor: pointer;
+}
+
+.ql-app .qlx-fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ql-app .qlx-fold[open] > summary {
+  margin-bottom: 1rem;
+}

@@ -350,8 +350,8 @@ export function Navbar() {
         },
         {
           id: 24,
-          title: 'For The Quants',
-          description: 'Quant tools & backtesting',
+          title: 'Quant Lab',
+          description: 'Strategies, backtests & research',
           url: '/for-the-quants',
           icon: 'bi-calculator',
           variant: 'gold',

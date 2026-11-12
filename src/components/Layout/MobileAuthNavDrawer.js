@@ -159,7 +159,7 @@ function buildNavGroups(isOrgUser) {
         description: 'Odds & EV',
       },
       {
-        label: 'For the Quants',
+        label: 'Quant Lab',
         href: '/for-the-quants',
         icon: Calculator,
         description: 'Backtests & tools',
@@ -345,7 +345,7 @@ function buildPartnerNavGroups() {
           description: 'Trends',
         },
         {
-          label: 'For the Quants',
+          label: 'Quant Lab',
           href: '/for-the-quants',
           icon: Calculator,
           description: 'Quant tools',

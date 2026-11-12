@@ -1,5 +1,5 @@
 // src/lib/quants/models.js
-// Pure statistical models for the For The Quants Model Library.
+// Pure statistical models for the Quant Lab Model Library.
 // No imports, no I/O: every function takes plain arrays and returns plain
 // objects, so scripts/check-quant-models.mjs can test it directly.
 // Covered: GARCH(1,1), a three-state Markov chain, PCA on a correlation matrix.

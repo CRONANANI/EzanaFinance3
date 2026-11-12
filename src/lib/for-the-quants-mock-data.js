@@ -1,5 +1,5 @@
 /**
- * Mock data for For The Quants — replace with API calls when backend exists.
+ * Mock data for Quant Lab — replace with API calls when backend exists.
  */
 
 export const FTQ_STAT_CARDS = [

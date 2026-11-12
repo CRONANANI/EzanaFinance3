@@ -2,8 +2,7 @@ import { BacktestSignInClient } from './BacktestSignInClient';
 
 export const metadata = {
   title: 'Sign In to Backtest | Ezana Finance',
-  description:
-    'Sign in to access the For The Quants backtesting engine and test hedge fund strategies.',
+  description: 'Sign in to access the Quant Lab backtesting engine and test hedge fund strategies.',
 };
 
 export default function BacktestSignInPage() {

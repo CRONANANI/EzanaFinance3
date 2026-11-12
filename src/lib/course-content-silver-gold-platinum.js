@@ -189,7 +189,7 @@ Isichenko (Ch.2.2.3) emphasizes trading volume as confirmation: "a breakout on h
 
 RSI measures momentum on a 0-100 scale. Above 70 is "overbought"; below 30 is "oversold." But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks, don't blindly fade momentum.
 
-MACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the For the Quants page, pulling real-time data from Alpha Vantage.`,
+MACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the Quant Lab page, pulling real-time data from Alpha Vantage.`,
         callout:
           'Isichenko Ch.2.2.2: Momentum "has been attributed to delayed information propagation and behavioral effects." Strong trends can persist longer than mean reversion traders expect.',
       },

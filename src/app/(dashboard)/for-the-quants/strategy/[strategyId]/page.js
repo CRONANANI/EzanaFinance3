@@ -16,6 +16,8 @@ import '../../../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../../../app-legacy/pages/home-dashboard.css';
 import '../../for-the-quants.css';
 
+const SAVED_STRATEGY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function generatePoints(seed, n, min, max) {
   const pts = [];
   let v = min + (max - min) * 0.3;
@@ -95,6 +97,15 @@ function StrategyEquityChart({ seed }) {
 export default function StrategyDetailPage() {
   const params = useParams();
   const router = useRouter();
+
+  /* A uuid is one of the user's own saved strategies, which live in Strategy
+     Lab. Only the sample community strategies (slug ids) render here. */
+  const isSavedStrategy = SAVED_STRATEGY_ID.test(String(params?.strategyId || ''));
+  useEffect(() => {
+    if (isSavedStrategy) {
+      router.replace(`/for-the-quants/strategy-lab?strategy=${params.strategyId}`);
+    }
+  }, [isSavedStrategy, params, router]);
   const strategyId = params?.strategyId;
   const detail = typeof strategyId === 'string' ? getStrategyDetail(strategyId) : null;
 
@@ -139,12 +150,12 @@ export default function StrategyDetailPage() {
 
   if (!detail) {
     return (
-      <div className="dashboard-page-inset ftq-page">
+      <div className="ftq-page">
         <div className="db-card" style={{ padding: '2rem' }}>
           <h1 className="ftq-title">Strategy not found</h1>
           <p className="ftq-subtitle">No strategy matches this ID.</p>
           <Link href="/for-the-quants" className="ftq-view-all" style={{ marginTop: '1rem' }}>
-            ← Back to For The Quants
+            ← Back to Quant Lab
           </Link>
         </div>
       </div>
@@ -154,7 +165,7 @@ export default function StrategyDetailPage() {
   const canDeploy = subscribed;
 
   return (
-    <div className="dashboard-page-inset ftq-page">
+    <div className="ftq-page">
       <div style={{ marginBottom: '1rem' }}>
         <button
           type="button"

@@ -398,7 +398,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'paragraph',
-      text: "This is precisely the gap Ezana's congressional and political-trading intelligence is built to close. Rather than surfacing a lone headline-grabbing trade, the platform aggregates filings across officials, tags them by sector and timing, and lets users screen for recurrence and cluster behavior, turning a coarse, laggy disclosure stream into a structured signal feed. Paired with the quantitative tooling on the For The Quants page, a user can take a candidate theme like the Q1 AI-chip tilt and actually test it: build the basket, backtest the entry window, and measure whether the pattern would have survived transaction costs and the disclosure lag.",
+      text: "This is precisely the gap Ezana's congressional and political-trading intelligence is built to close. Rather than surfacing a lone headline-grabbing trade, the platform aggregates filings across officials, tags them by sector and timing, and lets users screen for recurrence and cluster behavior, turning a coarse, laggy disclosure stream into a structured signal feed. Paired with the quantitative tooling on the Quant Lab page, a user can take a candidate theme like the Q1 AI-chip tilt and actually test it: build the basket, backtest the entry window, and measure whether the pattern would have survived transaction costs and the disclosure lag.",
     },
     {
       type: 'heading',

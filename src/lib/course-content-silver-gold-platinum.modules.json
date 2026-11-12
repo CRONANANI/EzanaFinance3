@@ -442,7 +442,7 @@
       },
       {
         "title": "Moving Averages and Indicators",
-        "content": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators, useful for confirmation, not prediction.\n\nRSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks, don't blindly fade momentum.\n\nMACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the For the Quants page, pulling real-time data from Alpha Vantage.",
+        "content": "The 50-day and 200-day simple moving averages (SMA) are the most-watched. The \"Golden Cross\" (50-day crossing above 200-day) confirms uptrends; the \"Death Cross\" confirms downtrends. These are lagging indicators, useful for confirmation, not prediction.\n\nRSI measures momentum on a 0-100 scale. Above 70 is \"overbought\"; below 30 is \"oversold.\" But Isichenko's momentum research (Ch.2.2.2) shows that in strong trends, prices can stay overbought for weeks, don't blindly fade momentum.\n\nMACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the Quant Lab page, pulling real-time data from Alpha Vantage.",
         "callout": "Isichenko Ch.2.2.2: Momentum \"has been attributed to delayed information propagation and behavioral effects.\" Strong trends can persist longer than mean reversion traders expect.",
         "shortTitle": "Moving Averages and Indicators",
         "estimatedMinutes": 3,
@@ -457,7 +457,7 @@
           },
           {
             "type": "paragraphs",
-            "body": "MACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the For the Quants page, pulling real-time data from Alpha Vantage."
+            "body": "MACD shows the relationship between two exponential moving averages. The histogram is the most actionable signal. These indicators are available live on Ezana's Technical Scanner on the Quant Lab page, pulling real-time data from Alpha Vantage."
           },
           {
             "type": "callout",

@@ -1,5 +1,5 @@
 // src/lib/quants/backtest-simulation-mapper.js
-// Derives animation-ready datasets for the For The Quants simulation visuals.
+// Derives animation-ready datasets for the Quant Lab simulation visuals.
 // READ-ONLY consumer of shared mock data. Does NOT mutate any imported object.
 // Per Quantitative_Trading_System_Skill_Updated.md: mock → heuristic → statistical
 // graduation path. This is deterministic mock visualization only — no live data.

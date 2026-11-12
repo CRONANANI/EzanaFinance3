@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CONDITIONS,
   MAX_UNIVERSE,
@@ -237,7 +237,17 @@ function NumField({ label, value, onChange, suffix, ...rest }) {
   );
 }
 
-export function QuantLabWorkbench() {
+/**
+ * @param {'full'|'build'} [mode]  'build' shows the strategy builder only:
+ *        run history, the report and validation live in the Backtesting
+ *        workspace.
+ * @param {string|null} [initialStrategyId]  open this saved strategy on load
+ * @param {(run: object, strategyId: string) => void} [onRunComplete]  called
+ *        after a successful backtest, instead of showing the report here
+ */
+export function QuantLabWorkbench({ mode = 'full', initialStrategyId = null, onRunComplete }) {
+  const buildOnly = mode === 'build';
+  const openedInitial = useRef(false);
   const [strategies, setStrategies] = useState([]);
   const [loadState, setLoadState] = useState('loading'); // loading | ready | error
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -297,6 +307,16 @@ export function QuantLabWorkbench() {
     loadRuns(s.id);
   };
 
+  /* Open the strategy named in the link that brought the user here, once. */
+  useEffect(() => {
+    if (openedInitial.current || !initialStrategyId || loadState !== 'ready') return;
+    openedInitial.current = true;
+    const match = strategies.find((s) => s.id === initialStrategyId);
+    if (match) openStrategy(match);
+    // openStrategy only sets state; listing it would re-run this on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStrategyId, loadState, strategies]);
+
   const startNew = (template) => {
     const next = template
       ? specToDraft(template.spec, { id: null, name: template.name })
@@ -355,6 +375,10 @@ export function QuantLabWorkbench() {
           config: toApiConfig(config),
         }),
       });
+      if (onRunComplete) {
+        onRunComplete(json.run, id);
+        return;
+      }
       setRun(json.run);
       setNotice('');
       loadRuns(id);
@@ -767,7 +791,7 @@ export function QuantLabWorkbench() {
         </div>
       </div>
 
-      {runs.length > 0 && (
+      {!buildOnly && runs.length > 0 && (
         <div className="ql-history">
           <h3 className="ql-eyebrow">Run history</h3>
           <div className="ql-table-wrap">
@@ -827,7 +851,7 @@ export function QuantLabWorkbench() {
         </div>
       )}
 
-      {run ? (
+      {buildOnly ? null : run ? (
         <BacktestReport run={run} />
       ) : (
         <div className="ql-empty">
@@ -839,12 +863,14 @@ export function QuantLabWorkbench() {
         </div>
       )}
 
-      <ValidationPanel
-        strategyId={draft.id}
-        dirty={dirty}
-        spec={checked.ok && !checked.unsupported.length ? checked.spec : null}
-        config={config}
-      />
+      {!buildOnly && (
+        <ValidationPanel
+          strategyId={draft.id}
+          dirty={dirty}
+          spec={checked.ok && !checked.unsupported.length ? checked.spec : null}
+          config={config}
+        />
+      )}
 
       <p className="ql-disclaimer">
         For educational and informational purposes only. Not financial advice. Past performance does

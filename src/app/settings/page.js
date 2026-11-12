@@ -122,7 +122,7 @@ function SettingsInner() {
       '/trading/mock': 'Mock Trading',
       '/ezana-echo': 'Ezana Echo',
       '/community': 'Community',
-      '/for-the-quants': 'For The Quants',
+      '/for-the-quants': 'Quant Lab',
       '/centaur-intelligence': 'Centaur Intelligence',
       '/betting-markets': 'Betting Markets',
       '/inside-the-capitol': 'Inside The Capitol',
