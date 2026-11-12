@@ -11,6 +11,8 @@ import {
 } from '@/lib/quants/strategy-spec';
 import { LAB_TEMPLATES } from './lab-templates';
 import { BacktestReport } from './BacktestReport';
+import { ValidationPanel } from './ValidationPanel';
+import { toApiConfig } from './lab-format';
 
 const UNSUPPORTED_LABELS = {
   congress_buy: 'Congress member buys',
@@ -349,13 +351,7 @@ export function QuantLabWorkbench() {
         method: 'POST',
         body: JSON.stringify({
           strategyId: id,
-          config: {
-            ...config,
-            initialCapital: Number(config.initialCapital),
-            slippageBps: Number(config.slippageBps),
-            commissionPerShare: Number(config.commissionPerShare),
-            riskFreeRate: Number(config.riskFreeRate) / 100,
-          },
+          config: toApiConfig(config),
         }),
       });
       setRun(json.run);
@@ -841,6 +837,13 @@ export function QuantLabWorkbench() {
           </p>
         </div>
       )}
+
+      <ValidationPanel
+        strategyId={draft.id}
+        dirty={dirty}
+        spec={checked.ok && !checked.unsupported.length ? checked.spec : null}
+        config={config}
+      />
 
       <p className="ql-disclaimer">
         For educational and informational purposes only. Not financial advice. Past performance does

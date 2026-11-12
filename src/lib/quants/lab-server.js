@@ -11,6 +11,8 @@ export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 /** Saved strategies per user, and backtests per user per day. */
 export const MAX_STRATEGIES = 100;
 export const MAX_RUNS_PER_DAY = 200;
+/** Validations per user per day. One validation is many engine runs. */
+export const MAX_VALIDATIONS_PER_DAY = 40;
 /** A run left 'running' longer than this died with its request; it no longer blocks a new one. */
 export const STALE_RUN_MS = 3 * 60 * 1000;
 
@@ -23,10 +25,11 @@ const daysBefore = (iso, days) =>
 /**
  * Bars for every ticker in the spec plus the benchmark, with enough history
  * before the start date for the slowest indicator to be ready on day one
- * (trading days to calendar days at 7/5, plus a holiday margin).
+ * (trading days to calendar days at 7/5, plus a holiday margin). A parameter
+ * sweep passes the longest lookback of any combination it will try.
  */
-export async function loadRunBars(spec, config) {
-  const warmupDays = Math.ceil(specLookback(spec) * 1.6) + 20;
+export async function loadRunBars(spec, config, lookback = specLookback(spec)) {
+  const warmupDays = Math.ceil(lookback * 1.6) + 20;
   const from = daysBefore(config.startDate, warmupDays);
   const tickers = [...new Set([...spec.universe, spec.benchmark])];
   const loaded = await Promise.all(
@@ -50,3 +53,6 @@ export async function loadRunBars(spec, config) {
 /** The columns a list view needs; never the full results payload. */
 export const RUN_SUMMARY_COLUMNS =
   'id, strategy_id, version_id, status, config, engine_version, metrics, error, created_at, completed_at';
+
+export const VALIDATION_SUMMARY_COLUMNS =
+  'id, strategy_id, version_id, status, config, options, summary, error, created_at, completed_at';

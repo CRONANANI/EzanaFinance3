@@ -649,3 +649,31 @@
       background 0.15s;
   }
 }
+
+/* ---- Validation ---- */
+
+.ql-block--inner {
+  margin-top: 1.25rem;
+}
+
+.ql-param--wide {
+  flex: 1 1 12rem;
+}
+
+.ql-param--wide .ql-input {
+  width: 100%;
+  font-family: var(--font-mono);
+}
+
+.ql-actions--plain {
+  margin-top: 1rem;
+}
+
+.ql-table .ql-wrap {
+  white-space: normal;
+  min-width: 12rem;
+}
+
+.ql-table tr.is-active th {
+  background: var(--surface-card-hover);
+}

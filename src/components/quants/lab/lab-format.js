@@ -115,3 +115,41 @@ export function tradesCsv(trades) {
     '\n',
   );
 }
+
+/**
+ * The workbench keeps its run settings as the strings a form produces, with
+ * the risk-free rate in percent. This is the shape the API expects.
+ */
+export function toApiConfig(config) {
+  return {
+    ...config,
+    initialCapital: Number(config.initialCapital),
+    slippageBps: Number(config.slippageBps),
+    commissionPerShare: Number(config.commissionPerShare),
+    riskFreeRate: Number(config.riskFreeRate) / 100,
+  };
+}
+
+/**
+ * Starting values for sweeping one parameter: five points around its current
+ * value, inside its bounds. A suggestion for the form, nothing more.
+ */
+export function suggestValues(param) {
+  const out = [];
+  for (const k of [0.5, 0.75, 1, 1.25, 1.5]) {
+    let v = param.current * k;
+    v = param.kind === 'int' ? Math.round(v) : Number(v.toFixed(2));
+    v = Math.min(Math.max(v, param.min), param.max);
+    if (!out.includes(v)) out.push(v);
+  }
+  return out;
+}
+
+/** "20, 50, 100" to [20, 50, 100]; anything that is not a number is dropped. */
+export function parseValues(text) {
+  return String(text || '')
+    .split(/[\s,;]+/)
+    .filter((s) => s !== '')
+    .map(Number)
+    .filter(isNum);
+}
