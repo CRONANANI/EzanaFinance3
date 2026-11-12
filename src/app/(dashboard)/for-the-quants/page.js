@@ -11,8 +11,6 @@ import {
   RISK_ANALYTICS,
   TRENDING_MARKETS,
   BETTING_ANALYTICS,
-  INDICATOR_TABS,
-  INDICATOR_CARDS,
   STRATEGY_TEMPLATES,
 } from '@/lib/for-the-quants-mock-data';
 import { VisualStrategyBuilder } from '@/components/quants/VisualStrategyBuilder';
@@ -41,6 +39,15 @@ const StrategyComparisonCard = dynamic(
   { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 360, width: '100%' }} /> },
 );
 
+/* The Model Library sits at the foot of the page: defer it too. */
+const ModelLibraryCard = dynamic(
+  () =>
+    import('@/components/quants/model-library/ModelLibraryCard').then((m) => ({
+      default: m.ModelLibraryCard,
+    })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 520, width: '100%' }} /> },
+);
+
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -52,6 +59,7 @@ import ProbabilityLatticeCard from './ProbabilityLatticeCard';
 import TailProbabilityRidgeCard from './TailProbabilityRidgeCard';
 import RelationshipGraphCard from './RelationshipGraphCard';
 import './simulation-visuals.css';
+import './model-library.css';
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -71,7 +79,6 @@ export default function ForTheQuantsPage() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [pmQuery, setPmQuery] = useState('');
   const [leaderPeriod, setLeaderPeriod] = useState('month');
-  const [indTab, setIndTab] = useState(INDICATOR_TABS[0]);
   const [simSeed, setSimSeed] = useState(7); // re-roll → new simulated backtest run
 
   const handlePmLookup = () => {
@@ -513,39 +520,7 @@ export default function ForTheQuantsPage() {
 
       <CorrelationMatrixCard />
 
-      <div className="db-card" style={{ marginBottom: '1.5rem' }}>
-        <div className="db-card-header">
-          <h3 className="ftq-section-title">
-            <i className="bi bi-book" aria-hidden />
-            Technical Indicators Library
-          </h3>
-        </div>
-        <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-          <div className="ftq-ind-tabs">
-            {INDICATOR_TABS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`ftq-tab ${indTab === t ? 'active' : ''}`}
-                onClick={() => setIndTab(t)}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="ftq-ind-grid">
-            {INDICATOR_CARDS.map((c) => (
-              <div key={c.id} className="ftq-ind-card">
-                <p className="ftq-ind-name">{c.name}</p>
-                <p className="ftq-ind-val">{c.value}</p>
-                <button type="button" className="ftq-btn-ghost">
-                  {c.action}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <ModelLibraryCard />
 
       <CoursePreviewSection
         title="Recommended Courses"
