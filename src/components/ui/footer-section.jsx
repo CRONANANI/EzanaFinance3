@@ -128,6 +128,7 @@ export function FooterSection({ onContactClick }) {
             <a href="/terms-of-service">Terms of Service</a>
             <a href="/copyright">Copyright</a>
             <a href="/accessibility">Accessibility</a>
+            <a href="/about/noah-asheber">About the founder</a>
             <button
               type="button"
               className="landing-footer-link-btn"
