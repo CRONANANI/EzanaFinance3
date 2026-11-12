@@ -1,0 +1,21 @@
+/* Quant Lab factor research card. Page-scoped (qf-), tokens only. Builds on
+   the ql- and qr- styles. */
+
+.qf-line--bottom {
+  stroke: var(--negative);
+  stroke-width: 1.5;
+}
+
+.qf-key--bottom {
+  margin-left: 0.6rem;
+  border-top: 2px solid var(--negative);
+}
+
+.qf-bar {
+  width: 6rem;
+  margin-right: 0;
+}
+
+.qf-bar--negative {
+  background: var(--negative);
+}

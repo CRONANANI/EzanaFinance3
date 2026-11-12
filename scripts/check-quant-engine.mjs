@@ -20,6 +20,7 @@ import {
   normalizeConfig,
   explainSpec,
   canonicalJson,
+  specEventKinds,
 } from '../src/lib/quants/strategy-spec.js';
 import { runBacktest, sma, rsi, ENGINE_VERSION } from '../src/lib/quants/backtest-engine.js';
 
@@ -427,9 +428,9 @@ test('spec validation: tickers, parameters, legacy ids and unsupported condition
   const legacy = validateSpec({ universe: ['AAPL'], entry: { op: 'cond', id: 'macd_crossover' } });
   assert.equal(legacy.spec.entry.id, 'macd_cross_up');
 
-  const alt = validateSpec({ universe: ['AAPL'], entry: { op: 'cond', id: 'congress_buy' } });
+  const alt = validateSpec({ universe: ['AAPL'], entry: { op: 'cond', id: 'cpi_surprise' } });
   assert.equal(alt.ok, true);
-  assert.equal(alt.unsupported[0].id, 'congress_buy');
+  assert.equal(alt.unsupported[0].id, 'cpi_surprise');
   assert.throws(
     () => runBacktest({ spec: alt.spec, config: cfg(sessions(10)), bars: {} }),
     /cannot be backtested/,
@@ -459,4 +460,100 @@ test('run settings are bounded', () => {
   assert.ok(errors.some((e) => /at most 10 years/.test(e)));
   assert.equal(config.slippageBps, 200);
   assert.equal(config.initialCapital, 1000);
+});
+
+/* ── Disclosure conditions ── */
+
+/* 2024-01-01 is a Monday: sessions 01-01, 01-02, 01-03, 01-04, 01-05, 01-08, 01-09, ... */
+const discSpec = (withinDays = 3, id = 'insider_purchase') =>
+  validateSpec({
+    universe: ['AAA'],
+    benchmark: 'AAA',
+    entry: { op: 'cond', id, params: { withinDays } },
+    exit: { maxHoldDays: 200 },
+    sizing: { type: 'equal_weight', maxPositions: 1 },
+  }).spec;
+const discRun = (events, extra = {}, withinDays = 3) => {
+  const dates = sessions(30);
+  return runBacktest({
+    spec: discSpec(withinDays),
+    config: cfg(dates, { ...FREE, ...extra }),
+    bars: {
+      AAA: mkBars(
+        dates,
+        dates.map(() => 100),
+      ),
+    },
+    events,
+  });
+};
+
+test('disclosure conditions are backtestable and name the data they need', () => {
+  const v = validateSpec({
+    universe: ['AAPL'],
+    entry: {
+      op: 'and',
+      args: [
+        { op: 'cond', id: 'congress_buy' },
+        { op: 'cond', id: 'insider_purchase', params: { withinDays: 10 } },
+      ],
+    },
+  });
+  assert.equal(v.ok, true);
+  assert.deepEqual(v.unsupported, []);
+  assert.equal(v.spec.entry.args[0].params.withinDays, 5, 'default window');
+  assert.deepEqual(specEventKinds(v.spec), ['congress_buy', 'insider_purchase']);
+  assert.deepEqual(specEventKinds(specOf()), []);
+  assert.ok(explainSpec(v.spec).join(' ').includes('publicly disclosed'));
+});
+
+test('a disclosure counts from the session AFTER it became public, and fills the session after that', () => {
+  /* Made public on Wednesday 01-03. It may have landed after that close, so
+     the first signal is Thursday's close and the fill is Friday's open. */
+  const r = discRun({ insider_purchase: { AAA: ['2024-01-03'] } });
+  assert.equal(r.trades.length, 1);
+  assert.equal(r.trades[0].signalDate, '2024-01-04');
+  assert.equal(r.trades[0].entryDate, '2024-01-05');
+  assert.equal(r.trades[0].entryReads.insider_purchaseDisclosed, '2024-01-03');
+});
+
+test('a weekend disclosure is acted on from Monday', () => {
+  /* Public on Saturday 01-06: first signal Monday 01-08, fill Tuesday 01-09. */
+  const r = discRun({ insider_purchase: { AAA: ['2024-01-06'] } });
+  assert.equal(r.trades[0].signalDate, '2024-01-08');
+  assert.equal(r.trades[0].entryDate, '2024-01-09');
+});
+
+test('a disclosure expires after its window', () => {
+  /* Public 01-03; the test starts 01-10, seven days later. A 3 day window has
+     lapsed; a 10 day window is still open on the first session. */
+  const late = { startDate: '2024-01-10' };
+  assert.equal(discRun({ insider_purchase: { AAA: ['2024-01-03'] } }, late, 3).trades.length, 0);
+  const open = discRun({ insider_purchase: { AAA: ['2024-01-03'] } }, late, 10);
+  assert.equal(open.trades[0].signalDate, '2024-01-10');
+});
+
+test('disclosures of another ticker or another kind are ignored', () => {
+  const r = discRun({
+    insider_purchase: { BBB: ['2024-01-03'] },
+    congress_buy: { AAA: ['2024-01-03'] },
+  });
+  assert.equal(r.trades.length, 0);
+  assert.ok(r.warnings.some((w) => w.includes('never fired')));
+});
+
+test('a run that needs disclosure data refuses to start without it', () => {
+  assert.throws(() => discRun({}), /Disclosure data for this strategy was not loaded/);
+  /* An empty list is data: the run is valid and simply has no trades. */
+  assert.equal(discRun({ insider_purchase: {} }).trades.length, 0);
+});
+
+test('a later disclosure never changes an earlier result', () => {
+  const a = discRun({ insider_purchase: { AAA: ['2024-01-03'] } }, { endDate: '2024-01-19' });
+  const b = discRun(
+    { insider_purchase: { AAA: ['2024-01-03', '2024-01-25'] } },
+    { endDate: '2024-01-19' },
+  );
+  assert.deepEqual(b.trades, a.trades);
+  assert.deepEqual(b.curve, a.curve);
 });

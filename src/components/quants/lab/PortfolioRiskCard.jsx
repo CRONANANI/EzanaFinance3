@@ -145,6 +145,25 @@ export function PortfolioRiskCard() {
                 </p>
               )}
 
+              {data.sectors?.length > 0 && (
+                <div className="qr-sectors">
+                  <h4 className="ql-eyebrow ql-eyebrow--spaced">Sector concentration</h4>
+                  {data.sectors.map((s) => (
+                    <div key={s.sector} className="qr-sector">
+                      <span className="qr-sector-name">{s.sector}</span>
+                      <span className="qr-sector-bar">
+                        <span
+                          className="qr-share-fill"
+                          style={{ width: `${Math.min(Math.max(s.weight * 100, 0), 100)}%` }}
+                        />
+                      </span>
+                      <span className="qr-sector-pct">{fmtPct(s.weight, 0)}</span>
+                    </div>
+                  ))}
+                  <p className="ql-hint">Share of total portfolio value, cash included.</p>
+                </div>
+              )}
+
               {data.notes?.length > 0 && (
                 <ul className="ql-warnings">
                   {data.notes.map((n) => (

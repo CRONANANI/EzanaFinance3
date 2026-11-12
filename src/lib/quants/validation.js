@@ -423,12 +423,21 @@ export function estimateWork({ tickers, sessions, options }) {
  * @param {object} input.config    normalized run config
  * @param {object} input.bars      { TICKER: bars[] } including warm-up history
  * @param {object[]} input.benchmarkBars
+ * @param {object} [input.events]  disclosure dates, passed straight to the engine
  * @param {object} input.options   from normalizeValidationOptions
  * @param {() => boolean} [input.shouldStop]  polled between engine runs; when
  *        it returns true the validation aborts with a clear error. The caller
  *        owns the clock so this module stays deterministic.
  */
-export function runValidation({ spec, config, bars, benchmarkBars = [], options, shouldStop }) {
+export function runValidation({
+  spec,
+  config,
+  bars,
+  benchmarkBars = [],
+  events = {},
+  options,
+  shouldStop,
+}) {
   const warnings = [];
   let engineRuns = 0;
   const run = (s, cfg) => {
@@ -438,7 +447,7 @@ export function runValidation({ spec, config, bars, benchmarkBars = [], options,
       );
     }
     engineRuns += 1;
-    return runBacktest({ spec: s, config: cfg, bars, benchmarkBars });
+    return runBacktest({ spec: s, config: cfg, bars, benchmarkBars, events });
   };
   /** A run that may legitimately have no data or no trades in a short window. */
   const tryRun = (s, cfg) => {

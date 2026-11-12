@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 import { LEADERBOARD, TRENDING_MARKETS, BETTING_ANALYTICS } from '@/lib/for-the-quants-mock-data';
 import { QuantLabWorkbench } from '@/components/quants/lab/QuantLabWorkbench';
 import { PortfolioRiskCard } from '@/components/quants/lab/PortfolioRiskCard';
+import { EventStudyCard } from '@/components/quants/lab/EventStudyCard';
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
 import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
 import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
+import { FactorLabCard } from '@/components/quants/lab/FactorLabCard';
 import { PairsTradingCard } from '@/components/quants/PairsTradingCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesForQuantsPreview } from '@/lib/learning-curriculum';
@@ -48,6 +50,7 @@ import './simulation-visuals.css';
 import './model-library.css';
 import './quant-lab.css';
 import './quant-risk.css';
+import './quant-factors.css';
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -275,7 +278,11 @@ export default function ForTheQuantsPage() {
         <PairsTradingCard />
       </div>
 
+      <EventStudyCard />
+
       <CorrelationMatrixCard />
+
+      <FactorLabCard />
 
       <ModelLibraryCard />
 

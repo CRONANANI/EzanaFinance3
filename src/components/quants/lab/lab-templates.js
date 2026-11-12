@@ -57,4 +57,21 @@ export const LAB_TEMPLATES = [
       sizing: { type: 'pct_equity', pct: 25, maxPositions: 4 },
     },
   },
+  {
+    id: 'congress-following',
+    name: 'Follow Congress purchases',
+    summary:
+      'Buy after a member of Congress discloses a purchase, while the stock is in an uptrend.',
+    spec: {
+      universe: ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'JPM', 'XOM', 'UNH'],
+      benchmark: 'SPY',
+      side: 'long',
+      entry: {
+        op: 'and',
+        args: [cond('congress_buy', { withinDays: 10 }), cond('price_above_sma', { period: 200 })],
+      },
+      exit: { stopLossPct: 10, maxHoldDays: 60 },
+      sizing: { type: 'equal_weight', maxPositions: 4 },
+    },
+  },
 ];

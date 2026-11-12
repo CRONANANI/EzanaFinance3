@@ -46,3 +46,41 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---- Sector concentration (Portfolio Risk card) ---- */
+
+.qr-sector {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+
+.qr-sector-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qr-sector-bar {
+  display: block;
+  height: 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--border-primary);
+  overflow: hidden;
+}
+
+.qr-sector-pct {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Event study card ---- */
+
+.qe-card {
+  margin-bottom: 1.25rem;
+}

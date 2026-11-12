@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getDailyBars } from '@/lib/prices/daily-bars';
-import { MAX_PORTFOLIO_HOLDINGS, portfolioRisk } from '@/lib/quants/risk';
+import { MAX_PORTFOLIO_HOLDINGS, portfolioRisk, sectorExposure } from '@/lib/quants/risk';
+import { FmpAPI } from '@/lib/services/fmp';
 import { cleanTicker } from '@/lib/quants/strategy-spec';
 
 export const dynamic = 'force-dynamic';
@@ -80,7 +81,22 @@ export const GET = withApiGuard(
           NO_STORE,
         );
       }
-      return NextResponse.json({ ...report, benchmark: BENCHMARK, beyondCap }, NO_STORE);
+      /* Sector of each holding, from the cached company profile. A lookup
+         that fails leaves that holding unclassified; it never blocks the report. */
+      const sectorOf = {};
+      await Promise.all(
+        report.holdings.map(async (h) => {
+          try {
+            const profile = await FmpAPI.getCompanyProfile(h.ticker.replace(/\./g, '-'));
+            const sector = typeof profile?.sector === 'string' ? profile.sector.trim() : '';
+            if (sector) sectorOf[h.ticker] = sector;
+          } catch {
+            /* unclassified */
+          }
+        }),
+      );
+      const sectors = Object.keys(sectorOf).length ? sectorExposure(report.holdings, sectorOf) : [];
+      return NextResponse.json({ ...report, sectors, benchmark: BENCHMARK, beyondCap }, NO_STORE);
     } catch (err) {
       return safeErrorResponse(err, { context: 'quants/portfolio-risk' });
     }

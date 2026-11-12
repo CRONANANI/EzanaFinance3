@@ -37,6 +37,7 @@ const PARAM_LABELS = {
   band: 'Band',
   multiple: 'Multiple',
   window: 'Window',
+  withinDays: 'Within days',
 };
 
 const isoDaysAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
@@ -626,9 +627,9 @@ export function QuantLabWorkbench() {
               ))}
             </ul>
             <p className="ql-hint">
-              Testing an event signal on the date the event happened, instead of the date it became
-              public, makes a strategy look better than it could have been. These stay switched off
-              until public-availability dates are loaded.
+              Congress and insider disclosures are available under Disclosures: they use the date a
+              trade was made public, never the date it happened. The signals listed here stay
+              switched off until the same kind of public date is on record for them.
             </p>
           </details>
 

@@ -22,7 +22,7 @@
 import { CONDITIONS } from './strategy-spec.js';
 import { computeRunMetrics, drawdownStats, monthlyReturns, sampleCaveats } from './metrics.js';
 
-export const ENGINE_VERSION = 'ql-engine-1.0.0';
+export const ENGINE_VERSION = 'ql-engine-1.1.0';
 
 /** Sessions an order may wait for its ticker to trade before it is cancelled. */
 const MAX_ORDER_WAIT = 5;
@@ -126,7 +126,7 @@ export function bollinger(closes, period = 20, k = 2) {
 
 /* ── Per-ticker indicator cache and rule evaluation ────────── */
 
-function makeContext(bars) {
+function makeContext(bars, events = {}) {
   const closes = bars.map((b) => b.close);
   const cache = new Map();
   const memo = (key, fn) => {
@@ -136,6 +136,8 @@ function makeContext(bars) {
   return {
     bars,
     closes,
+    /* { kind: sorted public dates } for this ticker. */
+    events,
     sma: (p) => memo(`sma${p}`, () => sma(closes, p)),
     rsi: (p) => memo(`rsi${p}`, () => rsi(closes, p)),
     macd: () => memo('macd', () => macd(closes)),
@@ -226,9 +228,32 @@ function evalCondition(id, p, ctx, i) {
         reads: { volume: bar.volume, [`avgVolume${p.window}`]: Math.round(avg) },
       };
     }
+    case 'congress_buy':
+    case 'congress_sell':
+    case 'insider_purchase': {
+      /* Latest disclosure made public strictly BEFORE this session. A filing
+         dated today may have landed after the close, so it only counts from
+         the next session. */
+      const last = lastBefore(ctx.events[id] || [], bar.date);
+      if (!last) return { value: false, reads: {} };
+      const age = Math.round((Date.parse(bar.date) - Date.parse(last)) / 86400000);
+      return { value: age <= p.withinDays, reads: { [`${id}Disclosed`]: last } };
+    }
     default:
       return { value: null, reads: {} };
   }
+}
+
+/** The latest date in a sorted list that is strictly before `date`, or null. */
+function lastBefore(sorted, date) {
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] < date) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo > 0 ? sorted[lo - 1] : null;
 }
 
 /** Three-valued rule evaluation: null (not enough history) never opens a trade. */
@@ -264,12 +289,29 @@ const calendarDays = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 8640
  *        including warm-up history before config.startDate
  * @param {{date:string, close:number}[]} [input.benchmarkBars]
  * @param {Record<string, string>} [input.sources]  price source per ticker, for the report
+ * @param {Record<string, Record<string, string[]>>} [input.events]  disclosure
+ *        dates per kind and ticker, e.g. { insider_purchase: { AAPL: ['2024-03-04'] } }.
+ *        Each date is the day the information became PUBLIC. Required for every
+ *        kind the spec uses (see specEventKinds).
  */
-export function runBacktest({ spec, config, bars, benchmarkBars = [], sources = {} }) {
+export function runBacktest({ spec, config, bars, benchmarkBars = [], sources = {}, events = {} }) {
+  const eventKinds = new Set();
   for (const id of collectIds(spec)) {
     if (!CONDITIONS[id]) throw new Error(`Condition "${id}" cannot be backtested`);
+    if (CONDITIONS[id].event) eventKinds.add(CONDITIONS[id].event);
+  }
+  for (const kind of eventKinds) {
+    if (!events[kind]) throw new Error('Disclosure data for this strategy was not loaded');
   }
   const warnings = [];
+  for (const kind of eventKinds) {
+    const found = spec.universe.some((t) => (events[kind][t] || []).length > 0);
+    if (!found) {
+      warnings.push(
+        `No ${CONDITIONS[kind].label.toLowerCase()} was on record for these tickers, so that condition never fired.`,
+      );
+    }
+  }
   const side = spec.side === 'short' ? 'short' : 'long';
   const slip = config.slippageBps / 10000;
 
@@ -294,7 +336,9 @@ export function runBacktest({ spec, config, bars, benchmarkBars = [], sources = 
       continue;
     }
     tickers.push(t);
-    ctx[t] = makeContext(series);
+    const tickerEvents = {};
+    for (const kind of eventKinds) tickerEvents[kind] = [...(events[kind][t] || [])].sort();
+    ctx[t] = makeContext(series, tickerEvents);
     index[t] = new Map(series.map((b, i) => [b.date, i]));
     if (!coverage[t].hasOpen) {
       warnings.push(
@@ -608,6 +652,11 @@ export function runBacktest({ spec, config, bars, benchmarkBars = [], sources = 
       'Whole shares only. No partial fills, market impact or limit orders.',
       'The universe is the list chosen today: companies that were delisted are not represented (survivorship bias).',
       'Prices are adjusted by the data source. Where it adjusts for splits only, dividends are not in the returns.',
+      ...(eventKinds.size
+        ? [
+            'Disclosure signals use the date a trade was made public, never the date it happened, and count from the first session after that date.',
+          ]
+        : []),
       'A backtest describes the past under these assumptions. It is not evidence of future results.',
     ],
   };

@@ -11,6 +11,7 @@ import {
   UUID_RE,
   loadRunBars,
 } from '@/lib/quants/lab-server';
+import { loadRunEvents } from '@/lib/quants/event-sources';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -145,22 +146,29 @@ export const POST = withApiGuard(
       if (rErr) return safeErrorResponse(rErr, { context: 'quants/backtests insert' });
       runId = run.id;
 
-      const loaded = await loadRunBars(checked.spec, config);
+      const [loaded, disclosures] = await Promise.all([
+        loadRunBars(checked.spec, config),
+        loadRunEvents(checked.spec, config),
+      ]);
       const result = runBacktest({
         spec: checked.spec,
         config,
         bars: loaded.bars,
         benchmarkBars: loaded.benchmarkBars,
         sources: loaded.sources,
+        events: disclosures.events,
       });
 
       const truncated = result.trades.length > MAX_STORED_TRADES;
-      const warnings = truncated
-        ? [
-            ...result.warnings,
-            `The ledger stores the first ${MAX_STORED_TRADES} of ${result.trades.length} trades. Every statistic uses all of them.`,
-          ]
-        : result.warnings;
+      const warnings = [
+        ...disclosures.notices,
+        ...result.warnings,
+        ...(truncated
+          ? [
+              `The ledger stores the first ${MAX_STORED_TRADES} of ${result.trades.length} trades. Every statistic uses all of them.`,
+            ]
+          : []),
+      ];
       const results = {
         curve: result.curve,
         drawdown: result.drawdown,

@@ -7,6 +7,10 @@
   "regions": ["pdx1"],
   "crons": [
     {
+      "path": "/api/cron/sync-quant-universe",
+      "schedule": "37 2 * * 2-6"
+    },
+    {
       "path": "/api/cron/sync-company-contract-history",
       "schedule": "25 4 * * 0"
     },

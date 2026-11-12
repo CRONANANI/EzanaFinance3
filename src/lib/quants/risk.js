@@ -407,3 +407,25 @@ export function portfolioRisk({ holdings, cash = 0, series, benchmark = [] }) {
     notes,
   };
 }
+
+/**
+ * Portfolio weight by sector, largest first. `sectors` maps ticker to a
+ * sector name; a holding with no known sector is listed as Unclassified
+ * rather than dropped, so the weights still add up to the invested share.
+ * @param {{ ticker: string, weight: number }[]} holdings
+ * @param {Object<string, string>} sectors
+ */
+export function sectorExposure(holdings, sectors) {
+  const map = new Map();
+  for (const h of holdings) {
+    if (!isNum(h.weight)) continue;
+    const sector = sectors[h.ticker] || 'Unclassified';
+    const row = map.get(sector) || { sector, weight: 0, holdings: 0 };
+    row.weight += h.weight;
+    row.holdings += 1;
+    map.set(sector, row);
+  }
+  return [...map.values()]
+    .map((r) => ({ ...r, weight: round(r.weight, 4) }))
+    .sort((a, b) => b.weight - a.weight);
+}

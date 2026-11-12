@@ -20,6 +20,7 @@ import {
   VALIDATION_SUMMARY_COLUMNS,
   loadRunBars,
 } from '@/lib/quants/lab-server';
+import { loadRunEvents } from '@/lib/quants/event-sources';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -181,13 +182,17 @@ export const POST = withApiGuard(
         const applied = applyParamSet(spec, params);
         if (applied.ok) lookback = Math.max(lookback, specLookback(applied.spec));
       }
-      const loaded = await loadRunBars(spec, config, lookback);
+      const [loaded, disclosures] = await Promise.all([
+        loadRunBars(spec, config, lookback),
+        loadRunEvents(spec, config),
+      ]);
       const deadline = Date.now() + COMPUTE_BUDGET_MS;
       const report = runValidation({
         spec,
         config,
         bars: loaded.bars,
         benchmarkBars: loaded.benchmarkBars,
+        events: disclosures.events,
         options,
         shouldStop: () => Date.now() > deadline,
       });
@@ -208,7 +213,8 @@ export const POST = withApiGuard(
         deflatedSharpe: report.sweep?.deflatedSharpe ?? null,
         bestParams: best?.params ?? null,
       };
-      const { warnings, coverage, ...rest } = report;
+      const { coverage, ...rest } = report;
+      const warnings = [...disclosures.notices, ...report.warnings];
       const results = {
         ...rest,
         coverage,

@@ -105,17 +105,61 @@ export const CONDITIONS = {
       `volume is at least ${p.multiple} times its average over the previous ${p.window} days`,
     lookback: (p) => p.window + 1,
   },
+  /* Disclosure conditions. Each reads a list of dates on which a trade became
+     PUBLIC (the filing or disclosure date, never the trade date). A date
+     counts from the first session after it, because a filing can land after
+     the close. `event` names the list the engine must be given. */
+  congress_buy: {
+    label: 'Congress member disclosed a purchase',
+    group: 'Disclosures',
+    event: 'congress_buy',
+    params: { withinDays: int(5, 1, 60) },
+    describe: (p) =>
+      `a member of Congress publicly disclosed buying it in the previous ${p.withinDays} days`,
+    lookback: () => 0,
+  },
+  congress_sell: {
+    label: 'Congress member disclosed a sale',
+    group: 'Disclosures',
+    event: 'congress_sell',
+    params: { withinDays: int(5, 1, 60) },
+    describe: (p) =>
+      `a member of Congress publicly disclosed selling it in the previous ${p.withinDays} days`,
+    lookback: () => 0,
+  },
+  insider_purchase: {
+    label: 'Insider filed an open-market purchase',
+    group: 'Disclosures',
+    event: 'insider_purchase',
+    params: { withinDays: int(5, 1, 60) },
+    describe: (p) =>
+      `a company insider filed an open-market purchase in the previous ${p.withinDays} days`,
+    lookback: () => 0,
+  },
 };
+
+/** The disclosure lists a spec needs loaded before it can run, e.g. ['insider_purchase']. */
+export function specEventKinds(spec) {
+  const kinds = new Set();
+  const walk = (n) => {
+    if (!n) return;
+    if (n.op === 'cond') {
+      const kind = CONDITIONS[n.id]?.event;
+      if (kind) kinds.add(kind);
+    } else if (n.op === 'not') walk(n.arg);
+    else (n.args || []).forEach(walk);
+  };
+  walk(spec?.entry);
+  walk(spec?.exit?.rule);
+  return [...kinds].sort();
+}
 
 /**
  * Builder conditions that cannot be backtested yet, with the reason. They need
- * point-in-time event data (the date the information became PUBLIC, not the
- * date of the event), which the engine does not load yet.
+ * point-in-time data (the date the information became PUBLIC, not the date of
+ * the event) that is not loaded yet.
  */
 export const UNSUPPORTED_CONDITIONS = {
-  congress_buy: 'Needs the public disclosure date of each trade, not its transaction date.',
-  congress_sell: 'Needs the public disclosure date of each trade, not its transaction date.',
-  insider_purchase: 'Needs the acceptance timestamp of each filing.',
   hedge_fund_new_position: 'Needs the filing date of each 13F; holdings are known weeks late.',
   fed_rate_change: 'Needs a point-in-time macro calendar.',
   cpi_surprise: 'Needs consensus history and release timestamps.',
