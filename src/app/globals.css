@@ -967,12 +967,14 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
      section targets so the heading isn't clipped by the nav on scroll. */
   #features,
   #faq,
+  #social,
   #heroSection {
     scroll-margin-top: 80px;
   }
   @media (max-width: 768px) {
     #features,
     #faq,
+    #social,
     #heroSection {
       scroll-margin-top: 72px;
     }

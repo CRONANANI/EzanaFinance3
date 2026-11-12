@@ -121,7 +121,11 @@ export function GettingStartedSection() {
       <div className="features-container">
         <div className="how-it-works">
           <p className="section-eyebrow lf-mono">Getting started</p>
-          <h2 className="how-title">From accounts to action in four steps</h2>
+          {/* #social: the nav's Social link lands here, with the heading just
+              under the sticky nav and the Social Investing section in view. */}
+          <h2 className="how-title" id="social">
+            From accounts to action in four steps
+          </h2>
           <div className="how-steps">
             {HOW_STEPS.map((s, i) => (
               <div key={s.title} className="how-step">

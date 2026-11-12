@@ -666,13 +666,18 @@ export function Navbar() {
           {/* Desktop nav links — hidden on mobile via CSS */}
           <ul className="nav-menu nav-menu-desktop">
             <li className="nav-item">
-              <a href="/#features" className="nav-link">
-                Features
+              <a href="/#social" className="nav-link">
+                Social
               </a>
             </li>
             <li className="nav-item">
-              <a href="/pricing" className="nav-link">
-                Pricing
+              <a href="/#sonar" className="nav-link">
+                Sonar
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="/#quant" className="nav-link">
+                Quant
               </a>
             </li>
             <li
@@ -786,6 +791,11 @@ export function Navbar() {
               </div>
             </li>
             <li className="nav-item">
+              <a href="/pricing" className="nav-link">
+                Pricing
+              </a>
+            </li>
+            <li className="nav-item">
               <a href="/ezana-echo" className="nav-link">
                 Ezana <span style={{ color: 'var(--emerald)' }}>Echo</span>
               </a>
@@ -836,18 +846,25 @@ export function Navbar() {
 
                   <nav className="mnav-body" aria-label="Main">
                     <a
-                      href="/#features"
+                      href="/#social"
                       className="mnav-link"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Features
+                      Social
                     </a>
                     <a
-                      href="/pricing"
+                      href="/#sonar"
                       className="mnav-link"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Pricing
+                      Sonar
+                    </a>
+                    <a
+                      href="/#quant"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Quant
                     </a>
                     <button
                       type="button"
@@ -917,6 +934,13 @@ export function Navbar() {
                         ))}
                       </div>
                     ) : null}
+                    <a
+                      href="/pricing"
+                      className="mnav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Pricing
+                    </a>
                     <a
                       href="/ezana-api"
                       className="mnav-link"

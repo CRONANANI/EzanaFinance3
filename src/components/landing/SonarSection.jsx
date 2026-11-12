@@ -1388,7 +1388,21 @@ export function SonarSection({
 
     /* An in-page anchor would fight the clamp and lose, stranding the
        visitor on the band with the wrong target under them. */
+    /* #sonar is the one anchor that asks to arrive ON the band, not past it
+       (the top nav's Sonar link). It re-arms the lock and runs the same entry
+       glide a scroll onto the band does, so the visitor lands in the takeover
+       exactly as if they had scrolled here. */
+    const arriveOnBand = () => {
+      if (lockedRef.current) return;
+      dismissedRef.current = false;
+      engage();
+    };
+
     const onHashChange = () => {
+      if (window.location.hash === '#sonar') {
+        arriveOnBand();
+        return;
+      }
       dismissedRef.current = true;
       release();
     };
@@ -1408,6 +1422,15 @@ export function SonarSection({
         return;
       }
       if (url.pathname !== window.location.pathname || !url.hash || url.hash === '#') return;
+      if (url.hash === '#sonar') {
+        /* Take the jump away from the browser: its native smooth scroll would
+           race the entry glide. The URL still gets the hash, without firing a
+           hashchange. */
+        e.preventDefault();
+        if (window.location.hash !== '#sonar') window.history.pushState(null, '', '#sonar');
+        requestAnimationFrame(arriveOnBand);
+        return;
+      }
       dismissedRef.current = true;
       release();
     };
@@ -1420,7 +1443,13 @@ export function SonarSection({
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('hashchange', onHashChange);
 
+    /* Arriving from another page on /#sonar: the browser has already jumped
+       to the band, so no downward scroll will ever cross the arming line. */
+    let arriveFrame = 0;
+    if (window.location.hash === '#sonar') arriveFrame = requestAnimationFrame(arriveOnBand);
+
     return () => {
+      if (arriveFrame) cancelAnimationFrame(arriveFrame);
       if (settleTimer) clearTimeout(settleTimer);
       cancelGlide();
       document.documentElement.classList.remove('snr-takeover-fade');
@@ -3095,6 +3124,7 @@ export function SonarSection({
     <div className="snr-host" style={{ display: hidden ? 'none' : 'contents' }}>
       <section
         ref={bandRef}
+        id={isPage ? undefined : 'sonar'}
         className={`snr-band${isPage ? ' snr-band--page' : ''}${inView ? '' : ' snr-paused'}${composed ? ' snr-composed' : ''}${
           lockedIn ? ' snr-frozen' : ''
         }${hasPinged ? ' snr-live' : ' snr-hold'}${stage2 ? ' snr-stage2' : ''}${
