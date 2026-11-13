@@ -2,11 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 import NavIcon from '@/components/nav/NavIcon';
 import NotificationFilterMenu from '@/components/nav/NotificationFilterMenu';
 import { IconButton, Skeleton } from '@/components/ds';
+import { notificationDestination, notificationSummary } from '@/lib/notifications/destination';
 
 /* Notification type → display category (label, Bootstrap icon). Oct 29: one
    accent (emerald, in nav-notifications.css) for every category tile instead
@@ -72,43 +75,39 @@ const FILTER_TABS = [
   { key: 'learning', label: 'Learning' },
 ];
 
-/* Notification card (desktop panel, Nov 2026 redesign). Tile, divider, then
-   the meta line (category, time, unread dot), title, summary, friend-request
-   buttons and the chip row (priority, tickers). On hover or keyboard focus
-   the time and dot give way to Mark as read (unread only) and Dismiss. */
+/* Notification row (desktop panel, Nov 12 2026 redesign). A flat ledger row
+   in the /home idiom: no tile, no fill, no border, a hairline between rows.
+   Line one is the meta (category, priority when it is not routine, tickers,
+   time), line two the title, line three the summary. The title is a real
+   link stretched over the whole row, so a click, Enter, middle click or
+   "open in new tab" all open the page the notification is about. On hover or
+   keyboard focus the time gives way to Mark as read (unread only) and
+   Dismiss, which sit above the link. */
 function NotifRowNew({ n, onOpen, onFriendRespond, onMarkRead, onDismiss }) {
   const cat = categoryMeta(n.type);
   const sev = severityMeta(n.priority);
+  const dest = notificationDestination(n);
+  const title = displayTitle(n.title);
+  const summary = notificationSummary(n.content);
   const unread = !n.read;
   const tickers = Array.isArray(n.tickers) ? n.tickers : [];
   const shown = tickers.slice(0, MAX_TICKERS);
   const more = tickers.length - shown.length;
   return (
-    <div
-      className={`nnx-row${unread ? ' nnx-row--unread' : ''}`}
-      role="button"
-      tabIndex={0}
-      onClick={() => onOpen(n)}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpen(n);
-        }
-      }}
-    >
-      <span className="nnx-tile" aria-hidden="true">
-        <i className={`bi ${cat.icon}`} />
-      </span>
-      <span className="nnx-divider" aria-hidden="true" />
-      <span className="nnx-main">
-        <span className="nnx-meta">
+    <div className={`nnx-row${unread ? ' nnx-row--unread' : ''}`}>
+      <span className="nnx-udot" aria-hidden="true" />
+      <div className="nnx-main">
+        <div className="nnx-meta">
           <span className="nnx-cat">{cat.label}</span>
-          <span className="nnx-meta-r">
-            <span className="nnx-stamp">
-              <span className="nnx-time">{getTimeAgo(n.time)}</span>
-              {unread && <span className="nnx-udot" aria-hidden="true" />}
+          {sev.key !== 'fyi' && <span className={`nnx-sev nnx-sev--${sev.key}`}>{sev.label}</span>}
+          {shown.length > 0 && (
+            <span className="nnx-tickers">
+              {shown.join(' ')}
+              {more > 0 && <span className="nnx-tmore"> +{more}</span>}
             </span>
+          )}
+          <span className="nnx-meta-r">
+            <span className="nnx-time">{getTimeAgo(n.time)}</span>
             <span className="nnx-actions">
               {unread && onMarkRead && (
                 <IconButton
@@ -116,10 +115,7 @@ function NotifRowNew({ n, onOpen, onFriendRespond, onMarkRead, onDismiss }) {
                   label="Mark as read"
                   size="sm"
                   className="nnx-act"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMarkRead(n.id);
-                  }}
+                  onClick={() => onMarkRead(n.id)}
                 />
               )}
               {onDismiss && (
@@ -128,19 +124,23 @@ function NotifRowNew({ n, onOpen, onFriendRespond, onMarkRead, onDismiss }) {
                   label="Dismiss notification"
                   size="sm"
                   className="nnx-act"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDismiss(n, e);
-                  }}
+                  onClick={(e) => onDismiss(n, e)}
                 />
               )}
             </span>
           </span>
-        </span>
-        <span className="nnx-title">{displayTitle(n.title)}</span>
-        {n.content && <span className="nnx-desc">{n.content}</span>}
+        </div>
+        <Link
+          href={dest.href}
+          className="nnx-title"
+          aria-label={`${title}${unread ? ', unread' : ''}. Opens ${dest.label}.`}
+          onClick={() => onOpen(n, dest)}
+        >
+          {title}
+        </Link>
+        {summary && <span className="nnx-desc">{summary}</span>}
         {n.friendRequestId && onFriendRespond && (
-          <span className="nnx-friend" onClick={(e) => e.stopPropagation()}>
+          <span className="nnx-friend">
             <button
               type="button"
               className="nnx-friend-accept"
@@ -157,41 +157,20 @@ function NotifRowNew({ n, onOpen, onFriendRespond, onMarkRead, onDismiss }) {
             </button>
           </span>
         )}
-        <span className="nnx-chips">
-          <span className={`nnx-sev nnx-sev--${sev.key}`}>{sev.label}</span>
-          {shown.length > 0 && (
-            <span className="nnx-tickers">
-              {shown.map((t, i) => (
-                <span key={t}>
-                  {i > 0 && (
-                    <span className="nnx-tsep" aria-hidden="true">
-                      ·
-                    </span>
-                  )}
-                  {t}
-                </span>
-              ))}
-              {more > 0 && <span className="nnx-tmore">+{more}</span>}
-            </span>
-          )}
-        </span>
-      </span>
+      </div>
     </div>
   );
 }
 
-/* Three shimmer cards while the first fetch is in flight. */
+/* Four shimmer rows while the first fetch is in flight. */
 function NotifSkeleton() {
   return (
     <div className="nnx-skel" aria-busy="true" aria-label="Loading notifications">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="nnx-skel-card">
-          <Skeleton width={44} height={44} radius="var(--radius-md)" />
-          <div className="nnx-skel-lines">
-            <Skeleton height={12} width="40%" />
-            <Skeleton height={14} width="85%" />
-            <Skeleton height={12} width="65%" />
-          </div>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="nnx-skel-row">
+          <Skeleton height={10} width="32%" />
+          <Skeleton height={13} width="78%" />
+          <Skeleton height={11} width="92%" />
         </div>
       ))}
     </div>
@@ -284,6 +263,7 @@ function getTimeAgo(ts) {
  */
 export function NavNotifications() {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   /* The chosen filter survives reopening the panel and page changes for the
@@ -437,22 +417,29 @@ export function NavNotifications() {
     setReadThisSession(new Set());
   }, []);
 
-  // Redesigned-row click: mark read (clears rail/wash/dot + decrements counts)
-  // and track the open, reusing the existing per-item read + track wiring.
+  /* Opening a notification: mark it read, record the click with where it
+     went, and close the panel. The desktop row is itself a link, so the
+     browser (or the router) does the navigation; the mobile sheet has no
+     link under the tap, so it asks for a push. */
   const openNotification = useCallback(
-    (n) => {
+    (n, dest, { push = false } = {}) => {
+      const target = dest || notificationDestination(n);
       markAsRead(n.id);
-      if (String(n.id).startsWith('fr-')) return;
-      fetch('/api/notifications/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: 'notification_click',
-          event_data: { notification_id: n.id, type: n.type },
-        }),
-      }).catch(() => {});
+      if (!String(n.id).startsWith('fr-')) {
+        fetch('/api/notifications/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            event_type: 'notification_click',
+            event_data: { notification_id: n.id, type: n.type, href: target.href },
+          }),
+        }).catch(() => {});
+      }
+      closePanel();
+      if (push) router.push(target.href);
     },
-    [markAsRead],
+    [markAsRead, closePanel, router],
   );
 
   const respondFriendRequest = useCallback(async (requestId, status) => {
@@ -605,6 +592,7 @@ export function NavNotifications() {
             onToggle={() => toggleExpand(n)}
             onDismiss={(e) => dismissNotification(n, e)}
             onFriendRespond={respondFriendRequest}
+            onOpen={() => openNotification(n, null, { push: true })}
           />
         ))
       )}
@@ -642,24 +630,8 @@ export function NavNotifications() {
         >
           <span className="nnx-caret" aria-hidden />
 
-          {/* Fixed header: live dot, title, "N new", divider, Mark all read */}
-          <div className="nnx-header">
-            <div className="nnx-header-l">
-              <span className="nnx-live" aria-hidden />
-              <h3 className="nnx-h-title">Notifications</h3>
-              {unreadCount > 0 && <span className="nnx-new-pill">{unreadCount} new</span>}
-            </div>
-            {unreadCount > 0 && (
-              <>
-                <span className="nnx-h-div" aria-hidden="true" />
-                <button className="nnx-markall" onClick={markAllRead} type="button">
-                  <i className="bi bi-check2-all" aria-hidden="true" /> Mark all read
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* All / Unread, then the category menu as a compact funnel */}
+          {/* One toolbar, no title: All / Unread, the category funnel, and
+              Mark all as read. The bell that opened it names the panel. */}
           <div className="nnx-controls">
             <div className="nnx-seg" role="tablist" aria-label="Show notifications">
               {VIEWS.map((v, i) => (
@@ -696,6 +668,15 @@ export function NavNotifications() {
               compact
               className="nnx-funnel"
             />
+            {unreadCount > 0 && (
+              <IconButton
+                icon="bi-check2-all"
+                label="Mark all as read"
+                size="sm"
+                className="nnx-markall"
+                onClick={markAllRead}
+              />
+            )}
           </div>
 
           {/* Scrolling body */}
@@ -714,7 +695,7 @@ export function NavNotifications() {
               <>
                 {todayItems.length > 0 && (
                   <>
-                    <div className="nnx-group">TODAY</div>
+                    <div className="nnx-group">Today</div>
                     {todayItems.map((n) => (
                       <NotifRowNew
                         key={n.id}
@@ -729,7 +710,7 @@ export function NavNotifications() {
                 )}
                 {earlierItems.length > 0 && (
                   <>
-                    <div className="nnx-group nnx-group--earlier">EARLIER</div>
+                    <div className="nnx-group">Earlier</div>
                     {earlierItems.map((n) => (
                       <NotifRowNew
                         key={n.id}
@@ -749,7 +730,7 @@ export function NavNotifications() {
           {/* Fixed footer */}
           <div className="nnx-footer">
             <a className="nnx-center-link" href="/settings?tab=notifications" onClick={closePanel}>
-              View notification center <i className="bi bi-arrow-right" aria-hidden="true" />
+              Notification center <i className="bi bi-arrow-right" aria-hidden="true" />
             </a>
           </div>
         </div>
@@ -805,7 +786,16 @@ export function NavNotifications() {
    Used identically in desktop dropdown and mobile overlay.
    Click to expand/collapse. Shows dismiss X when expanded.
    ═══════════════════════════════════════════════════════════ */
-function NotificationItem({ notification: n, expanded, onToggle, onDismiss, onFriendRespond }) {
+function NotificationItem({
+  notification: n,
+  expanded,
+  onToggle,
+  onDismiss,
+  onFriendRespond,
+  onOpen,
+}) {
+  const dest = notificationDestination(n);
+  const summary = notificationSummary(n.content);
   return (
     <button
       type="button"
@@ -822,7 +812,26 @@ function NotificationItem({ notification: n, expanded, onToggle, onDismiss, onFr
             <span className="nn-item-time">{getTimeAgo(n.time)}</span>
           </div>
           <span className="nn-item-title">{n.title}</span>
-          {expanded && <p className="nn-item-content">{n.content}</p>}
+          {expanded && summary && <p className="nn-item-content">{summary}</p>}
+          {expanded && onOpen && (
+            <span
+              className="nn-item-open"
+              role="link"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpen();
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                e.stopPropagation();
+                onOpen();
+              }}
+            >
+              Open {dest.label} <i className="bi bi-arrow-right" aria-hidden="true" />
+            </span>
+          )}
           {expanded && n.friendRequestId && onFriendRespond && (
             <div className="nn-friend-actions" onClick={(e) => e.stopPropagation()}>
               <button

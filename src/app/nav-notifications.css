@@ -735,33 +735,42 @@ body.light-mode .nn-item:hover {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   DESKTOP NOTIFICATIONS PANEL (Nov 2026 redesign)
-   460px panel: header (title, "N new", Mark all read), an All / Unread
-   segmented control with a compact category funnel, TODAY / EARLIER groups
-   of notification cards, and a full-width footer link. Header and footer
-   stay put; only .nnx-body scrolls. Tokens only.
+   DESKTOP NOTIFICATIONS PANEL (Nov 12 2026 redesign)
+   A 400px ledger in the /home idiom: one toolbar (All / Unread, category
+   funnel, mark all as read), then flat rows under Today / Earlier, then a
+   text link to the notification center. No title, no icon tiles, no card
+   fills or card borders: rows are separated by a hairline, unread is a dot
+   and a heavier title. Sans for words, mono with tabular numerals for
+   tickers, counts and times. The toolbar and footer stay put; only
+   .nnx-body scrolls. Tokens only.
    ══════════════════════════════════════════════════════════════ */
 body .nn-dropdown.nnx-panel {
-  width: 460px;
+  --nnx-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --nnx-edge: color-mix(in srgb, var(--text-primary) 14%, transparent);
+  --nnx-wash: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  --nnx-pad: 16px;
+
+  width: 400px;
   min-width: 0;
   max-width: calc(100vw - 24px);
-  max-height: min(640px, calc(100vh - 90px));
-  padding: 20px;
+  max-height: min(600px, calc(100vh - 90px));
+  padding: 0;
   background: var(--bg-secondary);
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--nnx-edge);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   overflow: visible;
   font-family: var(--font-sans);
+  letter-spacing: -0.008em;
   color: var(--text-primary);
-  animation: nnx-in 0.2s ease;
+  animation: nnx-in 0.18s ease;
 }
 @keyframes nnx-in {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
@@ -772,162 +781,105 @@ body .nn-dropdown.nnx-panel {
   position: absolute;
   top: -6px;
   left: 16px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: var(--bg-secondary);
-  border-left: 1px solid var(--emerald-border);
-  border-top: 1px solid var(--emerald-border);
+  border-top: 1px solid var(--nnx-edge);
+  border-left: 1px solid var(--nnx-edge);
   transform: rotate(45deg);
 }
 
-/* 1 · Header */
-.nnx-header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 0 16px;
-  border-bottom: 1px solid var(--border-secondary);
-}
-.nnx-header-l {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.nnx-live {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 0 4px var(--emerald-bg);
-  animation: nnx-pulse 2s ease-in-out infinite;
-}
-@keyframes nnx-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
-}
-.nnx-h-title {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: var(--type-section-size);
-  font-weight: var(--type-section-weight);
-  letter-spacing: var(--type-section-tracking);
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-.nnx-new-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--emerald-bg);
-  border: 1px solid var(--emerald-border);
-  color: var(--emerald-text);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.nnx-h-div {
-  flex-shrink: 0;
-  width: 1px;
-  height: 24px;
-  background: var(--border-secondary);
-}
-.nnx-markall {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--emerald-text);
-  white-space: nowrap;
-  transition: background 0.15s ease;
-}
-.nnx-markall:hover {
-  background: var(--emerald-bg);
-}
-.nnx-markall:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
-}
-
-/* 2 · All / Unread + category funnel */
+/* 1 · Toolbar: All / Unread as text tabs, then the funnel and mark all */
 .nnx-controls {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 16px;
+  gap: 4px;
+  height: 44px;
+  padding: 0 10px 0 var(--nnx-pad);
+  border-bottom: 1px solid var(--nnx-rule);
 }
 .nnx-seg {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border-radius: var(--radius-lg);
-  background: var(--surface-2);
-  border: 1px solid var(--emerald-border);
+  display: flex;
+  align-self: stretch;
+  gap: 18px;
+  min-width: 0;
 }
 .nnx-seg-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 36px;
+  gap: 6px;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-primary);
+  background: none;
+  color: var(--text-muted);
   font-family: var(--font-sans);
-  font-size: var(--type-body-size);
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: color 0.15s ease;
 }
 .nnx-seg-btn:hover {
-  background: var(--surface-card-hover);
+  color: var(--text-primary);
 }
 .nnx-seg-btn[aria-selected='true'] {
-  background: var(--emerald-dark);
-  color: var(--color-on-primary);
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+}
+/* The selected tab is marked on the toolbar's own rule. */
+.nnx-seg-btn[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--emerald);
 }
 .nnx-seg-btn:focus-visible {
   outline: 2px solid var(--emerald);
-  outline-offset: 2px;
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
 }
 .nnx-seg-count {
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--emerald-bg);
-  color: var(--emerald-text);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 600;
+  color: var(--emerald-text);
 }
-.nnx-seg-btn[aria-selected='true'] .nnx-seg-count {
-  background: color-mix(in srgb, var(--color-on-primary) 22%, transparent);
-  color: var(--color-on-primary);
+
+/* The shared funnel is a 46px bordered button; here it is a quiet 30px
+   icon, the same size as Mark all as read beside it. */
+.nnx-panel .nnx-funnel > button {
+  height: 30px;
+  min-width: 0;
+  padding: 0 8px;
+  gap: 4px;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+.nnx-panel .nnx-funnel > button:hover {
+  background: var(--nnx-wash);
+  color: var(--text-primary);
+}
+.nnx-panel .nnx-markall {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+.nnx-panel .nnx-markall:hover {
+  background: var(--nnx-wash);
+  color: var(--emerald-text);
 }
 
 /* Body */
@@ -935,147 +887,137 @@ body .nn-dropdown.nnx-panel {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  margin: 0 -4px;
-  padding: 0 4px 4px;
+  overscroll-behavior: contain;
 }
 
-/* 3 · Time groups */
+/* 2 · Time groups */
 .nnx-group {
-  padding: 16px 0 8px;
-  font-family: var(--font-mono);
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking);
+  padding: 12px var(--nnx-pad) 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
-.nnx-row ~ .nnx-group--earlier {
-  margin-top: 16px;
-  border-top: 1px solid var(--border-secondary);
+.nnx-row + .nnx-group {
+  margin-top: 4px;
+  border-top: 1px solid var(--nnx-rule);
 }
 
-/* 4–5 · Notification cards.
-   Exception to the no-border card rule: these are list items inside a
-   panel, and the 1px border is the read / unread state signal. */
+/* 3 · Rows. No fill and no border: a hairline between rows, a wash on
+   hover. The title link is stretched over the row (see ::after). */
 .nnx-row {
   position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: 14px;
-  padding: 14px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 10px var(--nnx-pad) 11px 12px;
+  transition: background 0.15s ease;
 }
-.nnx-row + .nnx-row {
-  margin-top: 8px;
-}
-.nnx-row--unread {
-  background: var(--emerald-bg);
-  border-color: var(--emerald-border);
+.nnx-row + .nnx-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: var(--nnx-pad);
+  left: 28px;
+  height: 1px;
+  background: var(--nnx-rule);
 }
 .nnx-row:hover,
 .nnx-row:focus-within {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-glow);
+  background: var(--nnx-wash);
 }
-.nnx-row--unread:hover,
-.nnx-row--unread:focus-within {
-  background: var(--emerald-bg-hover);
+.nnx-udot {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: transparent;
 }
-.nnx-row:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
-}
-.nnx-tile {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-  color: var(--text-muted);
-  font-size: 1.15rem;
-}
-.nnx-row--unread .nnx-tile {
-  background: color-mix(in srgb, var(--emerald) 18%, transparent);
-  color: var(--emerald-text);
-}
-.nnx-divider {
-  flex-shrink: 0;
-  width: 1px;
-  background: var(--border-primary);
-}
-.nnx-row--unread .nnx-divider {
-  background: var(--emerald-border);
+.nnx-row--unread .nnx-udot {
+  background: var(--emerald);
 }
 .nnx-main {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  min-width: 0;
 }
 .nnx-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 28px;
+  height: 18px;
+  font-size: 0.6875rem;
 }
 .nnx-cat {
-  flex: 1;
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* Priority as a word in its colour, never a pill. Routine rows show none. */
+.nnx-sev {
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.nnx-sev::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 1px;
+}
+.nnx-sev--high {
+  color: var(--negative);
+}
+.nnx-sev--watch {
+  color: var(--warning);
+}
+.nnx-tickers {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--type-eyebrow-weight);
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
-.nnx-row--unread .nnx-cat {
-  color: var(--emerald-text);
+.nnx-tmore {
+  color: var(--text-faint);
 }
 .nnx-meta-r {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-}
-.nnx-stamp {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  margin-left: auto;
 }
 .nnx-time {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
   color: var(--text-faint);
   white-space: nowrap;
 }
-.nnx-udot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--emerald);
-}
-/* Hover or keyboard focus: the time and dot give way to the actions. */
+/* Hover or keyboard focus: the time gives way to the actions, which sit
+   above the stretched link so they stay clickable. */
 .nnx-actions {
+  position: relative;
+  z-index: 1;
   display: none;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
+  margin: -4px -6px -4px 0;
 }
-.nnx-row:hover .nnx-stamp,
-.nnx-row:focus-within .nnx-stamp {
+.nnx-row:hover .nnx-time,
+.nnx-row:focus-within .nnx-time {
   display: none;
 }
 .nnx-row:hover .nnx-actions,
@@ -1083,97 +1025,67 @@ body .nn-dropdown.nnx-panel {
   display: inline-flex;
 }
 .nnx-panel .nnx-act {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 .nnx-panel .nnx-act:hover {
-  color: var(--emerald-text);
-  background: var(--emerald-bg);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
 }
 .nnx-title {
-  font-size: var(--type-card-title-size);
-  font-weight: 500;
-  letter-spacing: var(--type-card-title-tracking);
-  line-height: var(--type-card-title-leading);
-  color: var(--text-secondary);
-  white-space: nowrap;
+  display: block;
   overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  text-decoration: none;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.nnx-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.nnx-title:focus-visible {
+  outline: none;
+}
+.nnx-title:focus-visible::after {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
 }
 .nnx-row--unread .nnx-title {
   font-weight: 700;
   color: var(--text-primary);
 }
 .nnx-desc {
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.nnx-chips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.nnx-sev {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-secondary);
-  background: transparent;
+  font-size: 0.8125rem;
+  line-height: 1.4;
   color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
-}
-.nnx-sev--high {
-  color: var(--negative);
-  background: var(--negative-bg);
-  border-color: var(--negative-border);
-}
-.nnx-sev--watch {
-  color: var(--warning);
-  background: var(--warning-bg);
-  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
-}
-.nnx-tickers {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.nnx-tsep {
-  margin: 0 6px;
-  color: var(--text-faint);
-}
-.nnx-tmore {
-  margin-left: 6px;
-  color: var(--text-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .nnx-friend {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 6px;
 }
 .nnx-friend-accept,
 .nnx-friend-decline {
-  padding: 4px 12px;
+  height: 26px;
+  padding: 0 12px;
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -1184,15 +1096,15 @@ body .nn-dropdown.nnx-panel {
     border-color 0.15s ease;
 }
 .nnx-friend-accept {
-  border: none;
+  border: 0;
   background: var(--emerald);
-  color: var(--bg-primary);
+  color: var(--color-on-primary);
 }
 .nnx-friend-accept:hover {
   background: var(--emerald-hover);
 }
 .nnx-friend-decline {
-  border: 1px solid var(--border-input);
+  border: 1px solid var(--nnx-edge);
   background: transparent;
   color: var(--text-secondary);
 }
@@ -1205,27 +1117,20 @@ body .nn-dropdown.nnx-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 40px 20px;
+  gap: 4px;
+  padding: 36px 20px;
   text-align: center;
 }
 .nnx-empty-tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
   margin-bottom: 4px;
-  border-radius: 50%;
-  background: var(--emerald-bg);
-  color: var(--emerald-text);
   font-size: 1.25rem;
+  color: var(--emerald-text);
 }
 .nnx-empty-title {
   margin: 0;
-  font-size: var(--type-card-title-size);
-  font-weight: var(--type-card-title-weight);
-  letter-spacing: var(--type-card-title-tracking);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 .nnx-empty-line {
@@ -1236,53 +1141,59 @@ body .nn-dropdown.nnx-panel {
 
 /* Loading */
 .nnx-skel {
+  padding: 6px 0;
+}
+.nnx-skel-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
+  gap: 7px;
+  padding: 12px var(--nnx-pad) 12px 28px;
 }
-.nnx-skel-card {
-  display: flex;
-  gap: 14px;
-  padding: 14px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-primary);
-}
-.nnx-skel-lines {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.nnx-skel-row + .nnx-skel-row {
+  border-top: 1px solid var(--nnx-rule);
 }
 
-/* 6 · Footer */
+/* 4 · Footer: a text link, not a button */
 .nnx-footer {
   flex-shrink: 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-secondary);
+  border-top: 1px solid var(--nnx-rule);
 }
 .nnx-center-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-  height: 52px;
-  border-radius: var(--radius-lg);
-  background: var(--emerald-bg);
-  border: 1px solid var(--emerald-border);
-  font-size: 0.875rem;
-  font-weight: 700;
+  gap: 6px;
+  height: 40px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--emerald-text);
   text-decoration: none;
   transition: background 0.15s ease;
 }
 .nnx-center-link:hover {
-  background: var(--emerald-bg-hover);
+  background: var(--nnx-wash);
 }
 .nnx-center-link:focus-visible {
   outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+
+/* Mobile sheet: the link an expanded notification opens. */
+.nn-item-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.nn-item-open:focus-visible {
+  outline: 2px solid var(--emerald);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1290,9 +1201,7 @@ body .nn-dropdown.nnx-panel {
   .nn-mobile-panel {
     animation: none;
   }
-  .nnx-live,
   .nnx-row,
-  .nnx-markall,
   .nnx-seg-btn,
   .nnx-center-link,
   .nn-bell-btn.nn-has-unread :is(i, .nn-bell-glyph) {
