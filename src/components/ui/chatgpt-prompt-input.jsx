@@ -179,7 +179,7 @@ const MicIcon = (props) => (
   </svg>
 );
 
-/** Stock research tools (Company Research page) */
+/** Stock research tools (US Equities page) */
 export const EZANA_RESEARCH_TOOLS = [
   {
     id: 'grpv',
@@ -485,7 +485,7 @@ export function CentaurPromptBox({
                 <PopoverContent side="top" align="start">
                   <div className="flex flex-col gap-0.5 max-h-64 overflow-y-auto">
                     <p className="text-[10px] uppercase tracking-wider text-zinc-500 px-2 py-1">
-                      From Company Research
+                      From US Equities
                     </p>
                     {EZANA_RESEARCH_TOOLS.map((tool) => (
                       <button

@@ -117,7 +117,7 @@ function SettingsInner() {
     const PAGE_NAMES = {
       '/home': 'Home',
       '/home-dashboard': 'Dashboard',
-      '/company-research': 'Company Research',
+      '/company-research': 'US Equities',
       '/market-analysis': 'Market Analysis',
       '/trading/mock': 'Mock Trading',
       '/ezana-echo': 'Ezana Echo',

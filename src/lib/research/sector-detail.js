@@ -1,5 +1,5 @@
 /**
- * Sector modal data (Company Research, Sector Performance). Server only.
+ * Sector modal data (US Equities, Sector Performance). Server only.
  *
  * Oct 30 root cause: the screener returned the sector's stocks (141 for
  * Utilities) but the bulk quote endpoint answers 402 on this data plan, so

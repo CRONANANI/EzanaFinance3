@@ -74,7 +74,7 @@ export const CHECKLIST_STAGES = [
       {
         id: 'explore.company_profile',
         title: 'Open a company profile',
-        desc: 'Review metrics, peers and news in Company Research',
+        desc: 'Review metrics, peers and news in US Equities',
         href: '/company-research',
       },
       {

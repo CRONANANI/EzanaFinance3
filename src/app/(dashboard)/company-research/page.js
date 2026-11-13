@@ -452,7 +452,7 @@ function CompanyResearchPageInner() {
      filter icon, on every view. The h1 stays for screen readers only. */
   const searchPill = (
     <>
-      <h1 className="crx-visually-hidden">Company and Portfolio Research</h1>
+      <h1 className="crx-visually-hidden">US Equities</h1>
       <div
         className="company-search-wrapper crx-search"
         ref={searchRef}

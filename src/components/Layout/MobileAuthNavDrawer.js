@@ -122,7 +122,7 @@ function buildNavGroups(isOrgUser) {
         description: 'Congressional trades',
       },
       {
-        label: 'Company & portfolio research',
+        label: 'US Equities',
         href: '/company-research',
         icon: BarChart3,
         description: 'Stocks & models',
@@ -333,7 +333,7 @@ function buildPartnerNavGroups() {
           description: 'Congressional trades',
         },
         {
-          label: 'Company & portfolio research',
+          label: 'US Equities',
           href: '/company-research',
           icon: BarChart3,
           description: 'Analysis',

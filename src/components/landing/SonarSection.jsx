@@ -3613,7 +3613,7 @@ export function SonarSection({
                         {typed < 0 && reportTicker ? (
                           /* Nov 3: a company ping offers the sector analysis
                              report with comparables. It lives in the app
-                             (Company Research, Peers), so the button opens
+                             (US Equities, Peers), so the button opens
                              the sign-in / sign-up gate, which then lands the
                              visitor on that report. */
                           <button

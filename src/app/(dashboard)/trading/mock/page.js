@@ -195,7 +195,7 @@ function MockTradingPageInner() {
   // Use hook portfolio; fall back to fresh if not loaded yet
   const portfolio = portfolioFromHook ?? freshPortfolio();
 
-  /* Same symbol search as Company Research page (Finnhub via /api/finnhub/search) */
+  /* Same symbol search as US Equities page (Finnhub via /api/finnhub/search) */
   const {
     query: searchQuery,
     setQuery: setSearchQuery,
@@ -344,7 +344,7 @@ function MockTradingPageInner() {
     [clearSuggestions, setSearchQuery],
   );
 
-  /** Enter a ticker directly (same behavior as Company Research search bar) */
+  /** Enter a ticker directly (same behavior as US Equities search bar) */
   const submitSearchAsTicker = useCallback(() => {
     const q = searchQuery.trim();
     if (!q) return;

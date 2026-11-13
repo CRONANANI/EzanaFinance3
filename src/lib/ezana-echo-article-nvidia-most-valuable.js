@@ -501,7 +501,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'paragraph',
-      text: "For investors using Ezana, the Company Research page provides real-time Nvidia fundamentals via Alpha Vantage, P/E, EPS, revenue growth, and margins update live. The Comparable Company Analysis model benchmarks NVDA against semiconductor peers (AMD, AVGO, QCOM, TXN, INTC) with peer-median multiples and an implied valuation range. The Earnings Call Analyzer surfaces sentiment and forward guidance from Jensen Huang's quarterly commentary. And the Quant Lab page offers a live Technical Scanner with RSI, MACD, and Bollinger Band signals on NVDA in real time. The #2 ranking is a snapshot, the tools to monitor whether it persists or reverses are already on the platform.",
+      text: "For investors using Ezana, the US Equities page provides real-time Nvidia fundamentals via Alpha Vantage, P/E, EPS, revenue growth, and margins update live. The Comparable Company Analysis model benchmarks NVDA against semiconductor peers (AMD, AVGO, QCOM, TXN, INTC) with peer-median multiples and an implied valuation range. The Earnings Call Analyzer surfaces sentiment and forward guidance from Jensen Huang's quarterly commentary. And the Quant Lab page offers a live Technical Scanner with RSI, MACD, and Bollinger Band signals on NVDA in real time. The #2 ranking is a snapshot, the tools to monitor whether it persists or reverses are already on the platform.",
     },
   ],
   globeRail: {

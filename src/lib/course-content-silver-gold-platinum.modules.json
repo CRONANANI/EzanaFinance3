@@ -214,13 +214,13 @@
       },
       {
         "title": "Connecting to the Platform",
-        "content": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes.\n\nThe Comparable Company Analysis model applies peer-group median multiples to your target's financials, giving you an implied valuation range. Use this alongside your own DCF estimate for triangulation.\n\nIsichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E, combine fundamental analysis with technical timing and risk management.",
+        "content": "On Ezana, the US Equities page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes.\n\nThe Comparable Company Analysis model applies peer-group median multiples to your target's financials, giving you an implied valuation range. Use this alongside your own DCF estimate for triangulation.\n\nIsichenko's advice applies directly: \"due to being widely followed, and therefore subject to crowding, these themes are also used as risk factors.\" Don't just screen for low P/E, combine fundamental analysis with technical timing and risk management.",
         "shortTitle": "Connecting to the Platform",
         "estimatedMinutes": 3,
         "modules": [
           {
             "type": "paragraphs",
-            "body": "On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes."
+            "body": "On Ezana, the US Equities page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes."
           },
           {
             "type": "paragraphs",

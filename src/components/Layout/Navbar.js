@@ -290,7 +290,7 @@ export function Navbar() {
       items: [
         {
           id: 22,
-          title: 'Company & Portfolio Research',
+          title: 'US Equities',
           description: 'Stock analysis + portfolio modeling',
           url: '/company-research',
           icon: 'bi-bar-chart-line',

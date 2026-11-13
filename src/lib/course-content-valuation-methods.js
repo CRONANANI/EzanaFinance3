@@ -20,7 +20,7 @@ const VALUATION_METHODS_CONTENT = {
       href: '/company-research?model=valuation',
       label: 'Open the Valuation Method Selector',
       blurb:
-        'Search any ticker in Company Research and the selector classifies it, names the primary method and its cross checks, and opens the matching Ezana model.',
+        'Search any ticker in US Equities and the selector classifies it, names the primary method and its cross checks, and opens the matching Ezana model.',
     },
     sections: [
       {
@@ -151,7 +151,7 @@ const VALUATION_METHODS_CONTENT = {
       {
         title: 'Putting it together in Ezana',
         content:
-          "In practice, pick the primary method from the company type, run it, then run at least one cross check that uses a different source of value. When the two disagree, the disagreement is information: it tells you which assumption the answer depends on.\n\nEzana's Valuation Method Selector in Company Research does the first step for you. Search a ticker and it reads the company's industry and financial profile, names the primary method and cross checks, explains why, and opens the matching Ezana model: the interactive DCF for cash flow businesses, the comps model for multiples, and a built-in dividend discount calculator for banks and utilities.",
+          "In practice, pick the primary method from the company type, run it, then run at least one cross check that uses a different source of value. When the two disagree, the disagreement is information: it tells you which assumption the answer depends on.\n\nEzana's Valuation Method Selector in US Equities does the first step for you. Search a ticker and it reads the company's industry and financial profile, names the primary method and cross checks, explains why, and opens the matching Ezana model: the interactive DCF for cash flow businesses, the comps model for multiples, and a built-in dividend discount calculator for banks and utilities.",
         callout:
           'Educational content only. Not investment advice. Every method is only as good as its inputs.',
       },

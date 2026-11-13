@@ -63,7 +63,7 @@ Value: compare your intrinsic value estimate to market price. Graham recommended
       },
       {
         title: 'Connecting to the Platform',
-        content: `On Ezana, the Company Research page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes.
+        content: `On Ezana, the US Equities page provides real-time fundamental data via Alpha Vantage: P/E, EPS, revenue growth, margins, and free cash flow. The 3-Statement Model projects income statement, balance sheet, and cash flow forward, exactly the integrated analysis Khraisha describes.
 
 The Comparable Company Analysis model applies peer-group median multiples to your target's financials, giving you an implied valuation range. Use this alongside your own DCF estimate for triangulation.
 

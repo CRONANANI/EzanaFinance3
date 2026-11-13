@@ -97,6 +97,31 @@
   gap: 1rem;
 }
 
+/* Nov 13 2026: card content starts at the page edge, in line with the
+   search pill above and the logo in the top navigation. On the flat canvas
+   a card has no surface, so its side padding only read as an indent. */
+.crx-canvas .mpv-root.mpv-ledger .mcs-card {
+  padding-inline: 0;
+  border-inline-width: 0;
+}
+
+/* With no side padding, the gap alone separates two cards on one row. */
+.crx-canvas .mpv-grid {
+  column-gap: 2.5rem;
+}
+
+/* Sector rows: text at the edge. The hover wash still extends a little
+   past the text on both sides, so a hovered row does not look clipped. */
+.crx-canvas .mpv-root.mpv-ledger .shm-sector-row {
+  padding-inline: 0;
+}
+
+.crx-canvas .mpv-root.mpv-ledger .shm-sector-row:hover {
+  box-shadow:
+    -6px 0 0 var(--emerald-bg),
+    6px 0 0 var(--emerald-bg);
+}
+
 .crx-canvas .mpv-body-text {
   color: var(--text-secondary);
 }

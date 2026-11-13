@@ -6,7 +6,7 @@ import { getSectorDetail } from '@/lib/research/sector-detail';
  * GET /api/market-data/sector-detail?sector=Utilities&period=1D
  * (`range` is accepted as an alias of `period`.)
  *
- * The Company Research sector modal: top 10 performers in the sector for the
+ * The US Equities sector modal: top 10 performers in the sector for the
  * period, and the latest sector news. All logic and the Oct 30 root cause
  * live in @/lib/research/sector-detail; provider keys stay server-side.
  */

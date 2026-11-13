@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ValuationMethodSelector: Company Research model card.
+ * ValuationMethodSelector: US Equities model card.
  *
  * Classifies the selected ticker into a valuation archetype (industry plus a
  * transparent financial screen), names the primary method and cross checks,

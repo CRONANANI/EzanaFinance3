@@ -33,7 +33,7 @@ const REGULAR_TUTORIAL_STEPS = [
     icon: '✅',
   },
   {
-    title: 'Company Research',
+    title: 'US Equities',
     description:
       'Search any public company to see financials, AI analysis models (DCF, 3-Statement, Comps), earnings transcripts, and analyst ratings, all powered by real-time data.',
     target: null,

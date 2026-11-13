@@ -2,11 +2,11 @@
  * Valuation Method Map: single source of truth for "which valuation method
  * fits which kind of company". Consumed by:
  *   - the Learning Center course stocks-intermediate-9 (comparison table)
- *   - the Company Research "Valuation Method Selector" model card
+ *   - the US Equities "Valuation Method Selector" model card
  *
  * Rules of thumb, not rules of law. Every archetype lists a primary method,
  * the cross-checks a professional would run next to it, and the reason the
- * primary method fits. `ezanaModel` points at an existing Company Research
+ * primary method fits. `ezanaModel` points at an existing US Equities
  * model id when Ezana already ships a tool for that method.
  *
  * Educational content only. Not investment advice.
