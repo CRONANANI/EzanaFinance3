@@ -86,6 +86,7 @@ import {
 } from './SonarCountryStack';
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
+import { SonarAnswerQueryBar } from '@/components/sonar/SonarAnswerQueryBar';
 import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
 import { SonarCongressActivityStack } from './SonarCongressActivityStack';
 import { SonarInsiderBuyingStack } from './SonarInsiderBuyingStack';
@@ -2228,16 +2229,23 @@ export function SonarSection({
      it for the nav container. Removed on unmount so no other page sees it. */
   useEffect(() => {
     if (!isPage) return undefined;
-    const input = inputRef.current;
     const band = bandRef.current;
-    if (!input || !band) return undefined;
+    if (!band) return undefined;
     const body = document.body;
     let raf = 0;
     const publish = () => {
       raf = 0;
+      /* Nov 13: read the field on every pass. On an answer board the band's own bar gives way
+         to the workspace's query bar (centre column), so there is no band field to line up
+         with: the nav keeps the page padding, which the answered page matches. */
+      const input = inputRef.current;
       /* Hidden behind deep research: nothing to line up with, and a zero
          rect would pull the nav logo to the edge. */
-      if (!band.offsetParent && getComputedStyle(band).position !== 'fixed') {
+      if (
+        !input ||
+        !input.isConnected ||
+        (!band.offsetParent && getComputedStyle(band).position !== 'fixed')
+      ) {
         body.style.removeProperty('--snrp-logo-x');
         body.style.removeProperty('--snrp-nav-right');
         return;
@@ -2810,8 +2818,23 @@ export function SonarSection({
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     bandRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    setQueryValue(q);
     runPing(q);
   };
+
+  /* Nov 13: the query bar at the top of an answer board's centre column. The band's own
+     submit path (runPing: auth, quota and the loading screen) is unchanged. */
+  const answerBar = anyBoard ? (
+    <SonarAnswerQueryBar
+      value={queryValue}
+      onChange={(v) => {
+        userTookOverRef.current = true;
+        setQueryValue(v);
+      }}
+      onSubmit={(q) => runPing(q)}
+      pending={pinging}
+    />
+  ) : null;
 
   const runDeep = () => {
     const q = live?.rawQuery || live?.query;
@@ -3188,87 +3211,91 @@ export function SonarSection({
                 the results band auto-pings that query. The form's action and
                 method mirror that, so it works before hydration too. The
                 /datasets results band (isPage) keeps its in-place ping. */}
-              <form
-                ref={formRef}
-                className="snr-pingbar"
-                action={isPage ? '/sonar' : '/datasets'}
-                method="get"
-                role="search"
-                onSubmit={isPage ? onPingSubmit : onLandingSubmit}
-                inert={gateOpen ? '' : undefined}
-              >
-                <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
-                <label className="snr-label-sr" htmlFor="snr-ping-input">
-                  Ping a company, ticker, politician or bill
-                </label>
-                <input
-                  ref={inputRef}
-                  id="snr-ping-input"
-                  className="snr-input"
-                  type="search"
-                  name="q"
-                  placeholder=" "
-                  autoComplete="off"
-                  value={queryValue}
-                  onChange={(e) => {
-                    userTookOverRef.current = true;
-                    hideDemoCursor();
-                    setQueryValue(e.target.value);
-                  }}
-                  onFocus={(e) => {
-                    /* First touch on the landing band: select whatever the
+              {/* Nov 13: on an answer board the bar is the workspace's query bar at the top of the
+                centre column (answerBar below), same submit path. */}
+              {anyBoard ? null : (
+                <form
+                  ref={formRef}
+                  className="snr-pingbar"
+                  action={isPage ? '/sonar' : '/datasets'}
+                  method="get"
+                  role="search"
+                  onSubmit={isPage ? onPingSubmit : onLandingSubmit}
+                  inert={gateOpen ? '' : undefined}
+                >
+                  <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
+                  <label className="snr-label-sr" htmlFor="snr-ping-input">
+                    Ping a company, ticker, politician or bill
+                  </label>
+                  <input
+                    ref={inputRef}
+                    id="snr-ping-input"
+                    className="snr-input"
+                    type="search"
+                    name="q"
+                    placeholder=" "
+                    autoComplete="off"
+                    value={queryValue}
+                    onChange={(e) => {
+                      userTookOverRef.current = true;
+                      hideDemoCursor();
+                      setQueryValue(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      /* First touch on the landing band: select whatever the
                        demo typed, so the visitor's first keystroke replaces
                        it and Ping alone still searches the demo query. */
-                    if (!isPage && !userTookOverRef.current) e.currentTarget.select();
-                    userTookOverRef.current = true;
-                    hideDemoCursor();
-                  }}
-                />
-                {/* Decorative demo narration for the pristine loop only. Once
+                      if (!isPage && !userTookOverRef.current) e.currentTarget.select();
+                      userTookOverRef.current = true;
+                      hideDemoCursor();
+                    }}
+                  />
+                  {/* Decorative demo narration for the pristine loop only. Once
                   the real field has content, whether the demo typed it or the
                   visitor did, the overlay would double it. */}
-                {/* Oct 18: the caret only. The overlay used to type its own
+                  {/* Oct 18: the caret only. The overlay used to type its own
                   "Lockheed Martin" on the CSS loop before the real demo typed
                   it again into the field, so the query appeared twice. */}
-                {queryValue ? null : (
-                  <span className="snr-demo" aria-hidden="true">
-                    <span className="snr-caret snr-anim-caret" />
-                  </span>
-                )}
-                <button
-                  ref={pingBtnRef}
-                  type="submit"
-                  className={`snr-ping-btn${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
-                  disabled={pinging}
-                >
-                  <span className="snr-btn-label">
-                    <span className={`snr-btn-text${pinging ? ' is-active' : ''}`}>
-                      <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
-                      Pinging
+                  {queryValue ? null : (
+                    <span className="snr-demo" aria-hidden="true">
+                      <span className="snr-caret snr-anim-caret" />
                     </span>
-                    <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
-                  </span>
-                </button>
-                {/* Position and opacity are written by humanPointer() while
+                  )}
+                  <button
+                    ref={pingBtnRef}
+                    type="submit"
+                    className={`snr-ping-btn${btnPressed ? ' snr-ping-btn--pressed' : ''}`}
+                    disabled={pinging}
+                  >
+                    <span className="snr-btn-label">
+                      <span className={`snr-btn-text${pinging ? ' is-active' : ''}`}>
+                        <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
+                        Pinging
+                      </span>
+                      <span className={`snr-btn-text${pinging ? '' : ' is-active'}`}>Ping</span>
+                    </span>
+                  </button>
+                  {/* Position and opacity are written by humanPointer() while
                   cursorLive; React only owns the class. Oct 18: there is no
                   CSS keyframe pointer any more. Its path was fixed pixels
                   (it landed ~116px right of Ping at 1440 wide) and it flew
                   while the real demo typed, so the visitor saw it sail past
                   the button before the real pointer started over from the
                   text. Hidden until humanPointer() drives it. */}
-                <svg
-                  ref={cursorRef}
-                  className={`snr-cursor${cursorLive ? ' snr-cursor--demo' : ''}`}
-                  viewBox="0 0 24 24"
-                  fill="#ffffff"
-                  stroke="#04261c"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M5 3l14 8.5-6.2 1.4L9.7 19z" />
-                </svg>
-              </form>
+                  <svg
+                    ref={cursorRef}
+                    className={`snr-cursor${cursorLive ? ' snr-cursor--demo' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="#ffffff"
+                    stroke="#04261c"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 3l14 8.5-6.2 1.4L9.7 19z" />
+                  </svg>
+                </form>
+              )}
 
               <div className="snr-synth" inert={gateOpen ? '' : undefined}>
                 {/* Title only. The beacon dot, the hairline rule and the
@@ -4168,9 +4195,9 @@ export function SonarSection({
             charts, transmission map, key chart and indicators, scenarios, data
             not available), packed so no row leaves a gap. Inside the band so the
             --snr-* tokens and card shells hold. */}
+          {/* Nov 13: the resources belt gives way to the Desk Summary's Evidence and sources. */}
           {board ? (
             <>
-              <SonarSourceBelt live={live} />
               <SonarStackBoundary key={`board-${live?.rawQuery || live?.query || 'none'}`}>
                 <SonarCountryBoard
                   live={live}
@@ -4178,6 +4205,7 @@ export function SonarSection({
                   onDeep={runDeep}
                   onRun={runWorkspacePing}
                   deepNote={deepNoteFrom(bandEstimate)}
+                  queryBar={answerBar}
                   deepAction={deepAction || afterAnswer}
                   news={railNews}
                   extra={stackTop}
@@ -4199,7 +4227,6 @@ export function SonarSection({
           {/* Nov 6 (/datasets): every other answer, on the same board. */}
           {pingBoard ? (
             <>
-              <SonarSourceBelt live={live} />
               <SonarStackBoundary key={`pboard-${live?.rawQuery || live?.query || 'none'}`}>
                 <SonarPingBoard
                   live={live}
@@ -4209,6 +4236,7 @@ export function SonarSection({
                   onDeep={runDeep}
                   onRun={runWorkspacePing}
                   deepNote={deepNoteFrom(bandEstimate)}
+                  queryBar={answerBar}
                   deepAction={deepAction || afterAnswer}
                   notice={
                     live?.understood && !pinging ? (

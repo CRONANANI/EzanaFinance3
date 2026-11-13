@@ -24,7 +24,6 @@
 
 import { useId, useMemo, useState } from 'react';
 import { VisuallyHidden } from '@/components/ds';
-import { SonarSourceBelt } from '@/components/landing/SonarSourceBelt';
 import { EVIDENCE_CATEGORIES } from '@/lib/sonar/engine/domains';
 import { boardSpans } from '@/lib/sonar/country-board';
 import {
@@ -47,6 +46,9 @@ import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sona
 import { planVisualizations } from '@/lib/sonar/insight/viz-plan';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { SonarDeskSummary, SonarRelatedQuestions } from '@/components/sonar/SonarDeskSummary';
+import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-summary';
+import { benchmarkFor } from '@/lib/sonar/market-context';
 import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
 import {
   relatedFromEvidence,
@@ -94,69 +96,67 @@ function Eyebrow({ id, icon, children }) {
 /* Nov 7: the answer itself is the card's title. Eyebrow and the deep research action on one
    line, the headline across the card, a meta line (data date, lead source, sources used),
    the summary, then the key points in two columns on a wide card. */
-function Executive({ report, rank, deepAction, onCite, meta = [] }) {
-  const id = useId();
-  const pointsId = useId();
-  const headline = boardHeadline(report, rank);
+function Executive({ report, run, rank, deepAction, onCite, meta = [], depth, sources, market }) {
+  const headline = run?.headline || report?.headline || boardHeadline(report, rank);
   const summary = boardSummary(report, rank);
   const bullets = boardBullets(report, rank);
+  const paras = summaryParas(run?.summary || report?.summary);
+  /* An older run has no answeredAt: it was produced when it finished (start + duration). */
+  const started = Date.parse(run?.researchMetadata?.startedAt || '');
+  const answeredAt =
+    run?.answeredAt ||
+    (Number.isFinite(started) && Number.isFinite(run?.researchMetadata?.durationMs)
+      ? new Date(started + run.researchMetadata.durationMs).toISOString()
+      : null);
   return (
-    <section className="srb-card srb-exec" aria-labelledby={id}>
-      <div className="srb-exec-top">
-        <span className="srb-eyebrow">
-          <i className="bi bi-broadcast" aria-hidden="true" />
-          Desk summary
-        </span>
-        {deepAction ? <div className="srb-exec-deep">{deepAction}</div> : null}
-      </div>
-      <h2 id={id} className="srb-exec-title">
-        {headline || 'Research answer'}
-      </h2>
-      {meta.length ? (
-        <ul className="srb-exec-meta" aria-label="About this answer">
-          {meta.map((m) => (
-            <li key={m.id}>
-              <i className={`bi ${m.icon}`} aria-hidden="true" />
-              {m.text}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {summary ? (
-        <p className="srb-lede">
-          {summary}{' '}
-          {report?.executiveConclusion?.markers?.length ? (
-            <Cites markers={report.executiveConclusion.markers} onCite={onCite} />
-          ) : null}
-        </p>
-      ) : null}
-      {report?.conclusionLimits ? (
-        <p className="srb-limits">
-          <i className="bi bi-exclamation-circle" aria-hidden="true" />
-          <span>
-            <span className="srb-limits-label">Not established: </span>
-            {report.conclusionLimits}
-          </span>
-        </p>
-      ) : null}
-      {bullets.length ? (
-        <div className="srb-exec-points">
-          <h3 id={pointsId} className="srb-exec-label">
-            Key points
-          </h3>
-          <ul className="srb-bullets" aria-labelledby={pointsId}>
-            {bullets.map((b, i) => (
-              <li key={i} className={`is-${b.kind}`}>
-                {b.text}
-                {b.kind === 'derived' ? (
-                  <VisuallyHidden> (calculated from the ranking)</VisuallyHidden>
-                ) : null}
+    <SonarDeskSummary
+      mode={depth === 'deep' ? 'deep' : 'standard'}
+      answeredAt={answeredAt}
+      subhead={
+        meta.length ? (
+          <ul className="srb-exec-meta" aria-label="About this answer">
+            {meta.map((m) => (
+              <li key={m.id}>
+                <i className={`bi ${m.icon}`} aria-hidden="true" />
+                {m.text}
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-    </section>
+        ) : null
+      }
+      headline={headline || null}
+      question="Research answer"
+      summary={paras}
+      body={
+        paras.length ? null : summary ? (
+          <p className="srb-lede">
+            {summary}{' '}
+            {report?.executiveConclusion?.markers?.length ? (
+              <Cites markers={report.executiveConclusion.markers} onCite={onCite} />
+            ) : null}
+          </p>
+        ) : null
+      }
+      after={
+        report?.conclusionLimits ? (
+          <p className="srb-limits">
+            <i className="bi bi-exclamation-circle" aria-hidden="true" />
+            <span>
+              <span className="srb-limits-label">Not established: </span>
+              {report.conclusionLimits}
+            </span>
+          </p>
+        ) : null
+      }
+      footer={deepAction ? <div className="srb-exec-deep">{deepAction}</div> : null}
+      takeaways={deskTakeaways(
+        run?.takeaways || report?.takeaways,
+        bullets.map((b) => b.text),
+      )}
+      sources={deskSourceRows(sources)}
+      sourceCount={sources.length}
+      market={market}
+    />
   );
 }
 
@@ -836,6 +836,8 @@ export default function ResearchBoard({
      research cost and quota line goes to the left rail's card. */
   onRun = null,
   deepNote = null,
+  /* Nov 13: the workspace's query bar (the run's ping bar), for the top of the centre column. */
+  queryBar = null,
 }) {
   const unlocked = Boolean(access?.unlocked);
   const report = state.report;
@@ -863,6 +865,8 @@ export default function ResearchBoard({
   const lines = methodologyLines({ rank, metrics, run, limitations, sourceLabels });
   const groups = evidenceGroups(evidence, EVIDENCE_CATEGORIES);
   const resources = researchResources(state, { sourceLabels });
+  /* Nov 13: every resource the run used, for the Desk Summary's true sources count. */
+  const allResources = researchResources(state, { sourceLabels, max: Infinity });
   const meta = execMeta({ rank, resources, evidence });
   /* Nov 7: a congressional activity run ("How has disclosed congressional trading changed?")
      carries Ezana's computed counts as a panel. Its board leads with them (executive answer,
@@ -876,21 +880,32 @@ export default function ResearchBoard({
   const valuationModel = state.panels?.valuation || run?.valuation || null;
   const equity = Boolean(run?.equity || state.plan?.spec?.equity || valuationModel);
   const vSnap = !rank && valuationModel ? snapshotFromModel(valuationModel) : null;
-  const side = rank || vSnap;
+  /* Nov 13: Market Context for an answer about one listed company. */
+  const subjectSpec = state.plan?.spec?.subject || null;
+  const marketTicker =
+    equity && subjectSpec?.kind === 'company' && subjectSpec?.id ? String(subjectSpec.id) : null;
+  const market = marketTicker
+    ? { symbol: marketTicker, benchmark: benchmarkFor({ ticker: marketTicker }) }
+    : null;
 
   const generic = [
+    /* Nov 13: the Desk Summary takes the full row; the snapshot moves to the row under it. */
     {
       id: 'exec',
       section: 'answer',
-      span: side ? 7 : 12,
-      min: side ? 6 : 12,
+      span: 12,
+      min: 12,
       node: (
         <Executive
           report={report}
+          run={run}
           rank={rank}
           deepAction={deepAction}
           onCite={onCite}
           meta={meta}
+          depth={state.plan?.spec?.depth}
+          sources={allResources}
+          market={market}
         />
       ),
     },
@@ -1041,6 +1056,8 @@ export default function ResearchBoard({
     { onRun },
   );
   const related = relatedFromEvidence(evidence);
+  /* Nov 13: related questions from the run itself (none on an older run). */
+  const relatedQs = (run?.related?.length ? run.related : report?.related) || [];
   const rail =
     steps.length || related.length ? (
       <>
@@ -1058,9 +1075,16 @@ export default function ResearchBoard({
       equity={equity}
       rail={rail}
       deepNote={deepNote}
+      top={
+        queryBar || relatedQs.length ? (
+          <>
+            {queryBar}
+            <SonarRelatedQuestions questions={relatedQs} onAsk={onRun} />
+          </>
+        ) : null
+      }
     >
       <div className="srb" role="region" aria-label="Research answer">
-        {resources.length ? <SonarSourceBelt items={resources} /> : null}
         <div className="srb-grid">
           {cells.map((c) => (
             <div

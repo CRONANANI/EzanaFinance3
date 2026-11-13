@@ -15,6 +15,12 @@ Every Sonar answer is one board with a side navigation. The approved mock-ups an
 - `src/components/sonar/SonarAnswerFrame.jsx`: the three-column research workspace around every
   board (left rail: Research menu, sections, deep research card; right rail via its `rail` prop).
 - `src/components/sonar/SonarWorkspaceRail.jsx`: the right rail's Next steps and Related research.
+- `src/components/sonar/SonarDeskSummary.jsx`: the Desk Summary card every board opens with, the
+  related questions row and the loading skeleton; `SonarMarketContext.jsx` (one listed company
+  against its benchmark) and `SonarAnswerQueryBar.jsx` (the centre column's query bar).
+- `src/lib/sonar/answer-extras.js`: validation of the answer's `headline`, `summary`, `takeaways`
+  and `related`, and the quick ping writer's trailer; `src/lib/sonar/desk-summary.js`: the card's
+  view helpers. `GET /api/sonar/market-context` serves the closes.
 - `src/lib/sonar/workspace.js`: next steps, follow-up context, the attachment guard, share tokens
   and the public snapshot whitelist.
 - `src/lib/sonar/market-context.js`: the Market Context card's maths (subject against a benchmark).

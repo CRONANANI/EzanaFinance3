@@ -1,0 +1,114 @@
+/* SonarAnswerQueryBar (Nov 13 2026): the query bar at the top of the centre column. Scoped sqb-.
+   The one Sonar surface that keeps a border: emerald at about 70% with a soft emerald glow.
+   Reads the workspace's --san-* layer with app-token fallbacks. Tokens only. */
+
+.sqb {
+  --sqb-emerald: var(--san-emerald, var(--emerald));
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 920px;
+  min-height: 56px;
+  margin: 0 auto;
+  padding: 0 6px 0 16px;
+  border: 1px solid color-mix(in srgb, var(--sqb-emerald) 70%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--san-panel, var(--bg-secondary));
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--sqb-emerald) 10%, transparent),
+    0 8px 24px color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+}
+.sqb:focus-within {
+  border-color: var(--sqb-emerald);
+}
+.sqb .sqb-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.sqb .sqb-icon {
+  flex: none;
+  color: var(--san-accent, var(--emerald-text));
+}
+.sqb .sqb-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--san-text, var(--text-primary));
+  outline: none;
+}
+.sqb .sqb-input::placeholder {
+  font-weight: 400;
+  color: var(--san-faint, var(--text-muted));
+}
+.sqb .sqb-clear {
+  flex: none;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--san-muted, var(--text-secondary));
+  font: inherit;
+  font-size: var(--type-caption-size);
+  cursor: pointer;
+}
+.sqb .sqb-clear:hover {
+  color: var(--san-text, var(--text-primary));
+}
+.sqb .sqb-ping {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--sqb-emerald);
+  color: color-mix(in srgb, black 86%, var(--sqb-emerald));
+  font: inherit;
+  font-size: var(--type-body-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+.sqb .sqb-ping:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+.sqb .sqb-clear:focus-visible,
+.sqb .sqb-ping:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.sqb .sqb-spin {
+  animation: sqb-spin 0.9s linear infinite;
+}
+@keyframes sqb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sqb .sqb-spin {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .sqb {
+    padding-left: 12px;
+  }
+  .sqb .sqb-ping {
+    padding: 0 12px;
+  }
+}

@@ -36,20 +36,28 @@ import {
   runnableSteps,
 } from '@/components/sonar/workspace-rail-helpers';
 import { nextSteps } from '@/lib/sonar/workspace';
-import { boardSpans, sourceCoverage, datasetEvidence, hostOf } from '@/lib/sonar/country-board';
+import {
+  boardSpans,
+  sourceCoverage,
+  datasetEvidence,
+  hostOf,
+  pingResources,
+} from '@/lib/sonar/country-board';
 import {
   pingKpis,
   topMatches,
   answerParagraphs,
   companyBrief,
   companyIdentity,
-  splitCitations,
   briefFooter,
   exploreValuationAction,
   leadsWithVisual,
 } from '@/lib/sonar/ping-board';
+import { SonarDeskSummary, SonarRelatedQuestions } from '@/components/sonar/SonarDeskSummary';
+import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-summary';
+import { benchmarkFor } from '@/lib/sonar/market-context';
 import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
-import { ValuationSnapshot, fmtDate } from '@/components/sonar/valuation/ValuationSnapshot';
+import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
 import { Eyebrow, Coverage, Evidence } from './SonarCountryBoard';
 import './country-intel.css';
 import './sonar-country-board.css';
@@ -57,155 +65,108 @@ import './sonar-ping-board.css';
 
 const VISUAL_ID = 'snr-pb-visual';
 
-function Executive({ live, answer, deepAction, notice }) {
-  const id = useId();
-  const paras = answerParagraphs(live?.answer);
-  const toVisual = () => {
-    const el = document.getElementById(VISUAL_ID);
-    if (!el) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-    el.focus({ preventScroll: true });
-  };
+function toVisual() {
+  const el = document.getElementById(VISUAL_ID);
+  if (!el) return;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  el.focus({ preventScroll: true });
+}
+
+const remainingLine = (live) =>
+  typeof live?.remaining === 'number'
+    ? `${live.remaining} free ping${live.remaining === 1 ? '' : 's'} left`
+    : null;
+
+/* Nov 13 (research workspace): the answer is the shared Desk Summary. A new answer carries
+   its own headline, summary, takeaways and related questions; an older cached one keeps the
+   board's reading of the brief (the question as the title, the paragraphs, the lead first). */
+function Executive({ live, answer, deepAction, notice, sources }) {
+  const paras = answerParagraphs(live?.answer, 12);
+  const summary = summaryParas(live?.summary);
+  const headline = live?.headline || null;
+  const left = remainingLine(live);
   return (
-    <article className="snr-bd-card snr-bd-exec" aria-labelledby={id}>
-      <span className="snr-bd-eyebrow">Desk summary</span>
-      {notice}
-      <h2 id={id} className="snr-pb-q">
-        {live?.query}
-      </h2>
-      {/* The host's paragraphs (commodity figures stay buttons that open their chart). */}
-      {answer || (
-        <div className="snr-pb-answer">
-          {paras.map((p, i) => (
-            <p key={i} className={i === 0 ? 'snr-bd-headline snr-pb-lead' : 'snr-bd-lede'}>
-              {p}
-            </p>
-          ))}
+    <SonarDeskSummary
+      mode="quick"
+      answeredAt={live?.answeredAt || null}
+      notice={notice}
+      headline={headline}
+      question={live?.query}
+      leadFirst={!headline}
+      /* The host's paragraphs keep their commodity figure buttons. */
+      body={answer || null}
+      summary={answer ? [] : headline && summary.length ? summary : paras.slice(0, 4)}
+      more={!answer && headline && summary.length ? paras.slice(summary.length) : []}
+      footer={
+        <div className="snr-bd-actions">
+          {deepAction}
+          <button type="button" className="snr-bd-link" onClick={toVisual}>
+            <i className="bi bi-stack" aria-hidden="true" />
+            See the charts and data
+          </button>
+          {left ? <span className="snr-bd-cite">({left})</span> : null}
         </div>
-      )}
-      <div className="snr-bd-actions">
-        {deepAction}
-        <button type="button" className="snr-bd-link" onClick={toVisual}>
-          <i className="bi bi-stack" aria-hidden="true" />
-          See the charts and data
-        </button>
-        {typeof live?.remaining === 'number' ? (
-          <span className="snr-bd-cite">
-            ({live.remaining} free ping{live.remaining === 1 ? '' : 's'} left)
-          </span>
-        ) : null}
-      </div>
-    </article>
+      }
+      takeaways={deskTakeaways(live?.takeaways)}
+      sources={deskSourceRows(sources)}
+      sourceCount={sources.length}
+    />
   );
 }
-
-/* Citation markers as small links to the sources section. */
-function Cited({ text }) {
-  return splitCitations(text).map((p, i) =>
-    p.cite ? (
-      <a key={i} className="snr-pb-cite" href="#sa-sources" aria-label={`Source ${p.cite}`}>
-        {p.cite}
-      </a>
-    ) : (
-      <span key={i}>{p.text}</span>
-    ),
-  );
-}
-
-const TAKEAWAY_ICON = {
-  Valuation: 'bi-speedometer2',
-  Fundamentals: 'bi-bar-chart-line',
-  'Primary consideration': 'bi-exclamation-diamond',
-};
 
 /* Nov 2026: the executive answer for one listed company, as an equity research brief. The
    headline, summary and takeaways are the brief's own text (lib/sonar/ping-board
    companyBrief); an older brief without a headline shows its summary and keeps the rest
-   behind "More from the brief", never relabelled. */
-function CompanyExecutive({ live, identity, deepAction, notice }) {
-  const id = useId();
+   behind "More from the brief", never relabelled. Nov 13: rendered as the Desk Summary, with
+   Market Context against the company's sector benchmark. */
+function CompanyExecutive({ live, identity, deepAction, notice, sources, market }) {
   const brief = companyBrief(live?.answer);
   const foot = briefFooter(live);
-  const toVisual = () => {
-    const el = document.getElementById(VISUAL_ID);
-    if (!el) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-    el.focus({ preventScroll: true });
-  };
+  const summary = summaryParas(live?.summary);
+  const headline = live?.headline || brief.headline || null;
   return (
-    <article className="snr-bd-card snr-bd-exec snr-pb-co" aria-labelledby={id}>
-      <span className="snr-bd-eyebrow">Desk summary</span>
-      {notice}
-      <header className="snr-pb-co-id">
-        <h2 id={id} className="snr-pb-co-name">
-          {identity.name} <span className="snr-pb-co-ticker">({identity.ticker})</span>
-        </h2>
-        {identity.meta.length || identity.asOf ? (
-          <p className="snr-pb-co-meta">
-            {[...identity.meta, identity.asOf ? `Data as of ${fmtDate(identity.asOf)}` : null]
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
-        ) : null}
-      </header>
-      {brief.headline ? <p className="snr-pb-co-headline">{brief.headline}</p> : null}
-      {brief.summary ? (
-        <p className="snr-pb-co-summary">
-          <Cited text={brief.summary} />
+    <SonarDeskSummary
+      mode="quick"
+      answeredAt={live?.answeredAt || null}
+      dataAsOf={identity.asOf}
+      notice={notice}
+      subhead={
+        <p className="snr-pb-co-id">
+          <span className="snr-pb-co-name">
+            {identity.name} <span className="snr-pb-co-ticker">({identity.ticker})</span>
+          </span>
+          {identity.meta.length ? (
+            <span className="snr-pb-co-meta"> · {identity.meta.join(' · ')}</span>
+          ) : null}
         </p>
-      ) : null}
-      {brief.takeaways.length ? (
-        <ul className="snr-pb-co-takeaways" aria-label="Key takeaways">
-          {brief.takeaways.map((t) => (
-            <li key={t.label}>
-              <i className={`bi ${TAKEAWAY_ICON[t.label]}`} aria-hidden="true" />
-              <span>
-                <span className="snr-pb-co-tlabel">{t.label}: </span>
-                <Cited text={t.text} />
-              </span>
-            </li>
+      }
+      headline={headline}
+      question={`${identity.name} (${identity.ticker})`}
+      summary={summary.length ? summary : brief.summary ? [brief.summary] : []}
+      more={brief.more}
+      footer={
+        <div className="snr-bd-actions">
+          {deepAction}
+          <button type="button" className="snr-bd-link" onClick={toVisual}>
+            <i className="bi bi-stack" aria-hidden="true" />
+            See the charts and data
+          </button>
+          {[foot.status, remainingLine(live)].filter(Boolean).map((t, i) => (
+            <span key={i} className="snr-bd-cite">
+              {t}
+            </span>
           ))}
-        </ul>
-      ) : null}
-      {brief.more.length ? (
-        <details className="snr-pb-co-more">
-          <summary>More from the brief</summary>
-          {brief.more.map((p, i) => (
-            <p key={i}>
-              <Cited text={p} />
-            </p>
-          ))}
-        </details>
-      ) : null}
-      <div className="snr-bd-actions">
-        {deepAction}
-        <button type="button" className="snr-bd-link" onClick={toVisual}>
-          <i className="bi bi-stack" aria-hidden="true" />
-          See the charts and data
-        </button>
-      </div>
-      <footer className="snr-pb-co-foot">
-        {[
-          foot.cited ? `${foot.cited} cited record${foot.cited === 1 ? '' : 's'}` : null,
-          foot.datasets ? `${foot.datasets} Ezana dataset${foot.datasets === 1 ? '' : 's'}` : null,
-          foot.web ? `${foot.web} web page${foot.web === 1 ? '' : 's'}` : null,
-          foot.asOf ? `Updated ${fmtDate(foot.asOf)}` : null,
-          foot.status,
-          typeof live?.remaining === 'number'
-            ? `${live.remaining} free ping${live.remaining === 1 ? '' : 's'} left`
-            : null,
-        ]
-          .filter(Boolean)
-          .map((t, i) => (
-            <span key={i}>{t}</span>
-          ))}
-        <a className="snr-pb-co-srclink" href="#sa-sources">
-          Evidence and sources
-        </a>
-      </footer>
-    </article>
+        </div>
+      }
+      takeaways={deskTakeaways(
+        live?.takeaways,
+        brief.takeaways.map((t) => `${t.label}: ${t.text}`),
+      )}
+      sources={deskSourceRows(sources)}
+      sourceCount={sources.length}
+      market={market}
+    />
   );
 }
 
@@ -347,8 +308,9 @@ function WebSources({ live }) {
  * deepAction  inline deep research action
  * notice      the "showing results for" notice
  * access, onDeep  the side navigation's lock state and its deep research action
- * onRun       sends a new question through the host's ping path (Next steps)
+ * onRun       sends a new question through the host's ping path (Next steps, related questions)
  * deepNote    the deep research cost and quota line for the left rail's card
+ * queryBar    the workspace's query bar, for the top of the centre column
  */
 export function SonarPingBoard({
   live,
@@ -360,6 +322,7 @@ export function SonarPingBoard({
   onDeep = null,
   onRun = null,
   deepNote = null,
+  queryBar = null,
 }) {
   if (!live) return null;
   const matches = datasetEvidence(live).length;
@@ -371,6 +334,21 @@ export function SonarPingBoard({
   const lead = leadsWithVisual(live);
   const right = lead ? null : snapshot?.rows?.length ? 'valuation' : matches ? 'matches' : null;
   const kpiTiles = pingKpis(live);
+  /* Nov 13: every resource the answer used (the Desk Summary's true count) and Market
+     Context for one listed company, against its sector benchmark from the dossier profile. */
+  const sources = pingResources(live, { max: Infinity });
+  const profile = live?.dossier?.profile || {};
+  const market =
+    identity && equity
+      ? {
+          symbol: identity.ticker,
+          benchmark: benchmarkFor({
+            ticker: identity.ticker,
+            sector: profile.sector || '',
+            industry: profile.industry || live?.dossier?.industry?.name || '',
+          }),
+        }
+      : null;
   const cells = [
     lead
       ? {
@@ -380,20 +358,29 @@ export function SonarPingBoard({
           min: 12,
           node: <Visual visual={visual} lead live={live} notice={notice} deepAction={deepAction} />,
         }
-      : {
+      : /* Nov 13: the Desk Summary takes the full row; the snapshot moves under it. */
+        {
           id: 'exec',
           section: 'answer',
-          span: right ? 7 : 12,
-          min: right ? 6 : 12,
+          span: 12,
+          min: 12,
           node: identity ? (
             <CompanyExecutive
               live={live}
               identity={identity}
               deepAction={deepAction}
               notice={notice}
+              sources={sources}
+              market={market}
             />
           ) : (
-            <Executive live={live} answer={answer} deepAction={deepAction} notice={notice} />
+            <Executive
+              live={live}
+              answer={answer}
+              deepAction={deepAction}
+              notice={notice}
+              sources={sources}
+            />
           ),
         },
     right === 'valuation'
@@ -466,6 +453,14 @@ export function SonarPingBoard({
       equity={equity}
       rail={rail}
       deepNote={deepNote}
+      top={
+        queryBar || live?.related?.length ? (
+          <>
+            {queryBar}
+            <SonarRelatedQuestions questions={live?.related} onAsk={onRun} />
+          </>
+        ) : null
+      }
     >
       <div className="snr-cii snr-board snr-pb" role="region" aria-label={`${live.query}: answer`}>
         <div className="snr-bd-grid">

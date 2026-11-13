@@ -247,3 +247,203 @@ test('sharing: token shape, title, and a whitelist snapshot', () => {
     { name: 'B', url: null },
   ]);
 });
+
+/* ------------------------------------------------------------------ prompt 2: centre column */
+
+import { readFileSync } from 'node:fs';
+import {
+  answerExtras,
+  cleanHeadline,
+  cleanRelated,
+  cleanSummary,
+  cleanTakeaways,
+  splitDeskTrailer,
+  deskTrailerRules,
+  DESK_MARK,
+} from '../src/lib/sonar/answer-extras.js';
+import { isMarketSymbol } from '../src/lib/sonar/market-context.js';
+import {
+  deskSourceRows,
+  deskTakeaways,
+  summaryParas,
+  answeredLabel,
+  MODE_LABEL,
+} from '../src/lib/sonar/desk-summary.js';
+
+const readSrc = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+
+test('related questions: 12 to 120 chars, deduplicated, never the question, at most four', () => {
+  const q = "How will Jensen Huang's resignation affect Nvidia's shares?";
+  const out = cleanRelated(
+    [
+      'how will jensen huangs resignation affect nvidias shares',
+      'Too short?',
+      'x'.repeat(121),
+      'What drives Nvidia data center revenue growth?',
+      'What drives Nvidia data-center revenue growth',
+      42,
+      'How have Nvidia shares reacted to past CEO changes in the sector?',
+      'Which risks could change the reading on Nvidia margins?',
+      'How do AMD and Broadcom compare on valuation today?',
+      'What would a leadership change mean for Nvidia strategy?',
+    ],
+    q,
+  );
+  assert.equal(out.length, 4);
+  assert.ok(out.every((s) => s.length >= 12 && s.length <= 120));
+  assert.ok(!out.some((s) => /resignation affect/i.test(s)), 'never restates the question');
+  assert.equal(out.filter((s) => /data.center revenue/i.test(s)).length, 1, 'deduplicated');
+  assert.deepEqual(cleanRelated('not a list', q), []);
+});
+
+test('headline, summary and takeaways are validated server-side', () => {
+  assert.equal(
+    cleanHeadline('Yes. Nvidia shares fell after the news, though the cause is unclear.'),
+    'Yes. Nvidia shares fell after the news, though the cause is unclear.',
+  );
+  assert.equal(cleanHeadline(Array(31).fill('word').join(' ')), null, 'over 30 words');
+  assert.equal(cleanHeadline(42), null);
+  assert.ok(!cleanHeadline('A rise — then a fall').includes('—'), 'no em dash');
+  assert.equal(cleanSummary('One.\n\nTwo.\n\nThree.\n\nFour.'), 'One.\n\nTwo.\n\nThree.');
+  assert.equal(cleanSummary(['  A  ', '', 'B']), 'A\n\nB');
+  assert.equal(cleanSummary(''), null);
+  assert.deepEqual(cleanTakeaways(['Only one finding here']), [], 'fewer than two: none');
+  const t = cleanTakeaways([
+    '- Driver one is real',
+    'Driver one is real',
+    'Risk two is real',
+    'ok',
+  ]);
+  assert.deepEqual(t, ['Driver one is real', 'Risk two is real']);
+  assert.equal(
+    cleanTakeaways(Array.from({ length: 8 }, (_, i) => `Finding number ${i}`)).length,
+    5,
+  );
+  const all = answerExtras({ headline: 'H is short.', related: ['Q'] }, { question: 'x' });
+  assert.deepEqual(all, { headline: 'H is short.', summary: null, takeaways: [], related: [] });
+});
+
+test('the quick ping trailer is split out of the brief, never shown in it', () => {
+  const text = `Para one.\n\nPara two.\n${DESK_MARK}\nHeadline: Nvidia fell 3%.\nTakeaway: A driver.\nTakeaway: A risk.\nRelated: What drives Nvidia margins over time?\nRelated: How do peers compare on valuation?`;
+  const d = splitDeskTrailer(text);
+  assert.equal(d.body, 'Para one.\n\nPara two.');
+  assert.equal(d.headline, 'Nvidia fell 3%.');
+  assert.deepEqual(d.takeaways, ['A driver.', 'A risk.']);
+  assert.equal(d.related.length, 2);
+  assert.deepEqual(splitDeskTrailer('Just a brief.'), {
+    body: 'Just a brief.',
+    headline: null,
+    takeaways: [],
+    related: [],
+  });
+  assert.match(deskTrailerRules(), /Headline:/);
+  assert.doesNotMatch(
+    deskTrailerRules({ company: true }),
+    /Headline:/,
+    'equity brief: related only',
+  );
+  assert.match(deskTrailerRules({ company: true }), /never presupposing an event/);
+});
+
+test('market context: symbols are validated and the route rejects bad ones', () => {
+  for (const ok of ['NVDA', 'BRK.B', 'SOXX', 'BF-B']) assert.ok(isMarketSymbol(ok), ok);
+  for (const bad of ['nvda', '', 'TOOLONGSYMBOL', '1ABC', 'NV DA', "NVDA'", null])
+    assert.ok(!isMarketSymbol(bad), String(bad));
+  const route = readSrc('src/app/api/sonar/market-context/route.js');
+  assert.match(
+    route,
+    /!isMarketSymbol\(symbol\) \|\| \(benchmark && !isMarketSymbol\(benchmark\)\)/,
+  );
+  assert.match(route, /status: 400/);
+  assert.match(route, /getDailyBars\(symbol, from\)/, 'the shared price helper, no second path');
+  assert.match(route, /strict: true/);
+  assert.match(route, /requireAuth: false/);
+});
+
+test('desk summary helpers: mode labels, sources, takeaways, summary', () => {
+  assert.equal(MODE_LABEL.quick, 'Quick ping');
+  assert.equal(answeredLabel(null), null, 'never the render time');
+  assert.ok(answeredLabel('2026-11-13T15:04:00Z'));
+  const rows = deskSourceRows([
+    {
+      key: 'a',
+      kind: 'web',
+      label: 'Chip stocks slide',
+      sub: 'reuters.com',
+      href: 'https://reuters.com/x',
+      external: true,
+    },
+    { key: 'b', kind: 'dataset', label: 'Congressional trades', sub: 'Ezana dataset', href: null },
+    { key: 'c', kind: 'publisher', label: 'U.S. EIA', sub: 'eia.gov' },
+    { key: 'd', kind: 'news', label: 'Fourth', sub: 'ft.com' },
+  ]);
+  assert.equal(rows.length, 3, 'first three rows');
+  assert.deepEqual(
+    rows.map((r) => [r.name, r.initial, r.descriptor, r.external]),
+    [
+      ['reuters.com', 'R', 'Chip stocks slide', true],
+      ['Congressional trades', 'C', 'Ezana dataset', false],
+      ['U.S. EIA', 'U', 'eia.gov', false],
+    ],
+  );
+  assert.deepEqual(deskTakeaways(['a'], ['x', 'y']), ['x', 'y'], 'fallback when under two');
+  assert.deepEqual(deskTakeaways(['a', 'b'], ['x', 'y']), ['a', 'b']);
+  assert.deepEqual(deskTakeaways([], ['x']), []);
+  assert.deepEqual(summaryParas('A\n\nB\n\nC\n\nD'), ['A', 'B', 'C']);
+});
+
+test('the Desk Summary is one shared component, borderless, tokens only, no em dash', () => {
+  for (const f of [
+    'src/components/sonar/SonarDeskSummary.jsx',
+    'src/components/sonar/sonar-desk-summary.css',
+    'src/components/sonar/SonarMarketContext.jsx',
+    'src/components/sonar/sonar-market-context.css',
+  ]) {
+    const src = readSrc(f);
+    assert.doesNotMatch(src, /#[0-9a-fA-F]{3,8}\b/, `${f}: no hex`);
+    assert.doesNotMatch(src, /rgba?\(/, `${f}: no rgba literals`);
+    assert.ok(!src.includes('—'), `${f}: no em dash`);
+  }
+  for (const f of [
+    'src/components/sonar/sonar-desk-summary.css',
+    'src/components/sonar/sonar-market-context.css',
+  ]) {
+    const borders = [
+      ...readSrc(f).matchAll(/(?:^|[\s;{])border(?:-(?!radius)[a-z-]+)?\s*:\s*([^;]+);/gm),
+    ].map((m) => m[1].trim());
+    assert.ok(
+      borders.every((v) => v === '0' || v === 'none'),
+      `${f}: no border on cards (${borders.join(', ')})`,
+    );
+  }
+  for (const f of [
+    'src/components/landing/SonarPingBoard.jsx',
+    'src/components/landing/SonarCountryBoard.jsx',
+    'src/components/sonar/research/ResearchBoard.jsx',
+  ]) {
+    const src = readSrc(f);
+    assert.match(
+      src,
+      /import \{ SonarDeskSummary, SonarRelatedQuestions \} from '@\/components\/sonar\/SonarDeskSummary'/,
+      f,
+    );
+    assert.match(src, /<SonarDeskSummary/, f);
+    assert.match(src, /<SonarRelatedQuestions/, f);
+  }
+  const mc = readSrc('src/components/sonar/SonarMarketContext.jsx');
+  for (const fn of [
+    'compareSeries',
+    'availableRanges',
+    'signedPct',
+    'signedPoints',
+    'chartSummary',
+  ])
+    assert.match(mc, new RegExp(`\\b${fn}\\(`), `Market Context uses ${fn}`);
+  assert.match(mc, /role="img"/);
+  assert.match(mc, /aria-pressed=\{r\.key === active\}/);
+  assert.match(mc, /Market data is not available for the selected period\./);
+  assert.match(
+    readSrc('src/components/sonar/SonarDeskSummary.jsx'),
+    /dynamic\(\(\) => import\('\.\/SonarMarketContext'\)/,
+  );
+});

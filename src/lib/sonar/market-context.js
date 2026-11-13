@@ -139,3 +139,7 @@ export function chartSummary(cmp, subjectLabel, benchmarkLabel) {
   if (cmp.benchmarkReturn == null) return `${head}.`;
   return `${head}; ${benchmarkLabel} ${signedPct(cmp.benchmarkReturn)}; difference ${signedPoints(cmp.relative)}.`;
 }
+
+/** A symbol the market-context route accepts: "NVDA", "BRK.B", "SOXX". */
+export const MARKET_SYMBOL_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
+export const isMarketSymbol = (s) => typeof s === 'string' && MARKET_SYMBOL_RE.test(s);

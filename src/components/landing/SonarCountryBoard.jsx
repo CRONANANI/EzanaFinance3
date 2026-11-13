@@ -57,7 +57,10 @@ import {
   sourceCoverage,
   boardSpans,
   chartSpans,
+  pingResources,
 } from '@/lib/sonar/country-board';
+import { SonarDeskSummary, SonarRelatedQuestions } from '@/components/sonar/SonarDeskSummary';
+import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-summary';
 import { fxFindings } from '@/lib/sonar/macro/fx-findings';
 import ConflictCountryPanel from '@/components/conflict/ConflictCountryPanel';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
@@ -111,10 +114,14 @@ function Spark({ tile }) {
 
 /* ── 1a. executive answer ─────────────────────────────────────────────── */
 
+/* Nov 13 (research workspace): the shared Desk Summary. A new answer carries its own
+   headline, summary, takeaways and related questions; an older cached one keeps the board's
+   reading (boardHeadline, boardAnswer and its drivers as the takeaways). */
 function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
-  const titleId = useId();
-  const headline = boardHeadline({ intel, query: live?.rawQuery || live?.query });
+  const headline = live?.headline || boardHeadline({ intel, query: live?.rawQuery || live?.query });
   const a = boardAnswer(intel);
+  const summary = summaryParas(live?.summary);
+  const sources = pingResources(live, { max: Infinity });
   const toCharts = () => {
     const el = typeof document !== 'undefined' ? document.getElementById(CHARTS_ID) : null;
     if (!el) return;
@@ -123,47 +130,46 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
     el.focus({ preventScroll: true });
   };
   return (
-    <article className="snr-bd-card snr-bd-exec" aria-labelledby={titleId}>
-      <span className="snr-bd-eyebrow">Desk summary</span>
-      {notice}
-      {headline ? (
-        <h2 id={titleId} className="snr-bd-headline">
-          {headline}
-        </h2>
-      ) : (
-        <VisuallyHidden as="h2" id={titleId}>
-          Desk summary
-        </VisuallyHidden>
+    <SonarDeskSummary
+      mode="quick"
+      answeredAt={live?.answeredAt || null}
+      dataAsOf={intel?.asOf || null}
+      notice={notice}
+      headline={headline || null}
+      question="Desk summary"
+      summary={summary}
+      body={summary.length ? null : a.text ? <p className="snr-bd-lede">{a.text}</p> : null}
+      after={
+        a.detail ? (
+          <details className="snr-bd-more">
+            <summary>Show the full reading</summary>
+            <p className="snr-bd-para">{a.detail}</p>
+          </details>
+        ) : null
+      }
+      footer={
+        <div className="snr-bd-actions">
+          {deepAction}
+          <button type="button" className="snr-bd-link" onClick={toCharts}>
+            <i className="bi bi-stack" aria-hidden="true" />
+            See full dossier
+          </button>
+          {typeof remaining === 'number' ? (
+            <span className="snr-bd-cite">
+              ({remaining} free ping{remaining === 1 ? '' : 's'} left)
+            </span>
+          ) : null}
+        </div>
+      }
+      takeaways={deskTakeaways(
+        live?.takeaways,
+        a.bullets.map((b) =>
+          b.title ? `${b.title.replace(/[.:]\s*$/, '')}: ${b.text}` : String(b.text || ''),
+        ),
       )}
-      {a.text ? <p className="snr-bd-lede">{a.text}</p> : null}
-      {a.bullets.length ? (
-        <ul className="snr-bd-bullets">
-          {a.bullets.map((b, i) => (
-            <li key={i}>
-              {b.title ? <strong>{b.title.replace(/[.:]\s*$/, '')}:</strong> : null} {b.text}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {a.detail ? (
-        <details className="snr-bd-more">
-          <summary>Show the full reading</summary>
-          <p className="snr-bd-para">{a.detail}</p>
-        </details>
-      ) : null}
-      <div className="snr-bd-actions">
-        {deepAction}
-        <button type="button" className="snr-bd-link" onClick={toCharts}>
-          <i className="bi bi-stack" aria-hidden="true" />
-          See full dossier
-        </button>
-        {typeof remaining === 'number' ? (
-          <span className="snr-bd-cite">
-            ({remaining} free ping{remaining === 1 ? '' : 's'} left)
-          </span>
-        ) : null}
-      </div>
-    </article>
+      sources={deskSourceRows(sources)}
+      sourceCount={sources.length}
+    />
   );
 }
 
@@ -484,6 +490,8 @@ export function SonarCountryBoard({
      cost and quota line goes to the left rail's card. */
   onRun = null,
   deepNote = null,
+  /* Nov 13: the workspace's query bar, for the top of the centre column. */
+  queryBar = null,
 }) {
   const mapId = useId();
   const naId = useId();
@@ -522,11 +530,12 @@ export function SonarCountryBoard({
 
   /* Reading order; each cell's preferred and narrowest width in 12ths. */
   const cells = [
+    /* Nov 13: the Desk Summary takes the full row; the country card moves under it. */
     {
       id: 'exec',
       section: 'answer',
-      span: 7,
-      min: 6,
+      span: 12,
+      min: 12,
       node: (
         <ExecutiveAnswer
           live={live}
@@ -731,6 +740,14 @@ export function SonarCountryBoard({
       onDeep={onDeep}
       rail={rail}
       deepNote={deepNote}
+      top={
+        queryBar || live?.related?.length ? (
+          <>
+            {queryBar}
+            <SonarRelatedQuestions questions={live?.related} onAsk={onRun} />
+          </>
+        ) : null
+      }
     >
       <div
         className="snr-cii snr-board"

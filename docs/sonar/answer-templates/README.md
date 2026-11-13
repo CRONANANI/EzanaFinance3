@@ -16,19 +16,13 @@ Every other quick ping (a company, a member of Congress, a sector, an industry, 
 
 ## The layout, top to bottom
 
-1. **Sources belt** (`SonarSourceBelt`). A slow conveyor of every resource the answer used, in this order: Ezana datasets, data publishers, web pages, news. It pauses on hover, on focus and with its Pause button, and stays still under reduced motion.
-2. **Desk summary | Snapshot.** The answer card is 7 of 12 columns and holds:
-   - the "Desk summary" eyebrow;
-   - the headline;
-   - one summary paragraph;
-   - up to five bullets;
-   - Run deep research, top right or in the actions row;
-   - the link to the charts.
+1. **Query bar, then Explore related questions** (the frame's `top`, at the top of the centre column; Nov 13). One bar for every answered state (`SonarAnswerQueryBar`): the band's boards on `/datasets` pass it the band's own field and `runPing`; a research run passes its ping bar (`SonarRunPingBar` variant `query`), and its Back button stays at the top of the sections column (`navTop`). This replaces the Nov 7 rule that put the run's ping bar in the sections column. Related questions (up to four, from the answer's own `related` field) run through the same ping path; none in the payload, no row. The resources belt no longer sits above a board: the Desk Summary's Evidence and sources card replaces it.
+2. **Desk Summary, full width** (`SonarDeskSummary`, shared by all three boards; Nov 13). The header has the "Desk summary" eyebrow, the research mode and when the answer was produced (its own `answeredAt`), "Data as of" kept separate, and a slot for Save, Share and More. On the left: the notice, the headline, the summary with citation markers, the board's actions (deep research, the charts link, free pings), then Market Context for one listed company (`SonarMarketContext`: the company against its sector benchmark, daily closes, 5D to 1Y). On the right (about 270 px, stacked under 800 px of card width): Key takeaways (two or more, else no card) and Evidence and sources (the true count, three rows, "View all sources"). A new answer carries `headline`, `summary`, `takeaways` and `related`, written in the same model call and validated in `lib/sonar/answer-extras.js`; an older answer falls back to the board's own reading (`companyBrief`, `answerParagraphs`, `boardHeadline`, `boardSummary`, `boardBullets`).
 
-   The snapshot is 5 of 12 columns. It is whatever answers the question at a glance:
+   The snapshot moves to the row directly under it. It is whatever answers the question at a glance:
    - the country card with flag, KPI tiles and sparklines (01);
    - the top 5 (02);
-   - the top matches (ping board).
+   - the top matches or the Valuation snapshot (ping board).
 
 3. **KPI strip.** Up to four tiles across the full width, each an icon, a mono value, a label and a source line.
 4. **Key findings and evidence | Coverage or team.** On free answers, findings take the full row when the right-hand card is a locked section.

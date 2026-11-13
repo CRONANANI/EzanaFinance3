@@ -107,6 +107,10 @@ export const ENGINE_VERSION = 'engine-v3.1';
 const embedQuery = (text) =>
   import('@/lib/rag/embed-cached').then((m) => m.embedViaSupabaseCached(text)).catch(() => null);
 
+/* Output the research writer's Desk Summary fields add (headline, summary, takeaways,
+   related), so a full report never truncates its JSON. */
+const DESK_JSON_TOKENS = 500;
+
 /* Research depth: model, output tokens, run budget, synthesis reserve. */
 export const DEPTH_PROFILES = {
   quick: {
@@ -746,7 +750,8 @@ export async function runResearch(query, opts = {}) {
             ? spec.memoKind === 'positioning'
               ? Math.max(D.memoTokens || D.tokens, 8000)
               : D.memoTokens || D.tokens
-            : D.tokens,
+            : /* Nov 13: room for the Desk Summary fields at the end of the JSON. */
+              D.tokens + DESK_JSON_TOKENS,
           model: D.model,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
@@ -771,7 +776,7 @@ export async function runResearch(query, opts = {}) {
             kind: spec.memoKind,
             mandate: layout.fundFit || null,
           })
-        : validateResearch(parsed, { marked, metrics });
+        : validateResearch(parsed, { marked, metrics, question: spec.question });
       if (!report.executiveConclusion && !report.keyFindings.length) report = null;
     }
   }
@@ -1086,6 +1091,12 @@ export async function runResearch(query, opts = {}) {
     team: report.team || null,
     followOnResearch: report.followOnResearch,
     confidence: report.confidence,
+    /* Nov 13: the Desk Summary's fields (empty for a memo or a deterministic report). */
+    headline: report.headline || null,
+    summary: report.summary || null,
+    takeaways: report.takeaways || [],
+    related: report.related || [],
+    answeredAt: new Date().toISOString(),
     brief,
     layout,
     understood: phase1.understood,

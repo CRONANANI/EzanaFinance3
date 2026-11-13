@@ -11,18 +11,35 @@
  * Nov 7: on a finished research board the bar moves into the sections column (SonarRunNav,
  * the frame's navTop) as a compact, lighter field the width of that column, so it no longer
  * runs dark across the page and the answer moves up.
+ *
+ * Nov 13 (research workspace): on a finished board the bar is the workspace's query bar at the
+ * top of the centre column (variant 'query', SonarAnswerQueryBar); Back stays in the sections
+ * column (SonarRunNav). Same submit path as before: the words go to the host.
  */
 import { useId, useState } from 'react';
+import { SonarAnswerQueryBar } from './SonarAnswerQueryBar';
 
 export function SonarRunPingBar({
   onPing,
   disabled = false,
   placeholder = 'Ping another question',
-  /* 'bar' (the run bar) or 'nav' (the sections column: icon-only submit). */
+  /* 'bar' (the run bar), 'nav' (the sections column: icon-only submit) or 'query' (the
+     workspace's query bar, holding the run's question). */
   variant = 'bar',
+  initial = '',
 }) {
   const [value, setValue] = useState('');
   const id = useId();
+  if (variant === 'query') {
+    return (
+      <SonarAnswerQueryBar
+        initial={initial}
+        pending={disabled}
+        onSubmit={(q) => onPing?.(q)}
+        label="Ping another question"
+      />
+    );
+  }
   const submit = (e) => {
     e.preventDefault();
     const q = value.trim().slice(0, 600);

@@ -165,7 +165,7 @@ test('the analytical plan joins the synthesis prompt; no new model call', () => 
   assert.match(block, /Measure asked about: production/);
   assert.match(F.SYNTHESIS_SYSTEM, /Never make a finding that only restates the conclusion/);
   assert.match(F.SYNTHESIS_SYSTEM, /two to five, most important first, and fewer is better/);
-  assert.equal(F.SYNTHESIS_PROMPT_VERSION, 'synth-v3');
+  assert.equal(F.SYNTHESIS_PROMPT_VERSION, 'synth-v4');
 });
 
 /* ------------------------------------------------------------------ evidence relevance */

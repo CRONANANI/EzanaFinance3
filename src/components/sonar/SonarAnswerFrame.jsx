@@ -64,6 +64,8 @@ export function SonarAnswerFrame({
   rail = null,
   /* The deep research cost and quota line, shown in the left rail's card. */
   deepNote = null,
+  /* Nov 13: the top of the centre column (the query bar, then related questions). */
+  top = null,
   children,
   className = '',
 }) {
@@ -224,7 +226,10 @@ export function SonarAnswerFrame({
             ) : null}
           </nav>
         </div>
-        <div className="san-body">{children}</div>
+        <div className="san-body">
+          {top ? <div className="san-lead">{top}</div> : null}
+          {children}
+        </div>
         {rail ? (
           <aside className="san-rail" aria-label="Research tools">
             {rail}

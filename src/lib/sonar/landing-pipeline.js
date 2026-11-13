@@ -131,6 +131,14 @@ import { canonicalPing } from '@/lib/sonar/canonical-ping';
 import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
 import { compactMetrics } from '@/lib/sonar/macro/fx-findings';
 import { fetchValuationRaw, snapshotFromRaw, valuationEvidence } from '@/lib/sonar/valuation/fetch';
+import {
+  DESK_TRAILER_TOKENS,
+  answerExtras,
+  deskTrailerRules,
+  splitDeskTrailer,
+  summaryFromBody,
+} from '@/lib/sonar/answer-extras';
+import { companyBrief } from '@/lib/sonar/ping-board';
 
 /**
  * The landing-page Sonar pipeline, shared by the two routes that run it:
@@ -3246,6 +3254,9 @@ export async function runLandingPipeline(
 
   let answer = null;
   let grounded = false;
+  /* Nov 13 (research workspace): the Desk Summary's headline, takeaways and related
+     questions, written after the brief in the same model call (answer-extras.js). */
+  let desk = null;
   /* Where the brief came from: 'model' (grounded synthesis), 'facts' (a
      deterministic brief built from a snapshot, flows pings), 'evidence' (the
      cited-snippet fallback), 'general' (ungrounded synthesis). Model and
@@ -3277,7 +3288,7 @@ export async function runLandingPipeline(
               minHopMs: P.minHopMs,
               reserveMs: P.hopReserveMs,
             });
-            return again?.answer || null;
+            return again?.answer ? splitDeskTrailer(again.answer).body : null;
           }
         : null,
     );
@@ -3367,6 +3378,17 @@ export async function runLandingPipeline(
      computed every number, and the validator keeps only what the evidence
      supports. */
   const useIntel = Boolean(countryQuestion && intelItems.length);
+  /* The equity research brief's shape (COMPANY_ADDENDUM): it writes its own headline and
+     takeaways, so its Desk Summary trailer carries related questions only. */
+  const companyShape = Boolean(
+    resolved &&
+    !country &&
+    !politician &&
+    !industryPing &&
+    !ipoIntent &&
+    intent !== 'sanctions' &&
+    !govPing,
+  );
   let intelBrief = null;
   let synthesisStartMsLeft = null;
 
@@ -3413,15 +3435,15 @@ export async function runLandingPipeline(
           (activityPing ? CONGRESS_ACTIVITY_ADDENDUM : '') +
           (insiderPing ? INSIDER_BUYING_ADDENDUM : '') +
           (ipoIntent ? IPO_ADDENDUM : '') +
+          (companyShape ? COMPANY_ADDENDUM : '') +
           (resolved &&
           !country &&
           !politician &&
           !industryPing &&
           !ipoIntent &&
-          intent !== 'sanctions'
-            ? govPing
-              ? GOV_EXPOSURE_ADDENDUM
-              : COMPANY_ADDENDUM
+          intent !== 'sanctions' &&
+          govPing
+            ? GOV_EXPOSURE_ADDENDUM
             : '') +
           DATE_RULES +
           FRESHEST_RULES +
@@ -3447,6 +3469,8 @@ export async function runLandingPipeline(
       minHopMs: P.minHopMs,
       reserveMs: P.hopReserveMs,
     };
+    groundedArgs.system += deskTrailerRules({ company: companyShape && !useIntel });
+    groundedArgs.maxTokens += DESK_TRAILER_TOKENS;
     synthesisStartMsLeft = left();
     const synth = await leg(
       'synthesize',
@@ -3454,6 +3478,10 @@ export async function runLandingPipeline(
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
+    if (synth.answer) {
+      desk = splitDeskTrailer(synth.answer);
+      synth.answer = desk.body;
+    }
     const sourceTexts = marked.map(
       (it) => `${it.title || ''}. ${String(it.text || it.snippet || '')}`,
     );
@@ -3538,13 +3566,14 @@ export async function runLandingPipeline(
   const countryEvidenceHeld = countryQuestion && (intelItems.length > 0 || items.length > 0);
   if (!answer && !countryEvidenceHeld && left() - TAIL_MS > P.generalMinMs) {
     const generalArgs = {
-      system: webActive
-        ? GENERAL_SYSTEM_PROMPT + lensBlock + DATE_RULES + GROUNDING_RULES
-        : FAST_GENERAL_PROMPT + lensBlock + DATE_RULES,
+      system:
+        (webActive
+          ? GENERAL_SYSTEM_PROMPT + lensBlock + DATE_RULES + GROUNDING_RULES
+          : FAST_GENERAL_PROMPT + lensBlock + DATE_RULES) + deskTrailerRules(),
       user: `Today is ${todayLine()}.\nPing: ${display}${resolvedNote}\nThe visitor asked: "${String(
         asked,
       ).slice(0, 300)}"`,
-      maxTokens: P.briefTokens,
+      maxTokens: P.briefTokens + DESK_TRAILER_TOKENS,
       model: P.model,
       fallbackModel: HAIKU_MODEL,
       webSearch: { enabled: webActive, maxUses: webUses },
@@ -3558,6 +3587,10 @@ export async function runLandingPipeline(
       (v) => (v.answer ? `answered${v.webUsed ? ' +web' : ''}` : v.degraded || 'no answer'),
       (v) => Boolean(v.answer),
     );
+    if (synth.answer) {
+      desk = splitDeskTrailer(synth.answer);
+      synth.answer = desk.body;
+    }
     answer = await guardBrief(synth.answer || null, generalArgs, synth, []);
     if (answer) briefKind = 'general';
     grounded = false;
@@ -3661,10 +3694,42 @@ export async function runLandingPipeline(
     console.error('[sonar-pipeline] trace', summary, JSON.stringify(timing));
   }
 
+  /* Nov 13: the Desk Summary fields. Only a model brief has them; a facts or evidence brief
+     (and an older cached answer) leaves them empty and the boards fall back to their own
+     reading of the brief. An equity brief's headline, summary and takeaways are its own
+     labelled parts. */
+  const modelBrief = briefKind === 'model' || briefKind === 'general';
+  const coBrief = modelBrief && companyShape && !useIntel ? companyBrief(answer) : null;
+  const extras = answerExtras(
+    modelBrief
+      ? {
+          headline: coBrief?.structured ? coBrief.headline : desk?.headline,
+          summary: coBrief?.structured
+            ? coBrief.summary
+            : useIntel
+              ? intelBrief?.answer || null
+              : coBrief
+                ? null
+                : summaryFromBody(answer),
+          takeaways: coBrief?.structured
+            ? coBrief.takeaways.map((t) => `${t.label}: ${t.text}`)
+            : coBrief
+              ? []
+              : desk?.takeaways,
+          related: desk?.related,
+        }
+      : {},
+    { question: asked || display },
+  );
   const result = {
     answer,
     grounded,
     briefKind,
+    headline: extras.headline,
+    summary: extras.summary,
+    takeaways: extras.takeaways,
+    related: extras.related,
+    answeredAt: new Date().toISOString(),
     sources,
     relevance: grounded ? relevanceFrom(items, corporaSearched) : flatRelevance(FLOOR_UNGROUNDED),
     webUsed,

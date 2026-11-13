@@ -144,7 +144,7 @@ test('the snapshot renders the map for countries, with a list that carries the v
 
 /* ------------------------------------------------------------------ executive answer, KPIs */
 
-test('executive answer: the headline is the title, with a meta line and key points', () => {
+test('executive answer: the headline is the title, with a meta line and key takeaways', () => {
   const rank = B.rankingOf(oilState.analysis.visualizations);
   const meta = B.execMeta({ rank, resources: [1, 2, 3, 4, 5], evidence: [] });
   assert.deepEqual(
@@ -153,12 +153,18 @@ test('executive answer: the headline is the title, with a meta line and key poin
   );
   assert.deepEqual(B.execMeta({}), []);
   const rb = read('src/components/sonar/research/ResearchBoard.jsx');
+  /* Nov 13 (research workspace): the answer is the shared Desk Summary. Its title is the
+     run's headline (else the board's), the meta line sits above it, and the key points are
+     the card's Key takeaways (the run's own, else the board's bullets). */
+  assert.match(rb, /<SonarDeskSummary/);
   assert.match(
     rb,
-    /<h2 id=\{id\} className="srb-exec-title">\s*\{headline \|\| 'Research answer'\}/,
+    /const headline = run\?\.headline \|\| report\?\.headline \|\| boardHeadline\(report, rank\)/,
   );
+  assert.match(rb, /question="Research answer"/);
   assert.match(rb, /className="srb-exec-meta"/);
-  assert.match(rb, /Key points/);
+  assert.match(rb, /bullets\.map\(\(b\) => b\.text\)/);
+  assert.match(read('src/components/sonar/SonarDeskSummary.jsx'), /Key takeaways/);
   assert.ok(!rb.includes('—'), 'no em dash');
 });
 
@@ -174,22 +180,23 @@ test('KPI tiles: shorter, everything centred', () => {
 
 /* ------------------------------------------------------------------ run bar -> sections column */
 
-test('a finished board takes Back and the ping bar into its sections column', () => {
+/* Nov 13 (research workspace): Back stays at the top of the sections column; the ping bar is
+   the workspace's query bar at the top of the centre column (the frame's `top`). */
+test('a finished board keeps Back in its sections column and the ping bar in the centre', () => {
   const dr = read('src/components/sonar/DeepResearch.jsx');
   assert.equal((dr.match(/\{boardUp \? null : \(/g) || []).length, 2, 'both runs drop the bar');
   assert.equal(
-    (
-      dr.match(
-        /navTop=\{boardUp \? <SonarRunNav onBack=\{onBack\} onPing=\{onPing\} \/> : null\}/g,
-      ) || []
-    ).length,
+    (dr.match(/navTop=\{boardUp \? <SonarRunNav onBack=\{onBack\} \/> : null\}/g) || []).length,
     2,
   );
+  assert.equal((dr.match(/variant="query"/g) || []).length, 2, 'both runs pass the query bar');
   assert.match(dr, /const boardUp = onBoard && state\.status === 'done'/);
   const rr = read('src/components/sonar/research/ResearchReport.jsx');
   assert.match(rr, /navTop=\{navTop\}/);
   const rb = read('src/components/sonar/research/ResearchBoard.jsx');
   assert.match(rb, /navTop=\{navTop\}/);
+  assert.match(rr, /queryBar=\{queryBar\}/);
+  assert.match(rb, /\{queryBar\}/);
   const fr = read('src/components/sonar/SonarAnswerFrame.jsx');
   assert.match(fr, /\{navTop \? <div className="san-top">\{navTop\}<\/div> : null\}/);
   const fcss = read('src/components/sonar/sonar-answer-frame.css');

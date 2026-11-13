@@ -434,6 +434,12 @@ const POST_HANDLER = withApiGuard(
     const nextUsed = used + 1;
     const res = NextResponse.json({
       answer: result.answer,
+      /* Nov 13: the Desk Summary's fields (answer-extras.js); empty on older cached answers. */
+      headline: result.headline || null,
+      summary: result.summary || null,
+      takeaways: result.takeaways || [],
+      related: result.related || [],
+      answeredAt: result.answeredAt || null,
       grounded: result.grounded,
       sources: result.sources,
       relevance: result.relevance,

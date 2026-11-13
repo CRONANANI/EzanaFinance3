@@ -24,6 +24,7 @@
  * Pure apart from the synthesis call. Validation is unit-tested.
  */
 import { numbersOf } from './evidence';
+import { answerExtras } from '@/lib/sonar/answer-extras';
 import { findUnsupportedNegatives, stripCoverageNotes } from '@/lib/sonar/groundingGuard';
 
 export const CLASSIFICATIONS = [
@@ -36,7 +37,9 @@ export const CLASSIFICATIONS = [
 
 /* synth-v3 (Nov 2026): what a key finding is, the optional comparison, implication and
    caveat fields, and no quota. */
-export const SYNTHESIS_PROMPT_VERSION = 'synth-v3';
+/* synth-v4 (Nov 13 2026): headline, summary, takeaways and related questions for the research
+   workspace's Desk Summary, in the same call. */
+export const SYNTHESIS_PROMPT_VERSION = 'synth-v4';
 
 export const SYNTHESIS_SYSTEM = `You are Ezana Sonar, a financial and geopolitical research analyst. You receive a research question, a research plan, numbered evidence records [S1]..[Sn] and calculated metrics [M:id]. Return ONLY one JSON object, no prose around it, matching:
 {
@@ -45,7 +48,11 @@ export const SYNTHESIS_SYSTEM = `You are Ezana Sonar, a financial and geopolitic
   "analysis": [ { "text": string, "classification": string, "evidence": [markers], "metrics": [metric ids] } ],
   "limitations": [string],
   "followOnResearch": [string],
-  "confidence": "high" | "medium" | "low"
+  "confidence": "high" | "medium" | "low",
+  "headline": string,
+  "summary": [string],
+  "takeaways": [string],
+  "related": [string]
 }
 Classifications:
 - verified_fact: stated directly by a cited record.
@@ -67,6 +74,10 @@ Rules:
 - Findings only: no buy, sell or hold call and no price target in Ezana's voice. A named firm's published rating, attributed, is a finding.
 - Never ask the reader a question. Never mention web search.
 - Limitations: what the records cannot establish for this question (for example, a disclosure that does not split spend by issue). Be specific; never claim a dataset has no record of the subject itself.
+- headline: one sentence, at most 30 words, stating the finding including any uncertainty. A yes or no question keeps its one-word lead ("Yes." or "No."). No citation markers.
+- summary: one to three short paragraphs that answer the question, cited inline with markers.
+- takeaways: three to five findings, each adding something the summary does not say (a driver, a quantified finding the evidence supports, a risk, a decision factor). A point that needed evidence the records lack is left out or labelled as a hypothesis.
+- related: up to four follow-on research questions, each exploring a different analytical dimension of the same subject (drivers, peers or history, risks, what would change the reading). Specific enough to research, 12 to 120 characters, never restating the question, and never presupposing an event the records did not verify: if the question assumed something unverified, ask conditionally or about what is verifiable.
 - No em dashes.`;
 
 /** The user message: question, plan summary, evidence and metrics. */
@@ -312,7 +323,7 @@ export function validateClaim(claim, { byMarker, metricsById }) {
  * Validate a parsed research object. Returns the surviving report and the
  * validation record.
  */
-export function validateResearch(parsed, { marked, metrics }) {
+export function validateResearch(parsed, { marked, metrics, question = '' }) {
   const byMarker = new Map(marked.map((e) => [e.marker, e]));
   const metricsById = new Map(metrics.map((m) => [m.id, m]));
   const ctx = { byMarker, metricsById };
@@ -372,6 +383,17 @@ export function validateResearch(parsed, { marked, metrics }) {
     confidence: ['high', 'medium', 'low'].includes(parsed?.confidence)
       ? parsed.confidence
       : 'medium',
+    /* The Desk Summary's fields, validated (answer-extras.js); empty when the writer left
+       them out. */
+    ...answerExtras(
+      {
+        headline: parsed?.headline,
+        summary: parsed?.summary,
+        takeaways: parsed?.takeaways,
+        related: parsed?.related,
+      },
+      { question },
+    ),
     validation: { log, stats },
   };
 }

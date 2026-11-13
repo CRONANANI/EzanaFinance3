@@ -355,7 +355,16 @@ export function DeepResearchRun({
           {running ? <DraftStatus showing={draft.showing} /> : null}
           <ResearchReport
             state={draft.view}
-            navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
+            navTop={boardUp ? <SonarRunNav onBack={onBack} /> : null}
+            queryBar={
+              boardUp && onPing ? (
+                <SonarRunPingBar
+                  onPing={onPing}
+                  variant="query"
+                  initial={state.run?.researchQuestion || query}
+                />
+              ) : null
+            }
             onRun={onPing}
           />
         </div>
@@ -520,7 +529,16 @@ export function StandardResearchRun({
           {running ? <DraftStatus showing={draft.showing} /> : null}
           <ResearchReport
             state={draft.view}
-            navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
+            navTop={boardUp ? <SonarRunNav onBack={onBack} /> : null}
+            queryBar={
+              boardUp && onPing ? (
+                <SonarRunPingBar
+                  onPing={onPing}
+                  variant="query"
+                  initial={state.run?.researchQuestion || query}
+                />
+              ) : null
+            }
             onRun={onPing}
             deepNote={estimate && onDeep ? deepNoteFrom(deepEstimate) : null}
             onRunDeep={

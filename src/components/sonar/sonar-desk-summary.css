@@ -1,0 +1,427 @@
+/* SonarDeskSummary (Nov 13 2026): the answer card at the top of every Sonar board, the
+   related questions row above it, and its loading state. Scoped sds-. Reads the workspace's
+   --san-* layer (sonar-answer-frame.css), which follows the band's palette in /datasets and
+   the app tokens in a research report, so dark mode and body.light-mode both hold.
+   Sonar card rule: no outlines and no borders; a surface tint and the soft shadow only.
+   Tokens only, no hex, no rgba literals. Mono with tabular numerals for meta and counts. */
+
+.sds {
+  --sds-text: var(--san-text, var(--text-primary));
+  --sds-muted: var(--san-muted, var(--text-secondary));
+  --sds-faint: var(--san-faint, var(--text-muted));
+  --sds-accent: var(--san-accent, var(--emerald-text));
+  --sds-emerald: var(--san-emerald, var(--emerald));
+  --sds-card: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
+  --sds-panel: var(--san-panel, var(--surface-card));
+  --sds-mono: var(--san-mono, var(--font-mono));
+  container: sds / inline-size;
+  min-width: 0;
+  padding: 20px 22px 22px;
+  border-radius: var(--radius-lg);
+  background: var(--sds-panel);
+  box-shadow: var(--snr-soft, var(--shadow-sm));
+  color: var(--sds-text);
+}
+
+/* ── header ─────────────────────────────────────────────────────────── */
+.sds .sds-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-bottom: 14px;
+}
+.sds .sds-tile {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sds-emerald) 16%, transparent);
+  color: var(--sds-accent);
+  font-size: var(--type-body-size);
+}
+.sds .sds-eyebrow {
+  font-family: var(--sds-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--sds-accent);
+}
+.sds .sds-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-left: auto;
+  font-family: var(--sds-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--sds-faint);
+}
+.sds .sds-meta-line span + span::before {
+  content: '·';
+  margin: 0 6px;
+}
+.sds .sds-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── body: two columns, stacked below about 800px of card width ─────── */
+.sds .sds-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 22px;
+  align-items: start;
+}
+@container sds (max-width: 800px) {
+  .sds .sds-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sds .sds-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.sds .sds-subhead {
+  font-size: var(--type-caption-size);
+  color: var(--sds-muted);
+}
+.sds .sds-headline {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--sds-text);
+  text-wrap: balance;
+}
+.sds .sds-headline--q {
+  font-size: 19px;
+}
+.sds .sds-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 680px;
+}
+.sds .sds-summary p,
+.sds .sds-more p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--sds-muted);
+}
+.sds .sds-summary .sds-lead {
+  color: var(--sds-text);
+  font-weight: 600;
+}
+.sds .sds-more summary {
+  cursor: pointer;
+  font-size: var(--type-caption-size);
+  color: var(--sds-accent);
+}
+.sds .sds-more p {
+  margin-top: 8px;
+}
+.sds .sds-cite {
+  margin-left: 2px;
+  font-family: var(--sds-mono);
+  font-size: 0.72em;
+  vertical-align: super;
+  line-height: 0;
+  color: var(--sds-accent);
+  text-decoration: none;
+}
+.sds .sds-cite:hover {
+  text-decoration: underline;
+}
+.sds .sds-cite:focus-visible,
+.sds .sds-all:focus-visible,
+.sds .sds-src:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.sds .sds-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+/* ── right column cards ─────────────────────────────────────────────── */
+.sds .sds-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.sds .sds-card {
+  padding: 14px 14px 12px;
+  border-radius: var(--radius-md);
+  background: var(--sds-card);
+}
+.sds .sds-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-family: var(--sds-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--sds-accent);
+}
+.sds .sds-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--sds-faint);
+}
+.sds .sds-takeaways {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sds .sds-takeaways li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sds-muted);
+}
+.sds .sds-takeaways li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sds-emerald);
+}
+.sds .sds-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sds .sds-src {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.sds a.sds-src:hover {
+  background: color-mix(in srgb, var(--sds-emerald) 8%, transparent);
+}
+.sds .sds-src-tile {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sds-emerald) 14%, transparent);
+  font-family: var(--sds-mono);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  color: var(--sds-accent);
+}
+.sds .sds-src-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.sds .sds-src-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sds-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sds .sds-src-desc {
+  font-size: var(--type-caption-size);
+  color: var(--sds-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sds .sds-src-date {
+  font-family: var(--sds-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--sds-faint);
+}
+.sds .sds-src-out {
+  flex: none;
+  margin-top: 4px;
+  font-size: var(--type-caption-size);
+  color: var(--sds-faint);
+}
+.sds .sds-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--sds-accent);
+  text-decoration: none;
+}
+.sds .sds-all:hover {
+  text-decoration: underline;
+}
+.sds .sds-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sds-muted);
+}
+
+/* ── Market Context's reserved height while its code loads ─────────── */
+.sds .sds-mc-slot {
+  min-height: 360px;
+}
+.sds .sds-mc-wait {
+  height: 360px;
+  border-radius: var(--radius-md);
+  background: var(--sds-card);
+}
+
+/* ── Explore related questions ──────────────────────────────────────── */
+.sds-related {
+  min-width: 0;
+  margin: 0 0 14px;
+}
+.sds-related .sds-related-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--san-accent, var(--emerald-text));
+}
+.sds-related .sds-related-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sds-related .sds-related-q {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
+  color: var(--san-text, var(--text-primary));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.sds-related .sds-related-q:hover {
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 12%, transparent);
+}
+.sds-related .sds-related-q:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.sds-related .sds-related-ico,
+.sds-related .sds-related-go {
+  flex: none;
+  color: var(--san-accent, var(--emerald-text));
+}
+.sds-related .sds-related-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+@media (max-width: 640px) {
+  .sds-related .sds-related-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+  }
+  .sds-related .sds-related-row li {
+    flex: 0 0 min(78%, 260px);
+    scroll-snap-align: start;
+  }
+}
+
+/* ── loading skeleton ───────────────────────────────────────────────── */
+.sds--wait .sds-bone {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sds-emerald) 9%, transparent);
+  animation: sds-pulse 1.4s ease-in-out infinite;
+}
+.sds--wait .sds-bone--eyebrow {
+  width: 110px;
+  height: 12px;
+}
+.sds--wait .sds-bone--headline {
+  height: 26px;
+}
+.sds--wait .sds-bone--line {
+  height: 14px;
+}
+.sds--wait .sds-bone--short {
+  width: 62%;
+}
+.sds--wait .sds-bone--chart {
+  height: 220px;
+  margin-top: 6px;
+}
+.sds--wait .sds-bone--card {
+  height: 150px;
+  border-radius: var(--radius-md);
+}
+@keyframes sds-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sds--wait .sds-bone {
+    animation: none;
+  }
+  .sds-related .sds-related-q {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sds {
+    padding: 16px 14px 18px;
+  }
+  .sds .sds-meta {
+    margin-left: 0;
+    width: 100%;
+  }
+}

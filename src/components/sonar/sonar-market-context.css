@@ -1,0 +1,263 @@
+/* SonarMarketContext (Nov 13 2026): the subject against its benchmark, inside the Desk
+   Summary. Scoped smc-. Reads the workspace's --san-* layer with app-token fallbacks (the
+   expanded view renders in a Modal, outside the workspace). Borderless: a surface tint only.
+   Tokens only; mono with tabular numerals for every number. */
+
+.smc {
+  --smc-text: var(--san-text, var(--text-primary));
+  --smc-muted: var(--san-muted, var(--text-secondary));
+  --smc-faint: var(--san-faint, var(--text-muted));
+  --smc-accent: var(--san-accent, var(--emerald-text));
+  --smc-emerald: var(--san-emerald, var(--emerald));
+  --smc-mono: var(--san-mono, var(--font-mono));
+  --smc-bench: var(--san-faint, var(--text-muted));
+  position: relative;
+  min-width: 0;
+  padding: 14px 14px 12px;
+  border-radius: var(--radius-md);
+  background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
+  color: var(--smc-text);
+}
+.smc--modal {
+  padding: 0;
+  background: transparent;
+}
+.smc--wait {
+  min-height: 360px;
+}
+
+.smc .smc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.smc .smc-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  margin-right: auto;
+  min-width: 0;
+}
+.smc .smc-eyebrow {
+  font-family: var(--smc-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--smc-accent);
+}
+.smc .smc-name {
+  font-family: var(--smc-mono);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  color: var(--smc-text);
+}
+.smc .smc-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.smc .smc-tab,
+.smc .smc-expand,
+.smc .smc-retry {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--smc-emerald) 8%, transparent);
+  color: var(--smc-muted);
+  font-family: var(--smc-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.smc .smc-tab[aria-pressed='true'] {
+  background: var(--smc-emerald);
+  color: color-mix(in srgb, black 86%, var(--smc-emerald));
+  font-weight: 700;
+}
+.smc .smc-expand {
+  padding: 0 8px;
+}
+.smc .smc-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--smc-accent);
+}
+.smc .smc-tab:focus-visible,
+.smc .smc-expand:focus-visible,
+.smc .smc-retry:focus-visible,
+.smc .smc-hit:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.smc .smc-none {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--smc-muted);
+}
+
+.smc .smc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 14px;
+  align-items: center;
+}
+@container sds (max-width: 560px) {
+  .smc .smc-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.smc .smc-chart {
+  position: relative;
+  min-width: 0;
+}
+.smc .smc-svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+.smc .smc-chart--large .smc-svg {
+  height: 380px;
+}
+.smc .smc-grid {
+  stroke: color-mix(in srgb, var(--smc-faint) 18%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.smc .smc-zero {
+  stroke: color-mix(in srgb, var(--smc-faint) 55%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.smc .smc-ytick,
+.smc .smc-xtick {
+  fill: var(--smc-faint);
+  font-family: var(--smc-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.smc .smc-grad-top {
+  stop-color: var(--smc-emerald);
+  stop-opacity: 0.28;
+}
+.smc .smc-grad-bottom {
+  stop-color: var(--smc-emerald);
+  stop-opacity: 0;
+}
+.smc .smc-subject {
+  fill: none;
+  stroke: var(--smc-emerald);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+.smc .smc-bench {
+  fill: none;
+  stroke: var(--smc-bench);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+.smc .smc-cross {
+  stroke: color-mix(in srgb, var(--smc-faint) 60%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.smc .smc-dot {
+  fill: var(--smc-emerald);
+}
+.smc .smc-dot-b {
+  fill: var(--smc-bench);
+}
+.smc .smc-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.smc .smc-tip {
+  position: absolute;
+  top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-md);
+  font-family: var(--smc-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateX(8px);
+}
+.smc .smc-tip[data-side='left'] {
+  transform: translateX(calc(-100% - 8px));
+}
+.smc .smc-tip-date {
+  color: var(--text-muted);
+}
+.smc .smc-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.smc .smc-key {
+  width: 10px;
+  height: 2px;
+  border-radius: var(--radius-sm);
+}
+.smc .smc-key--s {
+  background: var(--smc-emerald);
+}
+.smc .smc-key--b {
+  background: var(--smc-bench);
+}
+
+.smc .smc-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+.smc .smc-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.smc .smc-stats dt {
+  font-family: var(--smc-mono);
+  font-size: var(--type-caption-size);
+  color: var(--smc-faint);
+}
+.smc .smc-stats dd {
+  margin: 0;
+  font-family: var(--smc-mono);
+  font-size: var(--type-value-sm-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.smc .smc-stats .is-up {
+  color: var(--smc-accent);
+}
+.smc .smc-stats .is-down {
+  color: var(--negative);
+}
+.smc .smc-stats .is-flat,
+.smc .smc-stats .is-bench {
+  color: var(--smc-muted);
+}
+.smc .smc-prov {
+  margin: 10px 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--smc-faint);
+}

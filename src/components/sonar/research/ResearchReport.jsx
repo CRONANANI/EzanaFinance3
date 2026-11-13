@@ -652,6 +652,8 @@ export default function ResearchReport({
   /* Nov 13: the research workspace's Next steps ping path and deep research cost line. */
   onRun = null,
   deepNote = null,
+  /* Nov 13: the workspace's query bar, for the top of the board's centre column. */
+  queryBar = null,
 }) {
   const rootRef = useRef(null);
   const sonarPlan = useSonarPlan();
@@ -854,6 +856,7 @@ export default function ResearchReport({
             navTop={navTop}
             onRun={onRun}
             deepNote={deepNote}
+            queryBar={queryBar}
           />
           {state.status === 'running' ? <Progress state={state} /> : null}
           {!unlocked && run ? (
