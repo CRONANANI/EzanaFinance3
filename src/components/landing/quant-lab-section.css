@@ -624,6 +624,151 @@ body.light-mode .qls-section {
   }
 }
 
+/* ── one screen (desktop) ───────────────────────────────────────────────
+   From 1100px wide and 650px tall the whole section, header and footer
+   included, fits the viewport below the fixed nav: the nav's Quant link
+   lands with nothing cut off and nothing to scroll for. The section takes a
+   definite height, the stage pane absorbs whatever is left over, and the
+   spacing and type that do not flex scale with the viewport height through
+   clamp(), down to floors that stay legible. Narrower or shorter screens keep
+   the natural stacked flow above: one screen is not enough room there.
+   The 80px is the section's scroll-margin-top (the nav plus breathing room). */
+@media (min-width: 1100px) and (min-height: 650px) {
+  .qls-section {
+    /* 9px at a 650px-tall viewport, the full 40px from about 960px. */
+    --qls-gap: clamp(8px, (100vh - 560px) * 0.1, 40px);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
+    /* Past this the stage would only grow emptier. */
+    max-height: 1000px;
+    padding-top: var(--qls-gap);
+    padding-bottom: var(--qls-gap);
+  }
+  .qls-container {
+    flex: 1 1 auto;
+    gap: var(--qls-gap);
+    width: 100%;
+    min-height: 0;
+  }
+
+  /* Header: the lead runs on one line where the width allows. */
+  .qls-header,
+  .qls-lead {
+    max-width: 120ch;
+  }
+  .qls-title {
+    margin-top: clamp(4px, 1vh, 10px);
+    font-size: clamp(1.375rem, 3.5vh, 2rem);
+    line-height: 1.2;
+  }
+  .qls-lead {
+    margin-top: clamp(4px, 1.2vh, 12px);
+    font-size: clamp(13px, 1.75vh, 17px);
+    line-height: 1.5;
+  }
+
+  /* Body and panes take the remaining height; the stage flexes. */
+  .qls-body {
+    flex: 1 1 auto;
+    gap: clamp(8px, 1.6vh, 16px);
+    min-height: 0;
+  }
+  .qls-step {
+    gap: clamp(6px, 1vh, 10px);
+    min-height: 0;
+    padding-bottom: clamp(2px, 0.6vh, 6px);
+  }
+  .qls-run {
+    min-height: clamp(36px, 4.8vh, 44px);
+  }
+  .qls-panes {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    min-height: 0;
+  }
+  .qls-pane {
+    gap: clamp(8px, 1.9vh, 20px);
+    min-height: 0;
+  }
+  .qls-pane-rules {
+    flex: 0 1 460px;
+  }
+  .qls-pane-stage {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  /* Rules pane: fixed content, so it scales with the viewport height. */
+  .qls-rules {
+    gap: 0;
+    font-size: clamp(0.75rem, 1.6vh, 0.875rem);
+    line-height: 1.5;
+  }
+  .qls-rule {
+    padding-top: clamp(1px, (100vh - 620px) * 0.02, 4px);
+    padding-bottom: clamp(1px, (100vh - 620px) * 0.02, 4px);
+  }
+  .qls-note {
+    gap: clamp(4px, 0.8vh, 8px);
+    /* Three lines of the longest note plus its tag, so steps do not jump. */
+    min-height: calc(clamp(0.8125rem, 1.7vh, 0.9375rem) * 1.5 * 3 + 1.75rem);
+  }
+  .qls-note-text {
+    font-size: clamp(0.8125rem, 1.7vh, 0.9375rem);
+    line-height: 1.5;
+  }
+  .qls-tiles,
+  .qls-metrics {
+    gap: clamp(8px, 1.6vh, 20px) 16px;
+  }
+  /* The four counts sit on one row, each as wide as its own text. */
+  .qls-tiles {
+    flex-wrap: nowrap;
+  }
+  .qls-tiles .qls-tile {
+    flex: 1 1 auto;
+  }
+  .qls-tile {
+    gap: clamp(1px, 0.4vh, 4px);
+  }
+  .qls-tile-label {
+    white-space: nowrap;
+  }
+  .qls-tile-value {
+    font-size: clamp(0.9375rem, 2vh, 1.125rem);
+  }
+
+  /* Stage pane: the plot and the chart give up height first. */
+  .qls-plot-wrap {
+    gap: clamp(6px, 1.4vh, 14px);
+    min-height: 0;
+  }
+  .qls-plot-row {
+    min-height: 0;
+  }
+  .qls-plot {
+    min-height: 0;
+  }
+  .qls-result {
+    gap: clamp(8px, 1.6vh, 16px);
+    min-height: 0;
+  }
+  .qls-chart {
+    min-height: 0;
+  }
+
+  .qls-footer {
+    gap: clamp(6px, 1.4vh, 20px);
+  }
+  .qls-cta {
+    min-height: clamp(38px, 4.8vh, 44px);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 @keyframes qls-fill {
   from {
     transform: scaleX(0);
