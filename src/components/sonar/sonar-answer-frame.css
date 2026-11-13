@@ -1,7 +1,10 @@
-/* SonarAnswerFrame (Nov 2026): the side navigation beside every Sonar answer. Scoped san-.
-   Inside .snr-band it reads the band's private --snr-* palette; in a research report it falls
-   back to the app tokens, through the --san-* layer. Borderless: no outlines on the nav or
-   its call to action, per the Sonar card rule. Tokens only, no hex. */
+/* SonarAnswerFrame (Nov 13 2026): the research workspace around every Sonar answer. Scoped
+   san-. Three columns on a wide container (left rail, board, right rail), two at mid width
+   (the right rail drops under the board), one on a phone (the sections become chips).
+   Inside .snr-band it reads the band's private --snr-* palette; in a research report it
+   falls back to the app tokens, through the --san-* layer. Borderless: no outlines on the
+   rails or their cards, per the Sonar card rule. Cards are a surface tint; rows inside a
+   card are split by a hairline drawn as a background. Tokens only, no hex. */
 
 .san {
   --san-text: var(--snr-text, var(--text-primary));
@@ -11,6 +14,8 @@
   --san-emerald: var(--snr-emerald, var(--emerald));
   --san-row: var(--snr-row, color-mix(in srgb, black 22%, transparent));
   --san-panel: var(--snr-panel, color-mix(in srgb, black 34%, transparent));
+  --san-card: color-mix(in srgb, var(--san-emerald) 5%, transparent);
+  --san-rule: color-mix(in srgb, var(--san-emerald) 14%, transparent);
   --san-mono: var(--snr-font-mono, var(--font-mono));
   --san-sans: var(--snr-font-sans, var(--font-sans));
   width: 100%;
@@ -28,7 +33,7 @@
   min-width: 0;
 }
 
-/* The column: navTop (Back and the ping bar) over the section nav. */
+/* The left rail: navTop (Back and the ping bar), the Research menu, the sections. */
 .san .san-side {
   display: flex;
   flex-direction: column;
@@ -42,8 +47,9 @@
   min-width: 0;
 }
 
-/* Narrow: a row of chips above the board, the locked ones after the open ones. */
-.san .san-nav {
+/* Narrow: rows of chips above the board, the locked ones after the open ones. */
+.san .san-nav,
+.san .san-research {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -51,53 +57,55 @@
   min-width: 0;
 }
 .san .san-head {
-  display: none;
   margin: 0;
   font-family: var(--san-mono);
   font-size: var(--type-micro-size);
   font-weight: 600;
-  letter-spacing: var(--type-eyebrow-tracking);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  color: var(--san-faint) !important;
+  color: var(--san-accent);
+}
+.san .san-head--locked {
+  color: var(--san-faint);
 }
 .san .san-list {
-  position: relative;
-  min-width: 0;
   display: flex;
   gap: 6px;
+  min-width: 0;
   margin: 0;
   padding: 0;
-  list-style: none;
   overflow-x: auto;
+  list-style: none;
   scrollbar-width: none;
-  max-width: 100%;
 }
 .san .san-list::-webkit-scrollbar {
   display: none;
 }
 .san .san-list li {
-  flex: 0 0 auto;
+  flex: none;
 }
 .san .san-link {
-  /* Positioned, so the visually hidden lock note stays inside the scrolling chip row. */
-  position: relative;
-  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0.3rem 0.85rem;
-  border: 0;
-  border-radius: 999px;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 0.8rem;
+  border-radius: var(--radius-md);
   background: var(--san-row);
-  font-size: var(--type-caption-size);
-  line-height: 1.35;
   color: var(--san-muted);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+  line-height: 1.3;
   text-decoration: none;
   white-space: nowrap;
   transition:
-    color 0.14s ease,
-    background 0.14s ease;
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.san .san-link .bi {
+  flex: none;
+  font-size: 1rem;
+  color: var(--san-faint);
 }
 .san a.san-link:hover {
   color: var(--san-text);
@@ -106,112 +114,260 @@
   outline: 2px solid var(--san-accent);
   outline-offset: 2px;
 }
-.san a.san-link.is-active {
-  color: var(--san-accent);
-  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
+.san a.san-link.is-active,
+.san .san-link.is-current {
+  background: color-mix(in srgb, var(--san-emerald) 22%, transparent);
+  color: var(--san-text);
   font-weight: 600;
 }
-/* Locked: greyed but legible (the faint ink keeps 4.5:1 on the dark ground), never a
-   pointer, never focusable (a span, not a link). */
+.san a.san-link.is-active .bi,
+.san .san-link.is-current .bi {
+  color: var(--san-accent);
+}
 .san .san-link.is-locked {
   color: var(--san-faint);
-  background: color-mix(in srgb, var(--san-row) 60%, transparent);
   cursor: not-allowed;
-  user-select: none;
+  opacity: 0.75;
 }
 .san .san-link.is-locked .bi {
-  font-size: 0.8em;
-  opacity: 0.85;
+  font-size: 0.75rem;
 }
 
+/* "Run deeper research": a tinted card, never an outline. */
 .san .san-cta {
   display: flex;
+  flex: 1 1 100%;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 14px;
-  flex-basis: 100%;
-  padding: 12px 14px;
-  border: 0;
+  gap: 6px 12px;
+  padding: 14px 16px;
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(
-      120% 120% at 0% 0%,
-      color-mix(in srgb, var(--san-emerald) 18%, transparent),
-      transparent 70%
-    ),
-    var(--san-panel);
+  background: color-mix(in srgb, var(--san-emerald) 10%, transparent);
+}
+.san .san-cta-icon {
+  font-size: 1.5rem;
+  color: var(--san-accent);
 }
 .san .san-cta-title {
   margin: 0;
-  font-size: var(--type-caption-size);
-  font-weight: 600;
-  color: var(--san-text) !important;
+  font-size: var(--type-body-size);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--san-text);
+}
+.san .san-cta-count {
+  margin: 0;
+  font-family: var(--san-mono);
+  font-size: var(--type-micro-size);
+  color: var(--san-accent);
 }
 .san .san-cta-line {
+  flex: 1 1 220px;
   margin: 0;
-  flex: 1 1 260px;
+  font-size: var(--type-caption-size);
+  line-height: 1.4;
+  color: var(--san-muted);
+}
+.san .san-cta-note {
+  flex: 1 1 100%;
+  margin: 0;
   font-size: var(--type-micro-size);
-  line-height: 1.5;
-  color: var(--san-muted) !important;
+  line-height: 1.4;
+  color: var(--san-faint);
 }
 .san .san-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 0.4rem 0.95rem;
+  min-height: 44px;
+  padding: 0 14px;
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--san-emerald);
-  font: inherit;
+  color: var(--bg-primary);
+  font-family: var(--san-sans);
   font-size: var(--type-caption-size);
-  font-weight: 600;
-  color: var(--snr-ink, var(--bg-primary));
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 .san .san-cta-btn:hover {
-  filter: brightness(1.08);
+  background: var(--emerald-hover);
 }
 .san .san-cta-btn:focus-visible {
   outline: 2px solid var(--san-accent);
   outline-offset: 2px;
 }
 
-/* Wide: a sticky column on the left. */
-@container san (min-width: 1100px) {
+/* The right rail and its cards. */
+.san .san-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.san .san-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--san-card);
+}
+.san .san-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--san-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--san-accent);
+}
+.san .san-card-head .bi {
+  font-size: 0.9375rem;
+}
+.san .san-steps,
+.san .san-related {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Rows are split by a hairline drawn as a background, so no card carries a border. */
+.san .san-steps li,
+.san .san-related li {
+  background: linear-gradient(var(--san-rule), var(--san-rule)) top / 100% 1px no-repeat;
+}
+.san .san-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--san-text);
+  font-family: var(--san-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.san .san-step-tile {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--san-emerald) 15%, transparent);
+  color: var(--san-accent);
+  font-size: 1.0625rem;
+}
+.san .san-step-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.san .san-step-title {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+.san .san-step-line,
+.san .san-related-meta {
+  font-size: var(--type-micro-size);
+  line-height: 1.35;
+  color: var(--san-muted);
+}
+.san .san-step-go {
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--san-faint);
+  transition: color 0.15s ease;
+}
+.san .san-step:hover .san-step-go {
+  color: var(--san-accent);
+}
+.san .san-step:focus-visible,
+.san .san-related-link:focus-visible,
+.san .san-more:focus-visible {
+  outline: 2px solid var(--san-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.san .san-related-link {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 0;
+  color: var(--san-text);
+  text-decoration: none;
+}
+.san .san-related-title {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.san .san-related-link:hover .san-related-title {
+  color: var(--san-accent);
+}
+.san .san-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--san-accent);
+  text-decoration: none;
+}
+
+/* Mid: the left rail becomes a sticky column; the right rail sits under the board. */
+@container san (min-width: 880px) {
   .san .san-grid {
     grid-template-columns: 200px minmax(0, 1fr);
-    column-gap: 24px;
+    column-gap: 20px;
     align-items: start;
   }
   .san .san-side {
     position: sticky;
     top: calc(var(--navbar-height, 64px) + 20px);
-    gap: 12px;
+    gap: 16px;
     max-height: calc(100vh - var(--navbar-height, 64px) - 40px);
     overflow-y: auto;
     scrollbar-width: thin;
   }
-  .san .san-nav {
+  .san .san-rail {
+    grid-column: 2;
+  }
+  .san .san-nav,
+  .san .san-research {
     flex-direction: column;
-    align-items: stretch;
     flex-wrap: nowrap;
-    gap: 6px;
+    align-items: stretch;
+    gap: 4px;
+  }
+  /* A hairline over the sections, under the Research menu. */
+  .san .san-research + .san-nav {
+    padding-top: 16px;
+    background: linear-gradient(var(--san-rule), var(--san-rule)) top / 100% 1px no-repeat;
   }
   .san .san-head {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 0 4px;
+    padding: 0 6px;
+    margin: 0 0 6px;
   }
+  .san .san-head--deep,
   .san .san-head--locked {
-    margin-top: 10px;
-  }
-  .san .san-list--locked .san-link {
-    min-height: 28px;
-    padding: 0.2rem 0.7rem;
-    font-size: var(--type-micro-size);
+    margin-top: 14px;
   }
   .san .san-list {
     flex-direction: column;
@@ -220,15 +376,16 @@
   }
   .san .san-link {
     display: flex;
-    min-height: 32px;
-    padding: 0.3rem 0.7rem;
-    border-radius: var(--radius-md);
+    min-height: 37px;
+    padding: 0 12px;
     background: transparent;
     white-space: normal;
   }
-  .san a.san-link.is-active {
-    box-shadow: inset 2px 0 0 var(--san-accent);
-    background: color-mix(in srgb, var(--san-emerald) 10%, transparent);
+  .san .san-link--menu {
+    min-height: 40px;
+  }
+  .san .san-list--locked .san-link {
+    min-height: 30px;
   }
   .san .san-link.is-locked {
     background: transparent;
@@ -236,10 +393,20 @@
   .san .san-cta {
     flex-direction: column;
     align-items: flex-start;
-    margin-top: 10px;
+    margin-top: 14px;
   }
   .san .san-cta-line {
     flex: none;
+  }
+}
+
+/* Wide: three columns. */
+@container san (min-width: 1240px) {
+  .san.has-rail .san-grid {
+    grid-template-columns: 200px minmax(0, 1fr) 264px;
+  }
+  .san.has-rail .san-rail {
+    grid-column: 3;
   }
 }
 
@@ -249,7 +416,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .san .san-link {
+  .san .san-link,
+  .san .san-cta-btn,
+  .san .san-step-go {
     transition: none;
   }
 }

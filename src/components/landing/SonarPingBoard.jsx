@@ -29,6 +29,13 @@ import { useId } from 'react';
 import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import {
+  relatedFromDossierEcho,
+  runWorkspaceStep,
+  runnableSteps,
+} from '@/components/sonar/workspace-rail-helpers';
+import { nextSteps } from '@/lib/sonar/workspace';
 import { boardSpans, sourceCoverage, datasetEvidence, hostOf } from '@/lib/sonar/country-board';
 import {
   pingKpis,
@@ -340,6 +347,8 @@ function WebSources({ live }) {
  * deepAction  inline deep research action
  * notice      the "showing results for" notice
  * access, onDeep  the side navigation's lock state and its deep research action
+ * onRun       sends a new question through the host's ping path (Next steps)
+ * deepNote    the deep research cost and quota line for the left rail's card
  */
 export function SonarPingBoard({
   live,
@@ -349,6 +358,8 @@ export function SonarPingBoard({
   notice = null,
   access = null,
   onDeep = null,
+  onRun = null,
+  deepNote = null,
 }) {
   if (!live) return null;
   const matches = datasetEvidence(live).length;
@@ -426,8 +437,36 @@ export function SonarPingBoard({
   const spans = boardSpans(cells);
   const anchors = anchorCells(cells);
   const present = [...new Set(cells.map((c) => c.section))];
+  /* Nov 13: the workspace's right rail, from this answer's own subject and Echo matches. */
+  const steps = runnableSteps(
+    nextSteps({
+      kind: live?.dossier?.kind || null,
+      name: live?.dossier?.name || null,
+      ticker: live?.dossier?.ticker || null,
+      depth: 'quick',
+      unlocked: Boolean(access?.unlocked),
+      present,
+      canDeep: Boolean(onDeep),
+    }),
+    { onRun },
+  );
+  const related = relatedFromDossierEcho(live?.dossier?.echo);
+  const rail =
+    steps.length || related.length ? (
+      <>
+        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+        <SonarRelatedResearch items={related} />
+      </>
+    ) : null;
   return (
-    <SonarAnswerFrame present={present} access={access} onDeep={onDeep} equity={equity}>
+    <SonarAnswerFrame
+      present={present}
+      access={access}
+      onDeep={onDeep}
+      equity={equity}
+      rail={rail}
+      deepNote={deepNote}
+    >
       <div className="snr-cii snr-board snr-pb" role="region" aria-label={`${live.query}: answer`}>
         <div className="snr-bd-grid">
           {cells.map((c) => (

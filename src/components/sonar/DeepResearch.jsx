@@ -36,6 +36,7 @@ import { sendModeEvent } from '@/lib/sonar/mode-events-client';
 import { deepState } from '@/lib/sonar/estimate-copy';
 import { GoDeeperBar } from './GoDeeperBar';
 import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
+import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
 import './deep-research.css';
 
 export { GoDeeperBar, DeepResearchCard, deepSignupHref };
@@ -355,6 +356,7 @@ export function DeepResearchRun({
           <ResearchReport
             state={draft.view}
             navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
+            onRun={onPing}
           />
         </div>
       ) : null}
@@ -519,6 +521,8 @@ export function StandardResearchRun({
           <ResearchReport
             state={draft.view}
             navTop={boardUp ? <SonarRunNav onBack={onBack} onPing={onPing} /> : null}
+            onRun={onPing}
+            deepNote={estimate && onDeep ? deepNoteFrom(deepEstimate) : null}
             onRunDeep={
               estimate && onDeep && !draft.showing ? () => onDeep({ supersede: false }) : null
             }

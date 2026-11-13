@@ -12,7 +12,13 @@ Every Sonar answer is one board with a side navigation. The approved mock-ups an
 
 - `src/lib/sonar/answer-sections.js`: the twelve sections (five free, seven deep), `sectionAccess`
   (who unlocks them, and the call to action for everyone else), `answerNav`, `anchorCells`, `canRender`.
-- `src/components/sonar/SonarAnswerFrame.jsx`: the side navigation beside every board.
+- `src/components/sonar/SonarAnswerFrame.jsx`: the three-column research workspace around every
+  board (left rail: Research menu, sections, deep research card; right rail via its `rail` prop).
+- `src/components/sonar/SonarWorkspaceRail.jsx`: the right rail's Next steps and Related research.
+- `src/lib/sonar/workspace.js`: next steps, follow-up context, the attachment guard, share tokens
+  and the public snapshot whitelist.
+- `src/lib/sonar/market-context.js`: the Market Context card's maths (subject against a benchmark).
+- `src/lib/sonar/research-controls.js`: Research Controls (focus, horizon, data sources).
 - Boards, each a set of cells `{ id, section, span, min, mid?, node }` packed by `boardSpans`:
   - `SonarCountryBoard` (country intelligence);
   - `SonarPingBoard` (every other quick ping);

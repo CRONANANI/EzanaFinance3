@@ -4,10 +4,11 @@ Every Sonar answer uses the same board layout: a quick ping on `/datasets`, a st
 
 The mock-ups come from the founder. Each one shows the ideal answer for one real question. They set the layout, not the copy or the exact numbers: every figure on a real answer comes from Sonar's own data.
 
-| #   | Question                                    | File                                  | Board                                        |
-| --- | ------------------------------------------- | ------------------------------------- | -------------------------------------------- |
-| 01  | Is Turkey's lira under pressure?            | `01-country-fx-turkey-lira.webp`      | `SonarCountryBoard` (country intelligence)   |
-| 02  | Which countries produce the most crude oil? | `02-ranking-crude-oil-producers.webp` | `ResearchBoard` (standard and deep research) |
+| #   | Question                                                    | File                                                                                                                        | Board                                        |
+| --- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 01  | Is Turkey's lira under pressure?                            | `01-country-fx-turkey-lira.webp`                                                                                            | `SonarCountryBoard` (country intelligence)   |
+| 02  | Which countries produce the most crude oil?                 | `02-ranking-crude-oil-producers.webp`                                                                                       | `ResearchBoard` (standard and deep research) |
+| 03  | How will Jensen Huang's resignation affect Nvidia's shares? | `03-workspace-company-event-nvidia.webp` (image pending: the handoff's `sonar-reference.png` was not in the working folder) | the shared research workspace                |
 
 Every other quick ping (a company, a member of Congress, a sector, an industry, flows, sanctions, a commodity, an open question) uses `SonarPingBoard`, which follows the same rows.
 
@@ -35,9 +36,30 @@ Every other quick ping (a company, a member of Congress, a sector, an industry, 
 6. **Methodology and limitations.** This is a locked (deep) section, but data gaps always stay visible in the free Evidence and sources section.
 7. **Evidence and sources.** Category pills, web pages, and "Data not available".
 
+## Research workspace (template 03, Nov 13 2026)
+
+Every answer (ping board, country board, research board) sits in one three-column workspace, `SonarAnswerFrame`:
+
+- **Left rail.** The Research menu, this report's sections, and the "Run deeper research" card. It stays sticky on wide screens: the answer below is long and the section highlight depends on it.
+- **Centre.** The board.
+- **Right rail** (the frame's `rail` prop, `SonarWorkspaceRail.jsx`). Next steps (`nextSteps()` in `lib/sonar/workspace.js`) and Related research (only Ezana Echo articles the answer matched, and later the reader's own saved research). A card with nothing real to show is not rendered.
+
+At mid widths the right rail drops under the board; on phones the sections become a row of chips above it. Once an answer shows on `/datasets` and `/sonar`, the workspace spans the page canvas (logo's left edge to the logout icon's right edge).
+
+Four decisions override the design reference:
+
+1. **Locks stay.** The left rail lists every real section; deep ones stay greyed with a lock until an unlocked deep run.
+2. **No outlines** on any card.
+3. **The rest of the answer stays.** Snapshot, KPI strip, findings, charts, tables and deep sections keep rendering below the answer card.
+4. **Everything shown works.** A feature that needs a backend arrives with it; until then it is not on the page.
+
+Every Next step does something real: `deep` starts deep research, `run` sends a new question through the host's own ping path (a host without one gets no `run` steps), `section` scrolls to a section this answer already has.
+
 ## Side navigation: twelve sections, five free
 
 Source: `lib/sonar/answer-sections.js`, `SonarAnswerFrame`.
+
+The left rail has three groups: **Research** (Current analysis, then history, saved research and the library once those pages exist), **Current report** (this answer's free sections) and **Deep research** (open on an unlocked deep run, otherwise listed with a lock). Under them, the "Run deeper research" card carries the call to action for the reader and, when deep research is available, the same cost and quota line the deep research card shows.
 
 | Free (everyone)      | Deep (deep research on Starter or higher, or an org or partner seat) |
 | -------------------- | -------------------------------------------------------------------- |

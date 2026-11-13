@@ -61,6 +61,13 @@ import {
 import { fxFindings } from '@/lib/sonar/macro/fx-findings';
 import ConflictCountryPanel from '@/components/conflict/ConflictCountryPanel';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import {
+  relatedFromDossierEcho,
+  runWorkspaceStep,
+  runnableSteps,
+} from '@/components/sonar/workspace-rail-helpers';
+import { nextSteps } from '@/lib/sonar/workspace';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
 import './sonar-country-board.css';
@@ -473,6 +480,10 @@ export function SonarCountryBoard({
   /* Nov 6: the side navigation's access (sectionAccess) and its deep research action. */
   access = null,
   onDeep = null,
+  /* Nov 13: Next steps run new questions through the host's ping path; the deep research
+     cost and quota line goes to the left rail's card. */
+  onRun = null,
+  deepNote = null,
 }) {
   const mapId = useId();
   const naId = useId();
@@ -691,10 +702,36 @@ export function SonarCountryBoard({
   const spans = boardSpans(cells.filter((c) => !c.hidden));
   const anchors = anchorCells(cells.filter((c) => !c.hidden));
   const present = [...new Set(cells.filter((c) => !c.hidden).map((c) => c.section))];
+  const steps = runnableSteps(
+    nextSteps({
+      kind: 'country',
+      name: intel.place || dossier.name || null,
+      ticker: null,
+      depth: 'quick',
+      unlocked: Boolean(access?.unlocked),
+      present,
+      canDeep: Boolean(onDeep),
+    }),
+    { onRun },
+  );
+  const related = relatedFromDossierEcho(dossier?.echo);
+  const rail =
+    steps.length || related.length ? (
+      <>
+        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+        <SonarRelatedResearch items={related} />
+      </>
+    ) : null;
   const sources = (intel.sources || []).filter(Boolean);
 
   return (
-    <SonarAnswerFrame present={present} access={access} onDeep={onDeep}>
+    <SonarAnswerFrame
+      present={present}
+      access={access}
+      onDeep={onDeep}
+      rail={rail}
+      deepNote={deepNote}
+    >
       <div
         className="snr-cii snr-board"
         role="region"

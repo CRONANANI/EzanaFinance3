@@ -86,6 +86,7 @@ import {
 } from './SonarCountryStack';
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
+import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
 import { SonarCongressActivityStack } from './SonarCongressActivityStack';
 import { SonarInsiderBuyingStack } from './SonarInsiderBuyingStack';
 import { usdTight } from '@/lib/sec/insider-buys';
@@ -851,6 +852,8 @@ export function SonarSection({
   const { isAuthenticated: signedIn } = useAuth();
   /* Nov 6: who is reading, for the answer's side navigation (locked deep sections). */
   const sonarPlan = useSonarPlan();
+  /* Nov 13: the latest estimate this band fetched, for the workspace's deep research note. */
+  const [bandEstimate, setBandEstimate] = useState(null);
   /* Oct 25 (/datasets only): stackTop is the matching dataset cards, set at
      the top of the right-hand stack. Null on the landing band, which is
      untouched. (The guest account card is no longer a rail in the band; it
@@ -2499,6 +2502,7 @@ export function SonarSection({
     lastPingRef.current = q;
     /* Oct 18: lets the /datasets host follow follow-up pings (CTA copy, ?q=). */
     if (typeof onPing === 'function') onPing(q);
+    setBandEstimate(null);
     setPinging(true);
     setPingError(null);
     /* Nov 2026: the estimate first (fast, nothing spent), then the ping at
@@ -2512,7 +2516,11 @@ export function SonarSection({
         signal: controller.signal,
       })
         .then((r) => (r.ok ? r.json() : null))
-        .then((est) => onEstimate(q, est && est.answer ? est : null))
+        .then((est) => {
+          const value = est && est.answer ? est : null;
+          setBandEstimate(value);
+          onEstimate(q, value);
+        })
         .catch((e) => {
           if (e?.name !== 'AbortError') onEstimate(q, null);
         });
@@ -2794,6 +2802,17 @@ export function SonarSection({
     isGuest: sonarPlan.isGuest,
     version: sonarPlan.version,
   });
+  /* Nov 13: a workspace Next step sends its question through the normal ping path (auth,
+     quota and loader unchanged) and brings the band's top back into view. */
+  const runWorkspacePing = (q) => {
+    if (!q) return;
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    bandRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    runPing(q);
+  };
+
   const runDeep = () => {
     const q = live?.rawQuery || live?.query;
     if (q && typeof onDeepOffer === 'function') onDeepOffer(q, live?.goDeeper?.deep || null);
@@ -4157,6 +4176,8 @@ export function SonarSection({
                   live={live}
                   access={answerAccess}
                   onDeep={runDeep}
+                  onRun={runWorkspacePing}
+                  deepNote={deepNoteFrom(bandEstimate)}
                   deepAction={deepAction || afterAnswer}
                   news={railNews}
                   extra={stackTop}
@@ -4186,6 +4207,8 @@ export function SonarSection({
                   visual={stage2 ? stackBlock : leadTop}
                   access={answerAccess}
                   onDeep={runDeep}
+                  onRun={runWorkspacePing}
+                  deepNote={deepNoteFrom(bandEstimate)}
                   deepAction={deepAction || afterAnswer}
                   notice={
                     live?.understood && !pinging ? (

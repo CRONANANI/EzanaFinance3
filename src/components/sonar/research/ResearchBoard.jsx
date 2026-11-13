@@ -47,6 +47,13 @@ import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sona
 import { planVisualizations } from '@/lib/sonar/insight/viz-plan';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
+import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import {
+  relatedFromEvidence,
+  runWorkspaceStep,
+  runnableSteps,
+} from '@/components/sonar/workspace-rail-helpers';
+import { nextSteps } from '@/lib/sonar/workspace';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
 import { ValuationSection } from '@/components/sonar/valuation/ValuationSection';
 import { snapshotFromModel } from '@/lib/sonar/valuation/history';
@@ -825,6 +832,10 @@ export default function ResearchBoard({
   deepBlocks = [],
   /* Nov 7: Back and the ping bar, at the top of the sections column (the run passes them). */
   navTop = null,
+  /* Nov 13: Next steps run new questions through the run's own ping bar handler; the deep
+     research cost and quota line goes to the left rail's card. */
+  onRun = null,
+  deepNote = null,
 }) {
   const unlocked = Boolean(access?.unlocked);
   const report = state.report;
@@ -1015,6 +1026,28 @@ export default function ResearchBoard({
     ...new Set([...cells.map((c) => c.section), ...blocks.map((b) => b.key).filter(Boolean)]),
   ];
   const seenKeys = new Set(cells.map((c) => c.section));
+  /* Nov 13: the workspace's right rail, from the run's resolved subject and Echo evidence. */
+  const subject = state.plan?.spec?.subject || null;
+  const steps = runnableSteps(
+    nextSteps({
+      kind: subject?.kind || null,
+      name: subject?.label || null,
+      ticker: subject?.kind === 'company' ? subject?.id || null : null,
+      depth: state.plan?.spec?.depth === 'deep' ? 'deep' : 'standard',
+      unlocked,
+      present,
+      canDeep: Boolean(onDeep),
+    }),
+    { onRun },
+  );
+  const related = relatedFromEvidence(evidence);
+  const rail =
+    steps.length || related.length ? (
+      <>
+        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+        <SonarRelatedResearch items={related} />
+      </>
+    ) : null;
 
   return (
     <SonarAnswerFrame
@@ -1023,6 +1056,8 @@ export default function ResearchBoard({
       onDeep={onDeep}
       navTop={navTop}
       equity={equity}
+      rail={rail}
+      deepNote={deepNote}
     >
       <div className="srb" role="region" aria-label="Research answer">
         {resources.length ? <SonarSourceBelt items={resources} /> : null}
