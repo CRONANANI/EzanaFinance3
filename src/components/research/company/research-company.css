@@ -418,9 +418,24 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+/* Heatmap, Add to watchlist, Send chart: the same height as the Company /
+   Industry / Portfolio buttons in the search pill (34px, 36px on phones). */
+.rc-hero__actions .rc-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  gap: 6px;
+}
+@media (max-width: 639px) {
+  .rc-hero__actions .rc-btn {
+    min-height: 36px;
+  }
+}
 .rc-hero__body {
   display: flex;
   flex-wrap: wrap;
+  /* Both columns take the row's height, so the chart ends where the key
+     figures on the left end. */
+  align-items: stretch;
   gap: 24px;
 }
 .rc-hero__price-block {
@@ -484,6 +499,29 @@
   flex: 999 1 420px;
   min-width: 0;
   margin: 0;
+  /* The chart fills the column: its plot grows to the height of the price
+     block beside it, bottom edge level with the last row ("Cap type"). */
+  display: flex;
+  flex-direction: column;
+}
+.rc-hero__chart > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.rc-hero__chart .chart-viewport-sm {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 200px;
+}
+/* Positioned, so its 100% height resolves against the stretched viewport
+   and cannot feed back into the row's height. */
+.rc-hero__chart .chart-viewport-sm > .recharts-responsive-container {
+  position: absolute;
+  inset: 0;
+}
+.rc-hero__chart .rc-skel--chart {
+  height: auto;
+  min-height: 260px;
 }
 
 /* ---------- [D] tool picker ---------- */

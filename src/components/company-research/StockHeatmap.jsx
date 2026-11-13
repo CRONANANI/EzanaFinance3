@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { filterHeatmap } from '@/lib/research/research-filters';
 
 /* ── Static sector data — tickers with YTD change % ─────────────────── */
 const SECTOR_DATA = {
@@ -98,26 +99,43 @@ function sizeClass(absPct) {
   return 'tiny';
 }
 
-export function StockHeatmap({ onSelectStock }) {
+/**
+ * `sectors` (names, empty for all) and `movers` ('all', 'gainers' or
+ * 'decliners') come from the research page's filter menu.
+ */
+export function StockHeatmap({ onSelectStock, sectors = [], movers = 'all' }) {
   const [hoveredTicker, setHoveredTicker] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   /* Build sector groups — sort stocks within each sector by |return| descending */
   const sectorGroups = useMemo(() => {
-    return Object.entries(SECTOR_DATA).map(([sectorName, stocks]) => {
-      const sorted = [...stocks]
-        .map((s) => ({ ...s, absReturn: Math.abs(s.ch), sector: sectorName }))
-        .sort((a, b) => b.absReturn - a.absReturn);
+    return Object.entries(filterHeatmap(SECTOR_DATA, { sectors, movers })).map(
+      ([sectorName, stocks]) => {
+        const sorted = [...stocks]
+          .map((s) => ({ ...s, absReturn: Math.abs(s.ch), sector: sectorName }))
+          .sort((a, b) => b.absReturn - a.absReturn);
 
-      /* Total absolute return for this sector — used to proportion tile widths */
-      const totalAbsReturn = sorted.reduce((sum, s) => sum + s.absReturn, 0);
+        /* Total absolute return for this sector — used to proportion tile widths */
+        const totalAbsReturn = sorted.reduce((sum, s) => sum + s.absReturn, 0);
 
-      return { sectorName, stocks: sorted, totalAbsReturn };
-    });
-  }, []);
+        return { sectorName, stocks: sorted, totalAbsReturn };
+      },
+    );
+  }, [sectors, movers]);
 
   /* Grand total for sector width proportions */
   const grandTotal = sectorGroups.reduce((sum, g) => sum + g.stocks.length, 0);
+
+  if (!sectorGroups.length) {
+    return (
+      <div className="heatmap-container">
+        <p className="crx-filter-empty" role="status">
+          No stocks match these filters. Change or reset them from the filter menu in the search
+          bar.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="heatmap-container">

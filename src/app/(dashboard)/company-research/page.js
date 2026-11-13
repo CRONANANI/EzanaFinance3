@@ -7,6 +7,14 @@ import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
 import { CompanyNews, CompanyOverview, EarningsCard, CompetitorsCard } from '@/components/research';
 import { ViewToggle } from '@/components/research/dossier/ViewToggle';
+import { ResearchFilterMenu } from '@/components/research/ResearchFilterMenu';
+import {
+  chooseFilter,
+  defaultFilters,
+  filterSuggestions,
+  resetFilters,
+  sanitizeFilters,
+} from '@/lib/research/research-filters';
 import { SectionTabs } from '@/components/research/dossier/SectionTabs';
 import { SectionStack } from '@/components/research/dossier/SectionStack';
 import { useSectionStack } from '@/components/research/dossier/useSectionStack';
@@ -64,6 +72,8 @@ import '../org-trading/org-trading.css';
 import '@/components/research/company/research-company.css';
 import '@/styles/home-canvas.css';
 import { markChecklistView } from '@/lib/onboarding/markView';
+
+const FILTERS_STORAGE_KEY = 'ezana.research.filters';
 
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
@@ -159,10 +169,45 @@ function CompanyResearchPageInner() {
   const {
     query,
     setQuery,
-    suggestions,
+    suggestions: allSuggestions,
     loading: searchLoading,
     clearSuggestions,
   } = useCompanySearchFinnhub();
+
+  /* Filter menu in the search pill. Its options follow the selected view;
+     the choices are remembered on this device. Storage can be unavailable,
+     in which case the filters simply start at their defaults. */
+  const [filters, setFilters] = useState(defaultFilters);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(FILTERS_STORAGE_KEY);
+      if (stored) setFilters(sanitizeFilters(JSON.parse(stored)));
+    } catch {
+      /* defaults stand */
+    }
+  }, []);
+  const updateFilters = useCallback((next) => {
+    setFilters(next);
+    try {
+      window.localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* not remembered */
+    }
+  }, []);
+  const handleChooseFilter = useCallback(
+    (forView, groupId, optionId) =>
+      updateFilters(chooseFilter(filters, forView, groupId, optionId)),
+    [filters, updateFilters],
+  );
+  const handleResetFilters = useCallback(
+    (forView) => updateFilters(resetFilters(filters, forView)),
+    [filters, updateFilters],
+  );
+
+  const suggestions = useMemo(
+    () => filterSuggestions(allSuggestions, filters.company.results),
+    [allSuggestions, filters.company.results],
+  );
   const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
@@ -424,6 +469,14 @@ function CompanyResearchPageInner() {
           onFocus={() => {}}
           loading={searchLoading}
           trailing={<ViewToggle view={view} setView={setView} />}
+          filter={
+            <ResearchFilterMenu
+              view={view}
+              filters={filters}
+              onChoose={handleChooseFilter}
+              onReset={handleResetFilters}
+            />
+          }
         />
       </div>
     </>
@@ -434,7 +487,7 @@ function CompanyResearchPageInner() {
       <div className="dashboard-page-inset cr-page ez-canvas">
         <div className="crx-canvas">
           {searchPill}
-          <MarketPortfolioView section={view} />
+          <MarketPortfolioView section={view} filters={filters} />
         </div>
       </div>
     );
@@ -484,7 +537,11 @@ function CompanyResearchPageInner() {
                     id="heatmapContainer"
                     data-task-target="research-company-card"
                   >
-                    <StockHeatmap onSelectStock={handleSelectStock} />
+                    <StockHeatmap
+                      onSelectStock={handleSelectStock}
+                      sectors={filters.company.sectors}
+                      movers={filters.company.movers}
+                    />
                   </div>
                 </div>
               </PinnableCard>

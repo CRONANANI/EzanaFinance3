@@ -6,16 +6,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { CHART } from '@/lib/chart-theme';
+
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
 import { EloSeasonCard } from '@/components/home/EloSeasonCard';
@@ -33,6 +24,15 @@ import { WIRE_NAME } from '@/lib/home/news-center';
 import './broadsheet.css';
 
 // Canvas card, browser-only: its own chunk, so it stays out of /home's first load.
+/* The comparison chart brings the chart library with it: keep both out of
+   the first load. The placeholder reserves the chart's height, so nothing
+   moves when it arrives. */
+const PortfolioComparisonChart = dynamic(
+  () =>
+    import('@/components/home/PortfolioComparisonChart').then((m) => m.PortfolioComparisonChart),
+  { ssr: false, loading: () => <div className="bs-cmp bs-cmp--placeholder" aria-hidden="true" /> },
+);
+
 const ActivityDensityCard = dynamic(
   () => import('@/components/home/ActivityDensityCard').then((m) => m.ActivityDensityCard),
   { ssr: false, loading: () => <div className="adc-skel" aria-hidden="true" /> },
@@ -748,6 +748,22 @@ export default function HomePage() {
     return out;
   }, [sparklinePoints, activeIndices, indexSeries, timeframe, extraChartSeries]);
 
+  /* The lines on the comparison chart, in draw order. The portfolio leads
+     when it is shown; otherwise the first remaining line does. */
+  const comparisonSeries = useMemo(() => {
+    const list = [];
+    if (showPortfolio) {
+      list.push({ key: 'portfolio', label: 'My Portfolio', color: 'var(--emerald)', lead: true });
+    }
+    for (const s of extraChartSeries) list.push({ key: s.key, label: s.label, color: s.color });
+    for (const label of activeIndices) {
+      const key = INDEX_API_KEYS[label];
+      if (key) list.push({ key, label, color: indexColor(label) });
+    }
+    return list;
+  }, [showPortfolio, extraChartSeries, activeIndices]);
+  const formatChartTick = useCallback((at) => formatTickByRange(at, timeframe), [timeframe]);
+
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.user_metadata?.name?.split(' ')[0] ||
@@ -1012,120 +1028,15 @@ export default function HomePage() {
       <section className="bs-band bs-band--cream bs-band--chart">
         <div className="bs-page-inner">
           <div className="bs-chart-block">
-            <div className="bs-chart-range-row">
-              <DateSelector
-                ranges={RANGE_BUTTONS}
-                value={timeframe}
-                onChange={setTimeframe}
-                size="lg"
-              />
-            </div>
-
-            <div className="bs-chart-wide">
-              {valueSeriesLoading || indexSeriesLoading ? (
-                <div className="bs-chart-loading">Loading chart…</div>
-              ) : combinedChartData.length > 1 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={combinedChartData}>
-                    <defs>
-                      <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--bs-green)" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="var(--bs-green)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray={CHART.gridDash}
-                      stroke="var(--bs-border-subtle)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="at"
-                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
-                      axisLine={{ stroke: 'var(--bs-border-rule)' }}
-                      tickLine={false}
-                      interval="preserveStartEnd"
-                      minTickGap={60}
-                      tickFormatter={(at) => formatTickByRange(at, timeframe)}
-                    />
-                    <YAxis
-                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'}
-                      width={55}
-                      domain={['auto', 'auto']}
-                    />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const p = payload[0].payload;
-                        return (
-                          <div className="bs-chart-tooltip">
-                            <div className="bs-chart-tooltip-date">
-                              {formatTickByRange(p.at, timeframe)}
-                            </div>
-                            {payload.map((entry) => (
-                              <div
-                                key={entry.dataKey}
-                                className="bs-chart-tooltip-val"
-                                style={{ color: entry.stroke }}
-                              >
-                                {entry.name}:{' '}
-                                {(entry.value >= 0 ? '+' : '') + entry.value.toFixed(2)}%
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      }}
-                    />
-                    {showPortfolio && (
-                      <Area
-                        type="monotone"
-                        dataKey="portfolio"
-                        name="Portfolio"
-                        stroke="var(--bs-green)"
-                        strokeWidth={2}
-                        fill="url(#portfolioFill)"
-                        isAnimationActive
-                        animationDuration={CHART.animationDuration}
-                      />
-                    )}
-                    {extraChartSeries.map((s) => (
-                      <Area
-                        key={s.key}
-                        type="monotone"
-                        dataKey={s.key}
-                        name={s.label}
-                        stroke={s.color}
-                        strokeWidth={2}
-                        fill="transparent"
-                        isAnimationActive={false}
-                        connectNulls
-                      />
-                    ))}
-                    {Array.from(activeIndices).map((label) => {
-                      const apiKey = INDEX_API_KEYS[label];
-                      if (!apiKey) return null;
-                      return (
-                        <Area
-                          key={apiKey}
-                          type="monotone"
-                          dataKey={apiKey}
-                          name={label}
-                          stroke={indexColor(label)}
-                          strokeWidth={1.5}
-                          fill="transparent"
-                          isAnimationActive={false}
-                          connectNulls
-                        />
-                      );
-                    })}
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="bs-chart-loading">No data for this range</div>
-              )}
-            </div>
+            <PortfolioComparisonChart
+              data={combinedChartData}
+              series={comparisonSeries}
+              timeframe={timeframe}
+              ranges={RANGE_BUTTONS}
+              onTimeframeChange={setTimeframe}
+              formatTick={formatChartTick}
+              loading={valueSeriesLoading || indexSeriesLoading}
+            />
 
             <div className="bs-index-strip">
               {(() => {

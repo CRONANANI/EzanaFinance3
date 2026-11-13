@@ -6,6 +6,7 @@ import { ModelCardShell } from '@/components/research/ModelCardShell';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
 import { resolveSectorQuery } from '@/lib/fmp/sector-performance';
+import { applySectorFilters } from '@/lib/research/research-filters';
 import { SectorDetailModal } from './SectorDetailModal';
 import { DateSelector } from '@/components/ui/DateSelector';
 
@@ -67,7 +68,13 @@ function SectorRow({ row, maxAbs, isHighlighted, onClick, rowRef }) {
   );
 }
 
-export function SectorHeatmap() {
+/**
+ * `direction` ('all', 'advancing', 'declining') and `sort` ('best', 'worst',
+ * 'name') come from the research page's filter menu. They change which rows
+ * are listed and in what order; the headline strip always describes every
+ * sector, so a filter can never change a reported number.
+ */
+export function SectorHeatmap({ direction = 'all', sort = 'best' }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -112,11 +119,17 @@ export function SectorHeatmap() {
     return vals.length ? Math.max(...vals) : 0;
   }, [sorted]);
 
+  const listed = useMemo(
+    () => applySectorFilters(sorted, { direction, sort }),
+    [sorted, direction, sort],
+  );
+
   const { leftCol, rightCol } = useMemo(() => {
-    const left = sorted.slice(0, 6);
-    const right = sorted.slice(6);
+    const half = Math.max(6, Math.ceil(listed.length / 2));
+    const left = listed.slice(0, half);
+    const right = listed.slice(half);
     return { leftCol: left, rightCol: right };
-  }, [sorted]);
+  }, [listed]);
 
   const modalRow = useMemo(
     () => (modalSector ? sorted.find((s) => s.sector === modalSector) : null),
@@ -254,6 +267,11 @@ export function SectorHeatmap() {
                 <div key={i} className="shm-skeleton-row" />
               ))}
             </div>
+          ) : sorted.length > 0 && listed.length === 0 ? (
+            <p className="crx-filter-empty" role="status">
+              No sectors are {direction === 'advancing' ? 'advancing' : 'declining'} over this
+              window. Change or reset the filter from the filter menu in the search bar.
+            </p>
           ) : (
             <>
               <div className="shm-sector-col">{renderColumn(leftCol)}</div>

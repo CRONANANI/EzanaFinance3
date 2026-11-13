@@ -1943,3 +1943,169 @@ body.light-mode .bs-band + .bs-band {
     transition: none;
   }
 }
+
+/* ── Portfolio versus indices chart (Nov 2026) ──────────────────────────
+   Drawn like the company research price chart: change chip and compact
+   range buttons above, quiet grid, end tag, drag to measure. */
+.bs-cmp {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+/* Head (28) + gap + body (240) + gap + hint (18): what the loaded chart takes. */
+.bs-cmp--placeholder {
+  min-height: 302px;
+}
+.bs-cmp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+.bs-cmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+.bs-cmp-chip.is-up {
+  color: var(--bs-green);
+  background: color-mix(in srgb, var(--bs-green) 10%, transparent);
+}
+.bs-cmp-chip.is-down {
+  color: var(--bs-red);
+  background: color-mix(in srgb, var(--bs-red) 10%, transparent);
+}
+.bs-cmp-chip-range {
+  font-weight: 500;
+  opacity: 0.85;
+}
+.bs-cmp-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.bs-cmp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.bs-cmp-body {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+/* Dragging must not select the axis labels. */
+.bs-cmp-body .recharts-wrapper {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.bs-cmp-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-text-label);
+  font-size: 13px;
+}
+.bs-cmp-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--bs-text-label);
+}
+
+/* The readout for a dragged window. It sits over the chart and lets the
+   pointer through, so a click on it still clears the window. */
+.bs-cmp-measure {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  min-width: 232px;
+  max-width: calc(100% - 24px);
+  padding: 10px 14px;
+  border: 1px solid var(--bs-border-rule);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bs-bg-light) 94%, transparent);
+  color: var(--bs-text-dark);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.bs-cmp-measure--up {
+  border-color: color-mix(in srgb, var(--bs-green) 45%, transparent);
+}
+.bs-cmp-measure--down {
+  border-color: color-mix(in srgb, var(--bs-red) 45%, transparent);
+}
+.bs-cmp-measure-range {
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+  text-align: center;
+}
+.bs-cmp-measure-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 14px;
+  row-gap: 2px;
+  margin: 0;
+}
+.bs-cmp-measure-row {
+  display: contents;
+}
+.bs-cmp-measure-row dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.bs-cmp-measure-row dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+.bs-cmp-measure-row:first-child dt,
+.bs-cmp-measure-row:first-child dd {
+  font-size: 14px;
+}
+.bs-cmp-measure-row dd.is-up {
+  color: var(--bs-green);
+}
+.bs-cmp-measure-row dd.is-down {
+  color: var(--bs-red);
+}
+.bs-cmp-measure-row dd.is-na,
+.bs-cmp-measure-row dd.bs-cmp-measure-gap {
+  font-weight: 500;
+  color: var(--bs-text-label);
+}
+.bs-cmp-measure-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.bs-cmp-measure-note {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--bs-text-label);
+  text-align: center;
+}

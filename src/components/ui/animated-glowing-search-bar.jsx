@@ -6,9 +6,11 @@ import React from 'react';
  * Search bar with controlled value, onChange, and optional suggestions dropdown.
  *
  * `trailing` renders inside the pill at the right edge, just left of the
- * filter icon (the research page puts its Company / Industry / Portfolio
- * toggle there). The right side is a flex cluster rather than absolutely
- * positioned, so the input text never runs underneath it.
+ * filter control (the research page puts its Company / Industry / Portfolio
+ * toggle there). `filter` is that control: the research page passes its
+ * filter menu; without one a plain icon is shown. The right side is a flex
+ * cluster rather than absolutely positioned, so the input text never runs
+ * underneath it.
  */
 export function AnimatedGlowingSearchBar({
   value = '',
@@ -24,6 +26,7 @@ export function AnimatedGlowingSearchBar({
   className = '',
   loading = false,
   trailing = null,
+  filter = null,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && value.trim()) {
@@ -59,7 +62,7 @@ export function AnimatedGlowingSearchBar({
         )}
         <div className="agsb-trailing flex flex-none items-center gap-3 pr-4 z-[2]">
           {trailing}
-          <i className="agsb-filter-icon bi bi-sliders" aria-hidden="true" />
+          {filter || <i className="agsb-filter-icon bi bi-sliders" aria-hidden="true" />}
         </div>
       </div>
 
