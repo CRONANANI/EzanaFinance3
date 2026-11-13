@@ -538,14 +538,106 @@ body.light-mode .qls-section {
 }
 .qls-chart-line {
   stroke: var(--qls-accent);
-  stroke-width: 2;
+  stroke-width: 2.5;
 }
+
+/* The result plays as a backtest: both lines draw left to right, then the
+   strategy's end point lands with its return, then the worst drawdown is
+   marked in red along the bottom. Everything runs once and rests; nothing
+   keeps blinking. The global reduced-motion rule below shows it all at once. */
+.qls-chart svg {
+  animation: qls-draw 1.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.qls-chart-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* End of the strategy line: a dot on the last close and its return. */
+.qls-end {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  animation: qls-fade 0.4s ease-out 1.25s both;
+}
+.qls-end-dot {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--qls-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emerald) 22%, transparent);
+  animation: qls-ping 0.9s ease-out 1.45s 2;
+}
+.qls-end-tag {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  /* Opaque, so the lines never strike through the figure. */
+  background: color-mix(in srgb, var(--emerald) 14%, var(--bg-primary));
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--qls-accent-text);
+}
+
+/* Max drawdown: a red line on the chart floor from the peak to the trough,
+   with a dashed drop from each of the two closes down to it. */
+.qls-dd-drop {
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--negative) 60%, transparent);
+  animation: qls-fade 0.4s ease-out 1.7s both;
+}
+.qls-dd-bar {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+}
+/* The line itself is a pseudo-element so its grow-in does not stretch the
+   label that sits on the same span. */
+.qls-dd-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-sm);
+  background: var(--qls-neg);
+  transform-origin: left center;
+  animation: qls-fill 0.5s ease-out 1.7s both;
+}
+.qls-dd-label {
+  position: absolute;
+  bottom: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--qls-neg);
+  animation: qls-fade 0.4s ease-out 2s both;
+}
+
 .qls-holdings {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 24px;
-  padding: 0;
+  /* A green rule between the four figures and the holdings row. */
+  padding: 12px 0 0;
+  border-top: 2px solid var(--qls-accent);
   background: var(--qls-inset);
 }
 .qls-holdings-label {
@@ -775,6 +867,22 @@ body.light-mode .qls-section {
   }
   to {
     transform: scaleX(1);
+  }
+}
+@keyframes qls-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes qls-ping {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px transparent;
   }
 }
 @keyframes qls-fade {

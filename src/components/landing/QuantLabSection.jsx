@@ -112,21 +112,32 @@ function noise(seed, n) {
 function stats(rets) {
   let e = 1;
   let peak = 1;
+  let peakAt = 0;
   let dd = 0;
+  /* Where the worst drawdown ran: index in eq of its peak and its trough. */
+  let ddFrom = 0;
+  let ddTo = 0;
   let sum = 0;
   let sq = 0;
   const eq = [1];
-  rets.forEach((r) => {
+  rets.forEach((r, i) => {
     e *= 1 + r;
     eq.push(e);
-    if (e > peak) peak = e;
-    dd = Math.min(dd, e / peak - 1);
+    if (e > peak) {
+      peak = e;
+      peakAt = i + 1;
+    }
+    if (e / peak - 1 < dd) {
+      dd = e / peak - 1;
+      ddFrom = peakAt;
+      ddTo = i + 1;
+    }
     sum += r;
     sq += r * r;
   });
   const m = sum / rets.length;
   const sd = Math.sqrt(Math.max(sq / rets.length - m * m, 1e-12));
-  return { eq, total: e - 1, dd, sharpe: (m / sd) * Math.sqrt(252) };
+  return { eq, total: e - 1, dd, ddFrom, ddTo, sharpe: (m / sd) * Math.sqrt(252) };
 }
 
 function linePath(vals, min, max, w, h, pad) {
@@ -138,6 +149,17 @@ function linePath(vals, min, max, w, h, pad) {
       return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(' ');
+}
+
+/* The same mapping as linePath, as percentages of the chart box. The svg is
+   stretched (preserveAspectRatio none), so anything that must keep its shape
+   (a dot, a label) is an HTML mark placed with these instead of svg text. */
+function markAt(vals, i, min, max, h, pad) {
+  const r = max - min || 1;
+  return {
+    left: (i / (vals.length - 1)) * 100,
+    top: ((pad + (1 - (vals[i] - min) / r) * (h - 2 * pad)) / h) * 100,
+  };
 }
 
 const pct = (v) => `${v >= 0 ? '+' : '-'}${Math.abs(v * 100).toFixed(2)}%`;
@@ -155,8 +177,15 @@ function buildModel() {
   const min = Math.min(...all);
   const max = Math.max(...all);
   const pathA = linePath(S.eq, min, max, 600, 240, 16);
+  const ddPeak = markAt(S.eq, S.ddFrom, min, max, 240, 16);
+  const ddTrough = markAt(S.eq, S.ddTo, min, max, 240, 16);
   return {
     held,
+    /* Where the strategy line ends, and its total return for the end tag. */
+    end: { top: markAt(S.eq, S.eq.length - 1, min, max, 240, 16).top, value: pct(S.total) },
+    /* The worst peak-to-trough stretch of the strategy, from the same series
+       the Max drawdown tile reads. */
+    drawdown: { peak: ddPeak, trough: ddTrough, value: pct(S.dd) },
     nSignal: STOCKS.filter((s) => s.signal).length,
     nFilter: passing.length,
     pathA,
@@ -347,13 +376,44 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                       viewBox="0 0 600 240"
                       preserveAspectRatio="none"
                       role="img"
-                      aria-label="Illustrative backtest result: strategy after costs against benchmark"
+                      aria-label={`Illustrative backtest result: strategy after costs ends at ${model.end.value} against the benchmark, with a maximum drawdown of ${model.drawdown.value}`}
                     >
                       <path className="qls-chart-grid" d="M0 60H600M0 120H600M0 180H600" />
                       <path className="qls-chart-area" d={model.area} />
                       <path className="qls-chart-bench" d={model.pathB} />
                       <path className="qls-chart-line" d={model.pathA} />
                     </svg>
+                    {/* Marks over the chart. The figures repeat the tiles
+                        below, so the layer is hidden from assistive tech. */}
+                    <div className="qls-chart-marks" aria-hidden="true">
+                      <span
+                        className="qls-dd-drop"
+                        style={{
+                          left: `${model.drawdown.peak.left}%`,
+                          top: `${model.drawdown.peak.top}%`,
+                        }}
+                      />
+                      <span
+                        className="qls-dd-drop"
+                        style={{
+                          left: `${model.drawdown.trough.left}%`,
+                          top: `${model.drawdown.trough.top}%`,
+                        }}
+                      />
+                      <span
+                        className="qls-dd-bar"
+                        style={{
+                          left: `${model.drawdown.peak.left}%`,
+                          width: `${model.drawdown.trough.left - model.drawdown.peak.left}%`,
+                        }}
+                      >
+                        <span className="qls-dd-label">Max drawdown {model.drawdown.value}</span>
+                      </span>
+                      <span className="qls-end" style={{ top: `${model.end.top}%` }}>
+                        <span className="qls-end-tag">Strategy {model.end.value}</span>
+                        <i className="qls-end-dot" />
+                      </span>
+                    </div>
                   </div>
                   <div className="qls-metrics">
                     {model.metrics.map((m) => (
