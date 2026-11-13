@@ -982,6 +982,11 @@ export function SonarSection({
      visitor straight back into the lock they had just left. */
   const programmaticRef = useRef(false);
   const dismissedRef = useRef(false);
+  /* Nov 12: true while the current lock was engaged by the visitor scrolling
+     UP into the band from the sections below. That lock exists only to play
+     the demo in the composed takeover; once the demo ends it stands itself
+     down (see the effect under arrowReady) and the page scrolls freely. */
+  const fromBelowRef = useRef(false);
   const lockedRef = useRef(false);
   const settlingRef = useRef(false);
 
@@ -1202,11 +1207,34 @@ export function SonarSection({
       cancelGlide();
       unfreezeBody();
       endSettle();
+      /* A lock left by hand is no longer the upward-arrival lock. */
+      fromBelowRef.current = false;
       setLock(false);
     };
 
-    const engage = () => {
+    /* Nov 12, upward arrival. upHold swallows the tail of the gesture that
+       carried the visitor up into the band: without it, the trackpad inertia
+       (or a held key, or the finger still on the glass) reads as "upward
+       intent at the band's top" the moment the lock lands and releases it
+       again before the demo can start. It clears on the next fresh gesture.
+       anchorJump marks a scroll the browser is running for an in-page link,
+       which must pass over the band without arming it. */
+    let upHold = false;
+    let lastWheelAt = 0;
+    let anchorJump = false;
+    let anchorTimer = null;
+    const markAnchorJump = () => {
+      anchorJump = true;
+      if (anchorTimer) clearTimeout(anchorTimer);
+      anchorTimer = setTimeout(() => {
+        anchorJump = false;
+      }, 1200);
+    };
+
+    const engage = (fromBelow = false) => {
       if (lockedRef.current || dismissedRef.current) return;
+      fromBelowRef.current = fromBelow;
+      upHold = fromBelow;
       setLock(true);
       settlingRef.current = true;
       const target = bandTop();
@@ -1247,7 +1275,16 @@ export function SonarSection({
     const onScroll = () => {
       const y = window.scrollY;
       const goingDown = y > lastYRef.current;
+      const goingUp = y < lastYRef.current;
       lastYRef.current = y;
+      /* An anchor jump is still running: keep the flag up until the scroll
+         has been quiet for a beat. */
+      if (anchorJump) {
+        if (anchorTimer) clearTimeout(anchorTimer);
+        anchorTimer = setTimeout(() => {
+          anchorJump = false;
+        }, 220);
+      }
       /* A scroll we caused ourselves is not the visitor asking for anything. */
       if (programmaticRef.current && !lockedRef.current) {
         programmaticRef.current = false;
@@ -1270,7 +1307,32 @@ export function SonarSection({
         return;
       }
       /* Arm when the band's top crosses the upper third on the way down. */
-      if (goingDown && band.getBoundingClientRect().top <= window.innerHeight * 0.33) engage();
+      const rect = band.getBoundingClientRect();
+      if (goingDown && rect.top <= window.innerHeight * 0.33) {
+        engage();
+        return;
+      }
+      /* Nov 12: arm on the way UP too, while the demo has not played yet. A
+         visitor who jumped past the band (the nav's Quant link, the arrow)
+         and scrolls back up used to meet it unlocked and uncomposed, with
+         the demo playing in the wrong geometry. Now the band locks in as it
+         does from above, plays the Lockheed Martin ping once, and lets go.
+         The line is the band's bottom crossing mid-screen: earlier than the
+         60% the resting-view demo waits for, so the lock always wins.
+         Skipped on the unlocked tier, during an anchor jump, and once the
+         demo or a real ping has run. */
+      if (
+        goingUp &&
+        !anchorJump &&
+        !demoDoneRef.current &&
+        !hasPingedRef.current &&
+        band.dataset.tier !== 'unlocked' &&
+        rect.top < -4 &&
+        rect.bottom >= window.innerHeight * 0.5
+      ) {
+        dismissedRef.current = false;
+        engage(true);
+      }
     };
 
     /* While locked the wheel drives the BAND, never the page. Leaving the
@@ -1281,7 +1343,20 @@ export function SonarSection({
     /* With the body frozen the page cannot move, so this is no longer about
        blocking it. It drives the band's own scroll and reads exit intent. */
     const onWheel = (e) => {
+      const now = performance.now();
+      const sinceLast = now - lastWheelAt;
+      lastWheelAt = now;
       if (!lockedRef.current) return;
+      if (upHold) {
+        /* A pause in the wheel stream after the glide has landed is a new
+           gesture: from here upward intent releases as usual. */
+        if (!settlingRef.current && sinceLast > 220) {
+          upHold = false;
+        } else {
+          if (e.cancelable) e.preventDefault();
+          return;
+        }
+      }
       /* Oct 15: a wheel over a panel that scrolls on its own (the research
          brief, the sourced matches) belongs to that panel. While it can
          still move in the wheel's direction the browser scrolls it natively;
@@ -1328,6 +1403,8 @@ export function SonarSection({
     const onTouchStart = (e) => {
       touchY = e.touches?.[0]?.clientY ?? null;
       touchX = e.touches?.[0]?.clientX ?? null;
+      /* A new touch after the glide has landed ends the upward-arrival hold. */
+      if (upHold && !settlingRef.current) upHold = false;
       const deck = colsRef.current;
       inDeck = Boolean(deck && e.target instanceof Node && deck.contains(e.target));
     };
@@ -1338,6 +1415,11 @@ export function SonarSection({
         return;
       }
       if (!lockedRef.current || settlingRef.current || touchY === null) return;
+      if (upHold) {
+        /* Still the drag that carried the visitor in. */
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
       const dy = (e.touches?.[0]?.clientY ?? touchY) - touchY;
       const dx = (e.touches?.[0]?.clientX ?? touchX ?? 0) - (touchX ?? 0);
       const insideBand = band.contains(e.target);
@@ -1381,6 +1463,15 @@ export function SonarSection({
       const typing =
         t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
       if (typing) return; /* the ping bar stays typeable, space included */
+      if (upHold) {
+        /* A held Up or PageUp that scrolled the visitor in is still
+           repeating. A fresh press (not a repeat) is a new gesture. */
+        if (e.repeat || settlingRef.current) {
+          if (UP_KEYS.has(e.key) || DOWN_KEYS.has(e.key)) e.preventDefault();
+          return;
+        }
+        upHold = false;
+      }
       const max = band.scrollHeight - band.clientHeight;
       const step = e.key === 'PageDown' || e.key === 'PageUp' ? band.clientHeight * 0.9 : 120;
       if (DOWN_KEYS.has(e.key)) {
@@ -1415,6 +1506,7 @@ export function SonarSection({
         return;
       }
       dismissedRef.current = true;
+      markAnchorJump();
       release();
     };
 
@@ -1443,6 +1535,7 @@ export function SonarSection({
         return;
       }
       dismissedRef.current = true;
+      markAnchorJump();
       release();
     };
 
@@ -1462,6 +1555,7 @@ export function SonarSection({
     return () => {
       if (arriveFrame) cancelAnimationFrame(arriveFrame);
       if (settleTimer) clearTimeout(settleTimer);
+      if (anchorTimer) clearTimeout(anchorTimer);
       cancelGlide();
       document.documentElement.classList.remove('snr-takeover-fade');
       document.body.classList.remove('snr-takeover-fade');
@@ -2984,6 +3078,21 @@ export function SonarSection({
 
   const arrowReady =
     (stage2Settled && typed === -1) || Boolean(pingError) || demoFailed || deadlinePassed;
+
+  /* Nov 12: a lock taken on the way UP into the band is for the demo only.
+     The moment the demo has ended (the same condition that shows the arrow,
+     so a failure or the deadline ends it too) the lock stands down for the
+     rest of the visit and the visitor scrolls either way. The composition
+     stays latched (snr-composed), so nothing resizes when the freeze lifts;
+     the takeover effect above unfreezes the body and restores the scroll. */
+  useEffect(() => {
+    if (!lockedIn || !arrowReady || !fromBelowRef.current) return;
+    fromBelowRef.current = false;
+    dismissedRef.current = true;
+    lockedRef.current = false;
+    settlingRef.current = false;
+    setLockedIn(false);
+  }, [lockedIn, arrowReady]);
 
   /* Stage 2's right-hand stack (Nov 6: a const, so the ping board can place the same cards in
      its charts and data row). */

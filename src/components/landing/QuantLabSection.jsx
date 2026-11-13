@@ -229,7 +229,6 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
     setAuto(true);
   };
 
-  const lastActiveRule = RULES.reduce((acc, r, k) => (r[2] === step ? k : acc), -1);
   const tiles = [
     ['Universe', 0, `${STOCKS.length} stocks`],
     ['After signal', 1, `${model.nSignal} stocks`],
@@ -294,16 +293,13 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
               </div>
 
               <div className="qls-rules">
-                {RULES.map(([key, val, at], k) => {
+                {RULES.map(([key, val, at]) => {
                   const state =
                     at < 0 ? 'comment' : at === step ? 'active' : at > step ? 'pending' : 'done';
                   return (
                     <div key={val} className={`qls-rule is-${state}`}>
                       {key ? <span className="qls-rule-key">{key}</span> : null}
                       <span className="qls-rule-val">{val}</span>
-                      {k === lastActiveRule ? (
-                        <span className="qls-caret" aria-hidden="true" />
-                      ) : null}
                     </div>
                   );
                 })}

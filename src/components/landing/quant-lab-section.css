@@ -11,18 +11,22 @@
    2rem / 700 title every other landing section uses. The button reuses the
    hero's .lp-btn-primary. Vertical rhythm is the shared --landing-gap.
 
-   No borders or outlines on the panes: they separate from the page by
-   surface only. The two thin lines on the scatter are chart axes.
+   The panes are transparent: no fill, no border, no outline. They sit
+   straight on the page and separate by spacing only, so every line in a
+   pane (title, rules, note, tiles) shares one left edge. The two thin lines
+   on the scatter are chart axes.
    ══════════════════════════════════════════════════════════════════════ */
 
 .qls-section {
   --qls-bg: var(--bg-primary);
-  /* Pane surface, one step off the page in either shell. */
-  --qls-card: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
-  --qls-inset: var(--bg-primary);
+  /* Panes and the blocks inside them carry no fill. */
+  --qls-card: transparent;
+  --qls-inset: transparent;
+  /* How far the active rule's tint bleeds past the text on either side. */
+  --qls-rule-bleed: 10px;
   --qls-text: var(--text-primary);
   --qls-muted: var(--text-muted);
-  /* Pending rules and excluded tickers. Holds 4.5:1 on the pane. */
+  /* Pending rules and excluded tickers. Holds 4.5:1 on the page. */
   --qls-dim: color-mix(in srgb, var(--text-primary) 50%, var(--bg-primary));
   --qls-accent: var(--emerald);
   --qls-accent-text: var(--emerald-text);
@@ -195,21 +199,21 @@ body.light-mode .qls-section {
   outline-offset: 3px;
 }
 
-/* ── panes: no border or outline, surface only ──────────────────────── */
+/* ── panes: transparent, no border or outline ───────────────────────── */
 
 .qls-panes {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 16px;
+  /* Wider than before: with no fill, the gap is what separates the panes. */
+  gap: 32px 48px;
 }
 .qls-pane {
   display: flex;
   flex-direction: column;
   gap: 20px;
   min-width: 0;
-  padding: 28px;
-  border-radius: var(--radius-xl);
+  padding: 0;
   background: var(--qls-card);
 }
 .qls-pane-rules {
@@ -245,7 +249,10 @@ body.light-mode .qls-section {
 .qls-rule {
   display: flex;
   align-items: flex-start;
-  padding: 4px 10px;
+  /* The text starts on the pane title's left edge. The padding is cancelled
+     by an equal negative margin, so only the active tint reaches past it. */
+  margin: 0 calc(-1 * var(--qls-rule-bleed));
+  padding: 4px var(--qls-rule-bleed);
   border-radius: var(--radius-sm);
   color: var(--qls-text);
   transition: background 0.3s ease-out;
@@ -272,24 +279,13 @@ body.light-mode .qls-section {
 .qls-rule.is-active .qls-rule-key {
   color: var(--qls-accent-text);
 }
-.qls-caret {
-  flex: none;
-  align-self: center;
-  width: 8px;
-  height: 15px;
-  margin-left: 4px;
-  background: var(--qls-accent);
-  animation: qls-blink 1s step-end infinite;
-}
-
 .qls-note {
   display: flex;
   flex-direction: column;
   gap: 8px;
   /* Fits the longest note, so the pane does not jump between steps. */
   min-height: 160px;
-  padding: 16px 18px;
-  border-radius: var(--radius-md);
+  padding: 0;
   background: var(--qls-inset);
 }
 .qls-note-tag {
@@ -314,7 +310,7 @@ body.light-mode .qls-section {
 .qls-metrics {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px 24px;
 }
 .qls-tiles {
   margin-top: auto;
@@ -325,8 +321,7 @@ body.light-mode .qls-section {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
+  padding: 0;
   background: var(--qls-inset);
 }
 .qls-metrics .qls-tile {
@@ -550,8 +545,7 @@ body.light-mode .qls-section {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 24px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
+  padding: 0;
   background: var(--qls-inset);
 }
 .qls-holdings-label {
@@ -609,9 +603,6 @@ body.light-mode .qls-section {
   .qls-container {
     gap: 28px;
   }
-  .qls-pane {
-    padding: 20px;
-  }
   .qls-pane-stage {
     min-height: 520px;
   }
@@ -622,9 +613,6 @@ body.light-mode .qls-section {
 
 /* Phones: twenty labels crowd a narrow plot, so the excluded ones go. */
 @media (max-width: 480px) {
-  .qls-pane {
-    padding: 16px;
-  }
   .qls-plot {
     margin-right: 44px;
   }
@@ -642,16 +630,6 @@ body.light-mode .qls-section {
   }
   to {
     transform: scaleX(1);
-  }
-}
-@keyframes qls-blink {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
   }
 }
 @keyframes qls-fade {
