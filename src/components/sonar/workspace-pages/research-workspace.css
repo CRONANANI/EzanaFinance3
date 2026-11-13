@@ -1,0 +1,366 @@
+/* Research history, Saved research, Research library and a saved answer (Sonar research
+   workspace, Nov 13 2026). Scoped srw-. The page canvas is the dashboard shell's (logo's left
+   edge to the logout icon's right edge): no max-width and no side padding here. Flat hairline
+   rows in the /home idiom, not bordered cards; the hairline is a background, not a border.
+   Tokens only. */
+
+.srw {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  padding-block: 24px 48px;
+  color: var(--text-primary);
+}
+.srw-side {
+  position: sticky;
+  top: 88px;
+}
+.srw-main {
+  min-width: 0;
+}
+
+/* ── the Research menu ─────────────────────────────────────────────── */
+.srw-menu-head {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.srw-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.srw-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--type-body-size);
+  text-decoration: none;
+}
+.srw-menu-link:hover {
+  background: var(--emerald-bg);
+  color: var(--text-primary);
+}
+.srw-menu-link.is-current {
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.srw-menu-link:focus-visible,
+.srw-row-link:focus-visible,
+.srw-btn:focus-visible,
+.srw-input:focus-visible,
+.srw-folder:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ── page header ──────────────────────────────────────────────────── */
+.srw-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 18px;
+}
+.srw-eyebrow {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.srw-title {
+  margin: 0;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  line-height: var(--type-page-title-leading);
+  letter-spacing: var(--type-page-title-tracking);
+}
+.srw-lede {
+  margin: 6px 0 0;
+  max-width: 640px;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.srw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── sections and flat rows ───────────────────────────────────────── */
+.srw-section + .srw-section {
+  margin-top: 32px;
+}
+.srw-section-title {
+  margin: 0 0 6px;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+}
+.srw-note {
+  margin: 0 0 10px;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.srw-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.srw-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 12px 4px;
+  background: linear-gradient(var(--border-primary), var(--border-primary)) bottom / 100% 1px
+    no-repeat;
+}
+.srw-row-link {
+  flex: 1 1 320px;
+  min-width: 0;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.srw-row-link:hover {
+  color: var(--emerald-text);
+}
+.srw-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.srw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+}
+.srw-chip--live {
+  color: var(--emerald-text);
+}
+.srw-row-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.srw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.srw-btn:hover {
+  background: var(--emerald-bg-hover);
+}
+.srw-btn--primary {
+  background: var(--emerald);
+  color: color-mix(in srgb, black 86%, var(--emerald));
+}
+.srw-btn--danger {
+  color: var(--negative);
+}
+.srw-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.srw-input,
+.srw-select {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-body-size);
+}
+.srw-input {
+  min-width: 220px;
+}
+.srw-empty,
+.srw-error {
+  margin: 12px 0;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.srw-error {
+  color: var(--negative);
+}
+
+/* ── library: folders beside items ────────────────────────────────── */
+.srw-lib {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.srw-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.srw-folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--type-body-size);
+  text-align: left;
+  cursor: pointer;
+}
+.srw-folder:hover,
+.srw-folder[aria-pressed='true'] {
+  background: var(--emerald-bg);
+  color: var(--text-primary);
+}
+.srw-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.srw-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── a saved answer ───────────────────────────────────────────────── */
+.srw-saved-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 14px;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .srw,
+  .srw-lib {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .srw-side {
+    position: static;
+  }
+  .srw-menu-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 480px) {
+  .srw-input {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+/* ── loading and missing states, the screen-reader-only helper ────── */
+.srw-pad {
+  padding-block: 24px;
+}
+.srw-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.srw-saved {
+  padding-block: 16px 48px;
+}
+
+/* ── the public share page (outside the dashboard shell) ──────────── */
+.srw-public {
+  width: min(100% - 32px, 760px);
+  margin: 0 auto;
+  padding-block: 40px 64px;
+  color: var(--text-primary);
+}
+.srw-public-q {
+  margin: 0 0 6px;
+  font-size: var(--type-body-size);
+  color: var(--text-secondary);
+}
+.srw-public .srw-title {
+  margin: 14px 0 12px;
+}
+.srw-public-p {
+  margin: 0 0 12px;
+  font-size: var(--type-prose-size);
+  line-height: var(--type-prose-leading);
+  color: var(--text-secondary);
+}
+.srw-public-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--type-body-size);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.srw-public-foot {
+  margin-top: 32px;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+.srw-public-foot a {
+  color: var(--emerald-text);
+}

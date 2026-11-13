@@ -1,0 +1,144 @@
+/* SonarSaveActions (Nov 13 2026): Save, Share and More in the Desk Summary header, and their
+   dialogs. Scoped ssa-. Borderless buttons on a surface tint with the emerald focus ring;
+   reads the workspace's --san-* layer with app-token fallbacks (the dialogs render in a Modal,
+   outside the workspace). Tokens only. */
+
+.ssa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.ssa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 9%, transparent);
+  color: var(--san-text, var(--text-primary));
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ssa-btn:hover {
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 15%, transparent);
+}
+.ssa-btn[aria-pressed='true'] .bi {
+  color: var(--san-accent, var(--emerald-text));
+}
+.ssa-btn:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+.ssa-btn--icon {
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+}
+.ssa-btn--primary {
+  background: var(--emerald);
+  color: color-mix(in srgb, black 86%, var(--emerald));
+}
+.ssa-btn:focus-visible,
+.ssa-link:focus-visible,
+.ssa-folder:focus-visible,
+.ssa-input:focus-visible,
+.ds-dropdown > span:focus-visible .ssa-btn {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.ssa-link {
+  font-size: var(--type-caption-size);
+  color: var(--san-accent, var(--emerald-text));
+}
+.ssa-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.ssa-error {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--negative);
+}
+
+/* ── dialogs ───────────────────────────────────────────────────────── */
+.ssa-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ssa-muted {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}
+.ssa-row {
+  display: flex;
+  gap: 8px;
+}
+.ssa-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary, var(--bg-secondary));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+}
+.ssa-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.ssa-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.ssa-folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-body-size);
+  text-align: left;
+  cursor: pointer;
+}
+.ssa-folder:hover,
+.ssa-folder[aria-pressed='true'] {
+  background: var(--emerald-bg);
+}
+.ssa-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}

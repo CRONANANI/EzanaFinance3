@@ -654,6 +654,8 @@ export default function ResearchReport({
   deepNote = null,
   /* Nov 13: the workspace's query bar, for the top of the board's centre column. */
   queryBar = null,
+  /* Nov 13: Save, Share and More on the Desk Summary (a live run the reader owns only). */
+  saveable = false,
 }) {
   const rootRef = useRef(null);
   const sonarPlan = useSonarPlan();
@@ -857,6 +859,7 @@ export default function ResearchReport({
             onRun={onRun}
             deepNote={deepNote}
             queryBar={queryBar}
+            saveable={saveable}
           />
           {state.status === 'running' ? <Progress state={state} /> : null}
           {!unlocked && run ? (

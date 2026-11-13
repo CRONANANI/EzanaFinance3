@@ -54,7 +54,14 @@ import {
   relatedFromEvidence,
   runWorkspaceStep,
   runnableSteps,
+  researchMenu,
+  mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
+import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { useSonarPlan } from '@/components/sonar/useSonarPlan';
+import { useSavedRelated } from '@/components/sonar/useSavedRelated';
+import { deskFields, fitSnapshot } from '@/lib/sonar/saved';
+import { snapshotFromState } from '@/lib/org-sonar/reports';
 import { nextSteps } from '@/lib/sonar/workspace';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
 import { ValuationSection } from '@/components/sonar/valuation/ValuationSection';
@@ -96,7 +103,18 @@ function Eyebrow({ id, icon, children }) {
 /* Nov 7: the answer itself is the card's title. Eyebrow and the deep research action on one
    line, the headline across the card, a meta line (data date, lead source, sources used),
    the summary, then the key points in two columns on a wide card. */
-function Executive({ report, run, rank, deepAction, onCite, meta = [], depth, sources, market }) {
+function Executive({
+  report,
+  run,
+  rank,
+  deepAction,
+  onCite,
+  meta = [],
+  depth,
+  sources,
+  market,
+  actions = null,
+}) {
   const headline = run?.headline || report?.headline || boardHeadline(report, rank);
   const summary = boardSummary(report, rank);
   const bullets = boardBullets(report, rank);
@@ -112,6 +130,7 @@ function Executive({ report, run, rank, deepAction, onCite, meta = [], depth, so
     <SonarDeskSummary
       mode={depth === 'deep' ? 'deep' : 'standard'}
       answeredAt={answeredAt}
+      actions={actions}
       subhead={
         meta.length ? (
           <ul className="srb-exec-meta" aria-label="About this answer">
@@ -838,8 +857,12 @@ export default function ResearchBoard({
   deepNote = null,
   /* Nov 13: the workspace's query bar (the run's ping bar), for the top of the centre column. */
   queryBar = null,
+  /* Nov 13: Save, Share and More (a live run only; a saved or org copy passes false). */
+  saveable = false,
 }) {
   const unlocked = Boolean(access?.unlocked);
+  const sonarPlan = useSonarPlan();
+  const signedIn = !sonarPlan.isGuest;
   const report = state.report;
   const run = state.run;
   const runId = run?.runId || state.plan?.runId;
@@ -880,6 +903,49 @@ export default function ResearchBoard({
   const valuationModel = state.panels?.valuation || run?.valuation || null;
   const equity = Boolean(run?.equity || state.plan?.spec?.equity || valuationModel);
   const vSnap = !rank && valuationModel ? snapshotFromModel(valuationModel) : null;
+  /* Nov 13: Save, Share and More, on a live run the reader owns (not a saved or org copy). */
+  const runQuestion = run?.researchQuestion || state.plan?.spec?.question || '';
+  const getSave = () => {
+    const snap = snapshotFromState(state);
+    const depthKey = state.plan?.spec?.depth === 'deep' ? 'deep' : 'standard';
+    const fit = fitSnapshot(
+      snap
+        ? {
+            ...snap,
+            ...deskFields({
+              question: runQuestion,
+              headline: run?.headline || report?.headline || boardHeadline(report, rank) || null,
+              summary: run?.summary || report?.summary || boardSummary(report, rank) || null,
+              takeaways: deskTakeaways(
+                run?.takeaways || report?.takeaways,
+                boardBullets(report, rank).map((b) => b.text),
+              ),
+              sources: deskSourceRows(allResources, 40),
+              depth: depthKey,
+              answeredAt: run?.answeredAt || null,
+            }),
+          }
+        : null,
+    );
+    if (!fit || !runId) return null;
+    return {
+      kind: 'research',
+      runId,
+      question: runQuestion,
+      subject: state.plan?.spec?.subject?.label || null,
+      ticker:
+        state.plan?.spec?.subject?.kind === 'company'
+          ? state.plan?.spec?.subject?.id || null
+          : null,
+      depth: depthKey,
+      controls: run?.controls || {},
+      snapshot: fit.snapshot,
+    };
+  };
+  const saveActions =
+    saveable && run && state.status === 'done' ? (
+      <SonarSaveActions getSave={getSave} question={runQuestion} />
+    ) : null;
   /* Nov 13: Market Context for an answer about one listed company. */
   const subjectSpec = state.plan?.spec?.subject || null;
   const marketTicker =
@@ -906,6 +972,7 @@ export default function ResearchBoard({
           depth={state.plan?.spec?.depth}
           sources={allResources}
           market={market}
+          actions={saveActions}
         />
       ),
     },
@@ -1055,14 +1122,20 @@ export default function ResearchBoard({
     }),
     { onRun },
   );
-  const related = relatedFromEvidence(evidence);
+  const subjectForSaved = state.plan?.spec?.subject || null;
+  const savedRelated = useSavedRelated({
+    ticker: subjectForSaved?.kind === 'company' ? subjectForSaved?.id || null : null,
+    subject: subjectForSaved?.label || null,
+    enabled: signedIn,
+  });
+  const related = mergeRelated(relatedFromEvidence(evidence), savedRelated);
   /* Nov 13: related questions from the run itself (none on an older run). */
   const relatedQs = (run?.related?.length ? run.related : report?.related) || [];
   const rail =
     steps.length || related.length ? (
       <>
         <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} />
+        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
       </>
     ) : null;
 
@@ -1075,6 +1148,7 @@ export default function ResearchBoard({
       equity={equity}
       rail={rail}
       deepNote={deepNote}
+      research={researchMenu({ signedIn })}
       top={
         queryBar || relatedQs.length ? (
           <>

@@ -85,3 +85,52 @@ export function deepNoteFrom(estimate, { pingsSpent = 1 } = {}) {
   const line = [estimate?.deep?.label, state.line].filter(Boolean).join('. ');
   return line || null;
 }
+
+/* ── Nov 13 (prompt 3): the Research menu, saved items, the quick ping save body ── */
+
+/** The Research menu's pages, for a signed-in reader. */
+export const RESEARCH_PAGES = [
+  { key: 'history', label: 'Research history', icon: 'bi-clock-history', href: '/sonar/history' },
+  { key: 'saved', label: 'Saved research', icon: 'bi-bookmark', href: '/sonar/saved' },
+  { key: 'library', label: 'Research library', icon: 'bi-collection', href: '/sonar/library' },
+];
+
+/**
+ * The left rail's Research menu. A guest keeps "Current analysis" only. `current` marks the
+ * page the reader is on ('current' on an answer).
+ */
+export function researchMenu({ signedIn = false, current = 'current', withCurrent = true } = {}) {
+  const head = withCurrent
+    ? [
+        {
+          key: 'current',
+          label: 'Current analysis',
+          icon: 'bi-chat-square-text',
+          current: current === 'current',
+          href: current === 'current' ? undefined : '/sonar',
+        },
+      ]
+    : [];
+  if (!signedIn) return head;
+  return [...head, ...RESEARCH_PAGES.map((p) => ({ ...p, current: p.key === current }))];
+}
+
+/** Related research from the reader's own saved items (at most two). */
+export function relatedFromSaved(items) {
+  return (Array.isArray(items) ? items : [])
+    .filter((s) => s && s.id && s.title)
+    .slice(0, 2)
+    .map((s) => ({
+      key: `saved:${s.id}`,
+      title: s.title,
+      href: `/sonar/saved/${s.id}`,
+      kind: 'Saved research',
+      meta: shortDate(s.created_at),
+    }));
+}
+
+/** Echo matches first (up to three), then the reader's saved items (up to two). */
+export const mergeRelated = (echo, saved) => [
+  ...(echo || []).slice(0, 3),
+  ...relatedFromSaved(saved),
+];

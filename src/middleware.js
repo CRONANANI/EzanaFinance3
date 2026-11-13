@@ -6,6 +6,7 @@ import {
   matchesRoutePrefix,
   PARTNER_DASHBOARD_ROUTES,
   USER_DASHBOARD_ROUTES,
+  PUBLIC_ROUTE_EXCEPTIONS,
 } from '@/lib/auth/protected-routes';
 import { withTimeout } from '@/lib/with-timeout';
 import { logger } from '@/lib/logger';
@@ -434,7 +435,9 @@ async function handle(request, requestId) {
   }
 
   const onPartnerProtectedRoute = matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES);
-  const onUserProtectedRoute = matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES);
+  const onUserProtectedRoute =
+    matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES) &&
+    !matchesRoutePrefix(pathname, PUBLIC_ROUTE_EXCEPTIONS);
 
   /** Trading landing + paper trading — public (no sign-in required to view CTA / mock) */
   const isTradingPublicPath = pathname === '/trading' || pathname === '/trading/mock';
@@ -512,7 +515,10 @@ async function handle(request, requestId) {
     const isAuthPage = pathname.startsWith('/auth');
     const isApiRoute = pathname.startsWith('/api');
     const isPublicRoute =
-      pathname === '/' || pathname === '/waitlist' || pathname.startsWith('/select-plan');
+      pathname === '/' ||
+      pathname === '/waitlist' ||
+      pathname.startsWith('/select-plan') ||
+      matchesRoutePrefix(pathname, PUBLIC_ROUTE_EXCEPTIONS);
 
     // Org (university) routes are gated too: /onboarding detects org
     // membership and shows the role questionnaire (OrgQuestionnaire), not the

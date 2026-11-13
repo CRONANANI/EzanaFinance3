@@ -366,6 +366,7 @@ export function DeepResearchRun({
               ) : null
             }
             onRun={onPing}
+            saveable
           />
         </div>
       ) : null}
@@ -540,6 +541,7 @@ export function StandardResearchRun({
               ) : null
             }
             onRun={onPing}
+            saveable
             deepNote={estimate && onDeep ? deepNoteFrom(deepEstimate) : null}
             onRunDeep={
               estimate && onDeep && !draft.showing ? () => onDeep({ supersede: false }) : null

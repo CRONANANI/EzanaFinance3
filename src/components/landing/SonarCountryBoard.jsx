@@ -69,7 +69,13 @@ import {
   relatedFromDossierEcho,
   runWorkspaceStep,
   runnableSteps,
+  researchMenu,
+  mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
+import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { useSonarPlan } from '@/components/sonar/useSonarPlan';
+import { useSavedRelated } from '@/components/sonar/useSavedRelated';
+import { deskFields } from '@/lib/sonar/saved';
 import { nextSteps } from '@/lib/sonar/workspace';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
@@ -117,7 +123,7 @@ function Spark({ tile }) {
 /* Nov 13 (research workspace): the shared Desk Summary. A new answer carries its own
    headline, summary, takeaways and related questions; an older cached one keeps the board's
    reading (boardHeadline, boardAnswer and its drivers as the takeaways). */
-function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
+function ExecutiveAnswer({ live, intel, deepAction, notice, remaining, saveable = false }) {
   const headline = live?.headline || boardHeadline({ intel, query: live?.rawQuery || live?.query });
   const a = boardAnswer(intel);
   const summary = summaryParas(live?.summary);
@@ -129,11 +135,43 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
     el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     el.focus({ preventScroll: true });
   };
+  const takeaways = deskTakeaways(
+    live?.takeaways,
+    a.bullets.map((b) =>
+      b.title ? `${b.title.replace(/[.:]\s*$/, '')}: ${b.text}` : String(b.text || ''),
+    ),
+  );
+  const question = live?.rawQuery || live?.query || '';
+  /* Nov 13: what Save stores: this card as the reader saw it, never private fields. */
+  const getSave = () => ({
+    kind: 'ping',
+    question,
+    subject: intel?.place || live?.dossier?.name || null,
+    ticker: null,
+    depth: 'quick',
+    snapshot: {
+      v: 1,
+      kind: 'ping',
+      ...deskFields({
+        question,
+        headline: headline || null,
+        summary: live?.summary || a.text || null,
+        takeaways,
+        sources: deskSourceRows(sources, 40),
+        depth: 'quick',
+        answeredAt: live?.answeredAt || null,
+      }),
+      subject: intel?.place || live?.dossier?.name || null,
+      dataAsOf: intel?.asOf || null,
+      related: live?.related || [],
+    },
+  });
   return (
     <SonarDeskSummary
       mode="quick"
       answeredAt={live?.answeredAt || null}
       dataAsOf={intel?.asOf || null}
+      actions={saveable ? <SonarSaveActions getSave={getSave} question={question} /> : null}
       notice={notice}
       headline={headline || null}
       question="Desk summary"
@@ -161,12 +199,7 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining }) {
           ) : null}
         </div>
       }
-      takeaways={deskTakeaways(
-        live?.takeaways,
-        a.bullets.map((b) =>
-          b.title ? `${b.title.replace(/[.:]\s*$/, '')}: ${b.text}` : String(b.text || ''),
-        ),
-      )}
+      takeaways={takeaways}
       sources={deskSourceRows(sources)}
       sourceCount={sources.length}
     />
@@ -496,6 +529,14 @@ export function SonarCountryBoard({
   const mapId = useId();
   const naId = useId();
   const cfId = useId();
+  /* Nov 13: who is reading (the Research menu and Save), and their own saved research on
+     this country for the right rail. */
+  const sonarPlan = useSonarPlan();
+  const signedIn = !sonarPlan.isGuest;
+  const savedRelated = useSavedRelated({
+    subject: live?.dossier?.intel?.place || live?.dossier?.name || null,
+    enabled: signedIn,
+  });
   /* The host's dataset cards fetch on their own and render nothing when no card matches.
      The cell stays mounted (so the fetch can land) but leaves the packing while empty,
      so an empty cell never holds half a row open. */
@@ -543,6 +584,7 @@ export function SonarCountryBoard({
           deepAction={deepAction}
           notice={notice}
           remaining={live.remaining}
+          saveable
         />
       ),
     },
@@ -723,12 +765,12 @@ export function SonarCountryBoard({
     }),
     { onRun },
   );
-  const related = relatedFromDossierEcho(dossier?.echo);
+  const related = mergeRelated(relatedFromDossierEcho(dossier?.echo), savedRelated);
   const rail =
     steps.length || related.length ? (
       <>
         <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} />
+        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
       </>
     ) : null;
   const sources = (intel.sources || []).filter(Boolean);
@@ -740,6 +782,7 @@ export function SonarCountryBoard({
       onDeep={onDeep}
       rail={rail}
       deepNote={deepNote}
+      research={researchMenu({ signedIn })}
       top={
         queryBar || live?.related?.length ? (
           <>

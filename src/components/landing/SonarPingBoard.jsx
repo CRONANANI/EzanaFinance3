@@ -34,7 +34,13 @@ import {
   relatedFromDossierEcho,
   runWorkspaceStep,
   runnableSteps,
+  researchMenu,
+  mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
+import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { useSonarPlan } from '@/components/sonar/useSonarPlan';
+import { useSavedRelated } from '@/components/sonar/useSavedRelated';
+import { deskFields } from '@/lib/sonar/saved';
 import { nextSteps } from '@/lib/sonar/workspace';
 import {
   boardSpans,
@@ -81,7 +87,7 @@ const remainingLine = (live) =>
 /* Nov 13 (research workspace): the answer is the shared Desk Summary. A new answer carries
    its own headline, summary, takeaways and related questions; an older cached one keeps the
    board's reading of the brief (the question as the title, the paragraphs, the lead first). */
-function Executive({ live, answer, deepAction, notice, sources }) {
+function Executive({ live, answer, deepAction, notice, sources, actions = null }) {
   const paras = answerParagraphs(live?.answer, 12);
   const summary = summaryParas(live?.summary);
   const headline = live?.headline || null;
@@ -90,6 +96,7 @@ function Executive({ live, answer, deepAction, notice, sources }) {
     <SonarDeskSummary
       mode="quick"
       answeredAt={live?.answeredAt || null}
+      actions={actions}
       notice={notice}
       headline={headline}
       question={live?.query}
@@ -120,7 +127,7 @@ function Executive({ live, answer, deepAction, notice, sources }) {
    companyBrief); an older brief without a headline shows its summary and keeps the rest
    behind "More from the brief", never relabelled. Nov 13: rendered as the Desk Summary, with
    Market Context against the company's sector benchmark. */
-function CompanyExecutive({ live, identity, deepAction, notice, sources, market }) {
+function CompanyExecutive({ live, identity, deepAction, notice, sources, market, actions = null }) {
   const brief = companyBrief(live?.answer);
   const foot = briefFooter(live);
   const summary = summaryParas(live?.summary);
@@ -130,6 +137,7 @@ function CompanyExecutive({ live, identity, deepAction, notice, sources, market 
       mode="quick"
       answeredAt={live?.answeredAt || null}
       dataAsOf={identity.asOf}
+      actions={actions}
       notice={notice}
       subhead={
         <p className="snr-pb-co-id">
@@ -168,6 +176,43 @@ function CompanyExecutive({ live, identity, deepAction, notice, sources, market 
       market={market}
     />
   );
+}
+
+/* Nov 13: what Save stores for a quick ping: the Desk Summary as the reader saw it (an older
+   answer's own reading where the payload has no fields). Private fields never go in. */
+function pingSave(live, sources, identity) {
+  const question = live?.rawQuery || live?.query || '';
+  const brief = identity ? companyBrief(live?.answer) : null;
+  const paras = answerParagraphs(live?.answer, 12);
+  const summary =
+    live?.summary || (brief?.summary ? brief.summary : paras.slice(0, 3).join('\n\n'));
+  return {
+    kind: 'ping',
+    question,
+    subject: live?.dossier?.name || null,
+    ticker: live?.dossier?.ticker || null,
+    depth: 'quick',
+    snapshot: {
+      v: 1,
+      kind: 'ping',
+      ...deskFields({
+        question,
+        headline: live?.headline || brief?.headline || null,
+        summary: summary || null,
+        takeaways: deskTakeaways(
+          live?.takeaways,
+          brief ? brief.takeaways.map((t) => `${t.label}: ${t.text}`) : [],
+        ),
+        sources: deskSourceRows(sources, 40),
+        depth: 'quick',
+        answeredAt: live?.answeredAt || null,
+      }),
+      subject: live?.dossier?.name || null,
+      ticker: live?.dossier?.ticker || null,
+      dataAsOf: identity?.asOf || null,
+      related: live?.related || [],
+    },
+  };
 }
 
 function Matches({ live }) {
@@ -324,6 +369,15 @@ export function SonarPingBoard({
   deepNote = null,
   queryBar = null,
 }) {
+  /* Nov 13: who is reading (the Research menu and Save), and their own saved research on
+     this subject for the right rail. Hooks before the early return. */
+  const sonarPlan = useSonarPlan();
+  const signedIn = !sonarPlan.isGuest;
+  const savedRelated = useSavedRelated({
+    ticker: live?.dossier?.ticker || null,
+    subject: live?.dossier?.name || null,
+    enabled: signedIn && Boolean(live),
+  });
   if (!live) return null;
   const matches = datasetEvidence(live).length;
   /* Nov 2026: one listed company gets the equity brief and the Valuation snapshot. */
@@ -337,6 +391,12 @@ export function SonarPingBoard({
   /* Nov 13: every resource the answer used (the Desk Summary's true count) and Market
      Context for one listed company, against its sector benchmark from the dossier profile. */
   const sources = pingResources(live, { max: Infinity });
+  const saveActions = (
+    <SonarSaveActions
+      getSave={() => pingSave(live, sources, identity)}
+      question={live?.rawQuery || live?.query || ''}
+    />
+  );
   const profile = live?.dossier?.profile || {};
   const market =
     identity && equity
@@ -372,6 +432,7 @@ export function SonarPingBoard({
               notice={notice}
               sources={sources}
               market={market}
+              actions={saveActions}
             />
           ) : (
             <Executive
@@ -380,6 +441,7 @@ export function SonarPingBoard({
               deepAction={deepAction}
               notice={notice}
               sources={sources}
+              actions={saveActions}
             />
           ),
         },
@@ -437,12 +499,12 @@ export function SonarPingBoard({
     }),
     { onRun },
   );
-  const related = relatedFromDossierEcho(live?.dossier?.echo);
+  const related = mergeRelated(relatedFromDossierEcho(live?.dossier?.echo), savedRelated);
   const rail =
     steps.length || related.length ? (
       <>
         <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} />
+        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
       </>
     ) : null;
   return (
@@ -453,6 +515,7 @@ export function SonarPingBoard({
       equity={equity}
       rail={rail}
       deepNote={deepNote}
+      research={researchMenu({ signedIn })}
       top={
         queryBar || live?.related?.length ? (
           <>

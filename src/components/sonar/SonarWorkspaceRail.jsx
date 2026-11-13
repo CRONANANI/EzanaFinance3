@@ -55,7 +55,7 @@ export function SonarRelatedResearch({ items = [], moreHref = null }) {
         Related research
       </h2>
       <ul className="san-related">
-        {items.slice(0, 3).map((it) => (
+        {items.slice(0, 5).map((it) => (
           <li key={it.key}>
             <Link href={it.href} className="san-related-link">
               <span className="san-related-title">{it.title}</span>

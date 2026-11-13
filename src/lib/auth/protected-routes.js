@@ -36,6 +36,12 @@ export const USER_DASHBOARD_ROUTES = [
   '/org-competitions',
 ];
 
+/**
+ * Public pages under a protected prefix. Nov 13 2026: a Sonar share link (/sonar/shared/[token])
+ * opens with no account; the page reads only the public whitelist of one shared answer.
+ */
+export const PUBLIC_ROUTE_EXCEPTIONS = ['/sonar/shared'];
+
 /** Logged-in partners; unauthenticated users go to partner login */
 export const PARTNER_DASHBOARD_ROUTES = [
   '/partner-home',
