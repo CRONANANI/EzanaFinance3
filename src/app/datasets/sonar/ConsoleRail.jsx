@@ -6,17 +6,21 @@
  * lands feeds one card per dimension, in taxonomy order.
  *
  * What is real (all from src/lib/datasets/taxonomy.js via page.js): the name,
- * Bootstrap icon, tagline, live/total count and, when a card is selected, its
- * dataset list with each dataset's own live or soon state (text and icon,
- * never colour alone).
+ * Bootstrap icon, tagline and, when a card is selected, its dataset list with
+ * each dataset's own live or soon state (text and icon, never colour alone).
  *
- * Oct 31: the card face is centred: the icon above a one-line title, the
- * tagline and the count. The dimension-level Live / Partial / Soon badge is
- * gone from the face; the count says the same thing.
+ * Oct 31: the card face is centred: the icon above a one-line title, then
+ * the tagline.
  *
- * The activity line renders only from a real series (`d.series`, an array of
- * numbers). No dimension has one today, so every card draws the dashed
- * baseline. Never generate or smooth a series for decoration.
+ * Nov 12: a compact face. Under the title sits one dashed rule, edge to edge
+ * and at the same height in every card, so the seven read as a single broken
+ * line across the rail. The live/total count is gone from the face (each
+ * dataset's state is in the list a selected card opens), and the fixed
+ * minimum height with it.
+ *
+ * The rule becomes an activity line only for a real series (`d.series`, an
+ * array of numbers). No dimension has one today, so every card draws the
+ * dashed rule. Never generate or smooth a series for decoration.
  *
  * Selecting a card drives the shared SonarSelection (and ?dimension=). While a
  * signal brief is open, choosing a card opens that dimension's freshest signal
@@ -35,19 +39,7 @@ const SH = 22;
 function ActivityLine({ series }) {
   const ok =
     Array.isArray(series) && series.length > 1 && series.every((v) => Number.isFinite(Number(v)));
-  if (!ok) {
-    return (
-      <svg
-        className="dsi-card__spark"
-        viewBox={`0 0 ${SW} ${SH}`}
-        preserveAspectRatio="none"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <path className="dsi-card__spark-base" d={`M0 ${SH / 2}H${SW}`} />
-      </svg>
-    );
-  }
+  if (!ok) return <span className="dsi-card__rule" aria-hidden="true" />;
   const nums = series.map(Number);
   const min = Math.min(...nums);
   const span = Math.max(...nums) - min || 1;
@@ -72,8 +64,6 @@ function ActivityLine({ series }) {
 }
 
 function Card({ d, on, onChoose }) {
-  const total = d.items.length;
-  const live = d.liveCount;
   const listId = `dsi-list-${d.id}`;
 
   return (
@@ -98,17 +88,6 @@ function Card({ d, on, onChoose }) {
       <ActivityLine series={d.series} />
 
       {d.tagline ? <p className="dsi-card__desc">{d.tagline}</p> : null}
-
-      <div className="dsi-card__foot">
-        <span className="dsi-card__count">
-          <span aria-hidden="true">
-            {live}/{total}
-          </span>
-          <span className="dsi-vh">
-            {live} of {total} datasets live
-          </span>
-        </span>
-      </div>
 
       <div id={listId} className="dsi-card__more" hidden={!on}>
         <ul className="dsi-card__list">
