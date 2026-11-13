@@ -2,6 +2,7 @@
 
 import { forwardRef, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NavIcon from '@/components/nav/NavIcon';
 import { useChecklistProgress } from '@/hooks/useChecklistProgress';
@@ -16,8 +17,6 @@ const Icon = ({ name, size = 16, className = '', label }) => (
     {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' })}
   />
 );
-
-const RING_C = 2 * Math.PI * 38; // r = 38 in an 88 viewBox
 
 function useIsPhone() {
   const [isPhone, setIsPhone] = useState(false);
@@ -35,6 +34,10 @@ function useIsPhone() {
  * Navbar trigger + Getting Started checklist (Nov 2026).
  * >= 768px: anchored dropdown under the trigger.
  * <  768px: bottom sheet with scrim, portaled to <body>.
+ * Nov 12 2026 redesign: a flat ledger in the /home idiom. No title, ring or
+ * header art (the trigger names the panel): one progress strip, then stages
+ * as hairline-separated sections whose tasks are plain rows. Every task row
+ * is a real link to the page where that task is done.
  * Hides itself entirely once every task is done, unless `showWhenComplete`.
  * The trigger keeps the nav's summit glyph and corner badge; `variant="partner"`
  * switches the accent to gold.
@@ -102,6 +105,7 @@ export default function GettingStartedChecklist({ showWhenComplete = false, vari
       variant={isPhone ? 'sheet' : 'popover'}
       data={data}
       onNavigate={go}
+      onFollow={() => setOpen(false)}
       onClose={close}
     />
   );
@@ -148,7 +152,7 @@ export default function GettingStartedChecklist({ showWhenComplete = false, vari
 
 // forwardRef: Next 14 ships React 18, where ref is not a regular prop.
 const ChecklistPanel = forwardRef(function ChecklistPanel(
-  { id, variant, data, onNavigate, onClose },
+  { id, variant, data, onNavigate, onFollow, onClose },
   ref,
 ) {
   const { stages, total, doneCount, xp, allDone, activeStage, tasksLeftInStage, nextTask } = data;
@@ -156,7 +160,7 @@ const ChecklistPanel = forwardRef(function ChecklistPanel(
   const isSheet = variant === 'sheet';
 
   const footText = allDone
-    ? `All ${total} tasks complete`
+    ? 'Live trading unlocked'
     : `${tasksLeftInStage} ${tasksLeftInStage === 1 ? 'task' : 'tasks'} left in Stage ${activeStage.number}`;
   const ctaLabel = allDone ? 'Start trading' : doneCount === 0 ? 'Start' : 'Resume';
   const ctaHref = allDone ? LIVE_TRADING_HREF : nextTask?.href;
@@ -171,41 +175,16 @@ const ChecklistPanel = forwardRef(function ChecklistPanel(
       aria-modal={isSheet || undefined}
       aria-label="Getting started checklist"
     >
+      {/* One progress strip, no title: count, XP and the bar. */}
       <header className="gsc-head">
-        <svg className="gsc-head-art" viewBox="0 0 200 70" aria-hidden="true">
-          <path d="M0 70 L70 30 L95 44 L140 6 L200 40 L200 70 Z" />
-          <path d="M60 70 L120 34 L150 50 L200 22 L200 70 Z" />
-        </svg>
         {isSheet && <span className="gsc-handle" aria-hidden="true" />}
         <div className="gsc-head-row">
-          <div className="gsc-ring">
-            <svg viewBox="0 0 88 88" aria-hidden="true">
-              <circle className="gsc-ring-track" cx="44" cy="44" r="38" />
-              <circle
-                className="gsc-ring-fill"
-                cx="44"
-                cy="44"
-                r="38"
-                strokeDasharray={RING_C}
-                strokeDashoffset={RING_C * (1 - pct)}
-              />
-            </svg>
-            <div className="gsc-ring-label">
-              <span className="gsc-mono gsc-ring-count">
-                {doneCount}/{total}
-              </span>
-              {!isSheet && <span className="gsc-mono gsc-ring-caption">TASKS</span>}
-            </div>
-          </div>
-          <div className="gsc-head-copy">
-            <h2>{allDone ? 'Live trading unlocked' : 'Getting started'}</h2>
-            <p>
-              {allDone
-                ? 'You finished every task. Your account is ready to trade.'
-                : 'Finish these to unlock live trading'}
-            </p>
-            {!isSheet && <Progress doneCount={doneCount} total={total} pct={pct} xp={xp} />}
-          </div>
+          <span className="gsc-count gsc-mono">
+            {doneCount}
+            <span className="gsc-count-of">/{total}</span>
+          </span>
+          <span className="gsc-count-label">tasks done</span>
+          <span className="gsc-xp gsc-mono">{xp} XP</span>
           {isSheet && (
             <button
               type="button"
@@ -213,21 +192,28 @@ const ChecklistPanel = forwardRef(function ChecklistPanel(
               aria-label="Close checklist"
               onClick={onClose}
             >
-              <Icon name="x-lg" size={16} />
+              <Icon name="x-lg" size={14} />
             </button>
           )}
         </div>
-        {isSheet && <Progress doneCount={doneCount} total={total} pct={pct} xp={xp} />}
+        <div
+          className="gsc-bar"
+          role="progressbar"
+          aria-label="Checklist progress"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={doneCount}
+        >
+          <div
+            className="gsc-bar-fill"
+            style={{ width: `${Math.max(pct * 100, doneCount ? 4 : 0)}%` }}
+          />
+        </div>
       </header>
 
       <div className="gsc-body">
         {stages.map((stage) => (
-          <Stage
-            key={stage.id}
-            stage={stage}
-            prevNumber={stage.number - 1}
-            onNavigate={onNavigate}
-          />
+          <Stage key={stage.id} stage={stage} prevNumber={stage.number - 1} onFollow={onFollow} />
         ))}
       </div>
 
@@ -235,137 +221,108 @@ const ChecklistPanel = forwardRef(function ChecklistPanel(
         <span className="gsc-foot-text">{footText}</span>
         <button type="button" className="gsc-cta" onClick={() => onNavigate(ctaHref)}>
           {ctaLabel}
-          <Icon name="arrow-right" size={16} />
+          <Icon name="arrow-right" size={14} />
         </button>
       </footer>
     </section>
   );
 });
 
-function Progress({ doneCount, total, pct, xp }) {
-  return (
-    <div className="gsc-progress">
-      <div
-        className="gsc-bar"
-        role="progressbar"
-        aria-label="Checklist progress"
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-valuenow={doneCount}
-      >
-        <div
-          className="gsc-bar-fill"
-          style={{ width: `${Math.max(pct * 100, doneCount ? 4 : 0)}%` }}
-        />
-      </div>
-      <span className="gsc-mono gsc-xp">{xp} XP</span>
-    </div>
-  );
-}
+const two = (n) => String(n).padStart(2, '0');
 
-function Stage({ stage, prevNumber, onNavigate }) {
+/* A stage is one section: a head row (marker, name, tally) and, for the
+   stage in progress, its tasks. Finished and locked stages are the head row
+   alone, so the list stays short. */
+function Stage({ stage, prevNumber, onFollow }) {
   const { status } = stage;
-
-  if (status === 'complete') {
-    return (
-      <div className="gsc-stage gsc-stage--row">
-        <span className="gsc-num gsc-num--done">
-          <Icon name="check-lg" size={15} />
-        </span>
-        <StageTitle
-          stage={stage}
-          meta={`Stage ${stage.number} · ${stage.doneN}/${stage.tasks.length} done`}
-        />
-        <span className="gsc-chip gsc-mono">Earned +{stage.bonusXp} XP</span>
-      </div>
-    );
-  }
-
-  if (status === 'locked') {
-    return (
-      <div className="gsc-stage gsc-stage--row gsc-stage--locked">
-        <span className="gsc-num gsc-num--locked gsc-mono">{stage.number}</span>
-        <StageTitle
-          stage={stage}
-          meta={`Stage ${stage.number} · ${stage.tasks.length} tasks`}
-          muted
-        />
-        <Icon name="lock-fill" size={16} label="Locked" className="gsc-lock-icon" />
-      </div>
-    );
-  }
-
+  const complete = status === 'complete';
   const active = status === 'active';
+  const locked = !complete && !active;
+
   return (
-    <div className="gsc-stage">
+    <section
+      className="gsc-stage"
+      data-status={complete ? 'complete' : active ? 'active' : 'locked'}
+    >
       <div className="gsc-stage-head">
-        <span className={`gsc-num gsc-mono ${active ? 'gsc-num--active' : 'gsc-num--locked'}`}>
-          {stage.number}
+        <span className="gsc-marker gsc-mono">
+          {complete ? (
+            <Icon name="check-lg" size={14} label="Complete" />
+          ) : locked ? (
+            <Icon name="lock" size={13} label="Locked" />
+          ) : (
+            two(stage.number)
+          )}
         </span>
-        <StageTitle
-          stage={stage}
-          meta={
-            active
-              ? `Stage ${stage.number} · ${stage.doneN}/${stage.tasks.length} done`
-              : `Stage ${stage.number} · ${stage.tasks.length} tasks`
-          }
-        />
-        <span className={`gsc-chip gsc-mono ${active ? '' : 'gsc-chip--soft'}`}>
-          +{stage.bonusXp} XP
+        <h3 className="gsc-stage-name">{stage.name}</h3>
+        <span className="gsc-stage-tally gsc-mono">
+          {complete
+            ? `Earned +${stage.bonusXp} XP`
+            : active
+              ? `${stage.doneN}/${stage.tasks.length} · +${stage.bonusXp} XP`
+              : `${stage.tasks.length} tasks`}
         </span>
       </div>
 
-      {active ? (
+      {status === 'next-locked' && (
+        <p className="gsc-stage-note">
+          Complete Stage {prevNumber} to unlock. {stage.lockDesc}
+        </p>
+      )}
+
+      {active && (
         <ul className="gsc-tasks">
           {stage.tasks.map((task) => (
             <li key={task.id}>
-              <button
-                type="button"
-                className="gsc-task"
-                data-done={task.done || undefined}
-                data-soon={task.soon || undefined}
-                disabled={task.soon && !task.done}
-                onClick={() => onNavigate(task.href)}
-              >
-                <span className="gsc-check" aria-hidden="true">
-                  {task.done && <Icon name="check-lg" size={13} />}
-                </span>
-                <span className="gsc-task-copy">
-                  <span className="gsc-task-title">
-                    {task.title}
-                    <span className="gsc-sr">{task.done ? ', done' : ', not done'}</span>
-                  </span>
-                  <span className="gsc-task-desc">{task.desc}</span>
-                </span>
-                <span
-                  className={`gsc-chip gsc-mono ${task.done ? 'gsc-chip--earned' : task.soon ? 'gsc-chip--soft' : ''}`}
-                >
-                  {task.done ? 'Earned' : task.soon ? 'Coming soon' : `+${task.xp} XP`}
-                </span>
-              </button>
+              <Task task={task} onFollow={onFollow} />
             </li>
           ))}
         </ul>
-      ) : (
-        <div className="gsc-locked-card">
-          <span className="gsc-locked-tile">
-            <Icon name="lock-fill" size={16} />
-          </span>
-          <span className="gsc-task-copy">
-            <span className="gsc-task-title">Complete Stage {prevNumber} to unlock</span>
-            <span className="gsc-task-desc">{stage.lockDesc}</span>
-          </span>
-        </div>
       )}
-    </div>
+    </section>
   );
 }
 
-function StageTitle({ stage, meta, muted }) {
+/* A task is a link to the page where it is done (a finished task still
+   links there). A task whose feature has not shipped is shown, not linked. */
+function Task({ task, onFollow }) {
+  const soon = task.soon && !task.done;
+  const inner = (
+    <>
+      <span className="gsc-check" aria-hidden="true">
+        {task.done && <Icon name="check-lg" size={11} />}
+      </span>
+      <span className="gsc-task-copy">
+        <span className="gsc-task-title">
+          {task.title}
+          <span className="gsc-sr">
+            {task.done ? ', done' : soon ? ', coming soon' : ', not done'}
+          </span>
+        </span>
+        <span className="gsc-task-desc">{task.desc}</span>
+      </span>
+      <span className="gsc-task-xp gsc-mono">
+        {task.done ? 'Earned' : soon ? 'Soon' : `+${task.xp} XP`}
+      </span>
+      {!soon && <Icon name="arrow-right" size={13} className="gsc-task-go" />}
+    </>
+  );
+
+  if (soon) {
+    return (
+      <div className="gsc-task" data-soon="true">
+        {inner}
+      </div>
+    );
+  }
   return (
-    <div className="gsc-stage-title">
-      <h3 className={muted ? 'gsc-muted-title' : undefined}>{stage.name}</h3>
-      <span>{meta}</span>
-    </div>
+    <Link
+      href={task.href}
+      className="gsc-task"
+      data-done={task.done || undefined}
+      onClick={onFollow}
+    >
+      {inner}
+    </Link>
   );
 }

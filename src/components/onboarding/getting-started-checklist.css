@@ -1,47 +1,36 @@
-/* Getting Started checklist (Nov 2026): component-scoped styles.
+/* Getting Started checklist (Nov 12 2026 redesign): component-scoped styles.
+   A 380px ledger in the /home idiom, the sibling of the notifications panel:
+   one progress strip (no title, ring or header art), stages as sections
+   separated by a hairline, tasks as plain rows with no fill and no border.
+   Sans for words; mono with tabular numerals for counts and XP.
    Every colour maps onto the theme tokens (src/app/theme-variables.css), so
-   light mode and the partner scope (where --emerald turns gold) follow on
-   their own. No borders or outlines on cards: separation by tint + shadow. */
+   light mode and the partner scope (gold in place of emerald) follow on
+   their own. */
 
 .gsc {
-  --gsc-panel: var(--card-bg);
-  --gsc-group: var(--bg-primary);
-  --gsc-card: color-mix(in srgb, var(--text-primary) 4%, var(--card-bg));
-  --gsc-head: color-mix(in srgb, var(--emerald) 8%, var(--card-bg));
-  --gsc-art-1: color-mix(in srgb, var(--emerald) 14%, transparent);
-  --gsc-art-2: color-mix(in srgb, var(--emerald) 8%, transparent);
-  --gsc-ring-track: color-mix(in srgb, var(--emerald) 18%, transparent);
+  --gsc-panel: var(--bg-secondary);
+  --gsc-edge: color-mix(in srgb, var(--text-primary) 14%, transparent);
+  --gsc-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --gsc-wash: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  --gsc-track: color-mix(in srgb, var(--text-primary) 10%, transparent);
   --gsc-accent: var(--emerald);
   --gsc-accent-text: var(--emerald-text);
-  --gsc-chip-bg: color-mix(in srgb, var(--emerald) 15%, transparent);
-  --gsc-chip-soft: color-mix(in srgb, var(--emerald) 10%, transparent);
-  --gsc-neutral-bg: color-mix(in srgb, var(--text-primary) 6%, transparent);
-  --gsc-neutral-fg: var(--text-muted);
   --gsc-text: var(--text-primary);
-  --gsc-sub: color-mix(in srgb, var(--text-primary) 66%, var(--card-bg));
+  --gsc-sub: var(--text-secondary);
   --gsc-muted: var(--text-muted);
-  --gsc-box: var(--text-faint);
-  --gsc-track: color-mix(in srgb, var(--text-primary) 8%, transparent);
-  --gsc-divider: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --gsc-faint: var(--text-faint);
   --gsc-cta-bg: var(--emerald);
   --gsc-cta-bg-hover: var(--emerald-hover);
   --gsc-cta-fg: var(--bg-primary);
-  --gsc-card-shadow: none;
-  --gsc-panel-shadow: var(--shadow-xl);
   --gsc-scrim: var(--bg-overlay);
-  --gsc-hover: color-mix(in srgb, var(--emerald) 6%, transparent);
+  --gsc-pad: 16px;
   font-family: var(--font-sans);
 }
 
 body.light-mode .gsc {
-  --gsc-group: color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary));
-  --gsc-card: var(--card-bg);
   /* The light emerald fails 4.5:1 with white text; the deeper step passes. */
   --gsc-cta-bg: var(--emerald-hover);
   --gsc-cta-bg-hover: var(--emerald-dark);
-  --gsc-cta-fg: var(--bg-primary);
-  --gsc-card-shadow: var(--shadow-sm);
-  --gsc-panel-shadow: var(--shadow-lg);
 }
 
 .gsc-mono {
@@ -67,24 +56,22 @@ body.light-mode .gsc {
 .gsc--partner {
   --gsc-accent: var(--gold);
   --gsc-accent-text: var(--gold-text);
-  --gsc-head: color-mix(in srgb, var(--gold) 8%, var(--card-bg));
-  --gsc-art-1: color-mix(in srgb, var(--gold) 14%, transparent);
-  --gsc-art-2: color-mix(in srgb, var(--gold) 8%, transparent);
-  --gsc-ring-track: color-mix(in srgb, var(--gold) 18%, transparent);
-  --gsc-chip-bg: color-mix(in srgb, var(--gold) 15%, transparent);
-  --gsc-chip-soft: color-mix(in srgb, var(--gold) 10%, transparent);
   --gsc-cta-bg: var(--gold);
   --gsc-cta-bg-hover: var(--gold-hover);
-  --gsc-hover: color-mix(in srgb, var(--gold) 6%, transparent);
+}
+body.light-mode .gsc--partner {
+  --gsc-cta-bg: var(--gold-hover);
+  --gsc-cta-bg-hover: var(--gold-text);
 }
 
 /* Panel shell */
 .gsc-panel {
-  background: var(--gsc-panel);
-  color: var(--gsc-text);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--gsc-panel);
+  color: var(--gsc-text);
+  letter-spacing: -0.008em;
   outline: none;
 }
 .gsc-panel--popover {
@@ -92,10 +79,12 @@ body.light-mode .gsc {
   top: calc(100% + 10px);
   left: 0;
   z-index: 60;
-  width: 460px;
-  max-height: calc(100vh - 96px);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--gsc-panel-shadow);
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  max-height: min(600px, calc(100vh - 90px));
+  border: 1px solid var(--gsc-edge);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   animation: gsc-pop 0.16s ease-out;
 }
 @keyframes gsc-pop {
@@ -121,11 +110,12 @@ body.light-mode .gsc {
   animation: gsc-fade 0.2s ease-out;
 }
 .gsc-panel--sheet {
+  --gsc-pad: 20px;
   position: absolute;
-  left: 0;
   right: 0;
   bottom: 0;
-  height: 92dvh;
+  left: 0;
+  max-height: 88dvh;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-shadow: var(--shadow-lg);
   animation: gsc-up 0.24s ease-out;
@@ -140,351 +130,251 @@ body.light-mode .gsc {
 }
 @keyframes gsc-up {
   from {
-    transform: translateY(100%);
+    transform: translateY(24px);
+    opacity: 0;
   }
   to {
     transform: none;
+    opacity: 1;
   }
 }
 
-/* Header */
+/* 1 · Progress strip: count, XP, then the bar on the strip's own rule */
 .gsc-head {
-  position: relative;
-  flex: 0 0 auto;
-  background: var(--gsc-head);
-  padding: 24px;
-}
-.gsc-head-art {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 200px;
-  height: 70px;
-  pointer-events: none;
-}
-.gsc-head-art path:first-child {
-  fill: var(--gsc-art-1);
-}
-.gsc-head-art path:last-child {
-  fill: var(--gsc-art-2);
+  flex-shrink: 0;
+  padding: 12px var(--gsc-pad) 0;
 }
 .gsc-head-row {
-  position: relative;
   display: flex;
-  align-items: center;
-  gap: 20px;
+  align-items: baseline;
+  gap: 8px;
 }
-.gsc-ring {
-  position: relative;
-  flex: 0 0 auto;
-  width: 88px;
-  height: 88px;
-}
-.gsc-ring svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.gsc-ring-track {
-  fill: var(--gsc-ring-hole);
-  stroke: var(--gsc-ring-track);
-  stroke-width: 7;
-}
-.gsc-ring-fill {
-  fill: none;
-  stroke: var(--gsc-accent);
-  stroke-width: 7;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.4s ease-out;
-}
-.gsc-ring-label {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.gsc-ring-count {
-  font-size: 20px;
+.gsc-count {
+  font-size: 1.125rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  line-height: 1;
   color: var(--gsc-text);
 }
-.gsc-ring-caption {
-  font-size: 11px;
+.gsc-count-of {
+  font-weight: 500;
+  color: var(--gsc-faint);
+}
+.gsc-count-label {
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: var(--type-label-tracking);
-  color: var(--gsc-sub);
+  text-transform: uppercase;
+  color: var(--gsc-muted);
 }
-.gsc-head-copy {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.gsc-head-copy h2 {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--gsc-text);
-}
-.gsc-head-copy p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--gsc-sub);
-}
-.gsc-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
+.gsc-xp {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gsc-accent-text);
 }
 .gsc-bar {
-  flex: 1 1 auto;
-  height: 8px;
-  border-radius: 999px;
+  height: 3px;
+  margin: 12px calc(var(--gsc-pad) * -1) 0;
   background: var(--gsc-track);
-  overflow: hidden;
 }
 .gsc-bar-fill {
   height: 100%;
-  border-radius: 999px;
   background: var(--gsc-accent);
   transition: width 0.4s ease-out;
-}
-.gsc-xp {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gsc-accent-text);
-  white-space: nowrap;
 }
 
 /* Body */
 .gsc-body {
-  flex: 1 1 auto;
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
-.gsc-stage {
-  background: var(--gsc-group);
-  border-radius: var(--radius-xl);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+
+/* 2 · Stages. Marker, name and tally share the task rows' columns, so the
+   checkboxes line up under the stage marker. */
+.gsc-stage + .gsc-stage {
+  border-top: 1px solid var(--gsc-rule);
 }
-.gsc-stage--row {
-  flex-direction: row;
+.gsc-stage-head,
+.gsc-task {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  column-gap: 10px;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  padding: 0 var(--gsc-pad);
 }
 .gsc-stage-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 4px 6px;
+  height: 42px;
 }
-.gsc-stage-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
+.gsc-marker {
+  display: inline-flex;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gsc-accent-text);
 }
-.gsc-stage-title h3 {
+.gsc-stage-name {
   margin: 0;
-  font-size: 16px;
+  overflow: hidden;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--gsc-text);
 }
-.gsc-stage-title h3.gsc-muted-title {
-  color: var(--gsc-neutral-fg);
-}
-.gsc-stage-title span {
-  font-size: 12px;
+.gsc-stage-tally {
+  font-size: 0.6875rem;
   color: var(--gsc-muted);
-}
-.gsc-num {
-  flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-}
-.gsc-num--active {
-  background: var(--gsc-chip-bg);
-  color: var(--gsc-accent-text);
-}
-.gsc-num--locked {
-  background: var(--gsc-neutral-bg);
-  color: var(--gsc-neutral-fg);
-}
-.gsc-num--done {
-  background: var(--gsc-accent);
-  color: var(--gsc-cta-fg);
-}
-.gsc-lock-icon {
-  color: var(--gsc-muted);
-  flex: 0 0 auto;
-}
-
-.gsc-chip {
-  flex: 0 0 auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--gsc-chip-bg);
-  color: var(--gsc-accent-text);
-  font-size: 12px;
-  font-weight: 700;
   white-space: nowrap;
 }
-.gsc-chip--soft {
-  background: var(--gsc-chip-soft);
+.gsc-stage[data-status='active'] .gsc-stage-tally {
+  color: var(--gsc-accent-text);
 }
-.gsc-chip--earned {
-  background: var(--gsc-neutral-bg);
-  color: var(--gsc-neutral-fg);
+.gsc-stage[data-status='complete'] .gsc-stage-name {
+  font-weight: 500;
+  color: var(--gsc-muted);
+}
+.gsc-stage[data-status='locked'] .gsc-marker,
+.gsc-stage[data-status='locked'] .gsc-stage-tally {
+  color: var(--gsc-faint);
+}
+.gsc-stage[data-status='locked'] .gsc-stage-name {
+  font-weight: 500;
+  color: var(--gsc-muted);
+}
+.gsc-stage-note {
+  margin: -6px 0 0;
+  padding: 0 var(--gsc-pad) 12px calc(var(--gsc-pad) + 30px);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--gsc-muted);
 }
 
+/* 3 · Tasks: plain rows. No fill, no border, a wash on hover. */
 .gsc-tasks {
-  list-style: none;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 0 0 6px;
+  list-style: none;
 }
 .gsc-task {
-  width: 100%;
-  text-align: left;
-  border: 0;
-  cursor: pointer;
+  grid-template-columns: 20px minmax(0, 1fr) auto 13px;
+  padding-top: 7px;
+  padding-bottom: 7px;
   color: inherit;
-  font: inherit;
-  background: var(--gsc-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--gsc-card-shadow);
-  padding: 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  transition: background 0.15s ease-out;
+  text-decoration: none;
+  transition: background 0.15s ease;
 }
-.gsc-task:hover {
-  background: var(--gsc-hover);
+.gsc-task:not([data-soon]):hover {
+  background: var(--gsc-wash);
 }
 .gsc-task:focus-visible {
   outline: 2px solid var(--gsc-accent);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 .gsc-check {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
-  box-sizing: border-box;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--gsc-box);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gsc-cta-fg);
-}
-.gsc-task[data-done] .gsc-check {
-  background: var(--gsc-accent);
-  border-color: var(--gsc-accent);
-}
-.gsc-task-copy {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.gsc-task-title {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--gsc-text);
-}
-.gsc-task[data-done] .gsc-task-title {
-  color: var(--gsc-muted);
-  text-decoration: line-through;
-}
-.gsc-task-desc {
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--gsc-muted);
-}
-
-.gsc-locked-card {
-  background: var(--gsc-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--gsc-card-shadow);
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.gsc-locked-tile {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--gsc-neutral-bg);
-  color: var(--gsc-neutral-fg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Footer */
-.gsc-foot {
-  flex: 0 0 auto;
-  padding: 16px 20px;
-  background: var(--gsc-panel);
-  box-shadow: 0 -1px 0 var(--gsc-divider);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.gsc-foot-text {
-  flex: 1 1 auto;
-  font-size: 14px;
-  color: var(--gsc-sub);
-}
-.gsc-cta {
-  height: 48px;
-  padding: 0 20px;
-  border: 0;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  background: var(--gsc-cta-bg);
-  color: var(--gsc-cta-fg);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: background 0.15s ease-out;
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+  border: 1.5px solid var(--gsc-faint);
+  border-radius: var(--radius-sm);
+  color: var(--gsc-cta-fg);
+}
+.gsc-task[data-done] .gsc-check {
+  border-color: var(--gsc-accent);
+  background: var(--gsc-accent);
+}
+.gsc-task-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.gsc-task-title {
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gsc-text);
+}
+.gsc-task-desc {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gsc-muted);
+}
+.gsc-task[data-done] .gsc-task-title {
+  color: var(--gsc-muted);
+}
+.gsc-task[data-done] .gsc-task-desc {
+  color: var(--gsc-faint);
+}
+.gsc-task-xp {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--gsc-accent-text);
+  white-space: nowrap;
+}
+.gsc-task[data-done] .gsc-task-xp,
+.gsc-task[data-soon] .gsc-task-xp {
+  font-weight: 500;
+  color: var(--gsc-faint);
+}
+/* The arrow says "this row takes you somewhere"; it shows on hover/focus. */
+.gsc-task-go {
+  color: var(--gsc-accent-text);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.gsc-task:hover .gsc-task-go,
+.gsc-task:focus-visible .gsc-task-go {
+  opacity: 1;
+}
+/* A task whose feature has not shipped: shown, not linked. It keeps the
+   empty arrow column so its label lines up with the rows around it. */
+.gsc-task[data-soon] {
+  opacity: 0.6;
+}
+
+/* 4 · Footer */
+.gsc-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px var(--gsc-pad);
+  border-top: 1px solid var(--gsc-rule);
+}
+.gsc-foot-text {
+  font-size: 0.8125rem;
+  color: var(--gsc-muted);
+}
+.gsc-cta {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--gsc-cta-bg);
+  color: var(--gsc-cta-fg);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 .gsc-cta:hover {
   background: var(--gsc-cta-bg-hover);
@@ -494,77 +384,56 @@ body.light-mode .gsc {
   outline-offset: 2px;
 }
 
-/* Bottom sheet adjustments (phone) */
-.gsc-panel--sheet .gsc-head {
-  padding: 8px 12px 18px 20px;
-}
+/* Bottom sheet (phones): the same ledger with room for thumbs. */
 .gsc-handle {
   display: block;
-  width: 40px;
-  height: 5px;
+  width: 36px;
+  height: 4px;
   margin: 0 auto 12px;
-  border-radius: 999px;
-  background: var(--gsc-box);
-  opacity: 0.6;
-  position: relative;
+  border-radius: var(--radius-sm);
+  background: var(--gsc-track);
 }
 .gsc-panel--sheet .gsc-head-row {
-  gap: 14px;
-}
-.gsc-panel--sheet .gsc-ring {
-  width: 64px;
-  height: 64px;
-}
-.gsc-panel--sheet .gsc-ring-count {
-  font-size: 15px;
-}
-.gsc-panel--sheet .gsc-head-copy h2 {
-  font-size: 20px;
-}
-.gsc-panel--sheet .gsc-head-copy p {
-  font-size: 13px;
-}
-.gsc-panel--sheet .gsc-progress {
-  margin-top: 14px;
-  padding-right: 8px;
+  align-items: center;
 }
 .gsc-close {
-  flex: 0 0 auto;
-  align-self: flex-start;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--gsc-track);
-  color: var(--gsc-sub);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -12px -10px 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--gsc-muted);
   cursor: pointer;
 }
-.gsc-panel--sheet .gsc-body {
-  padding: 12px;
-  gap: 10px;
+.gsc-close:focus-visible {
+  outline: 2px solid var(--gsc-accent);
+  outline-offset: -4px;
+}
+.gsc-panel--sheet .gsc-stage-head {
+  height: 48px;
 }
 .gsc-panel--sheet .gsc-task {
-  padding: 12px;
-  gap: 12px;
-  min-height: 64px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.gsc-panel--sheet .gsc-task-title,
+.gsc-panel--sheet .gsc-task-desc {
+  white-space: normal;
+}
+.gsc-panel--sheet .gsc-task-go {
+  opacity: 1;
 }
 .gsc-panel--sheet .gsc-foot {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
-}
-.gsc-panel--sheet .gsc-foot-text {
-  text-align: center;
-  font-size: 13px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 .gsc-panel--sheet .gsc-cta {
-  width: 100%;
-  height: 52px;
-  border-radius: var(--radius-lg);
+  height: 44px;
+  padding: 0 20px;
+  font-size: 0.875rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -573,17 +442,10 @@ body.light-mode .gsc {
   .gsc-scrim {
     animation: none;
   }
-  .gsc-ring-fill,
-  .gsc-bar-fill {
+  .gsc-bar-fill,
+  .gsc-task,
+  .gsc-task-go,
+  .gsc-cta {
     transition: none;
   }
-}
-
-/* A task whose feature has not shipped: shown, not clickable. */
-.gsc-task[data-soon]:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-.gsc-task[data-soon]:disabled:hover {
-  background: var(--gsc-card);
 }
