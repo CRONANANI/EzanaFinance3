@@ -87,6 +87,8 @@ import {
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
 import { SonarAnswerQueryBar } from '@/components/sonar/SonarAnswerQueryBar';
+import { controlsNeedResearch } from '@/components/sonar/research-controls-store';
+import { addSessionEntry } from '@/components/sonar/session-thread';
 import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
 import { SonarCongressActivityStack } from './SonarCongressActivityStack';
 import { SonarInsiderBuyingStack } from './SonarInsiderBuyingStack';
@@ -830,6 +832,9 @@ export function SonarSection({
      the research engine at standard depth. A host without it never gets a
      standard result (the band does not ask for one). */
   onStandardResearch = null,
+  /* Nov 13 (research workspace): shows a research answer from the session thread again (the
+     host owns research runs); a quick ping's entry is shown here. */
+  onRestoreResearch = null,
   /* Kept mounted but out of view while deep research shows (so its quick
      answer can still be asked for). */
   hidden = false,
@@ -886,6 +891,8 @@ export function SonarSection({
      band is a live surface for the rest of the visit and the demo timeline
      stays paused. */
   const [live, setLive] = useState(null);
+  /* Nov 13: this answer's entry in the session thread. */
+  const [sessionId, setSessionId] = useState(null);
   const [pinging, setPinging] = useState(false);
   const [pingError, setPingError] = useState(null);
   /* Nov 2: the ping in flight (aborted by the loading screen's Cancel) and
@@ -2497,6 +2504,22 @@ export function SonarSection({
 
   async function runPing(q, opts = {}) {
     if (pinging) return;
+    /* Nov 13: Research Controls shape a research run, and a quick ping cannot honour them. With
+       non-default controls the question runs as standard research (one ping, as today); with
+       the defaults nothing about routing changes. A re-ping (search instead, force) and a
+       declined deep offer stay quick. */
+    if (
+      isPage &&
+      !opts.noCorrect &&
+      !opts.force &&
+      opts.mode !== 'quick' &&
+      typeof onStandardResearch === 'function' &&
+      controlsNeedResearch()
+    ) {
+      setQueryValue(q);
+      onStandardResearch(q, {});
+      return;
+    }
     /* Nov 2: the ping loader's Cancel aborts the request (controlRef). */
     const controller = new AbortController();
     pingAbortRef.current = controller;
@@ -2583,7 +2606,7 @@ export function SonarSection({
         });
         setLive((l) => (l ? { ...l, remaining: 0 } : l));
       } else if (res.ok && data?.answer) {
-        setLive({
+        const nextLive = {
           answer: data.answer,
           sources: data.sources || [],
           relevance: data.relevance || null,
@@ -2604,6 +2627,25 @@ export function SonarSection({
           remaining: data.remaining,
           /* Borderline quick answer: Go deeper to standard or deep. */
           goDeeper: data.goDeeper || null,
+          /* Nov 13 (research workspace): the Desk Summary's own fields, written with the
+             answer (empty on an older cached answer, which keeps the board's reading). */
+          headline: data.headline || null,
+          summary: data.summary || null,
+          takeaways: Array.isArray(data.takeaways) ? data.takeaways : [],
+          related: Array.isArray(data.related) ? data.related : [],
+          answeredAt: data.answeredAt || null,
+        };
+        setLive(nextLive);
+        /* Nov 13: this answer joins the session thread (memory only). */
+        const entryId = `ping:${data.answeredAt || Date.now()}:${q}`;
+        setSessionId(entryId);
+        addSessionEntry({
+          id: entryId,
+          kind: 'ping',
+          question: nextLive.query,
+          headline: nextLive.headline,
+          mode: 'quick',
+          live: nextLive,
         });
         if (typeof onPing === 'function' && data.understood?.display) {
           onPing(q, { display: data.understood.display });
@@ -2675,6 +2717,16 @@ export function SonarSection({
         if (!words) return false;
         setQueryValue(words);
         runPingRef.current(words);
+        return true;
+      },
+      /* Nov 13: show a quick ping from the session thread again, from memory. */
+      show: (entry) => {
+        if (!entry?.live) return false;
+        hasPingedRef.current = true;
+        setHasPinged(true);
+        setLive(entry.live);
+        setSessionId(entry.id);
+        setQueryValue(entry.live.rawQuery || entry.live.query || '');
         return true;
       },
     };
@@ -2835,6 +2887,25 @@ export function SonarSection({
       pending={pinging}
     />
   ) : null;
+
+  /* Nov 13: a follow-up is a standard research run carrying this answer's context (the host
+     runs it); "In this session" shows an earlier answer again without a request. */
+  const followUp =
+    typeof onStandardResearch === 'function'
+      ? (q, extra) => {
+          setQueryValue(q);
+          onStandardResearch(q, { extra });
+        }
+      : null;
+  const restoreEntry = (entry) => {
+    if (!entry) return;
+    if (entry.kind === 'ping' && entry.live) {
+      setLive(entry.live);
+      setSessionId(entry.id);
+      setQueryValue(entry.live.rawQuery || entry.live.query || '');
+      bandRef.current?.scrollIntoView({ block: 'start' });
+    } else if (typeof onRestoreResearch === 'function') onRestoreResearch(entry);
+  };
 
   const runDeep = () => {
     const q = live?.rawQuery || live?.query;
@@ -4206,6 +4277,9 @@ export function SonarSection({
                   onRun={runWorkspacePing}
                   deepNote={deepNoteFrom(bandEstimate)}
                   queryBar={answerBar}
+                  onFollowUp={followUp}
+                  onRestore={restoreEntry}
+                  sessionId={sessionId}
                   deepAction={deepAction || afterAnswer}
                   news={railNews}
                   extra={stackTop}
@@ -4237,6 +4311,9 @@ export function SonarSection({
                   onRun={runWorkspacePing}
                   deepNote={deepNoteFrom(bandEstimate)}
                   queryBar={answerBar}
+                  onFollowUp={followUp}
+                  onRestore={restoreEntry}
+                  sessionId={sessionId}
                   deepAction={deepAction || afterAnswer}
                   notice={
                     live?.understood && !pinging ? (

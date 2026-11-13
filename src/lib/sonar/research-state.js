@@ -94,6 +94,11 @@ export function reduceEvent(state, [type, d]) {
       return { ...state, relationships: d };
     case 'coverage':
       return { ...state, coverage: d };
+    /* Nov 13: a plain-language notice for the answer (a control the plan could not honour). */
+    case 'notice':
+      return d?.message
+        ? { ...state, notices: [...(state.notices || []), String(d.message).slice(0, 300)] }
+        : state;
     case 'draft':
       return d && typeof d === 'object' && d.report
         ? { ...state, draft: { report: d.report, brief: d.brief ?? null } }

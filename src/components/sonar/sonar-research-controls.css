@@ -1,0 +1,56 @@
+/* SonarResearchControls (Nov 13 2026): the Research Controls card in the workspace's right
+   rail. Scoped src- inside the rail's borderless .san-card. 32px selects, real labels, no
+   outline on the card. Tokens only. */
+
+.san .src {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.san .src-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.san .src-label {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--san-muted);
+}
+.san .src-select {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--san-emerald) 8%, transparent);
+  color: var(--san-text);
+  font: inherit;
+  font-size: var(--type-caption-size);
+}
+.san .src-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.san .src-select:focus-visible,
+.san .src-reset:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.san .src-note {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--san-faint);
+}
+.san .src-note--mode {
+  color: var(--san-accent);
+}
+.san .src-reset {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--san-accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

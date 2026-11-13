@@ -29,6 +29,8 @@ import '@/app/datasets/datasets-loading.css';
 /* The landing Sonar band, loaded only once a Datasets search is sent. */
 import DatasetCardMatches from './DatasetCardMatches';
 import { DeepResearchPrompt, DeepResearchRun, StandardResearchRun } from './DeepResearch';
+import ResearchReport from './research/ResearchReport';
+import { SonarRunPingBar, SonarRunNav } from './SonarRunPingBar';
 import { DeepResearchCard, deepSignupHref } from './DeepResearchCard';
 import SonarLoadingState from '@/components/sonar/loading/SonarLoadingState';
 import { useAuth } from '@/components/auth-context';
@@ -193,6 +195,8 @@ export function SonarExperience({
   /* Nov 2026, research modes: a focused question runs standard research
      automatically ({ query, classification, goDeeper }). */
   const [standardRun, setStandardRun] = useState(null);
+  /* Nov 13: a research answer shown again from the session thread (no request). */
+  const [restored, setRestored] = useState(null);
   /* Nov 2026, estimates: POST /api/sonar/estimate for the latest ping
      ({ query, data }), fired by the band on submit just before the ping. It
      times the answer in progress and fills the deep research card. */
@@ -321,11 +325,29 @@ export function SonarExperience({
         : { query, phase: 'sweeping', leaving: false, hold: 'standard' },
     );
   }
-  function startStandard(query, { classification = null, goDeeper: hint = null } = {}) {
+  function startStandard(query, opts = {}) {
+    const { classification = null, goDeeper: hint = null, extra = null } = opts;
     setDeepRun(null);
     setDeepOffer(null);
-    setStandardRun({ query, classification, goDeeper: hint, nonce: Date.now() });
+    setRestored(null);
+    /* Nov 13: a follow-up carries { followUp, attachment } into the research request. */
+    setStandardRun({ query, classification, goDeeper: hint, extra, nonce: Date.now() });
     holdLoaderFor(query);
+  }
+  /* Nov 13 (research workspace): a follow-up from any answer is a standard research run with
+     that answer's context; "In this session" shows an earlier answer again from memory. */
+  const followUpRun = (query, extra) => startStandard(query, { extra: extra || null });
+  function restoreEntry(entry) {
+    if (!entry) return;
+    setDeepOffer(null);
+    setDeepRun(null);
+    setStandardRun(null);
+    if (entry.kind === 'research' && entry.state) {
+      setRestored(entry);
+      return;
+    }
+    setRestored(null);
+    bandControlRef.current?.show?.(entry);
   }
   const onStandardStatus = useCallback((status) => {
     if (status === 'done') {
@@ -354,6 +376,7 @@ export function SonarExperience({
     setDeepOffer(null);
     setDeepRun(null);
     setStandardRun(null);
+    setRestored(null);
     setQueryText(q);
     if (bandControlRef.current?.ping?.(q)) return;
     /* No band handle yet: start the band on the question (it auto-pings its query). */
@@ -727,6 +750,8 @@ export function SonarExperience({
               onQuick={() => quickInstead(deepRun.query)}
               onStandard={() => standardInstead(deepRun.query)}
               onBack={closeDeep}
+              onFollowUp={followUpRun}
+              onRestore={restoreEntry}
             />
           ) : null}
           {standardRun && !deepRun ? (
@@ -742,7 +767,30 @@ export function SonarExperience({
               onBack={closeDeep}
               estimate={estimateFor(standardRun.query)}
               onDeep={(opts) => chooseDeep(standardRun.query, opts)}
+              extra={standardRun.extra || null}
+              onFollowUp={followUpRun}
+              onRestore={restoreEntry}
             />
+          ) : null}
+          {restored && !deepRun && !standardRun ? (
+            <div className="sdr-run force-dark-theme">
+              <div className="sdr-report">
+                <ResearchReport
+                  state={restored.state}
+                  navTop={<SonarRunNav onBack={() => setRestored(null)} />}
+                  queryBar={
+                    <SonarRunPingBar
+                      onPing={pingFromRun}
+                      variant="query"
+                      initial={restored.question}
+                    />
+                  }
+                  onRun={pingFromRun}
+                  onAskFollowUp={followUpRun}
+                  onRestore={restoreEntry}
+                />
+              </div>
+            </div>
           ) : null}
         </div>
         {deepOffer ? (
@@ -786,10 +834,11 @@ export function SonarExperience({
                 setDeepRun({ query, estimate: deep?.estimate || null });
               } else setDeepOffer({ query, deep });
             }}
-            onStandardResearch={(query, { classification, goDeeper: hint } = {}) =>
-              startStandard(query, { classification, goDeeper: hint || null })
+            onStandardResearch={(query, { classification, goDeeper: hint, extra } = {}) =>
+              startStandard(query, { classification, goDeeper: hint || null, extra: extra || null })
             }
-            hidden={Boolean(deepRun || standardRun)}
+            onRestoreResearch={restoreEntry}
+            hidden={Boolean(deepRun || standardRun || restored)}
             onEstimate={(query, data) => setEstimate({ query, data })}
             afterAnswer={
               answeredQuery && estimateFor(answeredQuery) ? (

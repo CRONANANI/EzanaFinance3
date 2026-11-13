@@ -58,11 +58,14 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
+import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
+import { nextSteps, followUpContext } from '@/lib/sonar/workspace';
+import { controlsLabel } from '@/lib/sonar/research-controls';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { useSavedRelated } from '@/components/sonar/useSavedRelated';
 import { deskFields, fitSnapshot } from '@/lib/sonar/saved';
 import { snapshotFromState } from '@/lib/org-sonar/reports';
-import { nextSteps } from '@/lib/sonar/workspace';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
 import { ValuationSection } from '@/components/sonar/valuation/ValuationSection';
 import { snapshotFromModel } from '@/lib/sonar/valuation/history';
@@ -114,6 +117,7 @@ function Executive({
   sources,
   market,
   actions = null,
+  notices = [],
 }) {
   const headline = run?.headline || report?.headline || boardHeadline(report, rank);
   const summary = boardSummary(report, rank);
@@ -131,16 +135,36 @@ function Executive({
       mode={depth === 'deep' ? 'deep' : 'standard'}
       answeredAt={answeredAt}
       actions={actions}
+      /* Nov 13: read from the run itself, never from the current selects. */
+      meta={[
+        controlsLabel(run?.controls),
+        run?.attachmentName ? `Used your file: ${run.attachmentName}` : null,
+      ].filter(Boolean)}
+      notice={
+        notices.length ? (
+          <p className="srb-limits" role="status">
+            <i className="bi bi-info-circle" aria-hidden="true" />
+            <span>{notices.join(' ')}</span>
+          </p>
+        ) : null
+      }
       subhead={
-        meta.length ? (
-          <ul className="srb-exec-meta" aria-label="About this answer">
-            {meta.map((m) => (
-              <li key={m.id}>
-                <i className={`bi ${m.icon}`} aria-hidden="true" />
-                {m.text}
-              </li>
-            ))}
-          </ul>
+        meta.length || run?.followUpTo ? (
+          <>
+            {run?.followUpTo ? (
+              <p className="srb-followup">Follow-up to: {run.followUpTo}</p>
+            ) : null}
+            {meta.length ? (
+              <ul className="srb-exec-meta" aria-label="About this answer">
+                {meta.map((m) => (
+                  <li key={m.id}>
+                    <i className={`bi ${m.icon}`} aria-hidden="true" />
+                    {m.text}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
         ) : null
       }
       headline={headline || null}
@@ -859,6 +883,9 @@ export default function ResearchBoard({
   queryBar = null,
   /* Nov 13: Save, Share and More (a live run only; a saved or org copy passes false). */
   saveable = false,
+  /* Nov 13: the follow-up composer under the board, and the session thread's restore. */
+  onAskFollowUp = null,
+  onRestore = null,
 }) {
   const unlocked = Boolean(access?.unlocked);
   const sonarPlan = useSonarPlan();
@@ -973,6 +1000,7 @@ export default function ResearchBoard({
           sources={allResources}
           market={market}
           actions={saveActions}
+          notices={state.notices || []}
         />
       ),
     },
@@ -1131,13 +1159,14 @@ export default function ResearchBoard({
   const related = mergeRelated(relatedFromEvidence(evidence), savedRelated);
   /* Nov 13: related questions from the run itself (none on an older run). */
   const relatedQs = (run?.related?.length ? run.related : report?.related) || [];
-  const rail =
-    steps.length || related.length ? (
-      <>
-        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-      </>
-    ) : null;
+  const rail = (
+    /* Nov 13: Research Controls lead the rail, so it is always there. */
+    <>
+      <SonarResearchControls />
+      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
+    </>
+  );
 
   return (
     <SonarAnswerFrame
@@ -1174,6 +1203,24 @@ export default function ResearchBoard({
             </div>
           ))}
         </div>
+        {onAskFollowUp && run ? (
+          <SonarFollowUp
+            context={followUpContext({
+              question: runQuestion,
+              headline: run?.headline || report?.headline || boardHeadline(report, rank) || '',
+              summary: run?.summary || report?.summary || boardSummary(report, rank) || '',
+              subject: state.plan?.spec?.subject?.label || '',
+              ticker:
+                state.plan?.spec?.subject?.kind === 'company'
+                  ? state.plan?.spec?.subject?.id || ''
+                  : '',
+            })}
+            parentRunId={runId || null}
+            onAsk={onAskFollowUp}
+            onRestore={onRestore}
+            currentId={runId ? `research:${runId}` : null}
+          />
+        ) : null}
         {blocks.map((b, i) => {
           const first = b.key && !seenKeys.has(b.key);
           if (b.key) seenKeys.add(b.key);

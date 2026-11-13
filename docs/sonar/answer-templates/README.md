@@ -49,6 +49,12 @@ Four decisions override the design reference:
 
 Every Next step does something real: `deep` starts deep research, `run` sends a new question through the host's own ping path (a host without one gets no `run` steps), `section` scrolls to a section this answer already has.
 
+### Research controls, follow-ups and attachments (Nov 13 2026)
+
+- **Research Controls** lead the right rail (`SonarResearchControls`): focus, time horizon and data sources, kept in `localStorage` (`sonar_controls`) and sent with every research request. They shape the next run only: the route sanitizes them, adds the fixed option text as reader settings for the writer, and narrows the engine's source keys (`allowedSources`, never wider than the plan allows). With non-default controls a question runs as standard research, and the card says so. The Desk Summary's meta line reads the run's own controls.
+- **Ask a follow-up question** sits under every board (`SonarFollowUp`). A follow-up is a standard research run carrying a bounded context from the answer (the stored parent run wins over the client's copy). "In this session" lists the answers asked so far and shows one again from memory.
+- **Attach a file** to a follow-up: PDF, text, Markdown or CSV, 2 MB or less, read on the server (`POST /api/sonar/attachment`) for that one run. Only the file's name is kept on the run; its text is never stored, saved or shared, and the answer cites it as "the attached file".
+
 ## Side navigation: twelve sections, five free
 
 Source: `lib/sonar/answer-sections.js`, `SonarAnswerFrame`.

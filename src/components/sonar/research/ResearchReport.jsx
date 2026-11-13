@@ -656,6 +656,10 @@ export default function ResearchReport({
   queryBar = null,
   /* Nov 13: Save, Share and More on the Desk Summary (a live run the reader owns only). */
   saveable = false,
+  /* Nov 13: "Ask a follow-up question" (the host runs standard research with the context) and
+     the session thread's restore. */
+  onAskFollowUp = null,
+  onRestore = null,
 }) {
   const rootRef = useRef(null);
   const sonarPlan = useSonarPlan();
@@ -860,6 +864,8 @@ export default function ResearchReport({
             deepNote={deepNote}
             queryBar={queryBar}
             saveable={saveable}
+            onAskFollowUp={onAskFollowUp}
+            onRestore={onRestore}
           />
           {state.status === 'running' ? <Progress state={state} /> : null}
           {!unlocked && run ? (

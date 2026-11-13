@@ -58,32 +58,59 @@ export const HORIZON_OPTIONS = [
   { key: 'long', label: 'Long term', directive: 'Frame findings for a horizon beyond one year.' },
 ];
 
-/* Dataset families a run may be narrowed to. `match` tests an engine dataset
-   or source key; Claude Code maps these to the engine's real keys when wiring
-   (see PROMPT 4) and the unit test pins the mapping. */
+/* Dataset families a run may be narrowed to. `match` tests one of the research engine's
+   source keys (RUNNERS in src/lib/sonar/engine/sources.js); Nov 13 2026 (prompt 4) the first
+   pass's loose words were replaced by the engine's real keys, pinned by
+   scripts/check-sonar-workspace.mjs: every key lands in at most one family and each option
+   matches at least one key. Sources outside every family (Echo, news, the industry registry,
+   the value chain, competitor announcements) are general context: a narrowed run drops them,
+   except CONTEXT_SOURCES, which every run keeps. */
 export const SOURCE_OPTIONS = [
   { key: 'all', label: 'All available', match: null },
   {
     key: 'market',
     label: 'Market data',
-    match: /price|quote|market|equity|fx|commodit|rates|yield/i,
+    match:
+      /^(market_snapshot|analysts|price_performance|commodity_series|estimates|prediction_markets)$/,
   },
   {
     key: 'filings',
     label: 'Filings and fundamentals',
-    match: /filing|sec|edgar|fundamental|13f|insider|earnings/i,
+    match:
+      /^(sec_filings|disclosures|company_financials|product_segments|peer_financials|revenue_geo|customer_capex|capex_monetization|hyperscaler_capex|institutional_13f|holder_positioning|ipo_filings)$/,
   },
   {
     key: 'government',
     label: 'Government and political data',
-    match: /congress|lobby|contract|award|campaign|sanction|regulat|politic|usaspending/i,
+    match:
+      /^(congress_sector|congress_company|congress_activity|politician_dossier|lobbying_leaders|lobbying_company|lobbying_associations|lobbying_profile|contracts_history|contracts_profile|sanctions|export_controls)$/,
   },
   {
     key: 'macro',
     label: 'Macro and economic data',
-    match: /macro|oecd|world.?bank|imf|inflation|gdp|econom|fred|central.?bank/i,
+    match: /^(macro_country|macro_series)$/,
   },
 ];
+
+/* Sources a narrowed run still keeps: they resolve the subject or carry the reader's own
+   organization context, never evidence from another family. */
+export const CONTEXT_SOURCES = ['industry_registry', 'fund_mandate'];
+
+/**
+ * The engine sources the reader's plan allows: a source gated by a dataset (SOURCE_DATASET)
+ * needs that dataset in the entitlement; an ungated one is always allowed. `entitled` null
+ * means every dataset (a deep run).
+ */
+export function entitledSources(universe, entitled, sourceDataset = {}) {
+  const ok = Array.isArray(entitled) ? new Set(entitled) : null;
+  return (universe || []).filter((k) => !ok || !sourceDataset[k] || ok.has(sourceDataset[k]));
+}
+
+/** "market data", for the notice when a plan has none of a family. */
+export const sourceFamilyLabel = (controls) =>
+  (SOURCE_OPTIONS.find((o) => o.key === sanitizeControls(controls).sources)?.label || '')
+    .toLowerCase()
+    .replace(/ and fundamentals$/, ' or fundamentals');
 
 const has = (list, key) => list.some((o) => o.key === key);
 

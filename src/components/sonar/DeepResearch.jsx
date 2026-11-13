@@ -29,6 +29,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { SonarRunPingBar, SonarRunNav } from './SonarRunPingBar';
+import { addSessionEntry } from './session-thread';
 import ResearchReport from '@/components/sonar/research/ResearchReport';
 import SaveToOrg from '@/components/org/sonar/SaveToOrg';
 import { useResearchStream } from '@/components/sonar/research/useResearchStream';
@@ -213,6 +214,27 @@ function clock(sec) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/* Nov 13: a finished run joins the session thread (in memory), so "In this session" can show
+   it again without a new request. */
+function useSessionEntry(state, query, mode) {
+  const runId = state.run?.runId || null;
+  useEffect(() => {
+    if (state.status !== 'done' || !runId || !state.report) return;
+    addSessionEntry({
+      id: `research:${runId}`,
+      kind: 'research',
+      question: state.run?.researchQuestion || query,
+      headline:
+        state.run?.headline ||
+        String(state.report?.executiveConclusion?.text || '').split(/(?<=[.!?])\s/)[0] ||
+        null,
+      mode,
+      state,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.status, runId]);
+}
+
 export function DeepResearchRun({
   query,
   estimate,
@@ -227,8 +249,13 @@ export function DeepResearchRun({
   focusOnMount = false,
   /* Nov 7: the next question, from the ping bar on this answer (the host pings it). */
   onPing = null,
+  /* Nov 13: a follow-up question (the host runs standard research with its context) and the
+     session thread's restore. */
+  onFollowUp = null,
+  onRestore = null,
 }) {
   const { state, run, cancel } = useResearchStream();
+  useSessionEntry(state, query, 'deep');
   const rootRef = useRef(null);
   useEffect(() => {
     if (focusOnMount) rootRef.current?.focus({ preventScroll: true });
@@ -367,6 +394,8 @@ export function DeepResearchRun({
             }
             onRun={onPing}
             saveable
+            onAskFollowUp={boardUp ? onFollowUp : null}
+            onRestore={onRestore}
           />
         </div>
       ) : null}
@@ -424,12 +453,19 @@ export function StandardResearchRun({
   /* Nov 7: the run's status ('running' | 'done' | 'error' | 'gated' | 'quota'), so the host
      can hold its loading screen until the report has landed. */
   onStatus = null,
+  /* Nov 13: a follow-up's { followUp, attachment } for this run's request, the next
+     follow-up, and the session thread's restore. */
+  extra = null,
+  onFollowUp = null,
+  onRestore = null,
 }) {
   const { state, run, cancel } = useResearchStream();
+  useSessionEntry(state, query, 'standard');
+  const extraKey = extra ? JSON.stringify(extra) : '';
   useEffect(() => {
-    run(query, { mode: 'standard' });
+    run(query, { mode: 'standard', extra: extraKey ? JSON.parse(extraKey) : null });
     return () => cancel();
-  }, [query, run, cancel]);
+  }, [query, extraKey, run, cancel]);
   const onStatusRef = useRef(onStatus);
   onStatusRef.current = onStatus;
   useEffect(() => {
@@ -542,6 +578,8 @@ export function StandardResearchRun({
             }
             onRun={onPing}
             saveable
+            onAskFollowUp={boardUp ? onFollowUp : null}
+            onRestore={onRestore}
             deepNote={estimate && onDeep ? deepNoteFrom(deepEstimate) : null}
             onRunDeep={
               estimate && onDeep && !draft.showing ? () => onDeep({ supersede: false }) : null

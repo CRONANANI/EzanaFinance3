@@ -38,10 +38,12 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
+import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { useSavedRelated } from '@/components/sonar/useSavedRelated';
 import { deskFields } from '@/lib/sonar/saved';
-import { nextSteps } from '@/lib/sonar/workspace';
+import { nextSteps, followUpContext } from '@/lib/sonar/workspace';
 import {
   boardSpans,
   sourceCoverage,
@@ -368,6 +370,11 @@ export function SonarPingBoard({
   onRun = null,
   deepNote = null,
   queryBar = null,
+  /* Nov 13: "Ask a follow-up question" (the host runs standard research with the context)
+     and the session thread's restore. */
+  onFollowUp = null,
+  onRestore = null,
+  sessionId = null,
 }) {
   /* Nov 13: who is reading (the Research menu and Save), and their own saved research on
      this subject for the right rail. Hooks before the early return. */
@@ -500,13 +507,14 @@ export function SonarPingBoard({
     { onRun },
   );
   const related = mergeRelated(relatedFromDossierEcho(live?.dossier?.echo), savedRelated);
-  const rail =
-    steps.length || related.length ? (
-      <>
-        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-      </>
-    ) : null;
+  /* Nov 13: Research Controls lead the rail, so it is always there. */
+  const rail = (
+    <>
+      <SonarResearchControls />
+      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
+    </>
+  );
   return (
     <SonarAnswerFrame
       present={present}
@@ -538,6 +546,20 @@ export function SonarPingBoard({
             </div>
           ))}
         </div>
+        {onFollowUp ? (
+          <SonarFollowUp
+            context={followUpContext({
+              question: live.rawQuery || live.query,
+              headline: live.headline || companyBrief(live.answer).headline || '',
+              summary: live.summary || answerParagraphs(live.answer, 3).join(' '),
+              subject: live.dossier?.name || '',
+              ticker: live.dossier?.ticker || '',
+            })}
+            onAsk={onFollowUp}
+            onRestore={onRestore}
+            currentId={sessionId}
+          />
+        ) : null}
       </div>
     </SonarAnswerFrame>
   );

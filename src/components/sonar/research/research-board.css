@@ -1170,3 +1170,11 @@
 .srb .srb-vsn {
   height: 100%;
 }
+
+/* Nov 13 (research workspace): a follow-up answer's "Follow-up to: ..." line above its
+   headline. */
+.srb-followup {
+  margin: 0 0 6px;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+}

@@ -1,0 +1,199 @@
+/* SonarFollowUp (Nov 13 2026): "Ask a follow-up question" under the board, and the session
+   thread above it. Scoped sfu-. Its own card: a surface tint, no outline. Reads the
+   workspace's --san-* layer with app-token fallbacks. Tokens only. */
+
+.sfu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--san-panel, var(--bg-secondary));
+  color: var(--san-text, var(--text-primary));
+}
+.sfu-thread-head,
+.sfu-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--type-body-size);
+  font-weight: 600;
+}
+.sfu-thread-head {
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--san-accent, var(--emerald-text));
+}
+.sfu-thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sfu-thread-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sfu-thread-item:hover,
+.sfu-thread-item[aria-current='true'] {
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 10%, transparent);
+}
+.sfu-thread-q {
+  min-width: 0;
+  font-size: var(--type-caption-size);
+}
+.sfu-thread-meta {
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: var(--type-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--san-faint, var(--text-muted));
+}
+.sfu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sfu-row {
+  display: flex;
+  gap: 8px;
+}
+.sfu-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 7%, transparent);
+}
+.sfu-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--type-body-size);
+}
+.sfu-input::placeholder {
+  color: var(--san-faint, var(--text-muted));
+}
+.sfu-attach {
+  flex: none;
+  width: 40px;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--san-muted, var(--text-secondary));
+  cursor: pointer;
+}
+.sfu-attach:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sfu-file {
+  display: none;
+}
+.sfu-ask {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--san-emerald, var(--emerald));
+  color: color-mix(in srgb, black 86%, var(--san-emerald, var(--emerald)));
+  font: inherit;
+  font-size: var(--type-body-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+.sfu-ask:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.sfu-input:focus-visible,
+.sfu-attach:focus-visible,
+.sfu-ask:focus-visible,
+.sfu-thread-item:focus-visible,
+.sfu-chip-x:focus-visible,
+.sfu-retry:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.sfu-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px 4px 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--san-emerald, var(--emerald)) 10%, transparent);
+  font-size: var(--type-caption-size);
+  align-self: flex-start;
+}
+.sfu-chip-x,
+.sfu-retry {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sfu-retry {
+  color: var(--san-accent, var(--emerald-text));
+  text-decoration: underline;
+}
+.sfu-note {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--san-faint, var(--text-muted));
+}
+.sfu-error {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--negative);
+}
+.sfu-spin {
+  animation: sfu-spin 0.9s linear infinite;
+}
+@keyframes sfu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sfu-spin {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .sfu-row {
+    flex-direction: column;
+  }
+}

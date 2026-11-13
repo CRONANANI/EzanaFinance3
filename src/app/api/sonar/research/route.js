@@ -39,6 +39,19 @@ import { cleanSonarQuery } from '@/lib/sonar/estimate';
 import { rememberRun } from '@/lib/sonar/engine/memory';
 import { EMPTY_RESEARCH_STATE, reduceEvent } from '@/lib/sonar/research-state';
 import { snapshotFromState } from '@/lib/org-sonar/reports';
+import {
+  sanitizeControls,
+  isDefaultControls,
+  controlsDirective,
+  narrowDatasets,
+  entitledSources,
+  sourceFamilyLabel,
+  CONTEXT_SOURCES,
+} from '@/lib/sonar/research-controls';
+import { followUpContext, followUpPreamble, attachmentBlock } from '@/lib/sonar/workspace';
+import { RUNNERS } from '@/lib/sonar/engine/sources';
+import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
+import { isUuid } from '@/lib/sonar/saved';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -275,6 +288,77 @@ const POST_HANDLER = withApiGuard(
       );
     }
 
+    /* Nov 13 (research workspace): Research Controls, a follow-up's context and an attached
+       file. Depth, quota and entitlements are settled above, first; nothing here can raise a
+       limit. Controls only narrow what the plan already allows (source keys, through
+       entitledSources), and a control the plan cannot honour runs with the full entitlement
+       and says so. */
+    const controls = sanitizeControls(body?.controls);
+    const universe = Object.keys(RUNNERS);
+    /* Deep mode reads every dataset; it is narrowed only when the reader chose a family. */
+    const entitledSrc = entitledSources(
+      universe,
+      deepMode ? null : access.entitlements.datasets,
+      SOURCE_DATASET,
+    );
+    const narrow = narrowDatasets(entitledSrc, universe, controls);
+    const allowedSources = narrow.narrowed ? [...narrow.datasets, ...CONTEXT_SOURCES] : null;
+    const controlsNotice = narrow.empty
+      ? `Your plan has no ${sourceFamilyLabel(controls)} data for this question, so every available source was used.`
+      : null;
+    const directive = controlsDirective(controls);
+
+    /* A follow-up: a stored parent the caller owns is the context; the client's copy is only
+       re-clipped otherwise. Never conversation history. */
+    let followCtx = null;
+    let parentRunId = null;
+    let parentQuestion = null;
+    const fu = body?.followUp && typeof body.followUp === 'object' ? body.followUp : null;
+    if (fu && access.user && isUuid(fu.parentRunId)) {
+      const pr = await withTimeout(
+        admin
+          .from('sonar_research_runs')
+          .select('id, user_id, question, subject, report')
+          .eq('id', fu.parentRunId)
+          .maybeSingle(),
+        1200,
+        'follow-up-parent',
+      );
+      const parent = pr.ok ? pr.value?.data : null;
+      if (parent && parent.user_id === access.user.id) {
+        parentRunId = parent.id;
+        parentQuestion = parent.question || null;
+        followCtx = followUpContext({
+          question: parent.question,
+          headline: parent.report?.headline || null,
+          summary: parent.report?.summary || parent.report?.executiveConclusion?.text || null,
+          subject:
+            typeof parent.subject === 'string' ? parent.subject : parent.subject?.label || null,
+          ticker: parent.subject?.kind === 'company' ? parent.subject?.id || null : null,
+        });
+      }
+    }
+    if (fu && !followCtx) {
+      const clientCtx = fu.context && typeof fu.context === 'object' ? fu.context : {};
+      followCtx = followUpContext(clientCtx);
+      parentQuestion = followCtx.question || null;
+    }
+    /* An attached file: its text is quoted reference material for this one run. Only its
+       name is kept on the run; the contents are never stored or logged. */
+    const att = body?.attachment && typeof body.attachment === 'object' ? body.attachment : null;
+    const attachName =
+      att && typeof att.name === 'string' ? att.name.replace(/[\r\n]+/g, ' ').slice(0, 120) : null;
+    const attachText = att && typeof att.text === 'string' ? att.text : '';
+    const attachment = attachName && attachText ? attachmentBlock(attachName, attachText) : '';
+    const preamble = [
+      followCtx?.question ? followUpPreamble(followCtx) : '',
+      attachment
+        ? `${attachment}\nCite anything taken from it as "the attached file", never as a published source, and never count it among the sources.`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
     /* Sonar for organizations: fund fit and challenge runs (deep, org only). */
     const orgId = access.scope?.orgId || null;
     let fund = null;
@@ -356,6 +440,10 @@ const POST_HANDLER = withApiGuard(
         let run = null;
         /* An org member's run keeps the state the analyst saw, to save it. */
         let snap = orgId ? EMPTY_RESEARCH_STATE : null;
+        if (controlsNotice) {
+          send('notice', { message: controlsNotice });
+          if (snap) snap = reduceEvent(snap, ['notice', { message: controlsNotice }]);
+        }
         try {
           run = await runResearch(runQuery, {
             admin,
@@ -365,6 +453,16 @@ const POST_HANDLER = withApiGuard(
               startedAt + Math.min(DEPTH_PROFILES[depth].budgetMs, (maxDuration - 6) * 1000),
             /* Deep mode reads every dataset, as a quick ping does for anyone. */
             entitledDatasets: deepMode ? null : access.entitlements.datasets,
+            /* Nov 13: Research Controls and a follow-up's background (see above). */
+            allowedSources,
+            directive,
+            preamble,
+            runMeta: {
+              controls: isDefaultControls(controls) ? null : controls,
+              followUpTo: parentQuestion,
+              parentRunId,
+              attachmentName: attachment ? attachName : null,
+            },
             /* A standard run whose real plan leaves out evidence the question
                asked for says so right after the plan (never escalates). */
             emit: (event, data) => {
@@ -434,6 +532,9 @@ const POST_HANDLER = withApiGuard(
                   : 'failed',
                 orgId,
                 snapshot,
+                controls,
+                parentRunId,
+                attachmentName: attachment ? attachName : null,
               }),
               answered ? rememberRun(admin, run, { scope: 'public' }) : null,
             ]),

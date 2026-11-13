@@ -30,7 +30,8 @@ test('standard research holds the screen until the report lands', () => {
   );
   assert.match(
     host,
-    /onStandardResearch=\{\(query, \{ classification, goDeeper: hint \} = \{\}\) =>\s*startStandard\(/,
+    /* Nov 13: a follow-up's `extra` rides along. */
+    /onStandardResearch=\{\(query, \{ classification, goDeeper: hint(, extra)? \} = \{\}\) =>\s*startStandard\(/,
   );
   assert.match(
     host,

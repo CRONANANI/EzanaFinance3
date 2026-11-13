@@ -14,6 +14,7 @@
  * still available. `coverage`: a standard run's plan left out evidence the
  * question asked for ({ incomplete, missing, goDeeper }).
  */
+import { readControls } from '../research-controls-store';
 import { useCallback, useRef, useState } from 'react';
 import {
   EMPTY_RESEARCH_STATE as EMPTY,
@@ -48,8 +49,11 @@ export function useResearchStream() {
           query,
           ...(depth ? { depth } : {}),
           ...(mode ? { mode } : {}),
-          /* Org research (Nov 2026): { fundFit } or { challenge: { reportId } }. */
+          /* Org research (Nov 2026): { fundFit } or { challenge: { reportId } }. Nov 13: a
+             follow-up's { followUp, attachment } too. */
           ...(extra && typeof extra === 'object' ? extra : {}),
+          /* Nov 13: Research Controls, sanitized again on the server. */
+          controls: readControls(),
         }),
         signal: ac.signal,
       });

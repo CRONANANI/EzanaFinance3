@@ -73,10 +73,12 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
+import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
+import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { useSavedRelated } from '@/components/sonar/useSavedRelated';
 import { deskFields } from '@/lib/sonar/saved';
-import { nextSteps } from '@/lib/sonar/workspace';
+import { nextSteps, followUpContext } from '@/lib/sonar/workspace';
 import { anchorCells, canRender } from '@/lib/sonar/answer-sections';
 import './country-intel.css';
 import './sonar-country-board.css';
@@ -525,6 +527,10 @@ export function SonarCountryBoard({
   deepNote = null,
   /* Nov 13: the workspace's query bar, for the top of the centre column. */
   queryBar = null,
+  /* Nov 13: "Ask a follow-up question" and the session thread's restore. */
+  onFollowUp = null,
+  onRestore = null,
+  sessionId = null,
 }) {
   const mapId = useId();
   const naId = useId();
@@ -766,13 +772,14 @@ export function SonarCountryBoard({
     { onRun },
   );
   const related = mergeRelated(relatedFromDossierEcho(dossier?.echo), savedRelated);
-  const rail =
-    steps.length || related.length ? (
-      <>
-        <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-        <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-      </>
-    ) : null;
+  /* Nov 13: Research Controls lead the rail, so it is always there. */
+  const rail = (
+    <>
+      <SonarResearchControls />
+      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
+      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
+    </>
+  );
   const sources = (intel.sources || []).filter(Boolean);
 
   return (
@@ -811,6 +818,20 @@ export function SonarCountryBoard({
           ))}
         </div>
         {sources.length ? <p className="snr-bd-sources">Sources: {sources.join('; ')}.</p> : null}
+        {onFollowUp ? (
+          <SonarFollowUp
+            context={followUpContext({
+              question: live.rawQuery || live.query,
+              headline:
+                live.headline || boardHeadline({ intel, query: live.rawQuery || live.query }) || '',
+              summary: live.summary || boardAnswer(intel).text || '',
+              subject: intel.place || dossier.name || '',
+            })}
+            onAsk={onFollowUp}
+            onRestore={onRestore}
+            currentId={sessionId}
+          />
+        ) : null}
       </div>
     </SonarAnswerFrame>
   );

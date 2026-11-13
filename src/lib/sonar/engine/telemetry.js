@@ -38,6 +38,11 @@ export async function recordRun(
     status = 'complete',
     orgId = null,
     snapshot = null,
+    /* Nov 13 (research workspace): what the run was asked with. Never an attached file's
+       contents, only its name. */
+    controls = null,
+    parentRunId = null,
+    attachmentName = null,
   } = {},
 ) {
   if (!admin || !run?.runId) return { snapshotStored: false };
@@ -60,6 +65,8 @@ export async function recordRun(
     plan: clip(run.methodology?.plan),
     evidence_decisions: clip(run.methodology?.evidence),
     report: clip({
+      headline: run.headline || null,
+      summary: run.summary || null,
       executiveConclusion: run.executiveConclusion,
       keyFindings: run.keyFindings,
       analysis: run.analysis,
@@ -77,8 +84,22 @@ export async function recordRun(
   };
   if (orgId) row.org_id = orgId;
   if (orgId && snapshot) row.snapshot = snapshot;
+  if (controls && typeof controls === 'object') row.controls = controls;
+  if (parentRunId) row.parent_run_id = parentRunId;
+  if (attachmentName) row.attachment_name = String(attachmentName).slice(0, 120);
   let snapshotStored = Boolean(row.snapshot);
   let { error } = await admin.from('sonar_research_runs').upsert(row, { onConflict: 'id' });
+  /* The workspace columns are not migrated yet: keep the run without them. */
+  if (
+    error &&
+    ('controls' in row || 'parent_run_id' in row || 'attachment_name' in row) &&
+    /controls|parent_run_id|attachment_name|column/i.test(error.message || '')
+  ) {
+    delete row.controls;
+    delete row.parent_run_id;
+    delete row.attachment_name;
+    ({ error } = await admin.from('sonar_research_runs').upsert(row, { onConflict: 'id' }));
+  }
   if (
     error &&
     (row.org_id || row.snapshot) &&

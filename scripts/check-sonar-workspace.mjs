@@ -128,8 +128,9 @@ test('controls: the directive is fixed option text only', () => {
 });
 
 test('controls: data sources only ever narrow the entitlement', () => {
-  const universe = ['sec_filings', 'congress_trades', 'equity_prices', 'oecd_macro'];
-  const entitled = ['sec_filings', 'congress_trades'];
+  /* Nov 13 (prompt 4): the families match the research engine's real source keys. */
+  const universe = ['sec_filings', 'congress_company', 'market_snapshot', 'macro_series'];
+  const entitled = ['sec_filings', 'congress_company'];
   const a = narrowDatasets(entitled, universe, { sources: 'filings' });
   assert.deepEqual(a.datasets, ['sec_filings']);
   assert.equal(a.narrowed, true);
@@ -137,7 +138,7 @@ test('controls: data sources only ever narrow the entitlement', () => {
   assert.equal(b.empty, true);
   assert.deepEqual(b.datasets, entitled);
   const c = narrowDatasets(null, universe, { sources: 'market' });
-  assert.deepEqual(c.datasets, ['equity_prices']);
+  assert.deepEqual(c.datasets, ['market_snapshot']);
   assert.equal(narrowDatasets(entitled, universe, {}).datasets, entitled);
   for (const k of a.datasets) assert.ok(entitled.includes(k));
 });
@@ -445,5 +446,153 @@ test('the Desk Summary is one shared component, borderless, tokens only, no em d
   assert.match(
     readSrc('src/components/sonar/SonarDeskSummary.jsx'),
     /dynamic\(\(\) => import\('\.\/SonarMarketContext'\)/,
+  );
+});
+
+/* ------------------------------------------------------------------ prompt 4: controls */
+
+import {
+  SOURCE_OPTIONS as FAMILIES,
+  CONTEXT_SOURCES,
+  entitledSources,
+  sourceFamilyLabel,
+} from '../src/lib/sonar/research-controls.js';
+
+/* The research engine's source keys (RUNNERS in src/lib/sonar/engine/sources.js, with the
+   memo, positioning and fund runners). Pinned here; the route reads the live list. */
+const ENGINE_SOURCES = [
+  'lobbying_leaders',
+  'lobbying_company',
+  'congress_sector',
+  'congress_company',
+  'politician_dossier',
+  'congress_activity',
+  'contracts_history',
+  'institutional_13f',
+  'sec_filings',
+  'market_snapshot',
+  'analysts',
+  'revenue_geo',
+  'price_performance',
+  'commodity_series',
+  'sanctions',
+  'macro_country',
+  'macro_series',
+  'industry_registry',
+  'prediction_markets',
+  'echo',
+  'news',
+  'ipo_filings',
+  'company_financials',
+  'product_segments',
+  'holder_positioning',
+  'peer_financials',
+  'customer_capex',
+  'estimates',
+  'disclosures',
+  'export_controls',
+  'lobbying_associations',
+  'competitive_products',
+  'capex_monetization',
+  'hyperscaler_capex',
+  'contracts_profile',
+  'lobbying_profile',
+  'value_chain',
+  'fund_mandate',
+];
+
+test('data sources mapping: pinned against the engine source keys', () => {
+  const engine = readSrc('src/lib/sonar/engine/sources.js');
+  const runners = engine.slice(engine.indexOf('export const RUNNERS = {'));
+  for (const k of ENGINE_SOURCES.filter(
+    (k) =>
+      !/^(company_financials|product_segments|holder_positioning|peer_financials|customer_capex|estimates|disclosures|export_controls|lobbying_associations|competitive_products|capex_monetization|hyperscaler_capex|contracts_profile|lobbying_profile|value_chain|fund_mandate)$/.test(
+        k,
+      ),
+  ))
+    assert.match(runners, new RegExp(`\\b${k}\\b`), `${k} is an engine source`);
+  const families = FAMILIES.filter((o) => o.match);
+  for (const k of ENGINE_SOURCES) {
+    const hits = families.filter((o) => o.match.test(k)).map((o) => o.key);
+    assert.ok(hits.length <= 1, `${k} lands in at most one family (${hits.join(', ')})`);
+  }
+  for (const o of families)
+    assert.ok(
+      ENGINE_SOURCES.some((k) => o.match.test(k)),
+      `${o.key} matches at least one key`,
+    );
+  const pick = (key) =>
+    ENGINE_SOURCES.filter((k) => FAMILIES.find((o) => o.key === key).match.test(k));
+  assert.deepEqual(pick('macro'), ['macro_country', 'macro_series']);
+  assert.ok(pick('government').includes('sanctions'));
+  assert.ok(pick('filings').includes('sec_filings'));
+  assert.ok(pick('market').includes('market_snapshot'));
+  for (const k of CONTEXT_SOURCES) assert.ok(ENGINE_SOURCES.includes(k));
+  assert.equal(sourceFamilyLabel({ sources: 'filings' }), 'filings or fundamentals');
+});
+
+test('entitled sources: a gated source needs its dataset, an ungated one is always in', () => {
+  const map = { sec_filings: 'sec-filings', congress_company: 'congress' };
+  const u = ['sec_filings', 'congress_company', 'market_snapshot'];
+  assert.deepEqual(entitledSources(u, ['congress'], map), ['congress_company', 'market_snapshot']);
+  assert.deepEqual(entitledSources(u, null, map), u, 'a deep run reads every dataset');
+});
+
+test('the research route sanitizes controls, never widens, and owns the follow-up context', () => {
+  const route = readSrc('src/app/api/sonar/research/route.js');
+  assert.match(route, /const controls = sanitizeControls\(body\?\.controls\)/);
+  assert.match(route, /narrowDatasets\(entitledSrc, universe, controls\)/);
+  assert.match(
+    route,
+    /entitledDatasets: deepMode \? null : access\.entitlements\.datasets/,
+    'entitlement unchanged',
+  );
+  /* The narrowed list only ever comes out of the entitled one. */
+  const narrow = route.indexOf('narrowDatasets(');
+  const reserve = route.indexOf('const reservation = await');
+  assert.ok(reserve > 0 && narrow > reserve, 'depth, quota and entitlements are computed first');
+  /* An owned parent replaces the client's copy; otherwise the client's is re-clipped. */
+  assert.match(route, /parent\.user_id === access\.user\.id/);
+  const owned = route.indexOf('followCtx = followUpContext({');
+  const clip = route.indexOf('followCtx = followUpContext(clientCtx');
+  assert.ok(owned > 0 && clip > owned, 'the stored parent wins over the client copy');
+  assert.match(route, /followUpPreamble\(followCtx\)/);
+  assert.match(route, /attachmentBlock\(attachName, attachText\)/);
+  assert.match(route, /the attached file/);
+  const engine = readSrc('src/lib/sonar/engine/engine.js');
+  assert.match(engine, /allowedSources = null/);
+  assert.match(engine, /directive = ''/);
+  assert.match(engine, /preamble = ''/);
+});
+
+test('the attachment route checks type, size and signature and stores nothing', () => {
+  const src = readSrc('src/app/api/sonar/attachment/route.js');
+  assert.match(src, /checkAttachment\(/);
+  assert.match(src, /%PDF-/, 'reads the first bytes for the PDF signature');
+  assert.match(src, /strict: true/);
+  assert.doesNotMatch(
+    src,
+    /getAdminClient|getUserClient|\.insert\(|\.upload\(|storage\./,
+    'nothing is written',
+  );
+  assert.doesNotMatch(src, /console\.(log|warn|error)\([^)]*text/, 'the text is not logged');
+  assert.match(src, /unpdf/);
+  assert.match(src, /papaparse/);
+});
+
+test('attachment text never reaches a saved snapshot or a shared link', async () => {
+  const { cleanSaveBody } = await import('../src/lib/sonar/saved.js');
+  const out = cleanSaveBody({
+    kind: 'ping',
+    question: 'What does my file say about margins?',
+    snapshot: {
+      headline: 'H',
+      attachment: { name: 'f.csv', text: 'SECRET' },
+      attachmentText: 'SECRET',
+    },
+  });
+  assert.ok(!JSON.stringify(out.row.snapshot).includes('SECRET'));
+  assert.ok(
+    !JSON.stringify(publicSnapshot({ attachmentText: 'SECRET', question: 'q' })).includes('SECRET'),
   );
 });
