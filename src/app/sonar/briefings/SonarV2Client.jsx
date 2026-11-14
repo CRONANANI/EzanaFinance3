@@ -76,7 +76,7 @@ export default function SonarV2Client() {
           cited brief. Findings only, never advice.
         </p>
         <form
-          className="snv2-bar"
+          className="snv2-bar ds-search"
           onSubmit={(e) => {
             e.preventDefault();
             ping(input);
@@ -84,6 +84,7 @@ export default function SonarV2Client() {
         >
           <i className="bi bi-broadcast" aria-hidden="true" />
           <input
+            className="ds-search-input"
             type="search"
             value={input}
             maxLength={600}

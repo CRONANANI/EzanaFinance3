@@ -12,10 +12,11 @@ import { Card, M } from './ui';
 
 function TableSearch({ value, onChange, label }) {
   return (
-    <label className="inst-tsearch">
+    <label className="inst-tsearch ds-search">
       <i className="bi bi-search" aria-hidden="true" />
       <span className="inst-sr">{label}</span>
       <input
+        className="ds-search-input"
         type="search"
         placeholder={label}
         value={value}

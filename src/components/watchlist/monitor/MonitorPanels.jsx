@@ -434,11 +434,11 @@ export function MyWatchlistsCard({
         </label>
       </div>
 
-      <div className="wlm-search">
+      <div className="wlm-search ds-search">
         <i className="bi bi-search" aria-hidden="true" />
         <input
           type="search"
-          className="wlm-input wlm-input--bare"
+          className="wlm-input wlm-input--bare ds-search-input"
           placeholder="Search this list"
           aria-label="Search this list"
           value={q}
@@ -625,13 +625,13 @@ export function AddAssetDialog({ open, onClose, initialClass, listLabel, existin
             </button>
           ))}
         </div>
-        <div className="wlm-search">
+        <div className="wlm-search ds-search">
           <i className="bi bi-search" aria-hidden="true" />
           <input
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             type="search"
-            className="wlm-input wlm-input--bare"
+            className="wlm-input wlm-input--bare ds-search-input"
             aria-label={`Search ${cls.label.toLowerCase()}`}
             placeholder={
               classId === 'politicians'

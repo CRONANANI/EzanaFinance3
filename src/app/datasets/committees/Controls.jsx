@@ -118,9 +118,10 @@ export function GroupedSearch({
 
   let lastKind = null;
   return (
-    <div className="cmx-search" ref={boxRef}>
+    <div className="cmx-search ds-search" ref={boxRef}>
       <i className="bi bi-search" aria-hidden="true" />
       <input
+        className="ds-search-input"
         type="search"
         placeholder="Search committees or members…"
         aria-label="Search committees or members"

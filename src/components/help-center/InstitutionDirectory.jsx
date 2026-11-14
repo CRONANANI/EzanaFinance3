@@ -149,7 +149,7 @@ export function InstitutionDirectory() {
         <i className="bi bi-search hid-search-icon" aria-hidden="true" />
         <input
           type="search"
-          className="hid-input"
+          className="hid-input ds-search-input"
           value={query}
           onChange={(e) => setQuery(e.target.value.slice(0, 80))}
           placeholder="Search for your bank or brokerage"

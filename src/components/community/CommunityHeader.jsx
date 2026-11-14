@@ -134,10 +134,11 @@ function CommunitySearch({ onOpenPost }) {
 
   return (
     <div className={s.search} ref={wrapRef}>
-      <label className={s.searchField}>
+      <label className={`${s.searchField} ds-search`}>
         <i className="bi bi-search" aria-hidden="true" />
         <span className={s.srOnly}>Search the community</span>
         <input
+          className="ds-search-input"
           ref={inputRef}
           type="search"
           value={q}

@@ -285,6 +285,7 @@ export function PitchCircuitClient({ todayIso }) {
         </div>
         <div className="pcc-search">
           <Input
+            className="ds-search-input"
             type="search"
             aria-label="Search competitions"
             placeholder="Search by name, host or city"

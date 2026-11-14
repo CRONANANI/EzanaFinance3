@@ -147,10 +147,11 @@ function SearchBox({ value, onCommit }) {
     return () => clearTimeout(t);
   }, [text, value, onCommit]);
   return (
-    <label className="lbx-search">
+    <label className="lbx-search ds-search">
       <i className="bi bi-search" aria-hidden="true" />
       <span className="lbx-sr">Search clients or firms</span>
       <input
+        className="ds-search-input"
         type="search"
         placeholder="Search clients or firms…"
         value={text}
@@ -179,10 +180,11 @@ function IssueSheet({ issues, selected, onPick, onClose }) {
         <h2 className="lbx-title">All {issues.length} issue areas</h2>
         <CloseButton onClose={onClose} />
       </div>
-      <label className="lbx-search lbx-search--block">
+      <label className="lbx-search lbx-search--block ds-search">
         <i className="bi bi-search" aria-hidden="true" />
         <span className="lbx-sr">Filter issue areas</span>
         <input
+          className="ds-search-input"
           type="search"
           placeholder="Filter issue areas…"
           value={q}

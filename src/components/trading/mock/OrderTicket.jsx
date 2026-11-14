@@ -51,7 +51,7 @@ function TickerSearch({ query, setQuery, results, loading, onPick, onSubmitTicke
       <input
         id={`${listId}-input`}
         type="search"
-        className="mock-search__input"
+        className="mock-search__input ds-search-input"
         placeholder="Search company or ticker"
         autoComplete="off"
         role="combobox"

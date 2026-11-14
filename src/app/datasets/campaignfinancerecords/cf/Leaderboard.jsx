@@ -162,9 +162,10 @@ export function FinancialLeaderboard({ data, onOpen, onOrder, updated }) {
       ) : null}
 
       <div className={`cfi-lb-filters${filtersOpen ? ' is-open' : ''}`}>
-        <label className="cfi-search">
+        <label className="cfi-search ds-search">
           <i className="bi bi-search" aria-hidden="true" />
           <input
+            className="ds-search-input"
             type="search"
             placeholder="Search member or state"
             aria-label="Search member or state"

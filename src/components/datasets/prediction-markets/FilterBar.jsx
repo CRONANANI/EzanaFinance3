@@ -70,10 +70,11 @@ function SearchBox({ q, onCommit, id }) {
     return () => clearTimeout(t);
   }, [text, q]);
   return (
-    <label className="pmk-search" htmlFor={id}>
+    <label className="pmk-search ds-search" htmlFor={id}>
       <i className="bi bi-search" aria-hidden="true" />
       <span className="pmk-sr">Search markets</span>
       <input
+        className="ds-search-input"
         id={id}
         type="search"
         placeholder="Search markets…"

@@ -193,7 +193,7 @@ export function NewMessageDialog({
             <input
               ref={inputRef}
               type="text"
-              className="m-search__input"
+              className="m-search__input ds-search-input"
               placeholder="Search by name or @username"
               value={q}
               onChange={(e) => setQ(e.target.value)}

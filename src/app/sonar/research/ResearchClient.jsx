@@ -49,7 +49,7 @@ export default function ResearchClient() {
         </label>
         <input
           id="srp-q"
-          className="srp-input"
+          className="srp-input ds-search-input"
           value={q}
           maxLength={600}
           onChange={(e) => setQ(e.target.value)}

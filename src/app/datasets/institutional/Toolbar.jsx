@@ -57,9 +57,10 @@ export function GroupedToolbarSearch({ overview, onManager, onSecurity }) {
 
   let lastKind = null;
   return (
-    <div className="inst-search">
+    <div className="inst-search ds-search">
       <i className="bi bi-search" aria-hidden="true" />
       <input
+        className="ds-search-input"
         type="search"
         placeholder="Find a manager, ticker, issuer or CUSIP"
         aria-label="Find a manager, ticker, issuer or CUSIP"

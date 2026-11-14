@@ -139,7 +139,7 @@ export default function SavedClient() {
           }}
         >
           <input
-            className="srw-input"
+            className="srw-input ds-search-input"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

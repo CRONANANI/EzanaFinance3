@@ -69,7 +69,7 @@ export default function SonarReportsList({ pitchId = null, compact = false, limi
       {!compact ? (
         <div className="osr-filters" role="group" aria-label="Filter reports">
           <input
-            className="osr-search"
+            className="osr-search ds-search-input"
             type="search"
             placeholder="Search reports"
             value={q}

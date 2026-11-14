@@ -141,7 +141,7 @@ export function EchoSearchBar({ onSearch, placeholder = 'Search articles or auth
   };
 
   return (
-    <form className="echo-search-bar" onSubmit={handleSubmit}>
+    <form className="echo-search-bar ds-search" onSubmit={handleSubmit}>
       <i className="bi bi-search" />
       <input
         type="text"
@@ -151,7 +151,7 @@ export function EchoSearchBar({ onSearch, placeholder = 'Search articles or auth
           if (!e.target.value) onSearch?.('');
         }}
         placeholder={placeholder}
-        className="echo-search-input"
+        className="echo-search-input ds-search-input"
       />
       {query && (
         <button

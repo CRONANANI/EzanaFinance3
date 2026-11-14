@@ -135,9 +135,10 @@ export default function ConnectBrokerageModal({
         </header>
 
         <div className={styles.searchWrap}>
-          <label className={styles.search}>
+          <label className={`${styles.search} ds-search`}>
             <i className={`bi bi-search ${styles.searchIcon}`} aria-hidden="true" />
             <input
+              className="ds-search-input"
               ref={inputRef}
               type="search"
               value={query}
