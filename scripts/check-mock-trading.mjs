@@ -22,6 +22,9 @@ import {
   summarizePortfolio,
   ticketState,
 } from '../src/lib/trading/mock-ticket.js';
+/* The thesis and risk helpers have their own suite; importing it here runs it
+   under the same npm script. */
+import './check-mock-thesis.mjs';
 
 test('formats: money, signed deltas, compact headline, shares', () => {
   assert.equal(fmtUSD(12438.2), '$12,438.20');
