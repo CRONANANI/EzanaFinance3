@@ -1,6 +1,7 @@
 /**
  * Current mock-portfolio holdings as CSV, derived from the mock trade log
- * (GET /api/mock-trades). QA RET-21.
+ * (GET /api/mock-trades). QA RET-21. The trade journal export
+ * (buildMockJournalCsv) is below.
  *
  * Holdings use the average-cost method: a buy adds shares and cost; a sell
  * removes shares at the running average cost. Positions that net to zero are
@@ -71,5 +72,39 @@ export function buildMockPortfolioCsv(trades) {
     h.costBasis.toFixed(2),
     h.lastTradeAt ? new Date(h.lastTradeAt).toISOString() : '',
   ]);
+  return [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+}
+
+/**
+ * The trade journal as CSV (Mock Trading, Nov 14 2026): one row per trade,
+ * oldest first, with the thesis the trade was placed under and its thesis
+ * note. Notes and thesis names are user text, so every cell goes through the
+ * same formula-prefix neutralisation as the holdings export.
+ *
+ * @param {Array<{created_at, trade_type, ticker, quantity, price, total_amount,
+ *   thesis_name?, thesis_note?}>} trades  GET /api/mock-trades rows
+ */
+export function buildMockJournalCsv(trades) {
+  const header = ['Time', 'Type', 'Ticker', 'Shares', 'Price', 'Amount', 'thesis', 'thesis_note'];
+  const rows = [...(trades || [])]
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .map((t) => {
+      const qty = Number(t.quantity);
+      const price = Number(t.price);
+      const total =
+        t.total_amount != null && Number.isFinite(Number(t.total_amount))
+          ? Number(t.total_amount)
+          : qty * price;
+      return [
+        t.created_at ? new Date(t.created_at).toISOString() : '',
+        t.trade_type === 'sell' ? 'Sell' : 'Buy',
+        String(t.ticker || '').toUpperCase(),
+        Number.isFinite(qty) ? round(qty, 6) : '',
+        Number.isFinite(price) ? price.toFixed(4) : '',
+        Number.isFinite(total) ? total.toFixed(2) : '',
+        t.thesis_name || '',
+        t.thesis_note || '',
+      ];
+    });
   return [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }

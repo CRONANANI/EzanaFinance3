@@ -16,6 +16,8 @@
  * drives them with scripts/lib/mock-supabase.mjs). Each returns { status, body }.
  */
 
+import { parseThesisNote } from './mock-thesis.js';
+
 export const STARTING_CASH = 100_000;
 export const MIN_STARTING_CASH = 1_000;
 export const MAX_STARTING_CASH = 10_000_000;
@@ -204,10 +206,15 @@ async function currentPortfolioBody(admin, userId, extra = {}) {
 
 /**
  * POST /api/mock-trades. `deps.getQuote(ticker)` → { price } | null.
+ * Optional `thesis_note` (validated by parseThesisNote) is stored on the
+ * trade; `deps.getActiveThesisId(admin, userId)`, when given, stamps the
+ * caller's active thesis. The client never sends a thesis id.
  */
 export async function executeMockTrade(admin, userId, body, deps) {
   const req = parseTradeRequest(body);
   if (!req) return { status: 400, body: { error: 'Invalid trade request' } };
+  const note = parseThesisNote(body?.thesis_note);
+  if (!note.ok) return { status: 400, body: { error: note.error } };
 
   if (req.client_request_id) {
     const { data: prior, error: priorErr } = await admin
@@ -258,9 +265,18 @@ export async function executeMockTrade(admin, userId, body, deps) {
       total_amount: result.trade.total,
     };
     if (!claimed) {
+      const thesisCols = {};
+      if (note.value) thesisCols.thesis_note = note.value;
+      const thesisId = deps.getActiveThesisId ? await deps.getActiveThesisId(admin, userId) : null;
+      if (thesisId) thesisCols.thesis_id = thesisId;
       const { data: ins, error: insErr } = await admin
         .from('mock_trades')
-        .insert({ user_id: userId, ...tradeRow, client_request_id: req.client_request_id })
+        .insert({
+          user_id: userId,
+          ...tradeRow,
+          client_request_id: req.client_request_id,
+          ...thesisCols,
+        })
         .select('id, created_at')
         .single();
       if (insErr) {

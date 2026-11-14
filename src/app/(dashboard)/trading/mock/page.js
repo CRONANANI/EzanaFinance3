@@ -16,6 +16,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { useChecklist } from '@/hooks/useChecklist';
+import { useMockTheses } from '@/hooks/useMockTheses';
+import { Button, IconButton, Modal, Tabs, Textarea } from '@/components/ds';
 
 import {
   ActivityCard,
@@ -27,10 +29,13 @@ import {
 } from '@/components/trading/mock/MockSections';
 import { OrderTicket } from '@/components/trading/mock/OrderTicket';
 import { PreTradeCards } from '@/components/trading/mock/PreTradeCards';
+import { ReviewOrderModal } from '@/components/trading/mock/ReviewOrderModal';
+import { DeleteThesisModal, ThesisModal, ThesisPanel } from '@/components/trading/mock/ThesisPanel';
 import {
   filterPositions,
   fmtClockET,
   fmtQty,
+  fmtShortDayET,
   journalRows,
   parseAmount,
   portfolioRows,
@@ -38,7 +43,15 @@ import {
   sortPositions,
   ticketState,
 } from '@/lib/trading/mock-ticket';
-import { whatIf } from '@/lib/trading/mock-thesis';
+import {
+  THESIS_LIMITS,
+  capStatus,
+  fitClauses,
+  portfolioAlignment,
+  thesisFit,
+  whatIf,
+} from '@/lib/trading/mock-thesis';
+import { buildMockJournalCsv } from '@/lib/trading/mock-portfolio-csv';
 import { riskSnapshot } from '@/lib/trading/mock-risk';
 
 /* The reset modal only renders after a click: its own lazy chunk. The charts
@@ -262,6 +275,22 @@ function MockTradingPageInner() {
   const [posSort, setPosSort] = useState({ key: null, dir: 'desc' });
   const [posFilter, setPosFilter] = useState('all');
 
+  /* Thesis layer (Nov 14 2026): the user's theses, the Build / edit and
+     delete modals, the review step and the journal's note editing. */
+  const theses = useMockTheses({ enabled: Boolean(user?.id) });
+  const [thesisModal, setThesisModal] = useState({ open: false, thesis: null });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletePending, setDeletePending] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [journalTab, setJournalTab] = useState('all');
+  const [noteRow, setNoteRow] = useState(null);
+  const [noteText, setNoteText] = useState('');
+  const [notePending, setNotePending] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  /* Sector by ticker (from the stock stats response), fetched once each. */
+  const [sectors, setSectors] = useState({});
+  const sectorsAsked = useRef(new Set());
+
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
     /* The positions table already has a live price for held tickers: show it
@@ -409,7 +438,7 @@ function MockTradingPageInner() {
     toastRef.current = setTimeout(() => setToast(null), 3200);
   };
 
-  const executeTrade = async () => {
+  const executeTrade = async (note = '') => {
     const dollarAmount = parseAmount(amount);
     const check = ticketState({
       side,
@@ -429,7 +458,9 @@ function MockTradingPageInner() {
       amount: dollarAmount,
       name: selectedName,
       asset_type: selectedType,
+      ...(note && note.trim() ? { thesis_note: note } : {}),
     });
+    setReviewOpen(false);
     if (!r) return;
     if (!r.ok) {
       showToast(r.error || 'Trade failed.', 'error');
@@ -714,6 +745,151 @@ function MockTradingPageInner() {
     positions: positionRows,
     totalValue: summary.totalValue,
   });
+
+  /* Sectors for the ticket's ticker and every holding (the sector check and
+     portfolio alignment). One request per ticker per visit. */
+  const sectorSymbolsKey = [selectedSymbol, ...positionRows.map((r) => r.symbol)]
+    .filter(Boolean)
+    .join(',');
+  const hasActiveThesis = Boolean(theses.active);
+  useEffect(() => {
+    if (!hasActiveThesis) return;
+    /* No cancellation: each ticker is asked once, and its answer is kept even
+       if the effect runs again before it lands. */
+    const wanted = [...new Set(sectorSymbolsKey.split(',').filter(Boolean))].filter(
+      (sym) => !sectorsAsked.current.has(sym),
+    );
+    for (const sym of wanted) {
+      sectorsAsked.current.add(sym);
+      fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(sym)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => setSectors((m) => ({ ...m, [sym]: d?.sector || null })))
+        .catch(() => {
+          sectorsAsked.current.delete(sym);
+        });
+    }
+  }, [sectorSymbolsKey, hasActiveThesis]);
+
+  /* One fit result feeds the ticket's check line, the alignment card, the
+     risk card's cap notice, the panel's Current trade fit and the review. */
+  const thesis = theses.active;
+  const fit = thesisFit({
+    thesis,
+    projection,
+    sector: selectedSymbol ? (sectors[selectedSymbol] ?? null) : null,
+    isFund: selectedType === 'ETF',
+    beta: risk?.beta ?? null,
+  });
+  const clauses = fitClauses({ thesis, fit, projection });
+  const alignment = thesis
+    ? portfolioAlignment({ thesis, positions: positionRows, sectors })
+    : null;
+  const cap = thesis ? Number(thesis.max_single_name_pct) : null;
+  const capAlert =
+    fit?.checks.concentration === 'over' && projection
+      ? { symbol: projection.symbol, cap: cap.toFixed(1) }
+      : null;
+
+  const runThesis = async (fn, done) => {
+    const r = await fn();
+    if (!r.ok) showToast(r.error || 'That did not work.', 'error');
+    else if (done) showToast(done);
+    return r;
+  };
+
+  const journalShown = useMemo(() => {
+    if (journalTab === 'notes') return journal.filter((r) => r.note);
+    return journal;
+  }, [journal, journalTab]);
+
+  const openNote = (row) => {
+    setNoteRow(row);
+    setNoteText(row.note || '');
+  };
+  const saveNote = async () => {
+    if (!noteRow || notePending) return;
+    setNotePending(true);
+    try {
+      const res = await fetch(`/api/mock-trades/${encodeURIComponent(noteRow.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ thesis_note: noteText }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j?.error || 'Could not save the note.');
+      setDbTrades((list) =>
+        list.map((t) =>
+          t.id === noteRow.id ? { ...t, thesis_note: j.trade?.thesis_note ?? null } : t,
+        ),
+      );
+      setNoteRow(null);
+      showToast(j.trade?.thesis_note ? 'Note saved.' : 'Note cleared.');
+    } catch (e) {
+      showToast(e.message, 'error');
+    } finally {
+      setNotePending(false);
+    }
+  };
+
+  /* Export CSV: the whole trade log with each trade's thesis and note. */
+  const exportCsv = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const r = await fetch('/api/mock-trades?limit=5000', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d?.error || 'Could not export your trades.');
+      const blob = new Blob([buildMockJournalCsv(d.trades || [])], {
+        type: 'text/csv;charset=utf-8',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ezana-mock-journal-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      showToast(e.message || 'Could not export your trades.', 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const noteColumns =
+    journalTab === 'trades'
+      ? []
+      : [
+          {
+            key: 'note',
+            label: 'Thesis note',
+            render: (h) =>
+              h.note ? (
+                <span className="mock-note-text">{h.note}</span>
+              ) : (
+                <span className="mock-muted">None</span>
+              ),
+          },
+          {
+            key: 'edit',
+            label: <span className="mock-sr">Edit</span>,
+            align: 'right',
+            render: (h) =>
+              dbTrades.some((t) => t.id === h.id) ? (
+                <IconButton
+                  icon="bi-pencil"
+                  size="sm"
+                  label={`Edit thesis note for ${h.symbol}, ${fmtShortDayET(h.ts)}`}
+                  onClick={() => openNote(h)}
+                />
+              ) : null,
+          },
+        ];
   const savedLabel = syncing
     ? 'Saving…'
     : lastSavedAt
@@ -794,7 +970,15 @@ function MockTradingPageInner() {
             name={selectedName}
             livePrice={currentPrice}
           />
-          <PreTradeCards projection={projection} risk={risk} />
+          <PreTradeCards
+            projection={projection}
+            risk={risk}
+            capAlert={capAlert}
+            thesis={thesis}
+            fit={fit}
+            clauses={clauses}
+            onBuild={() => setThesisModal({ open: true, thesis: null })}
+          />
           <PositionsCard
             rows={sortedPositions}
             total={positionRows.length}
@@ -805,18 +989,59 @@ function MockTradingPageInner() {
             filter={posFilter}
             onFilter={setPosFilter}
             selected={selectedSymbol}
+            cap={cap}
+            capTone={thesis ? (r) => capStatus(r.weight, cap) : null}
             onSelect={(r) => selectAsset(r.symbol, r.name, r.type)}
             onClose={(r) => setCloseRow(r)}
             pending={tradePending}
             priceNote={priceFetchError}
           />
           <ActivityCard
-            rows={journal}
+            rows={journalShown}
             loading={Boolean(user?.id) && !dbTradesLoaded && journal.length === 0}
+            columns={noteColumns}
+            empty={journalTab === 'notes' ? 'No thesis notes yet.' : 'No trades yet.'}
+            extra={
+              journal.length > 0 ? (
+                <>
+                  <Tabs
+                    className="mock-journal-tabs"
+                    tabs={[
+                      { id: 'all', label: 'All activity' },
+                      { id: 'trades', label: 'Trades' },
+                      { id: 'notes', label: 'Thesis notes' },
+                    ]}
+                    value={journalTab}
+                    onChange={setJournalTab}
+                  />
+                  {user?.id ? (
+                    <button
+                      type="button"
+                      className="mock-btn mock-btn--sm"
+                      onClick={exportCsv}
+                      disabled={exporting}
+                      aria-busy={exporting || undefined}
+                    >
+                      <i className="bi bi-download" aria-hidden="true" />{' '}
+                      {exporting ? 'Preparing CSV…' : 'Export CSV'}
+                    </button>
+                  ) : null}
+                </>
+              ) : null
+            }
           />
         </div>
 
-        <aside className="mock-right-col" aria-label="Trade">
+        <aside className="mock-right-col" aria-label="Thesis and trade">
+          <ThesisPanel
+            theses={theses}
+            alignment={alignment}
+            fit={fit}
+            onBuild={() => setThesisModal({ open: true, thesis: null })}
+            onEdit={(t) => setThesisModal({ open: true, thesis: t })}
+            onDelete={(t) => setDeleteTarget(t)}
+            onActivate={(id) => runThesis(() => theses.activate(id))}
+          />
           <div ref={searchRef} className="mock-ticket-wrap">
             <OrderTicket
               search={{
@@ -842,13 +1067,84 @@ function MockTradingPageInner() {
               cash={portfolio.cash}
               position={selectedSymbol ? portfolio.positions[selectedSymbol] || null : null}
               pending={tradePending}
-              onSubmit={executeTrade}
+              onReview={() => setReviewOpen(true)}
               projection={projection}
+              clauses={clauses}
             />
           </div>
           <MarketMoversCard onSelect={(sym, nm) => selectAsset(sym, nm, 'Stock')} />
         </aside>
       </div>
+
+      <ReviewOrderModal
+        open={reviewOpen}
+        order={
+          projection
+            ? {
+                side,
+                symbol: projection.symbol,
+                amount: projection.amount,
+                shares: projection.shares,
+                cashAfter: projection.cash.after,
+                weightAfter: projection.weight.after,
+              }
+            : null
+        }
+        clauses={clauses}
+        thesisName={thesis?.name || null}
+        pending={tradePending}
+        onCancel={() => setReviewOpen(false)}
+        onPlace={(note) => executeTrade(note)}
+      />
+
+      <ThesisModal
+        open={thesisModal.open}
+        thesis={thesisModal.thesis}
+        onClose={() => setThesisModal({ open: false, thesis: null })}
+        onSave={(values) =>
+          thesisModal.thesis
+            ? runThesis(() => theses.update(thesisModal.thesis.id, values), 'Thesis saved.')
+            : runThesis(() => theses.create(values), 'Thesis created.')
+        }
+      />
+      <DeleteThesisModal
+        thesis={deleteTarget}
+        pending={deletePending}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          setDeletePending(true);
+          const r = await runThesis(() => theses.remove(deleteTarget.id), 'Thesis deleted.');
+          setDeletePending(false);
+          if (r.ok) setDeleteTarget(null);
+        }}
+      />
+      <Modal
+        open={Boolean(noteRow)}
+        onClose={() => setNoteRow(null)}
+        title={noteRow ? `Thesis note for ${noteRow.symbol}, ${fmtShortDayET(noteRow.ts)}` : ''}
+        size="460px"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setNoteRow(null)} disabled={notePending}>
+              Cancel
+            </Button>
+            <Button onClick={saveNote} loading={notePending}>
+              Save note
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          id="mock-note-edit"
+          label="Note"
+          rows={4}
+          value={noteText}
+          maxLength={THESIS_LIMITS.note}
+          onChange={(e) => setNoteText(e.target.value)}
+          hint={`${noteText.length} of ${THESIS_LIMITS.note} characters. Leave it empty to clear the note.`}
+        />
+      </Modal>
 
       <ClosePositionModal
         row={closeRow}

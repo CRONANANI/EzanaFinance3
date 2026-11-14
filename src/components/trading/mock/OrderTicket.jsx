@@ -1,12 +1,14 @@
 'use client';
 
 /**
- * Place order card (Nov 2026 redesign): ticker typeahead, selected-asset
- * strip, Buy / Sell, amount with presets, a live summary and the submit
- * button. Validation and every number come from ticketState in
- * src/lib/trading/mock-ticket.js; the page owns the trade call.
+ * Place order card (Nov 2026 redesign; review step Nov 14): ticker
+ * typeahead, selected-asset strip, Buy / Sell, amount with presets, a live
+ * summary (Est. shares, Cash after, Proj. position weight), the thesis check
+ * line and the Review button, which opens the page's ReviewOrderModal.
+ * Validation and every number come from ticketState and whatIf; the fit
+ * sentences from fitClauses. The page owns the trade call.
  */
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   PRESETS,
   fmtPct,
@@ -109,9 +111,13 @@ export function OrderTicket({
   cash,
   position,
   pending,
-  onSubmit,
+  onReview,
   projection = null,
+  clauses = [],
 }) {
+  const [more, setMore] = useState(false);
+  const checkKey = clauses.map((c) => c.text).join('|');
+  useEffect(() => setMore(false), [symbol]);
   const reasonId = useId();
   const amountRef = useRef(null);
   const amt = parseAmount(amount);
@@ -253,15 +259,54 @@ export function OrderTicket({
         </div>
       </dl>
 
+      {/* The thesis check: announced politely, and the only live region on the
+          pre-trade figures. Hidden with no active thesis or no order. */}
+      <div className="mock-check" aria-live="polite">
+        {clauses.length ? (
+          <>
+            <p className="mock-check__line" key={checkKey}>
+              <i
+                className={`bi ${clauses.every((c) => c.ok) ? 'bi-check-lg is-ok' : 'bi-exclamation-triangle is-warn'}`}
+                aria-hidden="true"
+              />
+              <span>
+                {more ? clauses.map((c) => c.text).join(' ') : clauses[0].text}
+                {!more && clauses.some((c) => !c.ok) && clauses[0].ok ? (
+                  <span className="mock-sr"> More checks need attention.</span>
+                ) : null}
+              </span>
+            </p>
+            {clauses.length > 1 ? (
+              <button
+                type="button"
+                className="mock-link mock-link--start mock-check__more"
+                aria-expanded={more}
+                onClick={() => setMore((v) => !v)}
+              >
+                {more ? 'Show less' : 'Show all checks'}
+              </button>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+
       <button
         type="button"
-        className={`mock-submit ${isBuy ? 'is-buy' : 'is-sell'}`}
+        className="mock-submit"
         data-task-target="mock-trade-submit"
         disabled={!t.canSubmit || pending}
         aria-busy={pending || undefined}
-        onClick={() => onSubmit({ amount: amt })}
+        aria-haspopup="dialog"
+        onClick={() => onReview({ amount: amt })}
       >
-        {pending ? 'Placing order…' : `${isBuy ? 'Buy' : 'Sell'}${symbol ? ` ${symbol}` : ''}`}
+        {pending ? (
+          'Placing order…'
+        ) : (
+          <>
+            {isBuy ? 'Review buy order' : 'Review sell order'}{' '}
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </>
+        )}
       </button>
 
       <p className="mock-disclaimer">

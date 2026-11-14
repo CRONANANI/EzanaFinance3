@@ -17,15 +17,42 @@ export function clampMockTradesLimit(raw) {
   return Math.min(n, MOCK_TRADES_MAX_LIMIT);
 }
 
+/**
+ * The trade log, newest first, with each trade's thesis note and the name of
+ * the thesis it was placed under (thesis_name, null when none or deleted).
+ */
 export async function listMockTrades(client, userId, { limit = MOCK_TRADES_DEFAULT_LIMIT } = {}) {
   const { data, error } = await client
     .from('mock_trades')
-    .select('id, ticker, quantity, price, trade_type, total_amount, created_at')
+    .select(
+      'id, ticker, quantity, price, trade_type, total_amount, created_at, thesis_id, thesis_note',
+    )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(clampMockTradesLimit(limit));
   if (error) return { status: 500, body: { error: error.message } };
-  return { status: 200, body: { trades: data || [] } };
+  const trades = data || [];
+  const ids = [...new Set(trades.map((t) => t.thesis_id).filter(Boolean))];
+  let names = new Map();
+  if (ids.length) {
+    const { data: theses } = await client
+      .from('mock_theses')
+      .select('id, name')
+      .eq('user_id', userId)
+      .in('id', ids);
+    names = new Map((theses || []).map((t) => [t.id, t.name]));
+  }
+  return {
+    status: 200,
+    body: {
+      trades: trades.map((t) => ({
+        ...t,
+        thesis_id: t.thesis_id ?? null,
+        thesis_note: t.thesis_note ?? null,
+        thesis_name: (t.thesis_id && names.get(t.thesis_id)) || null,
+      })),
+    },
+  };
 }
 
 export function parseMockTrade(body) {

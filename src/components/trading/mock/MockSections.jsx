@@ -616,7 +616,7 @@ export function ClosePositionModal({ row, pending, onCancel, onConfirm }) {
       size="440px"
       footer={
         <>
-          <Button variant="secondary" onClick={onCancel} disabled={pending}>
+          <Button variant="ghost" onClick={onCancel} disabled={pending}>
             Cancel
           </Button>
           <Button variant="danger" onClick={onConfirm} loading={pending}>

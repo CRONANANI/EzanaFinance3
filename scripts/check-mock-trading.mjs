@@ -35,9 +35,11 @@ import {
   weightBarFill,
 } from '../src/lib/trading/mock-ticket.js';
 import { rangeReturn } from '../src/lib/trading/mock-risk.js';
+import { buildMockJournalCsv } from '../src/lib/trading/mock-portfolio-csv.js';
 /* The thesis and risk helpers have their own suite; importing it here runs it
    under the same npm script. */
 import './check-mock-thesis.mjs';
+import './check-mock-theses-server.mjs';
 
 test('formats: money, signed deltas, compact headline, shares', () => {
   assert.equal(fmtUSD(12438.2), '$12,438.20');
@@ -302,6 +304,35 @@ test('journal: details, position impact from the replay, New York time', () => {
   assert.match(fmtClockET('2026-11-13T15:24:16Z'), /^10:24:16\sAM ET$/);
 });
 
+test('journal CSV: thesis and note columns, oldest first, formula prefixes neutralised', () => {
+  const csv = buildMockJournalCsv([
+    {
+      created_at: '2026-10-02T15:00:00Z',
+      trade_type: 'sell',
+      ticker: 'nvda',
+      quantity: 2,
+      price: 150,
+      total_amount: 300,
+      thesis_name: '=HYPERLINK("x")',
+      thesis_note: '+cmd, "quoted"\nline two',
+    },
+    {
+      created_at: '2026-10-01T15:00:00Z',
+      trade_type: 'buy',
+      ticker: 'NVDA',
+      quantity: 7.0112,
+      price: 142.63,
+      thesis_note: null,
+    },
+  ]);
+  const lines = csv.split('\r\n');
+  assert.equal(lines[0], 'Time,Type,Ticker,Shares,Price,Amount,thesis,thesis_note');
+  assert.match(lines[1], /^2026-10-01T15:00:00\.000Z,Buy,NVDA,7\.0112,142\.6300,1000\.01,,$/);
+  assert.match(lines[2], /,Sell,NVDA,2,150\.0000,300\.00,/);
+  assert.ok(lines[2].includes(`"'=HYPERLINK(""x"")"`), 'a formula thesis name is neutralised');
+  assert.ok(csv.includes(`"'+cmd, ""quoted""\nline two"`), 'a formula note is neutralised');
+});
+
 test('page wiring and token discipline', () => {
   const page = fs.readFileSync('src/app/(dashboard)/trading/mock/page.js', 'utf8');
   const css = fs.readFileSync('src/app/(dashboard)/trading/mock/mock-trading.css', 'utf8');
@@ -309,6 +340,9 @@ test('page wiring and token discipline', () => {
   const ticket = fs.readFileSync('src/components/trading/mock/OrderTicket.jsx', 'utf8');
   const pre = fs.readFileSync('src/components/trading/mock/PreTradeCards.jsx', 'utf8');
   const chart = fs.readFileSync('src/components/trading/MockPortfolioChart.jsx', 'utf8');
+  const panel = fs.readFileSync('src/components/trading/mock/ThesisPanel.jsx', 'utf8');
+  const review = fs.readFileSync('src/components/trading/mock/ReviewOrderModal.jsx', 'utf8');
+  const hook = fs.readFileSync('src/hooks/useMockTheses.js', 'utf8');
   for (const [name, src] of [
     ['page', page],
     ['css', css],
@@ -316,6 +350,9 @@ test('page wiring and token discipline', () => {
     ['ticket', ticket],
     ['pre-trade cards', pre],
     ['chart', chart],
+    ['thesis panel', panel],
+    ['review modal', review],
+    ['theses hook', hook],
   ]) {
     assert.ok(!src.includes(String.fromCharCode(8212)), `${name}: em dash`);
     assert.doesNotMatch(src, /#[0-9a-fA-F]{3,8}\b(?![\w-])/, `${name}: hex colour`);
@@ -362,6 +399,50 @@ test('page wiring and token discipline', () => {
   assert.match(pre, /Needs about a month of history\./);
   assert.match(page, /range=3M&benchmark=1/, 'risk reads the 3M series with its benchmark');
   assert.match(page, /riskSnapshot\(/, 'risk statistics come from mock-risk');
+
+  /* Thesis layer (step 3). */
+  const right = page.slice(page.indexOf('className="mock-right-col"'));
+  assert.ok(right.indexOf('<ThesisPanel') > -1, 'the thesis panel is in the right column');
+  assert.ok(
+    right.indexOf('<ThesisPanel') < right.indexOf('<OrderTicket'),
+    'the thesis panel renders before the ticket',
+  );
+  assert.match(css, /\.mock-thesis \{\s*order: -2;/, 'stacked: the thesis panel comes first');
+  assert.match(ticket, /data-task-target="mock-trade-submit"/, 'the checklist target stays');
+  assert.match(ticket, /Review buy order/);
+  assert.match(ticket, /aria-live="polite"/, 'the thesis check line is announced');
+  assert.match(page, /<ReviewOrderModal/, 'orders go through the review step');
+  assert.match(page, /thesis_note: note/, 'the review note rides on the trade');
+  assert.match(page, /completeTask\('action_2'\)/, 'the checklist call stays');
+  assert.match(page, /markChecklistView\('mock\.review_pnl'\)/);
+  assert.match(page, /thesisFit\(/, 'one fit result for every surface');
+  assert.match(panel, /parseThesis\(form, \{ sectors: CANONICAL_SECTORS \}\)/);
+  assert.match(panel, /CANONICAL_TO_DISPLAY/, 'sector labels use the display names');
+  assert.match(panel, /<Tabs/, 'thesis tabs use the ds Tabs');
+  assert.match(panel, /THESIS_TEMPLATES/, 'starter templates are offered, never seeded');
+  assert.match(panel, /Create and switch between investment theses for this paper account\./);
+  assert.match(pre, /aria-label=\{`Thesis fit \$\{score\} percent`\}/, 'the ring is labelled');
+  assert.match(pre, /role="img"/);
+  assert.match(review, /maxLength=\{THESIS_LIMITS\.note\}/);
+  assert.match(css, /\.mock-page \.ds-tabs \{[^}]*border-bottom: 0/, 'tabs are text only');
+  assert.doesNotMatch(
+    page + panel + pre + review + ticket,
+    /\b(should|recommend|good trade|bad trade)\b/i,
+    'descriptive wording, never advice',
+  );
+  for (const src of [page, panel, review, sections])
+    assert.doesNotMatch(src, /variant="secondary"/, 'secondary actions are plain text');
+  const routes = [
+    'src/app/api/mock-theses/route.js',
+    'src/app/api/mock-theses/[id]/route.js',
+    'src/app/api/mock-trades/[id]/route.js',
+  ].map((f) => fs.readFileSync(f, 'utf8'));
+  for (const r of routes) {
+    assert.match(r, /requireAuth: true/, 'thesis routes require a session');
+    assert.match(r, /safeErrorResponse/, 'errors never leak details');
+  }
+  const tradesRoute = fs.readFileSync('src/app/api/mock-trades/route.js', 'utf8');
+  assert.match(tradesRoute, /getActiveThesisId/, 'the server stamps the active thesis');
   assert.match(sections, /aria-selected=\{isSel\}/, 'the ticket row is marked selected');
   assert.match(sections, /aria-pressed=\{side === id\}/, 'Gainers and Losers are a pressed toggle');
   assert.doesNotMatch(

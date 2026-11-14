@@ -874,20 +874,23 @@
   margin: 0;
   font-weight: 600;
 }
+/* Review order: the primary action, an emerald fill with no border. */
 .mock-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
   min-height: 48px;
   border: 0;
   border-radius: var(--radius-md);
+  background: var(--emerald);
   color: var(--color-on-primary);
-  font: 700 16px var(--font-sans);
+  font: 700 15px var(--font-sans);
   cursor: pointer;
 }
-.mock-submit.is-buy {
-  background: var(--emerald);
-}
-.mock-submit.is-sell {
-  background: var(--negative);
+.mock-submit:hover:not(:disabled) {
+  background: var(--emerald-hover);
 }
 .mock-submit:disabled {
   opacity: 0.45;
@@ -903,6 +906,279 @@
 }
 .mock-disclaimer .bi {
   margin-top: 2px;
+}
+
+/* ---------- thesis check line (ticket) ---------- */
+.mock-check:empty {
+  display: none;
+}
+.mock-check__line {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.mock-check__line .bi {
+  margin-top: 2px;
+}
+.mock-check__line .is-ok,
+.mock-pre-checks .is-ok .bi {
+  color: var(--emerald-text);
+}
+.mock-check__line .is-warn,
+.mock-pre-checks .is-warn .bi {
+  color: var(--warning);
+}
+.mock-check__more {
+  min-height: 28px;
+  font-size: 12px;
+}
+
+/* ---------- investment thesis panel ---------- */
+.mock-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.mock-icon-btn:hover {
+  color: var(--text-primary);
+}
+.mock-thesis-info .ds-tooltip,
+.mock-thesis .mock-card-header__end .ds-tooltip {
+  width: 280px;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: left;
+}
+.mock-thesis .mock-card-header__end .ds-btn--primary {
+  border-color: transparent;
+}
+.mock-only-narrow {
+  display: none;
+}
+.mock-thesis-tabs {
+  overflow-x: auto;
+}
+.mock-thesis-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+}
+.mock-thesis-dl {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  font-size: 13px;
+}
+.mock-thesis-dl__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) 1.2fr;
+  gap: 12px;
+}
+.mock-thesis-dl dt {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.mock-thesis-dl dt .bi {
+  color: var(--emerald-text);
+}
+.mock-thesis-dl dd {
+  margin: 0;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.mock-thesis-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--mock-rule);
+  border-bottom: 1px solid var(--mock-rule);
+}
+.mock-thesis-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 8px;
+  border-right: 1px solid var(--mock-rule);
+}
+.mock-thesis-stats div:first-child {
+  padding-left: 0;
+}
+.mock-thesis-stats div:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+.mock-thesis-stats dt {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mock-thesis-stats dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mock-fit.is-high {
+  color: var(--emerald-text);
+}
+.mock-fit.is-medium,
+.mock-fit.is-low {
+  color: var(--warning);
+}
+
+/* Build / edit thesis modal */
+.mock-thesis-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mock-thesis-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.mock-thesis-sectors {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.mock-thesis-sectors__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+.mock-thesis-sector {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mock-thesis-sector.is-on {
+  color: var(--text-primary);
+}
+.mock-thesis-sector input {
+  accent-color: var(--emerald);
+}
+.mock-thesis-sector input:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* ---------- thesis alignment card ---------- */
+.mock-chip--thesis {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  min-width: 0;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+.mock-pre-fit {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mock-pre-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.mock-pre-checks li {
+  display: flex;
+  gap: 8px;
+}
+.mock-pre-checks .bi {
+  margin-top: 1px;
+}
+.mock-pre-score {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.mock-ring__track {
+  fill: none;
+  stroke: var(--mock-tint);
+  stroke-width: 6;
+}
+.mock-ring__arc {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.mock-ring:is(.is-medium, .is-low) .mock-ring__arc {
+  stroke: var(--warning);
+}
+.mock-ring__text {
+  fill: var(--text-primary);
+  font: 700 14px var(--font-mono);
+}
+.mock-pre-emptystate {
+  padding: 8px 0;
+  text-align: left;
+  align-items: flex-start;
+}
+
+/* ---------- journal ---------- */
+.mock-note-text {
+  display: block;
+  max-width: 260px;
+  white-space: pre-line;
+  color: var(--text-secondary);
+}
+.mock-table--journal td {
+  vertical-align: top;
+}
+
+/* ---------- review order ---------- */
+.mock-review-check {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--mock-rule);
+  border-bottom: 1px solid var(--mock-rule);
+}
+.mock-review-check__title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.mock-review-fine {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 /* ---------- close confirmation ---------- */
@@ -969,6 +1245,9 @@
   .mock-right-col {
     display: contents;
   }
+  .mock-thesis {
+    order: -2;
+  }
   .mock-ticket-wrap {
     order: -1;
   }
@@ -979,6 +1258,30 @@
 @media (max-width: 640px) {
   .mock-page {
     gap: 16px;
+  }
+  /* Narrow: the thesis details sit behind a disclosure; the name, tabs and
+     the stat strip stay visible. Switch thesis opens a menu. */
+  .mock-only-wide {
+    display: none;
+  }
+  .mock-only-narrow {
+    display: inline-flex;
+  }
+  .mock-thesis-dl:not(.is-open) {
+    display: none;
+  }
+  .mock-thesis-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mock-thesis-stats div:nth-child(2) {
+    padding-right: 0;
+    border-right: 0;
+  }
+  .mock-thesis-stats div:nth-child(3) {
+    padding-left: 0;
+  }
+  .mock-thesis-form__row {
+    grid-template-columns: 1fr;
   }
   .mock-card,
   .mock-trade-panel {

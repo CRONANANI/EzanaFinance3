@@ -289,6 +289,33 @@ test('plaid_*: read own holdings only, never write', (t) => {
   }
 });
 
+test('mock_theses: owner reads own rows only; no insert, update or delete from the browser', (t) => {
+  if (skip(t)) return;
+  pg.sql(`
+    insert into mock_theses (user_id, name, is_active) values ('${A}', 'A growth', true);
+    insert into mock_theses (user_id, name, is_active) values ('${B}', 'B income', true);
+  `);
+  assert.equal(lastLine(asA('select count(*) from mock_theses')), '1', 'sees only its own row');
+  assert.equal(lastLine(asA('select name from mock_theses')), 'A growth');
+  assert.equal(lastLine(asA(`select count(*) from mock_theses where user_id = '${B}'`)), '0');
+  denied(() => asA(`insert into mock_theses (user_id, name) values ('${A}', 'forged')`));
+  asA(`update mock_theses set max_single_name_pct = 99, name = 'x' where user_id = '${A}'`);
+  asA(`update mock_theses set name = 'x' where user_id = '${B}'`);
+  asA(`delete from mock_theses`);
+  assert.equal(
+    pg.sql(
+      `select string_agg(name || ':' || max_single_name_pct, ',' order by name) from mock_theses`,
+    ),
+    'A growth:15.00,B income:15.00',
+    'updates and deletes from the browser change nothing',
+  );
+  const n = pg.sql(
+    `select count(*) from pg_policies where schemaname = 'public' and tablename = 'mock_theses'
+       and cmd <> 'SELECT'`,
+  );
+  assert.equal(n, '0', 'select is the only policy');
+});
+
 /* ── QA remediation (Phase 8.2): static assertions on the new migrations ── */
 import { readFileSync } from 'node:fs';
 
