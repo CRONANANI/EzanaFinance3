@@ -294,11 +294,7 @@
 }
 .fa-seg {
   display: inline-flex;
-  padding: 3px;
   gap: 2px;
-  border: 1px solid var(--border-primary);
-  border-radius: 9999px;
-  background: var(--surface-input);
 }
 .fa-seg button {
   font-family: inherit;
@@ -319,7 +315,7 @@
   color: var(--text-primary);
 }
 .fa-seg button.is-active {
-  background: var(--emerald-bg, var(--emerald-bg-hover));
+  background: transparent;
   color: var(--emerald-text, var(--emerald));
 }
 

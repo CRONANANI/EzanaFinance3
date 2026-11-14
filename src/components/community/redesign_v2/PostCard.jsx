@@ -603,8 +603,8 @@ export function TickerEmbed({ embed }) {
                 fontWeight: 600,
                 padding: '2px 6px',
                 borderRadius: 4,
-                background: p === (embed.period || '1M') ? 'var(--emerald)' : 'transparent',
-                color: p === (embed.period || '1M') ? 'white' : 'var(--text-faint)',
+                background: 'transparent',
+                color: p === (embed.period || '1M') ? 'var(--emerald-text)' : 'var(--text-faint)',
               }}
             >
               {p}

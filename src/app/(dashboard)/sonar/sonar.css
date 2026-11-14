@@ -1325,9 +1325,9 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
   color: var(--text-primary);
 }
 .snr-range.is-on {
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
-  background: color-mix(in srgb, var(--emerald) 10%, transparent);
-  color: var(--emerald);
+  border-color: transparent;
+  background: transparent;
+  color: var(--emerald-text);
 }
 .snr-range:focus-visible {
   outline: 2px solid var(--emerald);

@@ -629,19 +629,17 @@
   font-weight: 600;
   color: var(--muted-foreground);
   background: transparent;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
 .pp-tr-btn:hover {
   color: var(--foreground);
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .pp-tr-btn.on {
-  color: var(--emerald);
-  background: var(--emerald-border);
-  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
+  color: var(--emerald-text);
+  background: transparent;
 }
 .pp-perf-svg {
   width: 100%;

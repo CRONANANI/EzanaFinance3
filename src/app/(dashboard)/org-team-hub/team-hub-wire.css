@@ -937,21 +937,16 @@ html.light-mode .thw-chart-card {
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid var(--border-primary);
+  border: 0;
   cursor: pointer;
-  transition:
-    color 0.12s ease-out,
-    border-color 0.12s ease-out,
-    background 0.12s ease-out;
+  transition: color 0.12s ease-out;
 }
 .thw-range:hover {
   color: var(--text-secondary);
-  border-color: var(--border-hover);
 }
 .thw-range.active {
-  color: #fff;
-  background: var(--emerald);
-  border-color: var(--emerald);
+  color: var(--emerald-text);
+  background: transparent;
 }
 .thw-chart {
   height: 150px;

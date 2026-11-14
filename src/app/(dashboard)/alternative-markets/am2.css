@@ -270,6 +270,20 @@
   color: var(--emerald);
   box-shadow: inset 0 0 0 1px var(--emerald-border);
 }
+/* Timeframe selector only (Nov 2026): no track, dividers or fill; the
+   selected timeframe is emerald text. Asset filters keep the segmented look. */
+.am2-seg[aria-label='Timeframe'] {
+  background: transparent;
+  border: 0;
+}
+.am2-seg[aria-label='Timeframe'] .am2-seg-btn {
+  border-right: 0;
+}
+.am2-seg[aria-label='Timeframe'] .am2-seg-btn--active {
+  background: transparent;
+  color: var(--emerald-text);
+  box-shadow: none;
+}
 
 /* â”€â”€ BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 

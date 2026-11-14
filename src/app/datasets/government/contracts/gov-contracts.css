@@ -2300,15 +2300,14 @@ body.light-mode .gcx-award-ghost.is-on {
 .gcx-range-btn {
   padding: 4px 10px;
   font-size: var(--ds-type-disclaimer-size);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: transparent;
+  border: 0;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
 }
 .gcx-range-btn.is-active {
-  color: var(--emerald);
-  border-color: var(--emerald);
+  color: var(--emerald-text);
 }
 .gcx-range-btn:focus-visible {
   outline: 2px solid var(--emerald);

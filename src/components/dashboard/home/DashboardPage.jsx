@@ -28,6 +28,7 @@ import {
   seriesRows,
 } from '@/lib/dashboard/derive';
 import {
+  DashboardActions,
   Greeting,
   HoldingsCard,
   KpiStrip,
@@ -225,7 +226,10 @@ export default function DashboardPage() {
           mode={mode}
           loading={loading}
         />
-        <KpiStrip data={data} loading={holdingsLoading} />
+        <div className={s.kpiRow}>
+          <KpiStrip data={data} loading={holdingsLoading} />
+          <DashboardActions />
+        </div>
         <PortfolioSnapshot
           data={data}
           loading={holdingsLoading}

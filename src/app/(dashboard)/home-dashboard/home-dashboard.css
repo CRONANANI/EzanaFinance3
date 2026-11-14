@@ -189,6 +189,20 @@ a.db-icon-btn {
   color: #fff;
   border-color: var(--emerald);
 }
+/* Time tabs (Nov 2026): no fill or border; the selected tab is emerald text.
+   Scoped to the group so the icon buttons that reuse .db-tf-btn-sm keep
+   their outline. */
+.db-tf-group-sm .db-tf-btn-sm,
+body.light-mode .db-tf-group-sm .db-tf-btn-sm {
+  border-color: transparent;
+  background: transparent;
+}
+.db-tf-group-sm .db-tf-btn-sm.active,
+body.light-mode .db-tf-group-sm .db-tf-btn-sm.active {
+  border-color: transparent;
+  background: transparent;
+  color: var(--emerald-text);
+}
 
 /* ══════════════════════════════
    HERO CARD (Portfolio Value)

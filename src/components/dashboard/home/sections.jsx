@@ -76,27 +76,33 @@ export function Greeting({ firstName, greeting, longDate, data, mode, loading })
           <p className={s.sub}>{line}</p>
         </div>
       </div>
-      <div className={s.actions}>
-        <Link href="/trading" className={s.btn}>
-          Deposit funds
-        </Link>
-        <button
-          type="button"
-          className={s.btn}
-          disabled
-          title="Rebalancing is coming soon"
-          aria-describedby="db-rebalance-note"
-        >
-          Rebalance
-        </button>
-        <span id="db-rebalance-note" className={s.srOnly}>
-          Coming soon
-        </span>
-        <Link href="/trading/mock" className={cx(s.btn, s.btnPrimary)}>
-          Trade
-        </Link>
-      </div>
     </section>
+  );
+}
+
+/** Deposit funds, Rebalance and Trade: sits on the KPI row, right-aligned. */
+export function DashboardActions() {
+  return (
+    <div className={s.actions}>
+      <Link href="/trading" className={s.btn}>
+        Deposit funds
+      </Link>
+      <button
+        type="button"
+        className={s.btn}
+        disabled
+        title="Rebalancing is coming soon"
+        aria-describedby="db-rebalance-note"
+      >
+        Rebalance
+      </button>
+      <span id="db-rebalance-note" className={s.srOnly}>
+        Coming soon
+      </span>
+      <Link href="/trading/mock" className={cx(s.btn, s.btnPrimary)}>
+        Trade
+      </Link>
+    </div>
   );
 }
 
@@ -131,11 +137,11 @@ export function KpiStrip({ data, loading }) {
     return (
       <section className={cx(s.card, s.kpis)} aria-label="Key metrics" aria-busy="true">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className={s.kpi}>
+          <div key={i} className={cx(s.kpi, s.kpiSkel)}>
             <span className={s.kpiIcon} aria-hidden="true" />
             <div className={s.kpiText} style={{ flex: 1 }}>
-              <div className={s.skel} style={{ height: 13, width: '60%' }} />
-              <div className={s.skel} style={{ height: 24, width: '80%' }} />
+              <div className={s.skel} style={{ height: 16, width: '60%' }} />
+              <div className={s.skel} style={{ height: 22, width: '80%' }} />
             </div>
           </div>
         ))}
@@ -241,8 +247,7 @@ export function PortfolioSnapshot({
           />
           <button
             type="button"
-            className={s.btn}
-            style={{ minHeight: 36, padding: '0 12px', fontSize: 12 }}
+            className={s.rangeCustom}
             aria-pressed={range === 'CUSTOM'}
             onClick={() => setCalendar(true)}
           >

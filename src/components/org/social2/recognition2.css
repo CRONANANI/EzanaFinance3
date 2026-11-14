@@ -69,16 +69,15 @@
   font-weight: 700;
   padding: 0.35rem 0;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
+  border: 0;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .rec2-period[aria-pressed='true'] {
-  border-color: var(--emerald);
   color: var(--emerald-text);
-  background: var(--emerald-bg);
+  background: transparent;
 }
 
 /* ── Ranked rows ────────────────────────────────────────────────────────── */

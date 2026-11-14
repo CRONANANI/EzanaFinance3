@@ -114,6 +114,7 @@
 .btn:focus-visible,
 .iconBtn:focus-visible,
 .seg button:focus-visible,
+.rangeCustom:focus-visible,
 .link:focus-visible,
 .pager button:focus-visible,
 .select:focus-visible,
@@ -182,14 +183,12 @@
   justify-content: flex-end;
 }
 
-/* Segmented time range: buttons may be 28 to 30px inside a 36px group. */
+/* Time range (Nov 2026): plain text buttons, no fill, border or track. The
+   selected range is emerald text; the focus ring stays for keyboard users. */
 .seg {
   display: inline-flex;
   flex-wrap: wrap;
-  padding: 3px;
   gap: 2px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
 }
 .seg button {
   min-width: 36px;
@@ -207,8 +206,31 @@
   color: var(--db-ink);
 }
 .seg button[aria-pressed='true'] {
-  background: var(--db-accent);
-  color: var(--db-on-accent);
+  background: transparent;
+  color: var(--emerald-text);
+  font-weight: 700;
+}
+/* Custom range: same plain button, always emerald (icon and label). */
+.rangeCustom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--emerald-text);
+  font: 600 12px var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rangeCustom:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rangeCustom[aria-pressed='true'] {
+  font-weight: 700;
 }
 .segSm button {
   min-width: 34px;
@@ -428,6 +450,8 @@
   padding: 0 12px;
   gap: 6px;
   font-size: 13px;
+  /* No outline on Deposit funds, Rebalance or Trade (Trade keeps its fill). */
+  border-color: transparent;
 }
 .actions .btnPrimary {
   padding: 0 16px;
@@ -440,38 +464,58 @@
 
 /* ── C · KPI strip ───────────────────────────────────────────────── */
 
+/* Nov 2026: the strip is compact (about half its old height) and only as
+   wide as its four metrics, so the actions share its row on the right. */
+.kpiRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px var(--db-gap);
+}
+.kpiRow .actions {
+  margin-left: auto;
+}
 .kpis {
+  flex: 0 1 auto;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, auto);
   padding: 0;
   gap: 0;
 }
 .kpi {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
   min-width: 0;
-  padding: 18px 22px;
+  padding: 4px 16px;
+}
+/* The first metric starts on the cards' content edge (22px). */
+.kpi:first-child {
+  padding-left: 22px;
+}
+.kpiSkel {
+  min-width: 190px;
 }
 .kpi + .kpi {
   box-shadow: inset 1px 0 0 var(--db-rule);
 }
 .kpiIcon {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--db-well);
   color: var(--emerald-text);
-  font-size: 18px;
+  font-size: 14px;
 }
 .kpiText {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 .kpiLabel {
@@ -479,7 +523,15 @@
   align-items: center;
   gap: 2px;
   color: var(--db-muted);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+/* 16px to look at; .info::after still gives the 36px hit area. */
+.kpiLabel .info {
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
 }
 .kpiValue {
   display: flex;
@@ -488,17 +540,17 @@
   gap: 4px 8px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 1.2;
 }
 .kpiExtra {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--db-muted);
 }
 .kpiOf {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--db-muted);
 }
@@ -994,7 +1046,12 @@
 
 @media (max-width: 1100px) {
   .kpis {
+    flex: 1 1 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpi,
+  .kpi:first-child {
+    padding: 8px 16px;
   }
   .kpi + .kpi {
     box-shadow: none;

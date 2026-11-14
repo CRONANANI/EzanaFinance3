@@ -144,8 +144,10 @@ export function DateSelector({
 
   /* One pill size for every timeframe selector on the platform (Oct 29).
      `size` is still accepted for back-compat but no longer changes the pill:
-     the same control must read the same in every card, in every app. */
-  const accent = variant === 'partner' ? 'var(--gold)' : 'var(--emerald)';
+     the same control must read the same in every card, in every app.
+     Nov 2026: no fill and no border on any pill. The selected range is accent
+     text only, and Custom (icon and label) is always accent text. */
+  const accent = variant === 'partner' ? 'var(--gold-text)' : 'var(--emerald-text)';
   const inactiveColor =
     inactiveTextColor || (variant === 'partner' ? 'var(--gold-hover)' : 'var(--text-muted)');
   const pill = {
@@ -191,9 +193,9 @@ export function DateSelector({
             title={off ? disabledTitle : undefined}
             style={{
               ...pill,
-              border: '1px solid transparent',
-              background: on ? accent : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
-              color: on ? '#fff' : inactiveColor,
+              border: 0,
+              background: 'transparent',
+              color: on ? accent : inactiveColor,
               ...(off ? { opacity: 0.4, cursor: 'not-allowed' } : null),
             }}
           >
@@ -211,9 +213,9 @@ export function DateSelector({
           style={{
             ...pill,
             gap: '0.25rem',
-            border: `1px solid ${isCustomActive ? accent : 'var(--border-primary)'}`,
-            background: isCustomActive ? accent : 'transparent',
-            color: isCustomActive ? '#fff' : accent,
+            border: 0,
+            background: 'transparent',
+            color: accent,
           }}
         >
           <svg width="9" height="9" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
