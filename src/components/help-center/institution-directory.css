@@ -1,0 +1,240 @@
+/* Supported-institution directory (Help Center). Prefix: hid-.
+   Tokens only; both themes come from theme-variables.css. */
+
+.hid-root {
+  margin: 1.5rem 0 2rem;
+}
+
+/* ── Search pill ───────────────────────────────────────────────────────── */
+.hid-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.hid-search-icon {
+  position: absolute;
+  left: 1.125rem;
+  font-size: 1rem;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+/* 16px minimum, or iOS Safari zooms the page on focus. */
+.hid-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 3rem 0.75rem 2.875rem;
+  border: 1px solid var(--border-input);
+  border-radius: 999px;
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.hid-input::placeholder {
+  color: var(--text-faint);
+}
+
+.hid-input:focus {
+  border-color: var(--border-focus);
+  background: var(--surface-input-focus);
+  box-shadow: 0 0 0 3px var(--emerald-bg);
+}
+
+/* The browser's own clear control would sit beside ours. */
+.hid-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.hid-clear {
+  position: absolute;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hid-clear:hover {
+  background: var(--emerald-bg);
+  color: var(--text-primary);
+}
+
+.hid-clear:focus-visible,
+.hid-empty a:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.hid-status {
+  min-height: 1.25rem;
+  margin: 0.875rem 0 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Logo wall ─────────────────────────────────────────────────────────── */
+/* The selectors carry .hid-root so they outrank the article's own list
+   rules (.hc-prose ul, .hc-prose li + li). */
+.hid-root .hid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hid-root .hid-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 120px;
+  margin: 0;
+  padding: 1rem 0.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.hid-root .hid-tile:hover {
+  background: var(--surface-card-hover);
+}
+
+.hid-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.hid-mark img {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+}
+
+.hid-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hid-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.hid-caps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: auto;
+}
+
+.hid-cap {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ── Loading and empty states ──────────────────────────────────────────── */
+.hid-root .hid-tile--skeleton {
+  background: var(--surface-card-hover);
+  animation: hidShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes hidShimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.hid-empty {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-align: center;
+}
+
+.hid-root .hid-empty-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.hid-root .hid-empty-body {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 480px) {
+  .hid-root .hid-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hid-input,
+  .hid-clear,
+  .hid-root .hid-tile {
+    transition: none;
+  }
+  .hid-root .hid-tile--skeleton {
+    animation: none;
+  }
+}

@@ -29,6 +29,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { BrokerageTradeInfo } from '@/components/landing/BrokerageTradeInfo';
 import './brokerage-logos.css';
 
@@ -505,6 +506,15 @@ export function BrokerageLogos() {
             icons={icons || {}}
           />
         ))}
+      </div>
+
+      {/* Ten tiles cannot answer "is mine supported?". This opens the Help
+          Center directory, where the full list is searchable. */}
+      <div className="bl-cta-row">
+        <Link href="/help-center/user/article/supported-institutions" className="bl-cta">
+          <i className="bi bi-search" aria-hidden="true" />
+          Check if your institution is supported
+        </Link>
       </div>
     </section>
   );

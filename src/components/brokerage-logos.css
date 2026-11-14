@@ -389,3 +389,49 @@ body.light-mode .bl-heading {
 .bl-info-link:hover {
   text-decoration: underline;
 }
+
+/* ── "Is mine supported?" CTA under the rows ───────────────────────────── */
+.bl-cta-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.bl-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.625rem 1.375rem;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.bl-cta:hover {
+  background: var(--btn-primary-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--emerald-glow);
+}
+
+.bl-cta:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bl-cta {
+    transition: none;
+  }
+  .bl-cta:hover {
+    transform: none;
+  }
+}

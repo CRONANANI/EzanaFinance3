@@ -11,6 +11,7 @@ import { useHelpArticleRead } from '@/components/help-center/help-reads';
 import { HelpSidebarNav } from '@/components/help-center/HelpSidebarNav';
 import { ArticleToc } from '@/components/help-center/ArticleToc';
 import { BrokerageAccessTable } from '@/components/help-center/BrokerageAccessTable';
+import { InstitutionDirectory } from '@/components/help-center/InstitutionDirectory';
 import '../../../help-center.css';
 
 /* Article bodies are authored in this repo (src/lib/help-center-content.js,
@@ -24,6 +25,12 @@ const PROSE_ID = 'hc-article-body';
 /* Sanitized form of the placeholder the content module emits; DOMPurify keeps
    the div and its id, so a plain string split is enough. */
 const LIVE_TABLE_MARKER = '<div id="hc-live-tables"></div>';
+/* Live components an article can host mid-prose, keyed by the placeholder
+   its content carries. One per article. */
+const EMBEDS = [
+  { marker: LIVE_TABLE_MARKER, Component: BrokerageAccessTable },
+  { marker: '<div id="hc-institution-directory"></div>', Component: InstitutionDirectory },
+];
 
 /* ~200 words per minute, floored at 1, computed from the stripped body. */
 function readTime(html) {
@@ -136,14 +143,15 @@ export default function UserHelpArticlePage() {
           <div id={PROSE_ID} className="hc-prose max-w-none">
             {(() => {
               const html = article.content || '';
-              const [before, after] = html.split(LIVE_TABLE_MARKER);
-              if (after === undefined) {
+              const embed = EMBEDS.find((e) => html.includes(e.marker));
+              if (!embed) {
                 return <div dangerouslySetInnerHTML={{ __html: html }} />;
               }
+              const [before, after = ''] = html.split(embed.marker);
               return (
                 <>
                   <div dangerouslySetInnerHTML={{ __html: before }} />
-                  <BrokerageAccessTable />
+                  <embed.Component />
                   <div dangerouslySetInnerHTML={{ __html: after }} />
                 </>
               );
