@@ -29,6 +29,9 @@
   --db-track: color-mix(in srgb, var(--text-primary) 8%, transparent);
   --db-skel: color-mix(in srgb, var(--text-primary) 7%, transparent);
   --db-gap: 20px;
+  /* Shared by Holdings and Sector distribution so their last rows line up. */
+  --db-card-gap: 14px;
+  --db-foot-h: 36px;
 
   display: flex;
   flex-direction: column;
@@ -307,7 +310,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--db-card-gap);
   min-width: 0;
   padding: 20px 22px;
   /* Flat on the canvas: no fill, outline, border, shadow or radius. */
@@ -680,6 +683,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  /* Same height with or without the pager (Sector distribution reserves it). */
+  min-height: var(--db-foot-h);
   color: var(--db-muted);
   font-size: 12px;
 }
@@ -865,16 +870,31 @@
 .sectorBody {
   flex: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
+  /* Beside Holdings the card is narrow (about 300px of content): reserve the
+     height of the Holdings footer so the last legend row ends level with the
+     last holdings row. Stacked under Holdings the card is wide and the clamp
+     resolves to 0 (a % in padding is measured against the card's width). */
+  padding-bottom: clamp(
+    0px,
+    calc((420px - 100%) * 999),
+    calc(var(--db-foot-h) + var(--db-card-gap))
+  );
 }
 .donut {
   position: relative;
   flex: none;
-  width: 160px;
-  height: 160px;
-  margin: 0;
+  width: var(--db-donut, 160px);
+  height: var(--db-donut, 160px);
+  /* Centered across the card and in the space above the legend. */
+  margin: auto;
+}
+.donut svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .donutCenter {
   position: absolute;
@@ -895,17 +915,39 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  flex: 1 1 150px;
-  min-width: 0;
+  width: 100%;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  font-size: 13px;
 }
+/* A legend row has the box of a holdings row (.page .table td and its rule),
+   so the two columns share one row rhythm. */
 .legend li {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
+  padding-block: 9px;
+  border-bottom: 1px solid transparent;
+}
+.legend li:last-child {
+  border-bottom: 0;
+}
+/* Five or more slices: smaller donut and tighter rows, so the legend still
+   ends on the last holdings row. The last row keeps the table's padding. */
+.sectorBody[data-dense='true'] {
+  --db-donut: 112px;
+  gap: 12px;
+}
+.sectorBody[data-dense='true'] .donutTotal {
+  font-size: 15px;
+}
+.sectorBody[data-dense='true'] .legend li {
+  padding-block: 5px;
+}
+.sectorBody[data-dense='true'] .legend li:last-child {
+  padding-bottom: 9px;
 }
 .swatch {
   flex: none;
@@ -993,6 +1035,10 @@
   .sectors,
   .txns {
     flex-basis: 100%;
+  }
+  /* Cards are stacked here, so there is no Holdings footer to match. */
+  .sectorBody {
+    padding-bottom: 0;
   }
 }
 @media (max-width: 479px) {

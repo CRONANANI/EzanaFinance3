@@ -566,7 +566,7 @@ export function SectorCard({ data, loading }) {
     );
   else
     body = (
-      <div className={s.sectorBody}>
+      <div className={s.sectorBody} data-dense={arcs.length > 4 ? 'true' : undefined}>
         <figure className={s.donut}>
           <svg
             viewBox="0 0 160 160"
