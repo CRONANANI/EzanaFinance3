@@ -3242,6 +3242,16 @@ html:has(.landing-page) .landing-footer button {
 .main-nav .nav-action-tap:has(.nav-logout-btn):focus-visible {
   background: color-mix(in srgb, var(--negative) 8%, transparent);
 }
+/* Page canvas (Nov 2026): the canvas ends on the right edge of the log out
+   glyph (1.35rem, centred in a 44px tap box), so the box overhangs the nav
+   envelope by half the difference. This covers the partner nav; the retail
+   and org nav (#mainNav) does the same from its own variables in
+   Layout/nav-icons.css. Desktop only: below 769px log out is hidden. */
+@media (min-width: 769px) {
+  .main-nav.partner-nav .nav-actions > .nav-action-tap:has(.nav-logout-btn) {
+    margin-right: calc((1.35rem - 44px) / 2);
+  }
+}
 
 /* Shared "Try again" pill for chart error states. */
 .ez-retry-btn {

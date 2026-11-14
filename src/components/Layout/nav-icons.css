@@ -114,6 +114,18 @@
   line-height: 1;
 }
 
+/* Page canvas (Nov 2026): the right edge of the canvas is the right edge of
+   the log out glyph, not of its 44px tap box. The glyph is centred in the box,
+   so the box overhangs the nav envelope by half the difference and the glyph
+   lands on the envelope edge, where every page's content ends. The whole
+   right-hand cluster moves with it; the centre links do not. Desktop only:
+   below 769px log out is hidden and the menu button ends the row. */
+@media (min-width: 769px) {
+  #mainNav.main-nav .nav-actions > .nav-action-tap:has(.nav-logout-btn) {
+    margin-right: calc((var(--nav-icon-glyph) - var(--nav-icon-box)) / 2);
+  }
+}
+
 /* Badges: anchored to the 44px box, same inset and size for notifications and progress. */
 #mainNav.main-nav .nn-badge,
 #mainNav.main-nav .checklist-trigger-badge {

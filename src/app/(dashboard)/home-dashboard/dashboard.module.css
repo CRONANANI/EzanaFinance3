@@ -334,7 +334,9 @@
   flex-direction: column;
   gap: var(--db-card-gap);
   min-width: 0;
-  padding: 20px 22px;
+  /* Page canvas (Nov 2026): no side padding. A card's text starts on the left
+     edge of the Ezana logo and ends on the right edge of the logout icon. */
+  padding: 20px 0;
   /* Flat on the canvas: no fill, outline, border, shadow or radius. */
   background: transparent;
   border: 0;
@@ -364,6 +366,11 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+/* A text-only control that ends a card header gives back its own 8px of
+   button padding, so its label (not its hit area) ends on the canvas edge. */
+.headTools > :is(.seg, .rangeCustom):last-child {
+  margin-right: -8px;
 }
 .skel {
   border-radius: var(--radius-md);
@@ -490,9 +497,9 @@
   min-width: 0;
   padding: 4px 16px;
 }
-/* The first metric starts on the cards' content edge (22px). */
+/* The first metric starts on the canvas edge, like every card's text. */
 .kpi:first-child {
-  padding-left: 22px;
+  padding-left: 0;
 }
 .kpiSkel {
   min-width: 190px;
@@ -694,6 +701,16 @@
   padding: 9px 8px;
   vertical-align: middle;
 }
+/* Outer cells are flush with the card: the first column's text starts on
+   the card's left edge and the last column's text ends on its right edge. */
+.page .table th:first-child,
+.page .table td:first-child {
+  padding-left: 0;
+}
+.page .table th:last-child,
+.page .table td:last-child {
+  padding-right: 0;
+}
 .page .table tbody tr {
   border-bottom: 1px solid var(--db-rule-soft);
 }
@@ -825,7 +842,9 @@
 .row3 {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--db-gap);
+  /* Cards carry no side padding, so the column gap keeps the old 64px
+     between neighbours (it was 22px + 20px + 22px). */
+  gap: var(--db-gap) calc(var(--db-gap) + 44px);
   align-items: stretch;
 }
 .holdings {
@@ -1053,6 +1072,10 @@
   .kpi:first-child {
     padding: 8px 16px;
   }
+  /* Two columns: the left column stays on the canvas edge. */
+  .kpi:nth-child(odd) {
+    padding-left: 0;
+  }
   .kpi + .kpi {
     box-shadow: none;
   }
@@ -1104,6 +1127,7 @@
   }
   .kpi:nth-child(n) {
     box-shadow: none;
+    padding-left: 0;
   }
   .kpi + .kpi {
     box-shadow: inset 0 1px 0 var(--db-rule);
