@@ -26,15 +26,19 @@ import {
   PositionsCard,
 } from '@/components/trading/mock/MockSections';
 import { OrderTicket } from '@/components/trading/mock/OrderTicket';
+import { PreTradeCards } from '@/components/trading/mock/PreTradeCards';
 import {
+  filterPositions,
+  fmtClockET,
   fmtQty,
+  journalRows,
   parseAmount,
-  positionRow,
+  portfolioRows,
   relativeTime,
   sortPositions,
-  summarizePortfolio,
   ticketState,
 } from '@/lib/trading/mock-ticket';
+import { whatIf } from '@/lib/trading/mock-thesis';
 
 /* The reset modal only renders after a click: its own lazy chunk. The charts
    load lazily inside PerformanceCard. */
@@ -225,8 +229,11 @@ function MockTradingPageInner() {
   const livePricesRef = useRef({});
   livePricesRef.current = livePrices;
   const [priceFetchError, setPriceFetchError] = useState(null);
+  /* Time of the last batch quote fetch that priced every position. */
+  const [lastQuoteAt, setLastQuoteAt] = useState(null);
 
   const [posSort, setPosSort] = useState({ key: null, dir: 'desc' });
+  const [posFilter, setPosFilter] = useState('all');
 
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
@@ -427,20 +434,38 @@ function MockTradingPageInner() {
     showToast(`Closed ${row.symbol} for ${fmtUSD(r.trade?.total)}`);
   };
 
-  const mergedActivity = useMemo(() => {
-    if (dbTrades.length > 0) {
-      return dbTrades.map((r) => ({
-        id: r.id,
-        side: r.trade_type,
-        symbol: r.ticker,
-        qty: Number(r.quantity),
-        price: Number(r.price),
-        total: Number(r.total_amount ?? Number(r.quantity) * Number(r.price)),
-        ts: r.created_at,
-      }));
-    }
-    return portfolio.history || [];
+  /* The journal reads the stored trade log; before it loads (or for a guest)
+     it falls back to the portfolio's own history in the same shape. */
+  const journal = useMemo(() => {
+    const log =
+      dbTrades.length > 0
+        ? dbTrades
+        : (portfolio.history || []).map((h, i) => ({
+            id: h.id || `h-${i}-${h.ts}`,
+            ticker: h.symbol,
+            trade_type: h.side,
+            quantity: h.qty,
+            price: h.price,
+            total_amount: h.total,
+            created_at: h.ts,
+          }));
+    return journalRows(log);
   }, [dbTrades, portfolio.history]);
+
+  /* The reset modal's activity list keeps its original shape. */
+  const mergedActivity = useMemo(
+    () =>
+      journal.map((r) => ({
+        id: r.id,
+        side: r.side,
+        symbol: r.symbol,
+        qty: r.qty,
+        price: r.price,
+        total: r.total,
+        ts: r.ts,
+      })),
+    [journal],
+  );
 
   const enrichedPositions = useMemo(() => {
     const list = Object.values(portfolio.positions || {});
@@ -464,31 +489,42 @@ function MockTradingPageInner() {
     });
   }, [portfolio.positions, portfolio.history, livePrices]);
 
-  const positionsList = Object.values(portfolio.positions || {});
+  const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
 
-  /* One row model for the table, the KPIs and the close modal. */
-  const positionRows = useMemo(
-    () =>
-      positionsList.map((pos) => {
-        const sym = String(pos.symbol || '')
-          .trim()
-          .toUpperCase();
-        const livePx = resolveLivePrice(livePrices[sym]);
-        return positionRow({
-          symbol: sym,
-          name: pos.name || sym,
-          type: pos.type,
-          qty: Number(pos.qty),
-          avgCost: Number(pos.avgCost),
-          currentPrice: livePx ?? pos.currentPrice ?? pos.avgCost,
-          openedAt: resolveOpenedAt(pos, portfolio.history),
-        });
-      }),
-    [positionsList, livePrices, portfolio.history],
-  );
+  /* One row model for the table, the KPIs, the pre-trade cards and the close
+     modal: portfolioRows adds the day move and the weight, and returns the
+     summary the rows add up to. */
+  const { rows: positionRows, summary } = useMemo(() => {
+    const changes = {};
+    const positions = Object.values(portfolio.positions || {}).map((pos) => {
+      const sym = String(pos.symbol || '')
+        .trim()
+        .toUpperCase();
+      const live = livePrices[sym];
+      const livePx = resolveLivePrice(live);
+      const ch = Number(live?.change);
+      if (livePx != null && live?.change != null && Number.isFinite(ch)) changes[sym] = ch;
+      return {
+        symbol: sym,
+        name: pos.name || sym,
+        type: pos.type,
+        qty: Number(pos.qty),
+        avgCost: Number(pos.avgCost),
+        currentPrice: livePx ?? pos.currentPrice ?? pos.avgCost,
+        openedAt: resolveOpenedAt(pos, portfolio.history),
+      };
+    });
+    return portfolioRows({
+      positions,
+      cash: portfolio.cash,
+      startingCash: effectiveStart,
+      changes,
+    });
+  }, [portfolio.positions, portfolio.history, portfolio.cash, livePrices, effectiveStart]);
+
   const sortedPositions = useMemo(
-    () => sortPositions(positionRows, posSort.key, posSort.dir),
-    [positionRows, posSort],
+    () => filterPositions(sortPositions(positionRows, posSort.key, posSort.dir), posFilter),
+    [positionRows, posSort, posFilter],
   );
 
   const togglePosSort = useCallback((key) => {
@@ -509,16 +545,8 @@ function MockTradingPageInner() {
     return [...set].sort().join(',');
   }, [portfolio.positions]);
 
-  // REMOVED: auto-default-to-largest-position effect.
-  // The chart now defaults to MockPortfolioChart (portfolio-value time series).
+  // The chart defaults to MockPortfolioChart (portfolio-value time series).
   // selectedSymbol stays null until the user explicitly searches or clicks a position.
-  // Clicking a position sets userExplicitChartPickRef=true via selectAsset(...).
-  const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
-  const summary = summarizePortfolio({
-    cash: portfolio.cash,
-    startingCash: effectiveStart,
-    positions: positionRows,
-  });
 
   useEffect(() => {
     const symbols = [
@@ -612,6 +640,7 @@ function MockTradingPageInner() {
           }
         } else {
           setPriceFetchError(null);
+          setLastQuoteAt(Date.now());
         }
       } catch (err) {
         if (!cancelled) setPriceFetchError(err?.message || 'fetch threw');
@@ -633,6 +662,18 @@ function MockTradingPageInner() {
   }, [openPositionSymbolsKey]);
 
   const currentPrice = quoteData?.price ?? 0;
+
+  /* The ticket's order projected onto the portfolio (What-if, the ticket's
+     projected weight). null until there is a symbol, a price and an amount. */
+  const projection = whatIf({
+    side,
+    amount: parseAmount(amount),
+    symbol: selectedSymbol,
+    price: currentPrice,
+    cash: portfolio.cash,
+    positions: positionRows,
+    totalValue: summary.totalValue,
+  });
   const savedLabel = syncing
     ? 'Saving…'
     : lastSavedAt
@@ -655,6 +696,23 @@ function MockTradingPageInner() {
           </span>
         </div>
         <div className="mock-head__right">
+          <span className="mock-account">
+            <span className="mock-account__name">Main paper account</span>
+            <span className="mock-muted mock-num">
+              {fmtUSD(summary.startingCash)} starting cash
+            </span>
+          </span>
+          {priceFetchError ? (
+            <span className="mock-quotes" title={priceFetchError}>
+              <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Some quotes are
+              delayed
+            </span>
+          ) : lastQuoteAt ? (
+            <span className="mock-quotes">
+              <span className="mock-dot is-up" aria-hidden="true" />
+              Quotes updated <span className="mock-num">{fmtClockET(lastQuoteAt)}</span>
+            </span>
+          ) : null}
           {savedLabel ? (
             <span className="mock-saved" role="status">
               <span className={`mock-dot${syncing ? ' is-busy' : ' is-up'}`} aria-hidden="true" />
@@ -696,19 +754,25 @@ function MockTradingPageInner() {
             name={selectedName}
             livePrice={currentPrice}
           />
+          <PreTradeCards projection={projection} />
           <PositionsCard
             rows={sortedPositions}
+            total={positionRows.length}
+            allRows={positionRows}
             loading={portfolioLoading && positionRows.length === 0}
             sort={posSort}
             onSort={togglePosSort}
+            filter={posFilter}
+            onFilter={setPosFilter}
+            selected={selectedSymbol}
             onSelect={(r) => selectAsset(r.symbol, r.name, r.type)}
             onClose={(r) => setCloseRow(r)}
             pending={tradePending}
             priceNote={priceFetchError}
           />
           <ActivityCard
-            items={mergedActivity}
-            loading={Boolean(user?.id) && !dbTradesLoaded && mergedActivity.length === 0}
+            rows={journal}
+            loading={Boolean(user?.id) && !dbTradesLoaded && journal.length === 0}
           />
         </div>
 
@@ -739,6 +803,7 @@ function MockTradingPageInner() {
               position={selectedSymbol ? portfolio.positions[selectedSymbol] || null : null}
               pending={tradePending}
               onSubmit={executeTrade}
+              projection={projection}
             />
           </div>
           <MarketMoversCard onSelect={(sym, nm) => selectAsset(sym, nm, 'Stock')} />

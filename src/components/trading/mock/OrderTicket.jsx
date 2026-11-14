@@ -9,6 +9,7 @@
 import { useId, useRef, useState } from 'react';
 import {
   PRESETS,
+  fmtPct,
   fmtQty,
   fmtSignedPct,
   fmtSignedUSD,
@@ -109,6 +110,7 @@ export function OrderTicket({
   position,
   pending,
   onSubmit,
+  projection = null,
 }) {
   const reasonId = useId();
   const amountRef = useRef(null);
@@ -236,22 +238,18 @@ export function OrderTicket({
 
       <dl className="mock-summary">
         <div>
-          <dt>Estimated shares</dt>
+          <dt>Est. shares</dt>
           <dd className="mock-num">{price && amt > 0 ? `≈ ${fmtQty(t.shares)}` : 'N/A'}</dd>
-        </div>
-        <div>
-          <dt>Price per share</dt>
-          <dd className="mock-num">{price ? fmtUSD(price) : 'N/A'}</dd>
-        </div>
-        <div>
-          <dt>Order total</dt>
-          <dd className="mock-num mock-strong">{fmtUSD(t.total)}</dd>
         </div>
         <div>
           <dt>Cash after</dt>
           <dd className={`mock-num${t.cashAfter < 0 ? ' mock-tone is-down' : ''}`}>
             {fmtUSD(t.cashAfter)}
           </dd>
+        </div>
+        <div>
+          <dt>Proj. position weight</dt>
+          <dd className="mock-num">{projection ? fmtPct(projection.weight.after) : 'N/A'}</dd>
         </div>
       </dl>
 

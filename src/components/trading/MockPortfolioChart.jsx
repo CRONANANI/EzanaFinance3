@@ -13,6 +13,8 @@ import {
 import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 import {
+  DEFAULT_RANGE,
+  RANGES,
   disabledRanges,
   fmtCompactUSD,
   fmtSignedPct,
@@ -23,8 +25,6 @@ import {
 } from '@/lib/trading/mock-ticket';
 import './mock-portfolio-chart.css';
 
-const RANGES = ['1M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
-
 function formatUSD(v) {
   if (!Number.isFinite(v)) return '$0';
   if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
@@ -34,7 +34,7 @@ function formatUSD(v) {
 
 function formatDateLabel(iso, range) {
   const d = new Date(iso);
-  if (range === '1M' || range === 'ALL') {
+  if (range === '1W' || range === '1M' || range === '3M' || range === 'ALL') {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -77,7 +77,7 @@ function CustomTooltip({ active, payload, startingCash }) {
  *   (the Mock Trading page puts its Portfolio / Selected asset switch here)
  */
 export default function MockPortfolioChart({ startingCash = null, headerExtra = null } = {}) {
-  const [range, setRange] = useState('ALL'); // 'ALL' = since inception (default)
+  const [range, setRange] = useState(DEFAULT_RANGE);
   /* First trade date, kept across range changes, so longer ranges can be disabled. */
   const [startedAt, setStartedAt] = useState(null);
   const [customRange, setCustomRange] = useState(null);
@@ -262,7 +262,11 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
                 <Tooltip
                   content={<CustomTooltip startingCash={startingCash} />}
                   allowEscapeViewBox={{ x: false, y: false }}
-                  cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
+                  cursor={{
+                    stroke: CHART.primaryStroke,
+                    strokeOpacity: 0.3,
+                    strokeDasharray: CHART.gridDash,
+                  }}
                 />
                 <Area
                   type="monotone"

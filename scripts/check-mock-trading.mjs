@@ -7,21 +7,34 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
+  DEFAULT_RANGE,
+  RANGES,
+  SORT_KEYS,
   disabledRanges,
+  etDay,
+  filterPositions,
+  fmtClockET,
   fmtCompactUSD,
   fmtDateTime,
   fmtQty,
   fmtSignedPct,
   fmtSignedUSD,
+  fmtStampET,
   fmtUSD,
+  impactLabel,
+  journalRows,
+  normalizeMovers,
   parseAmount,
+  portfolioRows,
   positionRow,
   rangeCaption,
   relativeTime,
   sortPositions,
   summarizePortfolio,
   ticketState,
+  weightBarFill,
 } from '../src/lib/trading/mock-ticket.js';
+import { rangeReturn } from '../src/lib/trading/mock-risk.js';
 /* The thesis and risk helpers have their own suite; importing it here runs it
    under the same npm script. */
 import './check-mock-thesis.mjs';
@@ -135,28 +148,158 @@ test('ticket: summary values, Max, and every blocking reason', () => {
   assert.equal(empty.showReason, false, 'an empty amount is a prompt, not an error');
 });
 
-test('chart ranges longer than the account history are disabled', () => {
+test('chart ranges: six presets, 3M default, longer than the history disabled', () => {
+  assert.deepEqual(RANGES, ['1W', '1M', '3M', '6M', '1Y', 'ALL']);
+  assert.equal(DEFAULT_RANGE, '3M');
   const now = Date.UTC(2026, 10, 9);
   const day = 86400000;
-  assert.deepEqual(disabledRanges(new Date(now - 120 * day).toISOString(), now), [
-    '1Y',
-    '3Y',
-    '5Y',
-    '10Y',
-  ]);
-  assert.deepEqual(disabledRanges(new Date(now - 400 * day).toISOString(), now), ['5Y', '10Y']);
-  assert.deepEqual(disabledRanges(new Date(now - 20 * day).toISOString(), now), [
-    '6M',
-    '1Y',
-    '3Y',
-    '5Y',
-    '10Y',
-  ]);
+  const ago = (n) => new Date(now - n * day).toISOString();
+  assert.deepEqual(disabledRanges(ago(120), now), ['1Y'], '4 months keeps 6M, drops 1Y');
+  assert.deepEqual(disabledRanges(ago(20), now), ['3M', '6M', '1Y'], '20 days keeps 1M');
+  assert.deepEqual(disabledRanges(ago(3), now), ['1M', '3M', '6M', '1Y'], 'a new account keeps 1W');
+  assert.deepEqual(disabledRanges(ago(400), now), [], 'over a year disables nothing');
   assert.deepEqual(disabledRanges(null, now), []);
   assert.equal(rangeCaption('ALL'), 'Since inception');
-  assert.equal(rangeCaption('6M'), 'Last 6M');
+  assert.equal(rangeCaption('3M'), 'Last 3 months');
+  assert.equal(rangeCaption('1W'), 'Last week');
   assert.equal(relativeTime(now - 2000, now), '2s ago');
   assert.equal(relativeTime(now - 5 * 60000, now), '5m ago');
+  const pts = [100, 104, 99, 110].map((value, i) => ({
+    at: new Date(now + i * day).toISOString(),
+    value,
+  }));
+  assert.ok(Math.abs(rangeReturn(pts) - 10) < 1e-9, 'range return comes from mock-risk');
+});
+
+test('day P&L: qty x day change, opened-today rule, N/A without quotes', () => {
+  const now = Date.parse('2026-11-13T18:00:00Z'); /* 1 PM in New York */
+  const held = positionRow(
+    { symbol: 'NVDA', qty: 10, avgCost: 100, currentPrice: 120, openedAt: '2026-10-01T15:00:00Z' },
+    { change: 2, now },
+  );
+  assert.equal(held.dayPnl, 20);
+  assert.ok(Math.abs(held.dayPct - (2 / 118) * 100) < 1e-9, 'day % is against the previous close');
+
+  /* Bought today at 119: the day counts from the fill (1/share), not the close (2/share). */
+  const today = positionRow(
+    { symbol: 'AMD', qty: 10, avgCost: 119, currentPrice: 120, openedAt: '2026-11-13T15:00:00Z' },
+    { change: 2, now },
+  );
+  assert.equal(today.dayPnl, 10);
+  /* Bought today below the previous close and still up on the fill: capped at the day move. */
+  const cheap = positionRow(
+    { symbol: 'AMD', qty: 10, avgCost: 110, currentPrice: 120, openedAt: '2026-11-13T15:00:00Z' },
+    { change: 2, now },
+  );
+  assert.equal(cheap.dayPnl, 20);
+  assert.equal(etDay('2026-11-14T03:00:00Z'), '2026-11-13', 'the day is the New York day');
+
+  const noQuote = positionRow({ symbol: 'XYZ', qty: 1, avgCost: 5, currentPrice: 5 });
+  assert.equal(noQuote.dayPnl, null);
+  assert.equal(noQuote.dayPct, null);
+
+  const s = summarizePortfolio({ cash: 1000, startingCash: 3000, positions: [held, noQuote] });
+  assert.equal(s.dayPnl, 20, 'rows without a quote are left out');
+  assert.ok(Math.abs(s.dayPnlPct - (20 / (s.totalValue - 20)) * 100) < 1e-9);
+  const none = summarizePortfolio({ cash: 1000, startingCash: 1000, positions: [noQuote] });
+  assert.equal(none.dayPnl, null);
+  assert.equal(none.dayPnlPct, null);
+  assert.equal(fmtSignedUSD(none.dayPnl), 'N/A');
+});
+
+test('portfolio rows: weights against the total, the table and the KPIs agree', () => {
+  const { rows, summary } = portfolioRows({
+    cash: 30000,
+    startingCash: 100000,
+    positions: [
+      { symbol: 'nvda', qty: 100, avgCost: 120, currentPrice: 140 },
+      { symbol: 'AAPL', qty: 280, avgCost: 210, currentPrice: 200 },
+    ],
+    changes: { NVDA: 1.5 },
+  });
+  assert.equal(summary.totalValue, 30000 + 14000 + 56000);
+  assert.ok(Math.abs(rows[0].weight - 14) < 1e-9);
+  assert.ok(Math.abs(rows[1].weight - 56) < 1e-9);
+  assert.equal(summary.dayPnl, 150);
+  assert.equal(rows[1].dayPnl, null);
+  assert.ok(Math.abs(summary.cashPct - 30) < 1e-9);
+  assert.equal(rows[0].name, 'nvda', 'name falls back to the ticker');
+
+  assert.ok(SORT_KEYS.includes('dayPct') && SORT_KEYS.includes('weight'));
+  assert.deepEqual(
+    sortPositions(rows, 'weight', 'desc').map((r) => r.symbol),
+    ['AAPL', 'nvda'],
+  );
+  assert.deepEqual(
+    sortPositions(rows, 'dayPct', 'desc').map((r) => r.symbol),
+    ['nvda', 'AAPL'],
+    'a row without a day move sorts last',
+  );
+  assert.deepEqual(
+    filterPositions(rows, 'winners').map((r) => r.symbol),
+    ['nvda'],
+  );
+  assert.deepEqual(
+    filterPositions(rows, 'losers').map((r) => r.symbol),
+    ['AAPL'],
+  );
+  assert.equal(filterPositions(rows, 'all').length, 2);
+
+  assert.ok(Math.abs(weightBarFill(56, rows) - 1) < 1e-9, 'full at the largest weight with no cap');
+  assert.ok(Math.abs(weightBarFill(14, rows) - 0.25) < 1e-9);
+  assert.equal(weightBarFill(14, rows, 15), 14 / 15, 'full at the cap when one is set');
+  assert.equal(weightBarFill(56, rows, 15), 1, 'never past full');
+  assert.equal(weightBarFill(null, rows), 0);
+});
+
+test('movers: gainers and losers, dollar change derived when missing', () => {
+  const m = normalizeMovers({
+    gainers: [
+      { ticker: 'abc', name: 'Abc Corp', price: 110, change: '+10.00%' },
+      { ticker: 'DEF', name: 'Def', price: 50, change: '+5.00%', dollarChange: '+2.38' },
+      { ticker: '', price: 1, change: '+1%' },
+    ],
+    losers: [{ ticker: 'GHI', name: 'Ghi', price: 90, change: '-10.00%' }],
+  });
+  assert.deepEqual(
+    m.gainers.map((g) => g.ticker),
+    ['ABC', 'DEF'],
+  );
+  assert.ok(Math.abs(m.gainers[0].change - 10) < 1e-9);
+  assert.equal(m.gainers[1].change, 2.38);
+  assert.ok(Math.abs(m.losers[0].change - -10) < 1e-9);
+  assert.equal(m.losers[0].pct, -10);
+  assert.deepEqual(normalizeMovers(null), { gainers: [], losers: [] });
+});
+
+test('journal: details, position impact from the replay, New York time', () => {
+  const rows = journalRows([
+    {
+      id: 'b',
+      ticker: 'NVDA',
+      trade_type: 'sell',
+      quantity: 10,
+      price: 150,
+      total_amount: 1500,
+      created_at: '2026-10-02T15:00:00Z',
+    },
+    {
+      id: 'a',
+      ticker: 'NVDA',
+      trade_type: 'buy',
+      quantity: 7.0112,
+      price: 142.63,
+      created_at: '2026-10-01T14:24:00Z',
+    },
+  ]);
+  assert.equal(rows[1].details, 'Bought 7.0112 shares @ $142.63');
+  assert.equal(rows[1].impactText, 'Opened position');
+  assert.equal(rows[0].impactText, 'Closed position', 'a sell past the holding closes it');
+  assert.ok(Math.abs(rows[1].total - 7.0112 * 142.63) < 1e-9);
+  assert.equal(impactLabel({ kind: 'added', shares: 7.0112 }), '+7.0112 shares');
+  assert.equal(impactLabel({ kind: 'reduced', shares: 10 }), '-10 shares');
+  assert.match(fmtStampET('2026-10-01T14:24:00Z'), /^Oct 1, 10:24\sAM$/);
+  assert.match(fmtClockET('2026-11-13T15:24:16Z'), /^10:24:16\sAM ET$/);
 });
 
 test('page wiring and token discipline', () => {
@@ -164,15 +307,20 @@ test('page wiring and token discipline', () => {
   const css = fs.readFileSync('src/app/(dashboard)/trading/mock/mock-trading.css', 'utf8');
   const sections = fs.readFileSync('src/components/trading/mock/MockSections.jsx', 'utf8');
   const ticket = fs.readFileSync('src/components/trading/mock/OrderTicket.jsx', 'utf8');
+  const pre = fs.readFileSync('src/components/trading/mock/PreTradeCards.jsx', 'utf8');
+  const chart = fs.readFileSync('src/components/trading/MockPortfolioChart.jsx', 'utf8');
   for (const [name, src] of [
     ['page', page],
     ['css', css],
     ['sections', sections],
     ['ticket', ticket],
+    ['pre-trade cards', pre],
+    ['chart', chart],
   ]) {
     assert.ok(!src.includes(String.fromCharCode(8212)), `${name}: em dash`);
     assert.doesNotMatch(src, /#[0-9a-fA-F]{3,8}\b(?![\w-])/, `${name}: hex colour`);
     assert.doesNotMatch(src, /lucide-react|window\.confirm|Math\.random/, `${name}: stack rules`);
+    assert.doesNotMatch(src, /rgba?\(/, `${name}: colour literal`);
   }
   assert.doesNotMatch(
     page + ticket,
@@ -183,7 +331,36 @@ test('page wiring and token discipline', () => {
     ticket,
     /Paper trading only\. No real money involved\. Prices update throughout the trading day\./,
   );
-  assert.match(page, /summarizePortfolio\(/, 'KPIs come from one summary');
+  assert.match(page, /portfolioRows\(/, 'KPIs and rows come from one pass (portfolioRows)');
+  assert.match(chart, /ranges=\{RANGES\}/, 'the chart ranges come from mock-ticket');
+  assert.doesNotMatch(chart, /const RANGES =/, 'one source for the ranges');
+  for (const label of [
+    'Portfolio value',
+    'Total return',
+    "Today's P&L",
+    'Available cash',
+    'Open positions',
+  ])
+    assert.ok(sections.includes(label), `KPI strip: ${label}`);
+  const left = page.slice(page.indexOf('mock-left-col'), page.indexOf('mock-right-col'));
+  assert.ok(
+    left.indexOf('<PerformanceCard') < left.indexOf('<PreTradeCards') &&
+      left.indexOf('<PreTradeCards') < left.indexOf('<PositionsCard'),
+    'pre-trade cards sit between the chart and the positions',
+  );
+  assert.match(pre, /Enter an order in the ticket to see its effect\./);
+  assert.match(sections, /aria-selected=\{isSel\}/, 'the ticket row is marked selected');
+  assert.match(sections, /aria-pressed=\{side === id\}/, 'Gainers and Losers are a pressed toggle');
+  assert.doesNotMatch(
+    css.match(/\.mock-seg__btn\.is-on \{[^}]*\}/)[0],
+    /background|border/,
+    'the selected toggle is text only',
+  );
+  assert.doesNotMatch(
+    css.match(/\.mock-btn \{[^}]*\}/)[0],
+    /border: 1px/,
+    'secondary buttons are plain text',
+  );
   assert.match(page, /<ClosePositionModal/, 'Close is confirmed in a modal');
   assert.match(page, /<ResetPortfolioModal/, 'Reset is confirmed in a modal');
   assert.match(sections, /aria-sort=/, 'sortable headers announce their state');
