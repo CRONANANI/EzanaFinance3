@@ -118,5 +118,6 @@ test('Dashboard: module cards are flat (transparent, no border, no shadow, no ra
     'border-radius: 0',
   ])
     assert.ok(body.includes(decl), `.card has ${decl}`);
-  assert.ok(!/--db-card\b/.test(mod), 'the --db-card tint is gone');
+  /* --db-card-gap (the card gap) is not the old tint token. */
+  assert.ok(!/--db-card(?![\w-])/.test(mod), 'the --db-card tint is gone');
 });
