@@ -39,6 +39,7 @@ import {
   ticketState,
 } from '@/lib/trading/mock-ticket';
 import { whatIf } from '@/lib/trading/mock-thesis';
+import { riskSnapshot } from '@/lib/trading/mock-risk';
 
 /* The reset modal only renders after a click: its own lazy chunk. The charts
    load lazily inside PerformanceCard. */
@@ -195,6 +196,32 @@ function MockTradingPageInner() {
       cancelled = true;
     };
   }, [user?.id]);
+
+  /* Risk snapshot: the last 3 months of daily value plus the S&P 500, read
+     again after each trade. The statistics come from mock-risk.js. */
+  const [riskSeries, setRiskSeries] = useState(null);
+  useEffect(() => {
+    if (!user?.id) {
+      setRiskSeries({ points: [], benchmark: [] });
+      return undefined;
+    }
+    let cancelled = false;
+    fetch('/api/portfolio/mock-value-series?range=3M&benchmark=1', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d) => {
+        if (!cancelled)
+          setRiskSeries({
+            points: Array.isArray(d.points) ? d.points : [],
+            benchmark: Array.isArray(d.benchmark) ? d.benchmark : [],
+          });
+      })
+      .catch(() => {
+        if (!cancelled) setRiskSeries({ points: [], benchmark: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, dbTrades.length]);
 
   // Use hook portfolio; fall back to fresh if not loaded yet
   const portfolio = portfolioFromHook ?? freshPortfolio();
@@ -522,6 +549,19 @@ function MockTradingPageInner() {
     });
   }, [portfolio.positions, portfolio.history, portfolio.cash, livePrices, effectiveStart]);
 
+  const risk = useMemo(
+    () =>
+      riskSeries
+        ? riskSnapshot({
+            points: riskSeries.points,
+            benchmark: riskSeries.benchmark,
+            positions: positionRows,
+            totalValue: summary.totalValue,
+          })
+        : null,
+    [riskSeries, positionRows, summary.totalValue],
+  );
+
   const sortedPositions = useMemo(
     () => filterPositions(sortPositions(positionRows, posSort.key, posSort.dir), posFilter),
     [positionRows, posSort, posFilter],
@@ -754,7 +794,7 @@ function MockTradingPageInner() {
             name={selectedName}
             livePrice={currentPrice}
           />
-          <PreTradeCards projection={projection} />
+          <PreTradeCards projection={projection} risk={risk} />
           <PositionsCard
             rows={sortedPositions}
             total={positionRows.length}

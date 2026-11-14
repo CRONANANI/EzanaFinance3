@@ -5,14 +5,43 @@ import { getAuthUser, getAdminClient } from '@/lib/supabase';
 import { replayTradesToValueSeries, clipPointsToRange } from '@/lib/portfolio-trade-replay';
 import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { rebaseBenchmark } from '@/lib/trading/mock-risk';
 
 export const dynamic = 'force-dynamic';
 
 const RANGES = new Set(['1D', '1W', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL']);
 const DEFAULT_STARTING_CASH = 10000;
+/* The S&P 500 line is drawn from this proxy's daily closes (never shown). */
+const BENCHMARK_SYMBOL = 'SPY';
 
 /**
- * GET /api/portfolio/mock-value-series?range=1D|7D|1M|3M|6M|1Y|3Y|5Y|10Y|ALL
+ * SPY closes over the series' window, rebased so the first point equals the
+ * portfolio's first value: [{ t, v }]. null when the fetch fails or has no
+ * overlap, and the chart then draws the portfolio alone.
+ */
+async function benchmarkFor(points) {
+  if (!Array.isArray(points) || points.length < 2) return null;
+  try {
+    const from = String(points[0].at).slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    const closes = (await fetchBatchedHistoricalPrices([BENCHMARK_SYMBOL], from, to))?.[
+      BENCHMARK_SYMBOL
+    ];
+    if (!closes) return null;
+    const bench = Object.entries(closes).map(([day, close]) => ({
+      at: `${day}T16:00:00.000Z`,
+      value: close,
+    }));
+    const out = rebaseBenchmark(points, bench).map((p) => ({ t: p.at, v: p.value }));
+    return out.length >= 2 ? out : null;
+  } catch (err) {
+    console.warn('[mock-value-series] benchmark fetch failed', err?.message);
+    return null;
+  }
+}
+
+/**
+ * GET /api/portfolio/mock-value-series?range=1D|1W|7D|1M|3M|6M|1Y|3Y|5Y|10Y|ALL[&benchmark=1]
  *
  * Returns the user's mock portfolio value over time, sourced primarily from
  * `mock_trades`. `mock_portfolios.portfolio` is a hint for current value only.
@@ -20,12 +49,22 @@ const DEFAULT_STARTING_CASH = 10000;
  * A custom window can be requested with `?from=<ISO>&to=<ISO>` — when both are
  * present the series is clipped to that explicit date range (the `range` param
  * is ignored). Used by the "Custom" date picker in the unified DateSelector.
+ *
+ * `&benchmark=1` adds `benchmark: [{ t, v }]`, the S&P 500 over the same
+ * window rebased to the portfolio's first value (null when unavailable).
  */
 export const GET = withApiGuard(
   async (request, user, context) => {
     try {
       const requestedRange = request.nextUrl.searchParams.get('range');
       const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
+      const wantBenchmark = request.nextUrl.searchParams.get('benchmark') === '1';
+      const reply = async (body) =>
+        NextResponse.json(
+          wantBenchmark && body.points?.length >= 2
+            ? { ...body, benchmark: await benchmarkFor(body.points) }
+            : body,
+        );
 
       const { data: tradesRaw, error: tradesError } = await getAdminClient()
         .from('mock_trades')
@@ -67,7 +106,7 @@ export const GET = withApiGuard(
           user_id: user.id,
           cash,
         });
-        return NextResponse.json({
+        return reply({
           range,
           points: [
             { at: `${startISO}T16:00:00.000Z`, value: cash },
@@ -138,7 +177,7 @@ export const GET = withApiGuard(
       const effectiveRange = isCustom ? 'CUSTOM' : range;
 
       if (clipped.length < 2 && replay.points.length >= 2) {
-        return NextResponse.json({
+        return reply({
           range: 'ALL',
           requested_range: effectiveRange,
           points: replay.points,
@@ -150,7 +189,7 @@ export const GET = withApiGuard(
         });
       }
 
-      return NextResponse.json({
+      return reply({
         range: effectiveRange,
         points: clipped,
         source: replay.source,

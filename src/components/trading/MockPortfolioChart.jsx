@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -23,6 +24,7 @@ import {
   rangeCaption,
   signOf,
 } from '@/lib/trading/mock-ticket';
+import { rangeReturn } from '@/lib/trading/mock-risk';
 import './mock-portfolio-chart.css';
 
 function formatUSD(v) {
@@ -40,11 +42,18 @@ function formatDateLabel(iso, range) {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-/* Date, portfolio value and (with a starting balance) all-time P&L. */
-function CustomTooltip({ active, payload, startingCash }) {
+const pctFrom = (v, base) =>
+  Number.isFinite(v) && Number.isFinite(base) && base > 0 ? (v / base - 1) * 100 : null;
+
+/* Date, portfolio value and its change over the range, the S&P 500 (rebased
+   to the same start) and its change, and with a starting balance the
+   all-time P&L. */
+function CustomTooltip({ active, payload, startingCash, base }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   const pl = Number.isFinite(startingCash) && startingCash > 0 ? p.value - startingCash : null;
+  const pv = pctFrom(p.value, base);
+  const bv = pctFrom(p.bench, base);
   return (
     <div className="mpc-tooltip">
       <div className="mpc-tooltip-date">
@@ -55,9 +64,25 @@ function CustomTooltip({ active, payload, startingCash }) {
         })}
       </div>
       <div className="mpc-tooltip-row">
-        <span>Portfolio value</span>
-        <span className="mpc-tooltip-value">{fmtUSD(p.value)}</span>
+        <span>Portfolio</span>
+        <span className="mpc-tooltip-value">
+          {fmtUSD(p.value)}
+          {pv != null ? (
+            <span className={`mpc-tooltip-pct is-${signOf(pv)}`}> {fmtSignedPct(pv)}</span>
+          ) : null}
+        </span>
       </div>
+      {Number.isFinite(p.bench) ? (
+        <div className="mpc-tooltip-row">
+          <span>S&amp;P 500</span>
+          <span className="mpc-tooltip-value">
+            {fmtUSD(p.bench)}
+            {bv != null ? (
+              <span className={`mpc-tooltip-pct is-${signOf(bv)}`}> {fmtSignedPct(bv)}</span>
+            ) : null}
+          </span>
+        </div>
+      ) : null}
       {pl != null && (
         <div className="mpc-tooltip-row">
           <span>All-time P&amp;L</span>
@@ -94,10 +119,10 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
 
     const url =
       range === 'CUSTOM' && customRange?.start && customRange?.end
-        ? `/api/portfolio/mock-value-series?range=ALL&from=${encodeURIComponent(
+        ? `/api/portfolio/mock-value-series?range=ALL&benchmark=1&from=${encodeURIComponent(
             customRange.start.toISOString(),
           )}&to=${encodeURIComponent(customRange.end.toISOString())}`
-        : `/api/portfolio/mock-value-series?range=${range}`;
+        : `/api/portfolio/mock-value-series?range=${range}&benchmark=1`;
 
     const load = async (attempt) => {
       try {
@@ -127,6 +152,7 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
         } else {
           setData({
             points: d.points || [],
+            benchmark: Array.isArray(d.benchmark) ? d.benchmark : null,
             source: d.source || 'unknown',
             note: d.note || null,
             startedAt: d.startedAt || null,
@@ -150,22 +176,33 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
     };
   }, [range, customRange, reloadKey]);
 
+  /* The benchmark joins the portfolio points by calendar day; days without a
+     close (weekends, holidays) leave a gap the line bridges. */
   const chartData = useMemo(() => {
-    return (data.points || []).map((p) => ({
-      ...p,
-      label: formatDateLabel(p.at, range),
-    }));
-  }, [data.points, range]);
+    const bench = new Map(
+      (data.benchmark || []).map((b) => [String(b.t).slice(0, 10), Number(b.v)]),
+    );
+    return (data.points || []).map((p) => {
+      const b = bench.get(String(p.at).slice(0, 10));
+      return {
+        ...p,
+        bench: Number.isFinite(b) ? b : null,
+        label: formatDateLabel(p.at, range),
+      };
+    });
+  }, [data.points, data.benchmark, range]);
 
-  // Compute summary stats
+  // Summary stats: the range return and the S&P 500's over the same window.
   const stats = useMemo(() => {
     if (chartData.length < 2) return null;
     const start = chartData[0].value;
     const end = chartData[chartData.length - 1].value;
     const change = end - start;
-    const changePct = start > 0 ? (change / start) * 100 : 0;
-    return { start, end, change, changePct, isPositive: change >= 0 };
-  }, [chartData]);
+    const ret = rangeReturn(data.points);
+    const benchRet = data.benchmark ? rangeReturn(data.benchmark) : null;
+    return { start, end, change, changePct: ret, benchRet, isPositive: change >= 0 };
+  }, [chartData, data.points, data.benchmark]);
+  const hasBench = chartData.some((p) => p.bench != null);
 
   const isEmpty = !loading && chartData.length === 0;
   const lineColor = stats?.isPositive === false ? 'var(--negative)' : 'var(--emerald)';
@@ -203,8 +240,28 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
             <span className={`mpc-stat-change is-${signOf(stats.change)}`}>
               {fmtSignedUSD(stats.change)} ({fmtSignedPct(stats.changePct)})
             </span>
+            {hasBench && stats.benchRet != null ? (
+              <span className="mpc-stat-bench">
+                vs. S&amp;P 500{' '}
+                <span className={`mpc-stat-change is-${signOf(stats.benchRet)}`}>
+                  {fmtSignedPct(stats.benchRet)}
+                </span>
+              </span>
+            ) : null}
           </div>
-          <span className="mpc-caption">{rangeCaption(range, customRange)}</span>
+          <span className="mpc-caption">
+            {rangeCaption(range, customRange)}
+            {hasBench ? (
+              <span className="mpc-legend" aria-hidden="true">
+                <span className="mpc-legend-item">
+                  <span className="mpc-legend-swatch" /> Portfolio
+                </span>
+                <span className="mpc-legend-item">
+                  <span className="mpc-legend-swatch is-bench" /> S&amp;P 500
+                </span>
+              </span>
+            ) : null}
+          </span>
         </div>
       )}
 
@@ -231,7 +288,7 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
         <>
           <div className="mpc-chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 8, right: 24, left: 4, bottom: 0 }}>
+              <ComposedChart data={chartData} margin={{ top: 8, right: 24, left: 4, bottom: 0 }}>
                 <defs>
                   <linearGradient id="mpc-gradient-up" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={CHART.primaryStroke} stopOpacity={0.4} />
@@ -260,7 +317,7 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
-                  content={<CustomTooltip startingCash={startingCash} />}
+                  content={<CustomTooltip startingCash={startingCash} base={stats?.start} />}
                   allowEscapeViewBox={{ x: false, y: false }}
                   cursor={{
                     stroke: CHART.primaryStroke,
@@ -274,8 +331,23 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
                   stroke={lineColor}
                   strokeWidth={2}
                   fill={`url(#${gradientId})`}
+                  name="Portfolio"
                 />
-              </AreaChart>
+                {hasBench ? (
+                  <Line
+                    type="monotone"
+                    dataKey="bench"
+                    name="S&P 500"
+                    stroke={CHART.benchmarkStroke}
+                    strokeWidth={CHART.secondaryStrokeWidth}
+                    strokeDasharray={CHART.benchmarkDash}
+                    dot={false}
+                    activeDot={false}
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                ) : null}
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           {data.note && (

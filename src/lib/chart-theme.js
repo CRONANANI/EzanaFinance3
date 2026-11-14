@@ -17,4 +17,8 @@ export const CHART = {
   animationDuration: 400,
   negativeStroke: 'var(--negative)',
   goldStroke: 'var(--gold-champagne)',
+  /* A comparison series (an index benchmark): neutral and dotted, so it is
+     told apart by dash pattern as well as colour. */
+  benchmarkStroke: 'var(--text-secondary)',
+  benchmarkDash: '2 4',
 };

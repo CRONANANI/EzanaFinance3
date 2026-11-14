@@ -33,6 +33,45 @@
 .mpc-stat-change.is-flat {
   color: var(--text-secondary);
 }
+/* Nov 14 2026: the S&P 500 comparison (a dotted neutral line). */
+.mpc-stats {
+  flex-wrap: wrap;
+}
+.mpc-stat-bench {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.mpc-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+.mpc-legend {
+  display: inline-flex;
+  gap: 12px;
+}
+.mpc-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mpc-legend-swatch {
+  width: 16px;
+  border-top: 2px solid var(--emerald);
+}
+.mpc-legend-swatch.is-bench {
+  border-top: 2px dotted var(--text-secondary);
+}
+.mpc-tooltip-pct {
+  font-family: var(--font-mono);
+}
+.mpc-tooltip-pct.is-up {
+  color: color-mix(in srgb, var(--positive) 78%, var(--text-primary));
+}
+.mpc-tooltip-pct.is-down {
+  color: color-mix(in srgb, var(--negative) 80%, var(--text-primary));
+}
 .mpc-tooltip-row {
   display: flex;
   justify-content: space-between;

@@ -349,6 +349,19 @@ test('page wiring and token discipline', () => {
     'pre-trade cards sit between the chart and the positions',
   );
   assert.match(pre, /Enter an order in the ticket to see its effect\./);
+  const route = fs.readFileSync('src/app/api/portfolio/mock-value-series/route.js', 'utf8');
+  assert.match(route, /benchmark'\) === '1'/, 'the series route takes benchmark=1');
+  assert.match(route, /rebaseBenchmark\(/, 'the benchmark is rebased by mock-risk');
+  assert.match(route, /fetchBatchedHistoricalPrices\(\[BENCHMARK_SYMBOL\]/);
+  assert.match(chart, /benchmark=1/, 'the chart asks for the benchmark');
+  assert.match(chart, /strokeDasharray=\{CHART\.benchmarkDash\}/, 'the benchmark is dotted');
+  assert.match(chart, /stroke=\{CHART\.benchmarkStroke\}/, 'benchmark colour from CHART');
+  assert.match(chart, /vs\. S&amp;P 500/, 'range return vs. the S&P 500');
+  assert.match(chart, /rangeReturn\(/, 'range returns come from mock-risk');
+  assert.doesNotMatch(page + chart + pre, /\bSPY\b/, 'the proxy ticker is never shown');
+  assert.match(pre, /Needs about a month of history\./);
+  assert.match(page, /range=3M&benchmark=1/, 'risk reads the 3M series with its benchmark');
+  assert.match(page, /riskSnapshot\(/, 'risk statistics come from mock-risk');
   assert.match(sections, /aria-selected=\{isSel\}/, 'the ticket row is marked selected');
   assert.match(sections, /aria-pressed=\{side === id\}/, 'Gainers and Losers are a pressed toggle');
   assert.doesNotMatch(

@@ -82,7 +82,7 @@
 .mock-stat-value.is-down {
   color: var(--mock-down);
 }
-.mock-page :is(button, a, input, [role='option']):focus-visible {
+.mock-page :is(button, a, input, [role='option'], [tabindex='0']):focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
@@ -641,6 +641,20 @@
 }
 .mock-pre-empty {
   text-align: left;
+}
+.mock-pre-alert {
+  font-size: 12px;
+}
+.mock-drawdown {
+  color: var(--negative);
+}
+.mock-na {
+  border-bottom: 1px dotted var(--text-muted);
+  color: var(--text-muted);
+  cursor: help;
+}
+.mock-skel--line {
+  height: 16px;
 }
 
 .mock-chip {
