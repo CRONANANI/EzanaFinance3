@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { getAdminClient } from '@/lib/supabase';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { isCronAuthorized } from '@/lib/cron/auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,8 +27,7 @@ export const GET = withApiGuard(
         { status: 503 },
       );
     }
-    const auth = request.headers.get('authorization') || '';
-    if (auth !== `Bearer ${secret}`) {
+    if (!isCronAuthorized(request, secret)) {
       return NextResponse.json(
         {
           ok: false,

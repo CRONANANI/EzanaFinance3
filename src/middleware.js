@@ -105,6 +105,7 @@ async function handle(request, requestId) {
      (next.config.js still adds the security headers). */
   if (pathname === '/v1' || pathname.startsWith('/v1/') || pathname.startsWith('/api/v1/')) {
     const h = new Headers(request.headers);
+    h.delete('x-ezana-uid');
     h.set('x-request-id', requestId);
     return NextResponse.next({ request: { headers: h } });
   }
@@ -269,6 +270,9 @@ async function handle(request, requestId) {
     if (ALLOWED_ORIGINS.some((o) => origin === o)) {
       response.headers.set('Access-Control-Allow-Origin', origin);
     }
+    /* The allow-origin header depends on the request Origin, so a shared
+       cache must key on it. */
+    response.headers.append('Vary', 'Origin');
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     response.headers.set('Access-Control-Max-Age', '86400');
@@ -628,5 +632,13 @@ async function handle(request, requestId) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  /* The first pattern skips static image files. The second makes every /api
+     path run this middleware whatever its last segment looks like: without
+     it, /api/<route>/<id>.png skipped the middleware, so the client could
+     send its own x-ezana-uid (a fresh rate-limit bucket per request) and
+     skip the global limit and the account-lock check. */
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/api/:path*',
+  ],
 };

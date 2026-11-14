@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { isCronAuthorized } from '@/lib/cron/auth';
 
 import { deepRemoveEmDashes } from '@/lib/text/em-dash';
 export const dynamic = 'force-dynamic';
@@ -12,12 +13,6 @@ const AV_BASE = 'https://www.alphavantage.co/query';
 // This route is a scheduled cron (see vercel.json). Vercel automatically sends
 // `Authorization: Bearer <CRON_SECRET>` on cron invocations, so we require that
 // token to prevent anonymous callers from triggering polls (API-quota abuse).
-function isCronAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return (request.headers.get('authorization') ?? '') === `Bearer ${secret}`;
-}
-
 function getAvKey() {
   return process.env.ALPHA_VANTAGE_API_KEY || '';
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { randomInt } from 'node:crypto';
 import { resend } from '@/lib/services/resend';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
@@ -10,7 +11,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  /* CSPRNG, uniform over 100000..999999 (the old generator was predictable). */
+  return randomInt(100000, 1000000).toString();
 }
 
 export async function POST(request) {

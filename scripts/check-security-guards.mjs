@@ -139,3 +139,63 @@ test('browser code reads other users through public_profiles, not profiles(*)', 
   });
   assert.deepEqual(offenders, []);
 });
+
+// ── Nov 2026 hardening (20-vector review) ──────────────────────────────────
+// Source-level guards: each one fails if the vulnerable form comes back.
+
+const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+
+test('middleware always runs on /api, whatever the last path segment', () => {
+  const src = read('src/middleware.js');
+  assert.match(src, /'\/api\/:path\*'/, 'matcher must list /api/:path*');
+  /* The image-extension pattern alone would skip /api/x/y.png. */
+  const first = new RegExp(
+    '^/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)$',
+  );
+  assert.equal(first.test('/api/comps/AAPL.png'), false);
+});
+
+test('x-ezana-uid is stripped on every middleware branch that forwards headers', () => {
+  const src = read('src/middleware.js');
+  const strips = src.match(/\.delete\('x-ezana-uid'\)/g) || [];
+  assert.ok(strips.length >= 2, 'strip on the /v1 branch and the main branch');
+});
+
+test('MFA level is never read from an unverified Authorization header', () => {
+  const src = read('src/lib/api-guard.js');
+  assert.doesNotMatch(src, /headers\.get\(\s*['"]authorization['"]/i);
+  assert.match(src, /verifiedAal\(ctx\)/);
+});
+
+test('no Math.random() in auth routes', () => {
+  const offenders = SRC.filter(
+    (p) => /src\/app\/api\/auth\//.test(p) && /Math\.random\(/.test(readFileSync(p, 'utf8')),
+  );
+  assert.deepEqual(offenders, []);
+});
+
+test('shared secrets are compared in constant time', () => {
+  const plain =
+    /(===|!==)\s*(`Bearer \$\{|process\.env\.(CRON_SECRET|ADMIN_LOCK_SECRET)\b|ADMIN_SECRET\b|secret\s*[;)])/;
+  const offenders = SRC.filter(
+    (p) => /src\/(app\/api|lib)\//.test(p) && plain.test(readFileSync(p, 'utf8')),
+  );
+  assert.deepEqual(offenders, []);
+});
+
+test('reserved usernames are refused', async () => {
+  const { isValidUsername } = await import('../src/lib/auth/password-rules.js');
+  for (const bad of [
+    'admin',
+    'support',
+    'ezana',
+    'ezana_support',
+    'ezanateam',
+    'Noah',
+    'nоah',
+    'a'.repeat(52),
+  ]) {
+    assert.equal(isValidUsername(bad), false, bad);
+  }
+  for (const ok of ['noah_a', 'quant42', 'lazar']) assert.equal(isValidUsername(ok), true, ok);
+});

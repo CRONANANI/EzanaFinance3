@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { hasLdaKey, createLdaBudget, listFilings } from '@/lib/lobbying/client';
 import { filingAmount, isRegistrationFiling } from '@/lib/lobbying/normalize';
+import { isCronAuthorized } from '@/lib/cron/auth';
 
 /**
  * GET /api/lobbying/diag?year=2025 — read-only ETL diagnostic (CRON_SECRET
@@ -18,17 +19,9 @@ import { filingAmount, isRegistrationFiling } from '@/lib/lobbying/normalize';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-function isAuthorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
-  // `?key=$CRON_SECRET` fallback for header-less cron/callers (see ingest route).
-  try {
-    return new URL(request.url).searchParams.get('key') === secret;
-  } catch {
-    return false;
-  }
-}
+/* Bearer header only, compared in constant time. The old ?key= fallback put
+   the secret in URLs and access logs (see src/lib/cron/auth.js). */
+const isAuthorized = (request) => isCronAuthorized(request);
 
 const supaConfigured = () =>
   !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);

@@ -46,22 +46,31 @@ test('a partner page sends a signed-out visitor to the partner sign-in card (PAR
    and the user has a verified factor. */
 const { mfaRequired } = await import('../src/lib/api-guard.js');
 const jwt = (claims) => `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
-const req = (claims) =>
-  new NextRequest('https://ezana.world/api/watchlists', {
-    headers: { authorization: `Bearer ${jwt(claims)}` },
-  });
+/* ctx is what getAuthContext returns: the user plus the access token that
+   passed verification. mfaRequired never looks at request headers. */
 const withFactor = { id: 'u', factors: [{ status: 'verified' }] };
+const ctx = (claims, user = withFactor) => ({ user, supabase: null, accessToken: jwt(claims) });
 
 test('mfa: aal1 + verified factor + MFA_ENFORCED=true -> required', async () => {
   process.env.MFA_ENFORCED = 'true';
-  assert.equal(await mfaRequired(req({ aal: 'aal1' }), withFactor), true);
-  assert.equal(await mfaRequired(req({ aal: 'aal2' }), withFactor), false);
-  assert.equal(await mfaRequired(req({ aal: 'aal1' }), { id: 'u', factors: [] }), false);
+  assert.equal(await mfaRequired(ctx({ aal: 'aal1' })), true);
+  assert.equal(await mfaRequired(ctx({ aal: 'aal2' })), false);
+  assert.equal(await mfaRequired(ctx({ aal: 'aal1' }, { id: 'u', factors: [] })), false);
+});
+
+test('mfa: a cookie session with no readable token counts as not aal2', async () => {
+  process.env.MFA_ENFORCED = 'true';
+  const cookieCtx = {
+    user: withFactor,
+    accessToken: null,
+    supabase: { auth: { getSession: async () => ({ data: { session: null } }) } },
+  };
+  assert.equal(await mfaRequired(cookieCtx), true);
 });
 
 test('mfa: off unless MFA_ENFORCED is exactly "true"', async () => {
   delete process.env.MFA_ENFORCED;
-  assert.equal(await mfaRequired(req({ aal: 'aal1' }), withFactor), false);
+  assert.equal(await mfaRequired(ctx({ aal: 'aal1' })), false);
 });
 
 /* Nov 2026: a route that streams (Sonar research) returns a plain Response.

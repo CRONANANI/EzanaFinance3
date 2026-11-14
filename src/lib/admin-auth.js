@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isAdminUser } from './admin-helpers';
+import { safeEqual } from './cron/auth';
 
 /**
  * Admin routes: allow service bearer (ADMIN_LOCK_SECRET / CRON_SECRET) or logged-in admin session.
@@ -16,8 +17,8 @@ import { isAdminUser } from './admin-helpers';
 export function requireAdminAccess(request, user) {
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  const adminOk = process.env.ADMIN_LOCK_SECRET && token === process.env.ADMIN_LOCK_SECRET;
-  const cronOk = process.env.CRON_SECRET && token === process.env.CRON_SECRET;
+  const adminOk = process.env.ADMIN_LOCK_SECRET && safeEqual(token, process.env.ADMIN_LOCK_SECRET);
+  const cronOk = process.env.CRON_SECRET && safeEqual(token, process.env.CRON_SECRET);
   if (adminOk || cronOk) return null;
   if (user?.app_metadata?.role === 'admin') return null;
   if (isAdminUser(user)) return null;

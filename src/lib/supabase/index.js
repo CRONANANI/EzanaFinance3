@@ -151,7 +151,7 @@ export async function getAuthContext(request) {
         data: { user },
         error,
       } = await supabase.auth.getUser();
-      if (!error && user) return { user, supabase };
+      if (!error && user) return { user, supabase, accessToken: token };
     }
 
     const supabase = buildCookieClient(request);

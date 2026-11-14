@@ -11,7 +11,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { findInvite, inviteNames } from '@/lib/waitlist/invite';
-import { USERNAME_RE, validatePassword } from '@/lib/auth/password-rules';
+import { USERNAME_RE, RESERVED_USERNAME_RE, validatePassword } from '@/lib/auth/password-rules';
 import { isTrue } from '@/lib/legal/consent';
 
 export const dynamic = 'force-dynamic';
@@ -58,6 +58,12 @@ export async function POST(request) {
         error: 'Usernames are 3 to 30 lowercase letters, numbers or underscores.',
       },
       { status: 400 },
+    );
+  }
+  if (RESERVED_USERNAME_RE.test(username)) {
+    return NextResponse.json(
+      { ok: false, field: 'username', error: 'That username is not available.' },
+      { status: 409 },
     );
   }
 

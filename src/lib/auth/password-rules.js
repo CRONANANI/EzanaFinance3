@@ -19,3 +19,16 @@ export const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /** Usernames: lowercase letters, numbers and underscores, 3 to 30 long. */
 export const USERNAME_RE = /^[a-z0-9_]{3,30}$/;
+
+/** Handles nobody may register: they read as Ezana staff or the system.
+    Keep in step with profiles_username_not_reserved (SQL_01). */
+export const RESERVED_USERNAME_RE =
+  /^(admin|administrator|support|help|helpdesk|staff|moderator|mod|official|security|system|root|null|undefined|sonar|echo|kidan|ezana|ezana_?[a-z0-9_]*)$/;
+
+export function isValidUsername(username) {
+  return (
+    typeof username === 'string' &&
+    USERNAME_RE.test(username) &&
+    !RESERVED_USERNAME_RE.test(username)
+  );
+}

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
-import { getAuthContext, getAuthUser } from './supabase';
+import { getAuthContext } from './supabase';
 import * as Sentry from '@sentry/nextjs';
 import { logger, requestIdOf } from './logger';
 import { logSecurityEvent } from './security-audit';
@@ -37,20 +37,27 @@ function jwtAal(token) {
   }
 }
 
-async function sessionAal(request) {
-  const header = request.headers.get('authorization') || '';
-  if (header.startsWith('Bearer ')) return jwtAal(header.slice(7));
-  const { supabase } = await getAuthContext(request);
-  if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
+/* The aal claim of the credential that authenticated this request, and of
+   nothing else. ctx comes from getAuthContext: accessToken is set when a
+   Bearer token passed getUser(); otherwise the cookie session did. Never
+   read the claim from the raw Authorization header: when a Bearer token
+   fails verification getAuthContext falls back to the cookie session, so a
+   forged token carrying aal2 next to a password-only (aal1) cookie session
+   used to skip the MFA step. */
+async function verifiedAal(ctx) {
+  if (ctx?.accessToken) return jwtAal(ctx.accessToken);
+  if (!ctx?.supabase) return null;
+  const { data } = await ctx.supabase.auth.getSession();
   return data?.session?.access_token ? jwtAal(data.session.access_token) : null;
 }
 
-export async function mfaRequired(request, user) {
+/** @param {{user: object|null, supabase?: object|null, accessToken?: string|null}} ctx */
+export async function mfaRequired(ctx) {
+  const user = ctx?.user;
   if (process.env.MFA_ENFORCED !== 'true' || !user) return false;
   const hasFactor = (user.factors || []).some((f) => f?.status === 'verified');
   if (!hasFactor) return false;
-  return (await sessionAal(request)) !== 'aal2';
+  return (await verifiedAal(ctx)) !== 'aal2';
 }
 
 /**
@@ -138,11 +145,12 @@ export function withApiGuard(handler, options = {}) {
 
       let user = null;
       if (requireAuth) {
-        user = await getAuthUser(request);
+        const ctx = await getAuthContext(request);
+        user = ctx.user;
         if (!user) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        if (await mfaRequired(request, user)) {
+        if (await mfaRequired(ctx)) {
           return NextResponse.json({ error: 'mfa_required' }, { status: 401 });
         }
       }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { scoreCompetition } from '@/lib/competition-scoring';
+import { safeEqual } from '@/lib/cron/auth';
 
 export { scoreCompetition };
 
@@ -12,7 +13,7 @@ const ADMIN_SECRET = process.env.ADMIN_LOCK_SECRET;
 function isAdmin(request) {
   const auth = request.headers.get('authorization') || '';
   const provided = auth.replace(/^Bearer\s+/i, '').trim();
-  return ADMIN_SECRET && provided === ADMIN_SECRET;
+  return Boolean(ADMIN_SECRET) && safeEqual(provided, ADMIN_SECRET);
 }
 
 /**

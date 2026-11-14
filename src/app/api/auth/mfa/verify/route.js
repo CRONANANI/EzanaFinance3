@@ -68,6 +68,15 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   }
 
+  /* Per account, not per IP: a caller who rotates IPs gets a fresh IP bucket
+     each time, and a 6-digit code only has a million values. The auth:
+     prefix makes this bucket fail closed. */
+  const perUser = await checkRateLimit(`auth:mfa-verify:u:${user.id}`, {
+    limit: 10,
+    window: '15 m',
+  });
+  if (!perUser.success) return rateLimitResponse(perUser);
+
   const { data, error } = await supabase.auth.mfa.verify({ factorId, challengeId, code });
   if (error || !data?.access_token) {
     // Surface the real Supabase message (e.g. "Invalid TOTP code entered").

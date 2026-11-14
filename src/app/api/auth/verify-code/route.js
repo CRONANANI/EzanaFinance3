@@ -4,6 +4,7 @@ import { getAdminClient, requireUser } from '@/lib/supabase';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeText, sanitizeEmail } from '@/lib/sanitize';
+import { safeEqual } from '@/lib/cron/auth';
 
 async function grantEmailVerifiedElo(supabaseAdmin, userId) {
   try {
@@ -49,7 +50,7 @@ export async function POST(request) {
     const { code } = await request.json();
     const codeStr = sanitizeText(String(code ?? ''), 16);
 
-    if (!codeStr || codeStr.length !== 6) {
+    if (!/^\d{6}$/.test(codeStr)) {
       return NextResponse.json({ error: 'Please enter a valid 6-digit code' }, { status: 400 });
     }
 
@@ -103,12 +104,23 @@ export async function POST(request) {
       );
     }
 
-    if (verificationRecord.code !== codeStr) {
+    if (!safeEqual(verificationRecord.code, codeStr)) {
       const newAttempts = verificationRecord.attempts + 1;
-      await supabaseAdmin
+      /* Compare-and-set on the attempts we read: of a burst of parallel
+         wrong guesses only one can move the counter, the rest are refused,
+         so a burst cannot buy more than the five allowed guesses. */
+      const { data: counted } = await supabaseAdmin
         .from('email_verification_codes')
         .update({ attempts: newAttempts })
-        .eq('id', verificationRecord.id);
+        .eq('id', verificationRecord.id)
+        .eq('attempts', verificationRecord.attempts)
+        .select('id');
+      if (!counted?.length) {
+        return NextResponse.json(
+          { error: 'Too many attempts at once. Please try again.' },
+          { status: 429 },
+        );
+      }
 
       if (newAttempts >= 5) {
         await supabaseAdmin

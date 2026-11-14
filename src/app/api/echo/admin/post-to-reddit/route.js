@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { runRedditPosterAgent } from '@/lib/agents/reddit-poster-agent';
+import { isCronAuthorized } from '@/lib/cron/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -76,8 +77,7 @@ export async function GET(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
 
-  const auth = request.headers.get('authorization') ?? '';
-  if (auth !== `Bearer ${secret}`) {
+  if (!isCronAuthorized(request, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
