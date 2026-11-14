@@ -26,11 +26,13 @@
 
 /* â”€â”€ SHARED CARD CHROME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
+/* Nov 2026: cards are flat on the page canvas. No fill, border, shadow or
+   rounded panel; the hairline under a card's header is what defines it. */
 .am2-card {
-  background: var(--card-bg);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
   position: relative;
@@ -178,53 +180,27 @@
 
 /* â”€â”€ PAGE HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
+/* Nov 2026: the eyebrow, title and intro line are gone. The header is the
+   action row only; the h1 stays for screen readers. */
 .am2-page-header {
-  padding: 28px 0 4px;
+  padding: 12px 0 0;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-end;
   gap: 24px;
   flex-wrap: wrap;
 }
 
-.am2-page-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 0 0 8px;
-}
-
-.am2-page-eyebrow-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--emerald);
-}
-
-.am2-page-title {
-  font-family: var(--font-sans);
-  font-size: var(--type-page-title-size);
-  font-weight: var(--type-page-title-weight);
-  letter-spacing: var(--type-page-title-tracking);
-  line-height: var(--type-page-title-leading);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.am2-page-sub {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text-muted);
-  max-width: 640px;
-  margin: 10px 0 0;
-  line-height: 1.5;
+.am2-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .am2-page-header-actions {
@@ -236,12 +212,13 @@
 
 /* â”€â”€ SEGMENTED CONTROL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
+/* Nov 2026, same as the app's time selectors: no track, border, dividers or
+   fill. The selected option is emerald text; the others are grey text. */
 .am2-seg {
   display: inline-flex;
-  background: var(--surface-card);
-  border: 1px solid var(--border-input);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  gap: 2px;
+  background: transparent;
+  border: 0;
 }
 
 .am2-seg-btn {
@@ -250,39 +227,20 @@
   font-weight: 500;
   padding: 7px 12px;
   background: transparent;
-  border: none;
-  border-right: 1px solid var(--border-secondary);
+  border: 0;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  transition:
-    color 0.15s,
-    background 0.15s;
-}
-.am2-seg-btn:last-child {
-  border-right: none;
+  transition: color 0.15s;
 }
 .am2-seg-btn:hover {
   color: var(--text-primary);
 }
 
-.am2-seg-btn--active {
-  background: var(--emerald-bg);
-  color: var(--emerald);
-  box-shadow: inset 0 0 0 1px var(--emerald-border);
-}
-/* Timeframe selector only (Nov 2026): no track, dividers or fill; the
-   selected timeframe is emerald text. Asset filters keep the segmented look. */
-.am2-seg[aria-label='Timeframe'] {
-  background: transparent;
-  border: 0;
-}
-.am2-seg[aria-label='Timeframe'] .am2-seg-btn {
-  border-right: 0;
-}
-.am2-seg[aria-label='Timeframe'] .am2-seg-btn--active {
+.am2-seg-btn--active,
+.am2-seg-btn--active:hover {
   background: transparent;
   color: var(--emerald-text);
-  box-shadow: none;
 }
 
 /* â”€â”€ BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -305,27 +263,32 @@
   gap: 6px;
 }
 
+/* Nov 2026, same as the Dashboard actions: no outline on any button. The
+   secondary button is plain text; the primary keeps its emerald fill. */
 .am2-btn-secondary {
-  background: var(--surface-card);
-  border: 1px solid var(--border-input);
+  background: transparent;
+  border: 0;
   color: var(--text-primary);
 }
 .am2-btn-secondary:hover {
-  background: var(--surface-card-hover);
-  border-color: var(--border-hover);
+  background: transparent;
+  color: var(--emerald-text);
 }
 
 .am2-btn-primary {
   background: var(--emerald);
-  border: 1px solid var(--emerald);
-  color: #ffffff;
+  border: 0;
+  color: var(--color-on-primary);
   font-weight: 600;
 }
 .am2-btn-primary:hover {
   background: var(--emerald-hover);
-  border-color: var(--emerald-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--emerald-glow);
+}
+
+.am2-seg-btn:focus-visible,
+.am2-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 /* â”€â”€ PCT BADGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -448,29 +411,25 @@
   gap: 16px;
 }
 
+/* Nov 2026: half the old height (about 170px to about 80px) and no accent
+   glow. The header spans the tile; the value and its change line stack on
+   the left with a small sparkline beside them. */
 .am2-metric-card {
   position: relative;
-  overflow: hidden;
-  padding: 16px 18px;
-}
-
-.am2-metric-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 60% 80% at 100% 0%,
-    var(--am2-accent-glow, transparent) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.am2-metric-card > * {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'head head'
+    'value spark'
+    'sub spark';
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 8px 20px;
 }
 
 .am2-metric-header {
+  grid-area: head;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -502,10 +461,13 @@
   line-height: 1;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  margin: 14px 0 10px;
+  grid-area: value;
+  margin: 2px 0 0;
+  font-size: 20px;
 }
 
 .am2-metric-sub {
+  grid-area: sub;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -515,8 +477,8 @@
 }
 
 .am2-metric-spark {
-  margin-top: 14px;
-  height: 36px;
+  grid-area: spark;
+  align-self: center;
 }
 
 /* Sentiment pill on Fear & Greed */
@@ -549,7 +511,7 @@
 .am2-table-head {
   display: grid;
   padding: 9px 14px;
-  background: var(--bg-tertiary);
+  background: transparent;
   border-bottom: 1px solid var(--border-primary);
   font-family: var(--font-sans);
   font-size: var(--type-label-size);
@@ -964,10 +926,10 @@
 }
 
 .am2-whale {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 0;
   display: flex;
   flex-direction: column;
   gap: 6px;

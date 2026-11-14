@@ -8,17 +8,7 @@ const ASSET_CLASSES = [
 export function AmPageHeader({ assetClass, onAssetClassChange, onExport, onAddWatchlist }) {
   return (
     <header className="am2-page-header">
-      <div>
-        <p className="am2-page-eyebrow">
-          <span className="am2-page-eyebrow-dot" aria-hidden />
-          Research · Alternative Markets
-        </p>
-        <h1 className="am2-page-title">Digital assets &amp; commodities</h1>
-        <p className="am2-page-sub">
-          Cross-asset signal across crypto markets, on-chain telemetry, community sentiment, and the
-          macro tape.
-        </p>
-      </div>
+      <h1 className="am2-sr-only">Alternative Markets</h1>
       <div className="am2-page-header-actions">
         <div className="am2-seg" role="tablist" aria-label="Asset class">
           {ASSET_CLASSES.map((c) => (
