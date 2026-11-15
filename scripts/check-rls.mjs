@@ -316,6 +316,44 @@ test('mock_theses: owner reads own rows only; no insert, update or delete from t
   assert.equal(n, '0', 'select is the only policy');
 });
 
+test('user_watchlist_notes: a user reads and writes only their own notes', (t) => {
+  if (skip(t)) return;
+  const note = (owner, ticker, text) =>
+    `insert into user_watchlist_notes (user_id, item_type, ticker, hypothesis) values ('${owner}', 'stock', '${ticker}', '${text}')`;
+  const asB = (stmt) => as(B, 'b@example.com', stmt);
+  asA(note(A, 'AAPL', 'mine'));
+  asB(note(B, 'AAPL', 'theirs'));
+  assert.equal(
+    lastLine(asA('select count(*) from user_watchlist_notes')),
+    '1',
+    'sees only its own',
+  );
+  assert.equal(lastLine(asB('select hypothesis from user_watchlist_notes')), 'theirs');
+  denied(() => asB(note(A, 'MSFT', 'forged for A')));
+  asB(`update user_watchlist_notes set hypothesis = 'hacked' where user_id = '${A}'`);
+  asB(`delete from user_watchlist_notes where user_id = '${A}'`);
+  denied(() => asB(`update user_watchlist_notes set user_id = '${A}' where user_id = '${B}'`));
+  asA(`update user_watchlist_notes set risks = 'rates' where user_id = '${A}'`);
+  assert.equal(
+    pg.sql(
+      `select string_agg(hypothesis || ':' || risks, ',' order by hypothesis) from user_watchlist_notes`,
+    ),
+    'mine:rates,theirs:',
+    'another user can neither edit, delete nor take over a note',
+  );
+  assert.throws(() => asA(note(A, 'AAPL', 'second')), /duplicate key/, 'one note per asset');
+  assert.throws(() => asA(note(A, 'TSLA', '')), /user_watchlist_notes_not_empty/);
+  assert.throws(
+    () =>
+      asA(
+        `insert into user_watchlist_notes (user_id, item_type, ticker, hypothesis) values ('${A}', 'fund', 'X', 'x')`,
+      ),
+    /check constraint/,
+  );
+  asA(`delete from user_watchlist_notes where user_id = '${A}'`);
+  assert.equal(pg.sql('select count(*) from user_watchlist_notes'), '1', 'the owner can delete');
+});
+
 /* ── QA remediation (Phase 8.2): static assertions on the new migrations ── */
 import { readFileSync } from 'node:fs';
 

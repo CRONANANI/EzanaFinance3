@@ -6,11 +6,13 @@
  * (`db`); the engine run uses the service-role client (`admin`) with the rule
  * already verified as the caller's.
  */
-import { runSmartRule, previewRule } from '@/lib/watchlist/smart-engine';
-import { sanitizeRule } from '@/lib/watchlist/smart-rules';
+import { loadCandidate, runSmartRule, previewRule } from '@/lib/watchlist/smart-engine';
+import { explainCandidate, sanitizeRule } from '@/lib/watchlist/smart-rules';
+import { ITEM_TYPES } from '@/lib/watchlist/asset-classes';
 
 const MAX_LABEL = 80;
 const RUN_COOLDOWN_MS = 2 * 60000;
+const WEEK_MS = 7 * 86400000;
 
 export class ServiceError extends Error {
   constructor(status, message) {
@@ -59,21 +61,33 @@ export async function listSmart(db, userId, { limit = 20 } = {}) {
     { data: rules, error: rErr },
     { data: events, error: eErr },
     { data: lists, error: lErr },
+    { data: week, error: wErr },
   ] = await Promise.all([
     db.from('smart_watchlist_rules').select('*').eq('user_id', userId).order('created_at'),
+    /* '*' so this keeps working before the `details` column exists. */
     db
       .from('smart_watchlist_events')
-      .select('id, list_id, item_type, ticker, name, reason, created_at')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit),
     db.from('user_watchlists').select('id, label').eq('user_id', userId),
+    /* Adds per list in the last 7 days, counted here so the page never counts a truncated feed. */
+    db
+      .from('smart_watchlist_events')
+      .select('list_id')
+      .eq('user_id', userId)
+      .gte('created_at', new Date(Date.now() - WEEK_MS).toISOString())
+      .limit(2000),
   ]);
   if (rErr) throw rErr;
   if (eErr) throw eErr;
   if (lErr) throw lErr;
   const label = new Map((lists || []).map((l) => [l.id, l.label]));
+  const weekCounts = {};
+  if (!wErr) for (const r of week || []) weekCounts[r.list_id] = (weekCounts[r.list_id] || 0) + 1;
   return {
+    weekCounts,
     rules: (rules || []).map((r) => ({
       ...ruleOut(r),
       label: label.get(r.list_id) || 'Smart watchlist',
@@ -82,10 +96,12 @@ export async function listSmart(db, userId, { limit = 20 } = {}) {
       id: e.id,
       listId: e.list_id,
       listLabel: label.get(e.list_id) || 'Smart watchlist',
+      ruleId: e.rule_id || null,
       type: e.item_type,
       ticker: e.ticker,
       name: e.name,
       reason: e.reason,
+      details: e.details || null,
       at: e.created_at,
     })),
   };
@@ -218,4 +234,40 @@ export async function previewSmart(admin, body) {
   const r = sanitizeRule(body?.rule);
   if (!r.ok) throw new ServiceError(400, r.error);
   return previewRule(admin, r.rule);
+}
+
+/**
+ * Does one item still match one of the caller's rules, right now? Read only.
+ * The item must be in the rule's own list, so this cannot be used to probe
+ * arbitrary tickers through the engine.
+ */
+export async function explainSmart(db, admin, userId, ruleId, raw) {
+  const rule = await ownRule(db, userId, ruleId);
+  const type = typeof raw?.type === 'string' ? raw.type.toLowerCase() : '';
+  const ticker = typeof raw?.ticker === 'string' ? raw.ticker.trim().toUpperCase() : '';
+  if (!ITEM_TYPES.includes(type) || !ticker) throw new ServiceError(400, 'Unknown asset.');
+  if (type !== rule.asset_class)
+    throw new ServiceError(400, 'This rule does not cover that asset class.');
+
+  const { data: item, error } = await db
+    .from('user_watchlist_items')
+    .select('type, ticker, name, sector, metadata')
+    .eq('list_id', rule.list_id)
+    .eq('user_id', userId)
+    .eq('type', type)
+    .eq('ticker', ticker)
+    .maybeSingle();
+  if (error) throw error;
+  if (!item) throw new ServiceError(404, 'That item is not in this smart watchlist.');
+
+  const cand = await loadCandidate(admin, rule, {
+    type: item.type,
+    ticker: item.ticker,
+    name: item.name,
+    sector: item.sector,
+    marketCap: item.metadata?.marketCap,
+  });
+  if (!cand) return { matchesNow: null, evaluatedAt: new Date().toISOString(), conditions: [] };
+  const e = explainCandidate(cand, rule);
+  return { matchesNow: e.matchesNow, evaluatedAt: e.evaluatedAt, conditions: e.conditions };
 }

@@ -171,20 +171,46 @@ export function useInstitutions(ticker) {
 
 export function useWatchlistAlerts(limit = 3) {
   const { user } = useAuth();
-  const [state, setState] = useState({ status: 'loading', items: [] });
+  const [state, setState] = useState({ status: 'loading', items: [], unread: [] });
   const load = useCallback(async () => {
     if (!user?.id) {
-      setState({ status: 'ready', items: [] });
+      setState({ status: 'ready', items: [], unread: [] });
       return;
     }
-    const { data, error } = await supabase
-      .from('user_notifications')
-      .select('id, title, content, created_at, read')
-      .eq('user_id', user.id)
-      .eq('type', 'watchlist')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-    setState({ status: error ? 'error' : 'ready', items: data || [] });
+    const latest = (cols) =>
+      supabase
+        .from('user_notifications')
+        .select(cols)
+        .eq('user_id', user.id)
+        .eq('type', 'watchlist')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+    const unreadOf = (cols) =>
+      supabase
+        .from('user_notifications')
+        .select(cols)
+        .eq('user_id', user.id)
+        .eq('type', 'watchlist')
+        .eq('read', false)
+        .order('created_at', { ascending: false })
+        .limit(200);
+    /* `tickers` scopes the pulse count to the active list. If the column is
+       not there yet, fall back to the columns that always exist. */
+    let [a, u] = await Promise.all([
+      latest('id, title, content, created_at, read, tickers'),
+      unreadOf('id, created_at, tickers'),
+    ]);
+    if (a.error || u.error) {
+      [a, u] = await Promise.all([
+        latest('id, title, content, created_at, read'),
+        unreadOf('id, created_at'),
+      ]);
+    }
+    setState({
+      status: a.error ? 'error' : 'ready',
+      items: a.data || [],
+      unread: u.data || [],
+    });
   }, [user?.id, limit]);
   useEffect(() => {
     load();

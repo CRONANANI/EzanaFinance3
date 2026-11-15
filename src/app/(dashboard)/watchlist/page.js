@@ -105,8 +105,17 @@ function WatchlistMonitor() {
 
   const { completeTask } = useChecklist();
   const { isOrgUser, hasPermission } = useOrg();
-  const { watchlists, loading, addItem, removeItem, createList, refresh, toggleStar, authedFetch } =
-    useWatchlists();
+  const {
+    watchlists,
+    loading,
+    addItem,
+    removeItem,
+    moveItem,
+    createList,
+    refresh,
+    toggleStar,
+    authedFetch,
+  } = useWatchlists();
   const smart = useSmartWatchlists(authedFetch);
   const alerts = useWatchlistAlerts(3);
   const { toast, show: notify, hide: hideToast } = useToast();
@@ -261,11 +270,21 @@ function WatchlistMonitor() {
         notify('Could not remove it. Try again.');
         return;
       }
+      /* Undo puts the row back as it was: its star and, for a smart add, why it was added. */
+      const was = r?.removed || item;
       notify(
         `Removed ${item.type === 'politician' ? item.name : item.ticker} from ${activeList.label}`,
         {
           label: 'Undo',
-          run: () => addItem(listId, payloadOf(item)),
+          run: () =>
+            addItem(listId, {
+              ...payloadOf(item),
+              restore: {
+                starred: !!was.starredAt,
+                addedBy: was.addedBy === 'smart' ? 'smart' : 'user',
+                addedReason: was.addedReason || null,
+              },
+            }),
         },
       );
     },
@@ -276,15 +295,19 @@ function WatchlistMonitor() {
     async (item, toId) => {
       if (!activeList) return;
       const target = watchlists.find((w) => w.id === toId);
-      const add = await addItem(toId, payloadOf(item));
-      if (add && add.ok === false) {
-        notify('Could not move it. Try again.');
+      /* One server call: the row moves with its star and provenance. */
+      const r = await moveItem(activeList.id, toId, { type: item.type, ticker: item.ticker });
+      if (!r.ok) {
+        notify(
+          r.status === 409
+            ? `${target?.label || 'That list'} already has it.`
+            : 'Could not move it. Try again.',
+        );
         return;
       }
-      await removeItem(activeList.id, { type: item.type, ticker: item.ticker });
       notify(`Moved to ${target?.label || 'watchlist'}`);
     },
-    [activeList, watchlists, addItem, removeItem, notify],
+    [activeList, watchlists, moveItem, notify],
   );
 
   const addAsset = useCallback(
@@ -321,7 +344,7 @@ function WatchlistMonitor() {
   };
 
   const afterSmartChange = useCallback(async () => {
-    await Promise.all([refresh?.(), alerts.reload()]);
+    await Promise.all([refresh?.({ force: true }), alerts.reload()]);
   }, [refresh, alerts]);
 
   const onSmartSaved = async (out, created) => {

@@ -20,13 +20,30 @@ import {
   pickAdds,
   sanitizeRule,
   testCondition,
+  explainCandidate,
+  matchDetails,
 } from '../src/lib/watchlist/smart-rules.js';
+import {
+  NOTE_LIMITS,
+  appendCatalyst,
+  noteHeadline,
+  parseNote,
+} from '../src/lib/watchlist/notes.js';
 import {
   classCounts,
   computeInsights,
   fmtSignedPct,
   fmtUSD,
   itemsForClass,
+  BIG_MOVE_PCT,
+  PAGE_SIZE,
+  addedLabel,
+  bigMoves,
+  filterItems,
+  paginate,
+  pulseSummary,
+  sonarPrompt,
+  sortItems,
   readUrlState,
   writeUrlState,
 } from '../src/lib/watchlist/watchlist-view.js';
@@ -311,6 +328,266 @@ test('formatting and URL state', () => {
 });
 
 /* ------------------------------------------------------------------ */
+/* Market Monitor 2.0: pulse, table, notes, explanations               */
+/* ------------------------------------------------------------------ */
+
+test('pulse: tracked, breadth from priced items only, scoped alerts', () => {
+  const items = itemsForClass(LIST, 'stocks', { ...QUOTES, MSFT: { price: 400 } });
+  const p = pulseSummary({
+    list: LIST,
+    classId: 'stocks',
+    items,
+    smartWeekCount: 3,
+    unreadAlerts: [
+      { created_at: '2026-11-09T14:00:00Z', tickers: ['AAPL'] },
+      { created_at: '2026-11-09T14:30:00Z', tickers: ['ZZZZ'] },
+      { created_at: '2026-11-09T13:00:00Z', tickers: [] },
+    ],
+    now: NOW,
+  });
+  assert.deepEqual(p.tracked, { total: 6, inClass: 3, classLabel: 'Stocks' });
+  assert.deepEqual(p.breadth, { priced: 2, up: 1, down: 1, pct: 50 });
+  assert.equal(p.disclosures, null);
+  assert.deepEqual(p.smartMatches, { count: 3, days: 7 });
+  assert.deepEqual(p.alerts, { unread: 1, latestAt: '2026-11-09T14:00:00Z', scoped: true });
+
+  const untagged = pulseSummary({
+    list: LIST,
+    classId: 'stocks',
+    items,
+    unreadAlerts: [{ created_at: '2026-11-08T10:00:00Z' }, { created_at: '2026-11-09T10:00:00Z' }],
+    now: NOW,
+  });
+  assert.deepEqual(untagged.alerts, {
+    unread: 2,
+    latestAt: '2026-11-09T10:00:00Z',
+    scoped: false,
+  });
+  assert.equal(pulseSummary({ list: LIST, classId: 'crypto', items: [] }).breadth, null);
+});
+
+test('pulse: politicians show disclosures, never breadth', () => {
+  const items = itemsForClass(LIST, 'politicians', {});
+  const p = pulseSummary({
+    list: LIST,
+    classId: 'politicians',
+    items,
+    politicians: {
+      P000197: { trades: [{ date: '2026-11-01' }, { date: '2026-10-20' }, { date: '2026-08-01' }] },
+    },
+    now: NOW,
+  });
+  assert.equal(p.breadth, null);
+  assert.deepEqual(p.disclosures, { count: 2, capped: false, days: 30 });
+  assert.equal(
+    pulseSummary({ list: LIST, classId: 'politicians', items, politicians: {}, now: NOW })
+      .disclosures,
+    null,
+    'no data means the card is omitted, not zero',
+  );
+});
+
+test('table: sort, filter, paginate, big moves, added label', () => {
+  const rows = [
+    { type: 'stock', ticker: 'MSFT', name: 'Microsoft', price: 400, changePct: 0.5 },
+    { type: 'stock', ticker: 'AAPL', name: 'Apple', price: 200, changePct: -6 },
+    { type: 'stock', ticker: 'NEW', name: 'No quote yet', price: null, changePct: null },
+    {
+      type: 'crypto',
+      ticker: 'BTCUSD',
+      name: 'Bitcoin',
+      price: 90000,
+      changePct: 7.2,
+      starredAt: '2026-11-01',
+      addedBy: 'smart',
+      addedReason: 'Up 7.20% today',
+    },
+  ];
+  const tickers = (xs) => xs.map((r) => r.ticker);
+  assert.deepEqual(tickers(sortItems(rows, null)), tickers(rows), 'no key keeps the order');
+  assert.deepEqual(tickers(sortItems(rows, 'ticker', 'asc')), ['AAPL', 'BTCUSD', 'MSFT', 'NEW']);
+  assert.deepEqual(tickers(sortItems(rows, 'price', 'desc')), ['BTCUSD', 'MSFT', 'AAPL', 'NEW']);
+  assert.deepEqual(
+    tickers(sortItems(rows, 'changePct', 'asc')),
+    ['AAPL', 'MSFT', 'BTCUSD', 'NEW'],
+    'rows without a value sink in both directions',
+  );
+  assert.notEqual(sortItems(rows, 'price'), rows, 'never sorts in place');
+
+  assert.deepEqual(tickers(filterItems(rows, { q: 'btc' })), ['BTCUSD']);
+  assert.deepEqual(tickers(filterItems(rows, { q: ' apple ' })), ['AAPL']);
+  assert.deepEqual(tickers(filterItems(rows, { starredOnly: true })), ['BTCUSD']);
+  assert.deepEqual(tickers(filterItems(rows, { smartOnly: true })), ['BTCUSD']);
+  assert.equal(filterItems(rows, {}).length, 4);
+
+  const many = Array.from({ length: 40 }, (_, i) => ({ ticker: `T${i}` }));
+  assert.equal(PAGE_SIZE, 25);
+  const p2 = paginate(many, 2);
+  assert.deepEqual(
+    {
+      n: p2.rows.length,
+      page: p2.page,
+      pages: p2.pages,
+      from: p2.from,
+      to: p2.to,
+      total: p2.total,
+    },
+    { n: 15, page: 2, pages: 2, from: 26, to: 40, total: 40 },
+  );
+  assert.equal(paginate(many, 99).page, 2, 'page is clamped');
+  assert.deepEqual(
+    { from: paginate([], 1).from, to: paginate([], 1).to, pages: paginate([], 1).pages },
+    { from: 0, to: 0, pages: 1 },
+  );
+
+  assert.equal(BIG_MOVE_PCT, 5);
+  assert.deepEqual(tickers(bigMoves(rows)), ['BTCUSD', 'AAPL']);
+  assert.deepEqual(addedLabel(rows[0]), { smart: false, text: 'Manual' });
+  assert.deepEqual(addedLabel(rows[3]), { smart: true, text: 'Up 7.20% today' });
+  assert.doesNotMatch(sonarPrompt(rows[3]) + sonarPrompt({ type: 'politician', name: 'A' }), /—/);
+  assert.match(sonarPrompt(rows[3]), /Bitcoin \(BTC\)/);
+});
+
+test('notes: limits, trimming, unknown keys, empty and past dates', () => {
+  const base = { type: 'stock', ticker: ' aapl ' };
+  const ok = parseNote(
+    { ...base, hypothesis: '  Services margin keeps expanding.\r\n\r\n\r\n\r\nWatch.  ' },
+    { today: '2026-11-14' },
+  );
+  assert.equal(ok.ok, true);
+  assert.equal(ok.note.ticker, 'AAPL');
+  assert.equal(ok.note.hypothesis, 'Services margin keeps expanding.\n\nWatch.');
+  assert.equal(ok.note.reviewOn, null);
+  assert.deepEqual(Object.keys(ok.note).sort(), [
+    'catalysts',
+    'hypothesis',
+    'metrics',
+    'reviewOn',
+    'risks',
+    'ticker',
+    'type',
+  ]);
+
+  assert.equal(parseNote({ ...base, hypothesis: '   ' }).ok, false, 'all empty is rejected');
+  assert.equal(parseNote({ ...base, risks: 'x', user_id: 'someone-else' }).ok, false);
+  assert.equal(parseNote({ ...base, risks: 5 }).field, 'risks');
+  assert.equal(
+    parseNote({ ...base, hypothesis: 'a'.repeat(NOTE_LIMITS.hypothesis + 1) }).field,
+    'hypothesis',
+  );
+  assert.equal(parseNote({ ...base, hypothesis: 'a'.repeat(NOTE_LIMITS.hypothesis) }).ok, true);
+  assert.equal(parseNote({ type: 'fund', ticker: 'AAPL', risks: 'x' }).ok, false);
+  assert.equal(parseNote({ type: 'stock', ticker: 'A B', risks: 'x' }).ok, false);
+  assert.equal(parseNote({ type: 'politician', ticker: 'P000197', risks: 'x' }).ok, true);
+  assert.equal(parseNote({ type: 'commodity', ticker: 'GC=F', metrics: 'x' }).ok, true);
+
+  const t = { today: '2026-11-14' };
+  assert.equal(parseNote({ ...base, risks: 'x', reviewOn: '2026-11-13' }, t).field, 'reviewOn');
+  assert.equal(
+    parseNote({ ...base, risks: 'x', reviewOn: '2026-11-14' }, t).note.reviewOn,
+    '2026-11-14',
+  );
+  assert.equal(parseNote({ ...base, risks: 'x', reviewOn: '2026-13-40' }, t).ok, false);
+  assert.equal(parseNote({ ...base, risks: 'x', reviewOn: '' }, t).note.reviewOn, null);
+  assert.equal(parseNote(null).ok, false);
+  assert.equal(parseNote([]).ok, false);
+
+  assert.equal(noteHeadline({ hypothesis: '', risks: 'Rates' }), 'Rates');
+  assert.equal(noteHeadline(null), '');
+  assert.equal(appendCatalyst('', 'Earnings, Nov 5 (est.)'), 'Earnings, Nov 5 (est.)');
+  assert.equal(appendCatalyst('A', 'A'), 'A', 'no duplicate lines');
+  assert.equal(appendCatalyst('A', 'B'), 'A\nB');
+  const full = 'x'.repeat(NOTE_LIMITS.catalysts);
+  assert.equal(appendCatalyst(full, 'B'), full, 'never over the limit');
+});
+
+test('explanations: observed values, stored reason text unchanged', () => {
+  const rule = {
+    match: 'all',
+    conditions: [
+      { type: 'day_change', op: 'gte', value: 3 },
+      { type: 'sector', sectors: ['Energy'] },
+    ],
+  };
+  const hit = { type: 'stock', ticker: 'FSLR', changePct: 4.25, sector: 'Energy' };
+  assert.equal(testCondition(rule.conditions[0], hit, NOW), 'Up 4.25% today');
+  assert.equal(evaluateCandidate(hit, rule, NOW).reasons.join(' · '), 'Up 4.25% today · Energy');
+
+  const e = explainCandidate(hit, rule, NOW);
+  assert.equal(e.matchesNow, true);
+  assert.equal(e.evaluatedAt, new Date(NOW).toISOString());
+  assert.deepEqual(e.conditions, [
+    { description: 'Up 3% or more today', met: true, observed: '+4.25% today' },
+    { description: describeCondition(rule.conditions[1]), met: true, observed: 'Energy' },
+  ]);
+
+  const faded = explainCandidate({ ...hit, changePct: -0.53 }, rule, NOW);
+  assert.equal(faded.matchesNow, false);
+  assert.deepEqual(
+    faded.conditions.map((c) => [c.met, c.observed]),
+    [
+      [false, '-0.53% today'],
+      [true, 'Energy'],
+    ],
+  );
+
+  const blind = explainCandidate({ ...hit, changePct: null }, rule, NOW);
+  assert.equal(blind.matchesNow, null, 'missing data is unknown, not a failed match');
+  assert.equal(blind.conditions[0].observed, null);
+
+  const any = explainCandidate({ ...hit, changePct: null }, { ...rule, match: 'any' }, NOW);
+  assert.equal(any.matchesNow, true);
+
+  const d = matchDetails(hit, rule, NOW);
+  assert.deepEqual(d, {
+    evaluatedAt: new Date(NOW).toISOString(),
+    match: 'all',
+    conditions: [
+      { description: 'Up 3% or more today', observed: '+4.25% today' },
+      { description: describeCondition(rule.conditions[1]), observed: 'Energy' },
+    ],
+  });
+
+  const [add] = pickAdds([hit], rule, { now: NOW });
+  assert.equal(add.reason, 'Up 4.25% today · Energy', 'the stored reason is unchanged');
+  assert.deepEqual(add.details, d);
+
+  const pol = {
+    type: 'politician',
+    ticker: 'P000197',
+    party: 'D',
+    chamber: 'house',
+    state: 'CA',
+    trades: [
+      { date: '2026-11-01', side: 'buy', ticker: 'NVDA', amount: 500000 },
+      { date: '2026-10-25', side: 'sell', ticker: 'AAPL', amount: 15000 },
+    ],
+  };
+  const polRule = {
+    match: 'all',
+    conditions: [
+      { type: 'party', parties: ['D'] },
+      { type: 'trade_activity', side: 'any', days: 30, min_trades: 3 },
+      { type: 'traded_ticker', ticker: 'NVDA', side: 'buy', days: 90 },
+      { type: 'trade_size', min_amount: 250000, days: 90 },
+    ],
+  };
+  const pe = explainCandidate(pol, polRule, NOW);
+  assert.deepEqual(
+    pe.conditions.map((c) => [c.met, c.observed]),
+    [
+      [true, 'Democrat'],
+      [false, '2 trades in 30d'],
+      [true, 'bought on 2026-11-01'],
+      [true, 'Largest $500K in 90d'],
+    ],
+  );
+  assert.equal(pe.matchesNow, false);
+  for (const c of [...e.conditions, ...pe.conditions])
+    assert.doesNotMatch(`${c.description}${c.observed}`, /—/);
+});
+
+/* ------------------------------------------------------------------ */
 /* Wiring                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -352,6 +629,62 @@ test('smart notifications land in the Watchlist tab of the bell', () => {
     assert.ok(sql.toLowerCase().includes(s.toLowerCase()), s);
   }
   assert.match(read('vercel.json'), /\/api\/cron\/smart-watchlists/);
+});
+
+test('stage A: atomic move, undo keeps provenance, no market cap placeholder', () => {
+  const items = read('src/app/api/watchlists/[listId]/items/route.js');
+  const move = read('src/app/api/watchlists/[listId]/items/move/route.js');
+  const hook = read('src/hooks/useWatchlists.js');
+  const page = read(PAGE);
+  for (const f of [items, hook, read('src/app/api/watchlists/route.js')])
+    assert.doesNotMatch(f, /marketCap: '–'/, 'the placeholder hid the real market cap');
+  assert.match(move, /\.update\(\{ list_id: toId \}\)/, 'a move is one UPDATE of list_id');
+  assert.doesNotMatch(
+    move,
+    /from\('user_watchlist_items'\)\s*\.(insert|upsert|delete)\(/,
+    'never add then remove',
+  );
+  assert.match(move, /\.eq\('user_id', user\.id\)/);
+  assert.match(items, /parseRestore/);
+  assert.match(items, /removed/);
+  assert.match(hook, /moveItem/);
+  assert.match(hook, /loadWatchlistsOnce/, 'the layout and the page share one request');
+  assert.match(page, /moveItem\(activeList\.id, toId/);
+  assert.match(page, /restore:/);
+});
+
+test('migration: notes are owner-only, smart events carry match details', () => {
+  const sql = read(
+    'supabase/migrations/20261120090000_watchlist_notes_and_match_details.sql',
+  ).toLowerCase();
+  for (const s of [
+    'create table if not exists public.user_watchlist_notes',
+    'enable row level security',
+    'for select to authenticated',
+    'for insert to authenticated',
+    'for update to authenticated',
+    'for delete to authenticated',
+    'uq_user_watchlist_notes_user_item',
+    'add column if not exists details jsonb',
+  ]) {
+    assert.ok(sql.includes(s), s);
+  }
+  assert.equal(
+    (sql.match(/auth\.uid\(\) = user_id/g) || []).length,
+    5,
+    'every policy is owner-scoped',
+  );
+  assert.doesNotMatch(sql, /using \(true\)|with check \(true\)/);
+  const engine = read('src/lib/watchlist/smart-engine.js');
+  assert.match(engine, /details: m\.details \|\| null/);
+  const notes = read('src/app/api/watchlists/notes/route.js');
+  assert.match(notes, /withApiGuard/);
+  assert.match(notes, /requireAuth: true/);
+  assert.doesNotMatch(
+    read('src/lib/watchlist/notes-server.js'),
+    /getAdminClient/,
+    'notes use the caller client',
+  );
 });
 
 test('styles: tokens only, no root max-width, reduced motion', () => {

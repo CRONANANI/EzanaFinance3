@@ -29,6 +29,7 @@ import {
   isCommoditySymbol,
 } from '@/lib/alpha-vantage';
 import { mapSector } from '@/lib/research/sectorMap';
+import { FmpAPI } from '@/lib/services/fmp';
 import { FIXED_UNIVERSE, displayTicker } from '@/lib/watchlist/asset-classes';
 import {
   PER_RUN_CAP,
@@ -284,6 +285,61 @@ async function politicianCandidates(admin, rule, ctx) {
     }));
 }
 
+/**
+ * One candidate for one item, for the "still matches?" check on the page.
+ * Uses the same loaders as a run. For a stock, sector and market cap come
+ * from the company profile (cached for a day) when the rule asks about them;
+ * anything that cannot be loaded stays null, and null never matches.
+ * Returns null when the item is not in the class's universe.
+ */
+export async function loadCandidate(admin, rule, item, ctx = createRunContext()) {
+  const cls = rule.asset_class;
+  const ticker = String(item?.ticker || '')
+    .trim()
+    .toUpperCase();
+  if (!ticker || item?.type !== cls) return null;
+
+  if (cls === 'politician') {
+    const all = await politicianCandidates(admin, rule, ctx);
+    return all.find((c) => String(c.ticker).toUpperCase() === ticker) || null;
+  }
+  if (cls !== 'stock') {
+    const all = await fixedCandidates(cls, ctx);
+    return all.find((c) => c.ticker === ticker) || null;
+  }
+  if (!/^[A-Z][A-Z0-9.-]{0,9}$/.test(ticker)) return null;
+
+  const quotes = await getQuotes([ticker], ctx);
+  const days = tradeDays(rule, ['congress_traded']);
+  const trades =
+    days > 0 ? (await congressTrades(admin, days, ctx)).filter((t) => t.ticker === ticker) : [];
+
+  let sector = item.sector || null;
+  let marketCap = finite(item.marketCap);
+  const needsProfile = rule.conditions.some(
+    (c) => (c.type === 'sector' && !sector) || (c.type === 'market_cap' && marketCap == null),
+  );
+  if (needsProfile) {
+    try {
+      const p = await FmpAPI.getCompanyProfile(ticker);
+      sector = sector || p?.sector || null;
+      marketCap = marketCap ?? finite(p?.marketCap ?? p?.mktCap);
+    } catch {
+      /* stays unknown */
+    }
+  }
+  return {
+    type: 'stock',
+    ticker,
+    name: item.name || ticker,
+    sector,
+    marketCap,
+    price: quotes[ticker]?.price ?? null,
+    changePct: quotes[ticker]?.changePct ?? null,
+    trades,
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /* Preview and run                                                     */
 /* ------------------------------------------------------------------ */
@@ -370,7 +426,9 @@ export async function runSmartRule(
           metadata:
             m.type === 'politician'
               ? { party: m.party, chamber: m.chamber, state: m.state, source: 'smart' }
-              : { source: 'smart' },
+              : Number.isFinite(m.marketCap)
+                ? { source: 'smart', marketCap: m.marketCap }
+                : { source: 'smart' },
           added_by: 'smart',
           added_reason: m.reason,
         })),
@@ -387,6 +445,8 @@ export async function runSmartRule(
           ticker: m.ticker,
           name: m.name || m.ticker,
           reason: m.reason,
+          /* What was observed for each matched condition, and when (Signal explainer). */
+          details: m.details || null,
         })),
         { onConflict: 'list_id,item_type,ticker', ignoreDuplicates: true },
       );

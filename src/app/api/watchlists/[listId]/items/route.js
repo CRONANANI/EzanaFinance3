@@ -15,10 +15,65 @@ import { withApiGuard } from '@/lib/api-guard';
 
 import { getAdminClient, getAuthContext } from '@/lib/supabase';
 import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
+import { FmpAPI } from '@/lib/services/fmp';
 
 export const dynamic = 'force-dynamic';
 
 const VALID_TYPES = new Set(['stock', 'bond_etf', 'crypto', 'commodity', 'politician']);
+const MAX_REASON = 300;
+const STOCK_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
+
+/** The shape every item response uses (the same fields GET /api/watchlists returns). */
+const itemOut = (row) => ({
+  id: row.id,
+  type: row.type,
+  ticker: row.ticker,
+  name: row.name || row.ticker,
+  sector: row.sector || '',
+  metadata: row.metadata || {},
+  createdAt: row.created_at || null,
+  starredAt: row.starred_at || null,
+  addedBy: row.added_by || 'user',
+  addedReason: row.added_reason || null,
+  price: 0,
+  change: 0,
+  changePct: 0,
+  marketCap: null,
+  volume: '–',
+});
+
+/**
+ * Undo support: the provenance a removed row had. Only what the row can
+ * legitimately hold is accepted, and only onto the caller's own list.
+ */
+function parseRestore(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const out = {};
+  if (raw.starred === true) out.starred_at = new Date().toISOString();
+  if (raw.addedBy === 'smart' || raw.addedBy === 'user') out.added_by = raw.addedBy;
+  if (out.added_by === 'smart' && typeof raw.addedReason === 'string' && raw.addedReason.trim())
+    out.added_reason = raw.addedReason.trim().slice(0, MAX_REASON);
+  return Object.keys(out).length ? out : null;
+}
+
+/**
+ * A stock added from search arrives with no sector or market cap, which
+ * leaves sector concentration and the cap label empty. Fill them from the
+ * company profile (cached for a day). Best effort: a failure adds nothing.
+ */
+async function stockFacts(ticker) {
+  if (!STOCK_RE.test(ticker)) return {};
+  try {
+    const p = await FmpAPI.getCompanyProfile(ticker);
+    const cap = Number(p?.marketCap ?? p?.mktCap);
+    return {
+      sector: typeof p?.sector === 'string' && p.sector.trim() ? p.sector.trim() : null,
+      marketCap: Number.isFinite(cap) && cap > 0 ? cap : null,
+    };
+  } catch {
+    return {};
+  }
+}
 
 async function assertListOwnedByUser(supabase, listId, userId) {
   const { data, error } = await supabase
@@ -56,8 +111,9 @@ export const POST = withApiGuard(
       const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
       const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
       const name = typeof body?.name === 'string' ? body.name.trim() : null;
-      const sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
-      const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+      let sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
+      let metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+      const restore = parseRestore(body?.restore);
 
       if (!VALID_TYPES.has(type)) {
         return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
@@ -66,14 +122,30 @@ export const POST = withApiGuard(
         return validationResponse('ticker is required.');
       }
 
+      if (type === 'stock' && (!sector || !Number.isFinite(Number(metadata.marketCap)))) {
+        const facts = await stockFacts(ticker);
+        if (!sector && facts.sector) sector = facts.sector;
+        if (!Number.isFinite(Number(metadata.marketCap)) && facts.marketCap)
+          metadata = { ...metadata, marketCap: facts.marketCap };
+      }
+
       // Upsert by unique (list_id, type, ticker) — idempotent add.
       const { data, error } = await supabase
         .from('user_watchlist_items')
         .upsert(
-          { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
+          {
+            list_id: listId,
+            user_id: user.id,
+            type,
+            ticker,
+            name,
+            sector,
+            metadata,
+            ...(restore || {}),
+          },
           { onConflict: 'list_id,type,ticker', ignoreDuplicates: false },
         )
-        .select('id, list_id, type, ticker, name, sector, metadata, created_at')
+        .select('*')
         .single();
 
       if (error) {
@@ -96,21 +168,7 @@ export const POST = withApiGuard(
         only: ['watchlist.add_three', 'explore.follow_member'],
       }).catch(() => {});
 
-      return NextResponse.json({
-        item: {
-          id: data.id,
-          type: data.type,
-          ticker: data.ticker,
-          name: data.name || data.ticker,
-          sector: data.sector || '',
-          metadata: data.metadata || {},
-          price: 0,
-          change: 0,
-          changePct: 0,
-          marketCap: '–',
-          volume: '–',
-        },
-      });
+      return NextResponse.json({ item: itemOut(data) });
     } catch (e) {
       // assertListOwnedByUser may rethrow a Supabase error — treat it as a DB error.
       if (e?.code) return dbErrorResponse('watchlist items POST ownership', e);
@@ -141,13 +199,15 @@ export const DELETE = withApiGuard(
         return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
       }
 
-      const { error } = await supabase
+      /* Return what was removed so Undo can put it back as it was. */
+      const { data: gone, error } = await supabase
         .from('user_watchlist_items')
         .delete()
         .eq('list_id', listId)
         .eq('user_id', user.id)
         .eq('type', type)
-        .eq('ticker', ticker);
+        .eq('ticker', ticker)
+        .select('*');
 
       if (error) {
         return dbErrorResponse('watchlist items DELETE', error, {
@@ -164,7 +224,8 @@ export const DELETE = withApiGuard(
       });
       if (bcErr) console.warn('[watchlist items] breadcrumb', bcErr.message);
 
-      return NextResponse.json({ success: true });
+      const removed = Array.isArray(gone) && gone[0] ? itemOut(gone[0]) : null;
+      return NextResponse.json({ success: true, removed });
     } catch (e) {
       return exceptionResponse('watchlist items DELETE', e);
     }

@@ -489,7 +489,8 @@ export function pickAdds(
   for (const c of candidates) {
     if (!c?.ticker || existing.has(key(c)) || seen.has(key(c))) continue;
     const r = evaluateCandidate(c, rule, now);
-    if (r.match) out.push({ ...c, reason: r.reasons.join(' · ') });
+    if (r.match)
+      out.push({ ...c, reason: r.reasons.join(' · '), details: matchDetails(c, rule, now) });
   }
   const score = (c) =>
     c.type === 'politician'
@@ -538,4 +539,108 @@ export function isDue(rule, now = Date.now(), everyMs = 55 * 60000) {
   if (!rule?.enabled) return false;
   const last = rule.last_run_at ? Date.parse(rule.last_run_at) : 0;
   return !last || now - last >= everyMs;
+}
+
+/* ------------------------------------------------------------------ */
+/* Explanations (Market Monitor 2.0)                                   */
+/* ------------------------------------------------------------------ */
+
+const signedPct = (v) => `${v > 0 ? '+' : v < 0 ? '-' : ''}${Math.abs(v).toFixed(2)}%`;
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/**
+ * What the data shows for one condition, met or not, as a short string.
+ * Null when the data needed to judge it is missing. Never changes the
+ * reason text testCondition returns.
+ */
+export function observeCondition(c, cand, now = Date.now()) {
+  const trades = Array.isArray(cand?.trades) ? cand.trades : null;
+  switch (c?.type) {
+    case 'day_change':
+      return Number.isFinite(cand.changePct) ? `${signedPct(cand.changePct)} today` : null;
+    case 'price':
+      return Number.isFinite(cand.price) ? money2(cand.price) : null;
+    case 'market_cap': {
+      if (!Number.isFinite(cand.marketCap)) return null;
+      const b = cand.marketCap / 1e9;
+      return `$${b >= 100 ? b.toFixed(0) : b.toFixed(1)}B`;
+    }
+    case 'sector':
+      return cand.sector ? sectorLabel(cand.sector) : null;
+    case 'congress_traded': {
+      if (!trades) return null;
+      const hits = trades.filter(
+        (t) =>
+          within(t.date, c.days, now) &&
+          sideOk(c.side, t.side) &&
+          (c.party === 'any' || t.party === c.party) &&
+          (!c.min_amount || (Number.isFinite(t.amount) && t.amount >= c.min_amount)),
+      );
+      const members = new Set(hits.map((t) => t.member || t.bioguide || `${t.date}-${t.amount}`));
+      return `${plural(members.size, 'member')} in ${c.days}d`;
+    }
+    case 'party':
+      return cand.party ? partyName(cand.party) : null;
+    case 'chamber':
+      return cand.chamber
+        ? CHAMBERS.find((x) => x.id === cand.chamber)?.label || cand.chamber
+        : null;
+    case 'state':
+      return cand.state || null;
+    case 'trade_activity': {
+      if (!trades) return null;
+      const n = trades.filter((t) => within(t.date, c.days, now) && sideOk(c.side, t.side)).length;
+      return `${plural(n, 'trade')} in ${c.days}d`;
+    }
+    case 'traded_ticker': {
+      if (!trades) return null;
+      const hit = trades.find(
+        (t) => t.ticker === c.ticker && within(t.date, c.days, now) && sideOk(c.side, t.side),
+      );
+      return hit ? `${sideVerb(hit.side)} on ${hit.date}` : `No ${c.ticker} trade in ${c.days}d`;
+    }
+    case 'trade_size': {
+      if (!trades) return null;
+      const top = trades
+        .filter((t) => within(t.date, c.days, now) && Number.isFinite(t.amount))
+        .sort((a, b) => b.amount - a.amount)[0];
+      return top ? `Largest ${usd(top.amount)} in ${c.days}d` : `No sized trade in ${c.days}d`;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Every condition of a rule against one candidate.
+ * matchesNow: true, false, or null when an unmet condition has no data to
+ * judge it (so "no longer matches" is never claimed on missing data).
+ */
+export function explainCandidate(cand, rule, now = Date.now()) {
+  const conditions = (rule?.conditions || []).map((c) => ({
+    description: describeCondition(c),
+    met: testCondition(c, cand, now) != null,
+    observed: observeCondition(c, cand, now),
+  }));
+  const hits = conditions.filter((c) => c.met).length;
+  const match = rule?.match === 'any' ? hits > 0 : hits === conditions.length && hits > 0;
+  const blind = conditions.some((c) => !c.met && c.observed == null);
+  return {
+    evaluatedAt: new Date(now).toISOString(),
+    match: rule?.match === 'any' ? 'any' : 'all',
+    matchesNow: match ? true : blind ? null : false,
+    conditions,
+  };
+}
+
+/** The record stored with a smart add: the conditions that were met, with what was observed. */
+export function matchDetails(cand, rule, now = Date.now()) {
+  const e = explainCandidate(cand, rule, now);
+  return {
+    evaluatedAt: e.evaluatedAt,
+    match: e.match,
+    conditions: e.conditions
+      .filter((c) => c.met)
+      .map(({ description, observed }) => ({ description, observed })),
+  };
 }
