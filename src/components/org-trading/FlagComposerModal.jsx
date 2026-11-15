@@ -11,7 +11,7 @@ import {
   defaultResponseHoursForConviction,
   reasonsForColor,
 } from '@/lib/org-flag-taxonomy';
-import { NA } from '@/lib/org-display';
+import { NA } from '@/lib/org-trading-desk';
 import { PinnedAttachmentPicker } from './PinnedAttachmentPicker';
 
 const num = (v, digits = 2) =>
@@ -46,10 +46,10 @@ function RoutedTo({ name, role }) {
   );
 }
 
-const pctText = (v) => (v == null ? NA : `${v >= 0 ? '+' : ''}${Number(v).toFixed(1)}%`);
+const pctText = (v) => (v == null ? NA : `${v >= 0 ? '+' : '-'}${Math.abs(Number(v)).toFixed(2)}%`);
 
 /**
- * Header position switcher — flag a different position without closing the
+ * Header position switcher, flag a different position without closing the
  * modal. The list is whatever the server returned as flaggable (already
  * permission-filtered); this only searches/keyboards over it. Rendered only
  * when there is more than one choice; otherwise the header shows static text.
@@ -124,10 +124,10 @@ function PositionSwitcher({ current, book, onSwitch }) {
         <span className="ot-ticker-chip ot-num">{current.ticker}</span>
         <span className="ot-switcher-sub">
           {current.sector || ''}
-          {current.analyst ? ` · ${current.analyst}` : ''}
+          {current.analyst ? `, ${current.analyst}` : ''}
           {current.plPct != null && (
             <span className={`ot-num ${current.plPct >= 0 ? 'ot-pos' : 'ot-neg'}`}>
-              {' · '}
+              {', '}
               {pctText(current.plPct)}
             </span>
           )}
@@ -141,7 +141,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
             ref={inputRef}
             type="text"
             className="ot-switcher-search ds-search-input"
-            placeholder="Search ticker, sector, analyst…"
+            placeholder="Search ticker, sector or analyst"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
@@ -149,7 +149,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
           />
           <ul className="ot-switcher-list" role="listbox">
             {filtered.length === 0 && (
-              <li className="ot-switcher-empty">No positions match “{query}”.</li>
+              <li className="ot-switcher-empty">No positions match your search.</li>
             )}
             {filtered.map((p, i) => (
               <li key={`${p.ticker}_${p.teamDbId || 'na'}`}>
@@ -166,7 +166,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
                   <span className="ot-ticker-chip ot-num">{p.ticker}</span>
                   <span className="ot-switcher-option-meta">
                     {p.sector}
-                    {p.analyst ? ` · ${p.analyst}` : ''}
+                    {p.analyst ? `, ${p.analyst}` : ''}
                   </span>
                   <span
                     className={`ot-num ot-switcher-option-pl ${p.plPct >= 0 ? 'ot-pos' : 'ot-neg'}`}
@@ -188,10 +188,13 @@ export function FlagComposerModal({
   teamDbId: initialTeamDbId,
   position: initialPosition,
   currentMember,
+  /* Sample content: { book, totalValue, onRaise }. With it the composer reads
+     the sample book and hands the flag back instead of sending it. */
+  sample = null,
   onClose,
   onSuccess,
 }) {
-  // Active position — switchable in-place via the header switcher. Everything
+  // Active position, switchable in-place via the header switcher. Everything
   // below (rail, routing, thesis, benchmark) re-derives from these.
   const [active, setActive] = useState({
     ticker: initialTicker,
@@ -216,11 +219,17 @@ export function FlagComposerModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [duplicate, setDuplicate] = useState(null); // { existing_flag }
+  const [pendingSwitch, setPendingSwitch] = useState(null); // position awaiting a discard
 
-  // Flaggable positions for the switcher — permission-filtered SERVER-SIDE.
+  // Flaggable positions for the switcher, permission-filtered SERVER-SIDE.
   const [book, setBook] = useState([]);
   const [bookTotal, setBookTotal] = useState(null);
   useEffect(() => {
+    if (sample) {
+      setBook(sample.book || []);
+      setBookTotal(sample.totalValue ?? null);
+      return undefined;
+    }
     let cancelled = false;
     fetch('/api/org-trading/positions')
       .then((r) => (r.ok ? r.json() : { positions: [] }))
@@ -234,9 +243,9 @@ export function FlagComposerModal({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sample]);
 
-  // ── Dossier — all server-resolved on the position row (real org chart) ─
+  // ── Dossier, all server-resolved on the position row (real org chart) ─
   const bookRow = book.find((p) => p.ticker === ticker && p.teamDbId === teamDbId) || null;
   const sector = bookRow?.sector || position?.sector || null;
   const benchmark = benchmarkForSector(sector);
@@ -244,7 +253,7 @@ export function FlagComposerModal({
   const sectorHeadName = bookRow?.sector_head ?? null;
   const thesis = bookRow?.thesis ?? null;
 
-  // Flagger IS the covering analyst → Thesis Update (id compare, not names).
+  // Flagger IS the covering analyst means Thesis Update (id compare, not names).
   const isThesisUpdate =
     !!currentMember?.id &&
     !!bookRow?.analyst_member_id &&
@@ -268,20 +277,16 @@ export function FlagComposerModal({
     evidence.length > 0 ||
     attachments.length > 0;
 
-  // Switch to another position — warns before discarding a draft, then resets
+  // Switch to another position, warns before discarding a draft, then resets
   // the whole composer. conflict_disclosed is ticker-specific, so it resets and
   // the conflict check re-runs against the new ticker.
-  const switchTo = (item) => {
+  const switchTo = (item, confirmed = false) => {
     if (!item || (item.ticker === ticker && (item.teamDbId ?? null) === teamDbId)) return;
-    if (
-      isDirty &&
-      typeof window !== 'undefined' &&
-      !window.confirm(
-        `Discard this draft flag? Your reason, message, and evidence for ${ticker} will be cleared.`,
-      )
-    ) {
+    if (isDirty && !confirmed) {
+      setPendingSwitch(item);
       return;
     }
+    setPendingSwitch(null);
     setActive({
       ticker: item.ticker,
       teamDbId: item.teamDbId ?? null,
@@ -331,8 +336,8 @@ export function FlagComposerModal({
   const softNudge = isRed && conviction === 'high' && !hasEvidence;
 
   const ctaLabel = isThesisUpdate
-    ? `Post Thesis Update → ${actionLabel(action)}`
-    : `Raise ${isRed ? 'Red' : 'Green'} Flag → ${actionLabel(action)}`;
+    ? `Post thesis update: ${actionLabel(action)}`
+    : `Raise ${isRed ? 'red' : 'green'} flag: ${actionLabel(action)}`;
 
   const submit = async (allowDuplicate = false) => {
     setError(null);
@@ -344,33 +349,40 @@ export function FlagComposerModal({
       setError(`Message must be at least ${MIN_MESSAGE_CHARS} characters.`);
       return;
     }
+    const payload = {
+      ticker,
+      team_id: teamDbId || null,
+      flag_color: flagColor,
+      subject,
+      body: message,
+      reason,
+      conviction,
+      suggested_action: action,
+      escalate_to_ic: escalate,
+      conflict_disclosed: conflict,
+      response_hours: responseHours,
+      allow_duplicate: allowDuplicate,
+      position_snapshot: {
+        shares: position?.shares,
+        avg_cost: position?.avg_cost,
+        current_price: position?.current_price,
+        sector,
+      },
+      attachments,
+      evidence,
+    };
+    if (sample) {
+      /* Sample content: the flag is added to the page and never sent. */
+      sample.onRaise?.(payload);
+      onSuccess?.();
+      return;
+    }
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/org-trading/flags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticker,
-          team_id: teamDbId || null,
-          flag_color: flagColor,
-          subject,
-          body: message,
-          reason,
-          conviction,
-          suggested_action: action,
-          escalate_to_ic: escalate,
-          conflict_disclosed: conflict,
-          response_hours: responseHours,
-          allow_duplicate: allowDuplicate,
-          position_snapshot: {
-            shares: position?.shares,
-            avg_cost: position?.avg_cost,
-            current_price: position?.current_price,
-            sector,
-          },
-          attachments,
-          evidence,
-        }),
+        body: JSON.stringify(payload),
       });
       if (res.status === 409) {
         const data = await res.json().catch(() => ({}));
@@ -410,8 +422,8 @@ export function FlagComposerModal({
           </div>
           <p className="ot-dossier-muted" style={{ marginBottom: '1rem' }}>
             An open flag on <strong>{ticker}</strong> already exists in the council
-            {duplicate.subject ? ` (“${duplicate.subject}”)` : ''}. You can raise a separate flag,
-            or cancel and respond to the existing one.
+            {duplicate.subject ? ` (${duplicate.subject})` : ''}. You can raise a separate flag, or
+            cancel and comment on the existing one.
           </p>
           <div className="ot-modal-footer">
             <button type="button" className="ot-btn-secondary" onClick={onClose}>
@@ -446,7 +458,7 @@ export function FlagComposerModal({
           <div className="ot-dossier-title">
             <i className={`bi bi-flag ot-flag-icon ${accentClass}`} aria-hidden="true" />
             <h2 id="ot-flag-composer-title" className="ot-modal-title">
-              {isThesisUpdate ? 'Thesis Update' : 'Flag Position'}
+              {isThesisUpdate ? 'Thesis update' : 'Flag position'}
             </h2>
             {book.length > 1 ? (
               <PositionSwitcher
@@ -458,7 +470,7 @@ export function FlagComposerModal({
               <>
                 <span className="ot-ticker-chip ot-num">{ticker}</span>
                 <span className="ot-dossier-sub">
-                  {sector ? `· ${sector}` : ''} {analystName ? `· ${analystName}` : ''}
+                  {[sector, analystName].filter(Boolean).join(', ')}
                 </span>
               </>
             )}
@@ -469,7 +481,7 @@ export function FlagComposerModal({
         </div>
 
         <div className="ot-dossier-grid">
-          {/* ── LEFT RAIL — the case being challenged (READ-ONLY) ── */}
+          {/* ── LEFT RAIL, the case being challenged (READ-ONLY) ── */}
           <aside className="ot-dossier-rail">
             <div className={`ot-dossier-pl ${positive ? 'pos' : 'neg'}`}>
               <div className="ot-dossier-pl-head">
@@ -478,17 +490,13 @@ export function FlagComposerModal({
                 ) : (
                   <i className="bi bi-graph-down-arrow" aria-hidden="true" />
                 )}
-                <span className="ot-num">
-                  {plPct == null ? NA : `${positive ? '▲' : '▼'} ${num(Math.abs(plPct), 1)}%`}
-                </span>
+                <span className="ot-num">{pctText(plPct)}</span>
               </div>
               <div className="ot-dossier-pl-dollar ot-num">
-                {plDollar == null
-                  ? NA
-                  : `${plDollar >= 0 ? '+' : '−'}$${num(Math.abs(plDollar), 0)}`}
+                {plDollar == null ? NA : `${plDollar >= 0 ? '+' : '-'}$${num(Math.abs(plDollar))}`}
               </div>
               <div className="ot-dossier-pl-bench ot-num">
-                {benchmark ? `vs ${benchmark}` : 'no benchmark'}
+                {benchmark ? `Judged against ${benchmark}` : 'No sector benchmark listed'}
               </div>
             </div>
 
@@ -500,14 +508,10 @@ export function FlagComposerModal({
                 </span>
               </div>
               <div className="ot-dossier-stat">
-                <span className="ot-dossier-stat-label">% of AUM</span>
+                <span className="ot-dossier-stat-label">% of fund</span>
                 <span className="ot-dossier-stat-value ot-num">
-                  {pctAum == null ? NA : `${num(pctAum, 1)}%`}
+                  {pctAum == null ? NA : `${num(pctAum)}%`}
                 </span>
-              </div>
-              <div className="ot-dossier-stat">
-                <span className="ot-dossier-stat-label">Held</span>
-                <span className="ot-dossier-stat-value ot-num">{NA}</span>
               </div>
               <div className="ot-dossier-stat">
                 <span className="ot-dossier-stat-label">Cost</span>
@@ -520,7 +524,7 @@ export function FlagComposerModal({
             <div className="ot-dossier-thesis">
               <span className="ot-form-label">Thesis</span>
               {thesis ? (
-                <p className="ot-dossier-thesis-text">“{thesis}”</p>
+                <p className="ot-dossier-thesis-text">{thesis}</p>
               ) : (
                 <p className="ot-dossier-muted">No pitch thesis on file for {ticker}.</p>
               )}
@@ -537,11 +541,15 @@ export function FlagComposerModal({
 
             <div className="ot-dossier-evidence">
               <span className="ot-form-label">Evidence</span>
-              <PinnedAttachmentPicker
-                ticker={ticker}
-                selected={attachments}
-                onChange={setAttachments}
-              />
+              {sample ? (
+                <p className="ot-dossier-muted">Pinned research is not attached to sample flags.</p>
+              ) : (
+                <PinnedAttachmentPicker
+                  ticker={ticker}
+                  selected={attachments}
+                  onChange={setAttachments}
+                />
+              )}
               <button
                 type="button"
                 className="ot-dossier-evidence-btn"
@@ -550,8 +558,8 @@ export function FlagComposerModal({
               >
                 <i className="bi bi-camera" aria-hidden="true" />
                 {evidence.some((e) => e.type === 'chart')
-                  ? 'Chart snapshot attached'
-                  : 'Chart snapshot'}
+                  ? 'Chart snapshot label attached'
+                  : 'Attach a chart snapshot label'}
               </button>
             </div>
 
@@ -566,7 +574,7 @@ export function FlagComposerModal({
             </div>
           </aside>
 
-          {/* ── RIGHT COLUMN — compose ── */}
+          {/* ── RIGHT COLUMN, compose ── */}
           <section className="ot-dossier-compose">
             <div className="ot-form-group">
               <span className="ot-form-label">Flag type</span>
@@ -606,7 +614,7 @@ export function FlagComposerModal({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               >
-                <option value="">Select a reason…</option>
+                <option value="">Select a reason</option>
                 {reasonOptions.map((r) => (
                   <option key={r.value} value={r.value}>
                     {r.label}
@@ -717,8 +725,32 @@ export function FlagComposerModal({
               </div>
             )}
 
+            {pendingSwitch && (
+              <div className="ot-banner amber" role="alert" style={{ marginTop: '0.75rem' }}>
+                <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+                <span>
+                  Switch to {pendingSwitch.ticker}? Your reason, message and evidence for {ticker}{' '}
+                  will be cleared.
+                </span>
+                <button
+                  type="button"
+                  className="ot-btn-secondary"
+                  onClick={() => setPendingSwitch(null)}
+                >
+                  Keep draft
+                </button>
+                <button
+                  type="button"
+                  className="ot-btn-secondary"
+                  onClick={() => switchTo(pendingSwitch, true)}
+                >
+                  Discard and switch
+                </button>
+              </div>
+            )}
+
             {error && (
-              <div className="ot-banner red" style={{ marginTop: '0.75rem' }}>
+              <div className="ot-banner red" role="alert" style={{ marginTop: '0.75rem' }}>
                 {error}
               </div>
             )}
@@ -727,7 +759,9 @@ export function FlagComposerModal({
 
         <div className="ot-modal-footer ot-dossier-footer">
           <span className="ot-dossier-footnote">
-            Recorded on the position · public within the org
+            {sample
+              ? 'Sample content: this flag is added to the page and is not saved.'
+              : 'Recorded on the position and visible to the whole council. A flag does not change the position.'}
           </span>
           <div className="ot-dossier-footer-actions">
             <button type="button" className="ot-btn-secondary" onClick={onClose}>
@@ -739,7 +773,7 @@ export function FlagComposerModal({
               onClick={() => submit(false)}
               disabled={isSubmitting || !reason || !messageOk}
             >
-              {isSubmitting ? 'Raising…' : ctaLabel}
+              {isSubmitting ? 'Raising' : ctaLabel}
             </button>
           </div>
         </div>

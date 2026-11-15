@@ -11,25 +11,32 @@ import './add-position-modal.css';
 const MODES = [
   {
     key: 'manual',
-    label: 'Manual Entry',
+    label: 'Manual entry',
     icon: 'bi-pencil-square',
     desc: 'Enter a single position by hand',
   },
   {
     key: 'csv',
-    label: 'Upload CSV',
+    label: 'Upload a spreadsheet',
     icon: 'bi-filetype-csv',
-    desc: 'Bulk import from a spreadsheet',
+    desc: 'Import many positions from a CSV file',
   },
   {
     key: 'brokerage',
-    label: 'Connect Brokerage',
+    label: 'Linked brokerage account',
     icon: 'bi-bank2',
-    desc: 'Sync from Plaid or SnapTrade',
+    desc: 'Import the holdings of an account you have linked',
   },
 ];
 
-export function AddPositionModal({ open, onClose, teamId, onAdded }) {
+/**
+ * Add position: record a holding the fund already owns. Nothing is bought.
+ *
+ * `sample` ({ onAdd }) is set while the Trading Desk shows sample content:
+ * a hand-entered position is added to the page only, and the two import
+ * modes are not offered because they write to the council's real book.
+ */
+export function AddPositionModal({ open, onClose, teamId, onAdded, sample = null }) {
   const { canManagePositions, orgData } = useOrg();
   const [mode, setMode] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -50,7 +57,7 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
 
   if (!open) return null;
 
-  if (!canManagePositions) {
+  if (!canManagePositions && !sample) {
     return (
       <div className="apm-org-overlay" onClick={handleClose}>
         <div
@@ -70,8 +77,8 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
           </div>
           <div className="apm-org-body">
             <p className="apm-org-empty">
-              Adding positions requires the <b>manage_positions</b> permission. Contact a portfolio
-              manager or an executive to be granted access.
+              Adding positions needs the right to manage positions. A portfolio manager or an
+              executive can grant it to you.
             </p>
           </div>
         </div>
@@ -92,7 +99,7 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
       >
         <div className="apm-org-header">
           <div>
-            <h2 id="apm-title">Add Position</h2>
+            <h2 id="apm-title">Add position</h2>
             {mode && (
               <button
                 className="apm-org-back"
@@ -113,9 +120,22 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
 
         <div className="apm-org-body">
           {!mode && (
+            <p className="apm-org-note">
+              Record a holding the fund already owns. Nothing is bought or sold here.
+              {sample
+                ? ' Sample content is showing: a manual entry is added to the page only and is not saved, and imports are not available.'
+                : ''}
+            </p>
+          )}
+          {!mode && (
             <div className="apm-org-mode-grid">
               {MODES.map((m) => (
-                <button key={m.key} className="apm-org-mode-tile" onClick={() => setMode(m.key)}>
+                <button
+                  key={m.key}
+                  className="apm-org-mode-tile"
+                  disabled={Boolean(sample) && m.key !== 'manual'}
+                  onClick={() => setMode(m.key)}
+                >
                   <i className={`bi ${m.icon}`} />
                   <div className="apm-org-mode-label">{m.label}</div>
                   <div className="apm-org-mode-desc">{m.desc}</div>
@@ -128,6 +148,7 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
             <ManualEntryForm
               orgId={orgId}
               teamId={teamId}
+              sample={sample}
               onSubmitting={setSubmitting}
               onError={setError}
               onSuccess={(p) => {
@@ -170,7 +191,8 @@ export function AddPositionModal({ open, onClose, teamId, onAdded }) {
             <div className="apm-org-success">
               {result.kind === 'manual' && (
                 <>
-                  Added <b>{result.position.ticker}</b> to the team portfolio.
+                  Added <b>{result.position.ticker}</b> to the{' '}
+                  {sample ? 'sample book' : 'fund book'}. It is carried at cost until it is priced.
                 </>
               )}
               {result.kind === 'csv' && (

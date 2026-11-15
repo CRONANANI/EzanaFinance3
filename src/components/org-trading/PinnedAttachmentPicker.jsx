@@ -33,7 +33,7 @@ export function PinnedAttachmentPicker({ ticker, selected = [], onChange }) {
   if (items === null) {
     return (
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem' }}>
-        Loading collection…
+        Loading your pinned research
       </div>
     );
   }
@@ -44,12 +44,10 @@ export function PinnedAttachmentPicker({ ticker, selected = [], onChange }) {
           fontSize: '0.75rem',
           color: 'var(--text-muted)',
           padding: '0.75rem',
-          background: 'rgba(255,255,255,0.02)',
-          borderRadius: 6,
         }}
       >
-        Your collection is empty. Pin charts, models, or news from research pages to attach them
-        here.
+        You have no pinned research yet. Pin charts, models or news from the research pages to
+        attach them here.
       </div>
     );
   }

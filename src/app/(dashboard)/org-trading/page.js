@@ -1,63 +1,10 @@
 'use client';
 
-import { useOrg } from '@/contexts/OrgContext';
-import { CouncilTradingDesk } from '@/components/org-trading/CouncilTradingDesk';
-import { TeamPortfolioView } from '@/components/org-trading/TeamPortfolioView';
-import Link from 'next/link';
+import { TradingDesk } from '@/components/org-trading/desk/TradingDesk';
 import './org-trading.css';
 
+/* The Trading Desk for every role. The component scopes what a member sees
+   (whole fund, own team, covered sectors) from the existing permission checks. */
 export default function OrgTradingPage() {
-  const { isOrgUser, orgRole, orgData, isLoading, canFlagPositions } = useOrg();
-
-  if (isLoading) {
-    return <div className="ot-page-notice">Loading Council Trading…</div>;
-  }
-  if (!isOrgUser) {
-    return <div className="ot-page-notice">This page is for organizational members only.</div>;
-  }
-
-  return (
-    <div className="org-trading-page">
-      {/* Legacy hero for PM / analyst views. The executive 1b desk
-          (CouncilTradingDesk) supplies its own header, so it is omitted there. */}
-      {orgRole !== 'executive' && (
-        <div className="ot-hero">
-          <div className="ot-hero-left">
-            <div className="ot-hero-icon">
-              <i className="bi bi-bank2" />
-            </div>
-            <div>
-              <h1>Council Trading</h1>
-              <p className="ot-hero-sub">
-                {orgData?.org?.name || 'Organization'} · {orgRole?.replace('_', ' ')}
-                {canFlagPositions && <span className="ot-perm-pill"> · Can flag positions</span>}
-              </p>
-            </div>
-          </div>
-          <div className="ot-hero-actions">
-            <Link href="/org-trading/inbox" className="ot-inbox-link">
-              <i className="bi bi-flag-fill" />
-              <span>Flag Inbox</span>
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {orgRole === 'executive' && <CouncilTradingDesk />}
-      {orgRole === 'portfolio_manager' && (
-        <TeamPortfolioView
-          teamId={orgData?.member?.team_id}
-          memberRole="portfolio_manager"
-          memberEmail={orgData?.member?.email}
-        />
-      )}
-      {orgRole === 'analyst' && (
-        <TeamPortfolioView
-          teamId={orgData?.member?.team_id}
-          memberRole="analyst"
-          memberEmail={orgData?.member?.email}
-        />
-      )}
-    </div>
-  );
+  return <TradingDesk />;
 }

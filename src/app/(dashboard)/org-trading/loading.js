@@ -1,46 +1,57 @@
-import {
-  SkeletonRegion,
-  SkeletonStatStrip,
-  SkeletonChart,
-  SkeletonTable,
-  token,
-} from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org-trading/desk/trading-desk.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for the Council Trading desk. Real header chrome +
- * a stat strip, a chart, and a positions-table silhouette. Renders OUTSIDE the
- * OrgProvider data context (the org-shell layout keeps the real OrgHubNav rail
- * beside it) — NO useOrg, NO fetch, NO import of the page component.
+ * Route loading state for the Trading Desk, in the page's final layout: the
+ * KPI strips, the fund book beside the flag queue, then the holdings table.
+ * It renders inside the shared Team Hub shell, whose sidebar stays painted
+ * beside it. Presentation only: no data, no org context, no import of the page.
  */
-const titleStyle = {
-  margin: 0,
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
-const subStyle = {
-  margin: '8px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 13,
-  color: token.textSecondary,
-  maxWidth: 620,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
+
+function Block({ lines = 4, h = 14 }) {
+  return (
+    <div className="tcc-section">
+      <div className="tcc-head">{bar(180, 18)}</div>
+      <div className="otd-skelrows">
+        {Array.from({ length: lines }).map((_, i) => (
+          <span key={i}>{bar('100%', h)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function OrgTradingLoading() {
   return (
-    <SkeletonRegion label="Loading Council Trading…" style={{ padding: '20px 24px 40px' }}>
-      <h1 style={titleStyle}>Council Trading</h1>
-      <p style={subStyle}>Team positions, flags and allocation across the desk.</p>
-
-      <div style={{ marginTop: 22 }}>
-        <SkeletonStatStrip tiles={4} />
+    <SkeletonRegion
+      label="Loading the Trading Desk"
+      className="dashboard-page-inset ez-canvas tcc-page otd-page"
+    >
+      <div className="tcc-top otd-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(18, 18)}</span>
+                <span className="tcc-kpi__label">{bar(72, 10)}</span>
+                <span className="tcc-kpi__value">{bar(64, 16)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ marginTop: 20 }}>
-        <SkeletonChart h={240} />
+      <div className="tcc-row otd-row--even">
+        <Block lines={3} h={64} />
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={4} h={34} />
       </div>
-      <div style={{ marginTop: 20 }}>
-        <SkeletonTable rows={8} cols={7} />
+      <div className="tcc-row tcc-row--single">
+        <Block lines={5} />
       </div>
     </SkeletonRegion>
   );

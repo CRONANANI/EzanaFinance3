@@ -93,7 +93,7 @@ export function CsvUploadForm({ orgId, teamId, onSubmitting, onError, onSuccess 
                 Row {er.row}: {er.reason}
               </li>
             ))}
-            {rowErrors.length > 8 && <li>…and {rowErrors.length - 8} more</li>}
+            {rowErrors.length > 8 && <li>and {rowErrors.length - 8} more</li>}
           </ul>
         </div>
       )}

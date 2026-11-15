@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase-browser';
 
-export function ManualEntryForm({ orgId, teamId, onSubmitting, onError, onSuccess }) {
+export function ManualEntryForm({ orgId, teamId, sample, onSubmitting, onError, onSuccess }) {
   const [form, setForm] = useState({
     ticker: '',
     name: '',
@@ -16,6 +16,13 @@ export function ManualEntryForm({ orgId, teamId, onSubmitting, onError, onSucces
 
   const submit = async () => {
     onError(null);
+    if (sample) {
+      /* Sample content: the row is added to the page and never sent. */
+      const row = sample.onAdd?.({ ...form, team_id: teamId });
+      if (row) onSuccess(row);
+      setForm({ ticker: '', name: '', shares: '', avg_cost: '', sector: '', notes: '' });
+      return;
+    }
     onSubmitting(true);
     try {
       const {

@@ -331,3 +331,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* One line on what the dialog does, above the three ways to add. */
+.apm-org-note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.apm-org-mode-tile:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+.apm-org-mode-tile:disabled:hover {
+  border-color: var(--border-primary);
+}

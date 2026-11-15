@@ -19,7 +19,9 @@ export function BrokerageConnectForm({ orgId, teamId, onSubmitting, onError, onS
       try {
         const { data, error } = await supabase
           .from('unified_accounts')
-          .select('id, institution_name, account_name, account_mask, source_provider, balance_total')
+          .select(
+            'id, institution_name, account_name, account_mask, source_provider, balance_total',
+          )
           .in('source_provider', ['plaid', 'snaptrade'])
           .order('created_at', { ascending: false });
         if (error) throw error;
@@ -62,7 +64,7 @@ export function BrokerageConnectForm({ orgId, teamId, onSubmitting, onError, onS
     }
   };
 
-  if (accounts === null) return <div className="apm-org-empty">Loading your linked accounts…</div>;
+  if (accounts === null) return <div className="apm-org-empty">Loading your linked accounts</div>;
 
   if (accounts.length === 0) {
     return (
@@ -92,12 +94,9 @@ export function BrokerageConnectForm({ orgId, teamId, onSubmitting, onError, onS
               onChange={() => setSelectedId(a.id)}
             />
             <div className="apm-org-account-info">
-              <div className="apm-org-account-name">
-                {a.institution_name || 'Brokerage'}
-                <span className="apm-org-account-provider">{a.source_provider}</span>
-              </div>
+              <div className="apm-org-account-name">{a.institution_name || 'Brokerage'}</div>
               <div className="apm-org-account-meta apm-org-mono">
-                {a.account_name || 'Account'} {a.account_mask ? `••${a.account_mask}` : ''}
+                {a.account_name || 'Account'} {a.account_mask ? `ending ${a.account_mask}` : ''}
               </div>
             </div>
             {a.balance_total != null && (

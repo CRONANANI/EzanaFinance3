@@ -31,7 +31,7 @@ function useWidth(ref, fallback) {
   return w;
 }
 
-function FundChart({ snapshots, benchLabel, range }) {
+export function FundChart({ snapshots, benchLabel, range }) {
   const [hover, setHover] = useState(null);
   const wrapRef = useRef(null);
   const width = useWidth(wrapRef, 400);

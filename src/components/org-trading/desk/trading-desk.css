@@ -1,0 +1,846 @@
+/* ============================================================================
+   Trading Desk (/org-trading and /org-trading/inbox). Page-scoped: every
+   class starts with otd-. The page shares the Command Center's atoms (tcc-:
+   KPI strip, section titles, text buttons, text toggles, skeletons, rows), so
+   the two Team Hub pages read as one. Flat sections on the canvas (branding
+   guide, Part A): no surface, hairlines only, hover is a colour change.
+   Tokens only. --ez-rule and --ez-rule-subtle come from home-canvas.css.
+   ============================================================================ */
+.otd-page .tcc-pair dd.tcc-neg,
+.otd-page .tcc-textbtn.tcc-neg,
+.otd-page .otd-danger {
+  color: var(--negative);
+}
+.otd-page .tcc-textbtn.tcc-pos {
+  color: var(--positive);
+}
+.otd-page .tcc-textbtn.tcc-neg:hover,
+.otd-page .tcc-textbtn.tcc-pos:hover,
+.otd-page .otd-danger:hover {
+  color: var(--text-primary);
+}
+.otd-page .tcc-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+/* Text controls keep their shape when the app gives buttons a touch height. */
+.otd-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.otd-linkbtn,
+.otd-linkbtn:hover {
+  color: var(--btn-primary-fg);
+  text-decoration: none;
+}
+.otd-btn--danger {
+  background: var(--negative);
+}
+.otd-btn--danger:hover {
+  background: color-mix(in srgb, var(--negative) 86%, var(--text-primary));
+}
+.otd-anchor {
+  min-width: 0;
+  scroll-margin-top: 88px;
+}
+.otd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+}
+.otd-scope {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.otd-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.otd-subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 20px;
+  margin-bottom: 12px;
+}
+.otd-subhead--spaced {
+  margin-top: 28px;
+}
+.otd-foot {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.otd-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.otd-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.otd-skelrows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+}
+.otd-skelrows > * {
+  display: block;
+}
+.otd-skelrow {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: center;
+}
+.otd-skel--ring {
+  border-radius: 50%;
+}
+
+/* ── Row 1 ───────────────────────────────────────────────────────────────── */
+.otd-top {
+  border-bottom: 0;
+  padding-bottom: 14px;
+}
+.otd-kpi__sub {
+  font-size: 13px;
+  font-weight: 500;
+}
+.otd-note {
+  margin: 0;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.otd-toast {
+  padding: 12px 0 0;
+  color: var(--text-secondary);
+}
+.otd-toast > .bi {
+  color: var(--positive);
+}
+.otd-back {
+  min-height: 34px;
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────────── */
+.otd-row--even {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+}
+
+/* ── Fund book ───────────────────────────────────────────────────────────── */
+.otd-fund__top {
+  display: grid;
+  grid-template-columns: 196px minmax(0, 1fr);
+  column-gap: 40px;
+  align-items: start;
+}
+.otd-fund__alloc,
+.otd-fund__chart {
+  min-width: 0;
+}
+.otd-fund__alloc .otd-sub {
+  margin-bottom: 12px;
+}
+.otd-donut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.otd-donut__ring {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+.otd-donut__ring svg {
+  display: block;
+}
+.otd-donut__track {
+  stroke: var(--ez-rule-subtle);
+}
+.otd-donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.otd-donut__total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-donut__label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.otd-donut__legend {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.otd-donut__legend li {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.otd-donut__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.otd-donut__value {
+  grid-column: 2;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.otd-donut__pct {
+  grid-row: 1;
+  grid-column: 3;
+  color: var(--text-primary);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.otd-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.otd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.otd-table th,
+.otd-table td {
+  padding: 11px 10px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.otd-table thead th {
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.otd-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+/* First and last columns sit on the section's edges. */
+.otd-table tr > :first-child {
+  padding-left: 0;
+}
+.otd-table tr > :last-child {
+  padding-right: 0;
+}
+.otd-table td[role='rowheader'] {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-table--accuracy thead th {
+  white-space: normal;
+  vertical-align: bottom;
+}
+.otd-table--holdings th,
+.otd-table--holdings td {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.otd-table .otd-num {
+  text-align: right;
+}
+.otd-table td.otd-num {
+  color: var(--text-primary);
+}
+.otd-table td.tcc-pos {
+  color: var(--positive);
+}
+.otd-table td.tcc-neg {
+  color: var(--negative);
+}
+.otd-table td.tcc-na,
+.otd-table .tcc-na {
+  color: var(--text-muted);
+}
+.otd-rank {
+  width: 24px;
+  color: var(--text-muted);
+}
+.otd-table .otd-strong {
+  font-size: 14px;
+}
+.otd-tickers {
+  white-space: pre;
+}
+.otd-person {
+  display: inline-block;
+  max-width: 108px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+.otd-thesis {
+  color: var(--text-primary);
+}
+.otd-menucol {
+  width: 28px;
+  text-align: right;
+}
+.otd-table td.otd-menucol {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.otd-menu {
+  display: grid;
+  align-items: center;
+  justify-items: end;
+  width: 28px;
+  height: 28px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.otd-menu:hover {
+  color: var(--text-primary);
+}
+.otd-review {
+  font-weight: 500;
+}
+
+/* ── Holdings controls ───────────────────────────────────────────────────── */
+.otd-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 32px;
+  margin-bottom: 16px;
+}
+/* Search: no border, no fill, no ring. The cursor is the focus cue. */
+.otd-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 1 360px;
+  min-width: 0;
+  color: var(--text-muted);
+}
+.otd-page .otd-search input,
+.otd-page .otd-search input:focus,
+.otd-page .otd-search input:focus-visible {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+.otd-search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Flag queue ──────────────────────────────────────────────────────────── */
+.otd-queue__tabs {
+  margin-bottom: 12px;
+}
+.otd-flags {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.otd-flags > li {
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.otd-flags > li:last-child {
+  border-bottom: 0;
+}
+.otd-flag {
+  display: grid;
+  grid-template-columns: 46px 72px 96px 84px minmax(0, 1fr) 72px;
+  column-gap: 12px;
+  row-gap: 3px;
+  align-items: baseline;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: left;
+  color: var(--text-secondary);
+}
+button.otd-flag {
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.otd-flag > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.otd-flag--head {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.otd-flag__ticker {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-flag__color {
+  font-weight: 500;
+}
+.otd-flag__due {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  text-align: right;
+}
+.otd-flag__msg {
+  grid-column: 2 / -1;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+button.otd-flag:hover .otd-flag__ticker,
+button.otd-flag:hover .otd-flag__action,
+button.otd-flag:hover .otd-flag__who {
+  color: var(--emerald-text);
+}
+/* Selected: emerald text, nothing drawn. */
+.otd-flag.is-on .otd-flag__ticker,
+.otd-flag.is-on .otd-flag__action {
+  color: var(--emerald-text);
+}
+.otd-flag:focus-visible,
+.otd-menu:focus-visible,
+.otd-page .ds-dropdown [role='button']:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.otd-more {
+  margin-top: 8px;
+}
+
+.otd-detail {
+  min-width: 0;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ez-rule);
+}
+.otd-detail__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 20px;
+  margin-bottom: 10px;
+}
+.otd-detail__title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-detail__meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.otd-detail__meta.tcc-warn {
+  color: var(--warning);
+}
+.otd-detail__meta.tcc-neg {
+  color: var(--negative);
+}
+.otd-detail__close {
+  margin-left: auto;
+}
+.otd-fields {
+  margin: 0;
+}
+.otd-field {
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr);
+  column-gap: 16px;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.otd-field dt {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+.otd-field dd {
+  margin: 0;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.otd-field__note {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.otd-evidence {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.otd-msgs {
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--ez-rule-subtle);
+  list-style: none;
+}
+.otd-msgs li {
+  padding: 6px 0;
+  font-size: 13px;
+}
+.otd-msgs__who {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-msgs__when {
+  margin-left: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.otd-msgs p {
+  margin: 2px 0 0;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.otd-answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.otd-answer__label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.otd-answer__note {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.otd-answer__note--alone {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.otd-reject,
+.otd-comment {
+  margin-top: 14px;
+}
+.otd-reject {
+  padding-top: 14px;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.otd-page .otd-reject textarea,
+.otd-page .otd-comment textarea {
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.otd-reject__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 10px;
+}
+.otd-comment > .otd-action {
+  margin-top: 8px;
+}
+/* The inbox page: list and detail side by side. */
+.otd-queue--page .otd-queue__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 64px;
+  align-items: start;
+}
+.otd-queue--page .otd-queue__body > :only-child {
+  grid-column: 1 / -1;
+}
+.otd-queue--page .otd-detail {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.otd-detail--hint {
+  color: var(--text-muted);
+}
+
+/* ── Discussion ──────────────────────────────────────────────────────────── */
+.otd-page .otd-select {
+  width: auto;
+  min-width: 96px;
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 13px;
+}
+.otd-thread,
+.otd-replies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.otd-thread > li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.otd-thread > li:last-child {
+  border-bottom: 0;
+}
+/* One level of replies: indented, with a rule that keeps 24px from the text. */
+.otd-replies {
+  margin: 12px 0 0 15px;
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.otd-replies > li + li {
+  margin-top: 12px;
+}
+.otd-comment__row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: 12px;
+}
+.otd-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+.otd-comment__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.otd-comment__who {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otd-comment__role,
+.otd-comment__when {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.otd-comment__body {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.otd-mention {
+  font-weight: 600;
+  color: var(--emerald-text);
+}
+.otd-comment__actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 6px;
+}
+.otd-comment__actions .tcc-textbtn {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.otd-comment__actions .tcc-textbtn:hover,
+.otd-like.is-on {
+  color: var(--emerald-text);
+}
+.otd-compose {
+  margin-top: 14px;
+}
+.otd-page .otd-compose .sc2-textarea {
+  min-height: 0;
+  border-radius: var(--radius-md);
+}
+.otd-compose__reply {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.otd-compose__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+}
+.otd-compose__note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Gaps ────────────────────────────────────────────────────────────────── */
+.otd-gaps__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 12px;
+}
+
+/* ── Dialog text (the dialog itself keeps the library's surface) ─────────── */
+.otd-confirm p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ── Narrow layouts, by the width of the page column ─────────────────────── */
+@container tcc (max-width: 940px) {
+  .otd-row--even {
+    display: block;
+  }
+  .otd-queue--page .otd-queue__body {
+    display: block;
+  }
+  .otd-queue--page .otd-detail {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+/* The desk's figures are full dollar amounts, so its strip drops to two
+   columns earlier than the Command Center's. */
+@container tcc (max-width: 900px) {
+  .otd-page .tcc-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .otd-page .tcc-kpi,
+  .otd-page .tcc-kpi:nth-child(4n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .otd-page .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .otd-page .tcc-kpis {
+    flex: 1 1 100%;
+  }
+}
+@container tcc (max-width: 620px) {
+  .otd-fund__top {
+    display: block;
+  }
+  .otd-fund__chart {
+    margin-top: 24px;
+  }
+  .otd-flag {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+  }
+  .otd-flag--head {
+    display: none;
+  }
+  .otd-flag__action {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .otd-flag__who {
+    grid-column: 2 / -1;
+  }
+  .otd-flag__due {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .otd-flag__msg {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+  .otd-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .otd-search {
+    flex: 1 1 100%;
+  }
+  .otd-replies {
+    margin-left: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .otd-action,
+  .otd-menu {
+    min-height: 44px;
+  }
+  .otd-menu {
+    width: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otd-flag,
+  .otd-menu {
+    transition: none;
+  }
+}
