@@ -331,3 +331,9 @@ itself unless told to). `node_modules` is symlinked from the main clone.
 - Stage 3: Claude Design's navigation bar is a stand-in (wrong logo and wordmark). Never copy
   it. Sample figures in a wireframe may contradict real data rules in the description; the
   description wins.
+- Stage 2: JavaScript may be blocked on claude.ai. Then read the handoff README with
+  get_page_text while paging the editor with the PageDown key, and re-join wrapped lines.
+- Stage 2: if the live Ezana page says it is taking longer than expected, click Retry once.
+- Stage 3 (org pages): the Team Hub sidebar and shell are shared and were rebuilt with the
+  Command Center. Other org page builds must not edit the shell files; if a page needs a
+  shell change, list it in the build report instead.
