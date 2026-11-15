@@ -371,14 +371,17 @@ test('page wiring and token discipline', () => {
   assert.match(page, /portfolioRows\(/, 'KPIs and rows come from one pass (portfolioRows)');
   assert.match(chart, /ranges=\{RANGES\}/, 'the chart ranges come from mock-ticket');
   assert.doesNotMatch(chart, /const RANGES =/, 'one source for the ranges');
-  for (const label of [
-    'Portfolio value',
-    'Total return',
-    "Today's P&L",
-    'Available cash',
-    'Open positions',
-  ])
-    assert.ok(sections.includes(label), `KPI strip: ${label}`);
+  /* Nov 2026: the header is the Reset action alone. No title block, no
+     account or status line, no KPI strip above the chart. */
+  assert.doesNotMatch(page + sections, /MockKpiRow|mock-kpis|mock-paper|mock-title/);
+  assert.doesNotMatch(page, /Main paper account|Quotes updated|Auto-saved|Paper account/);
+  const head = page.slice(
+    page.indexOf('className="mock-head"'),
+    page.indexOf('<ResetPortfolioModal'),
+  );
+  assert.match(head, /Reset portfolio/);
+  assert.match(head, /<VisuallyHidden as="h1">Mock Trading<\/VisuallyHidden>/);
+  assert.equal((head.match(/<button/g) || []).length, 1, 'Reset is the only control in the header');
   const left = page.slice(page.indexOf('mock-left-col'), page.indexOf('mock-right-col'));
   assert.ok(
     left.indexOf('<PerformanceCard') < left.indexOf('<PreTradeCards') &&
@@ -459,5 +462,4 @@ test('page wiring and token discipline', () => {
   assert.match(page, /<ResetPortfolioModal/, 'Reset is confirmed in a modal');
   assert.match(sections, /aria-sort=/, 'sortable headers announce their state');
   assert.match(ticket, /role="combobox"/, 'keyboard-navigable typeahead');
-  assert.match(css, /\.mock-paper \{[^}]*--gold/, 'the Paper account pill is the gold element');
 });

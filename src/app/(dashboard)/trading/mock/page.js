@@ -10,20 +10,18 @@ import {
   Suspense,
 } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useMockTheses } from '@/hooks/useMockTheses';
-import { Button, IconButton, Modal, Tabs, Textarea } from '@/components/ds';
+import { Button, IconButton, Modal, Tabs, Textarea, VisuallyHidden } from '@/components/ds';
 
 import {
   ActivityCard,
   ClosePositionModal,
   MarketMoversCard,
-  MockKpiRow,
   PerformanceCard,
   PositionsCard,
 } from '@/components/trading/mock/MockSections';
@@ -33,13 +31,11 @@ import { ReviewOrderModal } from '@/components/trading/mock/ReviewOrderModal';
 import { DeleteThesisModal, ThesisModal, ThesisPanel } from '@/components/trading/mock/ThesisPanel';
 import {
   filterPositions,
-  fmtClockET,
   fmtQty,
   fmtShortDayET,
   journalRows,
   parseAmount,
   portfolioRows,
-  relativeTime,
   sortPositions,
   ticketState,
 } from '@/lib/trading/mock-ticket';
@@ -133,7 +129,6 @@ function MockTradingPageInner() {
     setPortfolio,
     placeTrade,
     resetPortfolio,
-    syncing,
     isLoading: portfolioLoading,
   } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
@@ -141,19 +136,6 @@ function MockTradingPageInner() {
   /* Chart subject (Portfolio | Selected asset) and the close confirmation. */
   const [chartSubject, setChartSubject] = useState('portfolio');
   const [closeRow, setCloseRow] = useState(null);
-  /* Autosave status: the time of the last finished save in this visit. */
-  const [lastSavedAt, setLastSavedAt] = useState(null);
-  const [, setClock] = useState(0);
-  const wasSyncing = useRef(false);
-  useEffect(() => {
-    if (wasSyncing.current && !syncing) setLastSavedAt(Date.now());
-    wasSyncing.current = syncing;
-  }, [syncing]);
-  useEffect(() => {
-    if (!lastSavedAt) return undefined;
-    const t = setInterval(() => setClock((c) => c + 1), 15_000);
-    return () => clearInterval(t);
-  }, [lastSavedAt]);
   /* Double-submit guard: one trade request in flight at a time. */
   const [tradePending, setTradePending] = useState(false);
   const tradePendingRef = useRef(false);
@@ -270,7 +252,6 @@ function MockTradingPageInner() {
   livePricesRef.current = livePrices;
   const [priceFetchError, setPriceFetchError] = useState(null);
   /* Time of the last batch quote fetch that priced every position. */
-  const [lastQuoteAt, setLastQuoteAt] = useState(null);
 
   const [posSort, setPosSort] = useState({ key: null, dir: 'desc' });
   const [posFilter, setPosFilter] = useState('all');
@@ -711,7 +692,6 @@ function MockTradingPageInner() {
           }
         } else {
           setPriceFetchError(null);
-          setLastQuoteAt(Date.now());
         }
       } catch (err) {
         if (!cancelled) setPriceFetchError(err?.message || 'fetch threw');
@@ -890,56 +870,15 @@ function MockTradingPageInner() {
               ) : null,
           },
         ];
-  const savedLabel = syncing
-    ? 'Saving…'
-    : lastSavedAt
-      ? `Auto-saved ${relativeTime(lastSavedAt)}`
-      : null;
-
   return (
     <div className="mock-page dashboard-page-inset ez-canvas">
-      <header className="mock-head">
-        <div className="mock-head__left">
-          <Link href="/trading" className="mock-back">
-            <i className="bi bi-arrow-left" aria-hidden="true" /> Trading
-          </Link>
-          <span className="mock-head__slash" aria-hidden="true">
-            /
-          </span>
-          <h1 className="mock-title">Mock Trading</h1>
-          <span className="mock-paper">
-            <i className="bi bi-layers" aria-hidden="true" /> Paper account
-          </span>
-        </div>
-        <div className="mock-head__right">
-          <span className="mock-account">
-            <span className="mock-account__name">Main paper account</span>
-            <span className="mock-muted mock-num">
-              {fmtUSD(summary.startingCash)} starting cash
-            </span>
-          </span>
-          {priceFetchError ? (
-            <span className="mock-quotes" title={priceFetchError}>
-              <i className="bi bi-exclamation-triangle" aria-hidden="true" /> Some quotes are
-              delayed
-            </span>
-          ) : lastQuoteAt ? (
-            <span className="mock-quotes">
-              <span className="mock-dot is-up" aria-hidden="true" />
-              Quotes updated <span className="mock-num">{fmtClockET(lastQuoteAt)}</span>
-            </span>
-          ) : null}
-          {savedLabel ? (
-            <span className="mock-saved" role="status">
-              <span className={`mock-dot${syncing ? ' is-busy' : ' is-up'}`} aria-hidden="true" />
-              {savedLabel}
-            </span>
-          ) : null}
-          <button className="mock-btn" type="button" onClick={() => setResetModalOpen(true)}>
-            <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset portfolio
-          </button>
-        </div>
-      </header>
+      {/* Page-level actions only: no title block, no account or status line. */}
+      <div className="mock-head">
+        <VisuallyHidden as="h1">Mock Trading</VisuallyHidden>
+        <button className="mock-btn" type="button" onClick={() => setResetModalOpen(true)}>
+          <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset portfolio
+        </button>
+      </div>
 
       <ResetPortfolioModal
         open={resetModalOpen}
@@ -957,8 +896,6 @@ function MockTradingPageInner() {
         portfolio={{ ...portfolio, history: mergedActivity }}
         enrichedPositions={enrichedPositions}
       />
-
-      <MockKpiRow summary={summary} />
 
       <div className="mock-layout">
         <div className="mock-left-col">
