@@ -23,6 +23,9 @@ import { EducationTip } from '@/components/beginner/EducationTip';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { useWatchlists } from '@/hooks/useWatchlists';
+import { useWatchlistNotes } from '@/hooks/useWatchlistNotes';
+import { useSmartExplain, useWatchlistCatalysts } from '@/hooks/useWatchlistCatalysts';
+import { appendCatalyst } from '@/lib/watchlist/notes';
 import {
   useInstitutions,
   usePoliticians,
@@ -51,6 +54,9 @@ import {
 import { CommandBar } from '@/components/watchlist/monitor/CommandBar';
 import { PulseRow } from '@/components/watchlist/monitor/PulseRow';
 import { SecuritiesTable } from '@/components/watchlist/monitor/SecuritiesTable';
+import { MonitoringNote, NoteModal } from '@/components/watchlist/monitor/MonitoringNote';
+import { SignalExplainer } from '@/components/watchlist/monitor/SignalExplainer';
+import { CatalystPanel, catalystLine } from '@/components/watchlist/monitor/CatalystPanel';
 import {
   AddAssetDialog,
   AssetDetail,
@@ -132,6 +138,8 @@ function WatchlistMonitor() {
   const [sendTicker, setSendTicker] = useState(null);
   /* The table's smart-only filter (set from the pulse row and the smart card). */
   const [smartOnly, setSmartOnly] = useState(false);
+  /* Why I'm watching: the note modal, optionally opened with a catalyst added. */
+  const [noteModal, setNoteModal] = useState({ open: false, prefill: null });
   const [prefs, setPrefs] = useState({});
   useEffect(() => setPrefs(readPrefs()), []);
 
@@ -211,6 +219,34 @@ function WatchlistMonitor() {
   );
   const selectedKey = selected ? itemKey(selected) : null;
   const inst = useInstitutions(selected?.type === 'stock' ? selected.ticker : null);
+
+  /* Research features for the selected row: its note, the smart rule and the
+     event that added it, the live re-check and related catalysts. Each one
+     fails quietly; the rest of the page keeps working. */
+  const notes = useWatchlistNotes(authedFetch, activeList?.id);
+  const selectedNote = notes.noteFor(selected);
+  const activeRule = useMemo(
+    () => (smart.rules || []).find((r) => r.listId === activeList?.id && r.enabled) || null,
+    [smart.rules, activeList?.id],
+  );
+  const selectedEvent = useMemo(() => {
+    if (!selected || !activeList) return null;
+    const t = String(selected.ticker).toUpperCase();
+    return (
+      (smart.events || []).find(
+        (e) =>
+          e.listId === activeList.id &&
+          e.type === selected.type &&
+          String(e.ticker).toUpperCase() === t,
+      ) || null
+    );
+  }, [smart.events, selected, activeList]);
+  const explain = useSmartExplain(
+    authedFetch,
+    selected?.addedBy === 'smart' ? activeRule?.id || null : null,
+    selected,
+  );
+  const catalysts = useWatchlistCatalysts(selected);
 
   const existing = useMemo(() => new Set((activeList?.stocks || []).map(itemKey)), [activeList]);
 
@@ -464,7 +500,13 @@ function WatchlistMonitor() {
               activeListId={activeList?.id}
               updatedAt={quotesAt}
               onSendToTeam={canSend ? (it) => setSendTicker(it.ticker) : null}
-            />
+            >
+              <MonitoringNote
+                note={selectedNote}
+                status={notes.status}
+                onEdit={() => setNoteModal({ open: true, prefill: null })}
+              />
+            </AssetDetail>
           ) : loading ? (
             <section className="wl-chart-panel wlm-detail" aria-hidden="true">
               <span className="wlm-skel wlm-skel--head" />
@@ -541,10 +583,48 @@ function WatchlistMonitor() {
             }}
             onChanged={afterSmartChange}
           />
+          <SignalExplainer
+            item={selected}
+            rule={activeRule}
+            event={selectedEvent}
+            explain={explain}
+            note={selectedNote}
+            onNote={() => setNoteModal({ open: true, prefill: null })}
+            onEditRule={(rule) => setSmartDialog({ open: true, rule })}
+          />
+          <CatalystPanel
+            item={selected}
+            catalysts={catalysts}
+            onAddToNote={(c) =>
+              setNoteModal({
+                open: true,
+                prefill: {
+                  catalysts: appendCatalyst(selectedNote?.catalysts || '', catalystLine(c)),
+                },
+              })
+            }
+          />
           <LearnRow course={course} bookmarked={bookmarked} onToggle={toggleBookmark} />
         </aside>
       </div>
 
+      <NoteModal
+        open={noteModal.open}
+        item={selected}
+        note={selectedNote}
+        prefill={noteModal.prefill}
+        onClose={() => setNoteModal({ open: false, prefill: null })}
+        onSave={async (n) => {
+          const r = await notes.save(n);
+          if (r.ok) notify('Note saved');
+          return r;
+        }}
+        onDelete={async () => {
+          const r = await notes.remove({ type: selected.type, ticker: selected.ticker });
+          if (r.ok) notify('Note deleted');
+          return r;
+        }}
+      />
       <NewWatchlistDialog
         open={newListOpen}
         onOpenChange={setNewListOpen}

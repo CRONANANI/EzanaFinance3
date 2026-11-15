@@ -601,6 +601,9 @@ const COMPONENTS = [
     'CommandBar.jsx',
     'PulseRow.jsx',
     'SecuritiesTable.jsx',
+    'MonitoringNote.jsx',
+    'SignalExplainer.jsx',
+    'CatalystPanel.jsx',
   ].map((f) => `src/components/watchlist/monitor/${f}`),
   'src/components/watchlist/NewWatchlistDialog.jsx',
 ];
@@ -769,4 +772,54 @@ test('stage C: smart card shows real run state, errors, and matches', () => {
   }
   assert.doesNotMatch(card, /Waiting for first run|bi-stars/);
   assert.match(read(PAGE), /setSmartOnly\(true\)/, 'View matches sets the smart-only filter');
+});
+
+test('market monitor 2.0: wiring', () => {
+  const all = [PAGE, ...COMPONENTS].map(read).join('\n');
+  for (const s of [
+    'data-task-target="watchlist-add-button"',
+    'data-task-target="watchlist-create-list"',
+    'pulseSummary',
+    'sortItems',
+    'filterItems',
+    'paginate',
+    'useWatchlistNotes',
+    'useWatchlistCatalysts',
+    'useSmartExplain',
+    'renameList',
+    'deleteList',
+    '/trading/mock?symbol=',
+    '/sonar?q=',
+  ]) {
+    assert.ok(all.includes(s), s);
+  }
+  assert.doesNotMatch(all, /QuoteStrip|AlsoInWatchlist/);
+  assert.doesNotMatch(all, /suitab|risk tolerance|alignment score|real-time|continuously/i);
+});
+
+test('stage D: note, explainer and catalysts follow the stored facts', () => {
+  const note = read('src/components/watchlist/monitor/MonitoringNote.jsx');
+  const explainer = read('src/components/watchlist/monitor/SignalExplainer.jsx');
+  const cat = read('src/components/watchlist/monitor/CatalystPanel.jsx');
+  for (const s of [
+    'parseNote(',
+    'NOTE_FIELDS',
+    'NOTE_LABELS',
+    'NOTE_LIMITS',
+    'noteHeadline',
+    'Review by',
+  ])
+    assert.ok(note.includes(s), s);
+  assert.match(note, /error\?\.field === f/, 'the field error shows inline');
+  assert.match(note, /Delete this note\?/, 'delete confirms inside the modal');
+  assert.match(explainer, /aria-live="polite"/);
+  assert.match(explainer, /Still matches/);
+  assert.match(explainer, /No longer\s+matches/);
+  assert.match(explainer, /details\.conditions/);
+  assert.match(explainer, /Added manually|added manually/);
+  assert.doesNotMatch(explainer, /score|suitab|should|recommend/i, 'rule facts only');
+  assert.match(cat, /\(est\.\)/);
+  assert.match(cat, /Add to monitoring note/);
+  assert.match(cat, /Research with Sonar/);
+  assert.match(read(PAGE), /appendCatalyst\(/);
 });
