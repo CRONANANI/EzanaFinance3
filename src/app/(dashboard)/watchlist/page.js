@@ -20,7 +20,6 @@ import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useChecklist } from '@/hooks/useChecklist';
 import { EducationTip } from '@/components/beginner/EducationTip';
-import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useWatchlistNotes } from '@/hooks/useWatchlistNotes';
@@ -37,20 +36,13 @@ import {
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
 import { CLASS_BY_ID, classIdOfType, isPriced } from '@/lib/watchlist/asset-classes';
 import {
-  bigMoves,
   classCounts,
-  computeInsights,
   itemsForClass,
   pulseSummary,
   readUrlState,
   writeUrlState,
 } from '@/lib/watchlist/watchlist-view';
-import {
-  ClassTabs,
-  LearnRow,
-  RecentAlertsCard,
-  SignalsCard,
-} from '@/components/watchlist/monitor/MonitorParts';
+import { ClassTabs } from '@/components/watchlist/monitor/MonitorParts';
 import { CommandBar } from '@/components/watchlist/monitor/CommandBar';
 import { PulseRow } from '@/components/watchlist/monitor/PulseRow';
 import { SecuritiesTable } from '@/components/watchlist/monitor/SecuritiesTable';
@@ -180,8 +172,6 @@ function WatchlistMonitor() {
     [activeList, classId, quotes],
   );
   const counts = useMemo(() => classCounts(activeList), [activeList]);
-  const insights = useMemo(() => computeInsights(items, classId), [items, classId]);
-  const moves = useMemo(() => bigMoves(items), [items]);
   /* Lists an enabled smart rule fills. */
   const smartListIds = useMemo(
     () => new Set((smart.rules || []).filter((r) => r.enabled).map((r) => r.listId)),
@@ -201,14 +191,7 @@ function WatchlistMonitor() {
         : null,
     [activeList, classId, items, smart.weekCounts, alerts.unread, politicians],
   );
-  const inList = useCallback(
-    (t) =>
-      (activeList?.stocks || []).some(
-        (i) => String(i.ticker).toUpperCase() === String(t).toUpperCase(),
-      ),
-    [activeList],
-  );
-  /* Getting Started checklist: the insights card shows sector exposure. */
+  /* Getting Started checklist: the table's Sector column shows how the list is spread. */
   useEffect(() => {
     if (items.length) markChecklistView('watchlist.sector_exposure');
   }, [items.length]);
@@ -250,44 +233,6 @@ function WatchlistMonitor() {
 
   const existing = useMemo(() => new Set((activeList?.stocks || []).map(itemKey)), [activeList]);
 
-  /* ---------------- courses ---------------- */
-  const course = useMemo(() => getCoursesForWatchlistPreview(1)[0] || null, []);
-  const [bookmarked, setBookmarked] = useState(() => new Set());
-  useEffect(() => {
-    let alive = true;
-    authedFetch('/api/learning/bookmarks')
-      .then((r) => (r.ok ? r.json() : { bookmarks: [] }))
-      .then((d) => alive && setBookmarked(new Set((d.bookmarks || []).map((b) => b.course_id))))
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, [authedFetch]);
-  const toggleBookmark = useCallback(
-    async (courseId, add) => {
-      setBookmarked((s) => {
-        const n = new Set(s);
-        if (add) n.add(courseId);
-        else n.delete(courseId);
-        return n;
-      });
-      const r = await authedFetch('/api/learning/bookmarks', {
-        method: 'POST',
-        body: JSON.stringify({ courseId, action: add ? 'add' : 'remove' }),
-      }).catch(() => null);
-      if (!r?.ok) {
-        setBookmarked((s) => {
-          const n = new Set(s);
-          if (add) n.delete(courseId);
-          else n.add(courseId);
-          return n;
-        });
-        notify('Could not update the bookmark.');
-      }
-    },
-    [authedFetch, notify],
-  );
-
   /* ---------------- actions ---------------- */
   const stockSelectedOnce = useRef(false);
   const select = useCallback(
@@ -307,14 +252,6 @@ function WatchlistMonitor() {
     setUrl({ listId: id, symbol: null });
     completeTask('watchlist_2');
   };
-  /* An alert row: select its ticker (switching tab when needed). */
-  const pickTicker = (t) => {
-    const it = (activeList?.stocks || []).find(
-      (i) => String(i.ticker).toUpperCase() === String(t).toUpperCase(),
-    );
-    if (it) setUrl({ classId: classIdOfType(it.type), symbol: String(it.ticker).toUpperCase() });
-  };
-
   const star = useCallback(
     async (item, on) => {
       if (!activeList) return;
@@ -539,11 +476,6 @@ function WatchlistMonitor() {
             onAdd={() => setAddOpen(true)}
             onCreateRule={() => setSmartDialog({ open: true, rule: null })}
           />
-
-          <div className="wlm-duo">
-            <SignalsCard insights={insights} moves={moves} classId={classId} />
-            <RecentAlertsCard alerts={alerts} inList={inList} onPick={pickTicker} />
-          </div>
         </div>
 
         <aside className="wl-side wlm-side" aria-label="Watchlists">
@@ -604,7 +536,6 @@ function WatchlistMonitor() {
               })
             }
           />
-          <LearnRow course={course} bookmarked={bookmarked} onToggle={toggleBookmark} />
         </aside>
       </div>
 

@@ -94,5 +94,8 @@
   `--echo-*` system, the broadsheet `--bs-*` palette, device chrome, standalone
   document generators) and the pending hand-review list are documented at the
   top of the script.
-- `EZANA_BRANDING_GUIDE.md` is the prose companion to the above. It is not
-  currently checked into this repo.
+- `docs/EZANA_BRANDING_GUIDE.md` is the Branding and UI Guide: one document
+  for the brand and design rules (Part A) and for how pages are built
+  (Part B: the ds library, buttons, cards on the canvas, tokens, the
+  pre-ship checklist). Read it before building or redesigning any page. It
+  replaces every earlier branding or design-system guide.

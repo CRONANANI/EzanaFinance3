@@ -698,6 +698,19 @@ test('migration: notes are owner-only, smart events carry match details', () => 
   );
 });
 
+test('selection never sits on text; the side column rule is emerald; no bottom cards', () => {
+  const css = read(CSS);
+  assert.doesNotMatch(
+    css,
+    /box-shadow:\s*inset\s+-?\d+px\s+0\s+0/,
+    'no left or right bar drawn over a flush row (it overlaps the text)',
+  );
+  assert.match(css, /\.wlm-mylists__row\.is-on \.wlm-strong \{\s*color: var\(--emerald-text\)/);
+  assert.match(css, /\.ez-canvas \.wl-side\.wlm-side \{\s*border-left-color: var\(--emerald\)/);
+  const all = [PAGE, ...COMPONENTS].map(read).join('\n');
+  assert.doesNotMatch(all, /SignalsCard|RecentAlertsCard|LearnRow|wlm-duo/);
+});
+
 test('styles: tokens only, no root max-width, reduced motion', () => {
   const css = read(CSS).replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|rgba?\(/i, 'no raw colours');
@@ -727,7 +740,6 @@ test('stage B: layout wiring, text-only tabs, one list selector', () => {
     'deleteList',
     '/trading/mock?symbol=',
     '/sonar?q=',
-    'Tracked names, not holdings.',
     'Checked while Ezana is open in this browser.',
     'wl-strip-card',
     'wl-chart-panel',

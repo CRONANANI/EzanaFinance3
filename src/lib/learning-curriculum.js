@@ -366,13 +366,6 @@ export function getTotalCourses() {
   return TOTAL_GRAND;
 }
 
-/** Stocks fundamentals & portfolio — basic + intermediate */
-export function getCoursesForWatchlistPreview(limit = 4) {
-  return ALL_COURSES.filter(
-    (c) => c.track === 'stocks' && (c.level === 'basic' || c.level === 'intermediate'),
-  ).slice(0, limit);
-}
-
 /** Risk track + advanced quant / algorithmic topics from stocks */
 export function getCoursesForQuantsPreview(limit = 4) {
   const risk = getCoursesByTrack('risk').slice(0, 2);

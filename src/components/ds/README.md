@@ -21,9 +21,9 @@ lead actions>` for the top of every page, `<Heading level="page|section|card">` 
 - **Icons:** Bootstrap Icons only (`<i className="bi bi-..." />`).
 - **CSS prefix:** `.ds-*`, component-scoped. **Zero new global tokens** are introduced.
 
-> Note: `EZANA_BRANDING_GUIDE.md` referenced by the project goal is not present in the
-> repo. This library is therefore derived from the live token file and the established
-> `ez-*` component anatomy already in the codebase, which encode the same brand rules.
+> The rules this library serves are in `docs/EZANA_BRANDING_GUIDE.md` (the Branding and UI
+> Guide). Part B, section 21, lists where the library still differs from the flat canvas
+> (bordered secondary button, hover lift and glow on primary) and what to use instead.
 
 ## Components
 
