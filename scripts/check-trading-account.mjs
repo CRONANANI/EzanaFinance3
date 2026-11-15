@@ -157,7 +157,7 @@ test('no sample content layer and the real legal line with its links', () => {
   assert.match(src, /Investments involve risk and are not FDIC insured\./);
 });
 
-test('the page is on the canvas and the old dashboard address lands here', () => {
+test('the page is on the canvas and the dashboard subpage is left as it was', () => {
   const page = read('src/app/(dashboard)/trading/page.js');
   const imports = [...page.matchAll(/^import ['"][^'"]+\.css['"];/gm)].map((m) => m[0]);
   assert.ok(imports.at(-1).includes('home-canvas.css'));
@@ -165,5 +165,7 @@ test('the page is on the canvas and the old dashboard address lands here', () =>
     read('src/components/trading/account/BrokerageAccountPage.jsx'),
     /className="[^"]*\bez-canvas\b/,
   );
-  assert.match(read('src/app/(dashboard)/trading/dashboard/page.js'), /redirect\('\/trading'\)/);
+  const dash = read('src/app/(dashboard)/trading/dashboard/page.js');
+  assert.doesNotMatch(dash, /redirect\(/);
+  assert.match(dash, /fetch\('\/api\/trading\/portfolio'\)/);
 });
