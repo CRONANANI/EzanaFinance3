@@ -2,38 +2,34 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  X,
-  Plus,
-  Sparkles,
-  Search,
-  Bell,
-  Check,
-  Building2,
-  Users,
-  Bitcoin,
-  Droplet,
-} from 'lucide-react';
 import { CompanySearch } from '@/components/research/CompanySearch';
+import { BOND_ETFS } from '@/lib/watchlist/asset-classes';
 import { getThemeSuggestions } from '@/lib/watchlist-suggestions';
 import './new-watchlist-dialog.css';
 import { enableNativePush } from '@/lib/native-push-client';
 
+/* Bootstrap Icons in place of the old icon set; `className` adds the size class. */
+const Bi = ({ name, className = '' }) => (
+  <i className={`bi bi-${name} nwd-bi ${className}`.trim()} aria-hidden="true" />
+);
+
+/* Colour tags as theme tokens (stored by id, painted through the token). */
 const PRESET_COLORS = [
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#22c55e',
-  '#06b6d4',
-  '#10b981',
-  '#8b5cf6',
-  '#ec4899',
+  { id: 'red', label: 'Red', css: 'var(--negative)' },
+  { id: 'orange', label: 'Orange', css: 'var(--orange)' },
+  { id: 'amber', label: 'Amber', css: 'var(--warning)' },
+  { id: 'green', label: 'Green', css: 'var(--positive)' },
+  { id: 'cyan', label: 'Cyan', css: 'var(--cyan)' },
+  { id: 'emerald', label: 'Emerald', css: 'var(--emerald)' },
+  { id: 'purple', label: 'Purple', css: 'var(--purple)' },
+  { id: 'pink', label: 'Pink', css: 'var(--pink)' },
 ];
 
 /**
- * The dialog supports four kinds of watchlist items, matching the
+ * The dialog supports five kinds of watchlist items, matching the
  * `user_watchlist_items.type` enum in the database:
  *   - stock       NYSE / NASDAQ equities (existing behaviour)
+ *   - bond_etf    Bond ETFs, picked from BOND_ETFS (the Add asset universe)
  *   - politician  Members of Congress (drives Inside-the-Capitol filtering)
  *   - crypto      Spot cryptocurrencies (BTC, ETH, ...)
  *   - commodity   Futures / commodities (GC gold, CL oil, ...)
@@ -42,10 +38,11 @@ const PRESET_COLORS = [
  * shape so the submit handler can just forward `type: t.kind`.
  */
 const ITEM_KINDS = [
-  { key: 'stock', label: 'Stock', icon: Building2, placeholder: 'AAPL, TSLA, MSFT…' },
-  { key: 'politician', label: 'Politician', icon: Users, placeholder: 'Nancy Pelosi' },
-  { key: 'crypto', label: 'Crypto', icon: Bitcoin, placeholder: 'BTC, ETH, SOL…' },
-  { key: 'commodity', label: 'Commodity', icon: Droplet, placeholder: 'GC (gold), CL (oil)…' },
+  { key: 'stock', label: 'Stock', icon: 'building', placeholder: 'AAPL, TSLA, MSFT…' },
+  { key: 'bond_etf', label: 'Bond ETF', icon: 'layers', placeholder: 'TLT, AGG, LQD…' },
+  { key: 'politician', label: 'Politician', icon: 'people', placeholder: 'Nancy Pelosi' },
+  { key: 'crypto', label: 'Crypto', icon: 'currency-bitcoin', placeholder: 'BTC, ETH, SOL…' },
+  { key: 'commodity', label: 'Commodity', icon: 'droplet', placeholder: 'GC (gold), CL (oil)…' },
 ];
 
 // Common suggestions so users can one-click a popular identifier without
@@ -89,7 +86,7 @@ function resolveExchange(result) {
 export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, addItem }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState(PRESET_COLORS[5]);
+  const [color, setColor] = useState(PRESET_COLORS[5].id);
   const [alertsOn, setAlertsOn] = useState(false);
   const [tickers, setTickers] = useState([]);
   const [kind, setKind] = useState('stock');
@@ -238,6 +235,13 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         });
         return true;
       }
+      if (kind === 'bond_etf') {
+        const sym = trimmed.toUpperCase().replace(/[^A-Z]/g, '');
+        const fund = BOND_ETFS.find((b) => b.ticker === sym);
+        if (!fund) return false;
+        addTicker({ kind: 'bond_etf', symbol: fund.ticker, name: labelOverride || fund.name });
+        return true;
+      }
       if (kind === 'commodity') {
         const sym = trimmed
           .toUpperCase()
@@ -310,7 +314,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         };
         window.localStorage.setItem('ezana.watchlistPrefs', JSON.stringify(prefs));
       } catch {
-        /* localStorage may be disabled — non-fatal */
+        /* localStorage may be disabled: non-fatal */
       }
 
       onCreated?.(res.listId);
@@ -387,7 +391,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             aria-label="Close dialog"
             onClick={() => onOpenChange(false)}
           >
-            <X size={18} />
+            <Bi name="x-lg" />
           </button>
         </header>
 
@@ -415,7 +419,6 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             <label className="nwd-label">What do you want to follow?</label>
             <div className="nwd-kind-row" role="tablist" aria-label="Item kind">
               {ITEM_KINDS.map((k) => {
-                const Icon = k.icon;
                 const isActive = kind === k.key;
                 return (
                   <button
@@ -429,7 +432,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                       setManualInput('');
                     }}
                   >
-                    <Icon size={13} />
+                    <Bi name={k.icon} className="nwd-bi--sm" />
                     <span>{k.label}</span>
                   </button>
                 );
@@ -439,7 +442,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             {kind === 'stock' ? (
               <div className="nwd-search-wrap" style={{ marginTop: '0.6rem' }}>
                 <label className="nwd-label nwd-label-inline">
-                  <Search size={14} /> Search for a company
+                  <Bi name="search" /> Search for a company
                 </label>
                 <CompanySearch
                   placeholder="Search by ticker or company name…"
@@ -452,12 +455,14 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             ) : (
               <div className="nwd-search-wrap" style={{ marginTop: '0.6rem' }}>
                 <label className="nwd-label nwd-label-inline">
-                  <Search size={14} />{' '}
+                  <Bi name="search" />{' '}
                   {kind === 'politician'
                     ? 'Add a politician by full name'
                     : kind === 'crypto'
                       ? 'Add a crypto by symbol'
-                      : 'Add a commodity by symbol'}
+                      : kind === 'bond_etf'
+                        ? 'Add a bond ETF by symbol'
+                        : 'Add a commodity by symbol'}
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input
@@ -484,7 +489,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                     }}
                     disabled={!manualInput.trim()}
                   >
-                    <Plus size={13} /> Add
+                    <Bi name="plus-lg" className="nwd-bi--sm" /> Add
                   </button>
                 </div>
 
@@ -501,7 +506,11 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                           disabled={added}
                           onClick={() => addManual(p)}
                         >
-                          {added ? <Check size={11} /> : <Plus size={11} />}
+                          {added ? (
+                            <Bi name="check-lg" className="nwd-bi--xs" />
+                          ) : (
+                            <Bi name="plus-lg" className="nwd-bi--xs" />
+                          )}
                           {p}
                         </button>
                       );
@@ -520,8 +529,37 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                           disabled={added}
                           onClick={() => addManual(c)}
                         >
-                          {added ? <Check size={11} /> : <Plus size={11} />}
+                          {added ? (
+                            <Bi name="check-lg" className="nwd-bi--xs" />
+                          ) : (
+                            <Bi name="plus-lg" className="nwd-bi--xs" />
+                          )}
                           {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {kind === 'bond_etf' && (
+                  <div className="nwd-quickpicks">
+                    {BOND_ETFS.map((b) => {
+                      const added = tickers.some(
+                        (t) => t.kind === 'bond_etf' && t.symbol === b.ticker,
+                      );
+                      return (
+                        <button
+                          key={b.ticker}
+                          type="button"
+                          className={`nwd-quickpick${added ? ' added' : ''}`}
+                          disabled={added}
+                          onClick={() => addManual(b.ticker, b.name)}
+                        >
+                          {added ? (
+                            <Bi name="check-lg" className="nwd-bi--xs" />
+                          ) : (
+                            <Bi name="plus-lg" className="nwd-bi--xs" />
+                          )}
+                          {b.ticker} · {b.name}
                         </button>
                       );
                     })}
@@ -541,7 +579,11 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                           disabled={added}
                           onClick={() => addManual(c.sym, c.label)}
                         >
-                          {added ? <Check size={11} /> : <Plus size={11} />}
+                          {added ? (
+                            <Bi name="check-lg" className="nwd-bi--xs" />
+                          ) : (
+                            <Bi name="plus-lg" className="nwd-bi--xs" />
+                          )}
                           {c.sym} · {c.label}
                         </button>
                       );
@@ -557,7 +599,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             <div className="nwd-field">
               <div className="nwd-label nwd-label-row">
                 <span className="nwd-label-inline">
-                  <Sparkles size={14} /> {heading}
+                  <Bi name="stars" /> {heading}
                 </span>
                 <span className="nwd-hint">NYSE &amp; NASDAQ only</span>
               </div>
@@ -603,11 +645,11 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                           >
                             {added ? (
                               <>
-                                <Check size={12} /> Added
+                                <Bi name="check-lg" className="nwd-bi--xs" /> Added
                               </>
                             ) : (
                               <>
-                                <Plus size={12} /> Add
+                                <Bi name="plus-lg" className="nwd-bi--xs" /> Add
                               </>
                             )}
                           </button>
@@ -659,7 +701,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                         aria-label={`Remove ${t.symbol}`}
                         className="nwd-chip-x"
                       >
-                        <X size={12} />
+                        <Bi name="x-lg" className="nwd-bi--xs" />
                       </button>
                     </div>
                   );
@@ -674,15 +716,15 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             <div className="nwd-colors">
               {PRESET_COLORS.map((c) => (
                 <button
-                  key={c}
+                  key={c.id}
                   type="button"
-                  onClick={() => setColor(c)}
-                  aria-label={`Select color ${c}`}
-                  aria-pressed={color === c}
-                  className={`nwd-color ${color === c ? 'on' : ''}`}
-                  style={{ background: c }}
+                  onClick={() => setColor(c.id)}
+                  aria-label={`Select color ${c.label}`}
+                  aria-pressed={color === c.id}
+                  className={`nwd-color ${color === c.id ? 'on' : ''}`}
+                  style={{ background: c.css }}
                 >
-                  {color === c && <Check size={12} color="#fff" strokeWidth={3} />}
+                  {color === c.id && <Bi name="check-lg" className="nwd-bi--xs nwd-color__check" />}
                 </button>
               ))}
             </div>
@@ -714,7 +756,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
                 if (e.target.checked) enableNativePush();
               }}
             />
-            <Bell size={14} />
+            <Bi name="bell" />
             <span>Notify me on major price moves (±5%)</span>
           </label>
 

@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * Watchlist Market Monitor panels (Nov 2026): the asset detail (header,
- * chips, institutional holders, chart, politician variant), the "My
- * watchlists" side card and the add-asset dialog.
+ * Watchlist Market Monitor panels (Nov 2026; Market Monitor 2.0): the asset
+ * panel (header with actions, institutional holders, chart, politician
+ * variant), the "My watchlists" side card (lists only, with rename, list
+ * settings and delete) and the add-asset dialog.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Modal } from '@/components/ds';
+import { Button, Dropdown, Input, MenuDivider, MenuItem, Modal, Toggle } from '@/components/ds';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import {
   ASSET_CLASSES,
@@ -17,8 +18,17 @@ import {
   classIdOfType,
   displayTicker,
 } from '@/lib/watchlist/asset-classes';
-import { RANGES, capBucket, fmtUSD } from '@/lib/watchlist/watchlist-view';
-import { AssetAvatar, Change, Sparkline } from './MonitorParts';
+import {
+  RANGES,
+  capBucket,
+  fmtSignedUSD,
+  fmtTime,
+  fmtUSD,
+  signOf,
+  sonarPrompt,
+} from '@/lib/watchlist/watchlist-view';
+import { AssetAvatar, Change } from './MonitorParts';
+import { canPaperTrade } from './SecuritiesTable';
 
 const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
   ssr: false,
@@ -62,8 +72,8 @@ function Holders({ inst }) {
   const more = Math.max(0, inst.total - shown.length);
   return (
     <div className="wlm-holders">
-      <span className="wlm-eyebrow">
-        Top institutional holders{inst.period ? `, ${inst.period}` : ''}
+      <span className="wlm-holders__title">
+        <i className="bi bi-bank" aria-hidden="true" /> Top institutional holders
       </span>
       <ul className="wlm-holders__list">
         {shown.map((h) => (
@@ -79,6 +89,9 @@ function Holders({ inst }) {
         ))}
         {more > 0 ? <li className="wlm-xs wlm-muted">+{more} more</li> : null}
       </ul>
+      <span className="wlm-caption">
+        {inst.period ? `Reported for ${inst.period}. ` : ''}Not current ownership.
+      </span>
     </div>
   );
 }
@@ -154,9 +167,15 @@ export function AssetDetail({
   onRange,
   onStar,
   onRemove,
+  onMove,
+  lists = [],
+  activeListId = null,
+  updatedAt = null,
   onSendToTeam,
   children,
 }) {
+  const others = lists.filter((l) => l.id !== activeListId);
+  const label = item.type === 'politician' ? item.name : displayTicker(item.ticker);
   const cls = CLASS_BY_ID[classIdOfType(item.type)];
   const isPol = item.type === 'politician';
   const bucket =
@@ -204,7 +223,7 @@ export function AssetDetail({
                   className="wlm-badge"
                   title={item.addedReason || 'Added by a smart watchlist'}
                 >
-                  <i className="bi bi-stars" aria-hidden="true" /> Smart
+                  <i className="bi bi-lightning-charge" aria-hidden="true" /> Smart
                 </span>
               ) : null}
             </h1>
@@ -224,7 +243,17 @@ export function AssetDetail({
           {!isPol ? (
             <div className="wlm-detail__px">
               <span className="wlm-num wlm-detail__price">{fmtUSD(item.price)}</span>
-              <Change value={item.changePct} className="wlm-sm" />
+              <span className="wlm-detail__chg">
+                {item.change != null ? (
+                  <span className={`wlm-num wlm-sm wlm-tone is-${signOf(item.change)}`}>
+                    {fmtSignedUSD(item.change)}
+                  </span>
+                ) : null}
+                <Change value={item.changePct} className="wlm-sm" />
+              </span>
+              {updatedAt ? (
+                <span className="wlm-xs wlm-muted">Updated {fmtTime(updatedAt)}</span>
+              ) : null}
             </div>
           ) : null}
           <div className="wlm-detail__actions">
@@ -232,7 +261,7 @@ export function AssetDetail({
               type="button"
               className="wlm-icon-btn"
               aria-pressed={!!item.starredAt}
-              aria-label={item.starredAt ? 'Unstar' : 'Star'}
+              aria-label={item.starredAt ? `Unstar ${label}` : `Star ${label}`}
               onClick={() => onStar(item, !item.starredAt)}
             >
               <i
@@ -243,37 +272,61 @@ export function AssetDetail({
             {item.type === 'stock' ? (
               <Link
                 href={`/company-research?ticker=${encodeURIComponent(item.ticker)}`}
-                className="wlm-icon-btn"
-                aria-label={`Research ${item.ticker}`}
+                className="wlm-btn wlm-btn--text wlm-btn--sm"
               >
-                <i className="bi bi-search" aria-hidden="true" />
+                <i className="bi bi-box-arrow-up-right" aria-hidden="true" /> Open research
               </Link>
             ) : null}
-            {onSendToTeam && item.type === 'stock' ? (
-              <button
-                type="button"
-                className="wlm-icon-btn"
-                aria-label="Send to team"
-                onClick={() => onSendToTeam(item)}
-              >
-                <i className="bi bi-send" aria-hidden="true" />
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="wlm-icon-btn"
-              aria-label="Remove from watchlist"
-              onClick={() => onRemove(item)}
+            <Link
+              href={`/sonar?q=${encodeURIComponent(sonarPrompt(item))}`}
+              className="wlm-btn wlm-btn--text wlm-btn--sm"
             >
-              <i className="bi bi-trash3" aria-hidden="true" />
-            </button>
+              <i className="bi bi-activity" aria-hidden="true" /> Ping Sonar
+            </Link>
+            <Dropdown
+              align="right"
+              trigger={
+                <span className="wlm-icon-btn" aria-label={`More actions for ${label}`}>
+                  <i className="bi bi-three-dots" aria-hidden="true" />
+                </span>
+              }
+            >
+              {onSendToTeam && item.type === 'stock' ? (
+                <MenuItem icon="bi-send" onClick={() => onSendToTeam(item)}>
+                  Send to team
+                </MenuItem>
+              ) : null}
+              {canPaperTrade(item) ? (
+                <MenuItem
+                  icon="bi-graph-up-arrow"
+                  onClick={() =>
+                    window.location.assign(
+                      `/trading/mock?symbol=${encodeURIComponent(item.ticker)}`,
+                    )
+                  }
+                >
+                  Open in mock trading
+                </MenuItem>
+              ) : null}
+              {others.length ? <MenuDivider /> : null}
+              {others.map((l) => (
+                <MenuItem key={l.id} icon="bi-arrow-left-right" onClick={() => onMove(item, l.id)}>
+                  Move to {l.label}
+                </MenuItem>
+              ))}
+              <MenuDivider />
+              <MenuItem icon="bi-trash3" danger onClick={() => onRemove(item)}>
+                Remove
+              </MenuItem>
+            </Dropdown>
           </div>
         </div>
       </header>
 
       {item.addedBy === 'smart' && item.addedReason ? (
         <p className="wlm-xs wlm-muted wlm-detail__why">
-          <i className="bi bi-stars" aria-hidden="true" /> Added automatically: {item.addedReason}
+          <i className="bi bi-lightning-charge" aria-hidden="true" /> Added automatically:{' '}
+          {item.addedReason}
         </p>
       ) : null}
 
@@ -305,225 +358,226 @@ export function AssetDetail({
 /* My watchlists                                                       */
 /* ------------------------------------------------------------------ */
 
-function RowMenu({ item, lists, currentId, onMove, onRemove }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+function RenameListModal({ list, onClose, onRename }) {
+  const [label, setLabel] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
   useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => {
-      if (!ref.current?.contains(e.target)) setOpen(false);
-    };
-    const esc = (e) => e.key === 'Escape' && setOpen(false);
-    document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', esc);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('keydown', esc);
-    };
-  }, [open]);
-  const others = lists.filter((l) => l.id !== currentId);
+    if (list) {
+      setLabel(list.label || '');
+      setError(null);
+    }
+  }, [list]);
+  const save = async (e) => {
+    e.preventDefault();
+    const next = label.trim();
+    if (!next || busy) return;
+    setBusy(true);
+    const r = await onRename(list.id, next);
+    setBusy(false);
+    if (r && r.ok === false) setError('Could not rename the list. Try again.');
+    else onClose();
+  };
   return (
-    <div className="wlm-menu" ref={ref}>
-      <button
-        type="button"
-        className="wlm-icon-btn wlm-icon-btn--sm"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={`More actions for ${item.name || item.ticker}`}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <i className="bi bi-three-dots" aria-hidden="true" />
-      </button>
-      {open ? (
-        <div className="wlm-menu__pop" role="menu">
-          {others.length ? <span className="wlm-menu__label wlm-eyebrow">Move to</span> : null}
-          {others.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              role="menuitem"
-              className="wlm-menu__item"
-              onClick={() => {
-                setOpen(false);
-                onMove(item, l.id);
-              }}
-            >
-              <i className="bi bi-folder" aria-hidden="true" /> {l.label}
-            </button>
-          ))}
-          <button
-            type="button"
-            role="menuitem"
-            className="wlm-menu__item is-danger"
-            onClick={() => {
-              setOpen(false);
-              onRemove(item);
-            }}
-          >
-            <i className="bi bi-trash3" aria-hidden="true" /> Remove
-          </button>
-        </div>
-      ) : null}
-    </div>
+    <Modal
+      open={Boolean(list)}
+      onClose={onClose}
+      title="Rename list"
+      size="420px"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button type="submit" form="wlm-rename-form" loading={busy} disabled={!label.trim()}>
+            Save
+          </Button>
+        </>
+      }
+    >
+      <form id="wlm-rename-form" onSubmit={save}>
+        <Input
+          id="wlm-rename-input"
+          label="List name"
+          value={label}
+          maxLength={60}
+          onChange={(e) => setLabel(e.target.value)}
+          error={error}
+        />
+      </form>
+    </Modal>
   );
 }
 
+/* Until server-side alerts ship, big moves are checked by the open page. */
+const BIG_MOVE_COPY =
+  'A notification when an item in this list moves 5% or more in a day. Checked while Ezana is open in this browser.';
+
+function ListSettingsModal({ list, alertsOn, onAlertsChange, onClose }) {
+  return (
+    <Modal
+      open={Boolean(list)}
+      onClose={onClose}
+      title={list ? `${list.label} settings` : ''}
+      size="440px"
+    >
+      {list ? (
+        <div className="wlm-settings">
+          <Toggle
+            label="Big-move alerts"
+            checked={alertsOn}
+            onChange={(e) => onAlertsChange(list.id, e.target.checked)}
+          />
+          <p className="wlm-sm wlm-muted">{BIG_MOVE_COPY}</p>
+        </div>
+      ) : null}
+    </Modal>
+  );
+}
+
+function DeleteListModal({ list, onClose, onDelete }) {
+  const [busy, setBusy] = useState(false);
+  const n = list?.stocks?.length || 0;
+  return (
+    <Modal
+      open={Boolean(list)}
+      onClose={onClose}
+      title={list ? `Delete ${list.label}?` : ''}
+      size="420px"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            loading={busy}
+            onClick={async () => {
+              setBusy(true);
+              await onDelete(list);
+              setBusy(false);
+              onClose();
+            }}
+          >
+            Delete list
+          </Button>
+        </>
+      }
+    >
+      {list ? (
+        <p className="wlm-sm wlm-soft">
+          This removes the list and its {n} {n === 1 ? 'item' : 'items'}. It cannot be undone.
+        </p>
+      ) : null}
+    </Modal>
+  );
+}
+
+/**
+ * My watchlists: list rows only (name, item count, Smart marker, active
+ * state) with a per-row menu. The items live in the securities table.
+ *   alertsFor(listId) -> boolean; onAlertsChange(listId, on)
+ */
 export function MyWatchlistsCard({
   lists,
   activeList,
+  smartListIds,
   onListChange,
-  items,
-  sparks,
-  selectedKey,
-  onSelect,
-  onStar,
-  onMove,
-  onRemove,
   onNewList,
-  onAdd,
-  alertsOn,
+  onRename,
+  onDelete,
+  alertsFor,
   onAlertsChange,
   loading,
 }) {
-  const [q, setQ] = useState('');
-  const shown = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return items;
-    return items.filter((i) => `${i.name || ''} ${i.ticker}`.toLowerCase().includes(s));
-  }, [items, q]);
+  const [renaming, setRenaming] = useState(null);
+  const [settings, setSettings] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   return (
     <section className="wlm-card wlm-mylists" aria-labelledby="wlm-my-h">
       <header className="wlm-card__head">
-        <i className="bi bi-list-stars wlm-card__icon" aria-hidden="true" />
+        <i className="bi bi-list-ul wlm-card__icon" aria-hidden="true" />
         <h2 id="wlm-my-h" className="wlm-card__title">
           My watchlists
         </h2>
-        <button type="button" className="wlm-btn wlm-btn--sm" onClick={onNewList}>
+        <button type="button" className="wlm-btn wlm-btn--text wlm-btn--sm" onClick={onNewList}>
           <i className="bi bi-plus-lg" aria-hidden="true" /> New list
         </button>
       </header>
-
-      <div className="wlm-mylists__bar">
-        <label className="wlm-sr" htmlFor="wlm-list-select">
-          Watchlist
-        </label>
-        <select
-          id="wlm-list-select"
-          className="wlm-input wlm-input--sm"
-          value={activeList?.id || ''}
-          onChange={(e) => onListChange(e.target.value)}
-        >
-          {lists.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.smart ? '✦ ' : ''}
-              {l.label} ({l.stocks?.length || 0})
-            </option>
-          ))}
-        </select>
-        <label
-          className="wlm-check wlm-xs"
-          title="Notify me when an item in this list moves 5% or more in a day"
-        >
-          <input
-            type="checkbox"
-            checked={alertsOn}
-            onChange={(e) => onAlertsChange(e.target.checked)}
-          />
-          <span>Big-move alerts</span>
-        </label>
-      </div>
-
-      <div className="wlm-search ds-search">
-        <i className="bi bi-search" aria-hidden="true" />
-        <input
-          type="search"
-          className="wlm-input wlm-input--bare ds-search-input"
-          placeholder="Search this list"
-          aria-label="Search this list"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-      </div>
 
       {loading ? (
         <div className="wlm-skel-stack" aria-hidden="true">
           <span className="wlm-skel wlm-skel--row" />
           <span className="wlm-skel wlm-skel--row" />
-          <span className="wlm-skel wlm-skel--row" />
         </div>
-      ) : shown.length === 0 ? (
+      ) : lists.length === 0 ? (
         <p className="wlm-empty">
-          {q ? 'No matches in this list.' : 'Nothing in this tab yet.'}{' '}
-          {!q ? (
-            <button type="button" className="wlm-link" onClick={onAdd}>
-              Add an asset
-            </button>
-          ) : null}
+          No lists yet.{' '}
+          <button type="button" className="wlm-link" onClick={onNewList}>
+            Create one
+          </button>
         </p>
       ) : (
         <ul className="wlm-mylists__rows">
-          {shown.map((it) => {
-            const key = `${it.type}:${it.ticker}`;
+          {lists.map((l) => {
+            const on = l.id === activeList?.id;
+            const smart = smartListIds?.has(l.id);
             return (
-              <li key={key} className={`wlm-mylists__row${key === selectedKey ? ' is-on' : ''}`}>
-                <button
-                  type="button"
-                  className="wlm-icon-btn wlm-icon-btn--sm"
-                  aria-pressed={!!it.starredAt}
-                  aria-label={
-                    it.starredAt ? `Unstar ${it.name || it.ticker}` : `Star ${it.name || it.ticker}`
-                  }
-                  onClick={() => onStar(it, !it.starredAt)}
-                >
-                  <i
-                    className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
-                    aria-hidden="true"
-                  />
-                </button>
+              <li key={l.id} className={`wlm-mylists__row${on ? ' is-on' : ''}`}>
                 <button
                   type="button"
                   className="wlm-rowbtn"
-                  onClick={() => onSelect(it)}
-                  aria-current={key === selectedKey || undefined}
+                  onClick={() => onListChange(l.id)}
+                  aria-current={on || undefined}
                 >
-                  <span className="wlm-mylists__names">
-                    <span className="wlm-strong wlm-ellipsis">
-                      {it.type === 'politician' ? it.name : displayTicker(it.ticker)}
-                      {it.addedBy === 'smart' ? (
-                        <i className="bi bi-stars wlm-mylists__smart" aria-label="Auto-added" />
-                      ) : null}
-                    </span>
-                    <span className="wlm-xs wlm-muted wlm-ellipsis">
-                      {it.type === 'politician' ? 'Politician' : it.name}
-                    </span>
-                  </span>
-                  {it.type !== 'politician' ? (
-                    <>
-                      <Sparkline points={sparks?.[it.ticker]} width={44} height={18} />
-                      <span className="wlm-mylists__px">
-                        <span className="wlm-num wlm-sm">{fmtUSD(it.price)}</span>
-                        <Change value={it.changePct} className="wlm-xs" />
-                      </span>
-                    </>
+                  <span className="wlm-strong wlm-ellipsis">{l.label}</span>
+                  {smart ? (
+                    <i
+                      className="bi bi-lightning-charge wlm-mylists__smart"
+                      role="img"
+                      aria-label="Smart list"
+                    />
                   ) : null}
+                  <span className="wlm-num wlm-xs wlm-muted wlm-mylists__count">
+                    {l.stocks?.length || 0}
+                  </span>
                 </button>
-                <RowMenu
-                  item={it}
-                  lists={lists}
-                  currentId={activeList?.id}
-                  onMove={onMove}
-                  onRemove={onRemove}
-                />
+                <Dropdown
+                  align="right"
+                  trigger={
+                    <span
+                      className="wlm-icon-btn wlm-icon-btn--sm"
+                      aria-label={`Actions for ${l.label}`}
+                    >
+                      <i className="bi bi-three-dots-vertical" aria-hidden="true" />
+                    </span>
+                  }
+                >
+                  <MenuItem icon="bi-pencil" onClick={() => setRenaming(l)}>
+                    Rename
+                  </MenuItem>
+                  <MenuItem icon="bi-gear" onClick={() => setSettings(l)}>
+                    List settings
+                  </MenuItem>
+                  <MenuItem icon="bi-trash3" danger onClick={() => setDeleting(l)}>
+                    Delete
+                  </MenuItem>
+                </Dropdown>
               </li>
             );
           })}
         </ul>
       )}
 
-      <button type="button" className="wlm-btn wlm-btn--block" onClick={onAdd}>
-        <i className="bi bi-plus-lg" aria-hidden="true" /> Add to watchlist
-      </button>
+      <RenameListModal list={renaming} onClose={() => setRenaming(null)} onRename={onRename} />
+      <ListSettingsModal
+        list={settings}
+        alertsOn={settings ? alertsFor(settings.id) : false}
+        onAlertsChange={onAlertsChange}
+        onClose={() => setSettings(null)}
+      />
+      <DeleteListModal list={deleting} onClose={() => setDeleting(null)} onDelete={onDelete} />
     </section>
   );
 }

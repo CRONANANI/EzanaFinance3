@@ -593,9 +593,17 @@ test('explanations: observed values, stored reason text unchanged', () => {
 
 const PAGE = 'src/app/(dashboard)/watchlist/page.js';
 const CSS = 'src/app/(dashboard)/watchlist/watchlist.css';
-const COMPONENTS = ['MonitorParts.jsx', 'MonitorPanels.jsx', 'SmartWatchlist.jsx'].map(
-  (f) => `src/components/watchlist/monitor/${f}`,
-);
+const COMPONENTS = [
+  ...[
+    'MonitorParts.jsx',
+    'MonitorPanels.jsx',
+    'SmartWatchlist.jsx',
+    'CommandBar.jsx',
+    'PulseRow.jsx',
+    'SecuritiesTable.jsx',
+  ].map((f) => `src/components/watchlist/monitor/${f}`),
+  'src/components/watchlist/NewWatchlistDialog.jsx',
+];
 
 test('page: real data hooks, smart card, no sample data or recharts', () => {
   const page = read(PAGE);
@@ -701,4 +709,45 @@ test('components: Bootstrap Icons only, no em dashes, no raw colours', () => {
     assert.doesNotMatch(src, /—/, `${f} has an em dash`);
     assert.doesNotMatch(src, /['"]#[0-9a-f]{3,8}['"]/i, f);
   }
+});
+
+test('stage B: layout wiring, text-only tabs, one list selector', () => {
+  const all = [PAGE, ...COMPONENTS].map(read).join('\n');
+  for (const s of [
+    'data-task-target="watchlist-add-button"',
+    'data-task-target="watchlist-create-list"',
+    'pulseSummary',
+    'sortItems',
+    'filterItems',
+    'paginate',
+    'renameList',
+    'deleteList',
+    '/trading/mock?symbol=',
+    '/sonar?q=',
+    'Tracked names, not holdings.',
+    'Checked while Ezana is open in this browser.',
+    'wl-strip-card',
+    'wl-chart-panel',
+    'wl-side',
+  ]) {
+    assert.ok(all.includes(s), s);
+  }
+  assert.doesNotMatch(all, /QuoteStrip|AlsoInWatchlist|CoursesCard/);
+  assert.doesNotMatch(all, /suitab|risk tolerance|alignment score|real-time|continuously/i);
+  assert.doesNotMatch(read(PAGE), /wlm-title|<h1/, 'no page title block');
+  assert.doesNotMatch(read(PAGE), /<select/, 'one list selector, the command bar dropdown');
+  const dialog = read('src/components/watchlist/NewWatchlistDialog.jsx');
+  assert.match(dialog, /key: 'bond_etf'/, 'Bond ETF is a new-list kind');
+  assert.match(dialog, /BOND_ETFS/);
+  const css = read(CSS).replace(/\/\*[\s\S]*?\*\//g, '');
+  const onTab = css.match(/\.wlm-tab\.is-on \{[^}]*\}/g).pop();
+  assert.doesNotMatch(onTab, /border|background/, 'tabs are text only');
+  assert.match(css, /\.wlm-table :is\(th, td\):first-child \{\s*padding-left: 0;/);
+  const tbl = read('src/components/watchlist/monitor/SecuritiesTable.jsx');
+  assert.match(
+    tbl,
+    /type === 'stock' \|\| item\?\.type === 'bond_etf'/,
+    'paper trading: stocks and bond ETFs',
+  );
+  assert.match(read('src/hooks/useWatchlistMonitor.js'), /weekCounts: d\.weekCounts/);
 });

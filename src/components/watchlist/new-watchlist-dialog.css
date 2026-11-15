@@ -680,3 +680,19 @@ body.light-mode .nwd-footer {
   color: #65a30d;
   border: 1px solid rgba(132, 204, 22, 0.35);
 }
+
+/* Bootstrap Icons (Nov 2026, Market Monitor 2.0): sizes for the old icon set. */
+.nwd-bi {
+  font-size: 14px;
+  line-height: 1;
+}
+.nwd-bi--sm {
+  font-size: 13px;
+}
+.nwd-bi--xs {
+  font-size: 11px;
+}
+.nwd-color__check {
+  color: var(--color-on-primary);
+  font-size: 12px;
+}

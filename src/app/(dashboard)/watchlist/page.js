@@ -1,12 +1,14 @@
 'use client';
 
 /**
- * Watchlist: the Market Monitor (Nov 2026 redesign) plus Smart Watchlists.
+ * Watchlist: Market Monitor 2.0 (Nov 2026) plus Smart Watchlists.
  *
  * Everything on the page is the user's own data: the active watchlist's items
- * per asset class with live quotes, the selected asset's chart and holders,
- * insights computed from the visible items, the latest 'watchlist'
- * notifications, and the smart watchlist rules with their auto-adds.
+ * per asset class with live quotes, the pulse row, the selected asset's
+ * panel (chart, holders), one securities table, signals computed from the
+ * visible items, the latest 'watchlist' notifications, and the smart
+ * watchlist rules with their auto-adds. No page title: the list selector in
+ * the command bar is the control.
  *
  * URL state: ?list=<id>&class=stocks&symbol=AAPL&range=1M (defaults dropped).
  * Flat home canvas: root keeps `ez-canvas`, home-canvas.css stays the last
@@ -32,21 +34,23 @@ import {
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
 import { CLASS_BY_ID, classIdOfType, isPriced } from '@/lib/watchlist/asset-classes';
 import {
+  bigMoves,
   classCounts,
   computeInsights,
   itemsForClass,
+  pulseSummary,
   readUrlState,
   writeUrlState,
 } from '@/lib/watchlist/watchlist-view';
 import {
-  AlsoInWatchlist,
   ClassTabs,
-  CoursesCard,
-  EmptyClass,
-  InsightsCard,
-  QuoteStrip,
+  LearnRow,
   RecentAlertsCard,
+  SignalsCard,
 } from '@/components/watchlist/monitor/MonitorParts';
+import { CommandBar } from '@/components/watchlist/monitor/CommandBar';
+import { PulseRow } from '@/components/watchlist/monitor/PulseRow';
+import { SecuritiesTable } from '@/components/watchlist/monitor/SecuritiesTable';
 import {
   AddAssetDialog,
   AssetDetail,
@@ -112,6 +116,8 @@ function WatchlistMonitor() {
     removeItem,
     moveItem,
     createList,
+    renameList,
+    deleteList,
     refresh,
     toggleStar,
     authedFetch,
@@ -124,6 +130,8 @@ function WatchlistMonitor() {
   const [addOpen, setAddOpen] = useState(false);
   const [smartDialog, setSmartDialog] = useState({ open: false, rule: null });
   const [sendTicker, setSendTicker] = useState(null);
+  /* The table's smart-only filter (set from the pulse row and the smart card). */
+  const [smartOnly, setSmartOnly] = useState(false);
   const [prefs, setPrefs] = useState({});
   useEffect(() => setPrefs(readPrefs()), []);
 
@@ -151,7 +159,7 @@ function WatchlistMonitor() {
         .map((i) => String(i.ticker).toUpperCase()),
     [activeList],
   );
-  const { quotes } = useQuotes(pricedSymbols);
+  const { quotes, updatedAt: quotesAt } = useQuotes(pricedSymbols);
   const sparks = useSparklines(pricedSymbols);
   const politicianIds = useMemo(
     () => (activeList?.stocks || []).filter((i) => i.type === 'politician').map((i) => i.ticker),
@@ -165,6 +173,33 @@ function WatchlistMonitor() {
   );
   const counts = useMemo(() => classCounts(activeList), [activeList]);
   const insights = useMemo(() => computeInsights(items, classId), [items, classId]);
+  const moves = useMemo(() => bigMoves(items), [items]);
+  /* Lists an enabled smart rule fills. */
+  const smartListIds = useMemo(
+    () => new Set((smart.rules || []).filter((r) => r.enabled).map((r) => r.listId)),
+    [smart.rules],
+  );
+  const pulse = useMemo(
+    () =>
+      activeList
+        ? pulseSummary({
+            list: activeList,
+            classId,
+            items,
+            smartWeekCount: smart.weekCounts?.[activeList.id],
+            unreadAlerts: alerts.unread,
+            politicians,
+          })
+        : null,
+    [activeList, classId, items, smart.weekCounts, alerts.unread, politicians],
+  );
+  const inList = useCallback(
+    (t) =>
+      (activeList?.stocks || []).some(
+        (i) => String(i.ticker).toUpperCase() === String(t).toUpperCase(),
+      ),
+    [activeList],
+  );
   /* Getting Started checklist: the insights card shows sector exposure. */
   useEffect(() => {
     if (items.length) markChecklistView('watchlist.sector_exposure');
@@ -177,18 +212,10 @@ function WatchlistMonitor() {
   const selectedKey = selected ? itemKey(selected) : null;
   const inst = useInstitutions(selected?.type === 'stock' ? selected.ticker : null);
 
-  const alsoIn = useMemo(() => {
-    if (!activeList) return [];
-    const others = ['stocks', 'bonds', 'commodities', 'crypto'].flatMap((c) =>
-      itemsForClass(activeList, c, quotes),
-    );
-    return others.filter((i) => itemKey(i) !== selectedKey).slice(0, 6);
-  }, [activeList, quotes, selectedKey]);
-
   const existing = useMemo(() => new Set((activeList?.stocks || []).map(itemKey)), [activeList]);
 
   /* ---------------- courses ---------------- */
-  const courses = useMemo(() => getCoursesForWatchlistPreview(4), []);
+  const course = useMemo(() => getCoursesForWatchlistPreview(1)[0] || null, []);
   const [bookmarked, setBookmarked] = useState(() => new Set());
   useEffect(() => {
     let alive = true;
@@ -240,8 +267,16 @@ function WatchlistMonitor() {
 
   const changeClass = (id) => setUrl({ classId: id, symbol: null });
   const changeList = (id) => {
+    setSmartOnly(false);
     setUrl({ listId: id, symbol: null });
     completeTask('watchlist_2');
+  };
+  /* An alert row: select its ticker (switching tab when needed). */
+  const pickTicker = (t) => {
+    const it = (activeList?.stocks || []).find(
+      (i) => String(i.ticker).toUpperCase() === String(t).toUpperCase(),
+    );
+    if (it) setUrl({ classId: classIdOfType(it.type), symbol: String(it.ticker).toUpperCase() });
   };
 
   const star = useCallback(
@@ -327,20 +362,38 @@ function WatchlistMonitor() {
     [activeList, addItem, notify, completeTask, classId, setUrl],
   );
 
-  const alertsOn = !!(activeList && prefs[activeList.id]?.alertsEnabled);
-  const setAlertsOn = (on) => {
-    if (!activeList) return;
+  const alertsFor = (listId) => !!prefs[listId]?.alertsEnabled;
+  const setListAlerts = (listId, on) => {
+    const list = watchlists.find((w) => w.id === listId);
     const next = {
       ...readPrefs(),
-      [activeList.id]: { ...(readPrefs()[activeList.id] || {}), alertsEnabled: on },
+      [listId]: { ...(readPrefs()[listId] || {}), alertsEnabled: on },
     };
     writePrefs(next);
     setPrefs(next);
     notify(
       on
-        ? `Big-move alerts on for ${activeList.label}`
-        : `Big-move alerts off for ${activeList.label}`,
+        ? `Big-move alerts on for ${list?.label || 'this list'}`
+        : `Big-move alerts off for ${list?.label || 'this list'}`,
     );
+  };
+
+  const rename = async (listId, label) => {
+    const r = await renameList(listId, label);
+    if (r && r.ok !== false) notify(`Renamed to ${label}`);
+    return r;
+  };
+  const removeList = async (list) => {
+    const r = await deleteList(list.id);
+    if (r && r.ok === false) {
+      notify('Could not delete the list. Try again.');
+      return;
+    }
+    notify(`Deleted ${list.label}`);
+    if (list.id === activeList?.id) {
+      const next = watchlists.find((w) => w.id !== list.id);
+      setUrl({ listId: next?.id || null, symbol: null });
+    }
   };
 
   const afterSmartChange = useCallback(async () => {
@@ -376,43 +429,26 @@ function WatchlistMonitor() {
     <div className="wl-page wlm-page dashboard-page-inset ez-canvas">
       <EducationTip topic="diversification" />
 
-      <header className="wlm-top">
-        <div className="wlm-top__titles">
-          <span className="wlm-eyebrow">Market monitor</span>
-          <h1 className="wlm-title">
-            {activeList?.label || 'Watchlist'}
-            {activeList?.smart ? (
-              <span className="wlm-badge">
-                <i className="bi bi-stars" aria-hidden="true" /> Smart
-              </span>
-            ) : null}
-          </h1>
-        </div>
-        <ClassTabs value={classId} counts={counts} onChange={changeClass} />
-      </header>
-
-      <div className="wl-strip-card wlm-strip-card">
-        {loading ? (
-          <div className="wlm-strip" aria-hidden="true">
-            {[0, 1, 2, 3].map((i) => (
-              <span key={i} className="wlm-skel wlm-skel--card" />
-            ))}
-          </div>
-        ) : items.length ? (
-          <QuoteStrip
-            items={items}
-            selectedKey={selectedKey}
-            sparks={sparks}
-            politicians={politicians}
-            onSelect={select}
-          />
-        ) : (
-          <EmptyClass cls={cls} onAdd={() => setAddOpen(true)} />
-        )}
-      </div>
+      <CommandBar
+        lists={watchlists}
+        activeList={activeList}
+        smartActive={!!activeList && smartListIds.has(activeList.id)}
+        onListChange={changeList}
+        onCreateList={() => setNewListOpen(true)}
+        onAddAsset={() => setAddOpen(true)}
+        onCreateRule={() => setSmartDialog({ open: true, rule: null })}
+      />
 
       <div className="wlm-grid">
         <div className="wlm-main">
+          <ClassTabs value={classId} counts={counts} onChange={changeClass} />
+          <PulseRow
+            pulse={pulse}
+            loading={loading}
+            smartOnly={smartOnly}
+            onSmartOnly={setSmartOnly}
+          />
+
           {selected ? (
             <AssetDetail
               item={selected}
@@ -423,49 +459,48 @@ function WatchlistMonitor() {
               onRange={(range) => setUrl({ range })}
               onStar={star}
               onRemove={remove}
+              onMove={move}
+              lists={watchlists}
+              activeListId={activeList?.id}
+              updatedAt={quotesAt}
               onSendToTeam={canSend ? (it) => setSendTicker(it.ticker) : null}
-            >
-              <AlsoInWatchlist
-                items={alsoIn}
-                sparks={sparks}
-                onSelect={(it) =>
-                  setUrl({
-                    classId: classIdOfType(it.type),
-                    symbol: String(it.ticker).toUpperCase(),
-                  })
-                }
-              />
-            </AssetDetail>
+            />
+          ) : loading ? (
+            <section className="wl-chart-panel wlm-detail" aria-hidden="true">
+              <span className="wlm-skel wlm-skel--head" />
+              <span className="wlm-skel wlm-skel--chart" />
+            </section>
           ) : (
             <section className="wl-chart-panel wlm-detail wlm-detail--empty">
-              <i className="bi bi-binoculars" aria-hidden="true" />
-              <p className="wlm-strong">Pick something to monitor</p>
               <p className="wlm-sm wlm-muted">
-                Add {cls.label.toLowerCase()} to {activeList?.label || 'a watchlist'}, or let a
-                smart watchlist find them for you.
+                Pick a row in the table to see its chart and details here.
               </p>
-              <div className="wlm-row">
-                <button
-                  type="button"
-                  className="wlm-btn wlm-btn--accent"
-                  onClick={() => setAddOpen(true)}
-                >
-                  <i className="bi bi-plus-lg" aria-hidden="true" /> Add {cls.singular}
-                </button>
-                <button
-                  type="button"
-                  className="wlm-btn"
-                  onClick={() => setSmartDialog({ open: true, rule: null })}
-                >
-                  <i className="bi bi-stars" aria-hidden="true" /> New smart watchlist
-                </button>
-              </div>
             </section>
           )}
 
+          <SecuritiesTable
+            cls={cls}
+            items={items}
+            listEmpty={!loading && (activeList?.stocks || []).length === 0}
+            loading={loading}
+            sparks={sparks}
+            politicians={politicians}
+            selectedKey={selectedKey}
+            lists={watchlists}
+            activeListId={activeList?.id}
+            smartOnly={smartOnly}
+            onSmartOnly={setSmartOnly}
+            onSelect={select}
+            onStar={star}
+            onMove={move}
+            onRemove={remove}
+            onAdd={() => setAddOpen(true)}
+            onCreateRule={() => setSmartDialog({ open: true, rule: null })}
+          />
+
           <div className="wlm-duo">
-            <InsightsCard insights={insights} classId={classId} />
-            <RecentAlertsCard alerts={alerts} />
+            <SignalsCard insights={insights} moves={moves} classId={classId} />
+            <RecentAlertsCard alerts={alerts} inList={inList} onPick={pickTicker} />
           </div>
         </div>
 
@@ -473,18 +508,13 @@ function WatchlistMonitor() {
           <MyWatchlistsCard
             lists={watchlists}
             activeList={activeList}
+            smartListIds={smartListIds}
             onListChange={changeList}
-            items={items}
-            sparks={sparks}
-            selectedKey={selectedKey}
-            onSelect={select}
-            onStar={star}
-            onMove={move}
-            onRemove={remove}
             onNewList={() => setNewListOpen(true)}
-            onAdd={() => setAddOpen(true)}
-            alertsOn={alertsOn}
-            onAlertsChange={setAlertsOn}
+            onRename={rename}
+            onDelete={removeList}
+            alertsFor={alertsFor}
+            onAlertsChange={setListAlerts}
             loading={loading}
           />
           <SmartWatchlistCard
@@ -502,10 +532,9 @@ function WatchlistMonitor() {
             }}
             onChanged={afterSmartChange}
           />
+          <LearnRow course={course} bookmarked={bookmarked} onToggle={toggleBookmark} />
         </aside>
       </div>
-
-      <CoursesCard courses={courses} bookmarked={bookmarked} onToggle={toggleBookmark} />
 
       <NewWatchlistDialog
         open={newListOpen}

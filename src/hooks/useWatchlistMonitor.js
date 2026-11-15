@@ -37,9 +37,11 @@ export function useQuotes(symbols) {
           for (const [sym, q] of Object.entries(d.quotes || {})) {
             const price = Number(q?.price);
             const pct = Number(q?.changePercent ?? q?.changesPercentage);
+            const chg = q?.change == null ? NaN : Number(q.change);
             quotes[sym.toUpperCase()] = {
               price: Number.isFinite(price) && price > 0 ? price : null,
               changePct: Number.isFinite(pct) ? pct : null,
+              change: Number.isFinite(chg) ? chg : null,
             };
           }
           setState({ quotes, loading: false, updatedAt: Date.now() });
@@ -223,7 +225,13 @@ export function useWatchlistAlerts(limit = 3) {
  * is the session fetch from useWatchlists (writes need the bearer token).
  */
 export function useSmartWatchlists(authedFetch) {
-  const [state, setState] = useState({ status: 'loading', rules: [], events: [], error: null });
+  const [state, setState] = useState({
+    status: 'loading',
+    rules: [],
+    events: [],
+    weekCounts: {},
+    error: null,
+  });
   const fetcherRef = useRef(authedFetch);
   fetcherRef.current = authedFetch;
 
@@ -238,7 +246,13 @@ export function useSmartWatchlists(authedFetch) {
   const reload = useCallback(async () => {
     try {
       const d = await call('/api/watchlists/smart');
-      setState({ status: 'ready', rules: d.rules || [], events: d.events || [], error: null });
+      setState({
+        status: 'ready',
+        rules: d.rules || [],
+        events: d.events || [],
+        weekCounts: d.weekCounts || {},
+        error: null,
+      });
     } catch (e) {
       setState((s) => ({ ...s, status: 'error', error: e.message }));
     }

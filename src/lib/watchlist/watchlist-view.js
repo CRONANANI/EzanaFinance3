@@ -32,6 +32,10 @@ export const fmtSignedPct = (v) =>
   isNum(v) ? `${v > 0 ? '+' : v < 0 ? '-' : ''}${Math.abs(v).toFixed(2)}%` : 'N/A';
 
 /** "up" | "down" | "flat" */
+/** +$2.15 / -$0.40; N/A without a number. */
+export const fmtSignedUSD = (v) =>
+  isNum(v) ? `${v > 0 ? '+' : v < 0 ? '-' : ''}${fmtUSD(Math.abs(v))}` : 'N/A';
+
 export const signOf = (v) => (!isNum(v) || v === 0 ? 'flat' : v > 0 ? 'up' : 'down');
 
 /** 10:24 AM in the viewer's local time. */
@@ -62,7 +66,7 @@ export function capBucket(marketCap) {
 /**
  * One list's items for a class, starred first (most recently starred on top),
  * then in the order they were added. Quotes are merged in from `quotes`
- * ({ SYMBOL: { price, changePct } }).
+ * ({ SYMBOL: { price, changePct, change } }).
  */
 export function itemsForClass(list, classId, quotes = {}) {
   const cls = CLASS_BY_ID[classId];
@@ -75,6 +79,8 @@ export function itemsForClass(list, classId, quotes = {}) {
         ...i,
         price: q && isNum(q.price) ? q.price : null,
         changePct: q && isNum(q.changePct) ? q.changePct : null,
+        /* Day change in dollars, only when the quote carries a finite one. */
+        change: q && isNum(q.change) ? q.change : null,
       };
     })
     .sort((a, b) => {
