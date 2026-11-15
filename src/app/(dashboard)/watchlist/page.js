@@ -530,6 +530,15 @@ function WatchlistMonitor() {
                 classId: rule ? classIdOfType(rule.assetClass) : classId,
               });
             }}
+            onViewMatches={(listId) => {
+              const rule = smart.rules.find((r) => r.listId === listId);
+              setUrl({
+                listId,
+                symbol: null,
+                classId: rule ? classIdOfType(rule.assetClass) : classId,
+              });
+              setSmartOnly(true);
+            }}
             onChanged={afterSmartChange}
           />
           <LearnRow course={course} bookmarked={bookmarked} onToggle={toggleBookmark} />

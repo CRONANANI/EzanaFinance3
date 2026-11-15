@@ -7,7 +7,7 @@
  * adds new matches, and drops a 'watchlist' notification into the bell.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Modal } from '@/components/ds';
+import { Alert, Dropdown, MenuItem, Modal } from '@/components/ds';
 import { ASSET_CLASSES, CLASS_BY_TYPE, displayTicker } from '@/lib/watchlist/asset-classes';
 import {
   CHAMBERS,
@@ -30,63 +30,91 @@ import { fmtSignedPct, fmtTime, fmtUSD, signOf } from '@/lib/watchlist/watchlist
 /* Card                                                                */
 /* ------------------------------------------------------------------ */
 
-function RuleRow({ rule, busy, onToggle, onRun, onEdit, onOpen }) {
+/**
+ * One rule: its list name, the rule in plain words, the enabled switch,
+ * real run state only ("Not run yet" before the first run), the last error
+ * in an Alert, and this list's recent additions as ticker chips.
+ */
+function RuleRow({ rule, busy, recent, onToggle, onRun, onEdit, onOpen, onViewMatches }) {
   const cls = CLASS_BY_TYPE[rule.assetClass];
-  const status = !rule.enabled
-    ? { tone: 'flat', text: 'Paused' }
-    : rule.lastError
-      ? { tone: 'down', text: 'Last run failed' }
-      : rule.lastRunAt
-        ? {
-            tone: 'up',
-            text: `Ran ${fmtTime(rule.lastRunAt)}${rule.lastRunAdded ? `, +${rule.lastRunAdded}` : ''}`,
-          }
-        : { tone: 'flat', text: 'Waiting for first run' };
+  const runText = !rule.enabled
+    ? 'Paused'
+    : rule.lastRunAt
+      ? `Last run ${fmtTime(rule.lastRunAt)}, ${rule.lastRunAdded || 0} added`
+      : 'Not run yet';
   return (
     <li className="wlm-smart__rule">
-      <div className="wlm-smart__rule-main">
+      <div className="wlm-smart__rule-top">
         <button type="button" className="wlm-smart__name" onClick={() => onOpen(rule)}>
-          <i className="bi bi-stars" aria-hidden="true" />
+          <i className="bi bi-lightning-charge" aria-hidden="true" />
           <span className="wlm-ellipsis">{rule.label}</span>
         </button>
-        <span className="wlm-xs wlm-muted wlm-clamp">
-          {cls?.label}: {describeRule({ match: rule.match, conditions: rule.conditions })}
-        </span>
-        <span className={`wlm-xs wlm-tone is-${status.tone}`}>{status.text}</span>
-      </div>
-      <div className="wlm-smart__rule-actions">
         <label className="wlm-switch">
           <input
             type="checkbox"
+            role="switch"
             checked={rule.enabled}
             disabled={busy}
             onChange={(e) => onToggle(rule, e.target.checked)}
           />
           <span className="wlm-switch__track" aria-hidden="true" />
-          <span className="wlm-sr">
-            {rule.enabled ? `Pause ${rule.label}` : `Resume ${rule.label}`}
-          </span>
+          <span className="wlm-sr">{`${rule.label} enabled`}</span>
         </label>
+      </div>
+      <span className="wlm-xs wlm-soft wlm-clamp">
+        {cls?.label}: {describeRule({ match: rule.match, conditions: rule.conditions })}
+      </span>
+      <span className="wlm-xs wlm-muted">
+        {rule.enabled ? 'Checks hourly. ' : ''}
+        {runText}
+      </span>
+      {rule.lastError ? (
+        <Alert tone="warning" className="wlm-smart__error">
+          The last run did not finish: {rule.lastError}
+        </Alert>
+      ) : null}
+      {recent.length ? (
+        <ul className="wlm-smart__chips" aria-label={`Recently added to ${rule.label}`}>
+          {recent.map((e) => (
+            <li key={e.id} className="wlm-chip wlm-chip--static wlm-num">
+              {e.type === 'politician' ? e.name : displayTicker(e.ticker)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="wlm-smart__rule-actions">
         <button
           type="button"
-          className="wlm-icon-btn"
-          disabled={busy || !rule.enabled}
-          aria-label={`Run ${rule.label} now`}
-          onClick={() => onRun(rule)}
-        >
-          <i
-            className={`bi ${busy ? 'bi-hourglass-split' : 'bi-arrow-repeat'}`}
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          type="button"
-          className="wlm-icon-btn"
-          aria-label={`Edit ${rule.label}`}
+          className="wlm-btn wlm-btn--text wlm-btn--sm"
           onClick={() => onEdit(rule)}
         >
-          <i className="bi bi-pencil" aria-hidden="true" />
+          <i className="bi bi-pencil" aria-hidden="true" /> Edit rule
         </button>
+        <button
+          type="button"
+          className="wlm-btn wlm-btn--text wlm-btn--sm"
+          disabled={busy || !rule.enabled}
+          aria-busy={busy || undefined}
+          onClick={() => onRun(rule)}
+        >
+          <i className={`bi ${busy ? 'bi-hourglass-split' : 'bi-play'}`} aria-hidden="true" /> Run
+          now
+        </button>
+        <Dropdown
+          align="right"
+          trigger={
+            <span className="wlm-icon-btn wlm-icon-btn--sm" aria-label={`More for ${rule.label}`}>
+              <i className="bi bi-three-dots" aria-hidden="true" />
+            </span>
+          }
+        >
+          <MenuItem icon="bi-funnel" onClick={() => onViewMatches(rule)}>
+            View matches
+          </MenuItem>
+          <MenuItem icon="bi-list-ul" onClick={() => onOpen(rule)}>
+            Open list
+          </MenuItem>
+        </Dropdown>
       </div>
     </li>
   );
@@ -96,7 +124,15 @@ function RuleRow({ rule, busy, onToggle, onRun, onEdit, onOpen }) {
  * The "Smart watchlists" component card: each rule with its status, a pause
  * switch, Run now and Edit, then the latest auto-added assets.
  */
-export function SmartWatchlistCard({ smart, onCreate, onEdit, onOpenList, onChanged, notify }) {
+export function SmartWatchlistCard({
+  smart,
+  onCreate,
+  onEdit,
+  onOpenList,
+  onViewMatches,
+  onChanged,
+  notify,
+}) {
   const [busyId, setBusyId] = useState(null);
 
   const toggle = async (rule, enabled) => {
@@ -133,12 +169,12 @@ export function SmartWatchlistCard({ smart, onCreate, onEdit, onOpenList, onChan
   return (
     <section className="wlm-card wlm-smart" aria-labelledby="wlm-smart-h">
       <header className="wlm-card__head">
-        <i className="bi bi-stars wlm-card__icon" aria-hidden="true" />
+        <i className="bi bi-layers wlm-card__icon" aria-hidden="true" />
         <h2 id="wlm-smart-h" className="wlm-card__title">
           Smart watchlists
         </h2>
-        <button type="button" className="wlm-btn wlm-btn--sm wlm-btn--accent" onClick={onCreate}>
-          <i className="bi bi-plus-lg" aria-hidden="true" /> New
+        <button type="button" className="wlm-btn wlm-btn--text wlm-btn--sm" onClick={onCreate}>
+          <i className="bi bi-plus-lg" aria-hidden="true" /> New rule
         </button>
       </header>
 
@@ -169,34 +205,16 @@ export function SmartWatchlistCard({ smart, onCreate, onEdit, onOpenList, onChan
               key={r.id}
               rule={r}
               busy={busyId === r.id}
+              recent={smart.events.filter((e) => e.listId === r.listId).slice(0, 5)}
               onToggle={toggle}
               onRun={run}
               onEdit={onEdit}
               onOpen={(rule) => onOpenList(rule.listId)}
+              onViewMatches={(rule) => onViewMatches?.(rule.listId)}
             />
           ))}
         </ul>
       )}
-
-      {smart.events.length > 0 ? (
-        <div className="wlm-smart__feed">
-          <h3 className="wlm-eyebrow">Recently auto-added</h3>
-          <ul className="wlm-smart__events">
-            {smart.events.slice(0, 6).map((e) => (
-              <li key={e.id} className="wlm-smart__event">
-                <span className="wlm-smart__event-sym wlm-num wlm-strong">
-                  {e.type === 'politician' ? e.name : displayTicker(e.ticker)}
-                </span>
-                <span className="wlm-xs wlm-muted wlm-clamp">
-                  {e.listLabel}
-                  {e.reason ? `: ${e.reason}` : ''}
-                </span>
-                <span className="wlm-xs wlm-muted wlm-num">{fmtTime(e.at)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </section>
   );
 }

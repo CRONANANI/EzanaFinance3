@@ -751,3 +751,22 @@ test('stage B: layout wiring, text-only tabs, one list selector', () => {
   );
   assert.match(read('src/hooks/useWatchlistMonitor.js'), /weekCounts: d\.weekCounts/);
 });
+
+test('stage C: smart card shows real run state, errors, and matches', () => {
+  const card = read('src/components/watchlist/monitor/SmartWatchlist.jsx');
+  for (const s of [
+    'Not run yet',
+    'Checks hourly',
+    'role="switch"',
+    'rule.lastError',
+    '<Alert',
+    'View matches',
+    'Open list',
+    'Edit rule',
+    'Run',
+  ]) {
+    assert.ok(card.includes(s), s);
+  }
+  assert.doesNotMatch(card, /Waiting for first run|bi-stars/);
+  assert.match(read(PAGE), /setSmartOnly\(true\)/, 'View matches sets the smart-only filter');
+});
