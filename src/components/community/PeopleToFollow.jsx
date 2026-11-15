@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * People to Follow (right rail). Follow is optimistic through the existing
+ * People to follow (right rail), up to four. Follow is a text button, optimistic through the existing
  * /api/community/follow route and rolls back on failure; the page refreshes
  * the Following count (and the feed when it shows Following). Hidden when
  * there is nobody to suggest.
@@ -46,11 +46,7 @@ function Person({ p, onFollowed }) {
       <div className={`${s.row} ${s.peopleRow}`}>
         <Avatar src={p.avatar_url} name={p.name} size={40} />
         <span style={{ minWidth: 0 }}>
-          <Link
-            href={href}
-            className={`${s.ellipsis} ${s.strong}`}
-            style={{ display: 'flex', gap: 4, color: 'inherit', textDecoration: 'none' }}
-          >
+          <Link href={href} className={s.personName}>
             <span className={s.ellipsis}>{p.name}</span>
             {p.is_partner ? <VerifiedBadge /> : null}
           </Link>
@@ -61,7 +57,7 @@ function Person({ p, onFollowed }) {
         </span>
         <button
           type="button"
-          className={`${s.btn} ${s.btnOutline}`}
+          className={s.followBtn}
           aria-pressed={following}
           aria-label={`${following ? 'Unfollow' : 'Follow'} ${p.name}`}
           onClick={toggle}
@@ -82,9 +78,9 @@ export function PeopleToFollow({ onFollowed }) {
     <SectionCard
       id="people-to-follow"
       icon="bi-people"
-      title="People to Follow"
+      title="People to follow"
       state={res}
-      skeletonRows={2}
+      skeletonRows={4}
       rowHeight={52}
     >
       <ul className={s.rows}>

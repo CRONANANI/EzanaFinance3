@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Community page header (Nov 2026): search with a Cmd/Ctrl K shortcut,
- * Messages (with an unread dot) and New Post. The eyebrow, title and subtitle
+ * Community page header (Nov 15 2026): a borderless search with a Cmd/Ctrl K
+ * shortcut on the left; on the right, Messages as a text button (with an
+ * unread dot) and New post, the page's one filled button. The eyebrow, title and subtitle
  * were removed (Nov 10); the h1 stays for screen readers only. Master admin
- * and demo accounts get a "Sample data" tag.
+ * and demo accounts get a "Sample content" label.
  * Search is debounced (250ms) against /api/community/search/all and shows
  * People and Posts, five each, with arrow-key navigation; Esc closes.
  */
@@ -148,7 +149,7 @@ function CommunitySearch({ onOpenPost }) {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder="Search for people, posts or discussions…"
+          placeholder="Search for people, posts or discussions"
           role="combobox"
           aria-expanded={showMenu}
           aria-controls={listId}
@@ -157,7 +158,7 @@ function CommunitySearch({ onOpenPost }) {
           autoComplete="off"
         />
         <kbd className={s.kbd} aria-hidden="true">
-          {isMac ? '⌘K' : 'Ctrl K'}
+          {isMac ? 'Cmd K' : 'Ctrl K'}
         </kbd>
       </label>
       {showMenu ? (
@@ -223,30 +224,29 @@ export function CommunityHeader({ hasUnreadMessages, onNewPost, onOpenPost, demo
       <h1 className={s.srOnly}>Community</h1>
       <div className={s.headTools}>
         <CommunitySearch onOpenPost={onOpenPost} />
-        {demo ? (
-          <span className={s.sampleTag} title="Only admin accounts see this sample activity.">
-            <i className="bi bi-eye" aria-hidden="true" />
-            Sample data
-          </span>
-        ) : null}
-        <Link href="/community/messages" className={`${s.btn} ${s.btnSecondary}`}>
-          <i className="bi bi-chat" aria-hidden="true" />
-          Messages
-          {hasUnreadMessages ? (
-            <>
-              <span className={s.dot} aria-hidden="true" />
-              <span className={s.srOnly}>, unread messages</span>
-            </>
+        <div className={s.headActions}>
+          {demo ? (
+            <span className={s.sampleTag} title="Only admin accounts see this sample activity.">
+              Sample content
+            </span>
           ) : null}
-        </Link>
-        <button
-          type="button"
-          className={`${s.btn} ${s.btnPrimary} ${s.newPostDesktop}`}
-          onClick={onNewPost}
-        >
-          <i className="bi bi-pencil-square" aria-hidden="true" />
-          New Post
-        </button>
+          <Link href="/community/messages" className={s.btn}>
+            Messages
+            {hasUnreadMessages ? (
+              <>
+                <span className={s.dot} aria-hidden="true" />
+                <span className={s.srOnly}>, unread messages</span>
+              </>
+            ) : null}
+          </Link>
+          <button
+            type="button"
+            className={`${s.btn} ${s.btnPrimary} ${s.newPostDesktop}`}
+            onClick={onNewPost}
+          >
+            New post
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -76,6 +76,9 @@ const POSTS = [
     likes: 184,
     comments: 37,
     reposts: 21,
+    postType: 'analyst_take',
+    conviction: 78,
+    disclosure: 'Long NVDA',
   },
   {
     n: 2,
@@ -88,6 +91,14 @@ const POSTS = [
     likes: 142,
     comments: 48,
     reposts: 16,
+    poll: {
+      question: 'What is the most likely outcome at the next policy meeting?',
+      options: [
+        { id: 'a', label: 'A 25 bps cut', votes: 724 },
+        { id: 'b', label: 'No change', votes: 396 },
+        { id: 'c', label: 'A 25 bps hike', votes: 124 },
+      ],
+    },
   },
   {
     n: 3,
@@ -124,6 +135,7 @@ const POSTS = [
     likes: 218,
     comments: 52,
     reposts: 34,
+    embed: { symbols: ['TLT'], period: '1M' },
   },
   {
     n: 6,
@@ -226,6 +238,19 @@ function buildPost(p, topics) {
     created_at: ago(p.hours),
     liked_by_me: false,
     saved_by_me: false,
+    /* What a real post can carry (see /api/community/feed). */
+    poll: p.poll
+      ? {
+          question: p.poll.question,
+          options: p.poll.options,
+          total_votes: p.poll.options.reduce((n, o) => n + o.votes, 0),
+        }
+      : null,
+    ticker_embed: p.embed || null,
+    post_type: p.postType || null,
+    disclosure: p.disclosure || null,
+    conviction_pct: p.conviction ?? null,
+    my_vote: null,
     author: author(p.who),
     is_demo: true,
   };
@@ -285,6 +310,7 @@ export const DEMO_MOST_DISCUSSED = [
   { ticker: 'TSLA', posts: 287 },
   { ticker: 'AAPL', posts: 231 },
   { ticker: 'MSFT', posts: 164 },
+  { ticker: 'AMZN', posts: 148 },
 ];
 
 const TOPIC_TRENDS = [
@@ -292,6 +318,7 @@ const TOPIC_TRENDS = [
   { topic: 'Macro', posts: 341, prior: 298 },
   { topic: 'Markets', posts: 302, prior: 319 },
   { topic: 'Commodities', posts: 127, prior: 96 },
+  { topic: 'Global', posts: 88, prior: 0 },
 ];
 
 export function demoTrendingTopics(topics) {
@@ -306,7 +333,7 @@ export function demoTrendingTopics(topics) {
       label: match?.label || t.topic,
       posts: t.posts,
       prior: t.prior,
-      delta_pct: Math.round(((t.posts - t.prior) / t.prior) * 1000) / 10,
+      delta_pct: t.prior ? Math.round(((t.posts - t.prior) / t.prior) * 1000) / 10 : null,
     };
   });
 }
@@ -325,6 +352,8 @@ export const DEMO_DISCUSSIONS = [
   { post_id: postId(5), title: POSTS[4].title, replies: POSTS[4].comments, badge: 'hot' },
   { post_id: postId(2), title: POSTS[1].title, replies: POSTS[1].comments, badge: 'rising' },
   { post_id: postId(1), title: POSTS[0].title, replies: POSTS[0].comments, badge: 'popular' },
+  { post_id: postId(7), title: POSTS[6].title, replies: POSTS[6].comments, badge: 'rising' },
+  { post_id: postId(8), title: POSTS[7].title, replies: POSTS[7].comments, badge: 'popular' },
 ];
 
 export function demoLeaderboard(user, period) {
@@ -345,7 +374,13 @@ export function demoLeaderboard(user, period) {
     'Member';
   return {
     period,
-    top: [row(1, 'mei', 41.82), row(2, 'priya', 36.4), row(3, 'amara', 29.15)],
+    top: [
+      row(1, 'mei', 41.82),
+      row(2, 'priya', 36.4),
+      row(3, 'amara', 29.15),
+      row(4, 'daniel', 24.87),
+      row(5, 'jonas', 22.93),
+    ],
     me: {
       rank: DEMO_STATS.my_rank,
       user_id: user?.id || userId(0),
@@ -359,7 +394,7 @@ export function demoLeaderboard(user, period) {
   };
 }
 
-export const DEMO_PEOPLE = ['helen', 'jonas'].map((key) => ({
+export const DEMO_PEOPLE = ['helen', 'jonas', 'amara', 'daniel'].map((key) => ({
   user_id: userId(PEOPLE[key].n),
   name: PEOPLE[key].name,
   username: null,

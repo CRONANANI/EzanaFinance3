@@ -2,7 +2,7 @@
 
 /**
  * Community page primitives (Nov 2026): StatTile, SectionCard, TickerChip,
- * DeltaValue, TrendBadge, Avatar, VerifiedBadge, CountPill. Styles in
+ * DeltaValue, TrendBadge, Avatar, VerifiedBadge. All flat: text, not chips. Styles in
  * src/app/(dashboard)/community/community.module.css.
  */
 import Link from 'next/link';
@@ -36,11 +36,6 @@ export function VerifiedBadge() {
   );
 }
 
-export function CountPill({ value }) {
-  if (value == null) return null;
-  return <span className={s.countPill}>{value}</span>;
-}
-
 export function TickerChip({ ticker, href = true }) {
   if (!ticker) return null;
   const t = String(ticker).toUpperCase();
@@ -53,48 +48,34 @@ export function TickerChip({ ticker, href = true }) {
   );
 }
 
-/** Arrow icon plus a signed percentage; colour is never the only signal. */
+/** A signed percentage in the mono font. The sign carries the meaning, so
+ *  colour is never the only signal; a missing value reads N/A. */
 export function DeltaValue({ value, digits = 2, label }) {
   const text = signedPct(value, digits);
-  if (text == null) return <span className={`${s.delta} ${s.flat}`}>{label || 'n/a'}</span>;
+  if (text == null) return <span className={`${s.delta} ${s.flat}`}>{label || 'N/A'}</span>;
   const n = Number(value);
   const cls = n > 0 ? s.up : n < 0 ? s.down : s.flat;
-  const icon = n > 0 ? 'bi-arrow-up-right' : n < 0 ? 'bi-arrow-down-right' : 'bi-dash';
-  return (
-    <span className={`${s.delta} ${cls}`}>
-      <i className={`bi ${icon}`} aria-hidden="true" />
-      {text}
-    </span>
-  );
+  return <span className={`${s.delta} ${cls}`}>{text}</span>;
 }
 
 const TREND = {
-  hot: { cls: 'badgeHot', icon: 'bi-fire', label: 'Hot' },
-  rising: { cls: 'badgeRising', icon: 'bi-arrow-up', label: 'Rising' },
-  popular: { cls: 'badgePopular', icon: 'bi-arrow-up-right', label: 'Popular' },
+  hot: { cls: 'badgeHot', label: 'Hot' },
+  rising: { cls: 'badgeRising', label: 'Rising' },
+  popular: { cls: 'badgePopular', label: 'Popular' },
 };
+/** Hot, Rising or Popular as a word. No pill, no fill. */
 export function TrendBadge({ kind }) {
   const t = TREND[kind] || TREND.popular;
-  return (
-    <span className={`${s.badge} ${s[t.cls]}`}>
-      <i className={`bi ${t.icon}`} aria-hidden="true" />
-      {t.label}
-    </span>
-  );
+  return <span className={`${s.badge} ${s[t.cls]}`}>{t.label}</span>;
 }
 
-export function StatTile({ icon, value, label, extra }) {
+export function StatTile({ value, label, extra }) {
   return (
     <div className={s.stat}>
-      <span className={s.statIcon} aria-hidden="true">
-        <i className={`bi ${icon}`} />
-      </span>
-      <div style={{ minWidth: 0 }}>
-        <div className={s.statValue}>
-          {value}
-          {extra}
-        </div>
-        <div className={s.statLabel}>{label}</div>
+      <div className={s.statLabel}>{label}</div>
+      <div className={s.statValue}>
+        {value}
+        {extra}
       </div>
     </div>
   );
@@ -109,22 +90,29 @@ export function SectionCard({
   icon,
   title,
   action,
+  meta,
+  taskTarget,
   state,
   skeletonRows = 3,
   rowHeight = 44,
   children,
 }) {
   return (
-    <section className={s.card} id={id} aria-labelledby={id ? `${id}-title` : undefined}>
+    <section
+      className={s.card}
+      id={id}
+      aria-labelledby={id ? `${id}-title` : undefined}
+      data-task-target={taskTarget}
+    >
       <div className={s.cardHead}>
         <h2 className={s.cardTitle} id={id ? `${id}-title` : undefined}>
           <i className={`bi ${icon}`} aria-hidden="true" />
           {title}
         </h2>
-        {action}
+        {action || (meta ? <span className={s.cardMeta}>{meta}</span> : null)}
       </div>
       {state?.loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} aria-busy="true">
+        <div className={s.skelRows} aria-busy="true">
           {Array.from({ length: skeletonRows }).map((_, i) => (
             <div key={i} className={s.skel} style={{ height: rowHeight }} />
           ))}
@@ -132,8 +120,7 @@ export function SectionCard({
       ) : state?.error ? (
         <div className={s.cardError} role="alert">
           <span>Couldn&apos;t load this section.</span>
-          <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={state.reload}>
-            <i className="bi bi-arrow-clockwise" aria-hidden="true" />
+          <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={state.reload}>
             Retry
           </button>
         </div>

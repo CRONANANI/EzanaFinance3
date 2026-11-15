@@ -1,9 +1,11 @@
 'use client';
 
 /**
- * The Community Feed card (Nov 2026): Following | Trending | Latest tabs
- * (a proper tablist with arrow keys), a topic select that mirrors the
- * sidebar, and the post list with infinite scroll plus a Load more button.
+ * The Community feed (Nov 15 2026).
+ *   FeedControls  Following | Trending | Latest | Saved as text-only tabs (a
+ *                 proper tablist with arrow keys) and a topic select that
+ *                 mirrors the topic row. It sits beside the KPI strip.
+ *   CommunityFeed the post list with infinite scroll plus a Load more button.
  * Tab and topic live in the URL (handled by the page).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,6 +20,7 @@ const TABS = [
   { key: 'following', label: 'Following' },
   { key: 'trending', label: 'Trending' },
   { key: 'latest', label: 'Latest' },
+  { key: 'saved', label: 'Saved' },
 ];
 
 function feedUrl(tab, topic, cursor) {
@@ -32,9 +35,13 @@ function PostSkeleton() {
   return (
     <div className={s.post} aria-hidden="true">
       <div className={s.postBody}>
-        <div className={s.skel} style={{ height: 40, width: 220 }} />
-        <div className={s.skel} style={{ height: 20, width: '70%', marginTop: 12 }} />
-        <div className={s.skel} style={{ height: 36, marginTop: 8 }} />
+        <div className={s.postMeta}>
+          <div className={`${s.skel} ${s.skelCircle}`} style={{ width: 40, height: 40 }} />
+          <div className={s.skel} style={{ height: 12, width: '28%' }} />
+        </div>
+        <div className={s.skel} style={{ height: 18, width: '72%', marginTop: 16 }} />
+        <div className={s.skel} style={{ height: 12, marginTop: 12 }} />
+        <div className={s.skel} style={{ height: 12, width: '86%', marginTop: 8 }} />
       </div>
     </div>
   );
@@ -51,7 +58,7 @@ function PinnedDiscussion({ postId, onClose }) {
     return (
       <div className={s.post}>
         <p className={s.empty}>That discussion isn&apos;t available.</p>
-        <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={onClose}>
+        <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={onClose}>
           Close
         </button>
       </div>
@@ -74,12 +81,69 @@ function PinnedDiscussion({ postId, onClose }) {
             </button>
           </div>
         </div>
-        <h3 className={s.postTitle} style={{ marginTop: 10 }}>
+        <h3 className={s.postTitle} style={{ marginTop: 12 }}>
           {data.post.title}
         </h3>
         <DiscussionThread postId={postId} />
       </div>
     </article>
+  );
+}
+
+/** The feed's tabs and topic select, shown on the KPI strip's row. */
+export function FeedControls({ tab, onTab, topic, onTopic, topics }) {
+  const tabRefs = useRef([]);
+  const onTabKey = (e, i) => {
+    let j = null;
+    if (e.key === 'ArrowRight') j = (i + 1) % TABS.length;
+    if (e.key === 'ArrowLeft') j = (i - 1 + TABS.length) % TABS.length;
+    if (e.key === 'Home') j = 0;
+    if (e.key === 'End') j = TABS.length - 1;
+    if (j === null) return;
+    e.preventDefault();
+    tabRefs.current[j]?.focus();
+    onTab(TABS[j].key);
+  };
+  return (
+    <div className={s.feedControls}>
+      <div className={s.tabs} role="tablist" aria-label="Feed">
+        {TABS.map((t, i) => (
+          <button
+            key={t.key}
+            ref={(el) => {
+              tabRefs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`feed-tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls="community-feed-panel"
+            tabIndex={tab === t.key ? 0 : -1}
+            className={s.tab}
+            onClick={() => onTab(t.key)}
+            onKeyDown={(e) => onTabKey(e, i)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <label className={s.srOnly} htmlFor="feed-topic">
+        Topic
+      </label>
+      <select
+        id="feed-topic"
+        className={s.topicSelect}
+        value={topic || ''}
+        onChange={(e) => onTopic(e.target.value || null)}
+      >
+        <option value="">All topics</option>
+        {topics.map((t) => (
+          <option key={t.slug} value={t.slug}>
+            {t.label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -102,7 +166,6 @@ export function CommunityFeed({
   const [more, setMore] = useState(false);
   const seq = useRef(0);
   const sentinel = useRef(null);
-  const tabRefs = useRef([]);
 
   const load = useCallback(
     async (cursor) => {
@@ -149,65 +212,18 @@ export function CommunityFeed({
     return () => io.disconnect();
   }, [next, status, more, load]);
 
-  const onTabKey = (e, i) => {
-    let j = null;
-    if (e.key === 'ArrowRight') j = (i + 1) % TABS.length;
-    if (e.key === 'ArrowLeft') j = (i - 1 + TABS.length) % TABS.length;
-    if (e.key === 'Home') j = 0;
-    if (e.key === 'End') j = TABS.length - 1;
-    if (j === null) return;
-    e.preventDefault();
-    tabRefs.current[j]?.focus();
-    onTab(TABS[j].key);
-  };
-
   const topicLabel = topics.find((t) => t.slug === topic)?.label;
+  const saved = tab === 'saved';
 
   return (
-    <section className={s.card} aria-labelledby="community-feed-title">
-      <div className={s.feedHead}>
-        <h2 className={s.feedTitle} id="community-feed-title">
-          Community Feed
-        </h2>
-        <div className={s.tabs} role="tablist" aria-label="Feed">
-          {TABS.map((t, i) => (
-            <button
-              key={t.key}
-              ref={(el) => {
-                tabRefs.current[i] = el;
-              }}
-              type="button"
-              role="tab"
-              id={`feed-tab-${t.key}`}
-              aria-selected={tab === t.key}
-              aria-controls="community-feed-panel"
-              tabIndex={tab === t.key ? 0 : -1}
-              className={s.tab}
-              onClick={() => onTab(t.key)}
-              onKeyDown={(e) => onTabKey(e, i)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <label className={s.srOnly} htmlFor="feed-topic">
-          Topic
-        </label>
-        <select
-          id="feed-topic"
-          className={s.topicSelect}
-          value={topic || ''}
-          onChange={(e) => onTopic(e.target.value || null)}
-        >
-          <option value="">All Topics</option>
-          {topics.map((t) => (
-            <option key={t.slug} value={t.slug}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <section
+      className={s.feed}
+      aria-labelledby="community-feed-title"
+      data-task-target="community-feed"
+    >
+      <h2 className={s.srOnly} id="community-feed-title">
+        Community feed
+      </h2>
       <div id="community-feed-panel" role="tabpanel" aria-labelledby={`feed-tab-${tab}`}>
         {showFollowHint ? (
           <p className={s.hint}>
@@ -229,9 +245,8 @@ export function CommunityFeed({
 
           {status === 'error' ? (
             <div className={s.cardError} role="alert">
-              <span>Couldn&apos;t load this section.</span>
-              <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => load(null)}>
-                <i className="bi bi-arrow-clockwise" aria-hidden="true" />
+              <span>Couldn&apos;t load the feed.</span>
+              <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={() => load(null)}>
                 Retry
               </button>
             </div>
@@ -239,15 +254,30 @@ export function CommunityFeed({
 
           {status === 'ready' && posts.length === 0 ? (
             <div className={s.feedEmpty}>
-              {topicLabel
-                ? `No posts in ${topicLabel} yet.`
-                : tab === 'following'
-                  ? 'No posts from people you follow yet.'
-                  : 'No posts yet.'}
-              <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={onNewPost}>
-                <i className="bi bi-pencil-square" aria-hidden="true" />
-                New Post
-              </button>
+              {saved
+                ? topicLabel
+                  ? `No saved posts in ${topicLabel} yet`
+                  : 'No saved posts yet'
+                : topicLabel
+                  ? `No posts in ${topicLabel} yet`
+                  : tab === 'following'
+                    ? 'No posts from people you follow yet'
+                    : 'No posts yet'}
+              {saved ? (
+                <button
+                  type="button"
+                  className={`${s.btn} ${s.btnLink}`}
+                  onClick={() => onTab('latest')}
+                >
+                  Browse latest
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
+                </button>
+              ) : (
+                <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={onNewPost}>
+                  Write a post
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
+                </button>
+              )}
             </div>
           ) : null}
 
@@ -260,6 +290,9 @@ export function CommunityFeed({
                   onTopic={onTopic}
                   onDeleted={(id) => setPosts((list) => list.filter((x) => x.id !== id))}
                   onBlocked={(uid) => setPosts((list) => list.filter((x) => x.author?.id !== uid))}
+                  onUnsaved={
+                    saved ? (id) => setPosts((list) => list.filter((x) => x.id !== id)) : undefined
+                  }
                 />
               ))
             : null}
@@ -269,11 +302,11 @@ export function CommunityFeed({
               <div ref={sentinel} className={s.sentinel} aria-hidden="true" />
               <button
                 type="button"
-                className={`${s.btn} ${s.btnGhost} ${s.loadMore}`}
+                className={`${s.btn} ${s.btnLink} ${s.loadMore}`}
                 onClick={() => load(next)}
                 disabled={more}
               >
-                {more ? 'Loading…' : 'Load more'}
+                {more ? 'Loading' : 'Load more'}
               </button>
             </>
           ) : null}

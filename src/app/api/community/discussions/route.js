@@ -1,4 +1,4 @@
-/** GET /api/community/discussions: the Active Discussions card (community_active_discussions). */
+/** GET /api/community/discussions: the Active discussions card (community_active_discussions), top five. */
 import { NextResponse } from 'next/server';
 import { withSession, PRIVATE } from '@/lib/community/route-session';
 import { isCommunityDemoViewer, DEMO_DISCUSSIONS } from '@/lib/community/demo-page';
@@ -11,7 +11,7 @@ export async function GET(request) {
     if (isCommunityDemoViewer(user)) {
       return NextResponse.json({ rows: DEMO_DISCUSSIONS }, { headers: PRIVATE });
     }
-    const { data, error } = await supabase.rpc('community_active_discussions', { p_limit: 3 });
+    const { data, error } = await supabase.rpc('community_active_discussions', { p_limit: 5 });
     if (error) throw new Error(error.message);
     const rows = (data || []).map((r) => ({
       post_id: r.post_id,

@@ -76,7 +76,7 @@ export async function GET(request) {
     if (view === 'most-discussed') {
       const { data, error } = await supabase.rpc('community_most_discussed', {
         p_days: 7,
-        p_limit: 4,
+        p_limit: 5,
       });
       if (error) throw new Error(error.message);
       const rows = (data || []).map((r) => ({
@@ -95,7 +95,7 @@ export async function GET(request) {
     } else if (view === 'trending-topics') {
       const { data, error } = await supabase.rpc('community_trending_topics', {
         p_days: 7,
-        p_limit: 4,
+        p_limit: 5,
       });
       if (error) throw new Error(error.message);
       body = {

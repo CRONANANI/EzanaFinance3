@@ -1,6 +1,10 @@
 'use client';
 
-/** The four stat tiles (community_page_stats via /api/community/stats). */
+/**
+ * The KPI strip (community_page_stats via /api/community/stats). Nov 15 2026:
+ * a compact flat strip, only as wide as its content: a small grey label over
+ * a mono value, no boxes and no dividers.
+ */
 import { useState } from 'react';
 import s from '@/app/(dashboard)/community/community.module.css';
 import { StatTile } from './primitives';
@@ -40,39 +44,29 @@ export function CommunityStats() {
     return (
       <div className={s.stats} aria-busy="true">
         {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className={s.skel}
-            style={{ height: 70, borderRadius: 'var(--radius-lg)' }}
-          />
+          <div key={i} className={s.skel} style={{ width: 96, height: 44 }} />
         ))}
       </div>
     );
   }
   if (error) {
     return (
-      <div className={`${s.card} ${s.cardError}`} role="alert">
-        <span>Couldn&apos;t load this section.</span>
-        <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={reload}>
-          <i className="bi bi-arrow-clockwise" aria-hidden="true" />
+      <div className={s.cardError} role="alert">
+        <span>Couldn&apos;t load the community figures.</span>
+        <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={reload}>
           Retry
         </button>
       </div>
     );
   }
   return (
-    <div className={s.stats}>
-      <StatTile icon="bi-people" value={groupNumber(data?.total_members)} label="Total Members" />
+    <div className={s.stats} role="group" aria-label="Community figures">
+      <StatTile value={groupNumber(data?.total_members)} label="Total members" />
+      <StatTile value={groupNumber(data?.active_this_month)} label="Active this month" />
+      <StatTile value={groupNumber(data?.discussions)} label="Discussions" />
       <StatTile
-        icon="bi-activity"
-        value={groupNumber(data?.active_this_month)}
-        label="Active This Month"
-      />
-      <StatTile icon="bi-chat" value={groupNumber(data?.discussions)} label="Discussions" />
-      <StatTile
-        icon="bi-trophy"
         value={data?.my_rank ? `#${groupNumber(data.my_rank)}` : 'Unranked'}
-        label="Your Rank"
+        label="Your rank"
         extra={<RankInfo />}
       />
     </div>

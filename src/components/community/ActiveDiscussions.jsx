@@ -1,6 +1,6 @@
 'use client';
 
-/** Active Discussions (right rail): community_active_discussions, top three. */
+/** Active discussions (right rail): community_active_discussions, top five. */
 import s from '@/app/(dashboard)/community/community.module.css';
 import { SectionCard, TrendBadge } from './primitives';
 import { useCommunityResource } from './useCommunityResource';
@@ -13,11 +13,13 @@ export function ActiveDiscussions({ onOpenPost, onViewAll }) {
     <SectionCard
       id="active-discussions"
       icon="bi-chat"
-      title="Active Discussions"
+      title="Active discussions"
       state={res}
+      skeletonRows={5}
+      rowHeight={28}
       action={
         <button type="button" className={s.viewAll} onClick={onViewAll}>
-          View All <i className="bi bi-arrow-right" aria-hidden="true" />
+          View all <i className="bi bi-arrow-right" aria-hidden="true" />
         </button>
       }
     >
@@ -30,24 +32,15 @@ export function ActiveDiscussions({ onOpenPost, onViewAll }) {
               <button
                 type="button"
                 className={`${s.row} ${s.rowLink} ${s.discRow}`}
-                style={{
-                  width: '100%',
-                  border: 0,
-                  background: 'transparent',
-                  font: 'inherit',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                }}
                 onClick={() => onOpenPost(r.post_id)}
               >
                 <span className={s.rank}>{i + 1}</span>
-                <span style={{ minWidth: 0 }}>
-                  <span className={`${s.ellipsis} ${s.strong}`} style={{ display: 'block' }}>
-                    {r.title}
-                  </span>
-                  <span className={`${s.subline} ${s.num}`}>
-                    {groupNumber(r.replies)} {r.replies === 1 ? 'reply' : 'replies'}
-                  </span>
+                <span className={`${s.ellipsis} ${s.strong}`} title={r.title}>
+                  {r.title}
+                </span>
+                <span className={s.muted}>
+                  <span className={s.num}>{groupNumber(r.replies)}</span>{' '}
+                  {r.replies === 1 ? 'reply' : 'replies'}
                 </span>
                 <TrendBadge kind={r.badge} />
               </button>

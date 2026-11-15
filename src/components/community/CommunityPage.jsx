@@ -1,10 +1,17 @@
 'use client';
 
 /**
- * Community page (Nov 2026 redesign): header, then three columns: the
- * sidebar, the stats and feed, and the right rail (Insights, Active
- * Discussions, Leaderboard, People to Follow). Every section loads and fails
- * on its own. Tab, topic and a shared post (?post=) live in the URL.
+ * Community page (Nov 15 2026 redesign), one flat canvas:
+ *   row 1  search, Messages, New post
+ *   row 2  the KPI strip and the feed tabs (Following, Trending, Latest, Saved)
+ *   row 3  topics as text-only filters
+ *   then   the feed, and a right column split off by one vertical hairline
+ *          (Community insights, Active discussions, Leaderboard, People to
+ *          follow).
+ * The left navigation column is gone: its destinations were duplicates of
+ * the tabs, the topic row and the cards already on the page. Every section
+ * loads and fails on its own. Tab, topic and a shared post (?post=) live in
+ * the URL.
  *
  * Feed default: Following; Trending (with a hint) when the member follows
  * nobody yet.
@@ -14,9 +21,9 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import s from '@/app/(dashboard)/community/community.module.css';
 import { EvoComposer } from '@/components/community/redesign_v2/EvoComposer';
 import { CommunityHeader } from './CommunityHeader';
-import { CommunitySidebar, CommunityChipRow } from './CommunitySidebar';
+import { CommunityTopics } from './CommunityTopics';
 import { CommunityStats } from './CommunityStats';
-import { CommunityFeed } from './CommunityFeed';
+import { CommunityFeed, FeedControls } from './CommunityFeed';
 import { CommunityInsights } from './CommunityInsights';
 import { ActiveDiscussions } from './ActiveDiscussions';
 import { CommunityLeaderboard } from './CommunityLeaderboard';
@@ -57,7 +64,7 @@ function ComposerDialog({ open, onClose, topics, defaultTopic, onPosted }) {
       >
         <div className={s.dialogHead}>
           <h2 className={s.dialogTitle} id="composer-title">
-            New Post
+            New post
           </h2>
           <button type="button" className={s.iconBtn} aria-label="Close" onClick={onClose}>
             <i className="bi bi-x-lg" aria-hidden="true" />
@@ -162,41 +169,40 @@ export function CommunityPage() {
           onOpenPost={openPost}
         />
 
-        <div className={s.grid}>
-          <CommunitySidebar
-            tab={tab}
-            onTab={onTab}
-            topic={topic}
-            onTopic={onTopic}
-            topics={topics}
-            onToggleFollow={onToggleFollow}
-            me={me.data}
-          />
+        <div className={s.band}>
+          <CommunityStats />
+          <FeedControls tab={tab} onTab={onTab} topic={topic} onTopic={onTopic} topics={topics} />
+        </div>
 
-          <div className={s.center}>
-            <CommunityChipRow tab={tab} onTab={onTab} me={me.data} />
-            <CommunityStats />
-            {meSettled ? (
-              <CommunityFeed
-                tab={tab}
-                onTab={onTab}
-                topic={topic}
-                onTopic={onTopic}
-                topics={topics}
-                showFollowHint={showFollowHint && tab === 'trending'}
-                refreshKey={refreshKey}
-                myId={me.data?.user_id}
-                pinnedPostId={pinned}
-                onClosePinned={() => setParams({ post: null })}
-                onNewPost={() => setComposerOpen(true)}
-              />
-            ) : (
-              <section className={s.card} aria-busy="true">
-                <div className={s.skel} style={{ height: 44, marginBottom: 14 }} />
-                <div className={s.skel} style={{ height: 140 }} />
-              </section>
-            )}
-          </div>
+        <CommunityTopics
+          topic={topic}
+          onTopic={onTopic}
+          topics={topics}
+          onToggleFollow={onToggleFollow}
+        />
+
+        <div className={s.grid}>
+          {meSettled ? (
+            <CommunityFeed
+              tab={tab}
+              onTab={onTab}
+              topic={topic}
+              onTopic={onTopic}
+              topics={topics}
+              showFollowHint={showFollowHint && tab === 'trending'}
+              refreshKey={refreshKey}
+              myId={me.data?.user_id}
+              pinnedPostId={pinned}
+              onClosePinned={() => setParams({ post: null })}
+              onNewPost={() => setComposerOpen(true)}
+            />
+          ) : (
+            <section className={s.feed} aria-busy="true">
+              <div className={s.skel} style={{ height: 18, width: '60%', marginTop: 28 }} />
+              <div className={s.skel} style={{ height: 12, marginTop: 14 }} />
+              <div className={s.skel} style={{ height: 12, width: '80%', marginTop: 8 }} />
+            </section>
+          )}
 
           <aside className={s.rail} aria-label="Community highlights">
             <CommunityInsights onTopic={onTopic} />
@@ -215,7 +221,7 @@ export function CommunityPage() {
         <button
           type="button"
           className={s.fab}
-          aria-label="New Post"
+          aria-label="New post"
           onClick={() => setComposerOpen(true)}
         >
           <i className="bi bi-pencil-square" aria-hidden="true" />

@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Leaderboard (right rail): the top three for the current period, then the
- * caller's own row pinned below when they rank lower. An unranked or
+ * Leaderboard (right rail): the top five for the current period, then the
+ * caller's own row under a hairline when they rank lower. An unranked or
  * opted-out caller sees a note instead.
  */
 import Link from 'next/link';
@@ -19,14 +19,8 @@ function LbRow({ r, me = false }) {
   return (
     <li>
       <Link href={href} className={`${s.row} ${s.rowLink} ${s.lbRow} ${me ? s.meRow : ''}`}>
-        <span className={s.rank}>
-          {r.rank === 1 ? (
-            <i className={`bi bi-award-fill ${s.crown}`} role="img" aria-label="Rank 1" />
-          ) : (
-            r.rank
-          )}
-        </span>
-        <Avatar src={r.avatar_url} name={r.name} size={32} />
+        <span className={s.rank}>{r.rank}</span>
+        <Avatar src={r.avatar_url} name={r.name} size={28} />
         <span className={s.ellipsis}>
           <span className={s.strong}>{r.name}</span>
           {r.is_me ? <span className={s.youTag}>You</span> : null}
@@ -46,10 +40,13 @@ export function CommunityLeaderboard() {
       id="community-leaderboard"
       icon="bi-trophy"
       title="Leaderboard"
+      taskTarget="community-leaderboard"
       state={res}
+      skeletonRows={5}
+      rowHeight={28}
       action={
         <Link href="/leaderboard" className={s.viewAll}>
-          View All <i className="bi bi-arrow-right" aria-hidden="true" />
+          View all <i className="bi bi-arrow-right" aria-hidden="true" />
         </Link>
       }
     >
@@ -61,7 +58,7 @@ export function CommunityLeaderboard() {
         {me ? <LbRow r={me} me /> : null}
       </ol>
       {res.data && !res.data.ranked ? (
-        <p className={s.empty} style={{ marginTop: 10 }}>
+        <p className={s.empty}>
           You are not on the leaderboard.{' '}
           <Link href="/settings?tab=profile" className={s.viewAll}>
             Privacy settings

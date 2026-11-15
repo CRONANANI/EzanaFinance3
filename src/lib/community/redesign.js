@@ -7,7 +7,8 @@
 /* The period the existing leaderboard (mv_portfolio_leaderboard) is built for. */
 export const LEADERBOARD_PERIOD = 'yearly';
 
-export const FEED_TABS = ['following', 'trending', 'latest'];
+/* 'saved' lists the member's own bookmarked posts (post_saves). */
+export const FEED_TABS = ['following', 'trending', 'latest', 'saved'];
 export const FEED_PAGE = 20;
 
 export const TITLE_MIN = 3;

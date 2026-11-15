@@ -84,17 +84,23 @@ export function DiscussionThread({ postId, onReplied }) {
   return (
     <div className={s.thread}>
       {termsModal}
-      {loading ? <div className={s.skel} style={{ height: 48 }} aria-busy="true" /> : null}
+      {loading ? <div className={s.skel} style={{ height: 40 }} aria-busy="true" /> : null}
       {error ? (
         <div className={s.cardError} role="alert">
           <span>Couldn&apos;t load this discussion.</span>
-          <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={reload}>
+          <button type="button" className={`${s.btn} ${s.btnLink}`} onClick={reload}>
             Retry
           </button>
         </div>
       ) : null}
       {!loading && !error && data?.replies?.length === 0 ? (
         <p className={s.empty}>No replies yet. Start the discussion.</p>
+      ) : null}
+      {!loading && !error && data?.replies?.length ? (
+        <p className={s.replyCount}>
+          <span className={s.num}>{data.replies.length}</span>{' '}
+          {data.replies.length === 1 ? 'reply' : 'replies'}
+        </p>
       ) : null}
       {(data?.replies || []).map((r) => (
         <div key={r.id} className={s.reply}>
@@ -126,16 +132,11 @@ export function DiscussionThread({ postId, onReplied }) {
           className={s.replyInput}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Write a reply…"
+          placeholder="Write a reply"
           maxLength={MAX}
         />
-        <button
-          type="submit"
-          className={`${s.btn} ${s.btnPrimary}`}
-          style={{ height: 40 }}
-          disabled={!text.trim() || busy}
-        >
-          {busy ? 'Posting…' : 'Reply'}
+        <button type="submit" className={`${s.btn} ${s.btnLink}`} disabled={!text.trim() || busy}>
+          {busy ? 'Posting' : 'Reply'}
         </button>
       </form>
       {formError ? (

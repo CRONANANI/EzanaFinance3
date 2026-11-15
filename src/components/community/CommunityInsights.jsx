@@ -1,6 +1,7 @@
 'use client';
 
-/** Community Insights (right rail): Most Discussed | Trending Topics | Sentiment. */
+/** Community insights (right rail): Most discussed | Trending topics | Sentiment,
+ *  as text-only view tabs over flat rows. */
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import s from '@/app/(dashboard)/community/community.module.css';
@@ -9,8 +10,8 @@ import { useCommunityResource } from './useCommunityResource';
 import { groupNumber } from '@/lib/community/redesign';
 
 const VIEWS = [
-  { key: 'most-discussed', label: 'Most Discussed' },
-  { key: 'trending-topics', label: 'Trending Topics' },
+  { key: 'most-discussed', label: 'Most discussed' },
+  { key: 'trending-topics', label: 'Trending topics' },
   { key: 'sentiment', label: 'Sentiment' },
 ];
 
@@ -25,8 +26,10 @@ function MostDiscussed({ rows }) {
             className={`${s.row} ${s.rowLink} ${s.mdRow}`}
           >
             <TickerChip ticker={r.ticker} href={false} />
-            <span className={s.ellipsis}>{r.name || r.ticker}</span>
-            <span className={`${s.muted} ${s.num} ${s.mdPosts}`}>{groupNumber(r.posts)} posts</span>
+            <span className={`${s.ellipsis} ${s.strong}`}>{r.name || r.ticker}</span>
+            <span className={s.muted}>
+              <span className={s.num}>{groupNumber(r.posts)}</span> posts
+            </span>
             <DeltaValue value={r.change_pct} />
           </Link>
         </li>
@@ -43,19 +46,13 @@ function TrendingTopics({ rows, onTopic }) {
         <li key={r.slug}>
           <button
             type="button"
-            className={`${s.row} ${s.rowLink} ${s.topicRow}`}
-            style={{
-              width: '100%',
-              border: 0,
-              background: 'transparent',
-              font: 'inherit',
-              textAlign: 'left',
-              cursor: 'pointer',
-            }}
+            className={`${s.row} ${s.rowLink} ${s.trendRow}`}
             onClick={() => onTopic?.(r.slug)}
           >
             <span className={`${s.ellipsis} ${s.strong}`}>{r.label}</span>
-            <span className={`${s.muted} ${s.num}`}>{groupNumber(r.posts)} posts</span>
+            <span className={s.muted}>
+              <span className={s.num}>{groupNumber(r.posts)}</span> posts
+            </span>
             {r.prior === 0 ? (
               <span className={`${s.badge} ${s.badgeRising}`}>New</span>
             ) : (
@@ -91,11 +88,11 @@ function Sentiment({ sentiment }) {
         <span className={s.sentBear} style={{ width: `${bear}%` }} />
       </div>
       <div className={s.sentFacts}>
-        <div className={s.fact}>
-          <div className={s.muted}>Hottest ticker</div>
-          <div className={s.factValue}>{sentiment.hottest_ticker || 'None'}</div>
+        <div>
+          <div className={s.muted}>Most mentioned ticker</div>
+          <div className={s.factValue}>{sentiment.hottest_ticker || 'N/A'}</div>
         </div>
-        <div className={s.fact}>
+        <div>
           <div className={s.muted}>Posts in the last hour</div>
           <div className={s.factValue}>{groupNumber(sentiment.posts_last_hour)}</div>
         </div>
@@ -121,7 +118,8 @@ export function CommunityInsights({ onTopic }) {
     <SectionCard
       id="community-insights"
       icon="bi-bar-chart"
-      title="Community Insights"
+      title="Community insights"
+      meta="Posts from the last 7 days"
       state={{ ...res, loading: false }}
     >
       <div className={s.railTabs} role="tablist" aria-label="Insights">
@@ -145,9 +143,9 @@ export function CommunityInsights({ onTopic }) {
       </div>
       <div role="tabpanel">
         {res.loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} aria-busy="true">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className={s.skel} style={{ height: 40 }} />
+          <div className={s.skelRows} aria-busy="true">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className={s.skel} style={{ height: 28 }} />
             ))}
           </div>
         ) : res.error ? null : view === 'most-discussed' ? (

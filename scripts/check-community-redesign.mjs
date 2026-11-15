@@ -37,7 +37,7 @@ const ROUTES = [
 const COMPONENTS = [
   'CommunityPage',
   'CommunityHeader',
-  'CommunitySidebar',
+  'CommunityTopics',
   'CommunityStats',
   'CommunityFeed',
   'FeedPostCard',
@@ -71,7 +71,8 @@ test('relative times', () => {
 
 test('tabs, topics and titles are validated', () => {
   assert.equal(normalizeTab('Trending'), 'trending');
-  assert.equal(normalizeTab('saved'), null);
+  assert.equal(normalizeTab('Saved'), 'saved');
+  assert.equal(normalizeTab('popular'), null);
   assert.equal(normalizeTopic('macro-policy'), 'macro-policy');
   assert.equal(normalizeTopic('all'), null);
   assert.equal(normalizeTopic("x'; drop"), null);

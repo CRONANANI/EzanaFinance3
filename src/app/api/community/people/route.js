@@ -11,7 +11,7 @@ export async function GET(request) {
     if (isCommunityDemoViewer(user)) {
       return NextResponse.json({ rows: DEMO_PEOPLE }, { headers: PRIVATE });
     }
-    const { data, error } = await supabase.rpc('community_people_to_follow', { p_limit: 2 });
+    const { data, error } = await supabase.rpc('community_people_to_follow', { p_limit: 4 });
     if (error) throw new Error(error.message);
     const rows = (data || []).map((r) => ({
       user_id: r.user_id,
