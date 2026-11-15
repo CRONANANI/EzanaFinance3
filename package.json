@@ -28,6 +28,7 @@
     "test:sonar-valuation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-valuation.mjs",
     "test:security": "node scripts/check-security-guards.mjs",
     "test:retail-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-plaid-columns.mjs scripts/check-plan-switch.mjs scripts/check-mock-portfolio-csv.mjs",
+    "test:trading-account": "node --no-warnings --test scripts/check-trading-account.mjs",
     "test:org-command-center": "node --no-warnings --test scripts/check-org-command-center.mjs",
     "test:org-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs && node --no-warnings --test scripts/check-org-positions-sql.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-pitch-stages.mjs",
     "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-subrole.mjs",
