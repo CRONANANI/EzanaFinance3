@@ -37,7 +37,13 @@ import {
   trackStats,
   validTrack,
   yTicks,
+  COURSE_REWARD,
+  catalogueRows,
+  levelName,
+  tierName,
 } from '../src/lib/learning/hub-model.js';
+import { buildLearningSample } from '../src/lib/learning/demo-hub.js';
+import { buildProgressMap } from '../src/lib/learning-progress-logic.js';
 
 const read = (p) => fs.readFileSync(p, 'utf8');
 const NOW = Date.parse('2026-11-09T15:00:00Z');
@@ -77,7 +83,7 @@ test('tiers: one config; tier comes from the rating (562 is Silver, not Gold)', 
   assert.equal(nextTier(3000), null, 'no footer at the top tier');
   assert.deepEqual(
     tierRows().map((r) => r.range),
-    ['2,520+', '1,500 – 2,519', '500 – 1,499', '0 – 499'],
+    ['2,520+', '1,500 to 2,519', '500 to 1,499', '0 to 499'],
   );
 });
 
@@ -263,9 +269,12 @@ test('page: hub on the flat canvas, real endpoints, no synthesized history', () 
   assert.doesNotMatch(read(HUB) + read(CARDS), /Math\.sin|Math\.random|lcMappers/);
 });
 
-test('quests: read-only checkboxes in the UI, rewards only on the server', () => {
+test('quests: tasks are status marks, not inputs; rewards only on the server', () => {
   const cards = read(CARDS);
-  assert.match(cards, /readOnly/);
+  /* Nov 2026 flat-canvas redesign: the read-only checkboxes became status
+     icons, so there is nothing a member could tick. */
+  assert.doesNotMatch(cards, /type="checkbox"|onChange=\{[^}]*task/i);
+  assert.match(cards, /bi-check-square-fill/);
   assert.doesNotMatch(cards, /awardELO|quests\/daily['"`],\s*\{\s*method: 'POST'/);
   const server = read('src/lib/learning/hub-server.js');
   assert.match(server, /awardELO\(/);
@@ -287,4 +296,96 @@ test('styles and copy: tokens only, tier tokens, no root cap, no em dashes, Boot
     assert.doesNotMatch(src, /—/, `${f} has an em dash`);
     assert.doesNotMatch(src, /from 'lucide-react'/, f);
   }
+});
+
+/* ------------------------------------------------------------------ */
+/* Flat-canvas redesign (Nov 2026)                                     */
+/* ------------------------------------------------------------------ */
+
+test('course reward mirrors the server rule; levels say "level", tiers say "tier"', () => {
+  const elo = read('src/lib/elo.js');
+  for (const [level, pts] of Object.entries(COURSE_REWARD))
+    assert.match(elo, new RegExp(`${level}: ${pts},`), `${level} pays ${pts}`);
+  assert.deepEqual(COURSE_REWARD, { basic: 10, intermediate: 20, advanced: 35, expert: 55 });
+  assert.equal(pathRows('stocks', 'basic', MAP)[0].reward, 10);
+  assert.equal(levelName('basic'), 'Bronze level');
+  assert.equal(tierName(tierFor(562)), 'Silver tier');
+});
+
+test('course filter: the whole catalogue, one next course per track', () => {
+  const all = catalogueRows({}, MAP, new Set());
+  assert.equal(all.length, 121);
+  assert.equal(all.filter((r) => r.state === 'next').length, 5);
+  const hits = catalogueRows({ query: 'STOCK market' }, MAP, new Set());
+  assert.ok(hits.length > 0 && hits.length < 121);
+  assert.ok(
+    hits.every((r) => `${r.title} ${r.description}`.toLowerCase().includes('stock market')),
+  );
+  const saved = catalogueRows(
+    { savedOnly: true },
+    MAP,
+    new Set(['risk-basic-1', 'stocks-basic-8']),
+  );
+  assert.deepEqual(saved.map((r) => r.id).sort(), ['risk-basic-1', 'stocks-basic-8']);
+  assert.equal(catalogueRows({ query: 'zzzz-no-such-course' }, MAP, new Set()).length, 0);
+});
+
+test('sample content obeys the real rules and agrees with itself', () => {
+  const s = buildLearningSample(NOW);
+  assert.equal(s.is_sample, true);
+  const rows = s.courses.progress;
+  const map = buildProgressMap(rows);
+  assert.ok(rows.every((r) => r.is_sample));
+  /* The chart ends at the headline rating and the tier follows from it. */
+  assert.equal(s.rating.history.at(-1).rating, s.rating.rating);
+  assert.equal(
+    ratingSeries(s.rating.history, s.rating.rating, '3M', NOW).at(-1).rating,
+    s.rating.rating,
+  );
+  assert.equal(tierFor(s.rating.rating).key, 'silver');
+  /* Per-track ratings are exactly the course rewards plus quest rewards. */
+  const paid = (t) =>
+    orderedCourses(t)
+      .filter((c) => map[c.id]?.quiz_passed)
+      .reduce((sum, c) => sum + COURSE_REWARD[c.level], 0);
+  assert.equal(s.rating.byTrack.crypto, paid('crypto'));
+  assert.equal(s.rating.byTrack.risk, paid('risk'));
+  assert.ok(s.rating.byTrack.stocks > paid('stocks'), 'stocks also carries the quest rewards');
+  assert.equal(activeTrackCount(map), 3);
+  assert.equal(
+    pathRows('stocks', currentLevel('stocks', map), map).filter((r) => r.state === 'next').length,
+    1,
+  );
+  assert.equal(resumeTarget('stocks', rows, map).resume, true);
+  assert.deepEqual([s.streak.current_streak, s.streak.longest_streak], [6, 14]);
+  assert.equal(s.streak.days_this_week.length, 7);
+  assert.equal(s.quest.bonus.length, 3);
+  assert.ok(s.bookmarks.length > 0 && s.bookmarks.every((b) => b.is_sample));
+});
+
+test('sample content is gated on the server and never saved', () => {
+  const route = read('src/app/api/learning/sample/route.js');
+  assert.match(route, /isCommunityDemoViewer\(user\) \? buildLearningSample\(\) : null/);
+  assert.match(route, /requireAuth: true/);
+  assert.doesNotMatch(route, /getAdminClient|getUserClient|\.from\(/);
+  assert.doesNotMatch(read('src/lib/learning/demo-hub.js'), /supabase|fetch\(/);
+  const hook = read('src/components/learning/hub/useLearningHub.js');
+  assert.match(hook, /\/api\/learning\/sample/);
+  /* Both writes return before any request while sample content is showing. */
+  assert.equal((hook.match(/if \(sampleOn\) \{/g) || []).length, 2);
+  assert.match(read(CARDS), /Sample content/);
+});
+
+test('flat canvas: one filled button, per-section errors with Retry, no title block', () => {
+  const cards = read(CARDS);
+  const hub = read(HUB);
+  assert.equal((cards.match(/className="lh-primary"/g) || []).length, 1);
+  assert.doesNotMatch(cards + hub, /Welcome back|lh-eyebrow|lh-hero/);
+  assert.match(cards, /function SectionError/);
+  assert.ok((cards.match(/<SectionError/g) || []).length >= 7);
+  for (const k of ['rating', 'quest', 'streak', 'courses', 'bookmarks'])
+    assert.match(hub, new RegExp(`retry\\('${k}'\\)`), k);
+  const css = read(CSS).replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(css, /inset 2px|border-left: [23]px/);
+  assert.match(css, /--btn-primary-fg/);
 });

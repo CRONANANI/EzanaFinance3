@@ -47,6 +47,17 @@ export const LEVELS = [
 ];
 export const LEVEL_BY_KEY = Object.fromEntries(LEVELS.map((l) => [l.key, l]));
 export const levelLabel = (key) => LEVEL_BY_KEY[key]?.label || key;
+/** "Bronze level": course levels always say "level", rating tiers say "tier". */
+export const levelName = (key) => `${levelLabel(key)} level`;
+export const tierName = (tier) => `${tier?.label || ''} tier`;
+
+/**
+ * LearningELO paid for passing a course, by level. Mirrors
+ * ELO_PER_COURSE_LEVEL in src/lib/elo.js (server only, so it cannot be
+ * imported here); scripts/check-learning-hub.mjs asserts the two agree.
+ */
+export const COURSE_REWARD = { basic: 10, intermediate: 20, advanced: 35, expert: 55 };
+export const courseReward = (level) => COURSE_REWARD[level] ?? null;
 
 /** Track icon (Bootstrap Icons) and accent token. */
 export const TRACK_STYLE = {
@@ -124,7 +135,7 @@ export function tierRows() {
     const next = RATING_TIERS[i + 1];
     return {
       ...t,
-      range: next ? `${fmtInt(t.min)} – ${fmtInt(next.min - 1)}` : `${fmtInt(t.min)}+`,
+      range: next ? `${fmtInt(t.min)} to ${fmtInt(next.min - 1)}` : `${fmtInt(t.min)}+`,
     };
   }).reverse();
 }
@@ -222,23 +233,50 @@ export const activeTrackCount = (progressById) =>
  * 'next' (the track's next course, when it is in this level); the rest are
  * 'completed' or 'unstarted'. `resume` when the next course is part done.
  */
+function courseRow(c, progressById, bookmarked, next) {
+  const row = progressById[c.id];
+  const state = isDone(row) ? 'completed' : next?.id === c.id ? 'next' : 'unstarted';
+  return {
+    id: c.id,
+    code: courseCode(c),
+    title: c.title,
+    description: c.description || '',
+    track: c.track,
+    level: c.level,
+    minutes: c.duration_minutes,
+    reward: courseReward(c.level),
+    state,
+    inProgress: state !== 'completed' && row?.status === 'in_progress',
+    resume: state === 'next' && row?.status === 'in_progress',
+    bookmarked: bookmarked.has(c.id),
+  };
+}
+
 export function pathRows(trackId, level, progressById, bookmarked = new Set()) {
   const next = nextCourse(trackId, progressById);
   return orderedCourses(trackId)
     .filter((c) => c.level === level)
-    .map((c) => {
-      const row = progressById[c.id];
-      const state = isDone(row) ? 'completed' : next?.id === c.id ? 'next' : 'unstarted';
-      return {
-        id: c.id,
-        code: courseCode(c),
-        title: c.title,
-        minutes: c.duration_minutes,
-        state,
-        resume: state === 'next' && row?.status === 'in_progress',
-        bookmarked: bookmarked.has(c.id),
-      };
-    });
+    .map((c) => courseRow(c, progressById, bookmarked, next));
+}
+
+/**
+ * The whole catalogue as rows, for the course filter: every course whose
+ * title or description contains `query` (case-insensitive), optionally only
+ * saved ones. Tracks keep their curriculum order, and each track still has
+ * exactly one 'next' course.
+ */
+export function catalogueRows({ query = '', savedOnly = false }, progressById, bookmarked) {
+  const q = String(query).trim().toLowerCase();
+  const out = [];
+  for (const t of TRACK_IDS) {
+    const next = nextCourse(t, progressById);
+    for (const c of orderedCourses(t)) {
+      if (savedOnly && !bookmarked.has(c.id)) continue;
+      if (q && !`${c.title} ${c.description || ''}`.toLowerCase().includes(q)) continue;
+      out.push(courseRow(c, progressById, bookmarked, next));
+    }
+  }
+  return out;
 }
 
 /**
