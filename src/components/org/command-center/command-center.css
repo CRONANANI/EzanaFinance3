@@ -1,0 +1,1014 @@
+/* ============================================================================
+   Command Center (Team Hub home, /org-team-hub). Page-scoped: every class
+   starts with tcc-. Flat sections on the canvas (branding guide, Part A):
+   no card surface, hairlines only, text-only toggles, one filled button.
+   Tokens only. --ez-rule and --ez-rule-subtle come from home-canvas.css.
+   ============================================================================ */
+.tcc-page {
+  container: tcc / inline-size;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+/* ── Shared bits ─────────────────────────────────────────────────────────── */
+.tcc-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.tcc-pos {
+  color: var(--positive);
+}
+.tcc-neg {
+  color: var(--negative);
+}
+.tcc-warn {
+  color: var(--warning);
+}
+.tcc-na {
+  color: var(--text-muted);
+}
+.tcc-default {
+  color: var(--text-secondary);
+}
+.tcc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.tcc-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tcc-ticker {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Primary button: the one filled control on the page. */
+.tcc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+}
+.tcc-btn:hover {
+  background: var(--btn-primary-bg-hover);
+}
+/* Text button: transparent, no border, no side padding on a canvas line. */
+.tcc-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.tcc-textbtn:hover {
+  color: var(--emerald-text);
+}
+.tcc-textbtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.tcc-textbtn--accent,
+.tcc-link {
+  color: var(--emerald-text);
+}
+.tcc-textbtn--accent:hover,
+.tcc-link:hover {
+  color: var(--text-primary);
+}
+.tcc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease-out;
+}
+.tcc-rowlink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease-out;
+}
+.tcc-rowlink:hover,
+.tcc-rowlink:hover * {
+  color: var(--emerald-text);
+}
+
+/* Text-only selectors: emerald when on, grey when off. No track, no pill. */
+.tcc-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+.tcc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.tcc-toggle.tcc-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.tcc-toggle:hover {
+  color: var(--text-primary);
+}
+.tcc-toggle.is-on {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+
+.tcc-btn:focus-visible,
+.tcc-textbtn:focus-visible,
+.tcc-toggle:focus-visible,
+.tcc-link:focus-visible,
+.tcc-rowlink:focus-visible,
+.tcc-chart__plot:focus-visible,
+.tcc-page [role='button']:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Skeleton bars: the only fills on the page, and only while loading. */
+.tcc-skel {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  animation: tcc-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tcc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* One-line states */
+.tcc-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 12px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.tcc-state--error {
+  color: var(--text-secondary);
+}
+.tcc-state--error > .bi {
+  color: var(--negative);
+}
+
+/* ── Row 1: KPI strips and page actions ──────────────────────────────────── */
+.tcc-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.tcc-kpis {
+  min-width: 0;
+}
+/* Four cells to a row, columns only as wide as their content. */
+.tcc-kpistrip {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  row-gap: 12px;
+}
+.tcc-kpi {
+  display: grid;
+  grid-template-columns: 28px auto;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  justify-content: start;
+  min-height: 48px;
+  padding: 0 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.tcc-kpi:nth-child(4n + 1) {
+  padding-left: 0;
+  border-left: 0;
+}
+.tcc-kpi__icon {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+.tcc-kpi__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tcc-kpi__value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.tcc-kpi__value.tcc-pos,
+.tcc-kpi__value .tcc-pos {
+  color: var(--positive);
+}
+.tcc-kpi__value.tcc-neg,
+.tcc-kpi__value .tcc-neg {
+  color: var(--negative);
+}
+.tcc-kpi__value.tcc-na {
+  color: var(--text-muted);
+}
+
+.tcc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px 24px;
+  margin-left: auto;
+}
+.tcc-actions__context {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+.tcc-cohort {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.tcc-sample {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.tcc-actions__context .tcc-textbtn {
+  font-size: 12px;
+}
+.tcc-switch {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.tcc-switch__trigger .bi {
+  font-size: 11px;
+}
+.tcc-switch__error {
+  font-size: 12px;
+  color: var(--negative);
+}
+
+/* ── Rows of side-by-side sections ───────────────────────────────────────── */
+.tcc-row {
+  display: grid;
+  column-gap: 31.5px; /* 64px between sections, the rule centred */
+  padding: 24px 0;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.tcc-row:last-of-type {
+  border-bottom: 0;
+}
+.tcc-row--wide {
+  grid-template-columns: minmax(0, 620fr) 1px minmax(0, 443fr);
+}
+.tcc-row--narrow {
+  grid-template-columns: minmax(0, 500fr) 1px minmax(0, 563fr);
+}
+.tcc-row--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+.tcc-vrule {
+  width: 1px;
+  align-self: stretch;
+  background: var(--ez-rule);
+}
+.tcc-section {
+  min-width: 0;
+}
+.tcc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 20px;
+  margin-bottom: 14px;
+}
+.tcc-title {
+  margin: 0;
+  font-size: var(--ez-title-size);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.tcc-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tcc-rows > li {
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.tcc-rows > li:last-child {
+  border-bottom: 0;
+}
+.tcc-more {
+  margin-top: 10px;
+}
+
+/* ── Fund performance ────────────────────────────────────────────────────── */
+.tcc-perf__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px 148px;
+  column-gap: 24px;
+}
+.tcc-chart {
+  min-width: 0;
+}
+.tcc-chart__plot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: crosshair;
+}
+.tcc-chart__plot svg {
+  display: block;
+  overflow: visible;
+}
+.tcc-chart__grid {
+  stroke: var(--ez-rule-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.tcc-chart__tick {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.tcc-chart__line {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.tcc-chart__bench {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
+}
+.tcc-chart__cross {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+.tcc-chart__dot {
+  fill: var(--emerald);
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+/* The hover read-out is an overlay, so it keeps a surface. */
+.tcc-chart__tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+.tcc-chart__tipval {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.tcc-chart__tipsub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.tcc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 10px 0 0;
+  padding: 0 0 0 52px;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.tcc-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tcc-legend__swatch {
+  width: 16px;
+  height: 2px;
+  background: var(--emerald);
+}
+.tcc-legend__swatch--dotted {
+  height: 0;
+  background: transparent;
+  border-top: 2px dotted var(--text-muted);
+}
+.tcc-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.tcc-readout dl {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+.tcc-readout dt {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.tcc-readout dd {
+  margin: 2px 0 0;
+  min-height: 24px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.tcc-readout dd.tcc-pos {
+  color: var(--positive);
+}
+.tcc-readout dd.tcc-neg {
+  color: var(--negative);
+}
+.tcc-readout dd.tcc-na {
+  color: var(--text-muted);
+}
+.tcc-readout dd.tcc-readout__words {
+  font-size: 14px;
+}
+.tcc-readout__note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.tcc-readout__link {
+  margin-top: auto;
+}
+
+/* ── Needs your attention ────────────────────────────────────────────────── */
+.tcc-attn__filters {
+  margin-bottom: 4px;
+}
+.tcc-attn__row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 76px 92px minmax(84px, auto);
+  column-gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+}
+.tcc-attn__icon {
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+.tcc-attn__icon.tcc-neg {
+  color: var(--negative);
+}
+.tcc-attn__main,
+.tcc-page a.tcc-attn__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  gap: 2px;
+  min-width: 0;
+}
+/* A row is already a full-height target; its link adds no height of its own. */
+.tcc-rows .tcc-rowlink {
+  min-height: 0;
+}
+.tcc-attn__kind,
+.tcc-attn__sub {
+  max-width: 100%;
+}
+.tcc-attn__kind {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tcc-attn__sub {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.tcc-attn__owner {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tcc-attn__date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tcc-attn__date.tcc-na {
+  color: var(--text-muted);
+}
+.tcc-attn__status {
+  display: flex;
+  justify-content: flex-end;
+}
+.tcc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color 0.15s ease-out;
+}
+.tcc-status.tcc-pos {
+  color: var(--positive);
+}
+.tcc-status.tcc-neg {
+  color: var(--negative);
+}
+.tcc-status--menu {
+  cursor: pointer;
+}
+.tcc-status--menu:hover {
+  color: var(--text-primary);
+}
+.tcc-status__chev {
+  font-size: 10px;
+}
+
+/* ── Upcoming dates ──────────────────────────────────────────────────────── */
+.tcc-dates__row {
+  display: grid;
+  grid-template-columns: 104px 96px 152px minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 13px;
+}
+.tcc-dates__date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tcc-dates__kind {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.tcc-dates__team,
+.tcc-dates__title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tcc-dates__team {
+  color: var(--text-secondary);
+}
+.tcc-dates__title {
+  color: var(--text-primary);
+}
+
+/* ── Label and value pairs (digest, council counts) ──────────────────────── */
+.tcc-pairs {
+  margin: 0;
+}
+.tcc-pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 14px;
+}
+.tcc-pair:last-child {
+  border-bottom: 0;
+}
+.tcc-pair dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+.tcc-pair dt .bi {
+  color: var(--text-muted);
+}
+.tcc-pair dd {
+  margin: 0;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* ── Sector teams ────────────────────────────────────────────────────────── */
+.tcc-table__head,
+.tcc-table__row {
+  display: grid;
+  grid-template-columns: 24px 120px minmax(0, 1fr) 84px 140px;
+  column-gap: 16px;
+  align-items: center;
+}
+.tcc-table__head {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.tcc-table__row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+}
+.tcc-table__row:last-child {
+  border-bottom: 0;
+}
+.tcc-table__rank {
+  color: var(--text-muted);
+}
+.tcc-table__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tcc-table__roi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.tcc-table__roi > .tcc-mono {
+  flex: 0 0 64px;
+}
+.tcc-table__num {
+  text-align: right;
+}
+.tcc-table__row .tcc-table__num {
+  color: var(--text-primary);
+}
+.tcc-table__tickers {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tcc-table__head .tcc-table__tickers {
+  color: var(--text-muted);
+}
+.tcc-bar {
+  flex: 1;
+  max-width: 112px;
+  height: 3px;
+}
+.tcc-bar__fill {
+  display: block;
+  height: 100%;
+  background: var(--emerald);
+}
+.tcc-bar__fill.is-neg {
+  background: var(--negative);
+}
+
+/* ── Setup checklist ─────────────────────────────────────────────────────── */
+.tcc-setup__row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 11px 0;
+  font-size: 14px;
+}
+.tcc-setup__icon {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.tcc-setup__row.is-done .tcc-setup__icon {
+  color: var(--positive);
+}
+.tcc-setup__label {
+  color: var(--text-primary);
+}
+.tcc-setup__row.is-done .tcc-setup__label {
+  color: var(--text-secondary);
+}
+.tcc-setup__count {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Fund data health ────────────────────────────────────────────────────── */
+.tcc-health__row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+}
+.tcc-health__row > .bi {
+  font-size: 16px;
+  line-height: 1;
+}
+.tcc-health__label {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.tcc-health__value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tcc-health__value.tcc-na {
+  color: var(--text-muted);
+}
+.tcc-health__overall {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── Council snapshot ────────────────────────────────────────────────────── */
+.tcc-council {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  column-gap: 24px;
+}
+.tcc-council__me {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding-top: 8px;
+}
+.tcc-council__me dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.tcc-council__me dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── New task dialog (an overlay: it keeps the library's surface) ────────── */
+.tcc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tcc-form__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.tcc-form__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.tcc-flatbtn:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Narrow layouts (by the width of the page column, not the window, so
+      the page reflows the same whether the sidebar is beside or above it) ── */
+@container tcc (max-width: 940px) {
+  .tcc-row,
+  .tcc-row--wide,
+  .tcc-row--narrow {
+    display: block;
+  }
+  .tcc-row > .tcc-vrule {
+    display: block;
+    width: auto;
+    height: 1px;
+    margin: 24px 0;
+  }
+}
+@container tcc (max-width: 620px) {
+  .tcc-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .tcc-actions__context {
+    align-items: flex-start;
+    text-align: left;
+    flex: 1 1 100%;
+  }
+  .tcc-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tcc-kpi,
+  .tcc-kpi:nth-child(4n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .tcc-perf__body {
+    display: block;
+  }
+  .tcc-perf__body > .tcc-vrule {
+    display: none;
+  }
+  .tcc-readout {
+    margin-top: 16px;
+  }
+  .tcc-readout dl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px 16px;
+  }
+  .tcc-legend {
+    padding-left: 0;
+  }
+  .tcc-attn__row {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+  .tcc-attn__owner {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tcc-attn__date {
+    grid-column: 3;
+    grid-row: 2;
+    text-align: right;
+  }
+  .tcc-attn__status {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .tcc-dates__row {
+    grid-template-columns: 96px minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .tcc-dates__date {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tcc-dates__title {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .tcc-dates__kind {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .tcc-dates__team {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tcc-table__head,
+  .tcc-table__row {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+  }
+  .tcc-table__num,
+  .tcc-table__tickers,
+  .tcc-bar {
+    display: none;
+  }
+  .tcc-table__roi > .tcc-mono {
+    flex: 0 0 auto;
+  }
+  .tcc-council {
+    display: block;
+  }
+  .tcc-council > .tcc-vrule {
+    display: none;
+  }
+  .tcc-council__me {
+    padding-top: 16px;
+  }
+  .tcc-form__pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Touch: every text control gets a 44px target. */
+@media (pointer: coarse) {
+  .tcc-toggle,
+  .tcc-textbtn,
+  .tcc-link,
+  .tcc-status--menu {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tcc-skel {
+    animation: none;
+  }
+  .tcc-btn,
+  .tcc-textbtn,
+  .tcc-toggle,
+  .tcc-link,
+  .tcc-rowlink,
+  .tcc-status {
+    transition: none;
+  }
+}

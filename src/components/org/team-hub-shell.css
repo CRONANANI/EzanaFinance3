@@ -1,0 +1,282 @@
+/* ============================================================================
+   Team Hub shell: the shared sidebar and frame of every Team Hub page
+   (the /org-team-hub routes, Trading Desk, Competitions, Council Rankings).
+   Rendered only by TeamHubShell and TeamHubSidebar.
+
+   Branding guide, sections 3.5 and 6.6: a side column is split from the page
+   by ONE full-height hairline with 24px of clear space on each side, and a
+   selected row is emerald text only (no pill, no wash, no accent bar).
+
+   The dashboard shell (.dashboard-main-content) already carries the
+   navigation bar's envelope, so nothing here adds side padding: sidebar text
+   starts on the logo line and the page ends on the logout line.
+
+   Tokens only. Light and dark follow the tokens.
+   ============================================================================ */
+.thub-shell {
+  /* The canvas hairlines (home-canvas.css), declared here because the shell
+     sits outside each page's own canvas root. */
+  --thub-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --thub-skel: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  display: flex;
+  align-items: stretch;
+  /* Run the hairline from the navigation bar to the foot of the page: cancel
+     the dashboard shell's own top and bottom padding and re-apply it inside. */
+  margin-top: -1.5rem;
+  margin-bottom: -3rem;
+  min-height: calc(100vh - var(--navbar-height));
+  font-family: var(--font-sans);
+}
+body:not(.light-mode) .thub-shell {
+  --thub-rule: color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+
+.thub-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 0 3rem 24px;
+  border-left: 1px solid var(--thub-rule);
+}
+
+/* A short fade of the page only, once per navigation. */
+.thub-fade {
+  animation: thub-fade-in 160ms ease-out both;
+}
+@keyframes thub-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.thub-side {
+  flex: 0 0 200px;
+  width: 200px;
+  margin-right: 24px;
+  /* Pinned under the fixed navigation bar while the page scrolls. On a short
+     window the column scrolls on its own so no destination is cut off. */
+  position: sticky;
+  top: var(--navbar-height);
+  align-self: flex-start;
+  max-height: calc(100vh - var(--navbar-height));
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.thub-side::-webkit-scrollbar {
+  display: none;
+}
+
+/* Member */
+.thub-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1.5rem 0 20px;
+  border-bottom: 1px solid var(--thub-rule);
+}
+.thub-avatar {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.thub-member__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.thub-member__name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thub-member__line {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  overflow-wrap: anywhere;
+}
+
+/* Items */
+.thub-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 24px;
+}
+.thub-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease-out;
+}
+.thub-item__icon {
+  flex: 0 0 16px;
+  width: 16px;
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+}
+.thub-item__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thub-item:hover {
+  color: var(--text-primary);
+}
+/* Selected: emerald text. Nothing else. */
+.thub-item.is-current,
+.thub-item.is-current:hover {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.thub-item--accent {
+  color: var(--emerald-text);
+}
+.thub-item:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Counts: plain numbers, no badge. */
+.thub-item__count {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.thub-item__count.is-negative {
+  color: var(--negative);
+}
+.thub-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Member skeleton (the items always render) */
+.thub-skel {
+  display: block;
+  background: var(--thub-skel);
+  animation: thub-pulse 1.4s ease-in-out infinite;
+}
+.thub-skel--avatar {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.thub-skel--name {
+  width: 110px;
+  height: 12px;
+  margin: 4px 0;
+}
+.thub-skel--line {
+  width: 70px;
+  height: 10px;
+  margin: 3px 0;
+}
+@keyframes thub-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thub-fade,
+  .thub-skel {
+    animation: none;
+  }
+  .thub-item {
+    transition: none;
+  }
+}
+
+/* ── Tablet and phone: the sidebar moves above the page ───────────────────── */
+@media (max-width: 900px) {
+  .thub-shell {
+    flex-direction: column;
+    margin-top: 0;
+    margin-bottom: 0;
+    min-height: 0;
+  }
+  .thub-side {
+    position: static;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    overflow: visible;
+    margin-right: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--thub-rule);
+  }
+  .thub-member {
+    padding: 0 0 8px;
+    border-bottom: 0;
+  }
+  .thub-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 20px;
+    padding: 0;
+  }
+  .thub-item {
+    display: inline-flex;
+    gap: 8px;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .thub-item__label {
+    flex: 0 1 auto;
+    overflow: visible;
+  }
+  .thub-item__count {
+    margin-left: 0;
+  }
+  .thub-main {
+    padding: 16px 0 0;
+    border-left: 0;
+  }
+}

@@ -1,61 +1,65 @@
-import {
-  SkeletonRegion,
-  SkeletonStatStrip,
-  SkeletonChart,
-  SkeletonCard,
-  token,
-} from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for the org Command Center.
- *
- * Renders OUTSIDE the OrgProvider data context (it is the Suspense fallback
- * for the page, wrapped by the org-shell layout — whose real OrgHubNav rail
- * stays painted beside it). Pure presentational chrome + shape-matched
- * skeletons: NO useOrg, NO fetch, NO import of the page component.
+ * Route loading state for the Command Center, in the page's final layout:
+ * the KPI strips, then rows of two sections. It renders inside the shared
+ * Team Hub shell, whose sidebar stays painted beside it. Presentation only:
+ * no data, no org context, no import of the page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontSans,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
+
+function Block({ lines = 4 }) {
+  return (
+    <div className="tcc-section">
+      <div className="tcc-head">{bar(180, 18)}</div>
+      <ul className="tcc-rows">
+        {Array.from({ length: lines }).map((_, i) => (
+          <li key={i} className="tcc-health__row">
+            {bar(16, 16)}
+            {bar('60%')}
+            {bar(72, 11)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function OrgTeamHubLoading() {
   return (
-    <SkeletonRegion label="Loading Command Center…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Command Center</h1>
-
-      <div style={{ marginTop: 22 }}>
-        <SkeletonStatStrip tiles={4} />
+    <SkeletonRegion
+      label="Loading Command Center"
+      className="dashboard-page-inset ez-canvas tcc-page"
+    >
+      <div className="tcc-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(88, 16)}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-      <div style={{ marginTop: 20 }}>
-        <SkeletonChart h={220} />
+      <div className="tcc-row tcc-row--wide">
+        <div className="tcc-section">
+          <div className="tcc-head">{bar(180, 18)}</div>
+          {bar('100%', 216)}
+        </div>
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={4} />
       </div>
-
-      <div
-        style={{
-          marginTop: 20,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: 16,
-        }}
-      >
-        {Array.from({ length: 6 }).map((_, i) => (
-          <SkeletonCard key={i} rows={2} />
-        ))}
+      <div className="tcc-row tcc-row--wide">
+        <Block lines={5} />
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={5} />
       </div>
     </SkeletonRegion>
   );

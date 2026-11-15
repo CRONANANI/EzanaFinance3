@@ -2,7 +2,7 @@ import './org-design-system.css';
 import { redirect } from 'next/navigation';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
-import OrgTeamHubShell from './OrgTeamHubShell';
+import { TeamHubShell } from '@/components/org/TeamHubShell';
 
 /**
  * Server-side access gate for the ENTIRE org (Team Hub) experience.
@@ -14,8 +14,8 @@ import OrgTeamHubShell from './OrgTeamHubShell';
  *
  * Access is determined by MEMBERSHIP, enforced here — not by which login form
  * was used. So an org login by a non-member, or a non-member visiting the URL
- * directly, both land back on /home. The interactive shell (rail + fade) stays a
- * client component in OrgTeamHubShell; only the gate is server-side.
+ * directly, both land back on /home. The interactive shell (sidebar and fade) is the
+ * shared client component TeamHubShell; only the gate is server-side.
  */
 export default async function OrgTeamHubLayout({ children }) {
   const supabase = getUserClient();
@@ -23,5 +23,5 @@ export default async function OrgTeamHubLayout({ children }) {
   if (!member) {
     redirect('/home');
   }
-  return <OrgTeamHubShell>{children}</OrgTeamHubShell>;
+  return <TeamHubShell>{children}</TeamHubShell>;
 }

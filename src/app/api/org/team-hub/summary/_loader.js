@@ -62,8 +62,11 @@ export async function loadTeamHubSummary(supabase, member) {
       .from('org_fund_snapshots')
       .select('snapshot_date, total_value, total_cost, benchmark_return_pct')
       .eq('org_id', orgId)
-      .order('snapshot_date', { ascending: true })
-      .limit(64),
+      // Newest first, then reversed below. Ascending with a limit returned the
+      // OLDEST rows, so the chart stopped advancing once a council had more
+      // snapshots than the limit. 366 covers the longest range on the page (1Y).
+      .order('snapshot_date', { ascending: false })
+      .limit(366),
   ]);
 
   // ── Sector desk: per-team sleeves ranked by ROI ──────────────
@@ -129,7 +132,7 @@ export async function loadTeamHubSummary(supabase, member) {
       openViolations: (violations || []).length,
     },
     sectors,
-    snapshots: (snapshots || []).map((s) => ({
+    snapshots: [...(snapshots || [])].reverse().map((s) => ({
       date: s.snapshot_date,
       value: Number(s.total_value) || 0,
       benchmarkValue:

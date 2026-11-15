@@ -1,18 +1,12 @@
 'use client';
 
 import '../org-team-hub/org-design-system.css';
-import { OrgHubNav } from '@/components/org/OrgHubNav';
+import { TeamHubShell } from '@/components/org/TeamHubShell';
 
 /**
- * Pitch Competition Command Center lives outside the org-team-hub route group but
- * is an org page, so it renders the SAME shared OrgHubNav rail for a consistent
- * sidebar. The --org-* theme tokens come from the root OrgThemeProvider.
+ * Competitions lives outside the org-team-hub route group but is an org page, so
+ * it renders inside the same shared TeamHubShell for one consistent sidebar.
  */
 export default function OrgCompetitionsLayout({ children }) {
-  return (
-    <div className="org-shell">
-      <OrgHubNav />
-      <div className="org-shell-main">{children}</div>
-    </div>
-  );
+  return <TeamHubShell fade={false}>{children}</TeamHubShell>;
 }

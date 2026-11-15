@@ -1,18 +1,13 @@
 'use client';
 
 import '../org-team-hub/org-design-system.css';
-import { OrgHubNav } from '@/components/org/OrgHubNav';
+import { TeamHubShell } from '@/components/org/TeamHubShell';
 
 /**
  * Trading Desk lives outside the org-team-hub route group but is an org page, so
- * it renders the SAME shared OrgHubNav rail — identical sidebar everywhere. The
- * rail's "Trading Desk" item is route-matched active here.
+ * it renders inside the same shared TeamHubShell: one sidebar everywhere. The
+ * sidebar marks "Trading Desk" as the current page from the route.
  */
 export default function OrgTradingLayout({ children }) {
-  return (
-    <div className="org-shell">
-      <OrgHubNav />
-      <div className="org-shell-main">{children}</div>
-    </div>
-  );
+  return <TeamHubShell fade={false}>{children}</TeamHubShell>;
 }
