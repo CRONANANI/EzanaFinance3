@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { isAssignmentTarget } from '@/lib/org-assignment-submit';
+import { ALLOWED_FROM, ASSIGNEE_STATUSES, MANAGER_STATUSES } from '@/lib/org-assignments-model';
 import { MANAGER_ROLES, TYPES, STATUSES, resolveTargetsToMembers } from './_shared';
 import { loadAssignments, ROSTER_COLS } from './_loader';
 
@@ -231,18 +232,9 @@ export const POST = withApiGuard(
      assignee: assigned → in_progress → submitted (and returned → in_progress/submitted)
      manager:  submitted → under_review → complete | under_review → returned
                (returning REQUIRES a comment; graded carries the rubric)
-   'overdue' is derived and rejected on write. */
-const ASSIGNEE_STATUSES = ['in_progress', 'submitted'];
-const MANAGER_STATUSES = ['under_review', 'returned', 'complete', 'graded'];
-const ALLOWED_FROM = {
-  in_progress: ['assigned', 'returned'],
-  submitted: ['assigned', 'in_progress', 'returned'],
-  under_review: ['submitted'],
-  returned: ['submitted', 'under_review'],
-  complete: ['submitted', 'under_review'],
-  graded: ['submitted', 'under_review', 'complete'],
-};
-
+   'overdue' is derived and rejected on write. The status path itself lives in
+   src/lib/org-assignments-model.js, which the page reads too, so a row never
+   offers a step this route would refuse. */
 export const PATCH = withApiGuard(
   async (request) => {
     const supabase = getUserClient();

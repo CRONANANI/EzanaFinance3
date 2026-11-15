@@ -32,6 +32,7 @@
     "test:org-command-center": "node --no-warnings --test scripts/check-org-command-center.mjs",
     "test:org-trading-desk": "node --no-warnings --test scripts/check-org-trading-desk.mjs",
     "test:org-fund-analytics": "node --no-warnings --test scripts/check-org-fund-analytics.mjs",
+    "test:org-assignments": "node --no-warnings --test scripts/check-org-assignments.mjs",
     "test:org-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs && node --no-warnings --test scripts/check-org-positions-sql.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-pitch-stages.mjs",
     "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-subrole.mjs",
     "test:retail-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-retail-qa.mjs && node --no-warnings --test scripts/check-retail-qa-sql.mjs",

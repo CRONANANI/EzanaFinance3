@@ -69,10 +69,23 @@ export const GET = withApiGuard(
 
     const rosterList = roster || [];
     const byUser = new Map(rosterList.map((m) => [m.user_id, m]));
-    const people = resolveTargetsToMembers(targets || [], rosterList);
-    const assignees = (
-      people.length ? people : rosterList.filter((m) => m.user_id === assignment.assigned_to)
-    ).map((m) => ({
+    const isManager = assertOrgRole(member, MANAGER_ROLES);
+    const resolved = resolveTargetsToMembers(targets || [], rosterList);
+    const base = resolved.length
+      ? resolved
+      : rosterList.filter((m) => m.user_id === assignment.assigned_to);
+    /* Who may start and submit. A manager reads every target, so the resolved
+       list is complete for them. Anyone else can only read this row when it
+       is theirs (the legacy assigned_to, or a member, team, cohort, role or
+       whole-council target: the same ids the submit route accepts), while the
+       team, cohort and role target rows are hidden from them. So for a
+       non-manager, reading the row is the evidence. Before this, only the
+       legacy assigned_to saw Start and Submit. */
+    const targeted = base.some((m) => m.id === member.id);
+    const isAssignee = assignment.assigned_to === member.user_id || targeted || !isManager;
+    const self = rosterList.find((m) => m.id === member.id);
+    const people = isAssignee && !targeted && self ? [...base, self] : base;
+    const assignees = people.map((m) => ({
       member_id: m.id,
       user_id: m.user_id,
       name: m.display_name || 'Member',
@@ -88,6 +101,7 @@ export const GET = withApiGuard(
         overdue: deriveOverdue(assignment),
         archived: TERMINAL_STATUSES.includes(assignment.status),
         assignees,
+        assignee_targets: targets || [],
         assigner_name: assignment.assigned_by ? nameOf(assignment.assigned_by) : null,
       },
       submissions: (submissions || []).map((s) => ({
@@ -99,8 +113,8 @@ export const GET = withApiGuard(
       viewer: {
         userId: member.user_id,
         memberId: member.id,
-        canReview: assertOrgRole(member, MANAGER_ROLES),
-        isAssignee: assignment.assigned_to === member.user_id,
+        canReview: isManager,
+        isAssignee,
       },
     });
   },

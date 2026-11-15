@@ -9,6 +9,7 @@
  * handling (route → 500 with error.message; page → null initialData).
  */
 import { assertOrgRole } from '@/lib/org-trading-server';
+import { computeAssignmentMetrics, tabCounts } from '@/lib/org-assignments-model';
 import {
   MANAGER_ROLES,
   TYPES,
@@ -109,7 +110,18 @@ export async function loadAssignments(supabase, member) {
   // RLS still guarantees org isolation; this only narrows within the org. Lights
   // up as each university's reports_to hierarchy is populated at onboarding —
   // until then everyone correctly sees just their own work (empty reports set).
+  //
+  // A member who is not a manager can only read an assignment row when it is
+  // theirs: the row policies admit the legacy assigned_to and the ids returned
+  // by auth_targeted_assignment_ids() (member, team, cohort, role or whole
+  // council). The target rows themselves are hidden from the people a team,
+  // cohort or role target points at, so for these members the row being
+  // readable IS the evidence that they are an assignee. Without this, work
+  // given through a team, cohort, role or the whole council never reached
+  // the people it was given to (no row, no Start, no Submit), although the
+  // server accepts their submission.
   const isRelevant = (a) => {
+    if (!canAssign) return true;
     if (a.created_by === member.user_id || a.assigned_by === member.user_id) return true;
     if (a.assigned_to === member.user_id) return true;
     const people = peopleFor(a);
@@ -164,7 +176,14 @@ export async function loadAssignments(supabase, member) {
   // the filtered set the board shows, not org-wide totals.
   const enriched = relevantAssignments.map((a) => {
     const targets = targetsByAssignment.get(a.id) || [];
-    const people = peopleFor(a);
+    const resolved = peopleFor(a);
+    // See isRelevant: a non-manager who can read the row is one of its people,
+    // even when the targets that say so are hidden from them.
+    const self = byUserId.get(member.user_id);
+    const people =
+      !canAssign && self && !resolved.some((p) => p.id === member.id)
+        ? [...resolved, self]
+        : resolved;
     const assignees = people.map((m) => ({
       member_id: m.id,
       user_id: m.user_id,
@@ -173,7 +192,9 @@ export async function loadAssignments(supabase, member) {
     }));
     const overdue = deriveOverdue(a, now);
     const mine =
-      a.assigned_to === member.user_id || assignees.some((x) => x.user_id === member.user_id);
+      !canAssign ||
+      a.assigned_to === member.user_id ||
+      assignees.some((x) => x.user_id === member.user_id);
     const onMyTeam =
       !!member.team_id &&
       (people.some((m) => m.team_id === member.team_id) ||
@@ -196,53 +217,11 @@ export async function loadAssignments(supabase, member) {
     };
   });
 
-  // ── Metrics ───────────────────────────────────────────────────────────────
-  const open = enriched.filter((a) => !a.archived).length;
-  const overdueCount = enriched.filter((a) => a.overdue).length;
-  const awaitingReview = enriched.filter((a) =>
-    ['submitted', 'under_review'].includes(a.status),
-  ).length;
-
-  // Completion rate for the current term (cohort). Delta vs the previous term
-  // is computed only when both cohorts have assignments — otherwise null.
-  const completionFor = (list) => {
-    if (!list.length) return null;
-    const done = list.filter((a) => TERMINAL_STATUSES.includes(a.status)).length;
-    return Math.round((done / list.length) * 1000) / 10;
-  };
-  const currentCohort = (cohorts || []).find((c) => c.is_current && !c.archived) || null;
-  const priorCohort =
-    (cohorts || []).find((c) => c.id !== currentCohort?.id && !c.archived) ||
-    (cohorts || []).find((c) => c.id !== currentCohort?.id) ||
-    null;
-  const termList = currentCohort
-    ? enriched.filter((a) => a.cohort_id === currentCohort.id)
-    : enriched;
-  const completionRate = completionFor(termList);
-  let completionDelta = null;
-  if (currentCohort && priorCohort) {
-    const priorRate = completionFor(enriched.filter((a) => a.cohort_id === priorCohort.id));
-    const curRate = completionFor(enriched.filter((a) => a.cohort_id === currentCohort.id));
-    if (priorRate != null && curRate != null) {
-      completionDelta = Math.round((curRate - priorRate) * 10) / 10;
-    }
-  }
-
-  const metrics = {
-    open,
-    overdue: overdueCount,
-    awaiting_review: awaitingReview,
-    completion_rate_pct: completionRate,
-    completion_delta_pct: completionDelta,
-  };
-
-  const tab_counts = {
-    all: enriched.length,
-    mine: enriched.filter((a) => a.mine).length,
-    team: enriched.filter((a) => a.team).length,
-    by_me: enriched.filter((a) => a.by_me).length,
-    archive: enriched.filter((a) => a.archived).length,
-  };
+  // Metrics and tab counts come from the page model, so the server, the page
+  // and the sample content count the same way (and a tab count always equals
+  // the rows that tab shows).
+  const metrics = computeAssignmentMetrics(enriched, cohorts || []);
+  const tab_counts = tabCounts(enriched);
 
   // Distinct role labels present in the roster (for role-based targeting).
   const roleSet = new Set();
@@ -279,6 +258,7 @@ export async function loadAssignments(supabase, member) {
     viewer: {
       userId: member.user_id,
       memberId: member.id,
+      displayName: member.display_name || null,
       canAssign,
       teamId: member.team_id || null,
       types: TYPES,

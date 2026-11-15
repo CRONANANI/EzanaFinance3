@@ -1,71 +1,55 @@
-import { SkeletonRegion, Skeleton, SkeletonCard, token } from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/assignments/assignments.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for Assignments. Real header chrome + a calendar
- * grid and a right-rail silhouette. No useOrg / no fetch.
+ * Route loading state for Assignments, in the page's final layout: the four
+ * figures, then the grouped list beside the side column. It renders inside
+ * the shared Team Hub shell, whose sidebar stays painted beside it.
+ * Presentation only: no data, no org context, no import of the page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
 
 export default function AssignmentsLoading() {
   return (
-    <SkeletonRegion label="Loading assignments…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Academic</p>
-      <h1 style={titleStyle}>Assignments</h1>
-
-      <div
-        style={{
-          marginTop: 22,
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) 300px',
-          gap: 18,
-        }}
-      >
-        {/* Calendar */}
-        <div
-          style={{
-            border: `1px solid ${token.border}`,
-            background: token.surface,
-            borderRadius: token.radiusLg,
-            padding: 16,
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-            <Skeleton width={160} height={18} />
-            <Skeleton width={90} height={26} radius={8} />
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              gap: 8,
-            }}
-          >
-            {Array.from({ length: 35 }).map((_, i) => (
-              <Skeleton key={i} height={70} radius={token.radiusMd} />
+    <SkeletonRegion
+      label="Loading assignments"
+      className="dashboard-page-inset ez-canvas tcc-page oas-page"
+    >
+      <div className="tcc-top oas-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(48, 16)}
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Right rail */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SkeletonCard key={i} rows={2} />
-          ))}
+      </div>
+      <div className="oas-body">
+        <div className="oas-main">
+          <div className="tcc-head">{bar(160, 18)}</div>
+          <div className="oas-filters">{bar('100%', 14)}</div>
+          <div className="oas-skel">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i}>{bar('100%', 16)}</span>
+            ))}
+          </div>
+        </div>
+        <span className="tcc-vrule oas-vrule" aria-hidden="true" />
+        <div className="oas-side">
+          <div className="tcc-head">{bar(110, 18)}</div>
+          <div className="oas-skel oas-skel--side">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i}>{bar(`${92 - i * 9}%`, 12)}</span>
+            ))}
+          </div>
         </div>
       </div>
     </SkeletonRegion>
