@@ -1,25 +1,33 @@
-import { FundDashboard } from '@/components/org/analytics2/FundDashboard';
+import { FundAnalytics } from '@/components/org/fund-analytics/FundAnalytics';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadFundAnalytics } from '@/lib/org-fund-analytics';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * /org-team-hub/fund-analytics. Membership is checked on the server in
+ * layout.js, which also provides the shared sidebar (TeamHubShell).
+ *
+ * The default period arrives with the page, so the first paint has data and
+ * there is no fetch after it. The other two periods are fetched on demand.
+ * `sampleViewer` only tells the page whether to ask for sample content
+ * (master admin and demo accounts); the sample route checks again.
+ */
 export default async function FundAnalyticsPage() {
-  // Server-render the default-period analytics payload so first paint has data
-  // (no post-hydration fetch waterfall). The client keeps its own fetch as the
-  // fallback + period-change refetch path — see FundDashboard.
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   let initialData = null;
+  let sampleViewer = false;
   if (member) {
-    const { payload } = await loadFundAnalytics(supabase, member, 'semester');
+    const [{ payload }, auth] = await Promise.all([
+      loadFundAnalytics(supabase, member, 'semester'),
+      supabase.auth.getUser(),
+    ]);
     initialData = payload;
+    sampleViewer = isCommunityDemoViewer(auth?.data?.user || null);
   }
 
-  return (
-    <div className="dashboard-page-inset">
-      <FundDashboard initialData={initialData} />
-    </div>
-  );
+  return <FundAnalytics initialData={initialData} sampleViewer={sampleViewer} />;
 }

@@ -1,0 +1,628 @@
+/* ============================================================================
+   Fund Analytics (/org-team-hub/fund-analytics). Page-scoped: every class
+   starts with ofa-. The page shares the Command Center's atoms (tcc-: KPI
+   strip, section titles, text buttons, text toggles, skeletons, pairs, chart
+   styles), so the Team Hub pages read as one. Flat sections on the canvas
+   (branding guide, Part A): no surface, hairlines only, hover is a colour
+   change. Tokens only. --ez-rule and --ez-rule-subtle come from
+   home-canvas.css.
+   ============================================================================ */
+
+/* Text controls keep their shape when the app gives buttons a touch height. */
+.ofa-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ofa-page .tcc-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ofa-scope {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ofa-sub {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ofa-subtitle {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.ofa-foot {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.ofa-refreshing {
+  opacity: 0.55;
+  transition: opacity 0.15s ease-out;
+}
+.ofa-skelrows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+}
+.ofa-skelrows > * {
+  display: block;
+}
+.ofa-morelink {
+  margin-top: 12px;
+}
+
+/* ── Row 1: six figures, three to a line, and the page actions ───────────── */
+.ofa-top {
+  align-items: flex-start;
+  border-bottom: 0;
+  padding-bottom: 14px;
+}
+.ofa-kpistrip {
+  grid-template-columns: repeat(3, auto);
+}
+.ofa-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.ofa-kpistrip .tcc-kpi:nth-child(3n + 1) {
+  padding-left: 0;
+  border-left: 0;
+}
+.ofa-page .tcc-kpi__value.tcc-warn {
+  color: var(--warning);
+}
+.ofa-actions {
+  align-items: flex-start;
+}
+.ofa-period {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.ofa-range {
+  min-height: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The insight line, what the figures cover, and a message after an export. */
+.ofa-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.ofa-insight,
+.ofa-notice,
+.ofa-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ofa-insight,
+.ofa-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--text-secondary);
+}
+.ofa-insight > span,
+.ofa-notice > span {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.ofa-notice > span {
+  flex: 0 1 auto;
+}
+.ofa-insight > .bi,
+.ofa-notice > .bi {
+  color: var(--text-muted);
+}
+.ofa-insight--warn > .bi {
+  color: var(--warning);
+}
+.ofa-notice--error > .bi {
+  color: var(--negative);
+}
+.ofa-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────────── */
+.ofa-row--three {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr);
+}
+.ofa-row--two {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+}
+/* The leaderboard has eight columns, so its row gives it more of the width. */
+.ofa-row--board {
+  grid-template-columns: minmax(0, 800fr) 1px minmax(0, 320fr);
+}
+.ofa-page .tcc-pair dd.tcc-pos {
+  color: var(--positive);
+}
+.ofa-page .tcc-pair dd.tcc-neg {
+  color: var(--negative);
+}
+.ofa-page .tcc-pair dd.tcc-na {
+  color: var(--text-muted);
+}
+.ofa-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ofa-hrule {
+  height: 1px;
+  margin: 24px 0;
+  background: var(--ez-rule);
+}
+
+/* ── Chart ───────────────────────────────────────────────────────────────── */
+.ofa-chart__zero {
+  stroke: var(--ez-rule);
+  stroke-width: 1;
+}
+.ofa-chart__benchdot {
+  fill: var(--text-muted);
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+.ofa-legend {
+  padding-left: 62px;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.ofa-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+/* display: table holds against the app's phone rule that turns every table
+   into a scrolling block: these already scroll inside .ofa-scroll. */
+.ofa-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ofa-table th,
+.ofa-table td {
+  padding: 11px 10px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.ofa-table thead th {
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ofa-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+/* First and last columns sit on the section's edges. */
+.ofa-table tr > :first-child {
+  padding-left: 0;
+}
+.ofa-table tr > :last-child {
+  padding-right: 0;
+}
+.ofa-table td[role='rowheader'] {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ofa-table .ofa-num {
+  text-align: right;
+}
+.ofa-table td.ofa-num {
+  color: var(--text-primary);
+}
+.ofa-table td.tcc-pos {
+  color: var(--positive);
+}
+.ofa-table td.tcc-neg {
+  color: var(--negative);
+}
+.ofa-table td.tcc-na,
+.ofa-table .tcc-na {
+  color: var(--text-muted);
+}
+.ofa-table .ofa-strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ofa-rank {
+  width: 44px;
+}
+.ofa-table--board th,
+.ofa-table--board td,
+.ofa-table--sectors th,
+.ofa-table--sectors td {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.ofa-table--board thead th,
+.ofa-table--sectors thead th {
+  letter-spacing: 0.05em;
+}
+.ofa-table td.ofa-rank {
+  color: var(--text-muted);
+}
+
+/* Sortable header: a text button that carries its direction as an arrow. */
+.ofa-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ofa-sort .bi {
+  font-size: 10px;
+  opacity: 0.6;
+}
+.ofa-sort:hover {
+  color: var(--text-primary);
+}
+.ofa-sort.is-on {
+  color: var(--emerald-text);
+}
+.ofa-sort.is-on .bi {
+  opacity: 1;
+}
+
+/* A leaderboard row opens the scorecard: the hover is a colour change. */
+.ofa-rowbtn {
+  cursor: pointer;
+}
+.ofa-namebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ofa-rowbtn:hover .ofa-namebtn,
+.ofa-namebtn:hover {
+  color: var(--emerald-text);
+}
+.ofa-rowbtn.is-quiet td,
+.ofa-rowbtn.is-quiet .ofa-strong {
+  color: var(--text-muted);
+}
+.ofa-sort:focus-visible,
+.ofa-namebtn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Holdings by sector ──────────────────────────────────────────────────── */
+.ofa-capline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.ofa-capline > .bi {
+  color: var(--text-muted);
+}
+.ofa-capline--warn > .bi {
+  color: var(--warning);
+}
+.ofa-table td.ofa-over {
+  color: var(--warning);
+}
+.ofa-over .bi {
+  margin-right: 6px;
+  font-size: 12px;
+}
+.ofa-barcol {
+  width: 22%;
+  min-width: 56px;
+}
+.ofa-wbar {
+  position: relative;
+  display: block;
+  height: 4px;
+  background: var(--ez-rule-subtle);
+}
+.ofa-wbar__fill {
+  display: block;
+  height: 100%;
+  background: var(--text-muted);
+}
+.ofa-wbar__fill.is-over {
+  background: var(--warning);
+}
+/* The cap: one mark at the same place on every bar. */
+.ofa-wbar__cap {
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 12px;
+  background: var(--text-primary);
+}
+
+/* ── Pitch funnel ────────────────────────────────────────────────────────── */
+.ofa-funnel__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ofa-funnel__row {
+  display: grid;
+  grid-template-columns: 84px 28px minmax(0, 1fr) 72px;
+  column-gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  font-size: 13px;
+}
+.ofa-funnel__label {
+  color: var(--text-secondary);
+}
+.ofa-funnel__count {
+  text-align: right;
+  color: var(--text-primary);
+}
+.ofa-funnel__bar {
+  display: block;
+  height: 8px;
+  background: var(--ez-rule-subtle);
+}
+.ofa-funnel__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--emerald);
+}
+.ofa-funnel__pct {
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* ── Holding attribution ─────────────────────────────────────────────────── */
+.ofa-attr__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  column-gap: 31.5px;
+}
+.ofa-attr__col {
+  min-width: 0;
+}
+
+/* ── Pitch outcomes ──────────────────────────────────────────────────────── */
+.ofa-pstate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+.ofa-pstate.tcc-pos .bi {
+  color: var(--positive);
+}
+.ofa-pstate.tcc-neg .bi {
+  color: var(--negative);
+}
+.ofa-pstate.tcc-na {
+  color: var(--text-muted);
+}
+.ofa-table--outcomes td:last-child,
+.ofa-table--outcomes th:last-child {
+  padding-left: 48px;
+}
+.ofa-tablefoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 20px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Team attention map ──────────────────────────────────────────────────── */
+.ofa-attention__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 64px;
+}
+.ofa-attention__group {
+  min-width: 0;
+}
+.ofa-attention__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ofa-attention__rows > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 28px;
+  column-gap: 12px;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 13px;
+}
+.ofa-attention__topic {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.ofa-attention__bar {
+  display: block;
+  height: 4px;
+  background: var(--ez-rule-subtle);
+}
+.ofa-attention__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--text-muted);
+}
+.ofa-attention__count {
+  text-align: right;
+  color: var(--text-primary);
+}
+
+/* ── Scorecard dialog (an overlay: it keeps the library's surface) ───────── */
+/* The dialog is drawn outside the page, so it carries the page's rules. */
+.ofa-dialog {
+  --ez-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --ez-rule-subtle: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.ofa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ofa-card > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.ofa-card__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 0 0 6px;
+}
+.ofa-card__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ofa-card__tile dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ofa-card__tile dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ofa-card__tile dd.tcc-pos {
+  color: var(--positive);
+}
+.ofa-card__tile dd.tcc-neg {
+  color: var(--negative);
+}
+.ofa-card__tile dd.tcc-na {
+  color: var(--text-muted);
+}
+
+/* ── Narrow layouts (by the width of the page column, like the Command
+      Center, so the page reflows the same whether the sidebar is beside or
+      above it) ─────────────────────────────────────────────────────────── */
+@container tcc (max-width: 940px) {
+  .ofa-row--three,
+  .ofa-row--two,
+  .ofa-row--board {
+    display: block;
+  }
+  .ofa-attention__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+  .ofa-attr__grid {
+    display: block;
+  }
+  .ofa-attr__grid > .tcc-vrule {
+    display: block;
+    width: auto;
+    height: 1px;
+    margin: 20px 0;
+  }
+  .ofa-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .ofa-period {
+    align-items: flex-start;
+  }
+}
+@container tcc (max-width: 620px) {
+  .ofa-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ofa-kpistrip .tcc-kpi,
+  .ofa-kpistrip .tcc-kpi:nth-child(3n + 1),
+  .ofa-kpistrip .tcc-kpi:nth-child(4n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .ofa-kpistrip .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .ofa-page .tcc-kpi__value {
+    flex-wrap: wrap;
+    gap: 0 6px;
+  }
+  .ofa-legend {
+    padding-left: 0;
+  }
+  .ofa-attention__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ofa-barcol {
+    display: none;
+  }
+  .ofa-card__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ofa-table--outcomes td:last-child,
+  .ofa-table--outcomes th:last-child {
+    padding-left: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ofa-refreshing,
+  .ofa-sort,
+  .ofa-namebtn {
+    transition: none;
+  }
+}

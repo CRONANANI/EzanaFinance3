@@ -1,47 +1,66 @@
-import {
-  SkeletonRegion,
-  SkeletonStatStrip,
-  SkeletonChart,
-  SkeletonTable,
-  token,
-} from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/fund-analytics/fund-analytics.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for Fund Analytics. Real header chrome + a stat
- * strip, a performance chart, and a leaderboard table silhouette. No useOrg /
- * no fetch.
+ * Route loading state for Fund Analytics, in the page's final layout: the
+ * six figures, then the chart beside the sector table, then rows of lists.
+ * It renders inside the shared Team Hub shell, whose sidebar stays painted
+ * beside it. Presentation only: no data, no org context, no import of the
+ * page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
+
+function Block({ lines = 4 }) {
+  return (
+    <div className="tcc-section">
+      <div className="tcc-head">{bar(180, 18)}</div>
+      <div className="ofa-skelrows">
+        {Array.from({ length: lines }).map((_, i) => (
+          <span key={i}>{bar('100%', 14)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function FundAnalyticsLoading() {
   return (
-    <SkeletonRegion label="Loading fund analytics…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Fund Analytics</h1>
-
-      <div style={{ marginTop: 22 }}>
-        <SkeletonStatStrip tiles={4} />
+    <SkeletonRegion
+      label="Loading Fund Analytics"
+      className="dashboard-page-inset ez-canvas tcc-page ofa-page"
+    >
+      <div className="tcc-top ofa-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip ofa-kpistrip">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(88, 16)}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ marginTop: 20 }}>
-        <SkeletonChart h={260} />
+      <div className="tcc-row tcc-row--wide">
+        <div className="tcc-section">
+          <div className="tcc-head">{bar(180, 18)}</div>
+          {bar('100%', 264)}
+        </div>
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={5} />
       </div>
-      <div style={{ marginTop: 20 }}>
-        <SkeletonTable rows={8} cols={6} />
+      <div className="tcc-row tcc-row--wide">
+        <Block lines={6} />
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={4} />
+      </div>
+      <div className="tcc-row tcc-row--single">
+        <Block lines={5} />
       </div>
     </SkeletonRegion>
   );
