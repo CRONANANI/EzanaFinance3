@@ -1,58 +1,42 @@
-'use client';
-
 import Link from 'next/link';
-import { LEADERBOARD } from '@/lib/for-the-quants-mock-data';
+import { getUserClient } from '@/lib/supabase';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
 import { QuantSection } from '@/components/quants/shell/QuantLabShell';
-import { QuantDataTable } from '@/components/quants/shell/QuantDataTable';
+import LeaderboardSample from './LeaderboardSample';
 
-const numeric = (text) => Number.parseFloat(String(text).replace(/[^0-9.-]/g, ''));
-
-const COLUMNS = [
-  { key: 'rank', label: 'Rank', numeric: true, sortable: true },
-  {
-    key: 'name',
-    label: 'Strategy',
-    sortable: true,
-    render: (row) => (
-      <Link className="qlx-link" href={`/for-the-quants/strategy/${row.id}`}>
-        {row.name}
-      </Link>
-    ),
-  },
-  { key: 'author', label: 'Author', sortable: true },
-  {
-    key: 'returnPct',
-    label: 'Return',
-    numeric: true,
-    sortable: true,
-    value: (row) => numeric(row.returnPct),
-  },
-  {
-    key: 'subscribers',
-    label: 'Subscribers',
-    numeric: true,
-    sortable: true,
-    render: (row) => row.subscribers.toLocaleString(),
-  },
-];
+export const dynamic = 'force-dynamic';
 
 /**
- * The community strategy leaderboard. These rows are illustrative: no
- * community strategy has a stored, verified track record yet, so the whole
- * table carries a Sample data tag.
+ * The strategy leaderboard. There is no real one yet: Quant Lab strategies
+ * are private to their author and none has a shared, verified track record
+ * to rank. Everyone sees that, in one line. Master admin and demo accounts
+ * (checked on the verified session) also see the illustrative rows, labelled
+ * Sample content, so the page can be presented.
  */
-export default function CommunityStrategiesPage() {
+export default async function CommunityStrategiesPage() {
+  let sampleViewer = false;
+  try {
+    const { data } = await getUserClient().auth.getUser();
+    sampleViewer = isCommunityDemoViewer(data?.user || null);
+  } catch {
+    sampleViewer = false;
+  }
   return (
     <QuantSection
       title="Strategy leaderboard"
-      actions={<span className="qlx-tag">Sample data</span>}
+      actions={sampleViewer ? <span className="qlx-sub">Sample content</span> : null}
     >
-      <QuantDataTable
-        caption="Community strategies, sample data"
-        columns={COLUMNS}
-        rows={LEADERBOARD}
-        initialSort={{ key: 'rank', dir: 'asc' }}
-      />
+      {sampleViewer ? (
+        <LeaderboardSample />
+      ) : (
+        <p className="qlx-empty">
+          No leaderboard yet: strategies are private to their author, so there is nothing shared to
+          rank.{' '}
+          <Link className="qlx-link" href="/for-the-quants/strategy-lab">
+            Open Strategy Lab
+          </Link>
+        </p>
+      )}
     </QuantSection>
   );
 }

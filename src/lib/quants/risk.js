@@ -429,3 +429,52 @@ export function sectorExposure(holdings, sectors) {
     .map((r) => ({ ...r, weight: round(r.weight, 4) }))
     .sort((a, b) => b.weight - a.weight);
 }
+
+/**
+ * The path today's weights would have taken over the shared price history:
+ * cumulative return of the weighted holdings and of the benchmark, both
+ * rebased to 0 at the first shared session. Same holdings, sessions and
+ * weights as portfolioRisk, so the chart and the figures beside it agree.
+ * It is a replay of today's weights, not the account's own history.
+ *
+ * @returns {{ date: string, portfolio: number, benchmark: number|null }[]}
+ */
+export function replaySeries({ holdings, cash = 0, series, benchmark = [] }) {
+  const usable = [];
+  for (const h of holdings) {
+    const candles = (series[h.ticker] || []).filter((c) => isNum(c.close) && c.close > 0);
+    if (h.quantity > 0 && candles.length > MIN_PORTFOLIO_SESSIONS) {
+      usable.push({ ...h, map: new Map(candles.map((c) => [c.date, c.close])) });
+    }
+  }
+  if (!usable.length) return [];
+  const benchMap = new Map(
+    benchmark.filter((c) => isNum(c.close) && c.close > 0).map((c) => [c.date, c.close]),
+  );
+  const hasBench = benchMap.size > MIN_PORTFOLIO_SESSIONS;
+  const maps = usable.map((u) => u.map);
+  if (hasBench) maps.push(benchMap);
+  const dates = [...maps[0].keys()].filter((d) => maps.every((m) => m.has(d))).sort();
+  if (dates.length <= MIN_PORTFOLIO_SESSIONS) return [];
+
+  const lastDate = dates[dates.length - 1];
+  const values = usable.map((u) => u.quantity * u.map.get(lastDate));
+  const total = values.reduce((a, b) => a + b, 0) + Math.max(cash, 0);
+  const weights = values.map((v) => v / total);
+
+  const out = [{ date: dates[0], portfolio: 0, benchmark: hasBench ? 0 : null }];
+  let level = 1;
+  for (let t = 1; t < dates.length; t += 1) {
+    let r = 0;
+    for (let i = 0; i < usable.length; i += 1) {
+      r += weights[i] * (usable[i].map.get(dates[t]) / usable[i].map.get(dates[t - 1]) - 1);
+    }
+    level *= 1 + r;
+    out.push({
+      date: dates[t],
+      portfolio: round(level - 1),
+      benchmark: hasBench ? round(benchMap.get(dates[t]) / benchMap.get(dates[0]) - 1) : null,
+    });
+  }
+  return out;
+}

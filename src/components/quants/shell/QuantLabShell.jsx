@@ -48,7 +48,7 @@ export function QuantSection({ title, minor = false, actions, children, ...rest 
 
 /**
  * A ruled stat strip. `cells` is [{ label, value, sub, tone }], where tone is
- * 'up', 'down' or 'muted'. A value the data cannot supply is passed as 'n/a'.
+ * 'up', 'down' or 'muted'. A value the data cannot supply is passed as 'N/A'.
  */
 export function QuantStatStrip({ cells, dense = false, label }) {
   const toneClass = { up: 'qlx-up', down: 'qlx-down', muted: 'qlx-muted' };

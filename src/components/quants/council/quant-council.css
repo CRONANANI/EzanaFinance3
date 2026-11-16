@@ -1,0 +1,683 @@
+/* The Council tab of Quant Lab's Overview (/for-the-quants), council members
+   only. Page-scoped `qlc-` classes on the flat canvas: no fills, borders,
+   shadows or radius on sections; hairlines divide and never enclose; tokens
+   only. The shared Quant Lab styles are untouched. */
+
+.qlc {
+  container-type: inline-size;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+
+.qlc * {
+  box-sizing: border-box;
+}
+
+.qlc-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.qlc-ink {
+  color: var(--text-primary);
+}
+
+.qlc-muted {
+  color: var(--text-muted);
+}
+
+.qlc-faint {
+  color: var(--text-faint);
+}
+
+.qlc-r {
+  text-align: right;
+  justify-self: end;
+}
+
+.qlc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.qlc-tone--positive {
+  color: var(--positive);
+}
+
+.qlc-tone--negative {
+  color: var(--negative);
+}
+
+.qlc-tone--warning {
+  color: var(--warning);
+}
+
+.qlc-tone--muted {
+  color: var(--text-muted);
+}
+
+.qlc-tone--accent {
+  color: var(--emerald-text);
+}
+
+/* ── Text buttons and links ──────────────────────────────────────────────── */
+
+.qlc-link,
+.qlc-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.qlc-link:hover,
+.qlc-textbtn:hover {
+  color: var(--text-primary);
+}
+
+.qlc-textbtn {
+  color: var(--text-secondary);
+}
+
+.qlc-textbtn:hover {
+  color: var(--emerald-text);
+}
+
+.qlc-sample {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px 16px;
+  font-size: 12px;
+}
+
+/* ── Strip (12px labels, 18px mono values, hairlines between cells) ──────── */
+
+.qlc-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  row-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule);
+}
+
+.qlc-strip--state {
+  display: block;
+}
+
+.qlc-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 24px;
+}
+
+.qlc-kpi:first-child {
+  padding-left: 0;
+}
+
+.qlc-kpi + .qlc-kpi {
+  border-left: 1px solid var(--ez-rule);
+}
+
+.qlc-kpi__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.qlc-kpi__value {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.qlc-kpi__value.qlc-tone--positive {
+  color: var(--positive);
+}
+
+.qlc-kpi__value.qlc-tone--negative {
+  color: var(--negative);
+}
+
+.qlc-kpi__detail {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ── Two columns, a hairline centred in the 64px between them ────────────── */
+
+.qlc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+}
+
+.qlc-main,
+.qlc-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.qlc-main {
+  padding-right: 32px;
+}
+
+.qlc-side {
+  padding-left: 32px;
+  border-left: 1px solid var(--ez-rule);
+}
+
+.qlc-block {
+  min-width: 0;
+  padding: 20px 0;
+}
+
+.qlc-block + .qlc-block {
+  border-top: 1px solid var(--ez-rule);
+}
+
+.qlc-block__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.qlc-block__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.qlc-block__aside {
+  font-size: 12px;
+}
+
+.qlc-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.qlc-note .bi {
+  margin-right: 2px;
+}
+
+.qlc-summary {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.qlc-more {
+  margin-top: 12px;
+}
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+
+.qlc-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.qlc-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.qlc-state p {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.qlc-state--error .bi {
+  color: var(--negative);
+}
+
+/* ── Chart ───────────────────────────────────────────────────────────────── */
+
+.qlc-chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  margin: 0;
+}
+
+.qlc-chart__y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 220px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.qlc-chart__plot {
+  min-width: 0;
+}
+
+.qlc-chart__plot svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+
+.qlc-chart__zero {
+  stroke: var(--ez-rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.qlc-chart__fund,
+.qlc-chart__bench {
+  fill: none;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.qlc-chart__fund {
+  stroke: var(--emerald);
+  stroke-width: 2;
+}
+
+.qlc-chart__bench {
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.qlc-chart__x {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.qlc-legend {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.qlc-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qlc-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid var(--emerald);
+}
+
+.qlc-swatch--bench {
+  border-top: 2px dashed var(--text-muted);
+}
+
+/* ── Key and value rows ──────────────────────────────────────────────────── */
+
+.qlc-kv {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  margin: 16px 0 0;
+}
+
+.qlc-kv__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+}
+
+.qlc-kv__row dt {
+  color: var(--text-muted);
+}
+
+.qlc-kv__row dd {
+  margin: 0;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* ── Sector bars ─────────────────────────────────────────────────────────── */
+
+.qlc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qlc-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) 3.5rem 5.5rem;
+  align-items: center;
+  column-gap: 12px;
+  font-size: 13px;
+}
+
+.qlc-bar__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.qlc-bar__track {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ez-rule-subtle);
+}
+
+.qlc-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+}
+
+.qlc-bar__fill--near {
+  background: var(--warning);
+}
+
+.qlc-bar__fill--over {
+  background: var(--negative);
+}
+
+.qlc-bar__fill--none {
+  background: var(--text-faint);
+}
+
+.qlc-bar__cap {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 0;
+  border-left: 1px dashed var(--text-muted);
+}
+
+.qlc-bar__value {
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.qlc-bar__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ── Tables as grids ─────────────────────────────────────────────────────── */
+
+.qlc-table {
+  min-width: 0;
+}
+
+.qlc-tr {
+  display: grid;
+  align-items: center;
+  column-gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.qlc-tr:not(.qlc-tr--head):hover {
+  color: var(--text-primary);
+}
+
+.qlc-tr > * {
+  min-width: 0;
+}
+
+.qlc-tr--head {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qlc-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qlc-ticker {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qlc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.qlc-cols-pitch {
+  grid-template-columns: 3.75rem minmax(0, 1fr) minmax(0, 1fr) 4.5rem 5rem 5.5rem;
+}
+
+.qlc-cols-asg {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 4.75rem 7.5rem;
+}
+
+.qlc-cols-ips {
+  grid-template-columns: minmax(0, 11rem) 4rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.qlc-ips-rule,
+.qlc-ips-result {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qlc-ips-result .qlc-faint {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.qlc-ips-rule .qlc-faint {
+  font-size: 11px;
+}
+
+.qlc-ips-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 20px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.qlc-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+}
+
+.qlc-picker .bi {
+  font-size: 11px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.qlc-select {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.qlc-cols-asg > :nth-child(3) {
+  white-space: nowrap;
+}
+
+.qlc-due-icon {
+  margin-right: 4px;
+  font-size: 11px;
+}
+
+.qlc-select:hover {
+  color: var(--emerald-text);
+}
+
+.qlc-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ── Narrower content: the side column moves under the main one ──────────── */
+
+@container (max-width: 1040px) {
+  .qlc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qlc-main {
+    padding-right: 0;
+  }
+
+  .qlc-side {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--ez-rule);
+    padding-top: 16px;
+  }
+}
+
+@container (max-width: 620px) {
+  .qlc-kpi {
+    flex: 1 1 45%;
+    padding: 0 16px 0 0;
+  }
+
+  .qlc-kpi + .qlc-kpi {
+    border-left: 0;
+  }
+
+  .qlc-kv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qlc-cols-pitch {
+    grid-template-columns: 3.5rem minmax(0, 1fr) 4.5rem 5.25rem;
+  }
+
+  .qlc-cols-pitch > :nth-child(3),
+  .qlc-cols-pitch > :nth-child(4) {
+    display: none;
+  }
+
+  .qlc-cols-asg {
+    grid-template-columns: minmax(0, 1fr) 4.5rem 6.75rem;
+  }
+
+  .qlc-cols-asg > :nth-child(2) {
+    display: none;
+  }
+
+  .qlc-cols-ips {
+    grid-template-columns: minmax(0, 1fr) 3.5rem;
+  }
+
+  .qlc-cols-ips > .qlc-ips-result,
+  .qlc-cols-ips > :nth-child(3) {
+    grid-column: 1 / -1;
+    padding-top: 4px;
+  }
+
+  .qlc-bar {
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr) 3.25rem;
+  }
+
+  .qlc-bar__flag {
+    grid-column: 2 / -1;
+  }
+
+  .qlc-bar__flag:empty {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qlc-link,
+  .qlc-textbtn,
+  .qlc-tr {
+    transition: none;
+  }
+}

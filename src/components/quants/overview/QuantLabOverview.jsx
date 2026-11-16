@@ -1,11 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { computeRunMetrics, drawdownStats } from '@/lib/quants/metrics';
-import { fmtPct, fmtRatio, fmtSignedPct, linePaths, areaPath, tone } from '../lab/lab-format';
-import { PlannedPanel } from '../shell/QuantLabShell';
+import { NA, fmtPct, fmtRatio, fmtSignedPct, linePaths, areaPath, tone } from '../lab/lab-format';
 import { useQuantContext } from '../shell/useQuantContext';
+import { Skeleton, SkeletonRegion } from '@/components/ds';
+import { useCouncilQuant } from '../council/useCouncilQuant';
+import { QuantCouncil, CouncilSampleSwitch } from '../council/QuantCouncil';
+import './quant-overview.css';
 import {
   PERIODS,
   activityFeed,
@@ -34,6 +39,12 @@ const STATUS_TAG = {
   failed: 'qlx-tag--bad',
 };
 const RUN_STATUS = { completed: 'Completed', running: 'Running', failed: 'Failed' };
+/* Council members only: the council tab beside their own research. */
+const TABS = [
+  ['council', 'Council'],
+  ['research', 'My research'],
+];
+const tabKey = (userId) => `quantlab.overview.tab.${userId || 'viewer'}`;
 const toneClass = (x) => ({ positive: 'qlx-up', negative: 'qlx-down' })[tone(x)] || '';
 
 async function getJson(path) {
@@ -252,6 +263,27 @@ function StrategiesPanel({ rows }) {
   const [page, setPage] = useState(0);
   const [desc, setDesc] = useState(true);
   const [menu, setMenu] = useState(null);
+  const menuRef = useRef(null);
+
+  /* The row menu closes on Escape (focus back on its trigger) and on a click
+     outside it. */
+  useEffect(() => {
+    if (!menu) return undefined;
+    const onDoc = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenu(null);
+    };
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      menuRef.current?.querySelector('button')?.focus();
+      setMenu(null);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
 
   const sorted = useMemo(() => {
     const value = (r) => (typeof r.ret === 'number' ? r.ret : -Infinity);
@@ -319,26 +351,31 @@ function StrategiesPanel({ rows }) {
               <span>
                 <span className={`qlx-tag ${STATUS_TAG[r.status]}`}>{r.status}</span>
               </span>
-              <div className="qlx-menu-wrap">
+              <div className="qlx-menu-wrap" ref={menu === r.id ? menuRef : undefined}>
                 <button
                   type="button"
                   className="qlx-btn qlx-btn--icon qlx-btn--sm qlx-btn--bare"
                   aria-label={`Actions for ${r.name}`}
+                  aria-haspopup="menu"
                   aria-expanded={menu === r.id}
                   onClick={() => setMenu((m) => (m === r.id ? null : r.id))}
                 >
                   <i className="bi bi-three-dots" aria-hidden />
                 </button>
                 {menu === r.id && (
-                  <div className="qlx-menu">
-                    <Link href={`${BASE}/strategy-lab?strategy=${r.id}`}>Open and edit</Link>
-                    <Link href={`${BASE}/backtesting?strategy=${r.id}`}>Backtest</Link>
-                    <Link href={`${BASE}/backtesting?strategy=${r.id}&tab=validation`}>
+                  <div className="qlx-menu" role="menu" aria-label={`Actions for ${r.name}`}>
+                    <Link role="menuitem" href={`${BASE}/strategy-lab?strategy=${r.id}`}>
+                      Open and edit
+                    </Link>
+                    <Link role="menuitem" href={`${BASE}/backtesting?strategy=${r.id}`}>
+                      Backtest
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      href={`${BASE}/backtesting?strategy=${r.id}&tab=validation`}
+                    >
                       Validate
                     </Link>
-                    <button type="button" disabled title="Paper trading is not available yet">
-                      Paper deploy
-                    </button>
                   </div>
                 )}
               </div>
@@ -384,6 +421,41 @@ export function QuantLabOverview() {
   const [selected, setSelected] = useState('');
   const context = useQuantContext();
   const [now, setNow] = useState(0);
+
+  /* The Council tab: council members only, once their membership is known.
+     Everyone else sees the Overview as it was. The council part fetches
+     nothing until then. */
+  const { user } = useAuth();
+  const { isOrgUser, isLoading: orgLoading } = useOrg();
+  const councilReady = Boolean(user && isOrgUser && !orgLoading);
+  const council = useCouncilQuant(councilReady);
+  const [tab, setTab] = useState('council');
+  const tabsId = useId();
+  useEffect(() => {
+    if (!councilReady) return;
+    try {
+      const stored = window.localStorage.getItem(tabKey(user?.id));
+      if (stored === 'council' || stored === 'research') setTab(stored);
+    } catch {
+      /* storage blocked: the Council tab opens first */
+    }
+  }, [councilReady, user?.id]);
+  const chooseTab = (id) => {
+    setTab(id);
+    try {
+      window.localStorage.setItem(tabKey(user?.id), id);
+    } catch {
+      /* the choice still holds for this visit */
+    }
+  };
+  const onTabKey = (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const i = TABS.findIndex(([id]) => id === tab);
+    const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length][0];
+    chooseTab(next);
+    document.getElementById(`${tabsId}-${next}`)?.focus();
+  };
 
   const load = useCallback(async () => {
     setState('loading');
@@ -475,308 +547,348 @@ export function QuantLabOverview() {
     (x) => x.status === 'completed' && Date.parse(x.created_at) >= dayAgo,
   ).length;
 
-  if (state === 'loading') return <p className="qlx-empty">Loading your research.</p>;
-  if (state === 'error') {
-    return (
-      <p className="qlx-empty">
+  const kpis =
+    state === 'ready'
+      ? [
+          {
+            label: 'Strategies',
+            value: String(strategies.length),
+            sub: strategies.length
+              ? `${active} active · ${strategies.length - active} archived`
+              : 'None saved yet',
+          },
+          {
+            label: 'Active research',
+            value: String(running),
+            sub: `running · ${doneToday} completed in the last day`,
+          },
+          { label: 'Paper trading', value: NA, sub: 'Not available yet', cls: 'qlx-muted' },
+          {
+            label: 'Sharpe (best)',
+            value: best ? fmtRatio(best.sharpe) : NA,
+            sub: best
+              ? `${best.strategy.name} v${best.strategy.latest_version} · ${best.run.config?.startDate} to ${best.run.config?.endDate}`
+              : 'No completed backtest yet',
+          },
+          {
+            label: 'Max drawdown',
+            value: fmtPct(metrics?.maxDrawdown, 1),
+            sub:
+              strategy && metrics
+                ? `${strategy.name} · run window`
+                : 'No completed backtest selected',
+            cls: metrics?.maxDrawdown < 0 ? 'qlx-down' : '',
+          },
+        ]
+      : [];
+
+  const research =
+    state === 'loading' ? (
+      <SkeletonRegion label="Loading your research" className="qlo-skel">
+        <Skeleton height={12} width="90%" />
+        <Skeleton height={12} width="72%" />
+        <Skeleton height={12} width="56%" />
+      </SkeletonRegion>
+    ) : state === 'error' ? (
+      <p className="qlx-empty" role="alert">
         Your research could not be loaded.{' '}
-        <button type="button" className="qlx-btn qlx-btn--sm" onClick={load}>
+        <button type="button" className="qlo-textbtn" onClick={load}>
           Retry
         </button>
       </p>
-    );
-  }
+    ) : (
+      <>
+        <div className="qlx-band">
+          <PerformancePanel strategy={strategy} summary={summary} />
+          <StrategiesPanel rows={rows} />
+        </div>
 
-  const kpis = [
-    {
-      label: 'Strategies',
-      value: String(strategies.length),
-      sub: strategies.length
-        ? `${active} active · ${strategies.length - active} archived`
-        : 'None saved yet',
-    },
-    {
-      label: 'Active research',
-      value: String(running),
-      sub: `running · ${doneToday} completed in the last day`,
-    },
-    { label: 'Paper trading', value: 'n/a', sub: 'Not available yet', cls: 'qlx-muted' },
-    {
-      label: 'Sharpe (best)',
-      value: best ? fmtRatio(best.sharpe) : 'n/a',
-      sub: best
-        ? `${best.strategy.name} v${best.strategy.latest_version} · ${best.run.config?.startDate} to ${best.run.config?.endDate}`
-        : 'No completed backtest yet',
-    },
-    {
-      label: 'Max drawdown',
-      value: fmtPct(metrics?.maxDrawdown, 1),
-      sub: strategy && metrics ? `${strategy.name} · run window` : 'No completed backtest selected',
-      cls: metrics?.maxDrawdown < 0 ? 'qlx-down' : '',
-    },
-  ];
+        <div className="qlx-band">
+          <section className="qlx-col" style={{ flex: '1 1 300px' }}>
+            <div className="qlx-head">
+              <h2 className="qlx-title">Risk overview</h2>
+              <Link className="qlx-link" href={`${BASE}/risk-portfolio`}>
+                Risk &amp; Portfolio
+              </Link>
+            </div>
+            {!metrics ? (
+              <p className="qlx-empty">
+                Risk figures appear once the selected strategy has a completed backtest.
+              </p>
+            ) : (
+              <>
+                {[
+                  ['Volatility (annualised)', fmtPct(metrics.volatility, 1), ''],
+                  [
+                    `Beta against ${strategy?.version?.spec?.benchmark || 'benchmark'}`,
+                    fmtRatio(metrics.beta),
+                    '',
+                  ],
+                  [
+                    'VaR (95%, 1 day)',
+                    metrics.valueAtRisk95 == null ? NA : fmtPct(-metrics.valueAtRisk95, 1),
+                    'qlx-down',
+                  ],
+                  [
+                    'Expected shortfall (95%)',
+                    metrics.expectedShortfall95 == null
+                      ? NA
+                      : fmtPct(-metrics.expectedShortfall95, 1),
+                    'qlx-down',
+                  ],
+                  ['Gross exposure (average)', fmtPct(metrics.averageGrossExposure, 0), ''],
+                  ['Gross exposure (peak)', fmtPct(metrics.maxGrossExposure, 0), ''],
+                ].map(([label, value, cls]) => (
+                  <div key={label} className="qlx-kv">
+                    <span>{label}</span>
+                    <span className={`qlx-num ${value === NA ? 'qlx-muted' : cls || 'qlx-ink'}`}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+                <p className="qlx-note" style={{ paddingTop: '0.625rem' }}>
+                  Historical method on the daily returns of the selected strategy&apos;s latest
+                  completed run.
+                </p>
+              </>
+            )}
+          </section>
+
+          <section className="qlx-col" style={{ flex: '1.2 1 320px' }}>
+            <div className="qlx-head">
+              <h2 className="qlx-title">Research activity</h2>
+              <Link className="qlx-link" href={`${BASE}/backtesting`}>
+                View all
+              </Link>
+            </div>
+            {feed.length === 0 && (
+              <p className="qlx-empty">Backtests and validations will be listed here.</p>
+            )}
+            {feed.map((a) => (
+              <Link
+                key={a.id}
+                className="qlx-activity"
+                href={`${BASE}/backtesting?strategy=${a.strategyId}${a.runId ? `&run=${a.runId}` : '&tab=validation'}`}
+              >
+                <span
+                  className={`qlx-dot ${a.status === 'failed' ? 'qlx-down' : a.status === 'running' ? 'qlx-muted' : 'qlx-up'}`}
+                />
+                <span className="qlx-activity-text">
+                  <span className="qlx-ink" style={{ fontWeight: 600 }}>
+                    {a.kind === 'backtest' ? 'Backtest' : 'Validation'} {a.status}
+                  </span>
+                  <span className="qlx-sub">
+                    {a.name} · {relativeTime(a.at, now)}
+                  </span>
+                </span>
+                <span
+                  className={`qlx-num ${a.status === 'failed' ? 'qlx-down' : a.resultKind === 'return' ? toneClass(a.result) : 'qlx-ink'}`}
+                  style={{ fontWeight: 600 }}
+                >
+                  {a.status === 'failed'
+                    ? 'Failed'
+                    : a.status === 'running'
+                      ? 'Running'
+                      : a.resultKind === 'return'
+                        ? fmtSignedPct(a.result, 1)
+                        : `OOS Sharpe ${fmtRatio(a.result)}`}
+                </span>
+              </Link>
+            ))}
+          </section>
+        </div>
+
+        <div className="qlx-band">
+          <section className="qlx-col" style={{ flex: '1 1 100%' }}>
+            <div className="qlx-head">
+              <h2 className="qlx-title">Recent backtests</h2>
+              <Link className="qlx-link" href={`${BASE}/backtesting`}>
+                View all
+              </Link>
+            </div>
+            {runs.length === 0 ? (
+              <p className="qlx-empty">No backtests yet.</p>
+            ) : (
+              <div className="qlx-tw">
+                <div className="qlx-th qlx-cols-runs">
+                  <span>Run</span>
+                  <span>Strategy</span>
+                  <span>Window</span>
+                  <span className="qlx-r">Return</span>
+                  <span className="qlx-r">Sharpe</span>
+                  <span>Status</span>
+                </div>
+                {runs.slice(0, 5).map((r) => (
+                  <Link
+                    key={r.id}
+                    className="qlx-tr qlx-cols-runs"
+                    href={`${BASE}/backtesting?strategy=${r.strategy_id}&run=${r.id}`}
+                  >
+                    <span className="qlx-num qlx-muted">{String(r.id).slice(0, 6)}</span>
+                    <span className="qlx-ink" style={{ fontWeight: 600 }}>
+                      {names[r.strategy_id] || 'Deleted strategy'}
+                    </span>
+                    <span className="qlx-num qlx-muted">
+                      {String(r.config?.startDate || '').slice(0, 7)} to{' '}
+                      {String(r.config?.endDate || '').slice(0, 7)}
+                    </span>
+                    <span
+                      className={`qlx-num qlx-r ${toneClass(r.metrics?.totalReturn) || 'qlx-muted'}`}
+                    >
+                      {fmtSignedPct(r.metrics?.totalReturn, 1)}
+                    </span>
+                    <span className="qlx-num qlx-r qlx-ink">{fmtRatio(r.metrics?.sharpe)}</span>
+                    <span>
+                      <span className={`qlx-tag ${STATUS_TAG[r.status] || ''}`}>
+                        {RUN_STATUS[r.status] || r.status}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <div className="qlx-band">
+          <section className="qlx-col" style={{ flex: '1 1 100%' }}>
+            <div className="qlx-head">
+              <h2 className="qlx-title">Quick actions</h2>
+            </div>
+            <div className="qlx-actions qlo-actions">
+              {[
+                [
+                  'New strategy',
+                  'Build with the rule editor',
+                  `${BASE}/strategy-lab?new=1`,
+                  'bi-plus-lg',
+                ],
+                [
+                  'Run backtest',
+                  'Test on historical bars',
+                  `${BASE}/backtesting`,
+                  'bi-play-circle',
+                ],
+                [
+                  'Factor research',
+                  'Rank the universe by a signal',
+                  `${BASE}/factor-research`,
+                  'bi-bar-chart',
+                ],
+                [
+                  'Risk analysis',
+                  'Exposure and concentration',
+                  `${BASE}/risk-portfolio`,
+                  'bi-shield',
+                ],
+              ].map(([label, sub, href, icon]) => (
+                <Link key={label} className="qlx-action" href={href}>
+                  <i className={`bi ${icon}`} aria-hidden />
+                  <span className="qlx-ink" style={{ fontWeight: 600 }}>
+                    {label}
+                  </span>
+                  <span className="qlx-sub">{sub}</span>
+                </Link>
+              ))}
+              <div className="qlx-action" aria-disabled="true">
+                <i className="bi bi-send" aria-hidden />
+                <span className="qlx-ink" style={{ fontWeight: 600 }}>
+                  Paper deploy
+                </span>
+                <span className="qlx-sub">Not available yet</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p className="qlo-planned">
+          <i className="bi bi-hourglass-split" aria-hidden="true" /> Planned, not built yet: factor
+          exposure of a run, performance by market regime, and hypotheses handed over from Sonar
+          (until then, test a disclosure signal in{' '}
+          <Link className="qlx-link" href={`${BASE}/datasets-research`}>
+            Datasets &amp; Research
+          </Link>
+          ).
+        </p>
+      </>
+    );
 
   return (
     <>
-      <div className="qlx-toolbar" role="group" aria-label="Workspace controls">
-        <label className="qlx-row">
-          <span className="qlx-label">Strategy</span>
-          <select
-            className="qlx-select"
-            value={selected}
-            disabled={!strategies.length}
-            onChange={(e) => {
-              setSelected(e.target.value);
-              context.setContext({ strategy: e.target.value });
-            }}
-          >
-            {!strategies.length && <option value="">No strategies yet</option>}
-            {strategies.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} · v{s.latest_version}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Link className="qlx-btn qlx-btn--primary" href={`${BASE}/strategy-lab?new=1`}>
-          <i className="bi bi-plus-lg" aria-hidden />
-          <span>Create strategy</span>
-        </Link>
-      </div>
-
-      <section aria-label="Summary" className="qlx-strip">
-        {kpis.map((k) => (
-          <div key={k.label} className="qlx-cell">
-            <span className="qlx-eyebrow">{k.label}</span>
-            <span className={`qlx-val ${k.cls || ''}`}>{k.value}</span>
-            <span className="qlx-sub">{k.sub}</span>
-          </div>
-        ))}
-      </section>
-
-      <div className="qlx-band">
-        <PerformancePanel strategy={strategy} summary={summary} />
-        <StrategiesPanel rows={rows} />
-      </div>
-
-      <div className="qlx-band">
-        <div className="qlx-col" style={{ flex: '1 1 300px' }}>
-          <PlannedPanel title="Factor exposure">
-            How much of a strategy&apos;s return each price factor explains. It needs the run&apos;s
-            monthly returns regressed on the Factor Research spreads, which is not built yet.
-          </PlannedPanel>
-        </div>
-
-        <section className="qlx-col" style={{ flex: '1 1 280px' }}>
-          <div className="qlx-head">
-            <h2 className="qlx-title">Risk overview</h2>
-            <Link className="qlx-link" href={`${BASE}/risk-portfolio`}>
-              Risk &amp; Portfolio
-            </Link>
-          </div>
-          {!metrics ? (
-            <p className="qlx-empty">
-              Risk figures appear once the selected strategy has a completed backtest.
-            </p>
-          ) : (
-            <>
-              {[
-                ['Volatility (annualised)', fmtPct(metrics.volatility, 1), ''],
-                [
-                  `Beta against ${strategy?.version?.spec?.benchmark || 'benchmark'}`,
-                  fmtRatio(metrics.beta),
-                  '',
-                ],
-                [
-                  'VaR (95%, 1 day)',
-                  metrics.valueAtRisk95 == null ? 'n/a' : fmtPct(-metrics.valueAtRisk95, 1),
-                  'qlx-down',
-                ],
-                [
-                  'Expected shortfall (95%)',
-                  metrics.expectedShortfall95 == null
-                    ? 'n/a'
-                    : fmtPct(-metrics.expectedShortfall95, 1),
-                  'qlx-down',
-                ],
-                ['Gross exposure (average)', fmtPct(metrics.averageGrossExposure, 0), ''],
-                ['Gross exposure (peak)', fmtPct(metrics.maxGrossExposure, 0), ''],
-              ].map(([label, value, cls]) => (
-                <div key={label} className="qlx-kv">
-                  <span>{label}</span>
-                  <span className={`qlx-num ${value === 'n/a' ? 'qlx-muted' : cls || 'qlx-ink'}`}>
-                    {value}
-                  </span>
-                </div>
-              ))}
-              <p className="qlx-note" style={{ paddingTop: '0.625rem' }}>
-                Historical method on the daily returns of the selected strategy&apos;s latest
-                completed run.
-              </p>
-            </>
-          )}
-        </section>
-
-        <section className="qlx-col" style={{ flex: '1.2 1 320px' }}>
-          <div className="qlx-head">
-            <h2 className="qlx-title">Research activity</h2>
-            <Link className="qlx-link" href={`${BASE}/backtesting`}>
-              View all
-            </Link>
-          </div>
-          {feed.length === 0 && (
-            <p className="qlx-empty">Backtests and validations will be listed here.</p>
-          )}
-          {feed.map((a) => (
-            <Link
-              key={a.id}
-              className="qlx-activity"
-              href={`${BASE}/backtesting?strategy=${a.strategyId}${a.runId ? `&run=${a.runId}` : '&tab=validation'}`}
-            >
-              <span
-                className={`qlx-dot ${a.status === 'failed' ? 'qlx-down' : a.status === 'running' ? 'qlx-muted' : 'qlx-up'}`}
-              />
-              <span className="qlx-activity-text">
-                <span className="qlx-ink" style={{ fontWeight: 600 }}>
-                  {a.kind === 'backtest' ? 'Backtest' : 'Validation'} {a.status}
-                </span>
-                <span className="qlx-sub">
-                  {a.name} · {relativeTime(a.at, now)}
-                </span>
-              </span>
-              <span
-                className={`qlx-num ${a.status === 'failed' ? 'qlx-down' : a.resultKind === 'return' ? toneClass(a.result) : 'qlx-ink'}`}
-                style={{ fontWeight: 600 }}
+      {state === 'ready' && (
+        <>
+          <div className="qlx-toolbar" role="group" aria-label="Workspace controls">
+            <label className="qlx-row">
+              <span className="qlx-label">Strategy</span>
+              <select
+                className="qlx-select"
+                value={selected}
+                disabled={!strategies.length}
+                onChange={(e) => {
+                  setSelected(e.target.value);
+                  context.setContext({ strategy: e.target.value });
+                }}
               >
-                {a.status === 'failed'
-                  ? 'Failed'
-                  : a.status === 'running'
-                    ? 'Running'
-                    : a.resultKind === 'return'
-                      ? fmtSignedPct(a.result, 1)
-                      : `OOS Sharpe ${fmtRatio(a.result)}`}
-              </span>
-            </Link>
-          ))}
-        </section>
-      </div>
-
-      <div className="qlx-band">
-        <section className="qlx-col" style={{ flex: '58 1 460px' }}>
-          <div className="qlx-head">
-            <h2 className="qlx-title">Recent backtests</h2>
-            <Link className="qlx-link" href={`${BASE}/backtesting`}>
-              View all
+                {!strategies.length && <option value="">No strategies yet</option>}
+                {strategies.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} · v{s.latest_version}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Link className="qlx-btn qlx-btn--primary" href={`${BASE}/strategy-lab?new=1`}>
+              <i className="bi bi-plus-lg" aria-hidden />
+              <span>Create strategy</span>
             </Link>
           </div>
-          {runs.length === 0 ? (
-            <p className="qlx-empty">No backtests yet.</p>
-          ) : (
-            <div className="qlx-tw">
-              <div className="qlx-th qlx-cols-runs">
-                <span>Run</span>
-                <span>Strategy</span>
-                <span>Window</span>
-                <span className="qlx-r">Return</span>
-                <span className="qlx-r">Sharpe</span>
-                <span>Status</span>
+
+          <section aria-label="Summary" className="qlx-strip">
+            {kpis.map((k) => (
+              <div key={k.label} className="qlx-cell">
+                <span className="qlx-eyebrow">{k.label}</span>
+                <span className={`qlx-val ${k.cls || ''}`}>{k.value}</span>
+                <span className="qlx-sub">{k.sub}</span>
               </div>
-              {runs.slice(0, 5).map((r) => (
-                <Link
-                  key={r.id}
-                  className="qlx-tr qlx-cols-runs"
-                  href={`${BASE}/backtesting?strategy=${r.strategy_id}&run=${r.id}`}
+            ))}
+          </section>
+        </>
+      )}
+
+      {councilReady ? (
+        <>
+          <div className="qlo-tabrow">
+            <div className="qlo-tabs" role="tablist" aria-label="Overview">
+              {TABS.map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`${tabsId}-${id}`}
+                  aria-selected={tab === id}
+                  aria-controls={`${tabsId}-panel`}
+                  tabIndex={tab === id ? 0 : -1}
+                  onClick={() => chooseTab(id)}
+                  onKeyDown={onTabKey}
                 >
-                  <span className="qlx-num qlx-muted">{String(r.id).slice(0, 6)}</span>
-                  <span className="qlx-ink" style={{ fontWeight: 600 }}>
-                    {names[r.strategy_id] || 'Deleted strategy'}
-                  </span>
-                  <span className="qlx-num qlx-muted">
-                    {String(r.config?.startDate || '').slice(0, 7)} to{' '}
-                    {String(r.config?.endDate || '').slice(0, 7)}
-                  </span>
-                  <span
-                    className={`qlx-num qlx-r ${toneClass(r.metrics?.totalReturn) || 'qlx-muted'}`}
-                  >
-                    {fmtSignedPct(r.metrics?.totalReturn, 1)}
-                  </span>
-                  <span className="qlx-num qlx-r qlx-ink">{fmtRatio(r.metrics?.sharpe)}</span>
-                  <span>
-                    <span className={`qlx-tag ${STATUS_TAG[r.status] || ''}`}>
-                      {RUN_STATUS[r.status] || r.status}
-                    </span>
-                  </span>
-                </Link>
+                  {label}
+                </button>
               ))}
             </div>
-          )}
-        </section>
-
-        <div className="qlx-col" style={{ flex: '42 1 360px' }}>
-          <PlannedPanel title="Market regime performance">
-            A strategy&apos;s return in up and down trends and in calm and turbulent markets. It
-            needs each session labelled by regime from benchmark history that starts before the run
-            does, which is not built yet.
-          </PlannedPanel>
-        </div>
-      </div>
-
-      <div className="qlx-band">
-        <section className="qlx-col" style={{ flex: '58 1 460px' }}>
-          <div className="qlx-head">
-            <h2 className="qlx-title">Quick actions</h2>
+            {tab === 'council' ? <CouncilSampleSwitch council={council} /> : null}
           </div>
-          <div className="qlx-actions">
-            {[
-              [
-                'New strategy',
-                'Build with the rule editor',
-                `${BASE}/strategy-lab?new=1`,
-                'bi-plus-lg',
-              ],
-              ['Run backtest', 'Test on historical bars', `${BASE}/backtesting`, 'bi-play-circle'],
-              [
-                'Factor research',
-                'Rank the universe by a signal',
-                `${BASE}/factor-research`,
-                'bi-bar-chart',
-              ],
-              [
-                'Risk analysis',
-                'Exposure and concentration',
-                `${BASE}/risk-portfolio`,
-                'bi-shield',
-              ],
-            ].map(([label, sub, href, icon]) => (
-              <Link key={label} className="qlx-action" href={href}>
-                <i className={`bi ${icon}`} aria-hidden />
-                <span className="qlx-ink" style={{ fontWeight: 600 }}>
-                  {label}
-                </span>
-                <span className="qlx-sub">{sub}</span>
-              </Link>
-            ))}
-            <div className="qlx-action" aria-disabled="true">
-              <i className="bi bi-send" aria-hidden />
-              <span className="qlx-ink" style={{ fontWeight: 600 }}>
-                Paper deploy
-              </span>
-              <span className="qlx-sub">Not available yet</span>
-            </div>
+          <div
+            role="tabpanel"
+            id={`${tabsId}-panel`}
+            aria-labelledby={`${tabsId}-${tab}`}
+            className="qlo-panel"
+          >
+            {tab === 'council' ? <QuantCouncil council={council} /> : research}
           </div>
-        </section>
-
-        <div className="qlx-col" style={{ flex: '42 1 360px' }}>
-          <PlannedPanel title="From Sonar">
-            Hypotheses saved in Sonar will arrive here as ready-to-run tests. The handoff from Sonar
-            is not connected yet. Until then, a disclosure signal can be tested directly in{' '}
-            <Link className="qlx-link" href={`${BASE}/datasets-research`}>
-              Datasets &amp; Research
-            </Link>
-            .
-          </PlannedPanel>
-        </div>
-      </div>
+        </>
+      ) : (
+        research
+      )}
     </>
   );
 }

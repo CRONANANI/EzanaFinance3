@@ -1,0 +1,129 @@
+/* Quant Lab Overview (/for-the-quants): the page's own `qlo-` rules on the
+   flat canvas. The Council and My research tabs (council members only), the
+   one-line Planned note and the flat quick actions. The shared Quant Lab
+   styles (quant-lab.css) are untouched; tokens only. */
+
+.qlo-tabrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: -12px;
+}
+
+.qlo-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+}
+
+.qlo-tabs button {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.qlo-tabs button:hover {
+  color: var(--text-primary);
+}
+
+.qlo-tabs button[aria-selected='true'] {
+  color: var(--emerald-text);
+}
+
+.qlo-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.qlo-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.qlo-textbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+
+.qlo-textbtn:hover {
+  color: var(--text-primary);
+}
+
+.qlo-planned {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--ez-rule);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* Quick actions: flat text actions, a hairline between them, no tiles. */
+.qlo-actions {
+  gap: 0;
+}
+
+.qlo-actions .qlx-action {
+  padding: 4px 20px;
+  border-radius: 0;
+  background: transparent;
+  border-left: 1px solid var(--ez-rule);
+  transition: color 0.15s ease;
+}
+
+.qlo-actions .qlx-action:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.qlo-actions .qlx-action:hover {
+  background: transparent;
+}
+
+.qlo-actions .qlx-action:hover .qlx-ink {
+  color: var(--emerald-text);
+}
+
+.qlo-actions .qlx-action[aria-disabled='true'] {
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 1px solid var(--ez-rule);
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .qlo-actions .qlx-action {
+    padding: 8px 0;
+    border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qlo-tabs button,
+  .qlo-actions .qlx-action {
+    transition: none;
+  }
+}

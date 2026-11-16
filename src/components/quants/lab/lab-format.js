@@ -3,8 +3,8 @@
 
 const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
 
-/** A statistic that could not be computed is shown as "n/a", never as 0. */
-export const NA = 'n/a';
+/** A statistic that could not be computed is shown as "N/A", never as 0. */
+export const NA = 'N/A';
 
 export const fmtPct = (x, digits = 2) => (isNum(x) ? `${(x * 100).toFixed(digits)}%` : NA);
 export const fmtSignedPct = (x, digits = 2) =>
