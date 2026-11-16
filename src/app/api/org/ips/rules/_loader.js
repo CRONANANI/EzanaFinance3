@@ -1,7 +1,7 @@
 /**
  * Shared loader for the IPS rules list.
  *
- * Underscore-prefixed, colocated module — ignored by the App Router for routing,
+ * Underscore-prefixed, colocated module, ignored by the App Router for routing,
  * so it is safe to import from the sibling route handler AND from the Compliance
  * server page for first-paint SSR.
  *

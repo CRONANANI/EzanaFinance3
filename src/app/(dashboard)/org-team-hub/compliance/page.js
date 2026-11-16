@@ -2,38 +2,49 @@ import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadIpsRules } from '@/app/api/org/ips/rules/_loader';
 import { loadIpsViolations } from '@/app/api/org/ips/violations/_loader';
-import { ComplianceClient } from './ComplianceClient';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
+import { CompliancePage } from '@/components/org/compliance/CompliancePage';
 
 export const dynamic = 'force-dynamic';
 
-/* Server component: seed the initial rules + violations payloads (same shapes
-   the client mount fetches produce) so first paint has data. The 5-tab
-   interactive shell — including the best-effort positions fetch, the pre-trade
-   gate, resolve action, and the exec-gated rule editor / audit views — stays
-   client-side in ComplianceClient, which keeps its own mount fetch as the
-   fallback when initialData is null (non-member / load failure). */
-export default async function CompliancePage() {
+/**
+ * /org-team-hub/compliance. Membership is checked on the server in layout.js,
+ * which also provides the shared sidebar (TeamHubShell).
+ *
+ * The rules and open breaches (the same payloads as the two GET routes)
+ * arrive with the page, so the first paint has data. When either cannot be
+ * loaded the page fetches them itself and shows its own error with Retry.
+ * Holdings readings, the resolved list and the activity log load on the
+ * client. `sampleViewer` only tells the page whether to ask for sample
+ * content (master admin and demo accounts); the sample route checks again.
+ */
+export default async function ComplianceRoute() {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;
+  let sampleViewer = false;
+  let viewerRole = null;
   if (member) {
-    const [rulesRes, violationsRes] = await Promise.all([
+    viewerRole = member.role;
+    const [rulesRes, violationsRes, auth] = await Promise.all([
       loadIpsRules(supabase, member),
       loadIpsViolations(supabase, member),
+      supabase.auth.getUser(),
     ]);
-    // Seed only when BOTH primary reads succeed; otherwise fall back to the
-    // client load so its error handling (incl. the member-only gate) is intact.
+    sampleViewer = isCommunityDemoViewer(auth?.data?.user || null);
     if (!rulesRes.error && !violationsRes.error) {
       initialData = {
         rules: rulesRes.payload.rules,
-        ruleTypes: rulesRes.payload.ruleTypes,
         canEdit: rulesRes.payload.viewer.canEdit,
         violations: violationsRes.payload.violations,
         canResolve: violationsRes.payload.viewer.canResolve,
+        resolutionStorage: violationsRes.payload.viewer.resolutionStorage,
       };
     }
   }
 
-  return <ComplianceClient initialData={initialData} />;
+  return (
+    <CompliancePage initialData={initialData} sampleViewer={sampleViewer} viewerRole={viewerRole} />
+  );
 }

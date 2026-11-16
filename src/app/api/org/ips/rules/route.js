@@ -1,13 +1,33 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 import { loadIpsRules, RULE_TYPES } from './_loader';
+
+/* Activity log for rule changes (best-effort; never blocks the change).
+   org_audit_log has no client-insert policy, so this goes through the
+   service-role client, only after the executive's own RLS-scoped write has
+   succeeded. */
+async function logRule(member, action, rule) {
+  if (!rule || !isServerSupabaseConfigured()) return;
+  await logOrgAction(getAdminClient(), {
+    orgId: member.org_id,
+    actorId: member.user_id,
+    action,
+    targetType: 'ips_rule',
+    targetId: rule.id,
+    detail: {
+      label: rule.label || rule.rule_type,
+      severity: rule.rule_value?.severity === 'block' ? 'block' : 'warning',
+    },
+  });
+}
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-/* GET /api/org/ips/rules — list rules (any member).
+/* GET /api/org/ips/rules: list rules (any member).
    The read lives in `_loader.js` so the Compliance server page can seed the
    same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
@@ -23,7 +43,7 @@ export const GET = withApiGuard(
   { requireAuth: true },
 );
 
-/* POST /api/org/ips/rules — create or toggle a rule (executive only). */
+/* POST /api/org/ips/rules: create or toggle a rule (executive only). */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
@@ -50,6 +70,7 @@ export const POST = withApiGuard(
         .select('*')
         .single();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      await logRule(member, data.is_active ? 'ips_rule_enabled' : 'ips_rule_disabled', data);
       return NextResponse.json({ rule: data });
     }
 
@@ -74,12 +95,13 @@ export const POST = withApiGuard(
       .select('*')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await logRule(member, 'ips_rule_added', data);
     return NextResponse.json({ rule: data });
   },
   { requireAuth: true },
 );
 
-/* DELETE /api/org/ips/rules?id= — remove a rule (executive only). */
+/* DELETE /api/org/ips/rules?id= : remove a rule (executive only). */
 export const DELETE = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
@@ -92,12 +114,14 @@ export const DELETE = withApiGuard(
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('org_ips_rules')
       .delete()
       .eq('id', id)
-      .eq('org_id', member.org_id);
+      .eq('org_id', member.org_id)
+      .select('id, label, rule_type, rule_value');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await logRule(member, 'ips_rule_deleted', (data || [])[0]);
     return NextResponse.json({ ok: true });
   },
   { requireAuth: true },

@@ -1,43 +1,73 @@
-import { SkeletonRegion, Skeleton, SkeletonCard, SkeletonTable, token } from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/compliance/compliance.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for Compliance. Real header chrome + a tab row and
- * panel/table silhouettes. No useOrg / no fetch.
+ * Route loading state for Compliance, in the page's final layout: the
+ * figures, then breaches beside the policy summary, rules beside sector
+ * headroom, and the idea check. It renders inside the shared Team Hub shell,
+ * whose sidebar stays painted beside it. Presentation only: no data, no org
+ * context, no import of the page, no fields and no live controls.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
+
+const lines = (n, base = 100) => (
+  <div className="cmp-skel">
+    {Array.from({ length: n }).map((_, i) => (
+      <span key={i}>{bar(`${base - (i % 3) * 8}%`, i === 0 ? 10 : 14)}</span>
+    ))}
+  </div>
+);
 
 export default function ComplianceLoading() {
   return (
-    <SkeletonRegion label="Loading compliance…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Compliance</h1>
-
-      <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} width={120} height={34} radius={9} />
-        ))}
+    <SkeletonRegion
+      label="Loading compliance"
+      className="dashboard-page-inset ez-canvas tcc-page cmp-page"
+    >
+      <div className="tcc-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(80, 10)}
+                {bar(32, 16)}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <SkeletonCard rows={3} />
-        <SkeletonCard rows={3} />
+      <div className="cmp-row">
+        <div>
+          {bar('24%', 18)}
+          {lines(4)}
+        </div>
+        <span className="tcc-vrule cmp-vrule" aria-hidden="true" />
+        <div>
+          {bar('50%', 18)}
+          {lines(5, 92)}
+        </div>
       </div>
-      <div style={{ marginTop: 20 }}>
-        <SkeletonTable rows={6} cols={5} />
+      <div className="cmp-row">
+        <div>
+          {bar('30%', 18)}
+          {lines(7)}
+        </div>
+        <span className="tcc-vrule cmp-vrule" aria-hidden="true" />
+        <div>
+          {bar('50%', 18)}
+          {lines(5, 92)}
+        </div>
+      </div>
+      <div className="cmp-row cmp-row--single">
+        <div>
+          {bar('16%', 18)}
+          {lines(3, 70)}
+        </div>
       </div>
     </SkeletonRegion>
   );
