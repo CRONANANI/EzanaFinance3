@@ -57,7 +57,9 @@ export const POST = withApiGuard(
     });
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({
       message: { ...result.message, author_name: viewer.display_name },
       pitch: detail,

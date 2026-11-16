@@ -42,8 +42,11 @@ export const GET = withApiGuard(
         rating,
         peers: peers || [],
       });
-    } catch (e) {
-      return NextResponse.json({ error: e.message || 'FMP fetch failed' }, { status: 502 });
+    } catch {
+      return NextResponse.json(
+        { error: 'Supporting data is unavailable right now.' },
+        { status: 502 },
+      );
     }
   },
   { requireAuth: true },

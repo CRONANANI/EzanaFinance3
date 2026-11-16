@@ -12,8 +12,17 @@
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { hasPitchPermission } from '@/lib/org-pitch-permissions';
-import { ACTIVE_STAGES, designStageLabel, nextForwardGate } from '@/lib/org-pitch-state-machine';
+import { designStageLabel } from '@/lib/org-pitch-state-machine';
 import { FmpAPI } from '@/lib/services/fmp';
+import { isBlindOpen, sealPitchDetail, sealPitchRows } from '@/lib/pitch/ballot-privacy';
+import { boardRow } from '@/lib/pitch/board-rows';
+import { buildGateContexts, countBallotsReceived } from '@/lib/pitch/gate-context';
+import { loadSealedMeetingIds } from '@/lib/pitch/sealed-pitches';
+import { isManager, reviewDueAt } from '@/lib/pitch/rules';
+
+export { gateSummaryFor, viewerStateFor } from '@/lib/pitch/board-rows';
+
+export { loadSealedMeetingIds, loadSealedPitchIds } from '@/lib/pitch/sealed-pitches';
 
 export const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 // IC committee eligibility is derived from org-chart roles, never a hardcoded list.
@@ -28,6 +37,7 @@ export async function getPitchContext() {
     ? {
         id: member.id,
         role: member.role,
+        tier: member.tier || null,
         team_id: member.team_id || null,
         display_name: member.display_name || member.email || 'Member',
       }
@@ -85,7 +95,7 @@ function statusLabel(status) {
 
 /**
  * Enrich a raw org_pitches row for the UI. days_in_stage is DERIVED from
- * stage_entered_at (falls back to created_at) — never read from a column.
+ * stage_entered_at (falls back to created_at): never read from a column.
  */
 export function enrichPitchRow(row, { memberMap, teamMap, deliverables = [] } = {}) {
   const analyst = memberMap?.get(row.analyst_member_id) || null;
@@ -125,7 +135,11 @@ export async function fetchPitches(supabase, orgId, { teamId, statuses } = {}) {
   if (statuses?.length) q = q.in('status', statuses);
   const { data, error } = await q.order('created_at', { ascending: false });
   if (error) return [];
-  return data || [];
+  /* Rows from here go to the browser. A pitch in an open blind vote leaves
+     without its running tally. */
+  const rows = data || [];
+  const sealed = await loadSealedMeetingIds(supabase, orgId, rows);
+  return sealPitchRows(rows, sealed);
 }
 
 export async function fetchDeliverablesMap(supabase, pitchIds) {
@@ -152,12 +166,21 @@ export async function fetchPitchRaw(supabase, orgId, pitchId) {
   return data || null;
 }
 
-export async function fetchPitchDetail(supabase, orgId, pitchId) {
+/**
+ * One pitch with its deliverables, ballots, discussion, history and
+ * hindsight, as the browser may see it.
+ *
+ * `viewerMemberId` is the signed-in member. While the pitch's meeting is
+ * blind and open the payload carries only that member's own ballot and the
+ * participation count (see lib/pitch/ballot-privacy.js). A caller that does
+ * not pass a viewer gets no ballot at all in that case.
+ */
+export async function fetchPitchDetail(supabase, orgId, pitchId, { viewerMemberId = null } = {}) {
   const raw = await fetchPitchRaw(supabase, orgId, pitchId);
   if (!raw) return null;
   const { memberMap, teamMap } = await loadDirectory(supabase, orgId);
 
-  const [delRes, voteRes, discRes, histRes, hindRes] = await Promise.all([
+  const [delRes, voteRes, discRes, histRes, hindRes, meetingRes, eligible] = await Promise.all([
     supabase
       .from('org_pitch_deliverables')
       .select('*')
@@ -175,7 +198,21 @@ export async function fetchPitchDetail(supabase, orgId, pitchId) {
       .eq('pitch_id', pitchId)
       .order('created_at'),
     supabase.from('org_pitch_hindsight').select('*').eq('pitch_id', pitchId).maybeSingle(),
+    raw.ic_meeting_id
+      ? supabase
+          .from('org_ic_meetings')
+          .select('id, meets_at, ballot_type, threshold, quorum_pct, status')
+          .eq('id', raw.ic_meeting_id)
+          .eq('org_id', orgId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    icEligibleVoters(supabase, orgId),
   ]);
+
+  const meeting = meetingRes?.data || null;
+  /* A meeting that is attached but cannot be read is treated as sealed. */
+  const sealed = meeting ? isBlindOpen(meeting) : Boolean(raw.ic_meeting_id);
+  const received = sealed ? (await countBallotsReceived(supabase, [pitchId]))[pitchId] : null;
 
   const enriched = enrichPitchRow(raw, { memberMap, teamMap, deliverables: delRes.data || [] });
   const nameOf = (id) => memberMap.get(id)?.display_name || 'Member';
@@ -196,15 +233,26 @@ export async function fetchPitchDetail(supabase, orgId, pitchId) {
     from_stage_label: h.from_stage ? designStageLabel(h.from_stage) : null,
   }));
 
-  return {
-    ...enriched,
-    hindsight: hindRes.data || null,
-    votes,
-    discussion,
-    history,
-    is_archived: raw.status !== 'active',
-    permissions: buildPitchPermissions(raw),
-  };
+  return sealPitchDetail(
+    {
+      ...enriched,
+      hindsight: hindRes.data || null,
+      votes,
+      discussion,
+      history,
+      ic_meeting: meeting,
+      review_due_at: reviewDueAt(raw),
+      is_archived: raw.status !== 'active',
+      permissions: buildPitchPermissions(raw),
+    },
+    {
+      sealed,
+      viewerMemberId,
+      eligibleCount: eligible.length,
+      quorumPct: meeting?.quorum_pct ?? 50,
+      received,
+    },
+  );
 }
 
 export function buildPitchPermissions(pitch) {
@@ -236,6 +284,7 @@ export async function insertPitch(supabase, orgId, viewer, payload) {
     thesis_full: payload.thesis_full || null,
     why_now: payload.why_now || null,
     variant_perception: payload.variant_perception || null,
+    falsification: payload.falsification || null,
     sector: payload.sector || null,
     catalysts: Array.isArray(payload.catalysts) ? payload.catalysts : [],
     risks: Array.isArray(payload.risks) ? payload.risks : [],
@@ -451,8 +500,19 @@ export async function castVoteDb(supabase, orgId, pitch, payload) {
     .single();
   if (error) return { error: error.message };
 
+  /* The running tally is written onto the pitch row, which every member of
+     the council can read. During a blind vote it is therefore not written at
+     all: closing the meeting writes it (see the meeting route). */
+  if (await isPitchSealed(supabase, orgId, pitch)) return { vote: data };
   await recalcVoteTally(supabase, orgId, pitch.id);
   return { vote: data };
+}
+
+/** Is this pitch attached to a blind meeting that has not closed? */
+export async function isPitchSealed(supabase, orgId, pitch) {
+  if (!pitch?.ic_meeting_id) return false;
+  const sealed = await loadSealedMeetingIds(supabase, orgId, [pitch]);
+  return sealed.has(pitch.ic_meeting_id);
 }
 
 export async function recalcVoteTally(supabase, orgId, pitchId) {
@@ -477,7 +537,7 @@ export async function recalcVoteTally(supabase, orgId, pitchId) {
 // ── Board assembly ──────────────────────────────────────────────────────────
 /**
  * Fetch + enrich every pitch in the org and bucket by lifecycle:
- *  - active:    status='active' (the 7 kanban stages)
+ *  - active:    status='active' (the seven working stages)
  *  - portfolio: stage='in_portfolio' (live book → 1b tracker)
  *  - archived:  rejected / withdrawn / exited (archive lane, reasons preserved)
  */
@@ -545,22 +605,8 @@ export async function createIcMeeting(supabase, orgId, viewer, payload) {
   return { meeting: data };
 }
 
-// ── Board payload assembly (shared by the API route + the SSR page) ──────────
-// Stage → design dot color token (light + dark safe theme tokens).
-const STAGE_TOKENS = {
-  idea: 'var(--info)',
-  screening: 'var(--cyan)',
-  deep_dive: 'var(--purple)',
-  cross_desk_review: 'var(--warning)',
-  pitch_scheduled: 'var(--gold)',
-  ic_vote: 'var(--amber)',
-  approved: 'var(--emerald)',
-  in_portfolio: 'var(--positive)',
-  exited: 'var(--text-muted)',
-  rejected: 'var(--negative)',
-};
-
-/** Batch-fetch current prices from FMP; degrade gracefully (stale/null). */
+// ── Pipeline payload (shared by the API route and the page) ──────────────────
+/** Current prices for a list of pitches. A failed lookup leaves them unset. */
 async function attachQuotes(pitches) {
   const symbols = [...new Set(pitches.map((p) => p.ticker).filter(Boolean))];
   let quoteMap = new Map();
@@ -570,100 +616,104 @@ async function attachQuotes(pitches) {
       const quotes = await FmpAPI.getBatchQuote(symbols);
       quoteMap = new Map((quotes || []).map((q) => [q.symbol, q]));
     } catch {
-      stale = true; // never fabricate a price — mark the strip stale instead
+      stale = true; // never invent a price: the page says prices are unavailable
     }
   }
   const decorated = pitches.map((p) => {
-    const q = quoteMap.get(p.ticker);
-    const current = q?.price ?? null;
+    const current = quoteMap.get(p.ticker)?.price ?? null;
     const upside =
-      current != null && p.target_price != null && Number(p.target_price) !== 0
-        ? (Number(p.target_price) - current) / current
+      current != null && p.target_price != null && Number(current) !== 0
+        ? ((Number(p.target_price) - current) / current) * 100
         : null;
-    const gate = nextForwardGate(p, {
-      deliverableCount: p.deliverable_count,
-      deliverableKinds: (p.deliverables || []).map((d) => d.kind),
-    });
-    return {
-      ...p,
-      current_price: current,
-      current_price_stale: current == null,
-      upside,
-      gate_block: gate?.blocked ? gate.reason : null,
-      next_gate_hint: gate && !gate.blocked ? gate.reason : null,
-    };
+    return { ...p, current_price: current, upside_pct: upside };
   });
   return { decorated, stale };
 }
 
 /**
- * Build the exact payload the pitch board client consumes on mount, for a given
- * view ('kanban' | 'tracker' | 'ic'). Assumes orgId is present (caller handles
- * the no-org case). Shared verbatim by the GET route and the SSR page so the
- * seeded first paint and the client refetch never drift.
+ * The payload the Pitch Pipeline page draws from. Assumes orgId is present.
+ * Shared by GET /api/org/pitches/board and the server page, so the first
+ * paint and a refresh can never drift.
+ *
+ * @param {object} supabase the signed-in member's client
+ * @param {string} orgId
+ * @param {{ viewer: {id, role, tier, team_id}, teamId?: string }} opts
  */
-export async function loadPitchBoard(supabase, orgId, { view = 'kanban', teamId } = {}) {
-  const { active, portfolio, archived } = await fetchBoardPitches(supabase, orgId, { teamId });
+export async function loadPitchBoard(supabase, orgId, { viewer, teamId } = {}) {
+  const actor = viewer || { id: null, role: 'analyst', tier: null, team_id: null };
+  const { all } = await fetchBoardPitches(supabase, orgId, { teamId });
+  const { memberMap, teamMap } = await loadDirectory(supabase, orgId);
 
-  // ── Tracker: live book (in_portfolio) + still-active pitches vs price ─
-  if (view === 'tracker') {
-    const { decorated, stale } = await attachQuotes([...portfolio, ...active]);
-    const rows = decorated.map((p) => {
-      const base = p.pitch_price ?? p.current_price_at_submission ?? null;
-      const pnl_pct =
-        base != null && p.current_price != null && Number(base) !== 0
-          ? (p.current_price - Number(base)) / Number(base)
-          : null;
-      const review_due =
-        p.stage === 'in_portfolio' &&
-        (!p.last_reaffirmed_at ||
-          Date.now() - new Date(p.last_reaffirmed_at).getTime() > 90 * 86400000);
-      return { ...p, pitch_price: base, pnl_pct, review_due };
-    });
-    return { view, rows, stale, total: rows.length };
+  /* Gates are computed for pitches that can still move, and for held ones. */
+  const live = all.filter((p) => p.status === 'active' || p.stage === 'in_portfolio');
+  const ids = all.map((p) => p.id);
+
+  const [{ decorated, stale }, ctxById, meetings, eligible, hindRes, voteRes] = await Promise.all([
+    attachQuotes(all),
+    buildGateContexts(supabase, orgId, live),
+    listIcMeetings(supabase, orgId),
+    icEligibleVoters(supabase, orgId),
+    ids.length
+      ? supabase
+          .from('org_pitch_hindsight')
+          .select('pitch_id, return_pct, benchmark_return_pct, alpha_pct, current_state')
+          .in('pitch_id', ids)
+      : Promise.resolve({ data: [] }),
+    ids.length
+      ? supabase.from('org_pitch_votes').select('pitch_id, voter_member_id').in('pitch_id', ids)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const known = new Map(meetings.map((m) => [m.id, m]));
+  /* A pitch attached to a meeting this member cannot read is treated as
+     sealed: hiding a tally by mistake is recoverable, showing one is not. */
+  const meetingById = {
+    get: (id) =>
+      id
+        ? known.get(id) || { id, ballot_type: 'blind', status: 'unknown', unreadable: true }
+        : null,
+  };
+  const hindById = new Map((hindRes?.data || []).map((h) => [h.pitch_id, h]));
+  const sealedPitchIds = new Set(
+    all.filter((p) => isBlindOpen(meetingById.get(p.ic_meeting_id))).map((p) => p.id),
+  );
+
+  const pitches = decorated.map((p) =>
+    boardRow(p, ctxById.get(p.id) || null, actor, {
+      meeting: meetingById.get(p.ic_meeting_id) || null,
+      eligibleCount: eligible.length,
+      hindsight: hindById.get(p.id) || null,
+    }),
+  );
+
+  /* Votes cast per member, for the analyst record. Ballots on a pitch whose
+     blind vote is open are left out, so the column cannot show who has voted. */
+  const votesCast = new Map();
+  for (const v of voteRes?.data || []) {
+    if (sealedPitchIds.has(v.pitch_id)) continue;
+    votesCast.set(v.voter_member_id, (votesCast.get(v.voter_member_id) || 0) + 1);
   }
-
-  // ── IC vote: agenda auto-assembles from Pitch-Scheduled + IC-Vote ────
-  if (view === 'ic') {
-    const agendaPitches = active.filter((p) => ['pitch_scheduled', 'ic_vote'].includes(p.stage));
-    const { decorated } = await attachQuotes(agendaPitches);
-    const eligible = await icEligibleVoters(supabase, orgId);
-    const meetings = await listIcMeetings(supabase, orgId);
-    const meetingById = new Map(meetings.map((m) => [m.id, m]));
-    const agenda = decorated.map((p) => {
-      const cast = (p.vote_yes_count || 0) + (p.vote_no_count || 0) + (p.vote_abstain_count || 0);
-      const quorumPct = (p.ic_meeting_id && meetingById.get(p.ic_meeting_id)?.quorum_pct) ?? 50;
-      return {
-        ...p,
-        quorum: computeQuorum(eligible.length, cast, quorumPct),
-        voting_open: p.stage === 'ic_vote',
-      };
-    });
-    return {
-      view,
-      agenda,
-      meetings,
-      eligible_voters: eligible.length,
-      eligible: eligible.map((m) => ({ id: m.id, name: m.display_name, role: m.role })),
-    };
-  }
-
-  // ── Kanban (default): 7 stage columns + archive lane ─────────────────
-  const { decorated, stale } = await attachQuotes(active);
-  const columns = ACTIVE_STAGES.map((stage) => ({
-    id: stage,
-    stage,
-    label: designStageLabel(stage),
-    token: STAGE_TOKENS[stage] || 'var(--text-secondary)',
-    pitches: decorated.filter((p) => p.stage === stage),
-  }));
 
   return {
-    view: 'kanban',
-    columns,
-    archive: archived,
-    portfolio_count: portfolio.filter((p) => p.stage === 'in_portfolio').length,
-    total_active: active.length,
+    view: 'pipeline',
+    viewer: {
+      id: actor.id,
+      role: actor.role,
+      tier: actor.tier || null,
+      team_id: actor.team_id || null,
+      is_manager: isManager(actor),
+    },
+    pitches,
     stale,
+    meetings,
+    eligible_voters: eligible.length,
+    teams: [...teamMap.values()].map((t) => ({ id: t.id, name: t.name })),
+    members: [...memberMap.values()].map((m) => ({
+      id: m.id,
+      display_name: m.display_name || 'Member',
+      role: m.role,
+      team_id: m.team_id || null,
+    })),
+    votes_cast: Object.fromEntries(votesCast),
   };
 }

@@ -1,5 +1,5 @@
 /**
- * Gate engine (spec PART 3) — pure functions, computed server-side. The client
+ * Gate engine (spec PART 3): pure functions, computed server-side. The client
  * renders gate state and disables buttons; the /advance endpoint re-evaluates
  * from the DB before permitting a transition.
  *
@@ -12,7 +12,7 @@
  * with a specific detail, never a fabricated pass.
  */
 
-import { STAGE_CONFIG } from './stage-config';
+import { STAGE_CONFIG } from './stage-config.js';
 
 const g = (id, label, status, detail, severity, extra = {}) => ({
   id,
@@ -25,7 +25,7 @@ const g = (id, label, status, detail, severity, extra = {}) => ({
 const len = (v) => (typeof v === 'string' ? v.trim().length : 0);
 
 // §3.2 thesis completeness fields + minimum meaningful lengths.
-const MIN_LENGTHS = {
+export const MIN_LENGTHS = {
   short_thesis: 20,
   full_thesis: 200,
   why_now: 60,
@@ -61,7 +61,8 @@ function fieldPresent(pitch, key) {
   return len(v) > 0 || v != null;
 }
 
-function thesisCompleteness(pitch, tier) {
+/** Which thesis sections a gate needs, and which of them a pitch still lacks. */
+export function thesisCompleteness(pitch, tier) {
   const fields = tier === 100 ? [...SECTIONS_80, ...SECTIONS_100_EXTRA] : SECTIONS_80;
   const present = fields.filter((f) => fieldPresent(pitch, f)).length;
   return { present, total: fields.length, missing: fields.filter((f) => !fieldPresent(pitch, f)) };

@@ -2,10 +2,11 @@
  * Org fund attribution engine (Phase 4). All math is server-side. Every helper
  * takes an already-authenticated supabase client + the caller's org_id, and
  * degrades gracefully when hindsight/portfolio data is missing (no NaN, no
- * divide-by-zero — missing outcomes are simply excluded from averages).
+ * divide-by-zero: missing outcomes are simply excluded from averages).
  */
 
 import { getOrgPositionBook } from '@/lib/org-position-book';
+import { loadSealedPitchIds } from '@/lib/pitch/sealed-pitches';
 import { getBenchmarkSymbol, benchmarkReturnPct } from '@/lib/org-benchmark';
 
 const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
@@ -13,7 +14,7 @@ const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length :
 
 /**
  * Resolve an org_members row to a real, human name. Rows used to render the
- * literal string 'Analyst' whenever display_name was null — a DATA bug that made
+ * literal string 'Analyst' whenever display_name was null: a DATA bug that made
  * the whole leaderboard anonymous. Fallback chain: display_name → title →
  * 'Unassigned'. The string 'Analyst' must never appear as a rendered name.
  * (No public profiles table + no service-role access here, so the user's email
@@ -29,7 +30,7 @@ function memberName(member) {
 }
 
 async function getPortfolio(supabase, orgId) {
-  // Canonical book — org_positions, explicitly org-scoped. Rows carry the
+  // Canonical book: org_positions, explicitly org-scoped. Rows carry the
   // legacy `current_value`/`ticker_symbol` aliases so the math below is unchanged.
   return getOrgPositionBook(supabase, orgId);
 }
@@ -96,10 +97,15 @@ export async function computeFundPerformance(supabase, orgId) {
     .order('snapshot_date', { ascending: true })
     .limit(1)
     .maybeSingle();
-  const positionDates = positions.map((p) => p.added_at).filter(Boolean).sort();
+  const positionDates = positions
+    .map((p) => p.added_at)
+    .filter(Boolean)
+    .sort();
   const fromDate = firstSnap?.snapshot_date || (positionDates[0] || '').slice(0, 10) || null;
   const toDate = new Date().toISOString().slice(0, 10);
-  const index = fromDate ? await benchmarkReturnPct(benchmarkSymbol, fromDate, toDate) : { pct: null, source: null };
+  const index = fromDate
+    ? await benchmarkReturnPct(benchmarkSymbol, fromDate, toDate)
+    : { pct: null, source: null };
 
   let benchmarkPct = null;
   let benchmarkSource = null;
@@ -204,7 +210,7 @@ export async function attributionByPitch(supabase, orgId) {
         pitch_id: p.id,
         ticker: p.ticker,
         company_name: p.company_name,
-        // null (not '—') when unassigned → the UI renders "Unassigned" + Assign.
+        // null (not '-') when unassigned → the UI renders "Unassigned" + Assign.
         analyst: p.analyst_member_id ? memberName(byId.get(p.analyst_member_id)) : null,
         analyst_member_id: p.analyst_member_id || null,
         decision: p.decision || p.stage || p.status || null,
@@ -245,10 +251,15 @@ export async function analystScorecard(supabase, orgId, memberId) {
   const avgAlpha = avg(withOutcome.map((c) => c.alpha_pct).filter((n) => n != null));
 
   // Participation: committee votes cast + research notes authored.
-  const { count: voteCount } = await supabase
-    .from('org_pitch_votes')
-    .select('id', { count: 'exact', head: true })
-    .eq('voter_member_id', memberId);
+  // Ballots on a pitch whose blind vote is still open are not counted, so the
+  // figure cannot show whether this member has voted in it yet.
+  const [{ data: ballotRows }, sealedPitchIds] = await Promise.all([
+    supabase.from('org_pitch_votes').select('pitch_id').eq('voter_member_id', memberId),
+    loadSealedPitchIds(supabase, orgId),
+  ]);
+  const voteCount = sealedPitchIds
+    ? (ballotRows || []).filter((b) => !sealedPitchIds.has(b.pitch_id)).length
+    : null;
 
   const { count: noteCount } = await supabase
     .from('org_research_notes')
@@ -266,7 +277,7 @@ export async function analystScorecard(supabase, orgId, memberId) {
     hit_rate: hitRate,
     avg_return: avgReturn,
     avg_alpha: avgAlpha,
-    votes_participated: voteCount || 0,
+    votes_participated: voteCount,
     notes_authored: noteCount || 0,
     calls,
   };

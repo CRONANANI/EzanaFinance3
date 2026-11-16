@@ -16,7 +16,7 @@ export const runtime = 'nodejs';
 export const POST = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { supabase, orgId } = await getPitchContext();
+    const { supabase, viewer, orgId } = await getPitchContext();
     if (!orgId) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
@@ -36,13 +36,15 @@ export const POST = withApiGuard(
       flagId = res.flagId;
     }
 
-    // Either way this is a completed review — reset the 90d review clock.
+    // Either way this is a completed review: reset the 90d review clock.
     await supabase
       .from('org_pitches')
       .update({ last_reaffirmed_at: new Date().toISOString() })
       .eq('id', pitch.id);
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail, tripped: !!body.tripped, flagId });
   },
   { requireAuth: true },

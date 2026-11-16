@@ -5,6 +5,7 @@ import { getPitchContext, fetchPitchRaw, fetchPitchDetail } from '@/lib/org-pitc
 import { STAGE_CONFIG, canAdvanceStage, canOverrideStage } from '@/lib/pitch/stage-config';
 import { evaluateGates, allGatesPass } from '@/lib/pitch/gates';
 import { buildGateContext } from '@/lib/pitch/gate-context';
+import { sealGates } from '@/lib/pitch/ballot-privacy';
 import { applyTransitionSideEffects } from '@/lib/pitch/side-effects';
 import { notifyStageChange } from '@/lib/org-pitch-notifications';
 
@@ -70,7 +71,9 @@ export const POST = withApiGuard(
         .eq('org_id', orgId)
         .eq('id', pitch.id);
       if (rejErr) return NextResponse.json({ error: rejErr.message }, { status: 500 });
-      const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+      const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+        viewerMemberId: viewer?.id,
+      });
       return NextResponse.json({ pitch: detail });
     }
 
@@ -79,7 +82,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: `Stage ${fromStage} cannot advance.` }, { status: 400 });
     }
 
-    // Role gate — enforced regardless of what the client posts.
+    // Role gate: enforced regardless of what the client posts.
     if (!canAdvanceStage(fromStage, actor)) {
       return NextResponse.json({ error: 'Your role cannot advance this pitch.' }, { status: 403 });
     }
@@ -95,11 +98,17 @@ export const POST = withApiGuard(
       const reason = (body.override_reason || '').trim();
       if (!wantsOverride) {
         return NextResponse.json(
-          { error: 'Gates failing', gates: gateResults.filter((g) => g.status !== 'pass') },
+          {
+            error: 'Gates failing',
+            // A blind vote that is still open never says which way it leans.
+            gates: (ctx.ballotsSealed ? sealGates(gateResults) : gateResults).filter(
+              (g) => g.status !== 'pass',
+            ),
+          },
           { status: 422 },
         );
       }
-      // ic_vote is NEVER overridable — overrideRoles is []. This blocks the CIO too.
+      // ic_vote is NEVER overridable: overrideRoles is []. This blocks the CIO too.
       if (!canOverrideStage(fromStage, actor)) {
         return NextResponse.json({ error: 'This stage cannot be overridden.' }, { status: 403 });
       }
@@ -146,7 +155,7 @@ export const POST = withApiGuard(
       .eq('id', pitch.id);
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
 
-    // Side effects (spec §3.3) — best-effort, never rolls back the transition.
+    // Side effects (spec §3.3): best-effort, never rolls back the transition.
     await applyTransitionSideEffects(admin, orgId, pitch, fromStage, toStage, actor);
 
     // Notify the stage's audience (best-effort; never fails the request).
@@ -156,7 +165,9 @@ export const POST = withApiGuard(
       /* notifications are best-effort */
     }
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail, from: fromStage, to: toStage, override });
   },
   { requireAuth: true },

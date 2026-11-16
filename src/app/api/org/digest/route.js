@@ -3,11 +3,12 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
+import { loadSealedPitchIds } from '@/lib/pitch/sealed-pitches';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-/* GET /api/org/digest — "This Week in the Fund": last-7-day activity for the org. */
+/* GET /api/org/digest: "This Week in the Fund": last-7-day activity for the org. */
 export const GET = withApiGuard(
   async () => {
     const supabase = getUserClient();
@@ -36,9 +37,12 @@ export const GET = withApiGuard(
         created_at: p.created_at,
       }));
 
-    // Votes cast this week (join via pitch_id).
+    // Votes cast this week (join via pitch_id). Ballots on a pitch whose blind
+    // vote is still open are left out: a choice next to a ticker is the tally.
+    // If that cannot be determined, no ballots are listed at all.
+    const sealedPitchIds = await loadSealedPitchIds(supabase, orgId);
     let votes = [];
-    if (pitchIds.length > 0) {
+    if (pitchIds.length > 0 && sealedPitchIds) {
       const { data: voteRows } = await supabase
         .from('org_pitch_votes')
         .select('id, pitch_id, vote, created_at')
@@ -46,15 +50,17 @@ export const GET = withApiGuard(
         .gte('created_at', since)
         .order('created_at', { ascending: false })
         .limit(40);
-      votes = (voteRows || []).map((v) => ({
-        id: v.id,
-        vote: v.vote,
-        created_at: v.created_at,
-        ticker: pitchById.get(v.pitch_id)?.ticker || null,
-      }));
+      votes = (voteRows || [])
+        .filter((v) => !sealedPitchIds.has(v.pitch_id))
+        .map((v) => ({
+          id: v.id,
+          vote: v.vote,
+          created_at: v.created_at,
+          ticker: pitchById.get(v.pitch_id)?.ticker || null,
+        }));
     }
 
-    // Positions opened this week — from the canonical org position book.
+    // Positions opened this week: from the canonical org position book.
     const book = await getOrgPositionBook(supabase, orgId);
     const positions = book
       .filter((p) => p.added_at && p.added_at >= since)

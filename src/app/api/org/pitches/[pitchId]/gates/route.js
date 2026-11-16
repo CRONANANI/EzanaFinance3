@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getPitchContext, fetchPitchRaw } from '@/lib/org-pitch-api-helpers';
+import {
+  getPitchContext,
+  fetchPitchRaw,
+  gateSummaryFor,
+  viewerStateFor,
+} from '@/lib/org-pitch-api-helpers';
 import { buildGateContext } from '@/lib/pitch/gate-context';
-import { evaluateGates } from '@/lib/pitch/gates';
-import { STAGE_CONFIG, canAdvanceStage, canOverrideStage } from '@/lib/pitch/stage-config';
 import { stageLabel } from '@/lib/pitch/stages';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +14,7 @@ export const runtime = 'nodejs';
 
 /**
  * GET /api/org/pitches/[pitchId]/gates
- * The Gate Panel's data source — recomputes the current stage's gates from the
+ * The Gate Panel's data source: recomputes the current stage's gates from the
  * DB so the panel shows real, specific blockers (never the client's guess).
  */
 export const GET = withApiGuard(
@@ -25,25 +28,28 @@ export const GET = withApiGuard(
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
 
-    const cfg = STAGE_CONFIG[pitch.stage];
     const ctx = await buildGateContext(supabase, orgId, pitch);
-    const gates = evaluateGates(pitch.stage, pitch, ctx);
-    // canAdvance = every HARD gate passes; soft gates warn but never block.
-    const hardFail = gates.filter((x) => x.severity === 'hard' && x.status !== 'pass').length;
-    const passedCount = gates.filter((x) => x.status === 'pass').length;
+    // One summary for the gate panel and the board: the current stage's gates
+    // only, sealed while a blind vote is open.
+    const summary = gateSummaryFor(pitch, ctx, actor);
+    const state = viewerStateFor(pitch, ctx, actor);
 
     return NextResponse.json({
       stage: pitch.stage,
       stageLabel: stageLabel(pitch.stage),
-      nextStage: cfg?.next || null,
-      nextStageLabel: cfg?.next ? stageLabel(cfg.next) : null,
-      gates,
-      passedCount,
-      total: gates.length,
-      allPass: hardFail === 0,
-      hasWarnings: gates.some((x) => x.severity === 'soft' && x.status !== 'pass'),
-      canAdvance: !!cfg && canAdvanceStage(pitch.stage, actor),
-      canOverride: !!cfg && canOverrideStage(pitch.stage, actor),
+      nextStage: summary.next_stage,
+      nextStageLabel: summary.next_stage_label,
+      gates: summary.gates,
+      passedCount: summary.passed,
+      total: summary.total,
+      allPass: summary.all_pass,
+      hasWarnings: Boolean(summary.has_warnings),
+      canAdvance: summary.can_advance,
+      canOverride: summary.can_override,
+      canReject: state.can_reject,
+      canExit: state.can_exit,
+      canEditThesis: state.can_edit_thesis,
+      ballotsSealed: Boolean(ctx?.ballotsSealed),
     });
   },
   { requireAuth: true },

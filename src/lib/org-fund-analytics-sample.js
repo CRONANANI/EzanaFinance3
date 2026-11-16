@@ -19,6 +19,7 @@
  * Pure: no React, no fetch, no server imports. Every row carries is_demo.
  */
 import { buildTradingDeskSample } from './org-trading-desk-sample.js';
+import { SAMPLE_PITCHES, SAMPLE_PITCH_AUTHORS } from './org-sample-pitches.js';
 import {
   FUND_PERIOD_VALUES,
   concentrationOf,
@@ -37,33 +38,10 @@ const memberOf = (n) => id('member', n);
 /* The council's one sector cap (its investment policy). */
 const SECTOR_CAP_PCT = 35;
 
-/* Member numbers, as the Trading Desk sample assigns them. */
-const WHO = { tesfaye: 1, bekele: 2, rossi: 7, weber: 8, alvarez: 9 };
-
-/*
- * The pitches behind the book. [ticker, company, analyst, decision, days since
- * the decision (null while undecided), return since the decision, alpha].
- * A pitch has no reading until 30 days after its decision, so GE, V and COST
- * carry none. HON was imported with no pitch on file: it is the coverage gap.
- * NVDA, LLY and CAT repeat the readings in the Command Center's digest.
- */
-const PITCHES = [
-  ['JPM', 'JPMorgan Chase & Co.', 'tesfaye', 'accepted', 131, 18.42, 9.61],
-  ['SCHW', 'The Charles Schwab Corporation', 'tesfaye', 'accepted', 122, 11.05, 3.87],
-  ['BAC', 'Bank of America Corporation', 'tesfaye', 'accepted', 113, 14.3, 6.12],
-  ['LLY', 'Eli Lilly and Company', 'bekele', 'accepted', 104, 15.4, 8.11],
-  ['UNH', 'UnitedHealth Group Incorporated', 'alvarez', 'accepted', 95, -8.03, -14.22],
-  ['MRK', 'Merck & Co., Inc.', 'bekele', 'accepted', 86, 9.48, 1.02],
-  ['NVDA', 'NVIDIA Corporation', 'rossi', 'accepted', 77, 21.9, 12.48],
-  ['MSFT', 'Microsoft Corporation', 'rossi', 'accepted', 68, 7.15, -0.84],
-  ['AAPL', 'Apple Inc.', 'rossi', 'accepted', 59, 5.02, -2.31],
-  ['CAT', 'Caterpillar Inc.', 'weber', 'accepted', 50, 4.2, -3.26],
-  ['GE', 'GE Aerospace', 'weber', 'accepted', 12, null, null],
-  ['V', 'Visa Inc.', 'tesfaye', 'accepted', 5, null, null],
-  ['PFE', 'Pfizer Inc.', 'bekele', 'rejected', 72, -3.1, -9.75],
-  ['DE', 'Deere & Company', 'weber', 'rejected', 44, 6.84, 0.37],
-  ['COST', 'Costco Wholesale Corporation', 'alvarez', null, null, null, null],
-];
+/* The pitches behind the book, and the ones still in the pipeline: the same
+   list the Pitch Pipeline sample shows (org-sample-pitches.js). */
+const WHO = SAMPLE_PITCH_AUTHORS;
+const PITCHES = SAMPLE_PITCHES;
 
 /* Votes cast and research notes written, per member (scorecard only). */
 const PARTICIPATION = {

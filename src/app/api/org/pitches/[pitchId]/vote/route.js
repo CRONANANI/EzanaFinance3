@@ -6,67 +6,38 @@ import {
   fetchPitchRaw,
   fetchPitchDetail,
   castVoteDb,
-  icEligibleVoters,
   computeQuorum,
 } from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+/**
+ * GET: the ballots on a pitch, as this member may see them.
+ *
+ * Open ballot, or a blind ballot whose meeting has closed: every ballot with
+ * its voter, plus the tally. Blind ballot still open: only the member's own
+ * ballot and the number of ballots received. No names, no choices, no
+ * rationales and no tally leave the server (lib/pitch/ballot-privacy.js).
+ */
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { supabase, orgId } = await getPitchContext();
+    const { supabase, viewer, orgId } = await getPitchContext();
     if (!orgId) return NextResponse.json({ votes: [] });
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
 
-    const { data: members } = await supabase
-      .from('org_members')
-      .select('id, display_name, role')
-      .eq('org_id', orgId);
-    const nameMap = new Map((members || []).map((m) => [m.id, m]));
-
-    const { data: rawVotes } = await supabase
-      .from('org_pitch_votes')
-      .select('*')
-      .eq('pitch_id', pitch.id)
-      .order('created_at');
-
-    // Blind ballot + quorum both derive from the attached IC meeting.
-    let blind = false;
-    let quorumPct = 50;
-    if (pitch.ic_meeting_id) {
-      const { data: mtg } = await supabase
-        .from('org_ic_meetings')
-        .select('ballot_type, status, quorum_pct')
-        .eq('id', pitch.ic_meeting_id)
-        .eq('org_id', orgId)
-        .maybeSingle();
-      if (mtg) {
-        blind = mtg.ballot_type === 'blind' && mtg.status !== 'closed' && pitch.stage === 'ic_vote';
-        quorumPct = mtg.quorum_pct ?? 50;
-      }
-    }
-
-    const votes = (rawVotes || []).map((v) => ({
-      id: v.id,
-      voter_name: nameMap.get(v.voter_member_id)?.display_name || 'Member',
-      voter_role: nameMap.get(v.voter_member_id)?.role || null,
-      recused: v.recused,
-      created_at: v.created_at,
-      vote: blind ? null : v.vote,
-      rationale: blind ? null : v.rationale,
-      conviction_level: blind ? null : v.conviction_level,
-    }));
-
-    const eligible = await icEligibleVoters(supabase, orgId);
-    const cast = votes.filter((v) => !v.recused).length;
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
+    const summary = detail.ballot;
     return NextResponse.json({
-      votes,
-      blind,
-      quorum: computeQuorum(eligible.length, cast, quorumPct),
+      votes: detail.votes,
+      blind: summary.sealed,
+      ballot: summary,
+      quorum: computeQuorum(summary.eligible, summary.received, summary.quorum_pct),
     });
   },
   { requireAuth: true },
@@ -118,7 +89,9 @@ export const POST = withApiGuard(
     });
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail, vote: result.vote });
   },
   { requireAuth: true },

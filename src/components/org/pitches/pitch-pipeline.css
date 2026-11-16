@@ -1,0 +1,925 @@
+/* ============================================================================
+   Pitch Pipeline (/org-team-hub/pitches). Page-scoped: every class starts
+   with opp-. It sits on the Team Hub canvas and shares the Command Center's
+   tcc- atoms (KPI strip, section titles, text buttons, toggles, states), so
+   the Team Hub pages read as one. Flat sections, hairlines only, text-only
+   tabs and toggles, one filled button per group. Tokens only. --ez-rule and
+   --ez-rule-subtle come from home-canvas.css; the dialogs are portalled
+   outside the canvas, so they use --border-primary for their inner rules.
+   ============================================================================ */
+
+/* ── Row 1 ───────────────────────────────────────────────────────────────── */
+.opp-top {
+  column-gap: 20px;
+}
+.opp-page .tcc-kpi {
+  padding: 0 16px;
+}
+.opp-page .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 0;
+}
+.opp-page .tcc-kpi__icon.tcc-warn {
+  color: var(--warning);
+}
+.opp-actions {
+  gap: 12px 20px;
+}
+.opp-action {
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.opp-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.opp-notice > .bi {
+  color: var(--positive);
+}
+.opp-notice--error > .bi {
+  color: var(--negative);
+}
+
+/* ── Row 2: the stage strip ──────────────────────────────────────────────── */
+.opp-stages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  min-height: 52px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.opp-stages .tcc-toggle {
+  display: inline-flex;
+  gap: 6px;
+  font-size: 13px;
+}
+.opp-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.opp-stages .tcc-toggle.is-on .opp-count {
+  color: var(--emerald-text);
+}
+.opp-stages__rule {
+  align-self: stretch;
+  width: 1px;
+  min-height: 18px;
+  background: var(--ez-rule);
+}
+
+/* ── Row 3: the tables beside the side column ────────────────────────────── */
+.opp-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px 300px;
+  column-gap: 31.5px; /* 64px between sections, the rule centred */
+  padding: 24px 0 0;
+}
+.opp-main,
+.opp-side {
+  min-width: 0;
+}
+.opp-side {
+  display: flex;
+  flex-direction: column;
+}
+.opp-side > .tcc-section + .tcc-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.opp-gap {
+  margin-top: 40px;
+}
+.opp-aside {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.opp-side .tcc-head__aside .tcc-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.opp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 24px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.opp-search {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.opp-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.opp-search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Tables. display: table holds against the app's phone rule that turns every
+   table into a scrolling block: these already scroll inside .opp-scroll. */
+.opp-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.opp-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.opp-table th,
+.opp-table td {
+  padding: 10px 5px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.opp-table thead th {
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.opp-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.opp-table tr > :first-child {
+  padding-left: 0;
+}
+.opp-table tr > :last-child {
+  padding-right: 0;
+}
+.opp-table tbody tr {
+  cursor: pointer;
+}
+.opp-table tbody tr.opp-static {
+  cursor: default;
+}
+/* Hover on a flush row is a colour change, never a wash. */
+.opp-table tbody tr:not(.opp-static):hover td,
+.opp-table tbody tr:not(.opp-static):hover .tcc-ticker,
+.opp-table tbody tr:not(.opp-static):hover .opp-sub {
+  color: var(--emerald-text);
+}
+.opp-table .opp-num {
+  text-align: right;
+}
+.opp-table td.opp-num {
+  color: var(--text-primary);
+}
+.opp-table td.tcc-na,
+.opp-table .tcc-na {
+  color: var(--text-muted);
+}
+.opp-table td.tcc-warn {
+  color: var(--warning);
+}
+.opp-table td.tcc-pos {
+  color: var(--positive);
+}
+.opp-table td.tcc-neg {
+  color: var(--negative);
+}
+.opp-table--wide,
+.opp-table--wide td {
+  font-size: 12px;
+}
+.opp-table--side th,
+.opp-table--side td {
+  padding-left: 4px;
+  padding-right: 4px;
+  white-space: normal;
+}
+.opp-pitchcell {
+  max-width: 150px;
+}
+.opp-pitchcell .opp-sub {
+  display: block;
+  max-width: 140px;
+  white-space: nowrap;
+}
+.opp-list .tcc-mono {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.opp-page .tcc-btn:disabled,
+.opp-dialog .tcc-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.opp-open {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.opp-open:hover,
+.opp-open:hover * {
+  color: var(--emerald-text);
+}
+.opp-open:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.opp-open .tcc-ticker {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.opp-sub {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+}
+.opp-two {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.opp-status,
+.opp-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.opp-status.tcc-warn {
+  color: var(--warning);
+}
+.opp-status.tcc-pos {
+  color: var(--positive);
+}
+.opp-status.tcc-na {
+  color: var(--text-muted);
+}
+.opp-step {
+  color: var(--text-primary);
+}
+.opp-step > .bi {
+  color: var(--text-muted);
+}
+.opp-more {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.opp-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+/* Side column lists */
+.opp-list,
+.opp-agenda {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.opp-list > li,
+.opp-agenda > li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+}
+.opp-list > li:last-child,
+.opp-agenda > li:last-child {
+  border-bottom: 0;
+}
+.opp-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+button.opp-line {
+  flex-direction: row;
+  width: 100%;
+}
+.opp-wrap {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.opp-grow {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.opp-wrap .opp-grow {
+  white-space: normal;
+}
+.opp-full {
+  flex-basis: 100%;
+  white-space: normal;
+}
+.opp-list .tcc-mono .bi {
+  margin-right: 4px;
+}
+.opp-list .tcc-warn,
+.opp-agenda .tcc-warn {
+  color: var(--warning);
+}
+.opp-list .tcc-link {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+.opp-agenda {
+  counter-reset: opp-agenda;
+}
+.opp-agenda > li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.opp-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.opp-note.tcc-warn,
+.opp-note.tcc-warn .bi {
+  color: var(--warning);
+}
+.opp-subhead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 18px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.opp-subhead .tcc-mono {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.opp-pairs .tcc-pair {
+  padding: 8px 0;
+  font-size: 13px;
+}
+.opp-pairs .tcc-pair dd {
+  text-align: right;
+  white-space: normal;
+}
+.opp-pairs dd .bi {
+  margin-right: 4px;
+}
+
+/* ── Dialogs (overlays keep the library's surface) ───────────────────────── */
+.opp-dialog .ds-modal-title {
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.opp-dialog .ds-modal-footer {
+  align-items: center;
+  gap: 8px 20px;
+}
+.opp-footleft {
+  margin-right: auto;
+}
+.opp-dtitle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.opp-dtitle .tcc-sample {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--emerald-text);
+}
+.opp-dmeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 0 0 16px;
+  padding: 0 0 12px;
+  list-style: none;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.opp-dmeta strong {
+  color: var(--text-primary);
+}
+.opp-dbody {
+  display: grid;
+  grid-template-columns: 260px 1px minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
+}
+.opp-dbody--vote {
+  grid-template-columns: 250px 1px minmax(0, 1fr) 1px 260px;
+}
+.opp-drule {
+  align-self: stretch;
+  width: 1px;
+  background: var(--border-primary);
+}
+.opp-dmain,
+.opp-gates,
+.opp-vote {
+  min-width: 0;
+}
+.opp-dtabs {
+  gap: 6px 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.opp-dtabs .tcc-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+.opp-tabpanel {
+  min-height: 260px;
+  padding-top: 4px;
+}
+.opp-dskel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+}
+.opp-gates .opp-subhead:first-child,
+.opp-vote .opp-subhead:first-child {
+  margin-top: 0;
+}
+.opp-gatelist {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.opp-gatelist > li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 13px;
+}
+.opp-gatelist > li:last-child {
+  border-bottom: 0;
+}
+.opp-gatelist > li > .bi {
+  padding-top: 2px;
+}
+.opp-gatebody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.opp-gatebody .opp-sub {
+  white-space: normal;
+}
+.opp-gatename {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.opp-gatestate {
+  font-size: 12px;
+  text-align: right;
+}
+.opp-fix {
+  grid-column: 2;
+  justify-self: start;
+  font-size: 12px;
+}
+.opp-dialog .tcc-pos {
+  color: var(--positive);
+}
+.opp-dialog .tcc-neg {
+  color: var(--negative);
+}
+.opp-dialog .tcc-warn {
+  color: var(--warning);
+}
+.opp-dialog .tcc-na {
+  color: var(--text-muted);
+}
+.opp-gateactions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+}
+.opp-gateactions .tcc-textbtn,
+.opp-confirm__row .tcc-textbtn,
+.opp-dialog .tcc-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.opp-danger,
+.opp-danger:hover {
+  color: var(--negative);
+}
+.opp-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.opp-confirm__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 20px;
+  margin-top: 8px;
+}
+.opp-confirm__row.opp-left {
+  justify-content: flex-start;
+}
+.opp-confirm__row .opp-note {
+  margin: 0;
+}
+.opp-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--negative);
+}
+.opp-received {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.opp-received > .tcc-mono {
+  font-size: 18px;
+  font-weight: 600;
+}
+.opp-received .opp-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.opp-received .opp-sub.tcc-pos {
+  color: var(--positive);
+}
+.opp-own {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 16px 0 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.opp-own strong {
+  color: var(--text-primary);
+}
+.opp-voteform {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.opp-toggles {
+  gap: 6px 20px;
+}
+.opp-toggles .tcc-toggle {
+  display: inline-flex;
+  gap: 6px;
+  min-height: 28px;
+}
+.opp-tally {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.opp-dfoot {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+.opp-history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.opp-history__label {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.opp-history__step {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.opp-history__step > .bi {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.opp-notes {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Tab content */
+.opp-tab {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.opp-tab > .opp-subhead:first-child {
+  margin-top: 12px;
+}
+.opp-fields {
+  margin: 8px 0 0;
+}
+.opp-fields > div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 13px;
+}
+.opp-fields > div:last-child {
+  border-bottom: 0;
+}
+.opp-fields dt {
+  color: var(--text-muted);
+}
+.opp-fields dd {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.opp-fields dd.tcc-na {
+  color: var(--text-muted);
+}
+.opp-start {
+  align-self: flex-start;
+  margin-top: 16px;
+}
+.opp-prose {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.opp-messages {
+  margin: 8px 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.opp-messages > li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 13px;
+}
+.opp-messages > li:last-child {
+  border-bottom: 0;
+}
+.opp-messages p {
+  margin: 4px 0 0;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.opp-msghead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.opp-handoff {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.opp-handoff p {
+  margin: 0;
+}
+.opp-handoff .tcc-link {
+  align-self: flex-start;
+}
+
+/* Forms inside dialogs use the library's fields. */
+.opp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+.opp-grid2,
+.opp-grid3 {
+  display: grid;
+  gap: 14px 16px;
+}
+.opp-grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.opp-grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.opp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.opp-lookup {
+  position: relative;
+}
+.opp-results {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.opp-results button {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.opp-results button:hover {
+  color: var(--emerald-text);
+}
+.opp-steps {
+  gap: 6px 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.opp-steps .tcc-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+.opp-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.opp-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.opp-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin-top: 6px;
+}
+.opp-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+  margin-top: 12px;
+}
+.opp-inline > .ds-field,
+.opp-inline > .ds-input {
+  flex: 1 1 200px;
+}
+.opp-inline .tcc-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .opp-body {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+  .opp-vrule {
+    display: none;
+  }
+  .opp-side {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .opp-dbody,
+  .opp-dbody--vote {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 16px;
+  }
+  .opp-drule {
+    width: auto;
+    height: 1px;
+  }
+}
+
+@media (max-width: 640px) {
+  .opp-stages {
+    gap: 8px 18px;
+  }
+  .opp-grid2,
+  .opp-grid3,
+  .opp-checks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .opp-fields > div {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .opp-actions {
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+}
+
+/* Touch: text controls get a 44px target, and stay inline with a gap. */
+@media (pointer: coarse) {
+  .opp-open,
+  .opp-stages .tcc-toggle,
+  .opp-toggles .tcc-toggle,
+  .opp-dtabs .tcc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opp-open,
+  .opp-results button {
+    transition: none;
+  }
+}

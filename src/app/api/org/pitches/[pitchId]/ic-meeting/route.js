@@ -78,7 +78,9 @@ export const POST = withApiGuard(
       .eq('id', pitch.id);
     if (error) return NextResponse.json({ error: 'Could not update the pitch' }, { status: 500 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail });
   },
   { requireAuth: true },

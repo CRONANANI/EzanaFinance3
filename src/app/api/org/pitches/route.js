@@ -146,6 +146,7 @@ export const POST = withApiGuard(
       thesis_full: body.thesis_full,
       why_now: body.why_now,
       variant_perception: body.variant_perception,
+      falsification: body.falsification,
       catalysts: Array.isArray(body.catalysts) ? body.catalysts : [],
       risks: Array.isArray(body.risks) ? body.risks : [],
       catalyst_date: body.catalyst_date,
@@ -159,7 +160,9 @@ export const POST = withApiGuard(
     });
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, result.pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, result.pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail }, { status: 201 });
   },
   { requireAuth: true },

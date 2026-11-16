@@ -14,10 +14,12 @@ export const runtime = 'nodejs';
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { supabase, orgId } = await getPitchContext();
+    const { supabase, viewer, orgId } = await getPitchContext();
     if (!orgId) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
-    const pitch = await fetchPitchDetail(supabase, orgId, params.pitchId);
+    const pitch = await fetchPitchDetail(supabase, orgId, params.pitchId, {
+      viewerMemberId: viewer?.id,
+    });
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
     return NextResponse.json({ pitch });
   },
@@ -36,11 +38,11 @@ export const PATCH = withApiGuard(
     if (pitch.analyst_member_id !== viewer.id && viewer.role === 'analyst') {
       return NextResponse.json({ error: 'Only the authoring analyst can edit' }, { status: 403 });
     }
-    // The thesis freezes at cross_desk_review — cross-desk PMs and the IC vote
+    // The thesis freezes at cross_desk_review: cross-desk PMs and the IC vote
     // on a thesis that cannot change. Post-freeze edits go via Request Changes.
     if (isThesisFrozen(pitch.stage)) {
       return NextResponse.json(
-        { error: 'Thesis is frozen at Cross-Desk Review. Use Request Changes to reopen.' },
+        { error: 'The thesis is frozen from Cross-Desk Review onward.' },
         { status: 400 },
       );
     }
@@ -52,6 +54,8 @@ export const PATCH = withApiGuard(
       'thesis_full',
       'why_now',
       'variant_perception',
+      // The Deep Dive gate checks this field, so the edit path must accept it.
+      'falsification',
       'sector',
       'catalysts',
       'risks',
@@ -73,7 +77,9 @@ export const PATCH = withApiGuard(
     const result = await patchPitch(supabase, orgId, pitch.id, patch);
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail });
   },
   { requireAuth: true },

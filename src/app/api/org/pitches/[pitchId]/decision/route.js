@@ -44,7 +44,9 @@ export const POST = withApiGuard(
     });
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id, {
+      viewerMemberId: viewer?.id,
+    });
     return NextResponse.json({ pitch: detail });
   },
   { requireAuth: true },

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
-import { getPitchContext } from '@/lib/org-pitch-api-helpers';
+import { getPitchContext, recalcVoteTally } from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -54,6 +54,20 @@ export const PATCH = withApiGuard(
       .select('*')
       .single();
     if (error) return NextResponse.json({ error: 'Could not update the meeting' }, { status: 500 });
+
+    /* While a blind vote is open the running tally is never written onto the
+       pitch. Closing the meeting is the moment results become readable, so
+       the tally of every pitch on its agenda is written now. */
+    if (status === 'closed') {
+      const { data: attached } = await admin
+        .from('org_pitches')
+        .select('id')
+        .eq('org_id', orgId)
+        .eq('ic_meeting_id', meeting.id);
+      for (const p of attached || []) {
+        await recalcVoteTally(admin, orgId, p.id);
+      }
+    }
     return NextResponse.json({ meeting: data });
   },
   { requireAuth: true },
