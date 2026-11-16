@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import { MANAGER_ROLES, ATS_STAGES } from '../ats-helpers';
+import { MANAGER_ROLES, ATS_STAGES, cohortBlindScreening, shapeApplicant } from '../ats-helpers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,7 +34,7 @@ export const PATCH = withApiGuard(
 
     const { data: applicant } = await supabase
       .from('org_applicants')
-      .select('id, stage, provisioned_member_id')
+      .select('id, stage, provisioned_member_id, cohort_id')
       .eq('id', id)
       .eq('org_id', member.org_id)
       .maybeSingle();
@@ -81,7 +81,10 @@ export const PATCH = withApiGuard(
       .select('*')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ applicant: data });
+    // Same redaction as the board: a pre-interview applicant under blind
+    // screening never comes back with a name, even to the manager who moved it.
+    const blind = await cohortBlindScreening(supabase, member.org_id, data.cohort_id);
+    return NextResponse.json({ applicant: shapeApplicant(data, { blind }) });
   },
   { requireAuth: true },
 );

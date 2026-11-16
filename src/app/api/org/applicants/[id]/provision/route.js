@@ -99,6 +99,15 @@ export const POST = withApiGuard(
       return NextResponse.json({ member: existing, applicant, already: true });
     }
 
+    // Accepting is the last step of the pipeline: only an applicant holding an
+    // offer is provisioned (blind screening also ends well before this stage).
+    if (applicant.stage !== 'offer') {
+      return NextResponse.json(
+        { error: 'Only an applicant with an offer can be accepted.' },
+        { status: 400 },
+      );
+    }
+
     if (!applicant.email) {
       return NextResponse.json(
         { error: 'Applicant has no email, cannot create an account to provision.' },

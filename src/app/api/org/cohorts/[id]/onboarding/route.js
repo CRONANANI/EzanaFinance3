@@ -35,11 +35,17 @@ export const GET = withApiGuard(
     // Onboarding members + the senior pool (for mentor pairing).
     const { data: allMembers } = await supabase
       .from('org_members')
-      .select('id, user_id, display_name, role, title, lifecycle_status, mentor_member_id')
+      .select(
+        'id, user_id, display_name, role, title, lifecycle_status, mentor_member_id, cohort_id',
+      )
       .eq('org_id', member.org_id)
       .eq('is_active', true);
     const roster = allMembers || [];
-    const cohortMembers = roster.filter((m) => m.lifecycle_status === 'onboarding');
+    // Only this cohort's onboarding members (other classes are never listed
+    // here, so ticking a task always targets a member of this cohort).
+    const cohortMembers = roster.filter(
+      (m) => m.lifecycle_status === 'onboarding' && m.cohort_id === id,
+    );
 
     // Tasks = onboarding-task links joined to their assignment rows.
     const { data: links } = await supabase

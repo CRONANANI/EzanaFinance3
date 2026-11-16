@@ -39,6 +39,7 @@
     "test:org-meetings": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-meetings.mjs",
     "test:org-recognition": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-recognition.mjs",
     "test:org-grades": "node --no-warnings --test scripts/check-org-grades.mjs",
+    "test:org-cohorts": "node --no-warnings --test scripts/check-org-cohorts.mjs",
     "test:org-competitions": "node --no-warnings --test scripts/check-org-competitions.mjs",
     "test:council-rankings": "node --no-warnings --test scripts/check-council-rankings.mjs",
     "test:org-research-library": "node --no-warnings --test scripts/check-org-research-library.mjs",

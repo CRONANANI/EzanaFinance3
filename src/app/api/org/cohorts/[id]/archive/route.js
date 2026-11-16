@@ -5,6 +5,7 @@ import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
 import { logOrgAction } from '@/lib/org-audit';
+import { loadGraduation, sameMemberSet } from '@/lib/org-cohort-graduation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -13,16 +14,10 @@ async function resolveParams(context) {
   return (await context?.params) || {};
 }
 
-/* A research note counts as a published coverage handoff when it is published
-   and typed/tagged as a handoff. */
-function isPublishedHandoff(note) {
-  const published = !!note.published_at || note.status === 'published';
-  const dt = (note.doc_type || '').toLowerCase();
-  const tags = Array.isArray(note.tags) ? note.tags.map((t) => String(t).toLowerCase()) : [];
-  return published && (dt.includes('handoff') || tags.includes('handoff'));
-}
-
 /* POST /api/org/cohorts/:id/archive — graduation, extended (executive only).
+   Graduates ONLY the members of this cohort who are flagged (see
+   src/lib/org-cohort-graduation.js); the dialog sends expected_member_ids and
+   the route refuses (409 roster_changed) when the list moved underneath it.
    Adds the pre-flight HANDOFF-DOCS GATE: refuses (409) when a graduating member
    has covered sectors without a published handoff doc, naming what's missing
    (pass { force: true } to override). On confirm it keeps the existing fund
@@ -63,71 +58,43 @@ export const POST = withApiGuard(
 
     const orgId = member.org_id;
 
-    const { data: members } = await supabase
-      .from('org_members')
-      .select('id, user_id, display_name, role, sub_role, title, is_graduating, team_id')
-      .eq('org_id', orgId)
-      .eq('is_active', true);
-    const roster = members || [];
-    const grads = roster.filter((m) => m.is_graduating);
+    // Only members of THIS cohort who are flagged graduate (Org Chart flag or
+    // lifecycle status). Members of other cohorts are never swept in.
+    const { roster, grads, gate } = await loadGraduation(supabase, orgId, id);
 
-    // ── PRE-FLIGHT HANDOFF-DOCS GATE ─────────────────────────────────────────
-    // Every sector a graduating member covers should have a published handoff
-    // doc before their knowledge leaves with them.
-    let handoffGate = { required: 0, published: 0, missing: [] };
-    if (graduate && grads.length > 0) {
-      const gradIds = grads.map((m) => m.id);
-      const gradUserIds = grads.map((m) => m.user_id).filter(Boolean);
-
-      const { data: coverage } = await supabase
-        .from('org_sector_coverage')
-        .select('member_id, sector')
-        .eq('org_id', orgId)
-        .in('member_id', gradIds);
-
-      let notes = [];
-      if (gradUserIds.length > 0) {
-        const { data: n } = await supabase
-          .from('org_research_notes')
-          .select('author_id, sector, doc_type, tags, status, published_at')
-          .eq('org_id', orgId)
-          .in('author_id', gradUserIds);
-        notes = (n || []).filter(isPublishedHandoff);
-      }
-
-      const nameById = new Map(roster.map((m) => [m.id, m.display_name]));
-      const userIdByMember = new Map(grads.map((m) => [m.id, m.user_id]));
-      const publishedKeys = new Set(
-        notes.map((n) => `${n.author_id}:${(n.sector || '').toLowerCase()}`),
-      );
-
-      const required = coverage || [];
-      const missing = required.filter((c) => {
-        const uid = userIdByMember.get(c.member_id);
-        return !uid || !publishedKeys.has(`${uid}:${(c.sector || '').toLowerCase()}`);
-      });
-
-      handoffGate = {
-        required: required.length,
-        published: required.length - missing.length,
-        missing: missing.map((c) => ({
-          member_id: c.member_id,
-          member_name: nameById.get(c.member_id) || null,
-          sector: c.sector,
-        })),
-      };
-
-      if (handoffGate.missing.length > 0 && !force) {
+    // The confirmation dialog sends the members it showed. If the list has
+    // changed since (someone was flagged or unflagged), stop and say so.
+    if (graduate && Array.isArray(body?.expected_member_ids)) {
+      if (
+        !sameMemberSet(
+          body.expected_member_ids,
+          grads.map((m) => m.id),
+        )
+      ) {
         return NextResponse.json(
           {
-            error: 'Handoff docs incomplete',
-            gate: 'handoff_docs',
-            ...handoffGate,
+            error: 'The members flagged to graduate changed. Review the list again.',
+            gate: 'roster_changed',
+            members: gate.members,
           },
           { status: 409 },
         );
       }
     }
+
+    // ── PRE-FLIGHT HANDOFF-DOCS GATE ─────────────────────────────────────────
+    // Every sector a graduating member covers should have a published handoff
+    // doc before their knowledge leaves with them.
+    const handoffGate = graduate
+      ? { required: gate.required, published: gate.published, missing: gate.missing }
+      : { required: 0, published: 0, missing: [] };
+    if (graduate && handoffGate.missing.length > 0 && !force) {
+      return NextResponse.json(
+        { error: 'Handoff docs incomplete', gate: 'handoff_docs', ...handoffGate },
+        { status: 409 },
+      );
+    }
+    const gradSet = new Set(grads.map((m) => m.id));
 
     // ── Build the fund snapshot ──────────────────────────────────────────────
     // Canonical org position book; rows carry the legacy team_id/ticker_symbol/
@@ -161,7 +128,7 @@ export const POST = withApiGuard(
         role: m.role,
         sub_role: m.sub_role,
         title: m.title,
-        graduated: graduate && m.is_graduating,
+        graduated: graduate && gradSet.has(m.id),
       })),
       portfolios,
       fund: {

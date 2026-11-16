@@ -9,12 +9,11 @@ export const runtime = 'nodejs';
 const INDUSTRIES = ['ib', 'pe', 'am', 'consulting', 'other'];
 const FINANCE = ['ib', 'pe', 'am', 'consulting'];
 const LABELS = {
-  ib: 'Investment Banking',
-  pe: 'Private Equity',
-  am: 'Asset Management',
+  ib: 'Investment banking',
+  pe: 'Private equity',
+  am: 'Asset management',
   consulting: 'Consulting',
   other: 'Other',
-  unknown: 'Undisclosed',
 };
 
 /* GET /api/org/alumni/placement?cohort_id= — the placement banner data:
@@ -41,12 +40,14 @@ export const GET = withApiGuard(
     const rows = data || [];
     const total = rows.length;
 
+    // Only placements actually stored: an alum with no industry on file is
+    // counted as "no placement recorded", never as a destination.
     const byIndustry = {};
-    for (const key of [...INDUSTRIES, 'unknown'])
-      byIndustry[key] = { key, label: LABELS[key], count: 0 };
+    for (const key of INDUSTRIES) byIndustry[key] = { key, label: LABELS[key], count: 0 };
+    let unrecorded = 0;
     for (const r of rows) {
-      const key = INDUSTRIES.includes(r.employer_industry) ? r.employer_industry : 'unknown';
-      byIndustry[key].count += 1;
+      if (INDUSTRIES.includes(r.employer_industry)) byIndustry[r.employer_industry].count += 1;
+      else unrecorded += 1;
     }
 
     const placedFinance6mo = rows.filter(
@@ -55,7 +56,8 @@ export const GET = withApiGuard(
 
     return NextResponse.json({
       total,
-      destinations: Object.values(byIndustry).filter((d) => d.count > 0 || total === 0),
+      destinations: Object.values(byIndustry).filter((d) => d.count > 0),
+      unrecorded,
       placed_finance_6mo: placedFinance6mo,
       placement_rate_pct: total > 0 ? Math.round((placedFinance6mo / total) * 100) : null,
       generated_at: new Date().toISOString(),

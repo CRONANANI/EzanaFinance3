@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { effectiveLifecycle } from '@/lib/org-cohorts-model';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,7 +27,7 @@ export const GET = withApiGuard(
     const { data: members, error } = await supabase
       .from('org_members')
       .select(
-        'id, user_id, display_name, role, sub_role, title, tier, team_id, lifecycle_status, is_active, joined_at, mentor_member_id, departed_at, departure_reason',
+        'id, user_id, display_name, role, sub_role, title, tier, team_id, lifecycle_status, is_active, is_graduating, joined_at, mentor_member_id, departed_at, departure_reason',
       )
       .eq('org_id', member.org_id)
       .eq('cohort_id', id);
@@ -82,7 +83,9 @@ export const GET = withApiGuard(
         title: m.title || null,
         tier: m.tier || null,
         team_id: m.team_id || null,
-        lifecycle_status: m.lifecycle_status || (m.is_active ? 'active' : 'departed'),
+        // A member flagged on the Org Chart reads Graduating here too.
+        lifecycle_status: effectiveLifecycle(m),
+        is_graduating: !!m.is_graduating,
         is_active: m.is_active,
         joined_at: m.joined_at || null,
         departed_at: m.departed_at || null,

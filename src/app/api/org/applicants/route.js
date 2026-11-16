@@ -7,6 +7,7 @@ import {
   MANAGER_ROLES,
   ATS_STAGES,
   shapeApplicant,
+  cohortBlindScreening,
   aggregateStar,
   submittedInterviewerCount,
 } from './ats-helpers';
@@ -39,15 +40,7 @@ export const GET = withApiGuard(
     if (!cohort) return NextResponse.json({ error: 'Cohort not found' }, { status: 404 });
 
     // Blind screening is a property of the cohort's application form.
-    const { data: form } = await supabase
-      .from('org_application_forms')
-      .select('blind_screening')
-      .eq('org_id', member.org_id)
-      .eq('cohort_id', cohortId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const blind = !!form?.blind_screening;
+    const blind = await cohortBlindScreening(supabase, member.org_id, cohortId);
 
     const { data: applicants, error } = await supabase
       .from('org_applicants')

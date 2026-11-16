@@ -2,12 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import {
-  MANAGER_ROLES,
-  RUBRIC_CRITERIA,
-  aggregateStar,
-  submittedInterviewerCount,
-} from '../../ats-helpers';
+import { RUBRIC_CRITERIA, scoresView } from '../../ats-helpers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -44,14 +39,6 @@ export const GET = withApiGuard(
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     const all = rows || [];
-    const myRows = all.filter((r) => r.interviewer_id === member.id);
-    const viewerSubmitted = myRows.some((r) => r.submitted_at);
-    // A manager who has not entered any scores is a pure reviewer (a decision
-    // maker, not a peer interviewer) and may read submitted notes. Any viewer
-    // with their own scores stays anchored until they submit — even a manager.
-    const pureReviewer = MANAGER_ROLES.includes(member.role) && myRows.length === 0;
-    const canViewOthers = viewerSubmitted || pureReviewer;
-
     // Resolve interviewer display names.
     const interviewerIds = [...new Set(all.map((r) => r.interviewer_id))];
     let nameById = new Map();
@@ -63,52 +50,7 @@ export const GET = withApiGuard(
       nameById = new Map((mem || []).map((m) => [m.id, m.display_name]));
     }
 
-    const byInterviewer = new Map();
-    for (const r of all) {
-      if (r.interviewer_id === member.id) continue;
-      if (!byInterviewer.has(r.interviewer_id)) byInterviewer.set(r.interviewer_id, []);
-      byInterviewer.get(r.interviewer_id).push(r);
-    }
-
-    const others = [...byInterviewer.entries()].map(([iid, irows]) => {
-      const submitted = irows.some((r) => r.submitted_at);
-      // Reveal per-criterion detail only once the panel is unlocked for this viewer.
-      const reveal = submitted && canViewOthers;
-      return {
-        interviewer_id: iid,
-        interviewer_name: nameById.get(iid) || 'Interviewer',
-        submitted,
-        rows: reveal
-          ? irows.map((r) => ({
-              criterion: r.criterion,
-              score: Number(r.score),
-              weight: Number(r.weight) || 1,
-              notes: r.notes || null,
-            }))
-          : [],
-        locked: !reveal,
-      };
-    });
-
-    return NextResponse.json({
-      criteria: RUBRIC_CRITERIA,
-      my: {
-        submitted: viewerSubmitted,
-        rows: myRows.map((r) => ({
-          criterion: r.criterion,
-          score: Number(r.score),
-          weight: Number(r.weight) || 1,
-          notes: r.notes || null,
-          submitted_at: r.submitted_at || null,
-        })),
-      },
-      others,
-      aggregate_star: aggregateStar(all),
-      scores_in: submittedInterviewerCount(all),
-      interviewer_count: interviewerIds.length,
-      can_view_others: canViewOthers,
-      viewer: { memberId: member.id, canManage: MANAGER_ROLES.includes(member.role) },
-    });
+    return NextResponse.json(scoresView(all, { memberId: member.id, role: member.role, nameById }));
   },
   { requireAuth: true },
 );
