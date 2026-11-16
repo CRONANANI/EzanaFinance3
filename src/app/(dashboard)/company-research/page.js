@@ -49,11 +49,27 @@ import { useToast } from '@/contexts/ToastContext';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
 import { useOrg } from '@/contexts/OrgContext';
+import { useCouncilResearch } from '@/components/research/council/useCouncilResearch';
 const OrgSendToTeamModal = dynamic(
   () =>
     import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
   { ssr: false, loading: () => null },
 );
+/* Council sections (council members only): loaded on demand, so the retail
+   page's bundle does not carry them. */
+const councilPart = (name) =>
+  dynamic(
+    () =>
+      import('@/components/research/council/CouncilSections').then((m) => ({
+        default: m[name],
+      })),
+    { ssr: false, loading: () => null },
+  );
+const CouncilBand = councilPart('CouncilBand');
+const CouncilOnThisName = councilPart('CouncilOnThisName');
+const CouncilNameSections = councilPart('CouncilNameSections');
+const CouncilGaps = councilPart('CouncilGaps');
+const CouncilSleeves = councilPart('CouncilSleeves');
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -79,7 +95,11 @@ function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { isOrgUser, hasPermission } = useOrg();
+  const { isOrgUser, hasPermission, isLoading: orgLoading, orgRole } = useOrg();
+  /* Council sections draw only once membership is known: nothing council
+     specific renders (or is fetched) while the org status is resolving, so
+     the page never flashes the council version for a retail member. */
+  const councilReady = isOrgUser && !orgLoading;
   const [sendChartTicker, setSendChartTicker] = useState(null);
   const rawView = searchParams.get('view');
   const view =
@@ -123,6 +143,7 @@ function CompanyResearchPageInner() {
   });
   /* One snapshot for every card: the same price, peers and metrics everywhere. */
   const research = useCompanyResearch(selectedStock);
+  const council = useCouncilResearch(viewMode === 'stock' ? selectedStock : null, councilReady);
   const [wlModalOpen, setWlModalOpen] = useState(false);
   const [wlAddedMap, setWlAddedMap] = useState({});
   const [wlBusyId, setWlBusyId] = useState(null);
@@ -487,7 +508,9 @@ function CompanyResearchPageInner() {
       <div className="dashboard-page-inset cr-page ez-canvas">
         <div className="crx-canvas">
           {searchPill}
+          {councilReady && <CouncilBand council={council} />}
           <MarketPortfolioView section={view} filters={filters} />
+          {councilReady && <CouncilSleeves council={council} />}
         </div>
       </div>
     );
@@ -509,6 +532,7 @@ function CompanyResearchPageInner() {
         )}
 
         {searchPill}
+        {councilReady && <CouncilBand council={council} />}
 
         <section className="cr-market-chart-root" id="marketChartSection">
           <div
@@ -549,6 +573,8 @@ function CompanyResearchPageInner() {
           </div>
         </section>
 
+        {councilReady && viewMode === 'heatmap' && <CouncilGaps council={council} />}
+
         {/* Company view: hero and tabs on the left, the rail on the right,
             then industry and portfolio tools. Built on one snapshot
             (useCompanyResearch) so every card quotes the same numbers. */}
@@ -581,9 +607,20 @@ function CompanyResearchPageInner() {
                 <p className="crx-visually-hidden" aria-live="polite">
                   {sectionAnnouncement}
                 </p>
+                {councilReady && (
+                  <CouncilNameSections
+                    council={council}
+                    ticker={selectedStock}
+                    research={research}
+                    role={orgRole}
+                  />
+                )}
               </div>
 
               <aside className="rc-right" aria-label={`${selectedStock} at a glance`}>
+                {councilReady && (
+                  <CouncilOnThisName council={council} ticker={selectedStock} research={research} />
+                )}
                 <AnalystCard analyst={research.analyst} price={research.quote.price} />
                 <KeyMetricsCard metrics={research.metrics} />
                 <NewsCard news={research.news} onViewAll={() => openSection('news', 'News')} />
