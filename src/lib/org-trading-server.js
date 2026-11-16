@@ -157,7 +157,7 @@ export async function resolveFlagRoutingDb(supabase, orgId, { ticker, teamDbId, 
       .eq('team_id', effectiveTeamId)
       .eq('role', 'analyst')
       .eq('is_active', true)
-      .order('created_at')
+      .order('joined_at') // org_members has joined_at, not created_at
       .limit(1)
       .maybeSingle();
     coveringAnalystOrgId = ta?.id ?? null;
@@ -173,7 +173,7 @@ export async function resolveFlagRoutingDb(supabase, orgId, { ticker, teamDbId, 
       .eq('team_id', effectiveTeamId)
       .eq('role', 'portfolio_manager')
       .eq('is_active', true)
-      .order('created_at')
+      .order('joined_at') // org_members has joined_at, not created_at
       .limit(1)
       .maybeSingle();
     sectorHeadOrgId = pm?.id ?? null;
@@ -198,7 +198,7 @@ export async function routeFallbackExecutive(supabase, orgId) {
     .eq('org_id', orgId)
     .eq('role', 'executive')
     .eq('is_active', true)
-    .order('created_at')
+    .order('joined_at') // org_members has joined_at, not created_at
     .limit(1)
     .maybeSingle();
   return data?.id ?? null;
