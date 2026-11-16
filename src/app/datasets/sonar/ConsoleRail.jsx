@@ -93,7 +93,7 @@ function Card({ d, on, onChoose }) {
         <ul className="dsi-card__list">
           {d.items.map((it) => (
             <li key={it.label} className="dsi-card__ds">
-              {it.live && it.href ? (
+              {(it.live || it.preview) && it.href ? (
                 <Link href={it.href}>{it.label}</Link>
               ) : (
                 <span className="dsi-card__ds-soon">{it.label}</span>
@@ -103,7 +103,7 @@ function Card({ d, on, onChoose }) {
                   className={`bi ${it.live ? 'bi-circle-fill' : 'bi-circle'}`}
                   aria-hidden="true"
                 />
-                {it.live ? 'Live' : 'Soon'}
+                {it.live ? 'Live' : it.preview ? 'Preview' : 'Soon'}
               </span>
             </li>
           ))}

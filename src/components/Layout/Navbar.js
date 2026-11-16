@@ -741,9 +741,9 @@ export function Navbar() {
                                 onClick={closeDatasetsMenu}
                               >
                                 <span className="nav-datasets-item-label">{item.label}</span>
-                                {/* Navigable, but showing sample data. */}
+                                {/* Navigable, but its source is not connected yet. */}
                                 {isPreview(item) ? (
-                                  <span className="nav-datasets-sample">Sample</span>
+                                  <span className="nav-datasets-sample">Preview</span>
                                 ) : null}
                               </a>
                             ) : (
@@ -916,7 +916,7 @@ export function Navbar() {
                                     onClick={() => setMobileMenuOpen(false)}
                                   >
                                     {item.label}
-                                    {isPreview(item) ? <em className="mnav-tag">Sample</em> : null}
+                                    {isPreview(item) ? <em className="mnav-tag">Preview</em> : null}
                                   </a>
                                 ) : (
                                   <span

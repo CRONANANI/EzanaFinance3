@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'Global, macro & wealth data | Ezana',
+  title: 'Global events and macro | Ezana',
   description:
-    'Macro snapshot across major economies, sovereign wealth fund positioning and cross-border flows, laid out alongside the US datasets so a global signal can be read against a domestic one.',
+    'Global events and macro releases, read against the US datasets. This dataset is being connected; its source is not live yet.',
 };
 
 export default function Layout({ children }) {

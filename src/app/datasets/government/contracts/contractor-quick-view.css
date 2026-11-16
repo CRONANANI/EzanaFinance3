@@ -447,3 +447,9 @@ body.light-mode .cqv-root {
     animation: none;
   }
 }
+
+/* Honest state for visitors without sample access: just the recipient and a
+   one-line note, no invented figures. */
+.cqv-root--empty {
+  width: min(560px, 92vw);
+}

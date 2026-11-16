@@ -65,7 +65,7 @@ export function generateMetadata({ params }) {
 /* Public sources named on the page: the live datasets' plus the linkage cards'. */
 function sourceLine(dim) {
   const list = [
-    ...dim.items.filter((it) => it.live).map((it) => it.source),
+    ...dim.items.filter((it) => it.live === true).map((it) => it.source),
     ...(HUB_LINKAGES[dim.id] || []).map((c) => c.sources),
   ];
   const parts = new Set();

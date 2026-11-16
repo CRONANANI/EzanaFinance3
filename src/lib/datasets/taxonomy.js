@@ -205,7 +205,7 @@ export const DATASET_TAXONOMY = [
         label: 'Search Interest Data',
         description: 'Google Trends demand signals and keyword-volume tracking',
         href: '/datasets/alternative',
-        live: false,
+        live: 'preview',
         source: 'Google Trends (unofficial)',
         sourceType: 'none',
       },
@@ -213,7 +213,7 @@ export const DATASET_TAXONOMY = [
         label: 'Web Traffic Analytics',
         description: 'Similarweb audience trends and traffic patterns',
         href: '/datasets/alternative',
-        live: false,
+        live: 'preview',
         source: 'Cloudflare Radar · Similarweb',
         sourceType: 'public',
       },
@@ -221,7 +221,7 @@ export const DATASET_TAXONOMY = [
         label: 'App Download Velocity',
         description: 'Application growth and adoption-rate tracking',
         href: '/datasets/alternative',
-        live: false,
+        live: 'preview',
         source: 'Commercial (data.ai / Sensor Tower)',
         sourceType: 'none',
       },
@@ -229,7 +229,7 @@ export const DATASET_TAXONOMY = [
         label: 'Consumer Spending Trends',
         description: 'Card and transaction data and consumer-behaviour patterns',
         href: '/datasets/alternative',
-        live: false,
+        live: 'preview',
         source: 'Census MARTS · BEA (aggregate)',
         sourceType: 'gov',
       },
@@ -256,16 +256,16 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Platform Community Signals',
         description: 'Ezana user watchlists, discussions, and posts',
-        href: '/datasets',
-        live: false,
+        href: '/datasets/community-signals',
+        live: 'preview',
         source: 'Ezana first-party',
         sourceType: 'none',
       },
       {
         label: 'Retail Sentiment Data',
         description: 'Reddit, StockTwits, and social-media investor activity',
-        href: '/datasets',
-        live: false,
+        href: '/datasets/retail-sentiment',
+        live: 'preview',
         source: 'Reddit · StockTwits',
         sourceType: 'public',
       },
@@ -313,7 +313,7 @@ export const DATASET_TAXONOMY = [
         label: 'Global & Macro', // folded in from the old "Markets" bucket
         description: 'Macro indicators, global markets, and billionaire / wealth tracking',
         href: '/datasets/global',
-        live: false,
+        live: 'preview',
         source: 'FRED · World Bank · OECD',
         sourceType: 'gov',
       },
@@ -347,7 +347,7 @@ export const DATASET_TAXONOMY = [
         label: 'GDELT Global Events Database',
         description: 'Global news events and geopolitical developments in real time',
         href: '/datasets/global',
-        live: false,
+        live: 'preview',
         source: 'GDELT 2.0 API',
         sourceType: 'public',
       },
@@ -364,34 +364,34 @@ export const DATASET_TAXONOMY = [
       'Legal and policy catalysts, legislation tracking today, with litigation, enforcement, and agency rulings on the roadmap.',
     items: [
       {
-        label: 'New Laws & Policy Legislation', // Legislation Search page is live
+        label: 'New Laws & Policy Legislation',
         description: 'Congressional bills, new legislation, and policy changes',
-        href: '/datasets/political',
-        live: false,
+        href: '/datasets/legislation',
+        live: 'preview',
         source: 'Congress.gov · GovInfo',
         sourceType: 'gov',
       },
       {
         label: 'Lawsuits & Legal Proceedings',
         description: 'Class actions, litigation tracking, and legal settlements',
-        href: '/datasets',
-        live: false,
+        href: '/datasets/lawsuits',
+        live: 'preview',
         source: 'CourtListener · PACER',
         sourceType: 'public',
       },
       {
         label: 'Regulatory Investigations & Enforcement',
         description: 'SEC enforcement, FTC investigations, and agency actions',
-        href: '/datasets',
-        live: false,
+        href: '/datasets/enforcement',
+        live: 'preview',
         source: 'SEC · DOJ · FTC feeds',
         sourceType: 'gov',
       },
       {
         label: 'Government Agency Rulings & Decisions',
         description: 'FDA approvals/denials, EPA rulings, and major agency decisions',
-        href: '/datasets',
-        live: false,
+        href: '/datasets/agency-rulings',
+        live: 'preview',
         source: 'Federal Register API',
         sourceType: 'gov',
       },
@@ -444,7 +444,9 @@ export const SOURCE_TYPE_META = {
 /**
  * Three states, not two. `live: true` is a dataset with real data behind it;
  * `live: 'preview'` is a page that exists and is worth opening but is showing
- * sample data; `live: false` is a roadmap entry with no page at all.
+ * sample data (its source is not connected yet: admin and demo accounts see
+ * labelled sample content, everyone else an honest empty state); `live: false`
+ * is a roadmap entry with no page at all.
  *
  * The distinction matters because `'preview'` is a truthy string, so every
  * `it.live ?` check silently promoted it to fully live, including the counts

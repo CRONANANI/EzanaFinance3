@@ -461,7 +461,7 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
                     {/* Navigable, but showing sample data. Said plainly where
                         the Soon tag would sit, so the link is not mistaken for
                         a live dataset. */}
-                    {isPreview(it) ? <span className="dscat-sample">Sample</span> : null}
+                    {isPreview(it) ? <span className="dscat-sample">Preview</span> : null}
                   </a>
                 ) : (
                   // Roadmap only: a <span>, not an <a>, so it cannot navigate at all.

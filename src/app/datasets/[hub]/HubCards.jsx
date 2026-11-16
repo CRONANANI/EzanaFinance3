@@ -25,7 +25,7 @@ function Value({ kind, value }) {
 
 export async function HubStats({ dimension }) {
   const items = dimension.items;
-  const live = items.filter((it) => it.live);
+  const live = items.filter((it) => it.live === true);
   /* Labels that share one read are counted once. */
   const labels = [...new Set(live.map((it) => SAME_READ_AS[it.label] || it.label))];
   const sums = await Promise.all(labels.map((l) => summaryFor(l)));
@@ -87,7 +87,7 @@ function CardHead({ item, tag }) {
 export async function DatasetCard({ item }) {
   const s = await summaryFor(item.label);
   const hasData = s && !s.empty && !s.error;
-  const soon = !item.live && !hasData;
+  const soon = item.live !== true && !hasData;
   const lead = hasData ? s.numbers?.[0] : null;
   const second = hasData ? s.numbers?.[1] : null;
 
@@ -95,9 +95,11 @@ export async function DatasetCard({ item }) {
     <article className={`hub-card hub-ds${soon ? ' hub-card--soon' : ''}`} title={item.description}>
       <div className="hub-ds-head">
         <h3 className="hub-ds-title">{item.label}</h3>
-        {soon ? (
+        {item.live === 'preview' && !hasData ? (
+          <span className="hub-tag hub-tag--soon">Not connected</span>
+        ) : soon ? (
           <span className="hub-tag hub-tag--soon">Soon</span>
-        ) : !item.live && hasData ? (
+        ) : item.live !== true && hasData ? (
           <span className="hub-tag hub-tag--preview">Preview</span>
         ) : null}
       </div>

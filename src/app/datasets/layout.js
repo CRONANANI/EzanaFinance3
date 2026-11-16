@@ -58,6 +58,14 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/commercial-real-estate',
   '/datasets/patents',
   '/datasets/night-lights',
+  // Datasets whose source is not connected yet (DatasetPreviewPage): admin and
+  // demo accounts see labelled sample content, everyone else an empty state.
+  '/datasets/legislation',
+  '/datasets/lawsuits',
+  '/datasets/enforcement',
+  '/datasets/agency-rulings',
+  '/datasets/community-signals',
+  '/datasets/retail-sentiment',
   // The seven dimension hubs (src/lib/datasets/hubs.js).
   ...Object.values(HUB_SLUGS).map((slug) => `/datasets/${slug}`),
 ]);

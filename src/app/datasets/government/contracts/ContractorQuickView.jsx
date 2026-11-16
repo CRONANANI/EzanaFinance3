@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getContractor, fyLabel } from './contractor-mock';
+import { useDatasetSampleViewer } from '@/components/datasets/sample-viewer';
+import { SampleContentLabel } from '@/components/datasets/DatasetSampleGate';
 import './contractor-quick-view.css';
 
 /**
- * Contractor Quick-View popup — 920px modal opened from ContractsExplorer
- * recipient rows. Payload is mock enrichment (contractor-mock.js) mapped by
- * recipient name; peer rows swap the payload in place, "Full dossier"
- * navigates to the dossier route.
+ * Contractor Quick-View popup, a 920px modal opened from ContractsExplorer
+ * recipient rows. Its payload is invented enrichment (contractor-mock.js), so
+ * only admin and demo accounts see it, under a "Sample content" label. Every
+ * other visitor gets an honest dialog naming the recipient and saying the
+ * profile figures are not connected yet; the award rows behind it are real.
  */
 
 /* Inline-SVG area chart: emerald line, gradient fill, 3 gridlines, filled dot
@@ -104,6 +107,7 @@ export default function ContractorQuickView({ recipient, onClose }) {
   const [watchlisted, setWatchlisted] = useState(false); // TODO: persist via /api/watchlist
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
+  const sampleViewer = useDatasetSampleViewer();
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -135,6 +139,36 @@ export default function ContractorQuickView({ recipient, onClose }) {
 
   const openDossier = () => router.push(`/datasets/government/contracts/dossier/${company.slug}`);
 
+  if (sampleViewer !== true) {
+    return (
+      <div className="cqv-scrim" onClick={onClose}>
+        <div
+          className="cqv-root cqv-root--empty"
+          role="dialog"
+          aria-modal="true"
+          aria-label={String(recipient || 'Contractor')}
+          tabIndex={-1}
+          ref={dialogRef}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <header className="cqv-head">
+            <div className="cqv-title-wrap">
+              <h2 className="cqv-name">{String(recipient || 'Contractor')}</h2>
+              <p className="cqv-meta">
+                {sampleViewer === 'loading'
+                  ? 'Loading contractor profile.'
+                  : 'Contractor profile figures are not connected yet. The award records in the table are real.'}
+              </p>
+            </div>
+            <button type="button" className="cqv-close" onClick={onClose} aria-label="Close">
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </header>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cqv-scrim" onClick={onClose}>
       <div
@@ -161,6 +195,7 @@ export default function ContractorQuickView({ recipient, onClose }) {
               <span className="cqv-chip cqv-chip-rank cqv-mono">{company.rankChip}</span>
             </div>
             <p className="cqv-meta">{company.meta}</p>
+            <SampleContentLabel />
           </div>
           <button type="button" className="cqv-close" onClick={onClose} aria-label="Close">
             <i className="bi bi-x-lg" aria-hidden="true" />

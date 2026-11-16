@@ -17,6 +17,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { OECD_SERIES_BY_SLUG, OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
 import OecdMacroClient from './OecdMacroClient';
+import { DatasetNotConnected, DatasetSampleGate } from '@/components/datasets/DatasetSampleGate';
 import { buildModel, allSlugsForLens, slugsForLens } from './oecd-explorer-model';
 import OecdAggregates from './OecdAggregates';
 import OecdMatrix from './OecdMatrix';
@@ -204,10 +205,20 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
     [a, b],
   );
 
-  // ── Fallback: no live data → the honest static sample ─────────────────────
+  // Fallback: no live data. The static sample is shown to admin and demo
+  // accounts only; everyone else sees the honest not-connected state.
   const isLive = Array.isArray(latest) && latest.length > 0 && model.countries.length > 0;
   if (!isLive) {
-    return <OecdMacroClient latest={latest} />;
+    return (
+      <DatasetSampleGate
+        isSample
+        fallback={
+          <DatasetNotConnected name="OECD macro data" dimension="Global Empire Lighthouse" />
+        }
+      >
+        <OecdMacroClient latest={latest} />
+      </DatasetSampleGate>
+    );
   }
 
   const series = OECD_SERIES_BY_SLUG[ind];

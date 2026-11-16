@@ -36,7 +36,7 @@ const DIM_IDS = DATASET_TAXONOMY.map((d) => d.id);
    its live count and its datasets. No dimension has an activity series yet,
    so `series` is absent and every card draws the dashed baseline. */
 const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
-  const liveCount = d.items.filter((it) => it.live).length;
+  const liveCount = d.items.filter((it) => it.live === true).length;
   return {
     id: d.id,
     label: d.label,
@@ -44,7 +44,12 @@ const ORBIT_DIMS = DATASET_TAXONOMY.map((d) => {
     tagline: d.tagline,
     live: liveCount > 0,
     liveCount,
-    items: d.items.map((it) => ({ label: it.label, href: it.href, live: Boolean(it.live) })),
+    items: d.items.map((it) => ({
+      label: it.label,
+      href: it.href,
+      live: it.live === true,
+      preview: it.live === 'preview',
+    })),
   };
 });
 

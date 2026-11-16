@@ -3,6 +3,7 @@ import { formatDisplayDate } from '@/lib/usaspending';
 import { getContractAwardsWithFallback, contractFreshnessNote } from '@/lib/usaspending-store';
 import { GovernmentContractsDashboard } from '@/components/marketing/GovernmentContractsDashboard';
 import { CONTRACT_AWARDS_SAMPLE, TOP_RECIPIENTS } from './government-sample';
+import { DatasetNotConnected, DatasetSampleGate } from '@/components/datasets/DatasetSampleGate';
 
 /**
  * Government Activity dataset page — server component.
@@ -45,18 +46,25 @@ export default async function GovernmentDatasetPage() {
     : rows;
   const leaders = usingSample ? TOP_RECIPIENTS : topRecipients;
 
+  /* Sample rows only when every live source is empty, and then only for admin
+     and demo accounts. */
   return (
-    <GovernmentContractsDashboard
-      title="Government activity data"
-      lead="The data institutions act on, federal contract awards, lobbying spend, and patent filings, entity-resolved to public companies and connected to tickers."
-      rows={tableRows}
-      topRecipients={leaders}
-      isLive={!usingSample}
-      note={contractFreshnessNote(source ?? 'sample', syncedAt)}
-      highlightTitle="Top contract recipients this fiscal year"
-      highlightDesc="Recipients ranked by total disclosed federal contract value this fiscal year, a read on which firms are winning government dollars right now."
-      tableLink={{ href: '/datasets/government/contracts', label: 'View all contracts' }}
-      source={SOURCE}
-    />
+    <DatasetSampleGate
+      isSample={usingSample}
+      fallback={<DatasetNotConnected name="Government activity data" dimension="Capitol Watch" />}
+    >
+      <GovernmentContractsDashboard
+        title="Government activity data"
+        lead="The data institutions act on, federal contract awards, lobbying spend, and patent filings, entity-resolved to public companies and connected to tickers."
+        rows={tableRows}
+        topRecipients={leaders}
+        isLive={!usingSample}
+        note={contractFreshnessNote(source ?? 'sample', syncedAt)}
+        highlightTitle="Top contract recipients this fiscal year"
+        highlightDesc="Recipients ranked by total disclosed federal contract value this fiscal year, a read on which firms are winning government dollars right now."
+        tableLink={{ href: '/datasets/government/contracts', label: 'View all contracts' }}
+        source={SOURCE}
+      />
+    </DatasetSampleGate>
   );
 }

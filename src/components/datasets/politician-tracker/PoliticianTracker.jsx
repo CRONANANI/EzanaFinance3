@@ -17,6 +17,7 @@
  * The shared green chrome and ticker are drawn by the datasets layout. The
  * page publishes ticker items through usePublishTicker and nothing else.
  */
+import { getDatasetSampleViewer } from '@/components/datasets/sample-viewer';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
@@ -367,15 +368,19 @@ export default function PoliticianTracker({
       ),
     ).then((pages) => {
       if (!alive) return;
-      /* 503 means no live source is configured: serve the placeholder
-         fixture under the SAMPLE DATA chip. Anything else that is empty is
-         "unavailable", never the fixture, because fixture rows would read
-         as real filings without the chip. */
+      /* 503 means no live source is configured: admin and demo accounts get
+         the placeholder fixture under the SAMPLE DATA chip; everyone else the
+         "unavailable" state. Anything else that is empty is "unavailable",
+         never the fixture, because fixture rows would read as real filings
+         without the chip. */
       if (pages.every((p) => p.status === 503)) {
-        setTrades(buildFixtureTrades());
-        setFeeds(null);
-        setStaleAt(null);
-        setStatus('sample');
+        getDatasetSampleViewer().then((ok) => {
+          if (!alive) return;
+          setTrades(ok ? buildFixtureTrades() : []);
+          setFeeds(null);
+          setStaleAt(null);
+          setStatus(ok ? 'sample' : 'empty');
+        });
         return;
       }
       const seen = new Set();
