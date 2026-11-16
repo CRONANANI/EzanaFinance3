@@ -39,14 +39,14 @@ async function getPortfolio(supabase, orgId) {
 async function getPitchesWithHindsight(supabase, orgId) {
   const { data: pitches } = await supabase
     .from('org_pitches')
-    .select('id, ticker, company_name, analyst_member_id, decision, stage, status')
+    .select('id, ticker, company_name, analyst_member_id, decision, stage, status, decision_at')
     .eq('org_id', orgId);
   const pitchIds = (pitches || []).map((p) => p.id);
   let hindsight = [];
   if (pitchIds.length > 0) {
     const { data } = await supabase
       .from('org_pitch_hindsight')
-      .select('pitch_id, return_pct, benchmark_return_pct, alpha_pct, current_state')
+      .select('pitch_id, return_pct, benchmark_return_pct, alpha_pct, current_state, computed_at')
       .in('pitch_id', pitchIds);
     hindsight = data || [];
   }
@@ -217,6 +217,9 @@ export async function attributionByPitch(supabase, orgId) {
         return_pct: h ? finite(h.return_pct) : null,
         alpha_pct: h ? finite(h.alpha_pct) : null,
         current_state: h?.current_state || null,
+        // The outcome's own dates: SPY is measured over the same window.
+        decision_at: p.decision_at || null,
+        computed_at: h?.computed_at || null,
         has_outcome: !!h,
       };
     })

@@ -41,6 +41,7 @@ export const ORG_ROUTE_ROLES = {
   // ── Phase 4 — Analytics & reporting ────────────────────────────────────
   'POST /api/org/reports': ['executive', 'portfolio_manager'],
   'GET /api/org/reports/[id]/pdf': ['executive', 'portfolio_manager'],
+  'DELETE /api/org/reports/[id]': ['executive', 'portfolio_manager'],
   // scorecard GET = own / PM-of-team / executive (see OWN_DATA_RULES)
 };
 
@@ -58,6 +59,14 @@ export const OWN_DATA_RULES = {
   'GET /api/org/grades': 'student reads only own rows; executive reads all',
   'GET /api/org/research-notes': "'private' visibility hidden from non-authors (RLS)",
   'GET /api/org/mentions': 'only mentions where mentioned_user_id = caller',
+  'GET /api/org/reports':
+    'reports listed only to members who may export them; portfolio managers only while the advisor setting includes them',
+  'POST /api/org/reports':
+    "portfolio managers only while who_can_export_reports is 'exec_pm_advisor'",
+  'GET /api/org/reports/[id]/pdf':
+    "portfolio managers only while who_can_export_reports is 'exec_pm_advisor'",
+  'DELETE /api/org/reports/[id]':
+    "portfolio managers only while who_can_export_reports is 'exec_pm_advisor'",
 };
 
 /** Convenience: roles required for a "METHOD /path" key, or null if open. */

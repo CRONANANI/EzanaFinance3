@@ -70,6 +70,7 @@ const EXEMPT = [
   // documents, so a literal stack is the only thing that works there.
   /[\\/]research-library[\\/]export-document\.js$/,
   /[\\/]api[\\/]org[\\/]reports[\\/].*[\\/]pdf[\\/]route\.js$/,
+  /[\\/]lib[\\/]org-reports-document\.js$/,
 ];
 
 // ── Pending hand review (brand-hex only) ─────────────────────────────────

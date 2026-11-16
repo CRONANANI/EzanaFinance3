@@ -1,124 +1,104 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
-import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import {
-  computeFundPerformance,
-  attributionByAnalyst,
-  attributionBySector,
-  attributionByPitch,
-} from '@/lib/org-attribution';
+import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { computeReport, listReports, reportViewer } from '@/lib/org-reports-server';
+import { summarizeReport } from '@/lib/org-reports-model';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const MANAGER_ROLES = ['executive', 'portfolio_manager'];
+const PRIVATE = { 'Cache-Control': 'private, no-store' };
 
-/* GET /api/org/reports — list previously generated reports. */
+/* Who may generate, open and delete: executives (faculty advisors are
+   executives) and, unless the advisor's "Who can export stakeholder reports"
+   setting says executives and advisors only, portfolio managers. Analysts and
+   restricted managers get their access reason and no reports. */
+
+/* GET /api/org/reports: saved reports, summarised, plus the newest in full. */
 export const GET = withApiGuard(
   async () => {
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
-
-    const { data, error } = await supabase
-      .from('org_reports')
-      .select('id, title, period_label, created_at, generated_by')
-      .eq('org_id', member.org_id)
-      .order('created_at', { ascending: false })
-      .limit(100);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    return NextResponse.json({
-      reports: data || [],
-      viewer: { canGenerate: assertOrgRole(member, MANAGER_ROLES) },
-    });
+    const viewer = await reportViewer(supabase, member);
+    const base = {
+      access: viewer.access,
+      exportScope: viewer.exportScope,
+      canGenerate: viewer.canExport,
+      canDelete: viewer.canExport,
+    };
+    if (!viewer.canExport) {
+      return NextResponse.json({ reports: [], latest: null, viewer: base }, { headers: PRIVATE });
+    }
+    const out = await listReports(supabase, member.org_id);
+    if (out.error) {
+      return NextResponse.json({ error: 'Could not load reports' }, { status: 500 });
+    }
+    return NextResponse.json(
+      { reports: out.reports, latest: out.latest, viewer: base },
+      { headers: PRIVATE },
+    );
   },
   { requireAuth: true },
 );
 
-/* POST /api/org/reports — assemble + store a stakeholder report (manager/advisor). */
+/* POST /api/org/reports: work out a stakeholder report and save it.
+   Body: { period_label, include_roster, include_analyst_names, dry_run }.
+   With dry_run the report is worked out and returned, and nothing is saved. */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
-    if (!assertOrgRole(member, MANAGER_ROLES)) {
-      return NextResponse.json({ error: 'Manager / advisor role required' }, { status: 403 });
+    const viewer = await reportViewer(supabase, member);
+    if (!viewer.canExport) {
+      return NextResponse.json(
+        {
+          error:
+            viewer.access === 'export_restricted'
+              ? 'Your council limits stakeholder reports to executives and faculty advisors.'
+              : 'Manager / advisor role required',
+        },
+        { status: 403 },
+      );
     }
 
     let body = {};
     try {
       body = await request.json();
     } catch {
-      /* defaults below */
+      /* defaults */
     }
-    const orgId = member.org_id;
-    const periodLabel = (body?.period_label || '').trim() || 'Current Term';
+    const { payload, title, cohortId } = await computeReport(supabase, member, body);
 
-    const [
-      performance,
-      byAnalyst,
-      bySector,
-      byPitch,
-      { data: org },
-      { data: roster },
-      { data: cohort },
-    ] = await Promise.all([
-      computeFundPerformance(supabase, orgId),
-      attributionByAnalyst(supabase, orgId),
-      attributionBySector(supabase, orgId),
-      attributionByPitch(supabase, orgId),
-      supabase.from('organizations').select('university_name, name').eq('id', orgId).maybeSingle(),
-      supabase
-        .from('org_members')
-        .select('display_name, role, sub_role, title')
-        .eq('org_id', orgId)
-        .eq('is_active', true),
-      supabase
-        .from('org_cohorts')
-        .select('id, name')
-        .eq('org_id', orgId)
-        .eq('is_current', true)
-        .maybeSingle(),
-    ]);
-
-    const universityName = org?.university_name || org?.name || 'Student Investment Fund';
-    const topPitches = (byPitch || []).filter((p) => p.has_outcome).slice(0, 10);
-
-    const payload = {
-      universityName,
-      periodLabel,
-      generatedAt: new Date().toISOString(),
-      performance,
-      attribution: { byAnalyst, bySector },
-      topPitches,
-      roster: (roster || []).map((m) => ({
-        name: m.display_name,
-        role: m.role,
-        title: m.title || null,
-        sub_role: m.sub_role || null,
-      })),
-      cohort: cohort?.name || null,
-    };
-
-    const title = `${universityName}, Fund Report (${periodLabel})`;
+    if (body?.dry_run) {
+      return NextResponse.json(
+        {
+          preview: summarizeReport(
+            { title, period_label: payload.periodLabel, created_at: payload.generatedAt, payload },
+            null,
+          ),
+        },
+        { headers: PRIVATE },
+      );
+    }
 
     const { data, error } = await supabase
       .from('org_reports')
       .insert({
-        org_id: orgId,
-        cohort_id: cohort?.id || null,
+        org_id: member.org_id,
+        cohort_id: cohortId,
         title,
-        period_label: periodLabel,
+        period_label: payload.periodLabel,
         generated_by: member.user_id,
         payload,
       })
-      .select('*')
+      .select('id, title, period_label, created_at, generated_by, payload')
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'Could not save the report' }, { status: 500 });
 
-    return NextResponse.json({ report: data });
+    return NextResponse.json({ report: data, summary: summarizeReport(data, null) });
   },
   { requireAuth: true },
 );
