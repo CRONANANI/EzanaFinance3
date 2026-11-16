@@ -52,16 +52,16 @@ export const STATUS_ICON = {
 export const SECTORS = GICS_SECTORS;
 
 /*
- * Visibility, with what each choice does today. "My team" is stored with the
- * author's team, but the read rule in the migrations only separates private
- * from everything else, so the whole council can read it. The copy says so.
+ * Visibility, with what each choice does. "My team" is enforced by the read
+ * rule in 20261121090000_org_research_team_visibility.sql: the author, their
+ * team, and the council's executives and portfolio managers.
  */
 export const VISIBILITY = [
   { value: 'org', label: 'Whole council', hint: 'Every council member can read it.' },
   {
     value: 'team',
     label: 'My team',
-    hint: 'Saved as your team, but not enforced yet: the whole council can currently read it.',
+    hint: 'You, your team, and executives and portfolio managers can read it.',
   },
   {
     value: 'private',

@@ -772,7 +772,7 @@ export function DocumentPanel({
                         {VISIBILITY_LABEL[note.visibility] || NA}
                         {note.visibility === 'team' && (
                           <span className="orl-muted orl-small orl-block">
-                            Not enforced yet: the whole council can read it.
+                            Your team, executives and portfolio managers can read it.
                           </span>
                         )}
                       </dd>
