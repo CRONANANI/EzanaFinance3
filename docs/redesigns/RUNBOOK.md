@@ -302,7 +302,7 @@ itself unless told to). `node_modules` is symlinked from the main clone.
    taken for open questions, anything left out, and checks run. End the message with:
 
    ```
-   Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
    Claude-Session: https://claude.ai/code/session_01PcV1GnvxB6PNeUemEDknFT
    ```
 
@@ -337,3 +337,10 @@ itself unless told to). `node_modules` is symlinked from the main clone.
 - Stage 3 (org pages): the Team Hub sidebar and shell are shared and were rebuilt with the
   Command Center. Other org page builds must not edit the shell files; if a page needs a
   shell change, list it in the build report instead.
+- All stages: never run SQL against the production database (no mcp__Supabase tools at all).
+  Read schema and policies from supabase/migrations in the repo. If the repo and production
+  may differ, say so in the report instead of checking.
+- Stage 2: tell ChatGPT and Claude Design to use invented sample names only. Move the mouse
+  pointer to a corner before each slice screenshot.
+- Stage 3: sample data never uses real people's names, and is the same sample council on
+  every org page (see the existing src/lib/org-*-sample.js files).
