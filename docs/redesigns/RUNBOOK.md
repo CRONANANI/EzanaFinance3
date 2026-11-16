@@ -337,7 +337,7 @@ itself unless told to). `node_modules` is symlinked from the main clone.
 - Stage 3 (org pages): the Team Hub sidebar and shell are shared and were rebuilt with the
   Command Center. Other org page builds must not edit the shell files; if a page needs a
   shell change, list it in the build report instead.
-- All stages: never run SQL against the production database (no mcp__Supabase tools at all).
+- Subagents: never run SQL against the production database (no mcp__Supabase tools at all); write it to sql.md. The orchestrator applies it after merge (owner's standing request, 2026-11-15): check live policy names and helpers first, apply with Supabase apply_migration, verify, then add it to supabase/migrations wrapped in a to_regclass guard so test:rls passes, and still send the .md file.
   Read schema and policies from supabase/migrations in the repo. If the repo and production
   may differ, say so in the report instead of checking.
 - Stage 2: tell ChatGPT and Claude Design to use invented sample names only. Move the mouse
