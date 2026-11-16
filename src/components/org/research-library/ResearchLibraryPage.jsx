@@ -177,7 +177,7 @@ export function ResearchLibraryPage({ initialData = null, sampleViewer = false, 
   const [open, setOpen] = useState(() => (start.open ? { id: start.open, tab: null } : null));
   const [symbol, setSymbol] = useState(start.symbol || null);
   const [chain, setChain] = useState(start.chain || null);
-  const [editor, setEditor] = useState(null); // { note } while open
+  const [editor, setEditor] = useState(() => (start.compose ? { note: null } : null)); // { note } while open
   const [handoff, setHandoff] = useState(null); // { ticker } while open
   const [notice, setNotice] = useState(null);
   const [setSum, setSetSum] = useState(null);

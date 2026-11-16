@@ -1,0 +1,65 @@
+/* Council view of Global Market Analysis: the rules that sit on the retail
+   terminal's shell. Imported by the page itself so the rotate prompt's
+   council button is styled before the view loads. Every selector here needs
+   a class only council members get (.ma-view-council, the council button),
+   so the retail page is unchanged. */
+
+/* ── The view inside the terminal shell ────────────────────────────────── */
+.ma-fullscreen.ma-view-council {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.ma-fullscreen.ma-view-council .ma-top-bar {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  align-self: center;
+  max-width: 100%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.ma-fullscreen.ma-view-council .ma-view-toggle {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+/* The tour points at map controls; it is replayed from the map. */
+.ma-fullscreen.ma-view-council .ma-help-btn {
+  display: none;
+}
+
+/* Council members on a phone in portrait can open the Council view from
+   the rotate prompt (the button renders for council members only). */
+.ma-rotate-prompt__council {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ma-rotate-prompt__council:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* The council view is a scrolling page, so phones in portrait read it
+   rather than being asked to rotate (the map and chain still ask). */
+@media (max-width: 900px) and (orientation: portrait) {
+  .ma-fullscreen.ma-view-council > .ma-rotate-prompt {
+    display: none;
+  }
+  .ma-fullscreen.ma-view-council > *:not(.ma-rotate-prompt) {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}

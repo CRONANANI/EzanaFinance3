@@ -41,6 +41,15 @@ const ISRArticleModal = dynamic(
     })),
   { ssr: false, loading: () => null },
 );
+/* Council view (council members only): loaded on demand, so the retail
+   page's bundle does not carry it. */
+const CouncilView = dynamic(
+  () =>
+    import('@/components/market-analysis/council/CouncilView').then((m) => ({
+      default: m.CouncilView,
+    })),
+  { ssr: false, loading: () => null },
+);
 const OrgSendToTeamModal = dynamic(
   () =>
     import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
@@ -68,6 +77,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 import '../centaur-intelligence/centaur-intelligence.css';
 import '../org-trading/org-trading.css';
+import '@/components/market-analysis/council/council-shell.css';
 
 const DATA_LAYER_GROUPS = [
   {
@@ -1655,8 +1665,12 @@ function tutorialKeyFor(userId) {
 
 export default function MarketAnalysisPage() {
   const { user, loading: authLoading } = useAuth() || {};
-  const { isOrgUser, hasPermission } = useOrg();
-  const [view, setView] = useState('map');
+  const { isOrgUser, hasPermission, isLoading: orgLoading, orgRole } = useOrg();
+  /* The Council view exists only once membership is known: nothing council
+     specific renders (or is fetched) while the org status is resolving. */
+  const councilReady = Boolean(isOrgUser && !orgLoading);
+  const [viewChoice, setView] = useState('map');
+  const view = viewChoice === 'council' && !councilReady ? 'map' : viewChoice;
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -1674,6 +1688,8 @@ export default function MarketAnalysisPage() {
   const [selectedIsrEvent, setSelectedIsrEvent] = useState(null);
   const [chainEvents, setChainEvents] = useState([]);
   const [chainEventsLoading, setChainEventsLoading] = useState(true);
+  const [chainEventsFailed, setChainEventsFailed] = useState(false);
+  const [chainReload, setChainReload] = useState(0);
   const [sendToTeamChainEvent, setSendToTeamChainEvent] = useState(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   // Track the app-wide applied theme. ThemeProvider is the single source of
@@ -1862,16 +1878,23 @@ export default function MarketAnalysisPage() {
         const res = await fetch('/api/market-data/economic-calendar');
         if (cancelled) return;
         if (!res.ok) {
-          if (!cancelled) setChainEventsLoading(false);
+          if (!cancelled) {
+            setChainEventsLoading(false);
+            setChainEventsFailed(true);
+          }
           return;
         }
         const data = await res.json();
         if (!cancelled) {
           setChainEvents(data.events || []);
           setChainEventsLoading(false);
+          setChainEventsFailed(false);
         }
       } catch {
-        if (!cancelled) setChainEventsLoading(false);
+        if (!cancelled) {
+          setChainEventsLoading(false);
+          setChainEventsFailed(true);
+        }
       }
     };
 
@@ -1887,7 +1910,10 @@ export default function MarketAnalysisPage() {
         const res = await fetch('/api/market-data/economic-calendar', { cache: 'no-store' });
         if (!res.ok || cancelled) return;
         const data = await res.json();
-        if (!cancelled) setChainEvents(data.events || []);
+        if (!cancelled) {
+          setChainEvents(data.events || []);
+          setChainEventsFailed(false);
+        }
       } catch {
         /* ignore */
       }
@@ -1897,6 +1923,26 @@ export default function MarketAnalysisPage() {
       cancelled = true;
       clearInterval(interval);
     };
+  }, [chainReload]);
+
+  const retryChainEvents = useCallback(() => {
+    setChainEventsLoading(true);
+    setChainEventsFailed(false);
+    setChainReload((n) => n + 1);
+  }, []);
+
+  /* Council view: Open chain switches to The chain and brings the event
+     into view when it is on the timeline. */
+  const openChainAt = useCallback((event) => {
+    setView('chain');
+    const title = event?.title ? String(event.title) : null;
+    if (!title) return;
+    setTimeout(() => {
+      const item = [...document.querySelectorAll('.ma-chain-item')].find((el) =>
+        (el.textContent || '').includes(title),
+      );
+      item?.scrollIntoView({ block: 'center' });
+    }, 120);
   }, []);
 
   const openIsrEvent = useCallback((event, match) => {
@@ -2057,7 +2103,7 @@ export default function MarketAnalysisPage() {
 
   return (
     <div
-      className={`ma-fullscreen ${isLightTheme ? 'ma-theme-light' : 'force-dark-theme'} ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}
+      className={`ma-fullscreen ${isLightTheme ? 'ma-theme-light' : 'force-dark-theme'} ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''} ${view === 'council' ? 'ma-view-council' : ''}`}
     >
       {/* Portrait orientation block — prompts users to rotate on phones */}
       <div
@@ -2106,6 +2152,16 @@ export default function MarketAnalysisPage() {
           <div className="ma-rotate-prompt__hint">
             <i className="bi bi-phone-flip" aria-hidden /> Rotate to landscape
           </div>
+          {councilReady && (
+            <button
+              type="button"
+              className="ma-rotate-prompt__council"
+              onClick={() => setView('council')}
+            >
+              <i className="bi bi-people" aria-hidden /> Open the council view, which reads in
+              portrait
+            </button>
+          )}
           <Link href="/home-dashboard" className="ma-rotate-prompt__back">
             <i className="bi bi-arrow-left" aria-hidden /> Back to dashboard
           </Link>
@@ -2171,6 +2227,16 @@ export default function MarketAnalysisPage() {
           >
             THE CHAIN
           </button>
+          {councilReady && (
+            <button
+              type="button"
+              className={`ma-view-btn ${view === 'council' ? 'active' : ''}`}
+              aria-pressed={view === 'council'}
+              onClick={() => setView('council')}
+            >
+              COUNCIL
+            </button>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link
               href="/datasets/global-empire-lighthouse"
@@ -2616,12 +2682,24 @@ export default function MarketAnalysisPage() {
             />
           )}
         </>
-      ) : (
+      ) : view === 'chain' ? (
         <ChainView
           events={chainEvents}
           loading={chainEventsLoading}
           showSendToTeam={isOrgUser && hasPermission('send_to_team')}
           onRequestSendToTeam={setSendToTeamChainEvent}
+        />
+      ) : (
+        <CouncilView
+          role={orgRole}
+          light={isLightTheme}
+          tickerData={tickerData}
+          chainEvents={chainEvents}
+          chainStatus={chainEventsLoading ? 'loading' : chainEventsFailed ? 'error' : 'ready'}
+          onRetryEvents={retryChainEvents}
+          onOpenChain={openChainAt}
+          canSendToTeam={hasPermission('send_to_team')}
+          onSendToTeam={setSendToTeamChainEvent}
         />
       )}
 

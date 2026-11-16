@@ -240,6 +240,9 @@ export function parseAddress(get) {
     open: one('d') ? String(one('d')).slice(0, 80) : null,
     symbol: cleanTicker(one('symbol')) || null,
     chain: cleanTicker(one('chain')) || null,
+    /* ?new=note opens the editor for a new document (the Council view of
+       Global Market Analysis links here). It is not written back. */
+    compose: one('new') === 'note',
   };
 }
 

@@ -782,6 +782,15 @@ body:has(.ez-404:not(.ez-404--inline)) {
   --emerald-border: rgba(16, 185, 129, 0.2);
   --emerald-text: #047857;
 
+  /* Status, light-surface set (same values as body.light-mode) */
+  --positive: #059669;
+  --positive-bg: rgba(5, 150, 105, 0.08);
+  --negative: #dc2626;
+  --negative-bg: rgba(220, 38, 38, 0.06);
+  --negative-border: rgba(220, 38, 38, 0.15);
+  --warning: #d97706;
+  --warning-bg: rgba(217, 119, 6, 0.08);
+
   /* Nav and app background */
   --nav-bg: rgba(255, 255, 255, 0.92);
   --nav-bg-solid: #ffffff;
