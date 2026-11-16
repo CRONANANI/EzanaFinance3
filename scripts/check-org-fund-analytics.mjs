@@ -426,3 +426,63 @@ test('source guards', () => {
     assert.ok(hook.includes(r), r);
   }
 });
+
+/* Owner review, Nov 15 2026: the percent chart started near -100% because the
+   council's earliest daily records held almost no value, and its first date
+   labels could overlap. */
+test('chart start: near-empty leading records are left out of the series and the headline', () => {
+  const cost = 160000;
+  const all = rows(120, (i) => i).map((r, i) => {
+    const value = i < 3 ? [12.4, 40, 310][i] : cost * (1.2 + i / 1000);
+    const ret = (value / cost - 1) * 100;
+    return {
+      ...r,
+      total_value: value,
+      return_pct: ret,
+      benchmark_return_pct: 2,
+      alpha_pct: ret - 2,
+    };
+  });
+  const s = scopeFundSeries(all, 'inception');
+  assert.equal(s.series.length, 117);
+  assert.equal(s.series[0].date, all[3].snapshot_date);
+  assert.ok(
+    s.series.every((p) => p.fund_return_pct > -50),
+    'no point near -100%',
+  );
+  assert.equal(s.periodStats.full_history, true, 'inception still uses the stored figures');
+  assert.equal(s.periodStats.start_date, all[3].snapshot_date);
+  const c = buildReturnChart(s.series, { width: 600, height: 260 });
+  assert.ok(c.yTicks[0].label !== '-100.00%');
+  /* A window that reaches back into the near-empty run starts where the chart does. */
+  const sem = scopeFundSeries(all, 'semester');
+  assert.equal(sem.series[0].date, all[3].snapshot_date);
+  assert.equal(sem.periodStats.return_pct, s.periodStats.return_pct);
+});
+
+test('chart x axis: date labels never overlap', () => {
+  for (const width of [280, 340, 460, 600, 900]) {
+    for (const n of [2, 3, 5, 12, 40, 200]) {
+      const series = rows(n, (i) => i).map((r) => ({
+        date: r.snapshot_date,
+        fund_value: 1,
+        fund_return_pct: 1,
+        benchmark_return_pct: 1,
+      }));
+      const c = buildReturnChart(series, { width, height: 260 });
+      const box = c.xTicks.map((t) => {
+        const w = t.label.length * 6.8;
+        const from = t.anchor === 'start' ? t.x : t.anchor === 'end' ? t.x - w : t.x - w / 2;
+        return [from, from + w];
+      });
+      assert.ok(
+        box.every((b, i) => i === 0 || b[0] >= box[i - 1][1]),
+        `${width}px ${n} points`,
+      );
+      assert.equal(new Set(c.xTicks.map((t) => t.label)).size, c.xTicks.length, 'no repeated date');
+    }
+  }
+  assert.ok(
+    read('src/components/org/fund-analytics/Performance.jsx').includes('textAnchor={t.anchor}'),
+  );
+});

@@ -23,6 +23,9 @@ import {
   toneOf,
   dueThisWeek,
   buildFundChart,
+  firstMeaningfulIndex,
+  placeXTicks,
+  MEANINGFUL_SHARE,
   buildAttentionRows,
   buildDigestRows,
   benchmarkInfo,
@@ -173,4 +176,94 @@ test('the chart reads the newest snapshots, and sample content is gated', () => 
   const route = read('src/app/api/org/team-hub/sample/route.js');
   assert.match(route, /isCommunityDemoViewer\(user\)/);
   assert.match(route, /getCurrentOrgMember/);
+});
+
+/* Owner review, Nov 15 2026: on live data the first x-axis labels overlapped,
+   and the line started with a cliff from near $0 because the council's
+   earliest daily records held almost no value. */
+const DAYMS = 86400000;
+const daily = (n, valueAt, end = NOW) =>
+  Array.from({ length: n }, (_, i) => ({
+    date: new Date(end - (n - 1 - i) * DAYMS).toISOString().slice(0, 10),
+    value: valueAt(i),
+    benchmarkValue: null,
+  }));
+const overlaps = (ticks, charWidth = 6.8) => {
+  const box = ticks.map((t) => {
+    const w = t.label.length * charWidth;
+    const from = t.anchor === 'start' ? t.x : t.anchor === 'end' ? t.x - w : t.x - w / 2;
+    return [from, from + w];
+  });
+  return box.some((b, i) => i > 0 && b[0] < box[i - 1][1]);
+};
+
+test('chart start: leading records below 5% of the peak are left off, later dips stay', () => {
+  assert.equal(MEANINGFUL_SHARE, 0.05);
+  assert.equal(firstMeaningfulIndex([12.4, 40, 310, 160000, 170000]), 3);
+  assert.equal(
+    firstMeaningfulIndex([null, 0, 9000, 200000]),
+    3,
+    '9,000 is 4.5% of the peak, so 200,000 is the first meaningful record',
+  );
+  assert.equal(firstMeaningfulIndex([160000, 10, 170000]), 0, 'only the leading run');
+  assert.equal(firstMeaningfulIndex([]), 0);
+  assert.equal(firstMeaningfulIndex([null, null]), 0);
+  assert.equal(firstMeaningfulIndex([0, 0]), 0);
+
+  const snaps = daily(150, (i) => (i < 3 ? [12.4, 40, 310][i] : 160000 + i * 300));
+  const c = buildFundChart(snaps, '1Y', { now: NOW, width: 620 });
+  assert.equal(c.skipped, 3);
+  assert.equal(c.points[0].value, 160000 + 3 * 300);
+  assert.equal(c.firstDate, snaps[3].date);
+  assert.ok(c.yTicks[0].label !== '$0', 'the axis no longer reaches down to zero');
+  /* A healthy fund is drawn from its first record. */
+  const healthy = buildFundChart(
+    daily(60, (i) => 1000 + i),
+    '1Y',
+    { now: NOW },
+  );
+  assert.equal(healthy.skipped, 0);
+  assert.equal(healthy.points.length, 60);
+});
+
+test('chart x axis: labels never overlap, at any width or range', () => {
+  for (const width of [300, 360, 460, 620, 900]) {
+    for (const range of ['1M', '3M', 'YTD', '1Y']) {
+      for (const n of [5, 20, 31, 32, 45, 95, 200, 366]) {
+        const c = buildFundChart(
+          daily(n, (i) => 1000 + i),
+          range,
+          { now: NOW, width },
+        );
+        if (!c) continue;
+        assert.ok(!overlaps(c.xTicks), `${width}px ${range} ${n} days`);
+        for (const t of c.xTicks) {
+          assert.ok(['start', 'middle', 'end'].includes(t.anchor));
+        }
+        assert.ok(c.xTicks.length >= 1);
+      }
+    }
+  }
+  /* The case seen live: a first label at the left edge and the next month a
+     few days later. */
+  const t = placeXTicks(
+    [
+      { x: 52, label: 'Jun' },
+      { x: 60, label: 'Jul' },
+      { x: 200, label: 'Aug' },
+      { x: 396, label: 'Sep' },
+    ],
+    { left: 52, right: 396 },
+  );
+  assert.deepEqual(
+    t.map((x) => [x.label, x.anchor]),
+    [
+      ['Jun', 'start'],
+      ['Aug', 'middle'],
+      ['Sep', 'end'],
+    ],
+  );
+  assert.ok(
+    read('src/components/org/command-center/FundPerformance.jsx').includes('textAnchor={t.anchor}'),
+  );
 });

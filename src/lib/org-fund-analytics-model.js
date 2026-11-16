@@ -5,7 +5,13 @@
  * same rules. Nothing is invented: a missing input yields null or an empty
  * list, and the page prints N/A or its empty state.
  */
-import { NA, fmtDate, fmtSignedPct } from './org-command-center.js';
+import {
+  NA,
+  firstMeaningfulIndex,
+  fmtDate,
+  fmtSignedPct,
+  placeXTicks,
+} from './org-command-center.js';
 
 const num = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
@@ -85,7 +91,11 @@ export function periodStart(period, latestDate) {
  * @param {string} period one of FUND_PERIOD_VALUES
  */
 export function scopeFundSeries(rows, period = 'semester') {
-  const all = (Array.isArray(rows) ? rows : []).filter((r) => r && r.snapshot_date);
+  const dated = (Array.isArray(rows) ? rows : []).filter((r) => r && r.snapshot_date);
+  /* Leading records that hold almost no value (before the book was entered)
+     are left out of the series and the headline alike, so neither starts
+     from a near -100% return. Rule and threshold: firstMeaningfulIndex. */
+  const all = dated.slice(firstMeaningfulIndex(dated.map((r) => r.total_value)));
   if (all.length === 0) return { series: [], latest: null, periodStats: null };
 
   const latestDate = all[all.length - 1].snapshot_date;
@@ -267,11 +277,16 @@ export function buildReturnChart(series, opts = {}) {
     yTicks.push({ y: yAt(v), label: axisPct(v), zero: Math.abs(v) < 1e-9 });
   }
   const want = Math.min(W < 460 ? 4 : 6, n);
-  const xTicks = [];
+  const raw = [];
   for (let k = 0; k < want; k += 1) {
     const i = Math.round((k * (n - 1)) / Math.max(1, want - 1));
-    xTicks.push({ x: xAt(i), label: tickDate(pts[i].date) });
+    if (raw.length && raw[raw.length - 1].i === i) continue;
+    raw.push({ i, x: xAt(i), label: tickDate(pts[i].date) });
   }
+  const xTicks = placeXTicks(
+    raw.map(({ x, label }) => ({ x, label })),
+    { left, right: W - right },
+  );
 
   return {
     W,

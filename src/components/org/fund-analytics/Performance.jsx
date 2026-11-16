@@ -121,7 +121,7 @@ function ReturnChart({ series, benchLabel }) {
               key={`${t.label}-${i}`}
               x={t.x}
               y={chart.H - 4}
-              textAnchor={i === 0 ? 'start' : i === chart.xTicks.length - 1 ? 'end' : 'middle'}
+              textAnchor={t.anchor}
               className="tcc-chart__tick"
             >
               {t.label}

@@ -122,7 +122,7 @@ export function FundChart({ snapshots, benchLabel, range }) {
                   key={`${t.label}-${i}`}
                   x={t.x}
                   y={chart.H - 4}
-                  textAnchor={i === 0 ? 'start' : 'middle'}
+                  textAnchor={t.anchor}
                   className="tcc-chart__tick"
                 >
                   {t.label}

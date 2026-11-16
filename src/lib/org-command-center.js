@@ -131,6 +131,65 @@ function axisMoney(v) {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
+ * Where a fund's chart starts. A council's earliest daily records can hold
+ * almost nothing (the record job ran before the book was entered), which
+ * drew a cliff from near $0, or near -100% on a return chart, at the left
+ * edge. The rule: a record is meaningful when its value is at least
+ * MEANINGFUL_SHARE (5%) of the largest value in the whole history. Leading
+ * records below that, or with no value, are left off the chart. Only the
+ * leading run is dropped: a later dip is real and stays. With no usable
+ * value at all nothing is dropped.
+ */
+export const MEANINGFUL_SHARE = 0.05;
+export function firstMeaningfulIndex(values, share = MEANINGFUL_SHARE) {
+  const list = Array.isArray(values) ? values.map(num) : [];
+  const peak = Math.max(0, ...list.filter((v) => v != null));
+  if (!(peak > 0)) return 0;
+  const floor = peak * share;
+  const i = list.findIndex((v) => v != null && v >= floor);
+  return i < 0 ? 0 : i;
+}
+
+/**
+ * Lay out x-axis labels so they never overlap. Each label's width is
+ * estimated from its length (11px mono, about 6.8px a character). A label
+ * near the left edge is anchored at its start, one near the right edge at its
+ * end, the rest centred. Walking left to right, a label is kept only when it
+ * starts at least `gap` past the end of the last one kept; the last label is
+ * preferred over the one before it, so the newest date always shows.
+ *
+ * @param {Array<{x:number,label:string}>} ticks in x order
+ * @param {{left:number,right:number,charWidth?:number,gap?:number}} box
+ * @returns {Array<{x:number,label:string,anchor:'start'|'middle'|'end'}>}
+ */
+export function placeXTicks(ticks, { left, right, charWidth = 6.8, gap = 12 }) {
+  const placed = (Array.isArray(ticks) ? ticks : []).map((t) => {
+    const w = String(t.label).length * charWidth;
+    let anchor = 'middle';
+    let from = t.x - w / 2;
+    if (from < left) {
+      anchor = 'start';
+      from = t.x;
+    } else if (t.x + w / 2 > right) {
+      anchor = 'end';
+      from = t.x - w;
+    }
+    return { ...t, anchor, from, to: from + w };
+  });
+  const kept = [];
+  for (const t of placed) {
+    const prev = kept[kept.length - 1];
+    if (!prev || t.from >= prev.to + gap) kept.push(t);
+  }
+  const last = placed[placed.length - 1];
+  if (last && kept[kept.length - 1] !== last) {
+    while (kept.length && kept[kept.length - 1].to + gap > last.from) kept.pop();
+    kept.push(last);
+  }
+  return kept.map(({ from, to, ...t }) => t);
+}
+
+/**
  * Geometry for the fund value chart. The y axis is fund value in dollars,
  * because that is what a daily snapshot records. Returns null with fewer than
  * three snapshots (the page shows its empty state).
@@ -142,7 +201,10 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export function buildFundChart(snapshots, range, opts = {}) {
   const W = opts.width || 400;
   const H = opts.height || 216;
-  const all = Array.isArray(snapshots) ? snapshots.filter((s) => num(s?.value) != null) : [];
+  const valued = Array.isArray(snapshots) ? snapshots.filter((s) => num(s?.value) != null) : [];
+  /* Start at the first record with a meaningful value (see firstMeaningfulIndex). */
+  const skipped = firstMeaningfulIndex(valued.map((s) => s.value));
+  const all = valued.slice(skipped);
   if (all.length < 3) return null;
   const pts = sliceSnapshots(all, range, opts.now);
   const n = pts.length;
@@ -205,6 +267,7 @@ export function buildFundChart(snapshots, range, opts = {}) {
       xTicks = xTicks.filter((_, i) => i % stride === 0);
     }
   }
+  xTicks = placeXTicks(xTicks, { left, right: W - right });
 
   return {
     W,
@@ -230,6 +293,8 @@ export function buildFundChart(snapshots, range, opts = {}) {
     })),
     firstDate: pts[0].date,
     lastDate: pts[n - 1].date,
+    /* Leading records left off because they held almost no value. */
+    skipped,
   };
 }
 
