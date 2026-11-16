@@ -91,6 +91,9 @@ function writeAddress({ stage, pitchId }) {
   const set = (k, v) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
   set('stage', stage || null);
   set('pitch', pitchId || null);
+  /* A ?new=pitch arrival opens the submit flow once; a reload does not. */
+  set('new', null);
+  set('ticker', null);
   const next = `${url.pathname}${url.search}${url.hash}`;
   if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
     try {
@@ -263,6 +266,8 @@ export function PitchPipelinePage({
   sampleViewer = false,
   initialStage = null,
   initialPitch = null,
+  initialNew = false,
+  initialTicker = null,
 }) {
   const { isOrgUser, isLoading } = useOrg();
   const enabled = Boolean(initialData) || Boolean(isOrgUser && !isLoading);
@@ -273,7 +278,15 @@ export function PitchPipelinePage({
   const [open, setOpen] = useState(() => (initialPitch ? { id: initialPitch, tab: null } : null));
   const [query, setQuery] = useState('');
   const [agingOnly, setAgingOnly] = useState(false);
-  const [submitOpen, setSubmitOpen] = useState(false);
+  /* ?new=pitch opens the submit flow on arrival (Alternative Markets' Start a
+     pitch), prefilled with ?ticker= when it is a plain ticker. */
+  const [submitOpen, setSubmitOpen] = useState(Boolean(initialNew));
+  const [prefillTicker] = useState(() => {
+    const t = String(initialTicker || '')
+      .toUpperCase()
+      .trim();
+    return initialNew && /^[A-Z0-9.^=-]{1,12}$/.test(t) ? t : '';
+  });
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [notice, setNotice] = useState(null);
 
@@ -765,9 +778,10 @@ export function PitchPipelinePage({
         />
       )}
 
-      {submitOpen && (
+      {submitOpen && d && (
         <SubmitPitchDialog
           board={d}
+          initialTicker={prefillTicker}
           sample={sampleActive}
           act={act}
           onClose={() => setSubmitOpen(false)}

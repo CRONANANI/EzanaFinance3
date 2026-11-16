@@ -1,0 +1,455 @@
+/* Council cards of Alternative Markets (/alternative-markets), council
+   members only. Page-scoped `amc-` classes on the flat canvas: no fills,
+   borders, shadows or radius on sections; hairlines divide and never
+   enclose; tokens only. The retail page's own styles are untouched. */
+
+.amc-band {
+  --amc-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --amc-rule-subtle: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  min-width: 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--amc-rule);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.amc-band * {
+  box-sizing: border-box;
+}
+.amc-band__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.amc-band__sample {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+/* Four columns, a hairline between them with 24px clear on each side. */
+.amc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.amc-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 24px;
+}
+.amc-col:first-child {
+  padding-left: 0;
+}
+.amc-col:last-child {
+  padding-right: 0;
+}
+.amc-col + .amc-col {
+  border-left: 1px solid var(--amc-rule);
+}
+.amc-col > * {
+  max-width: 100%;
+}
+.amc-col__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.amc-col__title > .bi {
+  font-size: 15px;
+  color: var(--text-muted);
+}
+.amc-col__aside {
+  margin-left: auto;
+  font-weight: 500;
+}
+
+@media (max-width: 1199px) {
+  .amc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 28px;
+  }
+  .amc-col:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .amc-col:nth-child(even) {
+    padding-right: 0;
+  }
+}
+@media (max-width: 699px) {
+  .amc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+  .amc-col,
+  .amc-col:nth-child(odd),
+  .amc-col:nth-child(even) {
+    padding: 16px 0;
+    border-left: 0;
+  }
+  .amc-col + .amc-col {
+    border-top: 1px solid var(--amc-rule);
+  }
+  .amc-col:first-child {
+    padding-top: 0;
+  }
+}
+
+/* ── Text ──────────────────────────────────────────────────────────────── */
+.amc-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.amc-sans {
+  font-family: var(--font-sans);
+}
+.amc-strong {
+  font-weight: 600;
+}
+.amc-muted {
+  color: var(--text-muted);
+}
+.amc-faint {
+  color: var(--text-faint);
+}
+.amc-small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.amc-r {
+  text-align: right;
+  justify-self: end;
+}
+.amc-ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.amc-col p,
+.amc-dialog p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.amc-tone--up {
+  color: var(--positive);
+}
+.amc-tone--down {
+  color: var(--negative);
+}
+.amc-tone--warn {
+  color: var(--warning);
+}
+.amc-tone--accent {
+  color: var(--emerald-text);
+}
+.amc-tone--flat {
+  color: var(--text-primary);
+}
+.amc-tone--na,
+.amc-tone--muted {
+  color: var(--text-muted);
+}
+
+/* ── Actions ───────────────────────────────────────────────────────────── */
+.amc-tb,
+.amc-link,
+.amc-rowlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.amc-tb {
+  color: var(--text-secondary);
+}
+.amc-tb:hover,
+.amc-rowlink:hover {
+  color: var(--emerald-text);
+}
+.amc-link {
+  color: var(--emerald-text);
+  white-space: nowrap;
+}
+.amc-link:hover {
+  color: var(--emerald-hover);
+}
+.amc-link:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+.amc-rowlink {
+  min-width: 0;
+  max-width: 100%;
+  color: var(--emerald-text);
+  font-weight: 500;
+}
+.amc-rowlink > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amc-rowlink > .bi {
+  flex: none;
+  font-size: 12px;
+}
+.amc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.amc-btn:hover {
+  background: var(--btn-primary-bg-hover);
+  color: var(--btn-primary-fg);
+}
+:is(.amc-tb, .amc-link, .amc-rowlink, .amc-btn):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Fields (borderless) ───────────────────────────────────────────────── */
+.amc-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  color: var(--text-muted);
+}
+.amc-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.amc-input::placeholder {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-transform: none;
+  color: var(--text-faint);
+}
+.amc-result {
+  min-height: 20px;
+}
+
+/* ── Lists and rows ────────────────────────────────────────────────────── */
+.amc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.amc-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.amc-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.amc-rows {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.amc-rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--amc-rule-subtle);
+  font-size: 13px;
+}
+.amc-rows li > :first-child {
+  min-width: 0;
+}
+.amc-rows li > :last-child {
+  flex: none;
+  text-align: right;
+  white-space: nowrap;
+}
+.amc-rows .amc-rowlink {
+  gap: 10px;
+  color: var(--text-primary);
+}
+.amc-rows .amc-rowlink:hover {
+  color: var(--emerald-text);
+}
+.amc-sleeves {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.amc-sleeves li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--amc-rule-subtle);
+  font-size: 13px;
+}
+.amc-sleeve__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amc-sleeve__tickers {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.amc-sleeve__tickers .amc-sans {
+  font-weight: 500;
+}
+
+/* ── Table (rankings, dialog) ──────────────────────────────────────────── */
+.amc-table {
+  width: 100%;
+  font-size: 13px;
+}
+.amc-tr {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border-bottom: 1px solid var(--amc-rule-subtle);
+}
+.amc-tr--head {
+  min-height: 28px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom-color: var(--amc-rule);
+}
+.amc-cols-rank {
+  grid-template-columns: 36px minmax(0, 1fr) 56px 72px;
+}
+.amc-cols-rules {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.2fr) 88px;
+  padding: 6px 0;
+}
+
+/* ── States ────────────────────────────────────────────────────────────── */
+.amc-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 4px 0;
+}
+.amc-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.amc-state p {
+  color: var(--text-muted);
+}
+.amc-state--error p {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--negative);
+}
+
+/* ── Chart actions ─────────────────────────────────────────────────────── */
+.amc-chart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+/* ── Dialog (on the ds Modal) ──────────────────────────────────────────── */
+.amc-dialog {
+  --amc-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --amc-rule-subtle: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+.amc-modal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amc-tb,
+  .amc-link,
+  .amc-rowlink,
+  .amc-btn {
+    transition: none;
+  }
+}

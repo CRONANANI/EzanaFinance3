@@ -16,7 +16,7 @@ const ACCENT_TO_SYM = {
 };
 
 export function AmMetricCard({ metric }) {
-  const { id, label, value, delta, positive, sparkline, accent, mood } = metric;
+  const { id, label, value, delta, positive, sparkline, accent, mood, period, note } = metric;
   const sym = ACCENT_TO_SYM[id] || id?.toUpperCase() || 'IDX';
   const isFG = id === 'fg';
 
@@ -27,10 +27,7 @@ export function AmMetricCard({ metric }) {
           <AmSymbolChip accent={accent}>{sym}</AmSymbolChip>
           <span className="am2-metric-label">{label}</span>
         </div>
-        <span className="am2-live">
-          <span className="am2-live-dot" aria-hidden />
-          Live
-        </span>
+        <span className="am2-illustrative">Illustrative</span>
       </div>
 
       <div className="am2-metric-value">{isFG && mood ? mood.num : value}</div>
@@ -39,12 +36,12 @@ export function AmMetricCard({ metric }) {
         {isFG && mood ? (
           <>
             <span className="am2-mood-pill">{mood.label}</span>
-            <span>{mood.label} last week</span>
+            <span>{note ? note.charAt(0).toUpperCase() + note.slice(1) : null}</span>
           </>
         ) : (
           <>
             <AmPct ch={delta} signed />
-            <span>vs. yesterday</span>
+            <span>{period}</span>
           </>
         )}
       </div>

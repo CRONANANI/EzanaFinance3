@@ -7,13 +7,13 @@ export function MarqueeTicker({ items = [] }) {
   const doubled = [...items, ...items];
 
   return (
-    <div className="am2-marquee" aria-label="Live ticker">
+    <div className="am2-marquee" aria-label="Illustrative prices">
       <div className="am2-marquee-track">
         {doubled.map((it, i) => (
           <span className="am2-marquee-cell" key={`${it.symbol}-${i}`}>
             <span className="am2-marquee-symbol">{it.symbol}</span>
             <span className="am2-marquee-price">{it.price}</span>
-            <AmPct ch={it.ch} />
+            <AmPct ch={it.ch} signed />
           </span>
         ))}
       </div>

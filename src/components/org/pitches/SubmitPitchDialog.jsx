@@ -38,12 +38,12 @@ const numOrNull = (v) => (v === '' || v == null || !Number.isFinite(Number(v)) ?
  * then the pitch is created; the server also blocks members whose required
  * onboarding is unfinished. In sample content nothing is sent.
  */
-export function SubmitPitchDialog({ board, sample, act, onClose, onCreated }) {
+export function SubmitPitchDialog({ board, sample, act, onClose, onCreated, initialTicker = '' }) {
   const viewer = board?.viewer || {};
   const teams = board?.teams || [];
   const [step, setStep] = useState(0);
   const [f, setF] = useState({
-    ticker: '',
+    ticker: initialTicker || '',
     company_name: '',
     team_id: viewer.team_id || teams[0]?.id || '',
     pitch_type: 'long',

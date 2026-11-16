@@ -1,6 +1,8 @@
 /**
- * Map mock data to shapes the am2 components expect.
- * TODO: wire to /api/alternative-markets when ready.
+ * Map the page's fixed illustrative data to shapes the am2 components expect.
+ * Nothing here is live market data. Figures the data does not carry (a 7 day
+ * change, a market cap for a commodity, a volume) stay missing and read N/A;
+ * they are never derived or invented.
  */
 
 export function synthesizeSparkline(currentPriceStr, deltaPct, n = 24) {
@@ -19,6 +21,8 @@ export function synthesizeSparkline(currentPriceStr, deltaPct, n = 24) {
 
 export function parseDelta(changeStr) {
   if (!changeStr) return 0;
+  /* Only a percentage is a change ("▲ from 65 last week" is not). */
+  if (!String(changeStr).includes('%')) return null;
   const m = String(changeStr).match(/(-?\d+(\.\d+)?)/);
   if (!m) return 0;
   const num = parseFloat(m[1]);
@@ -33,15 +37,20 @@ export function enrichHeadlineMetric(stat, accent) {
     label: stat.label,
     value: stat.price,
     delta,
-    positive: delta >= 0,
-    sparkline: synthesizeSparkline(stat.price, delta),
+    positive: delta == null || delta >= 0,
+    sparkline: synthesizeSparkline(stat.price, delta || 0),
     accent,
+    /* The period the data's own change line names ("today", "this week"). */
+    period: /week/i.test(stat.change || '') ? 'this week' : 'today',
+    note: String(stat.change || '')
+      .replace(/^[▲▼\s]+/, '')
+      .trim(),
     mood: stat.id === 'fg' ? extractMood(stat.price) : null,
   };
 }
 
 function extractMood(priceStr) {
-  const parts = String(priceStr).split(/[—–-]/);
+  const parts = String(priceStr).split(/[:—–-]/);
   const num = parseFloat(parts[0]) || 0;
   const label = parts.slice(1).join(' ').trim() || 'Neutral';
   return { num, label };
@@ -56,8 +65,9 @@ export function enrichPricesRow(row, rank) {
     ticker: row.ticker || extractTicker(row.name),
     price: row.price,
     chg24h: signed,
-    chg7d: row.chg7d != null ? parseFloat(row.chg7d) : signed * 1.4 + Math.sin(rank) * 0.5,
-    mcap: row.mcap || '–',
+    chg7d:
+      row.chg7d != null && Number.isFinite(parseFloat(row.chg7d)) ? parseFloat(row.chg7d) : null,
+    mcap: row.mcap || 'N/A',
     sparkline: synthesizeSparkline(row.price, signed, 16),
     positive: row.pos !== false,
     tier: row.tier || row.category || 'top',
@@ -90,6 +100,8 @@ export function buildMarqueeItems(...sources) {
     for (const s of src) {
       const sym = s.ticker || (s.name ? extractTicker(s.name) : s.id?.toUpperCase() || s.label);
       const delta = typeof s.ch === 'number' ? s.ch : parseDelta(s.change || s.chg || '');
+      /* Fear and greed is an index reading, not a price: it stays out. */
+      if (s.id === 'fg') continue;
       if (!sym || !s.price) continue;
       items.push({ symbol: sym, price: s.price, ch: delta });
     }
@@ -100,24 +112,19 @@ export function buildMarqueeItems(...sources) {
 export function deriveOHLC(currentPriceStr, sparkline) {
   const current = parseFloat(String(currentPriceStr).replace(/[$,]/g, '')) || 0;
   if (!sparkline || sparkline.length === 0) {
-    return { h: current, l: current, o: current, v: '–' };
+    return { h: current, l: current, o: current, v: 'N/A' };
   }
   return {
     h: Math.max(...sparkline),
     l: Math.min(...sparkline),
     o: sparkline[0],
-    v: estimateVolume(current),
+    /* The data has no volume; it reads N/A rather than a made-up figure. */
+    v: 'N/A',
   };
 }
 
-function estimateVolume(price) {
-  if (price > 10000) return '28.4B';
-  if (price > 100) return '12.6B';
-  return '4.8B';
-}
-
 export function formatLargeNumber(n) {
-  if (n == null) return '–';
+  if (n == null) return 'N/A';
   if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   return `$${n.toLocaleString()}`;

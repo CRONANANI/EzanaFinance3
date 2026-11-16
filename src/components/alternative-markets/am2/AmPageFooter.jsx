@@ -5,7 +5,7 @@ export function AmPageFooter() {
     <footer className="am2-page-footer">
       <span>Ezana · Alternative Markets Research</span>
       <span className="am2-page-footer-right">
-        Data delayed up to 60s · for informational purposes only
+        Illustrative figures, not market data · for informational purposes only
       </span>
     </footer>
   );

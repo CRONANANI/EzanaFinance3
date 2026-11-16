@@ -6,7 +6,7 @@ export function AmNews({ items = [] }) {
       <div className="am2-card-head">
         <div className="am2-card-head-titles">
           <h3 className="am2-card-title">News wire</h3>
-          <span className="am2-card-subtitle">All sources · last 12h</span>
+          <span className="am2-card-subtitle">Illustrative headlines</span>
         </div>
       </div>
       <div className="am2-card-body--flush">

@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { AmSymbolChip } from './AmSymbolChip';
+import { useMemo } from 'react';
 import { AmPct } from './AmPct';
-import { DateSelector } from '@/components/ui/DateSelector';
 
-const TIMEFRAMES = ['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y'];
-
+/*
+ * The selected asset's price and 24 hour change, with an illustrative line
+ * drawn from that change. The page has no price history, so there is no
+ * timeframe to choose and the line is labelled as illustrative. The asset
+ * picker lists the prices table's rows; clicking a row there selects it too.
+ * `actions` holds the council's Start a pitch and Send to team (members only).
+ */
 export function AmPriceChart({
   assetName,
   assetTicker,
-  accent = 'gold',
   currentPrice,
   delta,
   deltaAbs,
   series,
   ohlc,
+  assets = [],
   onAssetSelect,
+  actions = null,
 }) {
-  const [tf, setTf] = useState('3M');
-
   const path = useMemo(() => buildPath(series), [series]);
   const fillPath = useMemo(() => buildFillPath(series), [series]);
 
@@ -27,11 +29,23 @@ export function AmPriceChart({
     <div className="am2-card">
       <div className="am2-card-head">
         <h3 className="am2-card-title">Price chart</h3>
-        <button type="button" className="am2-asset-selector" onClick={onAssetSelect}>
-          <AmSymbolChip accent={accent}>{assetTicker}</AmSymbolChip>
-          <span>{assetName.replace(/\s*\(.+\)$/, '')} / USD</span>
-          <span className="am2-asset-selector-chevron">▾</span>
-        </button>
+        <div className="am2-chart-head-right">
+          {actions}
+          <label>
+            <span className="am2-sr-only">Asset shown in the chart</span>
+            <select
+              className="am2-asset-select"
+              value={assetTicker}
+              onChange={(e) => onAssetSelect?.(e.target.value)}
+            >
+              {assets.map((a) => (
+                <option key={a.ticker} value={a.ticker}>
+                  {a.name.replace(/\s*\(.+\)$/, '')} / USD ({a.ticker})
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className="am2-chart-header-row">
@@ -39,10 +53,12 @@ export function AmPriceChart({
           <div className="am2-chart-big-value">{currentPrice}</div>
           <div className="am2-chart-delta">
             <AmPct ch={delta} signed />
-            <span>{deltaAbs} · 24h</span>
+            <span>
+              {deltaAbs} · 24h ({assetName.replace(/\s*\(.+\)$/, '')})
+            </span>
           </div>
         </div>
-        <DateSelector ranges={TIMEFRAMES} value={tf} onChange={setTf} size="xs" />
+        <span className="am2-chart-note">Illustrative line, not price history</span>
       </div>
 
       <div className="am2-chart-area-wrap">
@@ -60,7 +76,7 @@ export function AmPriceChart({
               y1={y}
               x2="100"
               y2={y}
-              stroke="rgba(16, 185, 129, 0.06)"
+              stroke="var(--border-secondary)"
               strokeWidth="0.3"
             />
           ))}
@@ -119,6 +135,6 @@ function buildFillPath(values) {
 }
 
 function formatMoney(n) {
-  if (n == null) return '–';
+  if (n == null) return 'N/A';
   return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }

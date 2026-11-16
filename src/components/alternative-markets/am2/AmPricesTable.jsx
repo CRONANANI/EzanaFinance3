@@ -9,7 +9,7 @@ function normalizeTabs(tabs) {
   return tabs.map((t) => ({ key: t.key || t.id, label: t.label }));
 }
 
-export function AmPricesTable({ rows, title, subtitle, tabs, onRowClick }) {
+export function AmPricesTable({ rows, title, subtitle, tabs, selected, onRowClick }) {
   const normalizedTabs = useMemo(() => normalizeTabs(tabs || []), [tabs]);
   const [tab, setTab] = useState(normalizedTabs[1]?.key || normalizedTabs[0]?.key || 'top');
   const [sortKey, setSortKey] = useState(null);
@@ -74,9 +74,15 @@ export function AmPricesTable({ rows, title, subtitle, tabs, onRowClick }) {
           <div className="am2-table-head am2-table-prices">
             <span>#</span>
             <span>Asset</span>
+            <span className="am2-table-cell-right">Last</span>
             <button
               type="button"
               className="am2-table-cell-right"
+              aria-label={`Sort by 24 hour change${
+                sortKey === 'chg24h'
+                  ? `, now ${sortDir === 'desc' ? 'highest' : 'lowest'} first`
+                  : ''
+              }`}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -88,9 +94,8 @@ export function AmPricesTable({ rows, title, subtitle, tabs, onRowClick }) {
               }}
               onClick={() => onSort('chg24h')}
             >
-              Last{sortIndicator('chg24h')}
+              24h{sortIndicator('chg24h')}
             </button>
-            <span className="am2-table-cell-right">24h</span>
             <span className="am2-table-cell-right am2-col-7d">7d</span>
             <span className="am2-table-cell-right">Mkt cap</span>
             <span className="am2-table-cell-right am2-col-chart">Chart 24h</span>
@@ -99,11 +104,20 @@ export function AmPricesTable({ rows, title, subtitle, tabs, onRowClick }) {
           {filtered.map((row) => (
             <div
               key={`${row.name}-${row.rank}`}
-              className="am2-table-row am2-table-prices"
+              className={`am2-table-row am2-table-prices${
+                selected === row.ticker ? ' am2-table-row--selected' : ''
+              }`}
               onClick={() => onRowClick?.(row)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onRowClick?.(row)}
+              aria-pressed={selected === row.ticker}
+              aria-label={`Show ${row.name} in the price chart`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick?.(row);
+                }
+              }}
             >
               <span className="am2-table-rank">{String(row.rank).padStart(2, '0')}</span>
               <div className="am2-table-asset">

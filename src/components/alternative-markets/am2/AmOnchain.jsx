@@ -8,7 +8,7 @@ export function AmOnchain({ btcStats = [], ethStats = [], whales = [] }) {
       <div className="am2-card-head">
         <div className="am2-card-head-titles">
           <h3 className="am2-card-title">On-chain snapshot</h3>
-          <span className="am2-card-subtitle">Updated 1m ago</span>
+          <span className="am2-card-subtitle">Illustrative figures</span>
         </div>
       </div>
       <div className="am2-card-body">

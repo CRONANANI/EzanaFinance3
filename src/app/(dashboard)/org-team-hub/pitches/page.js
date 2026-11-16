@@ -18,7 +18,8 @@ const one = (v) => (Array.isArray(v) ? v[0] : v) || null;
  *
  * The chosen stage and the open pitch are kept in the page address
  * (?stage=deep_dive&pitch=<id>), so a pitch can be linked; older per-pitch
- * links redirect here. `sampleViewer` only tells the page whether to ask for
+ * links redirect here. ?new=pitch (with an optional &ticker=) opens the
+ * submit flow on arrival, prefilled with that ticker. `sampleViewer` only tells the page whether to ask for
  * sample content (master admin and demo accounts); the sample route checks
  * again.
  */
@@ -48,6 +49,8 @@ export default async function PitchPipelineRoute({ searchParams }) {
       sampleViewer={sampleViewer}
       initialStage={one(searchParams?.stage)}
       initialPitch={one(searchParams?.pitch)}
+      initialNew={one(searchParams?.new) === 'pitch'}
+      initialTicker={one(searchParams?.ticker)}
     />
   );
 }

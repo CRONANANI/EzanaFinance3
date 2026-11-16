@@ -1,12 +1,14 @@
 'use client';
 
-export function AmSentiment({ topics = [], onJoin }) {
+import Link from 'next/link';
+
+export function AmSentiment({ topics = [] }) {
   return (
     <div className="am2-card">
       <div className="am2-card-head">
         <div className="am2-card-head-titles">
           <h3 className="am2-card-title">Community sentiment</h3>
-          <span className="am2-card-subtitle">Top discussions · now</span>
+          <span className="am2-card-subtitle">Illustrative topics</span>
         </div>
       </div>
       <div className="am2-card-body">
@@ -40,14 +42,13 @@ export function AmSentiment({ topics = [], onJoin }) {
             );
           })}
         </div>
-        <button
-          type="button"
+        <Link
+          href="/community"
           className="am2-btn am2-btn-secondary"
           style={{ marginTop: 18, width: '100%', justifyContent: 'center' }}
-          onClick={onJoin}
         >
-          Join discussion →
-        </button>
+          Open Community
+        </Link>
       </div>
     </div>
   );

@@ -1,29 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-
-const TF_OPTIONS = ['1H', '1D', '7D', '1M', '3M', 'YTD', '1Y'];
-
-export function AmMovers({ winners = [], losers = [], onRowClick }) {
-  const [tf, setTf] = useState('1D');
-
+/*
+ * Biggest winners and losers by 24 hour change, from the same illustrative
+ * rows as the prices table. The page has no history, so there is no
+ * timeframe to choose: every change here is the 24 hour figure. Clicking a
+ * row shows that asset in the price chart.
+ */
+export function AmMovers({ winners = [], losers = [], selected, onRowClick }) {
   return (
     <div className="am2-card">
       <div className="am2-card-head">
-        <h3 className="am2-card-title">Movers</h3>
-        <div className="am2-seg" role="tablist" aria-label="Timeframe">
-          {TF_OPTIONS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tf === t}
-              className={`am2-seg-btn ${tf === t ? 'am2-seg-btn--active' : ''}`}
-              onClick={() => setTf(t)}
-            >
-              {t}
-            </button>
-          ))}
+        <div className="am2-card-head-titles">
+          <h3 className="am2-card-title">Movers</h3>
+          <span className="am2-card-subtitle">24h, illustrative</span>
         </div>
       </div>
 
@@ -32,14 +21,14 @@ export function AmMovers({ winners = [], losers = [], onRowClick }) {
           title="Biggest winners"
           rows={winners.slice(0, 5)}
           kind="up"
-          tf={tf}
+          selected={selected}
           onRowClick={onRowClick}
         />
         <MoverSection
           title="Biggest losers"
           rows={losers.slice(0, 5)}
           kind="down"
-          tf={tf}
+          selected={selected}
           onRowClick={onRowClick}
         />
       </div>
@@ -47,33 +36,38 @@ export function AmMovers({ winners = [], losers = [], onRowClick }) {
   );
 }
 
-function MoverSection({ title, rows, kind, tf, onRowClick }) {
+function MoverSection({ title, rows, kind, selected, onRowClick }) {
   return (
     <div className="am2-mover-section">
       <div className="am2-mover-section-head">
         <span className="am2-mover-section-title">{title}</span>
-        <span className="am2-mover-section-tf">{tf}</span>
+        <span className="am2-mover-section-tf">24h</span>
       </div>
-      {rows.map((row) => (
-        <div
-          key={`${row.symbol}-${row.rank}`}
-          className="am2-mover-row"
-          onClick={() => onRowClick?.(row)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onRowClick?.(row)}
-        >
-          <span className="am2-mover-rank">{String(row.rank).padStart(2, '0')}</span>
-          <span className="am2-mover-sym">
-            <span className={`am2-mover-sym-dot am2-mover-sym-dot--${kind}`} />
-            {row.symbol}
-          </span>
-          <span className="am2-mover-price">{row.price}</span>
-          <span className={`am2-badge-pct am2-badge-pct--${kind}`}>
-            {kind === 'up' ? '▲' : '▼'} {Math.abs(row.chg).toFixed(2)}%
-          </span>
-        </div>
-      ))}
+      {rows.length === 0 ? (
+        <p className="am2-mover-empty">None in this view.</p>
+      ) : (
+        rows.map((row) => {
+          const isSel = selected === row.ticker;
+          return (
+            <button
+              key={`${row.ticker}-${row.rank}`}
+              type="button"
+              className={`am2-mover-row${isSel ? ' am2-mover-row--selected' : ''}`}
+              aria-pressed={isSel}
+              aria-label={`Show ${row.name} in the price chart`}
+              onClick={() => onRowClick?.(row)}
+            >
+              <span className="am2-mover-rank">{String(row.rank).padStart(2, '0')}</span>
+              <span className="am2-mover-sym">{row.ticker}</span>
+              <span className="am2-mover-price">{row.price}</span>
+              <span className={`am2-badge-pct am2-badge-pct--${kind}`}>
+                {row.chg24h > 0 ? '+' : row.chg24h < 0 ? '-' : ''}
+                {Math.abs(row.chg24h).toFixed(2)}%
+              </span>
+            </button>
+          );
+        })
+      )}
     </div>
   );
 }

@@ -1,15 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useOrg } from '@/contexts/OrgContext';
+import { useCouncilAlt } from '@/components/alternative-markets/council/useCouncilAlt';
 import {
   CRYPTO_STATS,
   COMMODITY_STATS,
   CRYPTO_ROWS_TOP20,
   COMMODITY_TABLE_ROWS,
-  CRYPTO_WINNERS,
-  CRYPTO_LOSERS,
-  COMMODITY_WINNERS,
-  COMMODITY_LOSERS,
   ONCHAIN,
   CRYPTO_NEWS,
   COMM_NEWS,
@@ -31,7 +30,6 @@ import { AmPageFooter } from './AmPageFooter';
 import {
   enrichHeadlineMetric,
   enrichPricesRow,
-  enrichMover,
   buildMarqueeItems,
   deriveOHLC,
   buildChartSeries,
@@ -41,11 +39,44 @@ import {
 
 import '@/app/(dashboard)/alternative-markets/am2.css';
 
+/* Council cards load on demand, so the retail bundle does not carry them. */
+const CouncilWorkspace = dynamic(
+  () =>
+    import('@/components/alternative-markets/council/CouncilAlt').then((m) => m.CouncilWorkspace),
+  { ssr: false, loading: () => null },
+);
+const CouncilContext = dynamic(
+  () => import('@/components/alternative-markets/council/CouncilAlt').then((m) => m.CouncilContext),
+  { ssr: false, loading: () => null },
+);
+const CouncilChartActions = dynamic(
+  () =>
+    import('@/components/alternative-markets/council/CouncilAlt').then(
+      (m) => m.CouncilChartActions,
+    ),
+  { ssr: false, loading: () => null },
+);
+
 const METRIC_ACCENTS = { btc: 'gold', eth: 'purple', mcap: 'cyan', fg: 'emerald' };
 
+/*
+ * Every market figure on this page is fixed illustrative data built into the
+ * app; nothing claims to be live or delayed. Council members (once their
+ * membership is known) also see two council bands and chart actions; the
+ * page is otherwise the same for everyone.
+ */
 export function AmPage() {
   const [assetClass, setAssetClass] = useState('crypto');
+  const [picked, setPicked] = useState(null);
   const isCrypto = assetClass === 'crypto';
+  const { isOrgUser, isLoading: orgLoading, hasPermission, orgData } = useOrg();
+  const councilReady = Boolean(isOrgUser && !orgLoading);
+  const council = useCouncilAlt(councilReady);
+
+  const switchClass = (next) => {
+    setAssetClass(next);
+    setPicked(null);
+  };
 
   const headlineStats = useMemo(() => {
     const source = isCrypto ? CRYPTO_STATS : COMMODITY_STATS;
@@ -57,15 +88,26 @@ export function AmPage() {
     return source.map((row, i) => enrichPricesRow(row, i));
   }, [isCrypto]);
 
+  /* Movers come from the same rows as the table, so a row and its mover agree. */
   const winners = useMemo(
-    () => (isCrypto ? CRYPTO_WINNERS : COMMODITY_WINNERS).map((row, i) => enrichMover(row, i)),
-    [isCrypto],
+    () =>
+      pricesRows
+        .filter((r) => r.chg24h > 0)
+        .sort((a, b) => b.chg24h - a.chg24h)
+        .map((r, i) => ({ ...r, rank: i + 1 })),
+    [pricesRows],
   );
 
   const losers = useMemo(
-    () => (isCrypto ? CRYPTO_LOSERS : COMMODITY_LOSERS).map((row, i) => enrichMover(row, i)),
-    [isCrypto],
+    () =>
+      pricesRows
+        .filter((r) => r.chg24h < 0)
+        .sort((a, b) => a.chg24h - b.chg24h)
+        .map((r, i) => ({ ...r, rank: i + 1 })),
+    [pricesRows],
   );
+
+  const rowTickers = useMemo(() => pricesRows.map((r) => r.ticker), [pricesRows]);
 
   const marqueeItems = useMemo(
     () =>
@@ -81,21 +123,25 @@ export function AmPage() {
     [isCrypto, pricesRows],
   );
 
+  const selectedRow = useMemo(
+    () => pricesRows.find((r) => r.ticker === picked) || pricesRows[0] || null,
+    [pricesRows, picked],
+  );
+
   const chartMeta = useMemo(() => {
-    const top = pricesRows[0];
+    const top = selectedRow;
     if (!top) return null;
     const series = buildChartSeries(top.price, top.chg24h, 90);
     return {
       assetName: top.name,
       assetTicker: top.ticker,
-      accent: METRIC_ACCENTS[top.ticker?.toLowerCase()] || 'gold',
       currentPrice: top.price,
       delta: top.chg24h,
       deltaAbs: formatDeltaAbs(top.price, top.chg24h),
       series,
       ohlc: deriveOHLC(top.price, series),
     };
-  }, [pricesRows]);
+  }, [selectedRow]);
 
   const sentimentTopics = useMemo(buildSentimentTopics, []);
   const whales = useMemo(buildWhaleEvents, []);
@@ -119,7 +165,7 @@ export function AmPage() {
       asset: r.name,
       price: r.price,
       '24h_pct': r.chg24h,
-      '7d_pct': r.chg7d,
+      '7d_pct': r.chg7d == null ? 'N/A' : r.chg7d,
       mcap: r.mcap,
     }));
     // Quote + escape every cell (asset names can contain commas) and
@@ -153,27 +199,61 @@ export function AmPage() {
       <div className="am2-content">
         <AmPageHeader
           assetClass={assetClass}
-          onAssetClassChange={setAssetClass}
+          onAssetClassChange={switchClass}
           onExport={handleExport}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <AmMetricsGrid stats={headlineStats} />
 
+        {councilReady && (
+          <CouncilWorkspace
+            council={council}
+            mode={assetClass}
+            rowTickers={rowTickers}
+            councilName={orgData?.org?.name || null}
+          />
+        )}
+
         <div className="am2-row-wide">
           <AmPricesTable
+            key={assetClass}
             rows={pricesRows}
             title={isCrypto ? 'Crypto prices' : 'Commodity prices'}
-            subtitle={formatDate()}
+            subtitle="Illustrative figures"
             tabs={isCrypto ? CRYPTO_TABLE_TABS : COMMODITY_TABLE_TABS}
+            selected={selectedRow?.ticker}
+            onRowClick={(r) => setPicked(r.ticker)}
           />
-          <AmMovers winners={winners} losers={losers} />
+          <AmMovers
+            winners={winners}
+            losers={losers}
+            selected={selectedRow?.ticker}
+            onRowClick={(r) => setPicked(r.ticker)}
+          />
         </div>
 
         <div className="am2-row-wide">
-          {chartMeta && <AmPriceChart {...chartMeta} />}
+          {chartMeta && (
+            <AmPriceChart
+              {...chartMeta}
+              assets={pricesRows}
+              onAssetSelect={setPicked}
+              actions={
+                councilReady ? (
+                  <CouncilChartActions
+                    council={council}
+                    asset={{ ticker: selectedRow.ticker, name: chartMeta.assetName }}
+                    canSendToTeam={hasPermission('send_to_team')}
+                  />
+                ) : null
+              }
+            />
+          )}
           <AmSentiment topics={sentimentTopics} />
         </div>
+
+        {councilReady && <CouncilContext council={council} />}
 
         {isCrypto && <AmOnchain btcStats={btcStats} ethStats={ethStats} whales={whales} />}
 
@@ -190,10 +270,6 @@ function formatDeltaAbs(priceStr, pct) {
   const abs = (num * pct) / 100;
   const sign = abs < 0 ? '−' : '+';
   return `${sign}$${Math.abs(abs).toFixed(2)}`;
-}
-
-function formatDate() {
-  return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function deriveTopic(title) {
