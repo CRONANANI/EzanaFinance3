@@ -6,14 +6,14 @@ import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 import {
   loadPermissionsMatrix,
-  canGrantTo,
+  checkGrantChange,
   ASSIGNABLE_PERMISSIONS,
 } from '@/lib/org-permissions-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-/* GET /api/org/permissions — the viewer, their direct reports, and each
+/* GET /api/org/permissions: the viewer, their direct reports, and each
    report's effective + overridable permissions. */
 export const GET = withApiGuard(async () => {
   const supabase = getUserClient();
@@ -24,7 +24,7 @@ export const GET = withApiGuard(async () => {
   return NextResponse.json(payload);
 });
 
-/* POST /api/org/permissions — grant or revoke ONE permission on ONE direct
+/* POST /api/org/permissions: grant or revoke ONE permission on ONE direct
    report. Body: { memberId, permissionKey, action: 'grant' | 'revoke' }. */
 export const POST = withApiGuard(async (request) => {
   const supabase = getUserClient();
@@ -49,14 +49,13 @@ export const POST = withApiGuard(async (request) => {
     return NextResponse.json({ error: 'Unknown or non-assignable permission.' }, { status: 400 });
   }
 
-  // Authorization: viewer must have grant_permissions AND memberId must be a
-  // direct report of viewer. Re-checked here regardless of what the UI showed.
-  const allowed = await canGrantTo(supabase, viewer, memberId);
-  if (!allowed) {
-    return NextResponse.json(
-      { error: 'You cannot modify this member’s permissions.' },
-      { status: 403 },
-    );
+  // Authorization, re-checked here whatever the page showed: the viewer's
+  // role can grant, the member reports to the viewer in the org chart (same
+  // council, active, not the viewer), and a grant is only for a right the
+  // viewer holds themselves. See decideChange in org-permissions-model.js.
+  const verdict = await checkGrantChange(supabase, viewer, { memberId, permissionKey, action });
+  if (!verdict.ok) {
+    return NextResponse.json({ error: verdict.error }, { status: verdict.status });
   }
 
   if (action === 'grant') {
@@ -66,14 +65,24 @@ export const POST = withApiGuard(async (request) => {
         { org_member_id: memberId, permission_key: permissionKey, granted_by: viewer.id },
         { onConflict: 'org_member_id,permission_key' },
       );
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json(
+        { error: 'The grant was not saved. Try again.' },
+        { status: error.code === '42501' ? 403 : 500 },
+      );
+    }
   } else {
     const { error } = await supabase
       .from('org_member_permissions')
       .delete()
       .eq('org_member_id', memberId)
       .eq('permission_key', permissionKey);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json(
+        { error: 'The revoke was not saved. Try again.' },
+        { status: error.code === '42501' ? 403 : 500 },
+      );
+    }
   }
 
   // Audit the change (best-effort; never blocks the write). org_audit_log has no
@@ -85,7 +94,7 @@ export const POST = withApiGuard(async (request) => {
       action: `permission_${action}`,
       targetType: 'member',
       targetId: memberId,
-      detail: { permissionKey },
+      detail: { permissionKey, memberName: verdict.target?.display_name || null },
     });
   }
 

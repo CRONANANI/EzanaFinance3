@@ -104,7 +104,7 @@ test('no page root narrows the nav-wide canvas', () => {
 /* The pages fixed in Nov 2026: no cap and no side padding of their own. */
 const FIXED = [
   ['src/components/badges/badges-page.css', '.bp-container'],
-  ['src/components/org/permissions/team-permissions.css', '.tpm-root'],
+  ['src/components/org/permissions/team-permissions.css', '.tpm-page'],
   ['src/components/org/competitions/competitions.css', '.pcx-page'],
   ['src/components/leaderboard/elo-leaderboard.css', '.elo-lb-container'],
   ['src/app/ui-improvements.css', '.partner-dashboard-container'],
