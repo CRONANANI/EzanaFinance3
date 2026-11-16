@@ -150,12 +150,12 @@ export function monthlyHistory(rows = [], { months = 6, now = new Date() } = {})
 export function budgetMessage(reason, { pool = null, allocation = null, now = new Date() } = {}) {
   const when = resetLabel(now);
   if (reason === 'org_allocation') {
-    return `You have used your ${allocation ?? ''} deep research runs for this month. They reset on ${when}. An executive can raise your allocation; a standard answer is still available.`.replace(
+    return `You have used your ${allocation ?? ''} deep research runs for this month. They reset on ${when}. An executive can raise your allocation. Standard research does not use it.`.replace(
       'your  deep',
       'your deep',
     );
   }
-  return `Your fund has used this month's ${pool ?? ''} deep research runs. They reset on ${when}. An executive can raise the budget; a standard answer is still available.`.replace(
+  return `Your fund has used this month's ${pool ?? ''} deep research runs. They reset on ${when}. An executive can raise the budget. Standard research does not use it.`.replace(
     "month's  deep",
     "month's deep",
   );

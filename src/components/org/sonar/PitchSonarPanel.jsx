@@ -17,7 +17,10 @@ export default function PitchSonarPanel({ pitchId }) {
         <p className="osr-h3">
           <i className="bi bi-broadcast" aria-hidden="true" /> Sonar research
         </p>
-        <Link className="osr-link" href="/org-team-hub/sonar?tab=research">
+        <Link
+          className="osr-link"
+          href={`/org-team-hub/sonar?tab=research&pitch=${encodeURIComponent(pitchId)}`}
+        >
           Run research <i className="bi bi-arrow-right" aria-hidden="true" />
         </Link>
       </div>

@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { REPORT_VISIBILITY, VISIBILITY_LABEL } from '@/lib/org-sonar/reports';
+import { useOrgSonarSaveDefaults } from './save-defaults';
 import './org-sonar.css';
 
 async function getJson(url) {
@@ -69,11 +70,14 @@ export default function SaveToOrg({ org, query, challengeOf = null, label = null
 }
 
 function SaveDialog({ runId, query, challengeOf, onClose, onSaved }) {
+  /* Sonar Research passes the pitch a run was started for, and the report a
+     returned run answers; both stay changeable here. */
+  const defaults = useOrgSonarSaveDefaults();
   const [title, setTitle] = useState(String(query || '').slice(0, 160));
   const [visibility, setVisibility] = useState(challengeOf ? 'org' : 'private');
   const [shared, setShared] = useState([]);
-  const [pitchId, setPitchId] = useState('');
-  const [reportId, setReportId] = useState('');
+  const [pitchId, setPitchId] = useState(challengeOf ? '' : defaults?.pitchId || '');
+  const [reportId, setReportId] = useState(challengeOf ? '' : defaults?.reportId || '');
   const [members, setMembers] = useState([]);
   const [pitches, setPitches] = useState([]);
   const [mine, setMine] = useState([]);
@@ -100,7 +104,9 @@ function SaveDialog({ runId, query, challengeOf, onClose, onSaved }) {
       if (!live) return;
       setMembers((m?.members || []).filter((x) => x.is_active !== false));
       setPitches(p?.pitches || []);
-      setMine((r?.reports || []).filter((x) => x.status !== 'superseded'));
+      const list = (r?.reports || []).filter((x) => x.status !== 'superseded');
+      setMine(list);
+      setReportId((rid) => (rid && !list.some((x) => x.id === rid) ? '' : rid));
     });
     return () => {
       live = false;

@@ -1,0 +1,1138 @@
+/* ============================================================================
+   Sonar Research (/org-team-hub/sonar and /org-team-hub/sonar/[id]).
+   Page-scoped: every class starts with osp-. Built on the Command Center's
+   shared tcc- atoms so the Team Hub pages read as one. Flat sections on the
+   canvas: no card surface, hairlines only, text-only tabs and toggles, one
+   filled button per group. Tokens only. The Sonar answer keeps its own styles.
+   ============================================================================ */
+
+.osp-page {
+  gap: 0;
+}
+
+/* ── Row 1: figures and page actions ─────────────────────────────────────── */
+.osp-kpistrip {
+  grid-template-columns: repeat(5, auto);
+}
+.osp-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.osp-kpistrip .tcc-kpi:nth-child(5n + 1) {
+  padding-left: 0;
+  border-left: 0;
+}
+.osp-kpi-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.osp-actions a.tcc-textbtn {
+  text-decoration: none;
+}
+
+.osp-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.osp-notice > .bi {
+  color: var(--positive);
+}
+
+/* ── Tabs: text only, emerald when selected ──────────────────────────────── */
+.osp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 32px;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.osp-tab:hover {
+  color: var(--text-primary);
+}
+.osp-tab.is-on {
+  color: var(--emerald-text);
+}
+.osp-tab:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.osp-tabdot {
+  font-size: 11px;
+  color: var(--emerald-text);
+}
+
+/* ── Body: main column, one rule, side column ────────────────────────────── */
+.osp-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px 300px;
+  column-gap: 23.5px; /* 24px clear space beside the rule, as the shell gives */
+  padding: 24px 0 0;
+}
+.osp-main,
+.osp-side {
+  min-width: 0;
+}
+.osp-side {
+  display: flex;
+  flex-direction: column;
+}
+.osp-side > .tcc-section + .tcc-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.osp-gap {
+  margin-top: 40px;
+}
+.osp-aside {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.osp-sub-section + .osp-sub-section {
+  margin-top: 28px;
+}
+.osp-h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.osp-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.osp-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 4px 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.osp-hint--warn {
+  color: var(--text-secondary);
+}
+.osp-hint--warn > .bi {
+  color: var(--warning);
+}
+.osp-caption {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.osp-caption--top {
+  margin-top: -6px;
+}
+.osp-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Words with an icon: status, kind, visibility. Never a filled chip. */
+.osp-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.osp-mandate {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+}
+.osp-mandate__label {
+  color: var(--text-muted);
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+.osp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 24px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-search {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.osp-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.osp-search input::placeholder {
+  color: var(--text-muted);
+}
+.osp-filtermenus {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 20px;
+}
+
+/* A filter as text over a transparent native select. */
+.osp-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.osp-select.is-on {
+  color: var(--emerald-text);
+}
+.osp-select__text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.osp-select__text .bi {
+  font-size: 10px;
+}
+.osp-select select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 13px;
+}
+.osp-select:hover {
+  color: var(--emerald-text);
+}
+.osp-select:focus-within {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.osp-select--inline {
+  font-size: 12px;
+}
+
+/* ── Tables. display: table holds against the app's phone rule that turns
+   every table into a scrolling block: these scroll inside .osp-scroll. ─── */
+.osp-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.osp-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.osp-table th,
+.osp-table td {
+  padding: 10px 6px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-table thead th {
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.osp-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.osp-table tr > :first-child {
+  padding-left: 0;
+}
+.osp-table tr > :last-child {
+  padding-right: 0;
+}
+.osp-table tbody tr {
+  cursor: pointer;
+}
+.osp-table tbody tr.osp-static {
+  cursor: default;
+}
+/* Hover on a flush row is a colour change, never a wash. */
+.osp-table tbody tr:not(.osp-static):hover td,
+.osp-table tbody tr:not(.osp-static):hover .tcc-ticker,
+.osp-table tbody tr:not(.osp-static):hover .osp-title,
+.osp-table tbody tr:not(.osp-static):hover .osp-sub {
+  color: var(--emerald-text);
+}
+.osp-table .osp-num {
+  text-align: right;
+}
+.osp-table td.osp-num {
+  color: var(--text-primary);
+}
+.osp-table td.tcc-na,
+.osp-table td.osp-num.tcc-na,
+.osp-table .tcc-na {
+  color: var(--text-muted);
+}
+.osp-table td.tcc-warn,
+.osp-table .tcc-warn {
+  color: var(--warning);
+}
+.osp-table .tcc-pos {
+  color: var(--positive);
+}
+.osp-table .tcc-default {
+  color: var(--text-secondary);
+}
+.osp-table--wide,
+.osp-table--wide td {
+  font-size: 12px;
+}
+.osp-table--side th,
+.osp-table--side td {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.osp-wrap,
+.osp-table td.osp-wrap,
+.osp-table td.osp-note {
+  white-space: normal;
+}
+.osp-reportcell {
+  min-width: 200px;
+  max-width: 300px;
+}
+.osp-open {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.osp-open:has(> .bi) {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.osp-open--row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.osp-open:focus-visible,
+.osp-th:focus-visible,
+.osp-pitchlink:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.osp-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: normal;
+  transition: color 0.15s ease-out;
+}
+.osp-sub {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: normal;
+}
+.osp-two {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.osp-note {
+  min-width: 200px;
+  max-width: 280px;
+  white-space: normal;
+}
+.osp-note .osp-sub {
+  display: block;
+  margin-top: 2px;
+}
+.osp-pitchlink {
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.osp-pitchlink:hover {
+  color: var(--text-primary);
+}
+.osp-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.osp-th .bi {
+  font-size: 9px;
+}
+.osp-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+/* ── Side column ─────────────────────────────────────────────────────────── */
+.osp-pairs .tcc-pair {
+  font-size: 13px;
+  padding: 9px 0;
+}
+.osp-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  height: 96px;
+  padding-top: 4px;
+}
+.osp-bar {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.osp-bar__fill {
+  display: block;
+  width: 100%;
+  max-width: 28px;
+  background: var(--emerald);
+}
+.osp-bar__val,
+.osp-bar__month {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.osp-bar__val {
+  color: var(--text-secondary);
+}
+
+/* ── Research form ───────────────────────────────────────────────────────── */
+.osp-body--research .osp-main {
+  max-width: 720px;
+}
+.osp-form {
+  display: flex;
+  flex-direction: column;
+}
+.osp-modes {
+  margin-bottom: 8px;
+}
+.osp-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.osp-line--area {
+  align-items: flex-start;
+}
+.osp-line--area > .bi {
+  margin-top: 3px;
+}
+.osp-line input,
+.osp-line textarea,
+.osp-line select {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-primary);
+  resize: vertical;
+}
+.osp-line select {
+  cursor: pointer;
+}
+.osp-line select option {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+.osp-line input::placeholder,
+.osp-line textarea::placeholder {
+  color: var(--text-muted);
+}
+.osp-line:focus-within {
+  border-bottom-color: var(--ez-rule);
+}
+.osp-form .osp-hint {
+  margin-top: 12px;
+}
+.osp-formactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 20px;
+  margin-top: 12px;
+}
+.osp-form .osp-formactions {
+  justify-content: flex-start;
+}
+.osp-page .tcc-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.osp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.osp-steps li::marker {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+.osp-run {
+  padding-top: 20px;
+}
+.osp-runnote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.osp-runnote > .bi {
+  color: var(--emerald-text);
+}
+
+/* ── Analytics ───────────────────────────────────────────────────────────── */
+.osp-analytics {
+  padding-top: 20px;
+}
+.osp-windowrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 16px;
+}
+.osp-windowrow .osp-hint {
+  margin: 0;
+}
+.osp-totals {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-detailrow td {
+  padding-top: 4px;
+}
+.osp-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px 24px;
+  margin: 0;
+  padding: 4px 0 8px 22px;
+  white-space: normal;
+}
+.osp-detail dt {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.osp-detail dd {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.osp-detail__wide {
+  grid-column: 1 / -1;
+}
+
+/* ── Single report ───────────────────────────────────────────────────────── */
+.osp-rtop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+.osp-back {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+.osp-rhead {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.osp-rmeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.osp-rule {
+  width: 1px;
+  height: 14px;
+  background: var(--ez-rule);
+}
+.osp-rtitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.osp-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 32px;
+  margin: 0;
+  font-size: 13px;
+}
+.osp-people > div {
+  display: inline-flex;
+  gap: 6px;
+}
+.osp-people dt {
+  color: var(--text-muted);
+}
+.osp-people dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.osp-people dd.tcc-na {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.osp-rline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.osp-rline .osp-hint {
+  margin: 0;
+}
+.osp-reviewnote {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.osp-reviewnote > .bi {
+  color: var(--warning);
+}
+.osp-links {
+  gap: 6px 24px;
+}
+.osp-ractions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-top: 6px;
+}
+.osp-ractions a.tcc-textbtn,
+.osp-btnlink {
+  text-decoration: none;
+}
+.osp-danger {
+  color: var(--negative);
+}
+.osp-danger:hover {
+  color: var(--negative);
+  opacity: 0.85;
+}
+.osp-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.osp-error > .bi {
+  color: var(--negative);
+}
+.osp-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  column-gap: 23.5px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.osp-prose {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.osp-challenged {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.osp-plain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.osp-plain li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.osp-plain .osp-hint {
+  margin: 0;
+}
+.osp-versions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 14px 0;
+}
+.osp-versions .osp-hint {
+  margin: 0;
+}
+.osp-answer {
+  min-width: 0;
+  padding-bottom: 8px;
+}
+.osp-answer__ground {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto; /* the answer's own section row scrolls here on phones, not the page */
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+}
+.osp-answer-skel {
+  padding-top: 24px;
+}
+
+/* Comments */
+.osp-commentform {
+  display: flex;
+  flex-direction: column;
+  max-width: 820px;
+}
+.osp-thread {
+  display: flex;
+  flex-direction: column;
+  max-width: 820px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.osp-thread > li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-thread > li:last-child {
+  border-bottom: 0;
+}
+.osp-comment {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 12px;
+}
+.osp-comment--reply {
+  margin: 12px 0 0 40px;
+}
+.osp-comment.is-resolved .osp-comment__text {
+  color: var(--text-muted);
+}
+.osp-avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xl);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 10px;
+  font-weight: 700;
+}
+.osp-comment__body > p {
+  margin: 0;
+}
+.osp-comment__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.osp-comment__name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.osp-comment__part {
+  margin-top: 2px !important;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.osp-comment__part > span {
+  color: var(--emerald-text);
+}
+.osp-comment__text {
+  margin-top: 4px !important;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.osp-comment__actions {
+  display: flex;
+  gap: 18px;
+  margin-top: 6px !important;
+}
+.osp-comment__actions .tcc-textbtn {
+  font-size: 12px;
+  font-weight: 600;
+}
+.osp-replyform {
+  margin: 10px 0 0 40px;
+}
+
+/* ── Dialogs (portaled to the body, so scoped by .osp-dialog) ────────────── */
+.osp-dialog .ds-modal-title {
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.osp-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 20px;
+  width: 100%;
+}
+.osp-dialog__lead {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.osp-dialog .tcc-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.osp-btn--danger,
+.osp-btn--danger:hover {
+  background: var(--negative);
+  color: var(--btn-primary-fg);
+}
+.osp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.osp-field input,
+.osp-field textarea,
+.osp-field select {
+  width: 100%;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-primary);
+  resize: vertical;
+}
+.osp-field select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.osp-field input:focus,
+.osp-field textarea:focus,
+.osp-field select:focus {
+  border-bottom-color: var(--emerald-text);
+}
+.osp-field--inline input {
+  max-width: 140px;
+  font-family: var(--font-mono);
+}
+.osp-fieldset {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+.osp-fieldset legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.osp-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.osp-options--list {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.osp-alloc {
+  width: 72px;
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: right;
+}
+.osp-alloc:focus {
+  border-bottom-color: var(--emerald-text);
+}
+.osp-alloc::placeholder {
+  color: var(--text-muted);
+}
+.osp-dialog .osp-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.osp-dialog .osp-table th,
+.osp-dialog .osp-table td {
+  padding: 8px 6px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.osp-dialog .osp-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.osp-dialog .osp-table .osp-num {
+  text-align: right;
+}
+.osp-dialog .osp-table tr > :first-child {
+  padding-left: 0;
+}
+.osp-dialog .osp-table tr > :last-child {
+  padding-right: 0;
+}
+.osp-dialog .osp-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.osp-dialog .osp-two {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.osp-dialog .osp-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.osp-dialog .osp-hint {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.osp-dialog .osp-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.osp-dialog .osp-error > .bi {
+  color: var(--negative);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .osp-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .osp-vrule {
+    display: none;
+  }
+  .osp-side {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .osp-kpistrip {
+    grid-template-columns: repeat(3, auto);
+  }
+  .osp-kpistrip .tcc-kpi:nth-child(5n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .osp-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  .osp-compare {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 16px;
+  }
+  .osp-compare .tcc-vrule {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .osp-kpistrip {
+    grid-template-columns: repeat(2, auto);
+  }
+  .osp-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .osp-kpistrip .tcc-kpi {
+    padding: 0 16px;
+  }
+  .osp-kpistrip .tcc-kpi:nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .osp-tabs {
+    gap: 4px 24px;
+  }
+  .osp-filtermenus {
+    gap: 4px 16px;
+  }
+  .osp-comment--reply,
+  .osp-replyform {
+    margin-left: 20px;
+  }
+}
+@media (pointer: coarse) {
+  .osp-open,
+  .osp-tab,
+  .osp-select,
+  .osp-filtermenus .tcc-toggle,
+  .osp-ractions .tcc-textbtn,
+  .osp-comment__actions .tcc-textbtn {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .osp-tab,
+  .osp-title {
+    transition: none;
+  }
+}

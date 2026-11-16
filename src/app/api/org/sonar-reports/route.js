@@ -32,24 +32,13 @@ const GET_HANDLER = withApiGuard(
     if (!viewer) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const sp = new URL(request.url).searchParams;
 
-    let q = supabase
-      .from('org_sonar_reports')
-      .select(REPORT_COLUMNS)
-      .eq('org_id', viewer.org_id)
-      .order('updated_at', { ascending: false })
-      .limit(200);
     const status = sp.get('status');
-    if (REPORT_STATUSES.includes(status)) q = q.eq('status', status);
     const kind = sp.get('kind');
-    if (REPORT_KINDS.includes(kind)) q = q.eq('kind', kind);
     const ticker = (sp.get('ticker') || '').toUpperCase().replace(/[^A-Z0-9.-]/g, '');
-    if (ticker) q = q.eq('ticker', ticker.slice(0, 12));
-    if (sp.get('mine') === '1') q = q.eq('author_id', viewer.user_id);
     const pitchId = sp.get('pitchId');
-    if (pitchId && UUID.test(pitchId)) q = q.eq('pitch_id', pitchId);
     const challengeOf = sp.get('challengeOf');
-    if (challengeOf && UUID.test(challengeOf)) q = q.eq('challenge_of', challengeOf);
     const collectionId = sp.get('collectionId');
+    let ids = null;
     if (collectionId && UUID.test(collectionId)) {
       const { data: col } = await supabase
         .from('org_research_collections')
@@ -57,21 +46,50 @@ const GET_HANDLER = withApiGuard(
         .eq('id', collectionId)
         .eq('org_id', viewer.org_id)
         .maybeSingle();
-      const ids = (col?.report_ids || []).filter((id) => UUID.test(id));
+      ids = (col?.report_ids || []).filter((id) => UUID.test(id));
       if (!ids.length) return NextResponse.json({ reports: [], viewer: viewerOut(viewer) });
-      q = q.in('id', ids);
     }
+    /* A fresh query with the filters each time it is called (builders are mutable). */
+    const build = () => {
+      let q = supabase
+        .from('org_sonar_reports')
+        .select(REPORT_COLUMNS)
+        .eq('org_id', viewer.org_id)
+        .order('updated_at', { ascending: false })
+        .limit(200);
+      if (REPORT_STATUSES.includes(status)) q = q.eq('status', status);
+      if (REPORT_KINDS.includes(kind)) q = q.eq('kind', kind);
+      if (ticker) q = q.eq('ticker', ticker.slice(0, 12));
+      if (sp.get('mine') === '1') q = q.eq('author_id', viewer.user_id);
+      if (pitchId && UUID.test(pitchId)) q = q.eq('pitch_id', pitchId);
+      if (challengeOf && UUID.test(challengeOf)) q = q.eq('challenge_of', challengeOf);
+      if (ids) q = q.in('id', ids);
+      return q;
+    };
 
-    const { data, error } = await q;
+    const text = (sp.get('q') || '').trim().toLowerCase();
+    /* Search also reaches older reports: the same filters with the words matched on the
+       title, question and ticker by the database, merged with the newest 200 (whose
+       conclusions are searched here). If that query fails, the newest 200 still answer. */
+    const term = text.replace(/[^a-z0-9 .'-]/g, ' ').trim();
+    const [{ data, error }, deeper] = await Promise.all([
+      build(),
+      term.length >= 2
+        ? build().or(`title.ilike.*${term}*,question.ilike.*${term}*,ticker.ilike.*${term}*`)
+        : Promise.resolve({ data: [] }),
+    ]);
     if (error) return NextResponse.json({ error: 'Reports could not be loaded.' }, { status: 500 });
     let rows = data || [];
-    const text = (sp.get('q') || '').trim().toLowerCase();
     if (text) {
-      rows = rows.filter((r) =>
-        `${r.title} ${r.question || ''} ${r.ticker || ''} ${r.summary?.conclusion || ''}`
-          .toLowerCase()
-          .includes(text),
-      );
+      const seen = new Set(rows.map((r) => r.id));
+      const extra = (deeper?.error ? [] : deeper?.data || []).filter((r) => !seen.has(r.id));
+      rows = [...rows, ...extra]
+        .filter((r) =>
+          `${r.title} ${r.question || ''} ${r.ticker || ''} ${r.summary?.conclusion || ''}`
+            .toLowerCase()
+            .includes(text),
+        )
+        .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
     }
     const reports = await attachNames(supabase, viewer.org_id, rows);
     return NextResponse.json({ reports, viewer: viewerOut(viewer) });
