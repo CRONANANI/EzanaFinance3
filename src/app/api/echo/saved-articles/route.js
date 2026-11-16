@@ -57,10 +57,18 @@ export async function GET(request) {
   }
 
   const supabase = getAdminClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('echo_saved_articles')
-    .select('article_id')
-    .eq('user_id', user.id);
+    .select('article_id, saved_at')
+    .eq('user_id', user.id)
+    .order('saved_at', { ascending: false });
+  if (error) return NextResponse.json({ error: 'Could not load' }, { status: 500 });
 
-  return NextResponse.json({ savedIds: (data || []).map((r) => r.article_id) });
+  /* savedIds for the article page's save button; saved (newest first, with
+     the save date) for the reader's own list on the Echo front page. */
+  const rows = data || [];
+  return NextResponse.json({
+    savedIds: rows.map((r) => r.article_id),
+    saved: rows.map((r) => ({ id: r.article_id, savedAt: r.saved_at || null })),
+  });
 }

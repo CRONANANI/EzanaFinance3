@@ -206,11 +206,28 @@ test('filters combine section, region, range and search', () => {
   assert.deepEqual(ids({ region: 'oceania' }), []);
 });
 
+test('the Our names tab narrows to council tickers only when a ticker set is given', () => {
+  const stories = [
+    toStory(card('a', { tickers: ['nvda', 'MSFT'] })),
+    toStory(card('b', { tickers: ['XOM'] })),
+    toStory(card('c', {})),
+  ];
+  assert.deepEqual(stories[0].tickers, ['NVDA', 'MSFT']);
+  const f = { ...DEFAULT_FILTERS, ours: true };
+  const ids = (set) => filterStories(stories, f, NOW, set).map((s) => s.id);
+  assert.deepEqual(ids(new Set(['NVDA'])), ['a']);
+  assert.deepEqual(ids(undefined), ['a', 'b', 'c']);
+  assert.ok(emptyMessage(f).includes('our names'));
+});
+
 test('URL round-trip omits defaults and rejects junk', () => {
   assert.equal(filtersToSearch(DEFAULT_FILTERS), '');
   assert.ok(isDefaultFilters(DEFAULT_FILTERS));
-  const f = { section: 'crypto', region: 'asia', range: '7d', q: 'gold' };
+  const f = { section: 'crypto', region: 'asia', range: '7d', q: 'gold', ours: false };
   assert.deepEqual(parseFilters(new URLSearchParams(filtersToSearch(f).slice(1))), f);
+  const o = { ...DEFAULT_FILTERS, ours: true };
+  assert.equal(filtersToSearch(o), '?ours=1');
+  assert.deepEqual(parseFilters(new URLSearchParams('ours=1')), o);
   assert.deepEqual(
     parseFilters(new URLSearchParams('section=nope&region=mars&range=5y')),
     DEFAULT_FILTERS,

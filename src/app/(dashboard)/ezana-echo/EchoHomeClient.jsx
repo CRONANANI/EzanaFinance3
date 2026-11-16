@@ -14,10 +14,18 @@
  *   - paging is client-side over the hub payload: the top TOP_STORIES fill the
  *     feature block and the row of three, then PAGE_SIZE stories a bento page
  *   - The Evening Brief posts to /api/newsletter/marketing/subscribe (double opt-in)
+ *   - council members only (useOrg().isOrgUser, once org loading has
+ *     finished): the "For our council" band (loaded on demand), the Our names
+ *     tab (?ours=1) and a Team Hub link in the masthead. Nothing council
+ *     related is fetched or drawn for anyone else.
+ *   - masthead: Login only for signed-out readers.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
+import { useCouncilEcho } from '@/components/echo/council/useCouncilEcho';
 import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import EchoHome from '@/components/echo/home/EchoHome';
@@ -40,9 +48,20 @@ import './ezana-echo-home.css';
 
 const DAY_MS = 86400000;
 
+/* The council band and its model load only for council members. */
+const EchoCouncilBand = dynamic(() => import('@/components/echo/council/EchoCouncilBand'), {
+  ssr: false,
+  loading: () => null,
+});
+
 export default function EchoHomeClient({ initialHub = null, initialFilters = null, now }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useIsAdmin(user);
+  const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
+  const councilReady = Boolean(user && isOrgUser && !orgLoading);
+  const council = useCouncilEcho(councilReady);
+  /* The Our names tab applies only with the council's tickers in hand. */
+  const ourTickers = councilReady ? council.tickers : null;
 
   const [hub, setHub] = useState(() =>
     initialHub
@@ -187,10 +206,11 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     () =>
       filterStories(
         stories.filter((s) => s.id !== hero?.id),
-        filters,
+        councilReady ? filters : { ...filters, ours: false },
         nowMs,
+        ourTickers || undefined,
       ),
-    [stories, hero, filters, nowMs],
+    [stories, hero, filters, nowMs, councilReady, ourTickers],
   );
   // Stories 1-7 fill the feature block and the row of three; the bento then
   // gets full PAGE_SIZE pages from story 8 on.
@@ -200,8 +220,16 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   );
   // The chart is an editorial pick for the unfiltered front page; a filtered
   // grid shows only stories that match.
+  const shownFilters = councilReady ? filters : { ...filters, ours: false };
   const chart =
-    hub.chart && !archivedSet.has(hub.chart.slug) && isDefaultFilters(filters) ? hub.chart : null;
+    hub.chart && !archivedSet.has(hub.chart.slug) && isDefaultFilters(shownFilters)
+      ? hub.chart
+      : null;
+  /* Our names waits for the council's tickers rather than flash every story. */
+  const gridStatus =
+    councilReady && filters.ours && !ourTickers && council.fund.status !== 'error'
+      ? 'loading'
+      : undefined;
 
   const status = hub.status;
 
@@ -229,7 +257,7 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
 
   // Masthead section links filter the feed and bring the reader to it.
   const goToSection = (section) => {
-    onFiltersChange({ section });
+    onFiltersChange({ section, ours: false });
     document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
   };
 
@@ -237,6 +265,15 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   const goToBrief = () => {
     document.getElementById('brief')?.scrollIntoView({ behavior: smooth(), block: 'start' });
     document.getElementById('ech-brief-email')?.focus({ preventScroll: true });
+  };
+
+  const showOurNames = () => {
+    onFiltersChange({ section: '', ours: true });
+    document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
+  };
+  const browseAll = () => {
+    onFiltersChange({ ...DEFAULT_FILTERS });
+    document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
   };
 
   const openSearch = () => {
@@ -275,7 +312,7 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         </div>
         <nav className="eth-sections" aria-label="Echo sections">
           {SECTIONS.map((s) => {
-            const on = filters.section === s.id;
+            const on = !shownFilters.ours && filters.section === s.id;
             return (
               <button
                 key={s.id}
@@ -311,9 +348,17 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
               <span className="eth-archived-count">{archivedSet.size}</span>
             </Link>
           )}
-          <a href="/auth/login" className="eth-login">
-            Login
-          </a>
+          {councilReady ? (
+            <Link href="/org-team-hub" className="eth-login">
+              Team Hub
+            </Link>
+          ) : null}
+          {/* Login only once auth has settled and no one is signed in. */}
+          {!authLoading && !user ? (
+            <a href="/auth/login" className="eth-login">
+              Login
+            </a>
+          ) : null}
           <button type="button" className="eth-subscribe" onClick={goToBrief}>
             Subscribe
           </button>
@@ -331,7 +376,7 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         mostRead={status === 'loading' ? [] : mostRead}
         stories={visible}
         chart={chart}
-        filters={filters}
+        filters={shownFilters}
         onFiltersChange={onFiltersChange}
         hasMore={filtered.length > visible.length}
         onLoadMore={() => setPages((p) => p + 1)}
@@ -343,6 +388,20 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         isAdmin={isAdmin}
         onArchive={handleArchive}
         archivingId={archivingId}
+        ourNames={councilReady}
+        gridStatus={gridStatus}
+        council={
+          councilReady ? (
+            <EchoCouncilBand
+              council={council}
+              stories={stories}
+              councilName={orgData?.org?.name || null}
+              userId={user?.id || null}
+              onBrowse={browseAll}
+              onOurNames={showOurNames}
+            />
+          ) : null
+        }
       />
     </>
   );

@@ -31,6 +31,8 @@ import './echo-home.css';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SECTION_SHORT = Object.fromEntries(SECTIONS.map((s) => [s.id, s.short]));
+/* The Our names tab's value: never a section id. */
+const OUR_NAMES = '__ours';
 const fmtReads = (n) => `${Number(n || 0).toLocaleString('en-US')} READS`;
 
 /* `sizes` per image box; keep in step with the max-width caps in the CSS. */
@@ -67,6 +69,11 @@ const SIZES = {
  * @param {boolean}  [props.isAdmin]
  * @param {Function} [props.onArchive]     (articleId) => void
  * @param {string}   [props.archivingId]
+ * @param {React.ReactNode} [props.council] the council band (council members only),
+ *                         drawn between the Article of the Month and Latest Stories
+ * @param {boolean}  [props.ourNames]      council members: offer the Our names tab
+ * @param {'loading'|'ready'|'error'} [props.gridStatus] grid-only status (the Our
+ *                         names tab waits for the council's tickers); defaults to status
  */
 export default function EchoHome({
   hero,
@@ -88,7 +95,11 @@ export default function EchoHome({
   isAdmin = false,
   onArchive,
   archivingId = null,
+  council = null,
+  ourNames = false,
+  gridStatus: gridStatusProp,
 }) {
+  const gridStatus = status === 'ready' && gridStatusProp ? gridStatusProp : status;
   // Stories 1-7: feature block + row of three. The bento only gets the rest.
   const top = stories.slice(0, TOP_STORIES);
   const rest = useMemo(() => stories.slice(TOP_STORIES), [stories]);
@@ -137,6 +148,8 @@ export default function EchoHome({
         <HeroSkeleton />
       ) : null}
 
+      {council}
+
       <section className="ech-latest" id="latest" aria-labelledby="ech-latest-h">
         {/* Row 1: title left, section pills right. Row 2: region, range, search. */}
         <div className="ech-latest__head">
@@ -148,10 +161,15 @@ export default function EchoHome({
             label="Section"
             options={[
               { value: '', label: 'All' },
+              ...(ourNames ? [{ value: OUR_NAMES, label: 'Our names' }] : []),
               ...SECTIONS.map((s) => ({ value: s.id, label: s.label })),
             ]}
-            value={filters.section}
-            onChange={(section) => onFiltersChange?.({ section })}
+            value={ourNames && filters.ours ? OUR_NAMES : filters.section}
+            onChange={(v) =>
+              onFiltersChange?.(
+                v === OUR_NAMES ? { section: '', ours: true } : { section: v, ours: false },
+              )
+            }
           />
         </div>
         <div className="ech-controls">
@@ -202,7 +220,7 @@ export default function EchoHome({
         </div>
       </section>
 
-      {status === 'loading' && (
+      {gridStatus === 'loading' && (
         <>
           <FeatureSkeleton />
           <RowOfThreeSkeleton />
@@ -221,7 +239,7 @@ export default function EchoHome({
           </button>
         </div>
       )}
-      {status === 'ready' && stories.length === 0 && (
+      {gridStatus === 'ready' && stories.length === 0 && (
         <div className="ech-state" role="status">
           <span className="ech-state__icon" aria-hidden="true">
             <i className="bi bi-globe2" />
@@ -236,7 +254,7 @@ export default function EchoHome({
           </button>
         </div>
       )}
-      {status === 'ready' && stories.length > 0 && (
+      {gridStatus === 'ready' && stories.length > 0 && (
         <>
           <FeatureBlock
             stories={top.slice(0, 4)}
@@ -274,7 +292,7 @@ export default function EchoHome({
         </>
       )}
 
-      {status === 'ready' && hasMore && (
+      {gridStatus === 'ready' && hasMore && (
         <div className="ech-more">
           <button
             type="button"

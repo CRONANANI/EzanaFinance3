@@ -42,7 +42,16 @@ export const RANGES = [
   { id: 'all', label: 'ALL', days: null, phrase: 'all time' },
 ];
 
-export const DEFAULT_FILTERS = Object.freeze({ section: '', region: '', range: 'all', q: '' });
+/* `ours`: the council's "Our names" tab. It narrows the grid to stories
+   tagged with a ticker the viewer's council holds or pitches, and is applied
+   only when the page hands filterStories a ticker set (council members). */
+export const DEFAULT_FILTERS = Object.freeze({
+  section: '',
+  region: '',
+  range: 'all',
+  q: '',
+  ours: false,
+});
 
 /* Every Echo article carries a subcategory (one of its category's subs). Hub
    cards come from the DB, which does not store it yet, so this map is the
@@ -138,6 +147,17 @@ export function toStory(card) {
     publishedAt: card.publishedAt || null,
     geos: Array.isArray(card.geos) ? card.geos : [],
     views: card.views || 0,
+    tickers: [
+      ...new Set(
+        (Array.isArray(card.tickers) ? card.tickers : [])
+          .map((t) =>
+            String(t || '')
+              .toUpperCase()
+              .trim(),
+          )
+          .filter(Boolean),
+      ),
+    ],
     searchText: [card.title, card.excerpt, tag, ...(card.tickers || []), ...(card.tags || [])]
       .filter(Boolean)
       .join(' ')
@@ -145,8 +165,13 @@ export function toStory(card) {
   };
 }
 
-/** Bento filters: section AND region AND range AND search text. */
-export function filterStories(stories, filters = DEFAULT_FILTERS, now = Date.now()) {
+/**
+ * Bento filters: section AND region AND range AND search text, and (council
+ * members only) the "Our names" tab. `ourTickers` is a Set of upper-case
+ * tickers; without one the tab is ignored, so a shared ?ours=1 link opens the
+ * normal grid for everyone else.
+ */
+export function filterStories(stories, filters = DEFAULT_FILTERS, now = Date.now(), ourTickers) {
   const f = { ...DEFAULT_FILTERS, ...filters };
   const continent = REGIONS.find((r) => r.slug === f.region)?.continent || null;
   const days = RANGES.find((r) => r.id === f.range)?.days || null;
@@ -156,6 +181,7 @@ export function filterStories(stories, filters = DEFAULT_FILTERS, now = Date.now
     .filter(Boolean);
   return stories.filter((s) => {
     if (f.section && s.section !== f.section) return false;
+    if (f.ours && ourTickers && !(s.tickers || []).some((t) => ourTickers.has(t))) return false;
     if (continent && !continentsForGeos(s.geos).has(continent)) return false;
     if (days && s.publishedAt) {
       const t = new Date(s.publishedAt).getTime();
@@ -178,6 +204,7 @@ export function parseFilters(params) {
     region: REGIONS.some((r) => r.slug && r.slug === region) ? region : '',
     range: RANGES.some((r) => r.id === range) ? range : DEFAULT_FILTERS.range,
     q: get('q').slice(0, 80),
+    ours: get('ours') === '1',
   };
 }
 
@@ -188,6 +215,7 @@ export function filtersToSearch(filters) {
   if (filters.region) p.set('region', filters.region);
   if (filters.range && filters.range !== DEFAULT_FILTERS.range) p.set('range', filters.range);
   if (filters.q && filters.q.trim()) p.set('q', filters.q.trim());
+  if (filters.ours) p.set('ours', '1');
   const s = p.toString();
   return s ? `?${s}` : '';
 }
@@ -199,7 +227,7 @@ export function isDefaultFilters(filters) {
 /** The empty-filter line. */
 export function emptyMessage(filters) {
   const f = { ...DEFAULT_FILTERS, ...filters };
-  const section = sectionById(f.section)?.label || 'any section';
+  const section = f.ours ? 'our names' : sectionById(f.section)?.label || 'any section';
   const region = REGIONS.find((r) => r.slug === f.region && r.slug)?.label || 'any region';
   const range = RANGES.find((r) => r.id === f.range)?.phrase || 'all time';
   const q = f.q && f.q.trim() ? ` matching "${f.q.trim()}"` : '';
