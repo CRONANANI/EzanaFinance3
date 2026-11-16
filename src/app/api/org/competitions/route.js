@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
-/* GET /api/org/competitions — inter-university competitions + this org's entries. */
+/* GET /api/org/competitions: inter-university competitions and this org's entries. */
 export const GET = withApiGuard(
   async () => {
     const supabase = getUserClient();
@@ -44,7 +44,7 @@ export const GET = withApiGuard(
   { requireAuth: true },
 );
 
-/* POST /api/org/competitions — enter a competition (manager only). */
+/* POST /api/org/competitions: enter a running competition (manager only). */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
@@ -66,11 +66,15 @@ export const POST = withApiGuard(
 
     const { data: comp } = await supabase
       .from('competitions')
-      .select('id, is_inter_org')
+      .select('id, is_inter_org, status')
       .eq('id', competitionId)
       .maybeSingle();
     if (!comp || !comp.is_inter_org) {
       return NextResponse.json({ error: 'Not an inter-university competition' }, { status: 404 });
+    }
+    // Only a running challenge can be entered (it was offered at any status before).
+    if (comp.status !== 'active') {
+      return NextResponse.json({ error: 'This challenge is not open to enter' }, { status: 409 });
     }
 
     // Seed the entry's current value from the org's canonical position book.

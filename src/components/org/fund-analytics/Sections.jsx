@@ -710,7 +710,7 @@ export function CouncilStanding({ standing, onRetry }) {
       ) : loading ? (
         <SkelRows rows={3} />
       ) : !s ? (
-        <Empty href="/org-competitions" action="Open competitions">
+        <Empty href="/org-competitions?tab=fund" action="Open fund challenges">
           The council is not entered in an open competition.
         </Empty>
       ) : (
@@ -728,8 +728,8 @@ export function CouncilStanding({ standing, onRetry }) {
             </Pair>
             {s.ends_at && <Pair label="Ends">{fmtDate(s.ends_at)}</Pair>}
           </dl>
-          <ArrowLink href="/org-competitions" className="ofa-morelink">
-            Open competitions
+          <ArrowLink href="/org-competitions?tab=fund" className="ofa-morelink">
+            Open fund challenges
           </ArrowLink>
         </>
       )}

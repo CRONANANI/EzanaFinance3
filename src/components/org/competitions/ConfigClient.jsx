@@ -94,21 +94,11 @@ export function ConfigClient({ competition, initialConfig, canManage }) {
   const ro = !canManage;
 
   return (
-    <div className="pcx-page">
-      <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
-      </Link>
-      <header className="pcx-cc-head">
-        <h1 className="pcx-h1">Onboarding configuration</h1>
-        <p className="pcx-lead">
-          How councils get into this competition, what they must provide, and when.
-        </p>
-      </header>
-
+    <div className="pcx-cfg">
       {ro ? (
         <div className="pcx-error--banner pcx-lock">
-          <i className="bi bi-lock" aria-hidden="true" /> Only the host org’s executives and VPs can
-          edit the configuration. You have read-only access.
+          <i className="bi bi-lock" aria-hidden="true" /> Only the host council&apos;s executives
+          and portfolio managers change these rules. You can read them.
         </div>
       ) : null}
 

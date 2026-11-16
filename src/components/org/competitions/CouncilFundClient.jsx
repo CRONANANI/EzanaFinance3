@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { orgRequest } from '@/lib/org-request';
+import '@/components/org/command-center/command-center.css';
 import './competitions.css';
+import '@/styles/home-canvas.css';
 
 const FIELDS = [
   { key: 'roi_pct', label: 'ROI %', hint: 'Period return' },
@@ -79,37 +81,44 @@ export function CouncilFundClient() {
   if (state === 'loading')
     return (
       <div className="pcx-page">
-        <div className="pcx-empty pcx-empty--sm">
-          <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> Loading…
+        <div className="pcx-skel" aria-busy="true" aria-label="Loading the council rating">
+          {[40, 70, 60, 80].map((w) => (
+            <span key={w} className="tcc-skel" style={{ width: `${w}%`, height: 14 }} />
+          ))}
         </div>
       </div>
     );
   if (state === 'error')
     return (
       <div className="pcx-page">
-        <div className="pcx-empty pcx-empty--sm">Could not load your council ranking.</div>
+        <p className="tcc-state tcc-state--error" role="alert">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <span>Could not load the council rating. Reload the page to try again.</span>
+        </p>
       </div>
     );
 
   return (
     <div className="pcx-page">
-      <header className="pcx-cc-head">
-        <div className="pcx-cc-title-row">
-          <i className="bi bi-trophy" aria-hidden="true" />
-          <h1 className="pcx-h1">Council ranking</h1>
+      <header className="pcx-ws">
+        <Link href="/org-competitions?tab=fund" className="pcx-ws__back">
+          <i className="bi bi-arrow-left" aria-hidden="true" />
+          Fund challenges
+        </Link>
+        <div className="pcx-ws__row">
+          <div className="pcx-ws__name">
+            <h1 className="pcx-ws__title">Council rating and fund ratios</h1>
+          </div>
+          <div className="pcx-ws__aside">
+            <Link href="/council-rankings" className="tcc-textbtn">
+              Council Rankings
+            </Link>
+          </div>
         </div>
-        <p className="pcx-lead">
-          Your council&apos;s public standing blends judged competition results with your fund
-          performance ratios. <strong>Dollar amounts are never shown</strong>: only ROI, Sharpe, and
-          other ratios.
+        <p className="pcx-muted pcx-note">
+          The rating blends judged pitch results with fund ratios. No dollar amount is ever shown.
         </p>
       </header>
-
-      <div className="pcx-cc-links">
-        <Link href="/council-rankings" className="pcx-btn" target="_blank">
-          View public leaderboard <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
-        </Link>
-      </div>
 
       {elo ? (
         <div className="pcx-stat-row">
@@ -148,8 +157,8 @@ export function CouncilFundClient() {
         </p>
         {!canManage ? (
           <div className="pcx-error--banner pcx-lock">
-            <i className="bi bi-shield-exclamation" aria-hidden="true" /> Only executives and VPs
-            can edit fund metrics.
+            <i className="bi bi-lock" aria-hidden="true" /> Only executives and portfolio managers
+            change the fund ratios.
           </div>
         ) : null}
         <div className="pcx-form-grid">

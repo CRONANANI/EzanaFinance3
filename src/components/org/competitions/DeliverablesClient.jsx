@@ -50,22 +50,12 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
 
   if (!team) {
     return (
-      <div className="pcx-page">
-        <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-          <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
+      <p className="tcc-state">
+        <span>Your council has no team in this competition.</span>
+        <Link href={`/org-competitions/${competition.slug}/join`} className="tcc-link">
+          See the entry rules
         </Link>
-        <div className="pcx-card-block pcx-center">
-          <i className="bi bi-info-circle" aria-hidden="true" />
-          <h1 className="pcx-h1">No team registered</h1>
-          <p className="pcx-lead">Your organization isn’t registered in this competition yet.</p>
-          <Link
-            href={`/org-competitions/${competition.slug}/join`}
-            className="pcx-btn pcx-btn--primary"
-          >
-            Join the competition
-          </Link>
-        </div>
-      </div>
+      </p>
     );
   }
 
@@ -120,22 +110,14 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
   };
 
   return (
-    <div className="pcx-page pcx-narrow">
-      <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
-      </Link>
-      <header className="pcx-cc-head">
-        <div className="pcx-cc-title-row">
-          <h1 className="pcx-h1">Deliverables</h1>
-          <span className={`pcx-pill pcx-pill--${status === 'submitted' ? 'done' : 'mut'}`}>
-            {status === 'submitted' ? 'Submitted' : 'In progress'}
-          </span>
-        </div>
-        <p className="pcx-lead">
+    <div className="pcx-deliv-page">
+      <div className="pcx-sec__head">
+        <h2 className="pcx-h2">
           {team.team_name}
-          {due ? ` · due ${due}` : ''}
-        </p>
-      </header>
+          <span className="pcx-status">{status === 'submitted' ? 'Submitted' : 'In progress'}</span>
+        </h2>
+        {due ? <span className="pcx-muted tcc-mono">Due {due}</span> : null}
+      </div>
 
       {config.deliverable_notes ? (
         <p className="pcx-muted pcx-note">{config.deliverable_notes}</p>

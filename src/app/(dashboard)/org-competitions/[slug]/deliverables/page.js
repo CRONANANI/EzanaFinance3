@@ -4,6 +4,8 @@ import { loadCompetition } from '@/lib/competitions/loaders';
 import { loadConfig, loadDeliverables } from '@/lib/competitions/onboarding';
 import { DeliverablesClient } from '@/components/org/competitions/DeliverablesClient';
 
+import { WorkspaceFrame, WorkspaceNotice } from '../_frame';
+
 export const dynamic = 'force-dynamic';
 
 export default async function CompetitionDeliverablesPage({ params }) {
@@ -11,18 +13,12 @@ export default async function CompetitionDeliverablesPage({ params }) {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   if (!member) {
-    return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">This page is for organizational members only.</div>
-      </div>
-    );
+    return <WorkspaceNotice>This page is for organizational members only.</WorkspaceNotice>;
   }
   const competition = await loadCompetition(supabase, slug);
   if (!competition) {
     return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">Competition not found, or you don’t have access to it.</div>
-      </div>
+      <WorkspaceNotice>Competition not found, or you don’t have access to it.</WorkspaceNotice>
     );
   }
 
@@ -38,13 +34,18 @@ export default async function CompetitionDeliverablesPage({ params }) {
   const deliverables = team ? await loadDeliverables(supabase, team.id) : [];
 
   return (
-    <div className="dashboard-page-inset">
+    <WorkspaceFrame
+      supabase={supabase}
+      member={member}
+      competition={competition}
+      active="deliverables"
+    >
       <DeliverablesClient
         competition={competition}
         team={team || null}
         config={config}
         initialDeliverables={deliverables}
       />
-    </div>
+    </WorkspaceFrame>
   );
 }

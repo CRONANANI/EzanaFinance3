@@ -5,6 +5,8 @@ import { loadConfig } from '@/lib/competitions/onboarding';
 import { canManageCompetition } from '@/lib/competitions/permissions';
 import { ConfigClient } from '@/components/org/competitions/ConfigClient';
 
+import { WorkspaceFrame, WorkspaceNotice } from '../_frame';
+
 export const dynamic = 'force-dynamic';
 
 export default async function CompetitionConfigPage({ params }) {
@@ -12,31 +14,25 @@ export default async function CompetitionConfigPage({ params }) {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   if (!member) {
-    return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">This page is for organizational members only.</div>
-      </div>
-    );
+    return <WorkspaceNotice>This page is for organizational members only.</WorkspaceNotice>;
   }
 
   const competition = await loadCompetition(supabase, slug);
   if (!competition) {
     return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">Competition not found, or you don’t have access to it.</div>
-      </div>
+      <WorkspaceNotice>Competition not found, or you don’t have access to it.</WorkspaceNotice>
     );
   }
 
   const config = await loadConfig(supabase, competition.id);
 
   return (
-    <div className="dashboard-page-inset">
+    <WorkspaceFrame supabase={supabase} member={member} competition={competition} active="rules">
       <ConfigClient
         competition={{ ...competition, isHost: competition.host_org_id === member.org_id }}
         initialConfig={config}
         canManage={canManageCompetition(member, competition)}
       />
-    </div>
+    </WorkspaceFrame>
   );
 }

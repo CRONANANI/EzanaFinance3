@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { NA } from '@/lib/org-display';
+import { NA } from '@/lib/org-competitions-model';
+import { EntryRules } from './WorkspaceParts';
 import './competitions.css';
 
 const MODE_COPY = {
@@ -26,50 +27,67 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
   const [done, setDone] = useState(null);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const notice = (title, body) => (
-    <div className="pcx-page">
-      <Link href="/org-competitions" className="pcx-back">
-        <i className="bi bi-arrow-left" aria-hidden="true" /> Competitions
-      </Link>
-      <div className="pcx-card-block pcx-center">
-        <i className="bi bi-info-circle" aria-hidden="true" />
-        <h1 className="pcx-h1">{title}</h1>
-        <p className="pcx-lead">{body}</p>
-        <Link href={`/org-competitions/${competition.slug}`} className="pcx-btn pcx-btn--primary">
-          Go to competition
-        </Link>
-      </div>
+  /* The rules always show; beside them, either the form or one line that
+     says why there is no form, with one action. */
+  const rules = (
+    <section className="pcx-sec" aria-labelledby="pcx-rules-title">
+      <h2 className="pcx-h2" id="pcx-rules-title">
+        Entry rules
+      </h2>
+      <EntryRules config={config} />
+    </section>
+  );
+  const notice = (title, body, withLink = true) => (
+    <div className="pcx-split">
+      {rules}
+      <span className="tcc-vrule pcx-split__rule" aria-hidden="true" />
+      <section className="pcx-sec" aria-labelledby="pcx-join-title">
+        <h2 className="pcx-h2" id="pcx-join-title">
+          {title}
+        </h2>
+        <p className="tcc-state">
+          <span>{body}</span>
+          {withLink && (
+            <Link href={`/org-competitions/${competition.slug}`} className="tcc-link">
+              Open the overview
+            </Link>
+          )}
+        </p>
+      </section>
     </div>
   );
 
   if (isHost)
-    return notice('Your org hosts this competition', 'Manage it from the Command Center.');
+    return notice('Your council hosts this event', 'Change these rules under Entry rules.');
   if (alreadyEntered)
     return notice(
-      'You’re already entered',
-      'Your organization already has a team in this competition.',
+      'Your council is entered',
+      'Your council already has a team in this competition.',
     );
   if (hasPending)
     return notice(
       'Request pending',
-      'Your request is awaiting the host’s approval. We’ll surface it once they decide.',
+      'Your request is waiting for the host council to decide.',
+      false,
     );
   if (competition.status !== 'open') {
-    return notice('Registration closed', 'This competition is not taking new teams right now.');
+    return notice('Registration closed', 'This competition is not taking new teams.', false);
   }
   if (config.admission_mode === 'invite_only') {
     return notice(
       'Invite only',
-      'This competition admits teams by invitation. Ask the host council for an invite.',
+      'This competition admits teams by invitation from the host council.',
+      false,
     );
   }
 
   if (done) {
     return notice(
-      done.mode === 'open_signup' ? 'You’re in!' : 'Submitted',
+      done.mode === 'open_signup' ? 'Registered' : 'Request sent',
       done.mode === 'open_signup'
-        ? 'Your team is registered. Head to the competition to add your deliverables.'
-        : 'Your request has been sent to the host for review.',
+        ? 'Your team is registered. Hand in deliverables from the competition.'
+        : 'Your request was sent to the host council.',
+      done.mode === 'open_signup',
     );
   }
 
@@ -111,32 +129,20 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
   };
 
   return (
-    <div className="pcx-page pcx-narrow">
-      <Link href="/org-competitions" className="pcx-back">
-        <i className="bi bi-arrow-left" aria-hidden="true" /> Competitions
-      </Link>
-      <header className="pcx-cc-head">
-        <h1 className="pcx-h1">{copy.title}</h1>
-        <p className="pcx-lead">
-          {competition.name}
-          {competition.theme ? ` · ${competition.theme}` : ''}
-        </p>
-      </header>
-
-      {config.eligibility_note ? (
-        <div className="pcx-error--banner pcx-lock">
-          <i className="bi bi-info-circle" aria-hidden="true" /> {config.eligibility_note}
-        </div>
-      ) : null}
-
-      <form className="pcx-card-block pcx-stack-form" onSubmit={submit}>
+    <div className="pcx-split">
+      {rules}
+      <span className="tcc-vrule pcx-split__rule" aria-hidden="true" />
+      <form className="pcx-sec pcx-stack-form" onSubmit={submit} aria-labelledby="pcx-join-title">
+        <h2 className="pcx-h2" id="pcx-join-title">
+          {copy.title}
+        </h2>
         <label className="pcx-field">
           <span className="pcx-field-label">Team name</span>
           <input
             className="pcx-input"
             value={form.team_name}
             onChange={(e) => set('team_name', e.target.value)}
-            placeholder="e.g. McMaster A"
+            placeholder="Your council team"
             autoFocus
           />
         </label>
@@ -160,7 +166,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
                 value={form.ticker}
                 onChange={(e) => set('ticker', e.target.value)}
               >
-                <option value="">Pick from pool…</option>
+                <option value="">Pick from the pool</option>
                 {(config.ticker_pool || []).map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -205,7 +211,7 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
                   className="pcx-input"
                   value={form.application_deck_url}
                   onChange={(e) => set('application_deck_url', e.target.value)}
-                  placeholder="https://…"
+                  placeholder="https://"
                 />
               </label>
             ) : null}
@@ -233,18 +239,16 @@ export function JoinClient({ competition, config, isHost, alreadyEntered, hasPen
         ) : null}
 
         {error ? <p className="pcx-error">{error}</p> : null}
-        <button
-          type="submit"
-          className="pcx-btn pcx-btn--primary"
-          disabled={busy || !form.team_name.trim()}
-        >
-          {busy ? (
-            <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
-          ) : (
-            <i className="bi bi-check-circle" aria-hidden="true" />
-          )}{' '}
-          {copy.cta}
-        </button>
+        <div className="pcx-actions">
+          <button
+            type="submit"
+            className="pcx-btn pcx-btn--primary"
+            disabled={busy || !form.team_name.trim()}
+          >
+            {busy ? <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" /> : null}
+            {copy.cta}
+          </button>
+        </div>
       </form>
     </div>
   );

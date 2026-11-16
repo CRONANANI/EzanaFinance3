@@ -4,6 +4,8 @@ import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadConfig } from '@/lib/competitions/onboarding';
 import { JoinClient } from '@/components/org/competitions/JoinClient';
 
+import { WorkspaceFrame, WorkspaceNotice } from '../_frame';
+
 export const dynamic = 'force-dynamic';
 
 export default async function CompetitionJoinPage({ params }) {
@@ -11,11 +13,7 @@ export default async function CompetitionJoinPage({ params }) {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   if (!member) {
-    return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">This page is for organizational members only.</div>
-      </div>
-    );
+    return <WorkspaceNotice>This page is for organizational members only.</WorkspaceNotice>;
   }
 
   // A not-yet-joined org can't read the competition under RLS, so load the public
@@ -27,11 +25,7 @@ export default async function CompetitionJoinPage({ params }) {
     .eq('slug', slug)
     .maybeSingle();
   if (!competition) {
-    return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">Competition not found.</div>
-      </div>
-    );
+    return <WorkspaceNotice>Competition not found.</WorkspaceNotice>;
   }
   // A draft is unpublished: only its host org may see it (ORG-13).
   if (competition.status === 'draft' && competition.host_org_id !== member.org_id) notFound();
@@ -51,15 +45,23 @@ export default async function CompetitionJoinPage({ params }) {
       .eq('status', 'pending'),
   ]);
 
+  const isHost = competition.host_org_id === member.org_id;
+  const alreadyEntered = (myTeams || 0) > 0;
   return (
-    <div className="dashboard-page-inset">
+    <WorkspaceFrame
+      supabase={supabase}
+      member={member}
+      competition={competition}
+      active="rules"
+      visitor={!isHost && !alreadyEntered}
+    >
       <JoinClient
         competition={competition}
         config={config}
-        isHost={competition.host_org_id === member.org_id}
-        alreadyEntered={(myTeams || 0) > 0}
+        isHost={isHost}
+        alreadyEntered={alreadyEntered}
         hasPending={(myPending || 0) > 0}
       />
-    </div>
+    </WorkspaceFrame>
   );
 }

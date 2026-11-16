@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { withApiGuard } from '@/lib/api-guard';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { loadCompetitions } from '@/lib/competitions/loaders';
-import { canManageCompetition, slugify, COMPETITION_MANAGER_ROLES } from '@/lib/competitions/permissions';
+import {
+  canManageCompetition,
+  slugify,
+  COMPETITION_MANAGER_ROLES,
+} from '@/lib/competitions/permissions';
 import { DEFAULT_RUBRIC } from '@/lib/competitions/default-rubric';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +56,12 @@ export const POST = withApiGuard(
     const format = ['showcase', 'single_elim', 'round_robin'].includes(body?.format)
       ? body.format
       : 'showcase';
+    // The rules link is shown to entrants: only an http(s) address is kept.
+    const rulesUrl = body?.rules_url ? httpUrlOrNull(body.rules_url) : null;
+    if (body?.rules_url && !rulesUrl) {
+      return NextResponse.json({ error: 'Rules link must be a web address' }, { status: 400 });
+    }
+    const validDate = (v) => (v && Number.isFinite(Date.parse(v)) ? v : null);
     const slug = `${slugify(name) || 'competition'}-${randomUUID().slice(0, 6)}`;
 
     const { data: comp, error } = await supabase
@@ -62,9 +73,9 @@ export const POST = withApiGuard(
         description: body?.description || null,
         format,
         theme: body?.theme || null,
-        rules_url: body?.rules_url || null,
-        starts_at: body?.starts_at || null,
-        ends_at: body?.ends_at || null,
+        rules_url: rulesUrl,
+        starts_at: validDate(body?.starts_at),
+        ends_at: validDate(body?.ends_at),
         created_by: member.id,
       })
       .select('id, slug')
@@ -73,9 +84,9 @@ export const POST = withApiGuard(
 
     // Seed the default rubric and a first round. Best-effort — a competition is
     // still valid without them, so don't fail the create if these error.
-    await supabase.from('pitch_rubric_criteria').insert(
-      DEFAULT_RUBRIC.map((c) => ({ ...c, competition_id: comp.id })),
-    );
+    await supabase
+      .from('pitch_rubric_criteria')
+      .insert(DEFAULT_RUBRIC.map((c) => ({ ...c, competition_id: comp.id })));
     await supabase
       .from('pitch_rounds')
       .insert({ competition_id: comp.id, name: 'Round 1', sort_order: 0 });

@@ -1,25 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { NA } from '@/lib/org-display';
+import { Modal, Textarea } from '@/components/ds';
+import { NA } from '@/lib/org-competitions-model';
+import { HostToolsNav } from './WorkspaceParts';
 import './competitions.css';
 
-const REQ_TONE = { pending: 'warn', approved: 'pos', rejected: 'mut', withdrawn: 'mut' };
+const REQ_LABEL = {
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Declined',
+  withdrawn: 'Withdrawn',
+};
 
 export function RequestsClient({ competition, initialRequests, canManage }) {
   const [requests, setRequests] = useState(initialRequests || []);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
+  const [declining, setDeclining] = useState(null);
+  const [note, setNote] = useState('');
 
-  const decide = async (req, decision) => {
+  const decide = async (req, decision, decisionNote = null) => {
     setBusyId(req.id);
     setError('');
+    const note = decisionNote;
     try {
-      const note =
-        decision === 'rejected'
-          ? window.prompt('Optional note to the team (why it was declined):') || null
-          : null;
       const res = await fetch(`/api/org/pitch-competitions/${competition.id}/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,14 +32,16 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(json?.error || 'Could not record the decision.');
-        return;
+        setError(json?.error || 'The decision did not save. Try again.');
+        return false;
       }
       setRequests((rs) =>
         rs.map((r) => (r.id === req.id ? { ...r, status: decision, decision_note: note } : r)),
       );
+      return true;
     } catch {
-      setError('Could not connect.');
+      setError('Could not connect. Try again.');
+      return false;
     } finally {
       setBusyId(null);
     }
@@ -44,23 +51,22 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
   const decided = requests.filter((r) => r.status !== 'pending');
 
   return (
-    <div className="pcx-page">
-      <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-        <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
-      </Link>
-      <header className="pcx-cc-head">
-        <h1 className="pcx-h1">Join requests</h1>
-        <p className="pcx-lead">
-          Review councils requesting or applying to enter. Approving provisions their team.
-        </p>
-      </header>
+    <div className="pcx-requests">
+      <HostToolsNav slug={competition.slug} active="requests" />
 
-      {error ? <p className="pcx-error pcx-error--banner">{error}</p> : null}
+      {error ? (
+        <p className="tcc-state tcc-state--error" role="alert">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <span>{error}</span>
+        </p>
+      ) : null}
 
       <section className="pcx-card-block">
-        <h2 className="pcx-block-title">Pending ({pending.length})</h2>
+        <h2 className="pcx-block-title">
+          Pending <span className="tcc-mono pcx-muted">{pending.length}</span>
+        </h2>
         {pending.length === 0 ? (
-          <p className="pcx-muted">No pending requests.</p>
+          <p className="tcc-state">No pending requests.</p>
         ) : (
           <ul className="pcx-req-list">
             {pending.map((r) => (
@@ -87,28 +93,28 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
                   <div className="pcx-req-actions">
                     <button
                       type="button"
-                      className="pcx-btn pcx-btn--primary"
+                      className="tcc-textbtn tcc-textbtn--accent"
                       onClick={() => decide(r, 'approved')}
                       disabled={busyId === r.id}
+                      aria-label={`Approve ${r.team_name}`}
                     >
-                      {busyId === r.id ? (
-                        <i className="bi bi-arrow-repeat pcx-spin" aria-hidden="true" />
-                      ) : (
-                        <i className="bi bi-check-lg" aria-hidden="true" />
-                      )}{' '}
                       Approve
                     </button>
                     <button
                       type="button"
-                      className="pcx-btn"
-                      onClick={() => decide(r, 'rejected')}
+                      className="tcc-textbtn pcx-danger"
+                      onClick={() => {
+                        setNote('');
+                        setDeclining(r);
+                      }}
                       disabled={busyId === r.id}
+                      aria-label={`Decline ${r.team_name}`}
                     >
-                      <i className="bi bi-x-lg" aria-hidden="true" /> Decline
+                      Decline
                     </button>
                   </div>
                 ) : (
-                  <span className={`pcx-pill pcx-pill--${REQ_TONE[r.status]}`}>Pending</span>
+                  <span className="pcx-status">Pending</span>
                 )}
               </li>
             ))}
@@ -127,14 +133,53 @@ export function RequestsClient({ competition, initialRequests, canManage }) {
                   <div className="pcx-req-meta">{r.contact_email || NA}</div>
                   {r.decision_note ? <p className="pcx-muted">Note: {r.decision_note}</p> : null}
                 </div>
-                <span className={`pcx-pill pcx-pill--${REQ_TONE[r.status] || 'mut'}`}>
-                  {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                </span>
+                <span className="pcx-status">{REQ_LABEL[r.status] || r.status}</span>
               </li>
             ))}
           </ul>
         </section>
       ) : null}
+
+      {declining && (
+        <Modal
+          open
+          onClose={busyId ? undefined : () => setDeclining(null)}
+          title="Decline request?"
+          size={480}
+          className="pcx-dialog"
+          footer={
+            <>
+              <button type="button" className="tcc-textbtn" onClick={() => setDeclining(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="tcc-textbtn pcx-danger"
+                disabled={busyId === declining.id}
+                onClick={async () => {
+                  const ok = await decide(declining, 'rejected', note.trim() || null);
+                  if (ok) setDeclining(null);
+                }}
+              >
+                Decline request
+              </button>
+            </>
+          }
+        >
+          <p className="pcx-confirm">
+            {declining.team_name} will be told their request was declined. While registration is
+            open their council can ask again.
+          </p>
+          <Textarea
+            id="pcx-decline-note"
+            label="Note to the team"
+            hint="Optional"
+            rows={3}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

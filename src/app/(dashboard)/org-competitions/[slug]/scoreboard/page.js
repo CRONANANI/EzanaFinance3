@@ -4,6 +4,8 @@ import { loadCompetition } from '@/lib/competitions/loaders';
 import { canManageCompetition } from '@/lib/competitions/permissions';
 import { ScoreboardClient } from '@/components/org/competitions/ScoreboardClient';
 
+import { WorkspaceFrame, WorkspaceNotice } from '../_frame';
+
 export const dynamic = 'force-dynamic';
 
 export default async function CompetitionScoreboardPage({ params }) {
@@ -11,24 +13,18 @@ export default async function CompetitionScoreboardPage({ params }) {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   if (!member) {
-    return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">This page is for organizational members only.</div>
-      </div>
-    );
+    return <WorkspaceNotice>This page is for organizational members only.</WorkspaceNotice>;
   }
   const competition = await loadCompetition(supabase, slug);
   if (!competition || !canManageCompetition(member, competition)) {
     return (
-      <div className="dashboard-page-inset">
-        <div className="pcx-empty-page">The scoreboard is only visible to the host organizers.</div>
-      </div>
+      <WorkspaceNotice>The scoreboard is only visible to the host organizers.</WorkspaceNotice>
     );
   }
 
   return (
-    <div className="dashboard-page-inset">
+    <WorkspaceFrame supabase={supabase} member={member} competition={competition} active="host">
       <ScoreboardClient competition={competition} />
-    </div>
+    </WorkspaceFrame>
   );
 }

@@ -106,23 +106,19 @@ export function LiveBoardClient({ competition }) {
 
   return (
     <div className={`pcx-page ${projector ? 'pcx-projector' : ''}`}>
-      {!projector ? (
-        <Link href={`/org-competitions/${competition.slug}`} className="pcx-back">
-          <i className="bi bi-arrow-left" aria-hidden="true" /> {competition.name}
-        </Link>
-      ) : null}
-
-      <header className="pcx-cc-head pcx-cc-title-row" style={{ justifyContent: 'space-between' }}>
-        <div className="pcx-cc-title-row">
+      <div className="pcx-sec__head">
+        <h2 className="pcx-h2">
           <i className="bi bi-broadcast pcx-live-dot" aria-hidden="true" />
-          <h1 className="pcx-h1">Live board</h1>
-          <span className="pcx-muted">updates every 15s</span>
-        </div>
-        <button type="button" className="pcx-btn" onClick={() => setProjector((p) => !p)}>
-          <i className="bi bi-display" aria-hidden="true" />{' '}
-          {projector ? 'Exit projector' : 'Projector mode'}
+          {projector ? competition.name : 'Running order'}
+          <span className="pcx-muted pcx-h2__aside">
+            Refreshes every <span className="tcc-mono">15</span> seconds
+          </span>
+        </h2>
+        <button type="button" className="tcc-textbtn" onClick={() => setProjector((p) => !p)}>
+          <i className="bi bi-display" aria-hidden="true" />
+          {projector ? 'Exit projector mode' : 'Projector mode'}
         </button>
-      </header>
+      </div>
 
       {myAlert ? (
         <div className="pcx-live-alert">
@@ -131,9 +127,18 @@ export function LiveBoardClient({ competition }) {
         </div>
       ) : null}
 
-      {state === 'loading' && <div className="pcx-empty pcx-empty--sm">Loading the board…</div>}
+      {state === 'loading' && (
+        <div className="pcx-skel" aria-hidden="true">
+          {[60, 80, 70, 50].map((w) => (
+            <span key={w} className="tcc-skel" style={{ width: `${w}%`, height: 12 }} />
+          ))}
+        </div>
+      )}
       {state === 'error' && (
-        <div className="pcx-empty pcx-empty--sm">Could not load the board.</div>
+        <p className="tcc-state tcc-state--error" role="alert">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <span>Could not load the running order. It retries every 15 seconds.</span>
+        </p>
       )}
 
       {state === 'ready' &&

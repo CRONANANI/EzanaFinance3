@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadStructure } from '@/lib/competitions/loaders';
@@ -12,7 +13,11 @@ const COMP_COLUMNS =
   'id, host_org_id, name, slug, description, format, theme, rules_url, status, results_visible, starts_at, ends_at, created_at';
 
 async function loadComp(supabase, id) {
-  const { data } = await supabase.from('pitch_competitions').select(COMP_COLUMNS).eq('id', id).maybeSingle();
+  const { data } = await supabase
+    .from('pitch_competitions')
+    .select(COMP_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
   return data || null;
 }
 
@@ -60,8 +65,36 @@ export const PATCH = withApiGuard(
     }
 
     const patch = {};
-    for (const key of ['name', 'description', 'theme', 'rules_url', 'starts_at', 'ends_at', 'public_blurb', 'banner_path']) {
+    for (const key of [
+      'name',
+      'description',
+      'theme',
+      'rules_url',
+      'starts_at',
+      'ends_at',
+      'public_blurb',
+      'banner_path',
+    ]) {
       if (key in body) patch[key] = body[key] || null;
+    }
+    // The rules link is shown to entrants: only an http(s) address is kept.
+    if (body.rules_url) {
+      const safe = httpUrlOrNull(body.rules_url);
+      if (!safe)
+        return NextResponse.json({ error: 'Rules link must be a web address' }, { status: 400 });
+      patch.rules_url = safe;
+    }
+    for (const key of ['starts_at', 'ends_at']) {
+      if (patch[key] && !Number.isFinite(Date.parse(patch[key]))) {
+        return NextResponse.json({ error: 'Dates must be valid dates' }, { status: 400 });
+      }
+    }
+    if (
+      patch.starts_at &&
+      patch.ends_at &&
+      Date.parse(patch.ends_at) < Date.parse(patch.starts_at)
+    ) {
+      return NextResponse.json({ error: 'The end date is before the start date' }, { status: 400 });
     }
     if ('is_public' in body) patch.is_public = !!body.is_public;
     if ('format' in body && ['showcase', 'single_elim', 'round_robin'].includes(body.format)) {
@@ -74,8 +107,10 @@ export const PATCH = withApiGuard(
       patch.status = body.status;
     }
     if ('results_visible' in body) patch.results_visible = !!body.results_visible;
-    if (patch.name === null) return NextResponse.json({ error: 'name cannot be empty' }, { status: 400 });
-    if (!Object.keys(patch).length) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
+    if (patch.name === null)
+      return NextResponse.json({ error: 'name cannot be empty' }, { status: 400 });
+    if (!Object.keys(patch).length)
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
 
     const { data, error } = await supabase
       .from('pitch_competitions')

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { loadChallengeStandings } from '@/lib/competitions/fund-challenges';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -10,7 +11,8 @@ async function resolveParams(context) {
   return (await context?.params) || {};
 }
 
-/* GET /api/org/competitions/:id/leaderboard — cross-university standings. */
+/* GET /api/org/competitions/:id/leaderboard: cross-university standings, ranked by
+   return since entry. Never carries a council's fund value in dollars. */
 export const GET = withApiGuard(
   async (request, user, context) => {
     const supabase = getUserClient();
@@ -25,41 +27,11 @@ export const GET = withApiGuard(
       .maybeSingle();
     if (!comp) return NextResponse.json({ error: 'Competition not found' }, { status: 404 });
 
-    const { data: entries, error } = await supabase
-      .from('competition_org_entries')
-      .select('org_id, current_value, return_pct, rank, status')
-      .eq('competition_id', id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Ranked by return since entry. No fund value in dollars is ever returned.
+    const { error, standings } = await loadChallengeStandings(supabase, id, member.org_id);
+    if (error) return NextResponse.json({ error: 'Could not load standings' }, { status: 500 });
 
-    // Org names for each entry (organizations are public-readable).
-    const orgIds = [...new Set((entries || []).map((e) => e.org_id))];
-    const { data: orgs } = await supabase
-      .from('organizations')
-      .select('id, university_name, name')
-      .in('id', orgIds.length ? orgIds : ['00000000-0000-0000-0000-000000000000']);
-    const nameByOrg = new Map(
-      (orgs || []).map((o) => [o.id, o.university_name || o.name || 'University']),
-    );
-
-    // Rank by return_pct desc, falling back to current_value.
-    const ranked = (entries || [])
-      .map((e) => ({
-        org_id: e.org_id,
-        university: nameByOrg.get(e.org_id) || 'University',
-        current_value: e.current_value == null ? null : Number(e.current_value),
-        return_pct: e.return_pct == null ? null : Number(e.return_pct),
-        status: e.status,
-        isMine: e.org_id === member.org_id,
-      }))
-      .sort((a, b) => {
-        const ra = a.return_pct ?? -Infinity;
-        const rb = b.return_pct ?? -Infinity;
-        if (rb !== ra) return rb - ra;
-        return (b.current_value ?? 0) - (a.current_value ?? 0);
-      })
-      .map((e, i) => ({ ...e, rank: i + 1 }));
-
-    return NextResponse.json({ competition: comp, standings: ranked, myOrgId: member.org_id });
+    return NextResponse.json({ competition: comp, standings, myOrgId: member.org_id });
   },
   { requireAuth: true },
 );

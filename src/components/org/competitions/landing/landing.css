@@ -1,0 +1,589 @@
+/* ============================================================================
+   Competitions landing (/org-competitions). Page-scoped: every class starts
+   with ocp-. Builds on the shared Team Hub classes in command-center.css
+   (tcc-: KPI strip, buttons, text toggles, states). Flat sections on the
+   canvas: no card surface, hairlines only, text-only tabs, one filled
+   button. Tokens only; --ez-rule and --ez-rule-subtle come from
+   home-canvas.css.
+   ============================================================================ */
+.ocp-page {
+  container: ocp / inline-size;
+}
+.ocp-kpistrip {
+  grid-template-columns: repeat(5, auto);
+}
+.ocp-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.ocp-kpistrip .tcc-kpi:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* ── Page tabs: text only, emerald when selected ─────────────────────────── */
+.ocp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 32px;
+  padding: 20px 0 0;
+}
+.ocp-tab {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ocp-tab:hover {
+  color: var(--text-primary);
+}
+.ocp-tab.is-on {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.ocp-tab:focus-visible,
+.ocp-rowbtn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+/* Links styled as text buttons never underline. */
+.ocp-page a.tcc-textbtn,
+.ocp-page a.tcc-link {
+  text-decoration: none;
+}
+.ocp-notice {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Body: main column, one rule, side column ────────────────────────────── */
+.ocp-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 400px);
+  column-gap: 31.5px;
+  padding-top: 8px;
+}
+.ocp-main,
+.ocp-rail {
+  min-width: 0;
+}
+.ocp-vrule {
+  margin-top: 24px;
+}
+.ocp-section {
+  min-width: 0;
+  padding: 24px 0 8px;
+}
+.ocp-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: var(--ez-title-size);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.ocp-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.ocp-sub {
+  margin: -8px 0 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.ocp-subtitle {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ocp-muted {
+  color: var(--text-muted);
+}
+.ocp-state {
+  padding: 8px 0;
+}
+.ocp-more {
+  margin-top: 12px;
+}
+.ocp-foot {
+  margin: 24px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.ocp-gold {
+  color: var(--gold);
+}
+
+/* ── Skeleton rows in the final layout ───────────────────────────────────── */
+.ocp-skel {
+  display: flex;
+  flex-direction: column;
+}
+.ocp-skel__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+
+/* ── Obligations ─────────────────────────────────────────────────────────── */
+.ocp-oblig__row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+}
+.ocp-oblig__icon {
+  padding-top: 2px;
+  color: var(--text-muted);
+}
+.ocp-oblig__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ocp-oblig__name {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ocp-oblig__sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.ocp-oblig__when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.ocp-oblig__time {
+  color: var(--text-muted);
+}
+
+/* ── Tables: 11px grey caps header over one hairline, rows on hairlines ──── */
+.ocp-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+.ocp-table th {
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ocp-table td {
+  padding: 11px 8px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.ocp-table tr:last-child td {
+  border-bottom: 0;
+}
+.ocp-table :is(th, td):first-child {
+  padding-left: 0;
+}
+.ocp-table :is(th, td):last-child {
+  padding-right: 0;
+}
+.ocp-table td.tcc-pos {
+  color: var(--positive);
+}
+.ocp-table td.tcc-neg {
+  color: var(--negative);
+}
+.ocp-table td.tcc-na {
+  color: var(--text-muted);
+}
+.ocp-table .ocp-num {
+  text-align: right;
+}
+.ocp-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ocp-table td.ocp-name {
+  color: var(--text-primary);
+}
+.ocp-stage,
+.ocp-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ocp-stage .bi {
+  color: var(--text-muted);
+}
+.ocp-ready {
+  color: var(--warning);
+}
+.ocp-ready.is-met {
+  color: var(--emerald-text);
+}
+.ocp-milestone {
+  color: var(--text-primary);
+}
+.ocp-rowbtn {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ocp-rowbtn .bi {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ocp-rowbtn.is-on,
+.ocp-rowbtn.is-on .bi {
+  color: var(--emerald-text);
+}
+.ocp-table tr.is-mine td,
+.ocp-you {
+  color: var(--emerald-text);
+}
+.ocp-you {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* The canvas's generic table rules draw a dark head rule, dotted rows and a
+   hover wash; here the head sits on a hairline, rows on hairlines, and hover
+   is a colour change on the row's link only. */
+.ocp-page .ocp-table th {
+  border-bottom-color: var(--ez-rule);
+}
+.ocp-page .ocp-table tbody tr,
+.ocp-page .ocp-table tbody tr:hover {
+  border-bottom: 0;
+  background: transparent;
+}
+
+/* Column widths per table (the first column takes the rest). */
+.ocp-table--entered th:nth-child(2) {
+  width: 128px;
+}
+.ocp-table--entered th:nth-child(3) {
+  width: 112px;
+}
+.ocp-table--entered th:nth-child(4) {
+  width: 92px;
+}
+.ocp-table--entered th:nth-child(5) {
+  width: 22%;
+}
+.ocp-table--open th:nth-child(2) {
+  width: 216px;
+}
+.ocp-table--open th:nth-child(3) {
+  width: 120px;
+}
+.ocp-table--open th:nth-child(4) {
+  width: 18%;
+}
+.ocp-table--open th:nth-child(5) {
+  width: 64px;
+}
+.ocp-table--hosting th:nth-child(2) {
+  width: 108px;
+}
+.ocp-table--hosting th:nth-child(3) {
+  width: 132px;
+}
+.ocp-table--hosting th:nth-child(4) {
+  width: 26%;
+}
+.ocp-table--hosting th:nth-child(5) {
+  width: 20%;
+}
+.ocp-table--fund th:nth-child(2) {
+  width: 164px;
+}
+.ocp-table--fund th:nth-child(3) {
+  width: 176px;
+}
+.ocp-table--fund th:nth-child(4) {
+  width: 168px;
+}
+.ocp-table--fund th:nth-child(5) {
+  width: 128px;
+}
+.ocp-table--fund.is-compact th:nth-child(2) {
+  width: 76px;
+}
+.ocp-table--fund.is-compact th:nth-child(3) {
+  width: 76px;
+}
+.ocp-table--fund.is-compact :is(.ocp-col-field, .ocp-col-ends) {
+  display: none;
+}
+.ocp-table--board th:nth-child(1) {
+  width: 64px;
+}
+.ocp-table--board th:nth-child(3) {
+  width: 160px;
+}
+.ocp-table--board :is(th, td):first-child {
+  padding-right: 24px;
+}
+.ocp-table--fundopen th:nth-child(2),
+.ocp-table--fundopen th:nth-child(3) {
+  width: 132px;
+}
+.ocp-table--fundopen th:nth-child(4) {
+  width: 120px;
+}
+.ocp-board {
+  margin-top: 24px;
+}
+.ocp-fund {
+  max-width: none;
+}
+
+/* ── Side column: timeline, fund rail, trophies ──────────────────────────── */
+.ocp-rail .ocp-section {
+  padding-top: 24px;
+}
+.ocp-timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ocp-timeline::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 5px;
+  width: 1px;
+  background: var(--ez-rule);
+}
+.ocp-timeline li {
+  position: relative;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  column-gap: 16px;
+  padding: 0 0 14px;
+}
+.ocp-timeline li > .bi {
+  position: relative;
+  z-index: 1;
+  padding-top: 2px;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--emerald-text);
+  background: var(--bg-primary);
+}
+.ocp-timeline__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.ocp-timeline__date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ocp-timeline__what {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── Dialogs (ds Modal: an overlay, so it keeps the library's surface) ───── */
+.ocp-dialog .ds-modal-title {
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.ocp-dialog .ds-modal-footer {
+  align-items: center;
+  gap: 8px 20px;
+}
+.ocp-dialog .tcc-flatbtn {
+  border: 0;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+.ocp-dialog .tcc-flatbtn:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.ocp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ocp-field__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ocp-confirm {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.ocp-fielderror {
+  margin: 0;
+  font-size: 12px;
+  color: var(--negative);
+}
+.ocp-danger {
+  color: var(--negative);
+}
+.ocp-danger:hover {
+  color: var(--negative);
+  text-decoration: underline;
+}
+
+/* ── Narrow layouts, by the width of the page column ─────────────────────── */
+@container ocp (max-width: 1180px) {
+  .ocp-col-format {
+    display: none;
+  }
+  .ocp-body {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 340px);
+  }
+}
+@container ocp (max-width: 940px) {
+  .ocp-body {
+    display: block;
+  }
+  .ocp-vrule {
+    display: none;
+  }
+  .ocp-rail {
+    margin-top: 16px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .ocp-kpistrip {
+    grid-template-columns: repeat(3, auto);
+  }
+  .ocp-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container ocp (max-width: 620px) {
+  .ocp-col-admission,
+  .ocp-col-field,
+  .ocp-col-ends {
+    display: none;
+  }
+  .ocp-kpistrip {
+    grid-template-columns: repeat(2, auto);
+  }
+  .ocp-kpistrip .tcc-kpi {
+    padding-left: 24px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .ocp-kpistrip .tcc-kpi:nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .ocp-table {
+    table-layout: auto;
+  }
+  .ocp-table td.ocp-name,
+  .ocp-rowbtn {
+    white-space: normal;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .ocp-table th {
+    width: auto !important;
+    white-space: normal;
+  }
+  /* Phone: each table keeps its name column and the one or two figures that
+     matter most; the rest is a tap away in the event's workspace. */
+  .ocp-table--entered :is(th, td):nth-child(2),
+  .ocp-table--entered :is(th, td):nth-child(4),
+  .ocp-table--hosting :is(th, td):nth-child(2),
+  .ocp-table--hosting :is(th, td):nth-child(4) {
+    display: none;
+  }
+  .ocp-table--entered th:nth-child(3) {
+    width: 108px;
+  }
+  .ocp-table--open th:nth-child(2) {
+    width: 116px;
+  }
+  .ocp-table--open td:nth-child(2) {
+    white-space: normal;
+    font-size: 12px;
+  }
+  .ocp-table--hosting th:nth-child(3) {
+    width: 124px;
+  }
+  .ocp-table--fund th:nth-child(2),
+  .ocp-table--fund.is-compact th:nth-child(2) {
+    width: 72px;
+  }
+  .ocp-table--fund th:nth-child(3),
+  .ocp-table--fund.is-compact th:nth-child(3) {
+    width: 72px;
+  }
+  .ocp-table--fundopen th:nth-child(2),
+  .ocp-table--fundopen td:nth-child(2) {
+    display: none;
+  }
+  .ocp-table--fundopen th:nth-child(3) {
+    width: 108px;
+  }
+  .ocp-table--fundopen th:nth-child(4) {
+    width: 76px;
+  }
+  .ocp-table--board th:nth-child(3) {
+    width: 96px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocp-tab,
+  .ocp-page .tcc-skel {
+    transition: none;
+    animation: none;
+  }
+}

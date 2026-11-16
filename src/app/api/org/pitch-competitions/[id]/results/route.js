@@ -4,6 +4,7 @@ import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { canManageCompetition } from '@/lib/competitions/permissions';
 import { computeResults, teamCriterionBreakdown, teamFeedback } from '@/lib/competitions/results';
+import { anonymousFeedback } from '@/lib/org-competitions-model';
 import { awardCompetitionBadges } from '@/lib/competitions/badges';
 import { recomputeCouncilElo } from '@/lib/council-elo/recompute';
 
@@ -19,9 +20,9 @@ async function loadComp(supabase, id) {
   return data || null;
 }
 
-/* GET /api/org/pitch-competitions/:id/results[?team_id=] — host sees all results;
+/* GET /api/org/pitch-competitions/:id/results[?team_id=]: host sees all results;
    a participant sees only their own team, and only after reveal. With ?team_id, a
-   per-criterion breakdown + anonymized judge feedback. */
+   per-criterion breakdown and judge feedback (anonymous for participants). */
 export const GET = withApiGuard(
   async (request, _user, context) => {
     const { id } = await context.params;
@@ -81,7 +82,10 @@ export const GET = withApiGuard(
         team,
         result: result || null,
         breakdown,
-        feedback,
+        // Entrants get the comment text only, in an order that does not follow
+        // the judges: never a name, a firm or anything else that says who wrote
+        // it, even when a judge chose to be named. Host managers see the labels.
+        feedback: isHost ? feedback : anonymousFeedback(feedback),
       });
     }
 
@@ -106,7 +110,7 @@ export const GET = withApiGuard(
   { requireAuth: true },
 );
 
-/* POST /api/org/pitch-competitions/:id/results — host managers: recompute, publish
+/* POST /api/org/pitch-competitions/:id/results: host managers: recompute, publish
    (compute + reveal), or unpublish (re-hide). */
 export const POST = withApiGuard(
   async (request, _user, context) => {

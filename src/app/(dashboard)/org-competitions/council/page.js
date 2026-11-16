@@ -15,7 +15,7 @@ export default async function CouncilRankingPage() {
     );
   }
   return (
-    <div className="dashboard-page-inset">
+    <div className="dashboard-page-inset ez-canvas">
       <CouncilFundClient />
     </div>
   );
