@@ -1,59 +1,59 @@
-import { SkeletonRegion, Skeleton, SkeletonCard, token } from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/research-library/research-library.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for the Research Library. Real header chrome + a
- * search bar and a 4-column document-card grid silhouette. No useOrg / no fetch.
+ * Route loading state for the Research Library, in the page's final layout:
+ * the five figures, the view tabs, the search and filter lines, then the
+ * lists beside the side column. It renders inside the shared Team Hub shell,
+ * whose sidebar stays painted beside it. Presentation only: no data, no org
+ * context, no import of the page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
-const subStyle = {
-  margin: '8px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 13,
-  color: token.textSecondary,
-  maxWidth: 620,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
 
 export default function ResearchLibraryLoading() {
   return (
-    <SkeletonRegion label="Loading research library…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Research Library</h1>
-      <p style={subStyle}>
-        Typed, versioned institutional memory: theses that survive cohort rollover.
-      </p>
-
-      <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Skeleton width={280} height={38} radius={10} />
-        <Skeleton width={140} height={38} radius={10} />
-        <Skeleton width={140} height={38} radius={10} />
+    <SkeletonRegion
+      label="Loading the Research Library"
+      className="dashboard-page-inset ez-canvas tcc-page orl-page"
+    >
+      <div className="tcc-top orl-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip orl-kpis">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(40, 16)}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-      <div
-        style={{
-          marginTop: 20,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: 16,
-        }}
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <SkeletonCard key={i} rows={3} />
-        ))}
+      <div className="orl-tabsrow">{bar(220, 14)}</div>
+      <div className="orl-search">{bar('40%', 14)}</div>
+      <div className="orl-filters">{bar('60%', 12)}</div>
+      <div className="orl-body">
+        <div className="orl-main">
+          <div className="tcc-head">{bar(140, 18)}</div>
+          <div className="orl-skelcol">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <span key={i}>{bar('100%', 16)}</span>
+            ))}
+          </div>
+        </div>
+        <span className="tcc-vrule orl-vrule" aria-hidden="true" />
+        <div className="orl-side">
+          <div className="tcc-head">{bar(180, 18)}</div>
+          <div className="orl-skelcol">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i}>{bar(`${92 - i * 9}%`, 12)}</span>
+            ))}
+          </div>
+        </div>
       </div>
     </SkeletonRegion>
   );

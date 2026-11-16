@@ -16,7 +16,7 @@ const STALE_MS = STALE_DAYS * 86400000;
  *    handoff packet, plus a stale-coverage flag (>90d since last doc).
  *  - without ticker: an overview row per covered ticker (current analyst, last
  *    doc date, doc count, stale flag) so the 1c view can list coverage.
- * Performance context comes from org_pitches (expected return / status) — we do
+ * Performance context comes from org_pitches (expected return / status), we do
  * NOT fabricate realized returns.
  */
 export const GET = withApiGuard(
@@ -124,7 +124,7 @@ export const GET = withApiGuard(
     // Overview: one row per covered ticker.
     const { data: allChains } = await supabase
       .from('org_coverage_lineage')
-      .select('ticker, to_member_id, from_member_id, created_at')
+      .select('ticker, to_member_id, from_member_id, term, handoff_note_id, created_at')
       .eq('org_id', member.org_id)
       .order('created_at', { ascending: true });
 
@@ -143,11 +143,20 @@ export const GET = withApiGuard(
         ticker: key,
         currentAnalyst: null,
         hops: 0,
+        latestHop: null,
         lastDocAt: null,
         docCount: 0,
       };
       row.hops += 1;
       row.currentAnalyst = c.to_member_id ? memberName(c.to_member_id) : row.currentAnalyst;
+      // Chains arrive oldest first, so the last hop seen is the latest handoff.
+      row.latestHop = {
+        from: c.from_member_id ? memberName(c.from_member_id) : null,
+        to: c.to_member_id ? memberName(c.to_member_id) : null,
+        term: c.term || null,
+        created_at: c.created_at,
+        handoff_note_id: c.handoff_note_id || null,
+      };
       byTicker.set(key, row);
     }
     for (const d of docs || []) {
@@ -157,6 +166,7 @@ export const GET = withApiGuard(
         ticker: key,
         currentAnalyst: null,
         hops: 0,
+        latestHop: null,
         lastDocAt: null,
         docCount: 0,
       };
@@ -183,7 +193,7 @@ export const GET = withApiGuard(
   { requireAuth: true },
 );
 
-/* POST — record a coverage handoff (managers only, per RLS). */
+/* POST, record a coverage handoff (managers only, per RLS). */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();

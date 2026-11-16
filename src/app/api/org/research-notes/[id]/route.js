@@ -31,7 +31,7 @@ export const GET = withApiGuard(
     const { embedding, ...clean } = data;
     const [withAuthor] = await attachAuthors(supabase, member.org_id, [clean]);
 
-    // Resolve the doc this one was superseded by (stays readable — never hidden).
+    // Resolve the doc this one was superseded by (stays readable, never hidden).
     let supersededBy = null;
     if (data.superseded_by) {
       const { data: sup } = await supabase
@@ -121,6 +121,22 @@ export const PATCH = withApiGuard(
           .slice(0, 12);
       if ('visibility' in body && ['org', 'team', 'private'].includes(body.visibility))
         update.visibility = body.visibility;
+      // Linked pitch: only a pitch of the same council (read with the member's
+      // own client, so a pitch they cannot see cannot be linked).
+      if ('pitch_id' in body) {
+        if (!body.pitch_id) {
+          update.pitch_id = null;
+        } else {
+          const { data: pitch } = await supabase
+            .from('org_pitches')
+            .select('id')
+            .eq('id', String(body.pitch_id))
+            .eq('org_id', member.org_id)
+            .maybeSingle();
+          if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 400 });
+          update.pitch_id = pitch.id;
+        }
+      }
     }
 
     // Snapshot the pre-edit version before mutating content, then bump version.
@@ -180,7 +196,7 @@ export const DELETE = withApiGuard(
       return NextResponse.json({ error: 'Not allowed' }, { status: 403 });
     }
 
-    // Published/superseded docs are institutional memory — archive, never delete.
+    // Published/superseded docs are institutional memory, archive, never delete.
     if (note.status === 'published' || note.status === 'superseded') {
       const { error } = await supabase
         .from('org_research_notes')

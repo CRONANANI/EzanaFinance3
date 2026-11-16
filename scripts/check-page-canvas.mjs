@@ -120,6 +120,7 @@ const FIXED = [
   ['src/app/(dashboard)/changelog/changelog.css', '.cl-page'],
   ['src/app/(dashboard)/pricing/pricing.css', '.pricing-page'],
   ['src/components/org/org-chart/org-chart.css', '.ooc-page'],
+  ['src/components/org/research-library/research-library.css', '.orl-page'],
   ['src/app/(dashboard)/alternative-markets/am2.css', '.am2-content'],
   ['src/components/sonar/research/research-report.css', '.srr'],
 ];

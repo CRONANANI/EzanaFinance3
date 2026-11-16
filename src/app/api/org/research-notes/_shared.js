@@ -1,12 +1,20 @@
 /**
  * Shared server helpers for the Research Library 2a API surface.
  *
- * Not a route (no `route.js`), so App Router ignores it — safe to co-locate.
+ * Not a route (no `route.js`), so App Router ignores it, safe to co-locate.
  * Keeps embedding/serialization/facet logic in one place so the library GET,
  * the dossier, the lineage view and the write paths all agree on shapes.
  */
 
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { memberHasPermission } from '@/lib/org-permissions-server';
+import {
+  LOAD_LIMIT,
+  countByNote,
+  decorate,
+  librarySummary,
+  shelves,
+} from '@/lib/org-research-library-model';
 
 export const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
@@ -32,7 +40,7 @@ export function sanitizeStatus(v) {
   return STATUSES.includes(v) ? v : 'draft';
 }
 
-/** Text we embed for semantic search — title carries the most signal, then abstract, then body. */
+/** Text we embed for semantic search, title carries the most signal, then abstract, then body. */
 export function buildEmbedText(note) {
   return [note?.title || '', note?.abstract || '', note?.body || '']
     .join('\n')
@@ -109,11 +117,11 @@ export function keywordMatch(note, q) {
     .every((tok) => hay.includes(tok));
 }
 
-/** Loose semantic floor — below this a vector match is noise. Mirrors related-markets. */
+/** Loose semantic floor, below this a vector match is noise. Mirrors related-markets. */
 export const SEMANTIC_FLOOR = 0.72;
 
 /**
- * Reuse the existing Centaur endpoint for AI summaries. Same deployment — we
+ * Reuse the existing Centaur endpoint for AI summaries. Same deployment, we
  * forward the caller's session so /api/centaur/chat authenticates them.
  */
 export async function callCentaur(request, prompt) {
@@ -166,7 +174,11 @@ function countFacet(rows, dim) {
  * @param {import('@supabase/supabase-js').SupabaseClient} supabase  user-scoped client
  * @param {{ org_id: string, user_id: string, role: string }} member
  * @param {URLSearchParams} searchParams
- * @param {{ embedFn?: Function, embedConfigured?: boolean }} deps
+ * @param {{ embedFn?: Function, embedConfigured?: boolean, withLibraryExtras?: boolean }} deps
+ *   `withLibraryExtras` (the Research Library page) adds per-document file,
+ *   comment and open review block counts, the KPI summary, the shelves
+ *   (under review, the viewer's own work, exemplars) and the viewer's
+ *   approval right. Other callers (the research assistant) skip that work.
  */
 export async function librarySearch(supabase, member, searchParams, deps = {}) {
   const q = (searchParams.get('q') || '').trim();
@@ -198,16 +210,36 @@ export async function librarySearch(supabase, member, searchParams, deps = {}) {
     .eq('org_id', member.org_id)
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
-    .limit(1000);
+    .limit(LOAD_LIMIT);
   if (error) return { error: error.message };
 
   let rows = data || [];
+  const truncated = rows.length >= LOAD_LIMIT;
 
   // Drafts are personal-until-published: only surface a draft to its author
   // (managers still see them for review). Keeps the shared library clean.
   const isManager = MANAGER_ROLES.includes(member.role);
   if (!includeDrafts) {
     rows = rows.filter((r) => r.status !== 'draft' || r.author_id === member.user_id || isManager);
+  }
+
+  // Library page extras: counts per document from the comment and file rows
+  // the member can read (row policies follow the note's visibility). Read with
+  // the member's own client; a failed read leaves the counts at zero.
+  if (deps.withLibraryExtras) {
+    const [cRes, aRes] = await Promise.all([
+      supabase
+        .from('org_research_comments')
+        .select('note_id, is_review_block, resolved')
+        .eq('org_id', member.org_id)
+        .limit(20000),
+      supabase
+        .from('org_research_attachments')
+        .select('note_id')
+        .eq('org_id', member.org_id)
+        .limit(20000),
+    ]);
+    rows = decorate(rows, countByNote(cRes?.data || [], aRes?.data || []));
   }
 
   // Semantic scoring (optional). Compute similarity, keep vectors off the wire.
@@ -285,11 +317,30 @@ export async function librarySearch(supabase, member, searchParams, deps = {}) {
   // Pinned always floats to the top regardless of sort.
   finalScored.sort((a, b) => (b.row.pinned ? 1 : 0) - (a.row.pinned ? 1 : 0));
 
-  const notes = await attachAuthors(
-    supabase,
-    member.org_id,
-    finalScored.map((s) => stripEmbedding(s.row)),
-  );
+  let notes;
+  let extras = {};
+  if (deps.withLibraryExtras) {
+    // Name every visible row once: the list, the KPIs and the shelves share it.
+    const named = await attachAuthors(supabase, member.org_id, rows.map(stripEmbedding));
+    const byId = new Map(named.map((n) => [n.id, n]));
+    notes = finalScored.map((s) => byId.get(s.row.id)).filter(Boolean);
+    const canApprove =
+      isManager &&
+      (member.role === 'executive' ||
+        (await memberHasPermission(supabase, member, 'approve_deliverables')));
+    extras = {
+      summary: librarySummary(named, { userId: member.user_id }),
+      shelves: shelves(named, { userId: member.user_id }),
+      truncated,
+      canApprove,
+    };
+  } else {
+    notes = await attachAuthors(
+      supabase,
+      member.org_id,
+      finalScored.map((s) => stripEmbedding(s.row)),
+    );
+  }
 
   // Resolve author facet ids → names for the UI menu.
   const authorNames = {};
@@ -314,21 +365,27 @@ export async function librarySearch(supabase, member, searchParams, deps = {}) {
       userId: member.user_id,
       role: member.role,
       canManage: isManager,
+      ...(deps.withLibraryExtras
+        ? { canApprove: extras.canApprove, displayName: member.display_name || null }
+        : {}),
     },
+    ...(deps.withLibraryExtras
+      ? { summary: extras.summary, shelves: extras.shelves, truncated: extras.truncated }
+      : {}),
   };
 }
 
 /**
  * One-pass loader for the Research Library's INITIAL-mount payload. Shared by
  * the `/bootstrap` route (client fallback) and the research-library server page
- * so both agree on the exact shape `ResearchLibrary` seeds its state from — no
+ * so both agree on the exact shape `ResearchLibraryPage` seeds its state from, no
  * duplication, no drift.
  *
  * Audit of the component: on mount only the `library` view renders, so the only
  * data consumed is the hybrid library search result (`{ notes, facets,
  * authorNames, semantic, viewer }`). The ticker dossier, coverage-lineage
  * overview and the per-note detail drawer all fetch on demand when the user
- * navigates to them — they are deliberately NOT prefetched here so behavior and
+ * navigates to them, they are deliberately NOT prefetched here so behavior and
  * the honest-empty states stay identical. Batched via `Promise.all` so any
  * future mount dataset joins the same single round-trip.
  *
@@ -343,6 +400,7 @@ export async function loadResearchBootstrap(supabase, member, searchParams) {
     librarySearch(supabase, member, params, {
       embedFn: embedViaSupabase,
       embedConfigured: supaEmbedConfigured(),
+      withLibraryExtras: true,
     }),
   ]);
   if (library?.error) return { error: library.error };

@@ -1,33 +1,54 @@
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadResearchBootstrap } from '@/app/api/org/research-notes/_shared';
-import { ResearchLibrary } from '@/components/org/social2/ResearchLibrary';
-import LibrarySonarStrip from '@/components/org/sonar/LibrarySonarStrip';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
+import { parseAddress, searchQuery } from '@/lib/org-research-library-model';
+import { ResearchLibraryPage } from '@/components/org/research-library/ResearchLibraryPage';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Server component: builds the Research Library's initial-mount payload on the
- * server via the SAME loader the /bootstrap route uses, so the client paints
- * without a mount round-trip. When the caller isn't an org member (`member`
- * null) or the load errors, `initialData` stays null and ResearchLibrary falls
- * back to its client-side bootstrap fetch — the org-members-only gate (a 403
- * from that fetch) is preserved unchanged.
+ * /org-team-hub/research-library. Membership is checked on the server in
+ * layout.js, which also provides the shared sidebar (TeamHubShell).
+ *
+ * The library (the same loader the /bootstrap and /search routes use, with
+ * the search and filters from the page address) arrives with the page, so the
+ * first paint has data. When it cannot be loaded the page fetches it and
+ * shows its own error with Retry; a non-member still gets the members-only
+ * line from that fetch.
+ *
+ * The view, search, filters and open document live in the page address
+ * (?view=ticker&symbol=NVDA, ?type=pitch_memo&q=margin, ?d=<id>), so a view or
+ * one document can be linked. `sampleViewer` only tells the page whether to
+ * ask for sample content (master admin and demo accounts); the sample route
+ * checks again.
  */
-export default async function ResearchLibraryPage() {
+export default async function ResearchLibraryRoute({ searchParams }) {
+  const params = (await searchParams) || {};
+  const address = parseAddress((k) => params[k]);
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;
+  let sampleViewer = false;
   if (member) {
-    const result = await loadResearchBootstrap(supabase, member, new URLSearchParams());
+    const [result, auth] = await Promise.all([
+      loadResearchBootstrap(
+        supabase,
+        member,
+        new URLSearchParams(searchQuery(address.q, address.filters)),
+      ),
+      supabase.auth.getUser(),
+    ]);
     initialData = result.error ? null : result;
+    sampleViewer = isCommunityDemoViewer(auth?.data?.user || null);
   }
 
   return (
-    <div className="dashboard-page-inset">
-      {member ? <LibrarySonarStrip /> : null}
-      <ResearchLibrary initialData={initialData} />
-    </div>
+    <ResearchLibraryPage
+      initialData={initialData}
+      sampleViewer={sampleViewer}
+      initialAddress={address}
+    />
   );
 }

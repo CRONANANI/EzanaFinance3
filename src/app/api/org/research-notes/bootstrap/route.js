@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /*
- * GET /api/org/research-notes/bootstrap — ONE batched response with everything
- * `ResearchLibrary` needs on its initial mount. Collapses the separate mount
+ * GET /api/org/research-notes/bootstrap, ONE batched response with everything
+ * `ResearchLibraryPage` needs on its initial mount. Collapses the separate mount
  * fetch into a single round-trip and doubles as the client-side fallback when
  * the research-library page is not server-rendered. Interaction fetches (opening
  * a note, a new search query, ticker dossier, coverage lineage, summarize-set)
- * stay separate and on-demand — only the initial load is batched here.
+ * stay separate and on-demand, only the initial load is batched here.
  *
  * Member-scoped (RLS + explicit org_id inside the shared loader). Same auth gate
  * as the sibling search route: non-members get 403.

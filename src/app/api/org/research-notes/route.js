@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
  * GET /api/org/research-notes
  *   ?q=&type[]=&sector[]=&status[]=&term[]=&author[]=&ticker[]=&sort=&include_drafts=
  * Hybrid library query: keyword + optional gte-small semantic re-rank, real
- * facet counts. Backwards compatible — the legacy `sector`/`pinned`/`tag`
+ * facet counts. Backwards compatible, the legacy `sector`/`pinned`/`tag`
  * single-value params still narrow the result, and the `notes` + `viewer` shape
  * is preserved for the existing consumer.
  */
@@ -49,7 +49,7 @@ export const GET = withApiGuard(
 );
 
 /*
- * POST /api/org/research-notes — create a typed draft (or note). Embeds
+ * POST /api/org/research-notes, create a typed draft (or note). Embeds
  * title+abstract+body on write when Supabase embeddings are configured; falls
  * back to no vector (keyword-only search still works) otherwise.
  */
@@ -85,7 +85,21 @@ export const POST = withApiGuard(
     const status = sanitizeStatus(body?.status || 'draft');
     const docType = sanitizeDocType(body?.doc_type);
 
-    // Author role snapshot — survives cohort rollover (analyst → alum, etc.).
+    // Linked pitch: only a pitch of the same council, read with the member's
+    // own client.
+    let pitchId = null;
+    if (body?.pitch_id) {
+      const { data: pitch } = await supabase
+        .from('org_pitches')
+        .select('id')
+        .eq('id', String(body.pitch_id))
+        .eq('org_id', member.org_id)
+        .maybeSingle();
+      if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 400 });
+      pitchId = pitch.id;
+    }
+
+    // Author role snapshot, survives cohort rollover (analyst → alum, etc.).
     const roleSnapshot = member.role || null;
 
     const insert = {
@@ -105,7 +119,7 @@ export const POST = withApiGuard(
       term: body?.term ? String(body.term).slice(0, 40) : null,
       author_role_at_time: roleSnapshot,
       citations: body?.citations ? String(body.citations).slice(0, 4000) : null,
-      pitch_id: body?.pitch_id || null,
+      pitch_id: pitchId,
       assignment_id: body?.assignment_id || null,
       position_id: body?.position_id || null,
       published_at: status === 'published' ? new Date().toISOString() : null,

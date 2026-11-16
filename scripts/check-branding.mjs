@@ -68,7 +68,7 @@ const EXEMPT = [
   // Standalone documents rendered outside the app shell (an exported research
   // page, a generated PDF). The --font-* tokens do not exist in those
   // documents, so a literal stack is the only thing that works there.
-  /[\\/]social2[\\/]ResearchLibrary\.jsx$/,
+  /[\\/]research-library[\\/]export-document\.js$/,
   /[\\/]api[\\/]org[\\/]reports[\\/].*[\\/]pdf[\\/]route\.js$/,
 ];
 
