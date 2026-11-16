@@ -62,7 +62,7 @@ Do not design around these:
 
 - Live ship positions, vessel names, routes or a moving ship map.
 - Freight rates, container prices, charter rates or delivery times.
-- Company or ticker links (shipping lines, ports operators, importers).
+- Company or ticker links (shipping lines, port operators, importers).
 - Cargo by commodity, or trade by country pair.
 - Reasons for a change (weather, conflict, closures): no event data is joined.
 - Anything newer than the source's lag; any forecast or disruption score.

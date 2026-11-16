@@ -16,7 +16,7 @@ A macro explorer over 20 harmonised OECD Economic Outlook indicators in six lens
 
 ## 2. What is on the page today
 
-Desktop, top to bottom. No ticker and no EzanaQL row on the live layout. Sections are filled cards with small caps tags (MATRIX, RANKING, HEAD-TO-HEAD, HISTORY) and an info button that opens a methodology note.
+Desktop, top to bottom. No ticker and no EzanaQL row on the live layout. Sections are bordered, rounded cards with small caps tags (MATRIX, RANKING, HEAD-TO-HEAD, HISTORY) and an info button that opens a methodology note.
 
 | Section | What it shows | Controls |
 | --- | --- | --- |
@@ -78,7 +78,7 @@ Do not design around these.
 
 ### Design problems
 
-- Filled cards, segmented controls with fills, coloured pill dots and a "+ Add" select break the family look; there is no identity row, freshness line or EzanaQL row.
+- Bordered rounded cards, segmented controls with fills, coloured pill dots and a "+ Add" select break the family look; there is no identity row, freshness line or EzanaQL row.
 - Two parallel products (OECD indicators and empire scores) share one page without saying which is which; the matrix silently changes meaning depending on what loaded.
 - The fallback is a completely different layout.
 - Country names in the ranking use mono; several labels are 9 to 10px.

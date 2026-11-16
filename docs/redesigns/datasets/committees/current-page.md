@@ -14,7 +14,7 @@ The page shows who sits on every committee and subcommittee of Congress, who hol
 
 ## 2. What is on the page today
 
-Desktop, top to bottom: the green band with Capitol Watch active, then ten cards (rounded panels on a fill today) under one sticky control bar.
+Desktop: the green band (Capitol Watch active), then ten cards under one sticky control bar.
 
 - Ticker in the band: up to 20 recent overseen-sector trades ("Member (P-ST)", "BUY · TICKER", range, committee); an item opens the member panel.
 - Header: eyebrow "DATASETS · COMMITTEE ASSIGNMENTS", title, a one-sentence lead, and "Rosters as of (date)" on the right. Then the EzanaQL row to the Capitol Watch hub with Share.

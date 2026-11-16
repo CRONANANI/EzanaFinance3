@@ -91,6 +91,15 @@ production. Live row counts were read from the production database on 2026-11-16
 | 34 | Datasets overview | /datasets | Unlocked | Unlocked | Live counts |
 | 35 | Seven dimension hubs | /datasets/capitol-watch and so on | Unlocked | Unlocked | Live (Capitol Watch bespoke, others template) |
 
+Follow-ups found while describing pages (not done in this run):
+- Conflict (`/datasets/conflict`) is live but in no menu. Adding it to the taxonomy also needs
+  a Sonar coverage entry or an EXCLUDED reason (`test:sonar-dataset-coverage` enforces it).
+- `/datasets/government` is not in `STANDALONE_ROUTES`, so it still renders the old
+  marketing shell instead of the green dataset chrome.
+- Campaign Finance `?member=` uses replaceState, so Back leaves the page instead of closing
+  the drawer; Lobbying's client drawer has no URL; Contracts keeps no filter state in the URL.
+- ETF Holdings and Whale Moves footers name a third-party ticker-mapping vendor.
+
 Not in scope: `/for-the-quants/datasets-research` is a Quant Lab tab behind the v1.0 beta
 lock, not a dataset page. Ask the owner before unlocking it.
 
@@ -98,7 +107,7 @@ lock, not a dataset page. Ask the owner before unlocking it.
 
 | Page | Stage 1 description | 2a screenshots | 2b ChatGPT | 2c Claude Design | 3 build | Shipped |
 | --- | --- | --- | --- | --- | --- | --- |
-| all 35 rows above | see `docs/redesigns/datasets/<slug>/current-page.md` | todo | todo | todo | todo | todo |
+| all 35 rows above | done, `docs/redesigns/datasets/<slug>/current-page.md` (34 files; the contractor dossier is inside government-contracts, the seven hubs share `hubs`) | todo | todo | todo | todo | todo |
 
 Suggested order: the four reference pages last (their data loading must not break, and the
 others learn from their redesign brief), the six new preview pages and the two sample-only
