@@ -1,39 +1,47 @@
-import { OrgFinalClient } from './OrgFinalClient';
+import { OrgChart } from '@/components/org/org-chart/OrgChart';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadChart } from '@/app/api/org/chart/_loader';
 import { loadTeamHubSummary } from '@/app/api/org/team-hub/summary/_loader';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Organization | Ezana Finance',
+  title: 'Org chart | Ezana Finance',
   description:
-    'Investment council: chain of command and the full member roster, grouped by leadership and sector desk.',
+    'The council on one page: reporting structure, sector teams, sector coverage, flag routing and the member roster.',
 };
 
-/* Server component: seed the initial payloads OrgFinalClient fetches on mount
-   (GET /api/org/chart + GET /api/org/team-hub/summary) so first paint has data.
-   All interactivity — layout/committee/filter toggles, role edits, the profile
-   modal — stays client-side. OrgFinalClient keeps its own mount fetch as the
-   fallback when initialData is null (non-member / SSR unavailable). */
+/**
+ * /org-team-hub/org-chart. Membership is checked on the server in layout.js,
+ * which also provides the shared sidebar (TeamHubShell).
+ *
+ * The chart and the fund summary arrive with the page, so the first paint has
+ * data. A read that fails seeds nothing for that part, and the page fetches
+ * it and shows an error with Retry if that fails too. `sampleViewer` only
+ * tells the page whether to ask for sample content (master admin and demo
+ * accounts); the sample route checks again.
+ */
 export default async function OrgChartPage() {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;
+  let sampleViewer = false;
   if (member) {
-    // Mirror the client's Promise.allSettled: a failure of either read seeds
-    // null for that slice, not a broken page.
-    const [chartRes, summaryRes] = await Promise.allSettled([
+    const [chartRes, summaryRes, auth] = await Promise.allSettled([
       loadChart(supabase, member),
       loadTeamHubSummary(supabase, member),
+      supabase.auth.getUser(),
     ]);
     const chart =
       chartRes.status === 'fulfilled' && !chartRes.value.error ? chartRes.value.payload : null;
     const summary = summaryRes.status === 'fulfilled' ? summaryRes.value : null;
     initialData = { chart, summary };
+    sampleViewer =
+      auth.status === 'fulfilled' && isCommunityDemoViewer(auth.value?.data?.user || null);
   }
 
-  return <OrgFinalClient initialData={initialData} />;
+  return <OrgChart initialData={initialData} sampleViewer={sampleViewer} />;
 }

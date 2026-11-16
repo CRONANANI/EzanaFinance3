@@ -119,7 +119,7 @@ const FIXED = [
   ['src/app/(dashboard)/kairos-signal/kairos-signal.css', '.kairos-page'],
   ['src/app/(dashboard)/changelog/changelog.css', '.cl-page'],
   ['src/app/(dashboard)/pricing/pricing.css', '.pricing-page'],
-  ['src/app/(dashboard)/org-team-hub/org-chart/org-final.css', '.ox-wrap'],
+  ['src/components/org/org-chart/org-chart.css', '.ooc-page'],
   ['src/app/(dashboard)/alternative-markets/am2.css', '.am2-content'],
   ['src/components/sonar/research/research-report.css', '.srr'],
 ];

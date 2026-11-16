@@ -9,23 +9,7 @@
  * handling (route → 500; page → null initialData).
  */
 import { ORG_TIERS, tierOf, canEditMember, assignableTiers } from '@/lib/org-hierarchy';
-
-/* The 11 GICS sectors — the single source of truth for what may be assigned. */
-const GICS_SECTORS = [
-  'Energy',
-  'Materials',
-  'Industrials',
-  'Consumer Discretionary',
-  'Consumer Staples',
-  'Health Care',
-  'Financials',
-  'Information Technology',
-  'Communication Services',
-  'Utilities',
-  'Real Estate',
-];
-
-const MANAGER_ROLES = ['executive', 'portfolio_manager'];
+import { GICS_SECTORS, MANAGER_ROLES } from '@/lib/org-chart-model';
 
 const MEMBER_FIELDS =
   'id, user_id, display_name, title, role, sub_role, tier, team_id, reports_to, term_start, term_end, is_graduating';
@@ -39,15 +23,36 @@ const MEMBER_FIELDS =
 export async function loadChart(supabase, member) {
   const orgId = member.org_id;
 
-  const [{ data: members, error: membersErr }, { data: coverage }, { data: org }] =
-    await Promise.all([
-      supabase.from('org_members').select(MEMBER_FIELDS).eq('org_id', orgId).eq('is_active', true),
-      supabase
-        .from('org_sector_coverage')
-        .select('member_id, sector, is_primary')
-        .eq('org_id', orgId),
-      supabase.from('organizations').select('university_name, name').eq('id', orgId).maybeSingle(),
-    ]);
+  const [
+    { data: members, error: membersErr },
+    { data: coverage },
+    { data: org },
+    { data: teams, error: teamsErr },
+    { data: changes, error: changesErr },
+  ] = await Promise.all([
+    /* Earliest joined first. The page's flag routing lines read "first" in
+       this order, as routing does. */
+    supabase
+      .from('org_members')
+      .select(MEMBER_FIELDS)
+      .eq('org_id', orgId)
+      .eq('is_active', true)
+      .order('joined_at', { ascending: true }),
+    supabase
+      .from('org_sector_coverage')
+      .select('member_id, sector, is_primary')
+      .eq('org_id', orgId),
+    supabase.from('organizations').select('university_name, name').eq('id', orgId).maybeSingle(),
+    supabase.from('org_teams').select('id, name').eq('org_id', orgId).order('name'),
+    /* The rank change log. Every active member may read their council's rows
+       (row policy "Org members read role changes"); the rank route writes them. */
+    supabase
+      .from('org_role_changes')
+      .select('id, target_member_id, changed_by_member_id, old_tier, new_tier, created_at')
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .limit(12),
+  ]);
 
   if (membersErr) return { error: membersErr };
 
@@ -82,6 +87,9 @@ export async function loadChart(supabase, member) {
       assignableTiers: assignableTiers(viewerRow),
     },
     members: shaped,
+    /* null (not an empty list) when the read failed, so the page can say so. */
+    teams: teamsErr ? null : teams || [],
+    changes: changesErr ? null : changes || [],
   };
 
   return { payload };

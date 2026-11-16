@@ -1,0 +1,735 @@
+/* ============================================================================
+   Org chart (/org-team-hub/org-chart). Page-scoped: every class starts with
+   ooc-. It sits on the Command Center's shared tcc- atoms (KPI strip, section
+   heads, rows, text buttons, states) so the Team Hub pages read as one.
+   Flat sections on the canvas (branding guide, Part A): no card surface,
+   hairlines only, text-only toggles, one filled button. Tokens only.
+   --ez-rule and --ez-rule-subtle come from home-canvas.css.
+   ============================================================================ */
+/* The page root: on the canvas, no cap and no side padding of its own. */
+.ooc-page {
+  min-width: 0;
+}
+.ooc-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ooc-page .tcc-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ooc-invite {
+  text-decoration: none;
+}
+.ooc-scope {
+  max-width: 460px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-align: right;
+}
+.ooc-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0 0;
+}
+.ooc-ok {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.ooc-ok > .bi {
+  color: var(--positive);
+}
+.ooc-foot,
+.ooc-lede {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.ooc-lede {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ooc-lede .ooc-inline,
+.ooc-route .ooc-inline,
+.ooc-cover .ooc-inline,
+.ooc-table .ooc-inline,
+.ooc-facts .ooc-inline {
+  display: inline;
+  min-height: 0;
+  font-size: inherit;
+  white-space: normal;
+  text-align: left;
+}
+.ooc-skelrows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 0;
+}
+.ooc-warnline {
+  color: var(--warning);
+}
+.ooc-warnline > .bi {
+  margin-right: 6px;
+  font-size: 12px;
+}
+.ooc-tag {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ooc-tag--ic {
+  color: var(--emerald-text);
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────────── */
+.ooc-row--tree {
+  grid-template-columns: minmax(0, 760fr) 1px minmax(0, 328fr);
+}
+
+/* ── A person: initials, name, rank in words ─────────────────────────────── */
+.ooc-avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.ooc-avatar--xl {
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+}
+.ooc-avatar--vacant {
+  background: transparent;
+  border: 1px dashed var(--text-muted);
+  color: var(--text-muted);
+}
+.ooc-person {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  text-align: left;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ooc-person:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.ooc-person__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.ooc-person__name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.ooc-person__rank,
+.ooc-person__sub {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.ooc-person__sub {
+  font-size: 11px;
+}
+.ooc-person:hover .ooc-person__name,
+.ooc-person.is-self .ooc-person__name {
+  color: var(--emerald-text);
+}
+.ooc-person--lg .ooc-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 12px;
+}
+.ooc-person--lg .ooc-person__name {
+  font-size: 14px;
+}
+.ooc-person--sm .ooc-avatar {
+  width: 20px;
+  height: 20px;
+  font-size: 8px;
+}
+.ooc-person--sm {
+  gap: 8px;
+}
+.ooc-person--sm .ooc-person__name {
+  font-weight: 500;
+}
+
+/* ── Reporting structure ─────────────────────────────────────────────────── */
+.ooc-tier {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ooc-tree__lead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+/* Team columns. Each column draws its own piece of the grey bar above the
+   row, reaching across the gap to the next column, and the list clips the
+   last piece, so every wrapped row gets one unbroken line. */
+.ooc-tree__teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 28px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+.ooc-team {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 14px;
+}
+.ooc-team::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: -24px;
+  height: 1px;
+  background: var(--ez-rule);
+}
+.ooc-team__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ooc-team__members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  /* The spine sits under the head's initials, clear of the names. */
+  margin-left: 13.5px;
+  padding: 2px 0 2px 14px;
+  border-left: 1px solid var(--ez-rule);
+  list-style: none;
+}
+.ooc-team__none {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ooc-vacant {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+}
+.ooc-vacant > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ooc-vacant__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warning);
+}
+.ooc-vacant__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Sector coverage ─────────────────────────────────────────────────────── */
+.ooc-cover__row {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: baseline;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.ooc-cover__sector {
+  color: var(--text-secondary);
+}
+.ooc-cover__who {
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+/* ── Flag routing ────────────────────────────────────────────────────────── */
+.ooc-route {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: baseline;
+  padding: 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ooc-route__team {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ooc-route__line {
+  color: var(--text-secondary);
+}
+.ooc-route .ooc-inline,
+.ooc-lede .ooc-inline {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ooc-route .ooc-inline:hover,
+.ooc-lede .ooc-inline:hover {
+  color: var(--emerald-text);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.ooc-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+/* display: table holds against the app's phone rule that turns every table
+   into a scrolling block: these already scroll inside .ooc-scroll. */
+.ooc-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ooc-table th,
+.ooc-table td {
+  padding: 10px 10px;
+  text-align: left;
+  vertical-align: baseline;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.ooc-table thead th {
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ooc-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.ooc-table tr > :first-child {
+  padding-left: 0;
+}
+.ooc-table tr > :last-child {
+  padding-right: 0;
+}
+.ooc-table td[role='rowheader'] {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ooc-table .ooc-num {
+  text-align: right;
+}
+.ooc-table td.ooc-num {
+  color: var(--text-primary);
+}
+.ooc-table td.tcc-pos {
+  color: var(--positive);
+}
+.ooc-table td.tcc-neg {
+  color: var(--negative);
+}
+.ooc-table .tcc-na,
+.ooc-table td.tcc-na {
+  color: var(--text-muted);
+}
+.ooc-table td.ooc-wrap {
+  white-space: normal;
+  min-width: 96px;
+}
+.ooc-table .ooc-total > * {
+  border-top: 1px solid var(--ez-rule);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ooc-cellnote {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  white-space: normal;
+  color: var(--text-muted);
+}
+.ooc-table .ooc-rowname {
+  white-space: nowrap;
+}
+.ooc-rowname {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+/* The viewer's own row: emerald text only. */
+.ooc-self .ooc-rowname {
+  color: var(--emerald-text);
+}
+.ooc-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.ooc-table .ooc-actions .ooc-inline {
+  white-space: nowrap;
+}
+.ooc-table--roster th,
+.ooc-table--roster td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.ooc-filters {
+  margin-bottom: 14px;
+}
+
+/* ── Succession ──────────────────────────────────────────────────────────── */
+.ooc-succ {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+.ooc-succ__who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ooc-succ__who .ooc-inline {
+  align-self: flex-start;
+}
+.ooc-succ__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ooc-succ__when {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Overlays (dialogs keep the library's surface) ───────────────────────── */
+.ooc-dialog {
+  --ez-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --ez-rule-subtle: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.ooc-dialog .ds-modal-footer {
+  align-items: center;
+  gap: 20px;
+}
+.ooc-panel,
+.ooc-rank,
+.ooc-coverdlg,
+.ooc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ooc-panel > section,
+.ooc-panel > form {
+  padding-top: 16px;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.ooc-panel p {
+  margin: 0;
+}
+.ooc-panel__id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.ooc-panel__rank {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ooc-panel__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ooc-panel__rankbtn {
+  margin-left: auto;
+}
+.ooc-subtitle {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ooc-form .ooc-subtitle {
+  margin-bottom: 0;
+}
+.ooc-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 24px;
+  margin: 0;
+}
+.ooc-facts--stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ooc-facts__wide {
+  grid-column: 1 / -1;
+}
+.ooc-facts dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ooc-facts dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.ooc-facts dd.tcc-na,
+.ooc-facts .tcc-na {
+  color: var(--text-muted);
+}
+.ooc-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.ooc-fieldset legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ooc-checks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 16px;
+}
+/* Sentence case for options, and no tick drawn in an empty box. */
+.ooc-dialog .ds-checkbox {
+  align-items: flex-start;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.4;
+}
+.ooc-dialog .ds-checkbox-box {
+  flex: 0 0 auto;
+}
+.ooc-dialog .ds-checkbox input:not(:checked) + .ds-checkbox-box > .bi {
+  visibility: hidden;
+}
+.ooc-fieldset .tcc-form__note {
+  margin-top: 8px;
+}
+.ooc-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+}
+.ooc-tiles > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ooc-tiles dt {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ooc-tiles dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ooc-tiles dd.tcc-pos {
+  color: var(--positive);
+}
+.ooc-tiles dd.tcc-neg {
+  color: var(--negative);
+}
+.ooc-tiles dd.tcc-na {
+  color: var(--text-muted);
+}
+.ooc-calls {
+  margin-top: 10px !important;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.ooc-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.ooc-badges li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+.ooc-badges .bi {
+  color: var(--text-muted);
+}
+.ooc-badges__place {
+  color: var(--text-muted);
+}
+.ooc-message {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+/* Borderless field: the only focus cue is the text cursor. */
+.ooc-message__field {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ooc-message__field::placeholder {
+  color: var(--text-muted);
+}
+.ooc-rank__list {
+  display: flex;
+  flex-direction: column;
+}
+.ooc-rank__opt {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ooc-rank__opt:last-child {
+  border-bottom: 0;
+}
+.ooc-rank__opt > .bi {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ooc-rank__opt:hover {
+  color: var(--text-primary);
+}
+.ooc-rank__opt.is-on,
+.ooc-rank__opt.is-on > .bi {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.ooc-rank__opt:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.ooc-rank__group {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ── Narrow layouts (by the width of the page column) ────────────────────── */
+@container tcc (max-width: 940px) {
+  .ooc-scope {
+    max-width: none;
+    text-align: left;
+  }
+}
+@container tcc (max-width: 620px) {
+  .ooc-tree__teams {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .ooc-route {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .ooc-cover__row {
+    grid-template-columns: 116px minmax(0, 1fr) auto;
+  }
+}
+@media (max-width: 560px) {
+  .ooc-facts,
+  .ooc-checks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ooc-person,
+  .ooc-rank__opt {
+    transition: none;
+  }
+}

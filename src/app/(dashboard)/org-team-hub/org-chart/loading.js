@@ -1,54 +1,63 @@
-import { SkeletonRegion, Skeleton, SkeletonCard, token } from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/org-chart/org-chart.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for the Org Chart. Real header chrome + a ticker
- * tape strip and a member-tree card silhouette. No useOrg / no fetch.
+ * Route loading state for the Org chart, in the page's final layout: the
+ * eight figures, the structure beside sector coverage, then the tables. It
+ * renders inside the shared Team Hub shell, whose sidebar stays painted
+ * beside it. Presentation only: no data, no org context, no import of the
+ * page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
+
+function Block({ lines = 4 }) {
+  return (
+    <div className="tcc-section">
+      <div className="tcc-head">{bar(180, 18)}</div>
+      <div className="ooc-skelrows">
+        {Array.from({ length: lines }).map((_, i) => (
+          <span key={i}>{bar('100%', 14)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function OrgChartLoading() {
   return (
-    <SkeletonRegion label="Loading org chart…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Organization</h1>
-
-      {/* Desk tape */}
-      <div style={{ marginTop: 18 }}>
-        <Skeleton width="100%" height={40} radius={token.radiusMd} />
-      </div>
-
-      {/* Tree */}
-      <div style={{ marginTop: 22, display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: 260 }}>
-          <SkeletonCard rows={1} />
+    <SkeletonRegion
+      label="Loading the org chart"
+      className="dashboard-page-inset ez-canvas tcc-page ooc-page"
+    >
+      <div className="tcc-top ooc-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(56, 16)}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      <div
-        style={{
-          marginTop: 20,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: 16,
-        }}
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <SkeletonCard key={i} rows={1} />
-        ))}
+      <div className="tcc-row ooc-row--tree">
+        <Block lines={8} />
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={11} />
+      </div>
+      <div className="tcc-row tcc-row--wide">
+        <Block lines={5} />
+        <span className="tcc-vrule" aria-hidden="true" />
+        <Block lines={5} />
+      </div>
+      <div className="tcc-row tcc-row--single">
+        <Block lines={8} />
       </div>
     </SkeletonRegion>
   );
