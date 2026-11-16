@@ -7,7 +7,7 @@ Written from the code at commit caa179e (main, November 16, 2026). The page was 
 
 Whale Moves ranks institutional and activist positions by conviction rather than size, using the Whale Score, Ezana's own 0 to 100 measure (not an SEC figure). Quarterly institutional holdings are scored on share of the manager's book, newness, fund concentration and size; activist stakes (Schedules 13D and 13G) on form, stake size and escalation. A "Burry Watcher" block shows one famous manager's last public holdings.
 
-- Who uses it: retail investors and student analysts asking "which big investors just made a real bet, and on what?"
+- Who uses it: retail investors and students asking "which big investors just made a real bet?"
 - How they get there: the Titans Shadow menu in the green category bar, the Titans Shadow hub, search engines, shared links, and the 13D or 13G signal links on the Institutional Holdings page.
 - What they do next: read the table and the method, or open EzanaQL. No row links anywhere.
 - Data connected today: yes, live. Scores are computed hourly from SEC EDGAR filings and the page refreshes about every 15 minutes. Whether rows exist today was not checked.
@@ -15,17 +15,17 @@ Whale Moves ranks institutional and activist positions by conviction rather than
 
 ## 2. What is on the page today
 
-Desktop, top to bottom, in the older marketing page shell (centred, up to 1,400px).
+Desktop, in the older marketing page shell.
 
 **Frame.** The navigation bar, the full-bleed green category band, and a ticker strip of the 20 top-scored moves: lead the tier ("Fresh conviction"), "Manager name → TICKER", the score. Not clickable. The shared dataset footer closes the page.
 
-**Hero (centred).** Eyebrow "TITANS SHADOW · SEC EDGAR", title "Whale Moves" (title case), and a three-sentence lead on why conviction beats size.
+**Hero (centred).** Eyebrow "TITANS SHADOW · SEC EDGAR", title "Whale Moves", and a three-sentence lead.
 
 **EzanaQL row.** Terminal icon, "Query this data with EzanaQL" linking to the Titans Shadow hub, and Share.
 
-**Status note.** With no rows, a tinted note: "Scores appear once two quarters of 13F filings are loaded. Each filer's latest quarter is compared with its prior one, and the prior quarter is still being read from SEC EDGAR."
+**Status note.** With no rows, a tinted note: "Scores appear once two quarters of 13F filings are loaded." plus one sentence on why.
 
-**Highest-conviction moves this quarter.** Up to five bordered, filled, rounded cards in a row: a coloured tier pill and the score at the top, the manager name, the ticker chip and issuer, and one "why" line ("new · 14.2% of book", or "Schedule 13D at 8.1%"). Not clickable.
+**Highest-conviction moves this quarter.** Up to five bordered, filled, rounded cards: tier pill and score, manager, ticker chip and issuer, and a "why" line ("new · 14.2% of book" or "Schedule 13D at 8.1%"). Not clickable.
 
 **Controls.** Three labelled bordered drop-downs and a count:
 
@@ -48,32 +48,32 @@ Desktop, top to bottom, in the older marketing page shell (centred, up to 1,400p
 | Value | Position value, compact dollars, or a dash |
 | Score | A thin bar and the 0 to 100 number |
 
-Tiers: Fresh conviction, Doubling down, Activist stake (green); Adding, Quiet accumulation, New position (mild green); Holding (grey); Trimming, Heading for the exit (red). Empty lines: "No moves match the current filters." or "No scored moves yet. Scores appear once two quarters of 13F filings are loaded."
+Tiers: Fresh conviction, Doubling down, Activist stake (green); Adding, Quiet accumulation, New position (pale green); Holding (grey); Trimming, Heading for the exit (red). Empty: "No moves match the current filters." or "No scored moves yet. Scores appear once two quarters of 13F filings are loaded."
 
-**Burry Watcher.** One bordered card about one well-known manager whose firm stopped filing in November 2025.
+**Burry Watcher.** One bordered card on a well-known manager whose firm stopped filing in November 2025.
 
 - Head: eyebrow with manager and firm, title "Burry Watcher", intro; then a "Not current positions." notice explaining these are from the final public 13F and that his paid newsletter is not reproduced.
 - "Final 13F holdings": up to 12 lines: Issuer (with ticker), Type (Shares, Principal, Puts or Calls as small badges), Reported value, Share of reported value (bar and percent). Then totals, a note that option lines are notional, and a provenance line with form, dates, accession number and a filing link.
-- Two columns: "On Ezana Echo" (Echo articles mentioning him, title and date) and "In the news" (major-outlet headlines from the last 90 days, outlet and date, opening in a new tab).
+- Two columns: "On Ezana Echo" (articles mentioning him) and "In the news" (major-outlet headlines, last 90 days, new tab).
 - Each part has its own unavailable and empty line.
 
 **How the Whale Score works.** A lead and four factor blocks (name, weight, bar, description): Conviction 40, Newness 30, Concentration 20, Absolute size 10. Activist weights are not shown.
 
 **How we source it.** Two paragraphs on sources, the 45-day lag and the derived score, then a line naming the third-party ticker mapping service.
 
-**Loading.** A skeleton of a centred header, five highlight cards, three controls and a table block.
+**Loading.** A skeleton of header, five cards, controls and table.
 
-**Tablet and phone.** Highlight cards wrap to fewer columns. Under 560px the controls tighten and the Burry card loses padding. The table scrolls sideways in its own region.
+**Tablet and phone.** Highlight cards wrap. Under 560px controls tighten. The table scrolls sideways in its own region.
 
 ## 3. What the user can do
 
 - Filter by filer type and by tier; sort by score, value or conviction
-- Read the five highest-scored moves
-- Read the Burry Watcher holdings, open the filing, open Echo articles and news stories
+- Read the top five moves
+- Read the Burry Watcher; open its filing, Echo articles and news
 - Read how the score is built and sourced
 - Share the page; open EzanaQL
 - Not available: search, opening a manager or a stock, links to filings for moves, paging, export, and any URL state. Filters reset on reload.
-- Stored but not shown: the quarter, the filing date, the manager's identifier and the full factor breakdown behind each score.
+- Stored but not shown: quarter, filing date, manager identifier and each score's factor breakdown.
 
 ## 4. Data we have
 
@@ -91,30 +91,30 @@ Tiers: Fresh conviction, Doubling down, Activist stake (green); Adding, Quiet ac
 | Escalated | Stake grew since the last filing | Calculated | Same | Institutional rows |
 | Whale Score, tier | 0 to 100 and its band | Ezana calculation | Same | Moves under $100M or without a prior quarter |
 | Burry final holdings | Issuer, ticker, type, value, share of reported value | His firm's final 13F | Fixed (no newer filing exists) | None |
-| Echo articles, news headlines | Title, outlet, date, link | Ezana Echo; major news outlets | Hourly; six-hourly | Can be empty |
+| Echo articles, news | Title, outlet, date, link | Ezana Echo; major outlets | Hourly; six-hourly | Can be empty |
 
 ## 5. Data we do not have
 
 Do not design around these.
 
 - Current or live positions; everything is a past quarter end or a filing date.
-- Short positions, cash or most bonds.
+- Short positions or cash.
 - Price charts, returns since the move, or performance of any manager.
 - Manager photos, logos or biographies.
-- A per-move history over many quarters or score history over time.
-- Sector or industry for each move.
-- Any buy or sell recommendation; the score describes a filing, never advice.
-- Burry's current positions or newsletter content.
+- Score history over many quarters.
+- Sector or industry.
+- Any recommendation; the score describes a filing.
+- Burry's current positions or newsletter.
 - Wireframe figures are sample content with invented names; only admin and demo accounts will see sample data live, labelled "Sample content".
 
 ## 6. Must keep working
 
 - The Whale Score, its tiers and the published weights, with the clear statement that it is an Ezana metric, not an SEC figure.
 - Scores only once the prior quarter is loaded, and the honest status note when none are.
-- Filters by filer type and tier; sorting by score, value and conviction.
-- Activist rows show percent of class and form or escalation; institutional rows show conviction and change type.
-- The Burry Watcher with its "Not current positions" notice, provenance and filing link, option notional note, and per-section empty states.
-- The 45-day lag and sourcing explanation.
+- Filer type and tier filters; sorting by score, value and conviction.
+- Activist rows show percent of class and form; institutional rows show conviction and change.
+- The Burry Watcher with its "Not current positions" notice, provenance, filing link, option note and empty states.
+- The 45-day lag and sourcing note.
 - The ticker strip, the EzanaQL row and Share.
 - Institutional Holdings links here from its 13D and 13G signals; those links must keep landing here.
 - Sample data rule: admin and demo accounts may see sample content labelled "Sample content", never saved; everyone else sees real data or "This dataset's source is not connected yet." Known change: a parallel commit applies this rule to every dataset page.
@@ -126,17 +126,17 @@ Do not design around these.
 - A centred marketing hero with a three-sentence lead and a title-case title instead of the compact identity row.
 - Highlight cards, tier pills, change chips and the Burry card are bordered, filled and rounded; tiers rely on colour.
 - Bordered labelled drop-downs instead of text-only filters; sort is a drop-down, not header clicks.
-- Nothing opens: no manager or stock detail, no filing link per move.
+- Nothing opens: no detail, no filing link per move.
 - The Burry Watcher, about one person, takes as much space as the dataset.
-- The score explainer is four boxed blocks in a promotional tone.
+- The score explainer is four boxed blocks.
 
 ### Bugs and gaps
 
 - No URL state; filters cannot be shared.
-- The "Δ" header and the arrow in ticker items are symbols a screen reader may read oddly.
+- The "Δ" header and the ticker arrow may read oddly to screen readers.
 - The source note names a third-party data service, which breaks the no-vendor-names rule.
 - Links from Institutional Holdings drop the ticker; the page has no parameter to receive one.
-- Only 120 moves load, with no way to see more or search.
+- Only 120 moves load, with no search.
 
 ## 8. Design rules the mock must follow
 
