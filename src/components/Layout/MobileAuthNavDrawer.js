@@ -215,6 +215,12 @@ function buildNavGroups(isOrgUser) {
             description: 'Fund overview & analytics',
           },
           {
+            label: 'Community',
+            href: '/community',
+            icon: Users,
+            description: 'Council posts & events',
+          },
+          {
             label: 'Council trading',
             href: '/org-trading',
             icon: Landmark,

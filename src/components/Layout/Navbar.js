@@ -408,19 +408,15 @@ export function Navbar() {
       icon: 'bi-bookmark',
       isActive: pathname?.includes('/watchlist'),
     },
-    // Team Hub (org users) now lives at the front of the nav, to the left of
-    // Research — so only the non-org Community item remains in this slot.
-    ...(isOrgUser
-      ? []
-      : [
-          {
-            id: 5,
-            title: 'Community',
-            url: '/community',
-            icon: 'bi-people',
-            isActive: pathname?.includes('/community'),
-          },
-        ]),
+    // Team Hub (org users) lives at the front of the nav. Community sits
+    // here for everyone: council members get their council's community.
+    {
+      id: 5,
+      title: 'Community',
+      url: '/community',
+      icon: 'bi-people',
+      isActive: pathname?.includes('/community'),
+    },
     {
       id: 6,
       title: 'Learning Center',

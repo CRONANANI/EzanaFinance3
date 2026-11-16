@@ -7,6 +7,7 @@ import { ALLOWED_POST_TYPES } from '@/lib/post-types';
 import { insertNotificationAndPush } from '@/lib/push/fanout';
 import { visibleTo, isBlockedPair } from '@/lib/moderation/blocks';
 import { communityTermsGate } from '@/lib/moderation/terms';
+import { councilMemberPostingRefusal } from '@/lib/community/council-member-gate';
 
 import { validateTitle, normalizeTopic } from '@/lib/community/redesign';
 
@@ -578,6 +579,11 @@ export async function POST(request) {
 
     const termsGate = await communityTermsGate(admin, user.id);
     if (termsGate) return termsGate;
+    /* Council members post in their council community, never in public. */
+    const councilRefusal = await councilMemberPostingRefusal(supabase, user.id);
+    if (councilRefusal) {
+      return NextResponse.json({ error: councilRefusal.error }, { status: councilRefusal.status });
+    }
     if (parentPostForNotif && (await isBlockedPair(admin, user.id, parentPostForNotif.user_id))) {
       return NextResponse.json({ error: 'You cannot reply to this post.' }, { status: 403 });
     }
