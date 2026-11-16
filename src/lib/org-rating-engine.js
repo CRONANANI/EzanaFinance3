@@ -1,11 +1,11 @@
 /**
- * Ezana Rating engine — a NEW, per-ORG-MEMBER rating engine.
+ * Ezana Rating engine: a NEW, per-ORG-MEMBER rating engine.
  *
  * ⚠️ SEPARATION: this is NOT the platform-wide, per-USER ELO. It never reads or
  * writes user_elo / elo_transactions / ELO_TIERS / src/lib/elo.js. It owns only
  * the org rating tables: org_member_rating, org_rating_transactions,
  * org_rating_categories, org_rating_weights. (user_elo may be *read* as one input
- * signal for the "learning" category — never written.)
+ * signal for the "learning" category: never written.)
  *
  * Identity: a member is keyed by org_members.id (matches org_pitches.analyst_member_id),
  * so ratings join naturally to resolved theses.
@@ -16,6 +16,8 @@
  * never invented as a 0. Calibration in particular needs persisted
  * conviction_level; until pitches carry it, calibration is pending everywhere.
  */
+
+import { isFacultyAdvisor, isRatedPitch, scoredOn } from './org-recognition-model.js';
 
 // ── Tiers (the design's bands; distinct from ELO_TIERS) ─────────────────────
 export const EZANA_TIERS = [
@@ -63,13 +65,13 @@ export function mapMemberToWeightRole(role, subRole) {
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const num = (v) => (v == null || v === '' ? null : Number(v));
 
-/** Per-thesis rating delta from realized excess return (alpha vs sector). */
+/** Per-thesis rating delta from realized excess return over the broad market. */
 const ALPHA_FACTOR = 18;
 export function thesisDelta(alphaPct, { convictionLevel = null } = {}) {
   const a = num(alphaPct);
   if (a == null) return 0;
   let delta = clamp(a, -25, 40) * ALPHA_FACTOR;
-  // Calibration alignment bonus — ONLY when a real conviction was declared.
+  // Calibration alignment bonus: ONLY when a real conviction was declared.
   // (Strong outcomes score better when they were *intended*; weak/negative
   //  outcomes on high conviction are penalized harder.) No conviction ⇒ no bonus.
   if (convictionLevel != null) {
@@ -108,7 +110,7 @@ export async function getEffectiveWeights(db, orgId, weightRole) {
 /**
  * Compute the categories we can back with real data. Returns
  * { category: score } for computable categories ONLY. Categories with no inputs
- * are omitted (the API/UI renders them "pending" — never a fabricated 0).
+ * are omitted (the API/UI renders them "pending": never a fabricated 0).
  */
 export async function computeCategories(db, orgId, member, resolvedTheses) {
   const scores = {};
@@ -145,14 +147,9 @@ export async function computeCategories(db, orgId, member, resolvedTheses) {
   const taskScore = scoreFromCount(subCount || 0, 6);
   if (taskScore != null) scores.task_efficiency = taskScore;
 
-  // engagement ← research notes + recognition received (real participation signal).
-  const { count: recogCount } = await db
-    .from('org_recognition')
-    .select('id', { count: 'exact', head: true })
-    .eq('org_id', orgId)
-    .eq('recipient_id', userId);
-  const engSignal = (noteCount || 0) + (recogCount || 0);
-  const engScore = scoreFromCount(engSignal, 10);
+  // engagement ← research notes written. Badges received no longer count:
+  // a manager could raise their own score by awarding themselves (Nov 2026).
+  const engScore = scoreFromCount(noteCount || 0, 10);
   if (engScore != null) scores.engagement = engScore;
 
   // learning ← platform user_elo (READ-ONLY input signal; never written).
@@ -181,7 +178,7 @@ export async function computeCategories(db, orgId, member, resolvedTheses) {
 
 /**
  * Calibration: declared conviction (1–5) vs realized hit rate. Returns null when
- * NO resolved thesis carries a conviction — never fabricates a score.
+ * NO resolved thesis carries a conviction: never fabricates a score.
  * Also returns the per-conviction series for the calibration chart.
  */
 export function computeCalibration(resolvedTheses) {
@@ -225,7 +222,12 @@ export function computeCalibration(resolvedTheses) {
 export async function recomputeMemberRating(db, orgId, member) {
   const memberId = member.id;
 
-  // Resolved theses = this member's accepted pitches that have hindsight.
+  // Resolved theses = this member's ACCEPTED pitches that have hindsight
+  // (rejected, watchlist and deferred pitches are priced too, but not rated).
+  // Each one is dated on the day it was scored: 30 days after the decision.
+  // The outcome row's computed_at is refreshed every weekday, so it is not a
+  // date of anything (Nov 2026 fix: history and Top movers used to show every
+  // change on the day of the last recompute).
   const { data: pitches } = await db
     .from('org_pitches')
     .select(
@@ -249,7 +251,9 @@ export async function recomputeMemberRating(db, orgId, member) {
   const resolved = hindsight
     .map((h) => {
       const p = pitchById.get(h.pitch_id);
-      if (!p) return null;
+      if (!p || !isRatedPitch(p)) return null;
+      const scored = scoredOn(p.decision_at);
+      if (!scored || new Date(scored).getTime() > Date.now()) return null;
       return {
         pitch_id: h.pitch_id,
         ticker: p.ticker,
@@ -261,7 +265,7 @@ export async function recomputeMemberRating(db, orgId, member) {
         return_pct: h.return_pct,
         benchmark_return_pct: h.benchmark_return_pct,
         current_state: h.current_state,
-        resolved_at: h.computed_at || p.decision_at || p.created_at,
+        resolved_at: scored,
       };
     })
     .filter(Boolean)
@@ -296,7 +300,9 @@ export async function recomputeMemberRating(db, orgId, member) {
       rating_after: running,
       reason: 'thesis_resolved',
       pitch_id: t.pitch_id,
+      created_at: t.resolved_at,
       metadata: {
+        scored_on: t.resolved_at,
         ticker: t.ticker,
         alpha_pct: t.alpha_pct == null ? null : Number(t.alpha_pct),
         conviction_level: t.conviction_level,
@@ -312,7 +318,19 @@ export async function recomputeMemberRating(db, orgId, member) {
   const isProvisional = ratedThesisCount < PROVISIONAL_THRESHOLD;
   const tier = tierForRating(rating, ratedThesisCount);
 
-  // Upsert the member rating row.
+  // Upsert the member rating row. updated_at is the decay clock (the daily
+  // job decays members whose rating has not moved in 30 days), so it only
+  // moves when the rating or the count actually changed.
+  const { data: before } = await db
+    .from('org_member_rating')
+    .select('rating, rated_thesis_count')
+    .eq('org_id', orgId)
+    .eq('member_id', memberId)
+    .maybeSingle();
+  const moved =
+    !before ||
+    Math.round(Number(before.rating)) !== rating ||
+    Number(before.rated_thesis_count || 0) !== ratedThesisCount;
   await db.from('org_member_rating').upsert(
     {
       org_id: orgId,
@@ -320,7 +338,7 @@ export async function recomputeMemberRating(db, orgId, member) {
       rating,
       tier,
       rated_thesis_count: ratedThesisCount,
-      updated_at: new Date().toISOString(),
+      ...(moved ? { updated_at: new Date().toISOString() } : {}),
     },
     { onConflict: 'org_id,member_id' },
   );
@@ -363,7 +381,8 @@ export async function recomputeOrg(db, orgId) {
     .eq('org_id', orgId)
     .eq('is_active', true);
   const results = [];
-  for (const m of members || []) {
+  // Faculty advisors give awards but are not rated or ranked.
+  for (const m of (members || []).filter((x) => !isFacultyAdvisor(x))) {
     // eslint-disable-next-line no-await-in-loop
     const r = await recomputeMemberRating(db, orgId, m);
     results.push({ member_id: m.id, display_name: m.display_name, ...r });
@@ -381,8 +400,17 @@ export const DECAY_IDLE_DAYS = 30;
  * DECAY_IDLE_DAYS. Floored at DECAY_FLOOR. Writes a 'decay' transaction.
  * Returns the applied delta (0 if none).
  */
+export function decayTarget(currentRating) {
+  const r = Number(currentRating);
+  // A member at or below the floor is left alone: decay never RAISES a
+  // rating (Nov 2026 fix: a member below 1250 used to be lifted to 1250).
+  if (!Number.isFinite(r) || r <= DECAY_FLOOR) return r;
+  return Math.max(DECAY_FLOOR, r - DECAY_AMOUNT);
+}
+
 export async function applyDecay(db, orgId, memberId, currentRating) {
-  const target = Math.max(DECAY_FLOOR, currentRating - DECAY_AMOUNT);
+  if (!(Number(currentRating) > DECAY_FLOOR)) return 0;
+  const target = decayTarget(currentRating);
   const delta = Math.round(target - currentRating);
   if (delta === 0) return 0;
   await db.from('org_rating_transactions').insert({

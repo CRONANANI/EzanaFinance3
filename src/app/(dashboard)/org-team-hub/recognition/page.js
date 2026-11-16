@@ -1,58 +1,50 @@
+import { RecognitionPage } from '@/components/org/recognition/RecognitionPage';
 import { getUserClient } from '@/lib/supabase';
-import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import { RecognitionWall } from '@/components/org/social2/RecognitionWall';
+import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { loadRatings, loadRecognitionBase } from '@/app/api/org/recognition/_loader';
+import { isCommunityDemoViewer } from '@/lib/community/demo-page';
 
 export const dynamic = 'force-dynamic';
 
-const MANAGER_ROLES = ['executive', 'portfolio_manager'];
+const one = (v) => (Array.isArray(v) ? v[0] : v) || null;
 
-// Mirrors what RecognitionWall.loadMeta() consumes from GET /api/org/recognition
-// (members, viewer.canAward, viewer.memberId) and GET /api/org/recognition/recent
-// (recent), so the client can seed and skip the mount fetch.
-async function loadRecognition(supabase, member) {
-  const { data: members } = await supabase
-    .from('org_members')
-    .select('id, user_id, display_name, role')
-    .eq('org_id', member.org_id);
-  const byUser = new Map((members || []).map((m) => [m.user_id, m]));
-
-  const { data: recentRows, error } = await supabase
-    .from('org_recognition')
-    .select(
-      'id, recipient_id, badge_type, title, reason, period, is_award, auto_generated, pitch_id, created_at',
-    )
-    .eq('org_id', member.org_id)
-    .order('created_at', { ascending: false })
-    .limit(8);
-  if (error) return null;
-
-  const recent = (recentRows || []).map((r) => ({
-    ...r,
-    recipient_name: byUser.get(r.recipient_id)?.display_name || 'Member',
-    recipient_member_id: byUser.get(r.recipient_id)?.id || null,
-    recipient_role: byUser.get(r.recipient_id)?.role || null,
-  }));
-
-  return {
-    members: (members || []).map((m) => ({
-      user_id: m.user_id,
-      display_name: m.display_name,
-      role: m.role,
-    })),
-    canAward: assertOrgRole(member, MANAGER_ROLES),
-    viewerMemberId: member.id,
-    recent,
-  };
-}
-
-export default async function RecognitionPage() {
+/**
+ * /org-team-hub/recognition. Membership is checked on the server in
+ * layout.js, which also provides the shared sidebar (TeamHubShell).
+ *
+ * The roster, the badges and awards (the same payload as GET
+ * /api/org/recognition) and the first ranked list (Top movers, 30D) arrive
+ * with the page, so the first paint has data. When either cannot be loaded
+ * the page fetches it and shows its own error with Retry.
+ *
+ * The open scorecard is kept in the page address (?member=<id>), so one
+ * member's scorecard can be linked. `sampleViewer` only tells the page
+ * whether to ask for sample content (master admin and demo accounts); the
+ * sample route checks again.
+ */
+export default async function RecognitionRoute({ searchParams }) {
   const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
-  const initialData = member ? await loadRecognition(supabase, member) : null;
+  let initialBase = null;
+  let initialRatings = null;
+  let sampleViewer = false;
+  if (member) {
+    const [base, ratings, auth] = await Promise.all([
+      loadRecognitionBase(supabase, member),
+      loadRatings(supabase, member, 'movers', '30d'),
+      supabase.auth.getUser(),
+    ]);
+    initialBase = base.payload ?? null;
+    initialRatings = ratings.payload ?? null;
+    sampleViewer = isCommunityDemoViewer(auth?.data?.user || null);
+  }
 
   return (
-    <div className="dashboard-page-inset">
-      <RecognitionWall initialData={initialData} />
-    </div>
+    <RecognitionPage
+      initialBase={initialBase}
+      initialRatings={initialRatings}
+      sampleViewer={sampleViewer}
+      initialMember={one(searchParams?.member)}
+    />
   );
 }

@@ -9,6 +9,7 @@ import {
   computeCalibration,
   tierLabel,
 } from '@/lib/org-rating-engine';
+import { historyIsDated, isFacultyAdvisor, ratingHistory } from '@/lib/org-recognition-model';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,9 +22,14 @@ function percentileOf(value, population) {
 }
 
 /* GET /api/org/recognition/scorecard/[memberId]
-   The résumé artifact: hero, sparkline, percentiles, role-weighted categories
-   (pending where no inputs), resolved-thesis receipts (ΔRating from real tx),
-   calibration series, badges & awards. All from real rows — honest-empty. */
+   One member's scorecard: rating, tier, percentiles, rating history (rebuilt
+   from the deltas in date order, with `history_dated` saying whether the
+   dates can be trusted), role-weighted categories (pending where there are
+   no inputs), scored pitches with the change each made, calibration
+   (declared conviction 1 to 5 against the share of those pitches that beat
+   the market) and badges and awards with their giver. Real rows only.
+   Visibility is unchanged: any active member of the council may open any
+   scorecard (an open decision for the owner). */
 export const GET = withApiGuard(
   async (_request, _user, context) => {
     const supabase = getUserClient();
@@ -57,7 +63,7 @@ export const GET = withApiGuard(
           .eq('org_id', orgId),
         supabase
           .from('org_rating_transactions')
-          .select('id, delta, rating_after, reason, pitch_id, metadata, created_at')
+          .select('id, delta, reason, pitch_id, metadata, created_at')
           .eq('org_id', orgId)
           .eq('member_id', memberId)
           .order('created_at', { ascending: true }),
@@ -74,13 +80,9 @@ export const GET = withApiGuard(
     const isProvisional = ratingRow ? ratingRow.is_provisional : true;
     const tier = ratingRow ? ratingRow.tier : 'unranked';
 
-    // ── Rating-history sparkline (real transactions only) ─────────────────────
-    const sparkline = (txAll || []).map((t) => ({
-      t: t.created_at,
-      rating: Number(t.rating_after),
-      delta: Number(t.delta),
-      reason: t.reason,
-    }));
+    // ── Rating history (real changes only, dated when the dates are trusted) ──
+    const history = ratingHistory(txAll || []);
+    const historyDated = historyIsDated(txAll || []);
 
     // ── Percentiles ───────────────────────────────────────────────────────────
     const orgPop = (orgRatings || [])
@@ -131,7 +133,7 @@ export const GET = withApiGuard(
         supabase
           .from('org_pitches')
           .select(
-            'id, ticker, company_name, sector, conviction_level, time_horizon, decision_at, created_at',
+            'id, ticker, company_name, sector, conviction_level, time_horizon, decision, decision_at, created_at',
           )
           .in('id', pitchIds),
         supabase
@@ -150,10 +152,13 @@ export const GET = withApiGuard(
           const p = pitchById.get(t.pitch_id);
           const h = hsById.get(t.pitch_id);
           if (!p) return null;
-          const resolvedAt = h?.computed_at || p.decision_at || p.created_at;
+          // Days held: from the council's decision to the latest outcome reading.
           const holdDays =
-            p.created_at && resolvedAt
-              ? Math.max(0, Math.round((new Date(resolvedAt) - new Date(p.created_at)) / 86400000))
+            p.decision_at && h?.computed_at
+              ? Math.max(
+                  0,
+                  Math.round((new Date(h.computed_at) - new Date(p.decision_at)) / 86400000),
+                )
               : null;
           return {
             pitch_id: t.pitch_id,
@@ -162,8 +167,11 @@ export const GET = withApiGuard(
             sector: p.sector,
             benchmark_return_pct:
               h?.benchmark_return_pct != null ? Number(h.benchmark_return_pct) : null,
+            return_pct: h?.return_pct != null ? Number(h.return_pct) : null,
             hold_days: holdDays,
-            excess_vs_sector: h?.alpha_pct != null ? Number(h.alpha_pct) : null, // alpha = excess
+            // Excess return over the broad market benchmark (not the sector).
+            excess_return_pct: h?.alpha_pct != null ? Number(h.alpha_pct) : null,
+            scored_on: t.metadata?.scored_on || null,
             conviction_level: p.conviction_level, // null ⇒ pending in UI
             delta_rating: deltaByPitch.get(t.pitch_id) ?? 0,
             state: h?.current_state || null,
@@ -172,7 +180,7 @@ export const GET = withApiGuard(
         .filter(Boolean)
         .sort((a, b) => (b.delta_rating || 0) - (a.delta_rating || 0));
 
-      // Calibration series for the chart — honest-null when no conviction exists.
+      // Calibration series for the chart: honest-null when no conviction exists.
       const resolvedForCal = thesisTx
         .map((t) => {
           const p = pitchById.get(t.pitch_id);
@@ -190,14 +198,38 @@ export const GET = withApiGuard(
     }
 
     // ── Badges & awards ───────────────────────────────────────────────────────
-    const { data: recognitions } = await supabase
+    const { data: recRows } = await supabase
       .from('org_recognition')
       .select(
-        'id, badge_type, title, reason, period, is_award, auto_generated, pitch_id, created_at',
+        'id, badge_type, title, reason, period, is_award, auto_generated, pitch_id, awarded_by, created_at',
       )
       .eq('org_id', orgId)
       .eq('recipient_id', target.user_id)
       .order('created_at', { ascending: false });
+    const giverIds = [...new Set((recRows || []).map((r) => r.awarded_by).filter(Boolean))];
+    const recPitchIds = [...new Set((recRows || []).map((r) => r.pitch_id).filter(Boolean))];
+    const [{ data: givers }, { data: recPitches }, { data: team }] = await Promise.all([
+      giverIds.length
+        ? supabase
+            .from('org_members')
+            .select('user_id, display_name')
+            .eq('org_id', orgId)
+            .in('user_id', giverIds)
+        : Promise.resolve({ data: [] }),
+      recPitchIds.length
+        ? supabase.from('org_pitches').select('id, ticker').in('id', recPitchIds)
+        : Promise.resolve({ data: [] }),
+      target.team_id
+        ? supabase.from('org_teams').select('id, name').eq('id', target.team_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    const giverName = new Map((givers || []).map((g) => [g.user_id, g.display_name]));
+    const tickerOf = new Map((recPitches || []).map((p) => [p.id, p.ticker]));
+    const recognitions = (recRows || []).map((r) => ({
+      ...r,
+      awarded_by_name: r.auto_generated ? null : giverName.get(r.awarded_by) || null,
+      pitch_ticker: r.pitch_id ? tickerOf.get(r.pitch_id) || null : null,
+    }));
 
     return NextResponse.json({
       member: {
@@ -205,7 +237,10 @@ export const GET = withApiGuard(
         user_id: target.user_id,
         name: target.display_name || 'Member',
         role: target.role,
+        sub_role: target.sub_role || null,
         weight_role: weightRole,
+        team_name: team?.name || null,
+        is_advisor: isFacultyAdvisor(target),
       },
       rating: {
         value: rating,
@@ -215,13 +250,13 @@ export const GET = withApiGuard(
         is_provisional: isProvisional,
         has_rating: !!ratingRow,
       },
-      sparkline,
+      history,
+      history_dated: historyDated,
       percentiles: { org: orgPercentile, all_funds: allFundsPercentile },
       categories,
       receipts,
       calibration_series: calibrationSeries,
-      badges: (recognitions || []).filter((r) => !r.is_award),
-      awards: (recognitions || []).filter((r) => r.is_award),
+      recognitions,
     });
   },
   { requireAuth: true },

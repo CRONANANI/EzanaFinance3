@@ -1,0 +1,700 @@
+/* ============================================================================
+   Recognition (/org-team-hub/recognition). Page-scoped: every class starts
+   with orc-. Built on the Command Center's tcc- atoms (KPI strip, text
+   buttons, toggles, states) so the Team Hub pages read as one. Flat sections
+   on the canvas: no card surface, hairlines only, text-only toggles, one
+   filled button. Tokens only.
+   ============================================================================ */
+
+/* ── Figures: five cells, wrapping by the page width ─────────────────────── */
+.orc-page .orc-kpistrip {
+  grid-template-columns: repeat(5, auto);
+}
+.orc-page .orc-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.orc-page .orc-kpistrip .tcc-kpi:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.orc-kpiname {
+  max-width: 120px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.orc-kpiname:hover {
+  color: var(--emerald-text);
+}
+
+.orc-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.orc-notice > .bi {
+  color: var(--emerald-text);
+}
+.orc-notice--error > .bi {
+  color: var(--negative);
+}
+
+/* ── Body: awards and rankings | scorecard | about. Every column shrinks. ── */
+.orc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 330fr) 1px minmax(0, 440fr) 1px minmax(0, 236fr);
+  column-gap: 31.5px; /* 64px between sections, the rule centred */
+  padding: 24px 0 0;
+}
+.orc-left,
+.orc-main,
+.orc-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.orc-main {
+  container: orcmain / inline-size;
+}
+.orc-left > .orc-sec + .orc-sec,
+.orc-side > .orc-sec + .orc-sec {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.orc-sec {
+  min-width: 0;
+}
+.orc-skelrows,
+.orc-skelcol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.orc-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.orc-emerald {
+  color: var(--emerald-text);
+}
+.orc-gold {
+  color: var(--gold-text);
+}
+.orc-dim {
+  color: var(--text-muted);
+}
+.orc-you {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald-text);
+}
+.orc-namebtn {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.orc-namebtn:hover {
+  color: var(--emerald-text);
+}
+.orc-namebtn:focus-visible,
+.orc-kpiname:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.orc-more {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.orc-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.orc-table th {
+  padding: 0 8px 8px 0;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.orc-table td {
+  padding: 9px 8px 9px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  vertical-align: middle;
+}
+.orc-table th:last-child,
+.orc-table td:last-child {
+  padding-right: 0;
+}
+.orc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.orc-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.orc-table th.orc-num {
+  text-align: right;
+}
+.orc-ellipsis {
+  max-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orc-rank tr.is-on td,
+.orc-rank tr.is-on .orc-namebtn {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.orc-rank tr.is-on td.tcc-pos,
+.orc-rank tr.is-on td.tcc-neg {
+  font-weight: 600;
+}
+.orc-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+.orc-listtabs {
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+.orc-periods {
+  gap: 4px 16px;
+  margin-bottom: 10px;
+}
+
+/* ── Award rows (feed and scorecard) ─────────────────────────────────────── */
+.orc-feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.orc-award {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.orc-award:first-child {
+  padding-top: 0;
+}
+.orc-award:last-child {
+  border-bottom: 0;
+}
+.orc-award__icon {
+  padding-top: 2px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.orc-award__icon.is-gold,
+.orc-award__title.is-gold {
+  color: var(--gold-text);
+}
+.orc-award__main {
+  min-width: 0;
+}
+.orc-award__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.orc-award__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orc-award__date {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.orc-award__reason {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.orc-award__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.orc-award__meta .orc-namebtn {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.orc-award__meta .orc-namebtn:hover {
+  color: var(--emerald-text);
+}
+.orc-award__meta .tcc-link {
+  font-size: 12px;
+}
+
+/* ── Honour roll ─────────────────────────────────────────────────────────── */
+.orc-term {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.orc-term__name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Scorecard ───────────────────────────────────────────────────────────── */
+.orc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.orc-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.orc-hero__who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.orc-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.orc-hero__text {
+  min-width: 0;
+}
+.orc-hero__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 0;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.orc-provisional {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--warning);
+}
+.orc-hero__role {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.orc-hero__rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+}
+.orc-hero__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.orc-hero__value {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.orc-hero__value.is-dim {
+  color: var(--text-muted);
+}
+.orc-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  margin: 0;
+}
+.orc-facts > div {
+  padding: 0 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.orc-facts > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.orc-facts dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.orc-facts dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.orc-hero__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.orc-sub {
+  padding-top: 16px;
+  border-top: 1px solid var(--ez-rule);
+}
+.orc-sub__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-bottom: 8px;
+}
+.orc-sub__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.orc-sub__aside .orc-periods {
+  margin: 0;
+}
+.orc-bar {
+  display: block;
+  width: 100%;
+  min-width: 60px;
+  height: 6px;
+  background: var(--emerald-bg);
+}
+.orc-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--emerald);
+}
+.orc-breakdown td:nth-child(3) {
+  width: 45%;
+}
+.orc-receipts {
+  min-width: 340px;
+}
+.orc-receipts th {
+  vertical-align: bottom;
+  white-space: normal;
+}
+
+/* ── Charts ──────────────────────────────────────────────────────────────── */
+.orc-chart {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.orc-chart svg {
+  display: block;
+}
+.orc-chart__grid {
+  stroke: var(--border-secondary);
+  stroke-width: 1;
+}
+.orc-chart__tick {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+.orc-chart__axis {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+.orc-chart__line {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+}
+.orc-chart__dot {
+  fill: var(--emerald);
+}
+.orc-chart__dot.is-neg {
+  fill: var(--negative);
+}
+.orc-chart__ideal {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.orc-chart__point {
+  fill: var(--emerald);
+  fill-opacity: 0.85;
+}
+
+/* ── Side column ─────────────────────────────────────────────────────────── */
+.orc-method {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.orc-method strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.orc-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+/* ── Dialogs (overlays keep the library's surface) ───────────────────────── */
+.orc-dialog__body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.orc-formerror {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--negative);
+}
+.orc-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.orc-badgepick {
+  gap: 8px 18px;
+  margin-top: 6px;
+}
+.orc-weights {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.orc-weights li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 88px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.orc-weights li:last-child {
+  border-bottom: 0;
+}
+.orc-weights__input {
+  text-align: right;
+}
+.orc-weights__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── Narrow layouts, by the width of the page column ─────────────────────── */
+@container tcc (max-width: 1060px) {
+  .orc-body {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.3fr);
+  }
+  .orc-body > .orc-vrule--side {
+    display: none;
+  }
+  .orc-side {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 64px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .orc-side > .orc-sec + .orc-sec {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+@container tcc (max-width: 860px) {
+  .orc-page .orc-kpistrip {
+    grid-template-columns: repeat(3, auto);
+  }
+  .orc-page .orc-kpistrip .tcc-kpi:nth-child(4n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .orc-page .orc-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container tcc (max-width: 760px) {
+  .orc-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .orc-body > .orc-vrule {
+    display: none;
+  }
+  .orc-main {
+    order: -1;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--ez-rule);
+  }
+  .orc-side {
+    display: flex;
+    flex-direction: column;
+  }
+  .orc-side > .orc-sec + .orc-sec {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+@container tcc (max-width: 620px) {
+  .orc-page .orc-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .orc-page .orc-kpistrip .tcc-kpi,
+  .orc-page .orc-kpistrip .tcc-kpi:nth-child(4n + 1),
+  .orc-page .orc-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .orc-page .orc-kpistrip .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container orcmain (max-width: 560px) {
+  .orc-receipts .orc-col-company {
+    display: none;
+  }
+}
+@container orcmain (max-width: 420px) {
+  .orc-hero__rating {
+    align-items: flex-start;
+    margin-left: 0;
+  }
+  .orc-facts > div {
+    padding: 0 16px;
+  }
+  .orc-facts > div:first-child {
+    padding-left: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .orc-namebtn,
+  .orc-kpiname {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orc-namebtn,
+  .orc-kpiname {
+    transition: none;
+  }
+}
+
+/* Export: print the scorecard only (the shell and the rest of the page are
+   hidden), with the light palette so it reads on paper. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .orc-main,
+  .orc-main * {
+    visibility: visible;
+  }
+  .orc-main {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 16px;
+    background: var(--bg-primary);
+  }
+  .orc-hero__tools,
+  .orc-print-hide {
+    display: none !important;
+  }
+}
