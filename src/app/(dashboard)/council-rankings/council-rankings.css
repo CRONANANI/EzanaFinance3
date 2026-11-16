@@ -1,437 +1,615 @@
-/* Public council rankings — outside the auth shell, no dashboard chrome. Tokens
-   only; ratios never dollars. */
+/* ============================================================================
+   Council Rankings (/council-rankings and /council-rankings/[orgId]).
+   Page-scoped: every class starts with crx-. It sits on the Command Center
+   page parts (tcc-, command-center.css) like the other rebuilt Team Hub
+   pages. Flat sections on the canvas (branding guide, Part A): no card
+   surface, hairlines only, text-only toggles, one filled button. Tokens
+   only. --ez-rule and --ez-rule-subtle come from home-canvas.css.
+   ============================================================================ */
 .crx-page {
-  min-height: 100vh;
-  background: var(--bg-primary);
+  min-width: 0;
   color: var(--text-primary);
-  /* Page canvas (Nov 2026): the shell sets the width and side padding. */
-  padding: 40px 0 60px;
 }
 .crx-container {
-  width: 100%;
-}
-.crx-hero {
-  /* Left-aligned inside the org shell's content region, matching the Trading
-     Desk header convention (was centered when the page stood alone). */
-  text-align: left;
-  margin-bottom: 26px;
-}
-.crx-hero--detail {
   display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+.crx-page .tcc-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Row 1: context and actions ──────────────────────────────────────────── */
+.crx-actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  text-align: left;
-  gap: 20px;
+  gap: 12px 24px;
+  min-width: 0;
+  padding-bottom: 16px;
+}
+.crx-actions__context {
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  min-width: 0;
 }
-.crx-eyebrow {
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: var(--type-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--emerald);
+.crx-actions a {
+  text-decoration: none;
 }
-.crx-title {
-  margin: 0;
-  font-size: var(--type-page-title-size);
-  font-weight: var(--type-page-title-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-page-title-tracking);
-  line-height: var(--type-page-title-leading);
-}
-.crx-sub {
-  margin: 12px auto 0;
-  max-width: 620px;
-  color: var(--text-secondary);
-  font-size: 14.5px;
-  line-height: 1.55;
+.crx-actions__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-left: auto;
 }
 .crx-back {
-  display: inline-block;
-  margin-bottom: 16px;
-  color: var(--text-secondary);
   font-size: 13px;
-  text-decoration: none;
-}
-.crx-empty {
-  text-align: center;
-  color: var(--text-secondary);
-  padding: 50px 0;
 }
 
-.crx-table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg, 12px);
+/* ── KPI strip: six cells, one row, hairlines between ───────────────────── */
+.crx-kpis {
+  min-width: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--ez-rule);
+  border-bottom: 1px solid var(--ez-rule);
 }
-.crx-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13.5px;
+.crx-kpistrip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  justify-content: stretch;
 }
-.crx-table th,
-.crx-table td {
-  padding: 11px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-primary);
-  white-space: nowrap;
+.crx-kpistrip--league {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-.crx-table th {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  color: var(--text-faint);
-  background: var(--bg-secondary);
+.crx-kpistrip .crx-kpi,
+.crx-kpistrip .crx-kpi:nth-child(4n + 1) {
+  min-width: 0;
+  padding: 0 16px;
+  border-left: 1px solid var(--ez-rule);
 }
-.crx-table tbody tr:last-child td {
-  border-bottom: none;
+.crx-kpistrip .crx-kpi:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
-.crx-num {
-  text-align: right;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
+.crx-kpi .tcc-kpi__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.crx-rank {
-  font-weight: 700;
-  color: var(--text-faint);
-}
-.crx-strong {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.crx-council {
-  font-weight: 600;
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.crx-council:hover {
-  color: var(--emerald);
-}
-.crx-flag {
-  margin-left: 8px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  font-size: var(--type-micro-size);
-  color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
-}
-.crx-up {
-  color: var(--emerald);
-}
-.crx-down {
-  color: var(--danger, var(--warning));
-}
-.crx-tier {
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-.crx-tier--emerging {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
-.crx-tier--competitive {
-  background: color-mix(in srgb, var(--info) 14%, transparent);
-  color: var(--info);
-}
-.crx-tier--established {
-  background: color-mix(in srgb, var(--cyan, var(--info)) 16%, transparent);
-  color: var(--cyan, var(--info));
-}
-.crx-tier--elite {
-  background: color-mix(in srgb, var(--emerald) 16%, transparent);
-  color: var(--emerald);
-}
-.crx-tier--dynasty {
-  background: color-mix(in srgb, var(--warning) 18%, transparent);
+.crx-kpi__warn {
+  font-size: 12px;
   color: var(--warning);
 }
 
-.crx-bigrating {
-  text-align: right;
-}
-.crx-bigrating-num {
-  font-family: var(--font-mono);
-  font-size: var(--type-value-lg-size);
-  font-weight: var(--type-value-lg-weight);
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-.crx-bigrating-label {
-  display: block;
-  font-size: 12px;
-  color: var(--text-faint);
-}
-.crx-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin: 20px 0;
-}
-.crx-split-card {
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg, 12px);
-  background: var(--card-bg);
-  padding: 16px;
-}
-.crx-split-label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.crx-split-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.crx-split-note {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-.crx-section {
-  margin: 24px 0;
-}
-.crx-h2 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 12px;
-}
-.crx-ratios {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-}
-.crx-ratio {
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md, 8px);
-  background: var(--bg-secondary);
-  padding: 12px 14px;
-}
-.crx-ratio-label {
-  font-size: 11.5px;
-  color: var(--text-faint);
-  text-transform: uppercase;
-}
-.crx-ratio-val {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-.crx-note {
-  font-size: 12.5px;
-  color: var(--text-faint);
-  margin: 10px 0 0;
-}
-.crx-history {
-  list-style: none;
+.crx-method {
   margin: 0;
-  padding: 0;
-}
-.crx-hrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-primary);
+  padding: 14px 0;
   font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
-.crx-hdelta {
-  min-width: 46px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.crx-hreason {
-  margin-right: auto;
-  color: var(--text-secondary);
-}
-.crx-hmeta {
-  color: var(--text-faint);
+.crx-method--foot {
+  padding-top: 12px;
   font-size: 12px;
-}
-.crx-footer {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-faint);
 }
 
-/* ── Rank-by toggle (list page) ─────────────────────────────────────────── */
+.crx-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.crx-notice > .bi {
+  color: var(--emerald-text);
+}
+
+/* ── Table toolbar: text tabs, borderless search, order note ────────────── */
+.crx-board {
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--ez-rule);
+}
 .crx-toolbar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 32px;
+  min-width: 0;
+  padding: 10px 0 14px;
+}
+.crx-sorts .tcc-toggle {
+  font-size: 14px;
+}
+.crx-search {
+  display: flex;
+  flex: 1 1 200px;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 320px;
+  color: var(--text-muted);
+  font-size: 13px;
 }
-.crx-toolbar-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  color: var(--text-faint);
-  margin-right: 2px;
-}
-.crx-toggle {
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s;
-}
-.crx-toggle:hover {
+.crx-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
   color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--emerald) 40%, var(--border-primary));
+  font-family: var(--font-sans);
+  font-size: 13px;
 }
-.crx-toggle.is-active {
-  background: color-mix(in srgb, var(--emerald) 16%, transparent);
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
-  color: var(--emerald);
+.crx-search input::placeholder {
+  color: var(--text-muted);
 }
-.crx-toggle:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
+.crx-search:focus-within {
+  color: var(--emerald-text);
+}
+.crx-toolbar__note {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-/* ── Contribution split bar (list row) ──────────────────────────────────── */
-.crx-split-col {
-  min-width: 130px;
+/* ── Tables: 11px grey caps head, hairlines between rows, no box ────────── */
+.crx-tablewrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
-.crx-cbar {
-  display: flex;
-  height: 8px;
-  width: 120px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--bg-tertiary);
+.crx-page .crx-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
-.crx-cbar-comp {
-  background: var(--emerald);
+.crx-page .crx-table th {
+  padding: 0 12px 8px 0;
+  border-bottom: 1px solid var(--ez-rule);
+  background: transparent;
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--text-muted);
+  white-space: nowrap;
+  vertical-align: bottom;
 }
-.crx-cbar-fund {
-  background: color-mix(in srgb, var(--info) 70%, transparent);
+.crx-page .crx-table td {
+  padding: 10px 12px 10px 0;
+  line-height: 1.45;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: top;
+  transition: color 0.15s ease-out;
 }
-.crx-legend {
-  display: flex;
-  gap: 18px;
-  justify-content: center;
-  margin-top: 12px;
-  font-size: 11.5px;
-  color: var(--text-faint);
+.crx-page .crx-table th:last-child,
+.crx-page .crx-table td:last-child {
+  padding-right: 0;
 }
-.crx-legend-item {
+/* Hover is a colour change only: no wash, no bar (the canvas table rules
+   add a hover wash and dotted row lines; neither applies here). */
+.crx-page .crx-table tbody tr,
+.crx-page .crx-table tbody tr:hover {
+  border-bottom: 0;
+  background: transparent;
+}
+.crx-page .crx-table tbody tr:hover td {
+  color: var(--text-primary);
+}
+.crx-page .crx-table .crx-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.crx-strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.crx-c-rank {
+  width: 40px;
+}
+.crx-c-tier {
+  width: 128px;
+}
+.crx-c-rating {
+  width: 72px;
+}
+.crx-c-part {
+  width: 64px;
+}
+.crx-c-ratio {
+  width: 72px;
+}
+.crx-c-move {
+  width: 60px;
+}
+.crx-c-date {
+  width: 108px;
+}
+.crx-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: color 0.15s ease-out;
+}
+.crx-name:hover {
+  color: var(--emerald-text);
+}
+.crx-name:focus-visible,
+.crx-back:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.crx-name__sub {
+  display: block;
+  margin-top: 2px;
+}
+
+/* The viewer's own council: emerald text, never a wash. */
+.crx-page .crx-table tr.is-mine td,
+.crx-page .crx-table tr.is-mine .crx-name,
+.crx-page .crx-table tr.is-mine .crx-strong,
+.crx-page .crx-table tr.is-mine .crx-tier,
+.crx-page .crx-table tr.is-mine .crx-self {
+  color: var(--emerald-text);
+}
+
+/* Tier: text with an icon. Gold marks only the top tier's icon. */
+.crx-tier {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-.crx-legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-sm);
-  display: inline-block;
-}
-.crx-legend-swatch--comp {
-  background: var(--emerald);
-}
-.crx-legend-swatch--fund {
-  background: color-mix(in srgb, var(--info) 70%, transparent);
-}
-
-/* ── Weighted contribution bar (detail page) ────────────────────────────── */
-.crx-note--top {
-  margin: 0 0 14px;
-}
-.crx-contrib {
-  display: flex;
-  height: 30px;
-  border-radius: var(--radius-md, 8px);
-  overflow: hidden;
-  margin-bottom: 16px;
-  border: 1px solid var(--border-primary);
-}
-.crx-contrib-comp,
-.crx-contrib-fund {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  overflow: hidden;
-}
-.crx-contrib-comp {
-  background: color-mix(in srgb, var(--emerald) 88%, black 4%);
-}
-.crx-contrib-fund {
-  background: color-mix(in srgb, var(--info) 65%, transparent);
-}
-.crx-contrib-inner {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--on-emerald, #fff);
   white-space: nowrap;
-  padding: 0 8px;
-  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.crx-tier > .bi {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.crx-tier--elite > .bi,
+.crx-tier--dynasty > .bi {
+  color: var(--gold);
 }
 
-/* ── Ratio emphasis + tags (Sharpe weighted most) ───────────────────────── */
-.crx-ratio--emphasize {
-  border-color: color-mix(in srgb, var(--emerald) 45%, var(--border-primary));
-  background: color-mix(in srgb, var(--emerald) 8%, var(--bg-secondary));
+/* Self-reported: a warning icon and text, no chip. */
+.crx-self {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
 }
-.crx-ratio-tag {
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: var(--type-label-size);
-  font-weight: 700;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--emerald);
-  background: color-mix(in srgb, var(--emerald) 14%, transparent);
-  vertical-align: middle;
+.crx-self > .bi {
+  font-size: 11px;
+  color: var(--warning);
 }
-.crx-flag--inline {
-  margin-left: 10px;
-  vertical-align: middle;
+.crx-self__period {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
-/* ── Component badge in rating history ──────────────────────────────────── */
-.crx-hcomp {
-  font-size: var(--type-label-size);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  padding: 1px 7px;
-  border-radius: 999px;
-  color: var(--text-faint);
-  background: var(--bg-tertiary);
-}
-.crx-hcomp--competition {
-  color: var(--emerald);
-  background: color-mix(in srgb, var(--emerald) 13%, transparent);
-}
-.crx-hcomp--fund {
-  color: var(--info);
-  background: color-mix(in srgb, var(--info) 13%, transparent);
+.crx-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0 16px;
 }
 
-@media (max-width: 560px) {
-  .crx-split {
-    grid-template-columns: 1fr;
+/* ── Your council ────────────────────────────────────────────────────────── */
+.crx-own {
+  min-width: 0;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.crx-own__title {
+  margin: 0 0 4px;
+}
+.crx-own__row {
+  padding-bottom: 8px;
+  border-bottom: 0;
+}
+.crx-subtitle {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.crx-subtitle--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+.crx-mini .crx-c-tier {
+  width: 120px;
+}
+.crx-mini th:nth-child(4),
+.crx-mini th:nth-child(5) {
+  width: 64px;
+}
+.crx-parts {
+  margin: 0;
+}
+.crx-part {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.crx-part dt {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.crx-part dd {
+  margin: 0;
+}
+.crx-part__val {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-primary);
+}
+.crx-part__why {
+  grid-column: 1 / 3;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.crx-parts__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── Council page ────────────────────────────────────────────────────────── */
+.crx-dhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 32px;
+  min-width: 0;
+  padding: 8px 0 4px;
+}
+.crx-dhead__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  min-width: 0;
+}
+.crx-dtitle {
+  margin: 0;
+  font-size: var(--type-section-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.crx-mine {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--emerald-text);
+}
+.crx-dstats {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.crx-dstats > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.crx-dstats > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.crx-dstats > div:last-child {
+  padding-right: 0;
+}
+.crx-dstats dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.crx-dstats dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.crx-dstats dd .crx-tier {
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+.crx-dsplit {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  border-top: 1px solid var(--ez-rule);
+}
+.crx-big {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.crx-why {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.crx-drow {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  border-bottom: 1px solid var(--ez-rule);
+}
+.crx-ratios {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.crx-ratio {
+  min-width: 0;
+  text-align: right;
+}
+.crx-ratio dt {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.crx-ratio dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.crx-ratio dd.tcc-pos {
+  color: var(--positive);
+}
+.crx-ratio dd.tcc-neg {
+  color: var(--negative);
+}
+.crx-ratio dd.tcc-na {
+  color: var(--text-muted);
+}
+.crx-dhistory {
+  min-width: 0;
+  padding-top: 24px;
+}
+.crx-h-delta {
+  width: 64px;
+}
+.crx-h-part {
+  width: 112px;
+}
+.crx-h-after {
+  width: 96px;
+}
+.crx-h-date {
+  width: 108px;
+}
+.crx-page .crx-history .crx-h-reason {
+  overflow-wrap: anywhere;
+}
+
+/* ── Fund ratio dialog (an overlay: it keeps the library's surface) ─────── */
+.crx-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.crx-form__num {
+  font-family: var(--font-mono);
+}
+.crx-form__error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--negative);
+}
+
+/* ── Narrow layouts (by the width of the page column) ────────────────────── */
+@container tcc (max-width: 1020px) {
+  .crx-kpistrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 12px;
   }
-  .crx-hcomp {
+  .crx-kpistrip .crx-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .crx-kpistrip--league {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .crx-kpistrip--league .crx-kpi:nth-child(4) {
+    padding-left: 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .crx-c-date,
+  .crx-c-sharpe {
     display: none;
   }
-  .crx-contrib-inner {
-    font-size: var(--type-micro-size);
+  .crx-ratios {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+@container tcc (max-width: 940px) {
+  .crx-dsplit {
+    display: block;
+  }
+  .crx-dsplit > .tcc-vrule {
+    display: block;
+    width: auto;
+    height: 1px;
+    margin: 24px 0;
+  }
+}
+@container tcc (max-width: 700px) {
+  .crx-c-part,
+  .crx-c-ratio,
+  .crx-c-tier,
+  .crx-h-part,
+  .crx-h-after {
+    display: none;
+  }
+  .crx-kpistrip,
+  .crx-kpistrip--league {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crx-kpistrip .crx-kpi,
+  .crx-kpistrip .crx-kpi:nth-child(3n + 1),
+  .crx-kpistrip--league .crx-kpi:nth-child(4) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .crx-kpistrip .crx-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .crx-toolbar__note {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .crx-search {
+    max-width: none;
+  }
+  .crx-dstats > div {
+    padding: 0 16px;
+  }
+  .crx-ratios {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crx-form__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crx-part__why .crx-self {
+  margin-left: 6px;
 }
