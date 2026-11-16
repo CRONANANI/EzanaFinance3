@@ -38,6 +38,7 @@
     "test:org-pitch-pipeline": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-pitch-pipeline.mjs",
     "test:org-meetings": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-meetings.mjs",
     "test:org-recognition": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-recognition.mjs",
+    "test:org-grades": "node --no-warnings --test scripts/check-org-grades.mjs",
     "test:org-research-library": "node --no-warnings --test scripts/check-org-research-library.mjs",
     "test:org-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs && node --no-warnings --test scripts/check-org-positions-sql.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-pitch-stages.mjs",
     "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-subrole.mjs",

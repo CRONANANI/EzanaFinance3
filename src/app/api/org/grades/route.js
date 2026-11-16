@@ -2,80 +2,41 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import { getGovernance } from '@/lib/org-governance';
+import { DEFAULT_MAX, GRADED_ROLES, MAX_FEEDBACK, validateGrade } from '@/lib/org-grades-model';
+import { loadGrades } from './_loader';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const WORK_TYPES = ['pitch', 'research_note', 'coverage', 'participation', 'overall'];
+const PRIVATE = { 'Cache-Control': 'private, no-store' };
 
-/* GET /api/org/grades — RLS returns own grades for students, all for executives.
-   Honors the governance flag `grading_visible_to_students`: when off, students
-   (non-executives) see no grades until an advisor re-enables visibility. */
+/* GET /api/org/grades: executives receive the council's grades, roster and
+   cohorts; every other member receives only their own grades, and none while
+   the council has paused grade visibility (see _loader.js). */
 export const GET = withApiGuard(
   async () => {
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
-
-    const canGrade = member.role === 'executive';
-
-    if (!canGrade) {
-      const gov = await getGovernance(supabase, member.org_id);
-      if (!gov.grading_visible_to_students) {
-        return NextResponse.json({
-          grades: [],
-          roster: [],
-          viewer: { userId: member.user_id, canGrade: false },
-          workTypes: WORK_TYPES,
-          gradingHidden: true,
-        });
-      }
-    }
-
-    const { data, error } = await supabase
-      .from('org_grades')
-      .select('*')
-      .eq('org_id', member.org_id)
-      .order('created_at', { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    // Roster + names (only managers need the full roster; students just see names).
-    const { data: members } = await supabase
-      .from('org_members')
-      .select('user_id, display_name, role')
-      .eq('org_id', member.org_id)
-      .eq('is_active', true);
-    const byUser = new Map((members || []).map((m) => [m.user_id, m]));
-
-    const grades = (data || []).map((g) => ({
-      ...g,
-      student_name: byUser.get(g.student_id)?.display_name || 'Student',
-      grader_name: g.graded_by ? byUser.get(g.graded_by)?.display_name || null : null,
-    }));
-
-    return NextResponse.json({
-      grades,
-      roster: canGrade
-        ? (members || [])
-            .filter((m) => m.role === 'analyst' || m.role === 'portfolio_manager')
-            .map((m) => ({ user_id: m.user_id, display_name: m.display_name, role: m.role }))
-        : [],
-      viewer: { userId: member.user_id, canGrade },
-      workTypes: WORK_TYPES,
-    });
+    const { payload, error, status } = await loadGrades(supabase, member);
+    if (error) return NextResponse.json({ error }, { status: status || 500 });
+    return NextResponse.json(payload, { headers: PRIVATE });
   },
   { requireAuth: true },
 );
 
-/* POST /api/org/grades — create a grade (executive / faculty advisor only). */
+const firstError = (errors) => Object.values(errors)[0];
+
+/* POST /api/org/grades: create a grade (executives only, as today). The
+   member must be an active analyst or portfolio manager of the same council,
+   the same people the page offers. */
 export const POST = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
-      return NextResponse.json({ error: 'Executive / advisor role required' }, { status: 403 });
+      return NextResponse.json({ error: 'Executive role required' }, { status: 403 });
     }
 
     let body;
@@ -84,55 +45,58 @@ export const POST = withApiGuard(
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-    const studentId = body?.student_id;
-    const workType = body?.work_type;
-    if (!studentId || !WORK_TYPES.includes(workType)) {
-      return NextResponse.json(
-        { error: 'student_id and a valid work_type required' },
-        { status: 400 },
-      );
+    const errors = validateGrade(body || {}, { mode: 'new' });
+    if (Object.keys(errors).length) {
+      return NextResponse.json({ error: firstError(errors), fields: errors }, { status: 400 });
     }
 
-    // Student must be a member of the org.
     const { data: student } = await supabase
       .from('org_members')
-      .select('user_id, cohort_id')
+      .select('user_id, cohort_id, role, is_active')
       .eq('org_id', member.org_id)
-      .eq('user_id', studentId)
+      .eq('user_id', body.student_id)
+      .eq('is_active', true)
       .maybeSingle();
-    if (!student) return NextResponse.json({ error: 'Student not in org' }, { status: 404 });
+    if (!student || !GRADED_ROLES.includes(student.role)) {
+      return NextResponse.json(
+        { error: 'Only active analysts and portfolio managers of this council can be graded.' },
+        { status: 404 },
+      );
+    }
 
     const { data, error } = await supabase
       .from('org_grades')
       .insert({
         org_id: member.org_id,
-        cohort_id: student.cohort_id || body?.cohort_id || null,
-        student_id: studentId,
+        cohort_id: student.cohort_id || null,
+        student_id: student.user_id,
         graded_by: member.user_id,
-        work_type: workType,
+        work_type: body.work_type,
         work_id: body?.work_id || null,
-        score: body?.score != null ? Number(body.score) : null,
-        max_score: body?.max_score != null ? Number(body.max_score) : 100,
-        letter: body?.letter || null,
-        feedback: body?.feedback ? String(body.feedback).slice(0, 4000) : null,
+        score: Number(body.score),
+        max_score:
+          body?.max_score != null && body.max_score !== '' ? Number(body.max_score) : DEFAULT_MAX,
+        letter: String(body?.letter || '').trim() || null,
+        feedback: body?.feedback ? String(body.feedback).slice(0, MAX_FEEDBACK) : null,
         rubric: body?.rubric || null,
       })
-      .select('*')
+      .select('id')
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'The grade was not saved.' }, { status: 500 });
     return NextResponse.json({ grade: data });
   },
   { requireAuth: true },
 );
 
-/* PATCH /api/org/grades — update a grade (executive / advisor only). */
+/* PATCH /api/org/grades: change a grade (executives only). The executive who
+   changes it becomes its grader, as before; no history is kept. */
 export const PATCH = withApiGuard(
   async (request) => {
     const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
-      return NextResponse.json({ error: 'Executive / advisor role required' }, { status: 403 });
+      return NextResponse.json({ error: 'Executive role required' }, { status: 403 });
     }
 
     let body;
@@ -143,13 +107,34 @@ export const PATCH = withApiGuard(
     }
     if (!body?.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
+    const { data: current } = await supabase
+      .from('org_grades')
+      .select('id, score, max_score, letter, feedback')
+      .eq('id', body.id)
+      .eq('org_id', member.org_id)
+      .maybeSingle();
+    if (!current) return NextResponse.json({ error: 'Grade not found' }, { status: 404 });
+
+    /* Check the grade as it will be after the change. */
+    const next = {
+      score: 'score' in body ? body.score : current.score,
+      max_score: 'max_score' in body ? body.max_score : current.max_score,
+      letter: 'letter' in body ? body.letter : current.letter,
+      feedback: 'feedback' in body ? body.feedback : current.feedback,
+    };
+    const errors = validateGrade(next, { mode: 'edit' });
+    if (Object.keys(errors).length) {
+      return NextResponse.json({ error: firstError(errors), fields: errors }, { status: 400 });
+    }
+
     const update = { updated_at: new Date().toISOString(), graded_by: member.user_id };
-    if ('score' in body) update.score = body.score != null ? Number(body.score) : null;
+    if ('score' in body) update.score = Number(body.score);
     if ('max_score' in body)
-      update.max_score = body.max_score != null ? Number(body.max_score) : 100;
-    if ('letter' in body) update.letter = body.letter || null;
+      update.max_score =
+        body.max_score != null && body.max_score !== '' ? Number(body.max_score) : DEFAULT_MAX;
+    if ('letter' in body) update.letter = String(body.letter || '').trim() || null;
     if ('feedback' in body)
-      update.feedback = body.feedback ? String(body.feedback).slice(0, 4000) : null;
+      update.feedback = body.feedback ? String(body.feedback).slice(0, MAX_FEEDBACK) : null;
     if ('rubric' in body) update.rubric = body.rubric || null;
 
     const { data, error } = await supabase
@@ -157,9 +142,9 @@ export const PATCH = withApiGuard(
       .update(update)
       .eq('id', body.id)
       .eq('org_id', member.org_id)
-      .select('*')
+      .select('id')
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'The change was not saved.' }, { status: 500 });
     return NextResponse.json({ grade: data });
   },
   { requireAuth: true },

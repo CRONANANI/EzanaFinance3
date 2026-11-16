@@ -1,0 +1,927 @@
+/* ============================================================================
+   Grades (/org-team-hub/grades). Page-scoped: every class starts with ogr-.
+   Built on the Command Center's tcc- atoms (KPI strip, text buttons,
+   toggles, states) so the Team Hub pages read as one. Flat sections on the
+   canvas: no card surface, hairlines only, text-only toggles, one filled
+   button. Scores are never coloured. Tokens only.
+   ============================================================================ */
+
+/* ── Figures: five cells on one line, wrapping by the page width ─────────── */
+.ogr-page .ogr-kpistrip {
+  grid-template-columns: repeat(5, auto);
+}
+.ogr-page .ogr-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.ogr-page .ogr-kpistrip .tcc-kpi:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ogr-page .tcc-kpi__value.ogr-kpi__text {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+}
+.ogr-page .tcc-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ogr-textlink {
+  text-decoration: none;
+}
+
+/* ── Body: rail | main | side. Every column can shrink (min-width: 0). ───── */
+.ogr-body {
+  display: grid;
+  grid-template-columns: minmax(132px, 168px) 1px minmax(0, 1fr) 1px minmax(0, 300px);
+  column-gap: 31.5px; /* 64px between sections, the rule centred */
+  padding: 24px 0 0;
+}
+.ogr-body--noside {
+  grid-template-columns: minmax(132px, 168px) 1px minmax(0, 1fr);
+}
+.ogr-rail,
+.ogr-main,
+.ogr-side {
+  min-width: 0;
+}
+.ogr-main {
+  container: ogrmain / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 48px;
+}
+.ogr-side {
+  padding-bottom: 48px;
+}
+.ogr-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ogr-num {
+  text-align: right;
+}
+.ogr-neutral {
+  color: var(--text-primary);
+}
+
+/* ── Rail ────────────────────────────────────────────────────────────────── */
+.ogr-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ogr-views {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ogr-views .tcc-toggle {
+  font-size: 14px;
+  text-align: left;
+}
+.ogr-views__n,
+.ogr-tabs__n {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.tcc-toggle.is-on .ogr-views__n,
+.tcc-toggle.is-on .ogr-tabs__n {
+  color: var(--emerald-text);
+}
+.ogr-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--ez-rule);
+  border-bottom: 1px solid var(--ez-rule);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.ogr-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.ogr-search input::placeholder {
+  color: var(--text-muted);
+}
+.ogr-search:focus-within {
+  color: var(--emerald-text);
+}
+.ogr-railsec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ogr-railsec + .ogr-railsec {
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.ogr-railhead {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ogr-railhead--row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ogr-railclear {
+  font-size: 12px;
+}
+.ogr-cohorts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ogr-cohorts li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ogr-cohorts__name {
+  padding: 0;
+}
+.ogr-cohorts__line {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-railnote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.ogr-filters {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ogr-filter {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ogr-filter:hover {
+  color: var(--text-primary);
+}
+.ogr-filter.is-on {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.ogr-filter__n {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Main column ─────────────────────────────────────────────────────────── */
+.ogr-mainhead {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ogr-main__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.ogr-tabs {
+  gap: 4px 24px;
+}
+.ogr-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-note .tcc-link {
+  font-size: 12px;
+  font-weight: 600;
+}
+.ogr-note--paused {
+  justify-content: flex-start;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ogr-note--paused strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ogr-note--paused .tcc-link {
+  margin-left: auto;
+}
+.ogr-subtitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ogr-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ogr-notice > .bi {
+  color: var(--positive);
+}
+.ogr-paused {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 520px;
+}
+.ogr-paused > .bi {
+  font-size: 22px;
+  color: var(--text-muted);
+}
+.ogr-paused p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.ogr-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ogr-empty > .bi {
+  font-size: 20px;
+  color: var(--text-muted);
+}
+.ogr-more {
+  align-self: flex-start;
+}
+.ogr-kind {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.ogr-kind > .bi {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-kind__n {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ogr-former {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.ogr-cohort + .ogr-cohort {
+  padding-top: 8px;
+}
+.ogr-cohort__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+/* ── Tables (flat: caps header over one hairline, hairlines between rows) ── */
+:is(.ogr-page, .ogr-dialog) .ogr-table,
+:is(.ogr-page, .ogr-dialog) .ogr-mini {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table th,
+:is(.ogr-page, .ogr-dialog) .ogr-mini th {
+  padding: 0 8px 8px 0;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--text-muted);
+  vertical-align: bottom;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table td,
+:is(.ogr-page, .ogr-dialog) .ogr-mini td {
+  padding: 10px 8px 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table th:last-child,
+:is(.ogr-page, .ogr-dialog) .ogr-table td:last-child,
+:is(.ogr-page, .ogr-dialog) .ogr-mini th:last-child,
+:is(.ogr-page, .ogr-dialog) .ogr-mini td:last-child {
+  padding-right: 0;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-mini th.ogr-num,
+:is(.ogr-page, .ogr-dialog) .ogr-mini td.ogr-num,
+:is(.ogr-page, .ogr-dialog) .ogr-table th.ogr-num,
+:is(.ogr-page, .ogr-dialog) .ogr-table td.ogr-num {
+  text-align: right;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr,
+.ogr-pickrow {
+  cursor: pointer;
+}
+/* Hover is a colour change only: no wash, no bar (the canvas table rules
+   add a hover wash and dotted row lines; neither applies here). */
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr,
+:is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr,
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr:hover,
+:is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr:hover {
+  border-bottom: 0;
+  background: transparent;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr td,
+:is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr td {
+  transition: color 0.15s ease-out;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr:hover td,
+.ogr-page .ogr-pickrow:hover td {
+  color: var(--text-primary);
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr.is-on td,
+:is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr.is-on td,
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr.is-on .ogr-kind > .bi {
+  color: var(--emerald-text);
+}
+/* A selected row keeps the score and the letter neutral. */
+:is(.ogr-page, .ogr-dialog) .ogr-table tbody tr.is-on td.ogr-neutral,
+:is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr.is-on td.ogr-neutral {
+  color: var(--text-primary);
+}
+.ogr-rowbtn {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: color 0.15s ease-out;
+}
+.ogr-rowbtn:hover,
+tr.is-on .ogr-rowbtn {
+  color: var(--emerald-text);
+}
+.ogr-rowbtn:focus-visible,
+.ogr-hist__pick:focus-visible,
+.ogr-filter:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.ogr-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-cohort {
+  width: 60px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-work {
+  width: 112px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-score {
+  width: 64px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-letter {
+  width: 56px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-grader {
+  width: 92px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-date {
+  width: 72px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-name {
+  width: 22%;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-table--member .ogr-c-work {
+  width: 26%;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-mini td {
+  font-size: 13px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-mini--summary th:not(:first-child),
+:is(.ogr-page, .ogr-dialog) .ogr-mini--summary td:not(:first-child) {
+  width: 132px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-mini--members th:not(:first-child):not(.ogr-c-role),
+:is(.ogr-page, .ogr-dialog) .ogr-mini--members td:not(:first-child):not(.ogr-c-role) {
+  width: 96px;
+}
+:is(.ogr-page, .ogr-dialog) .ogr-mini--members .ogr-c-role {
+  width: 132px;
+}
+
+/* ── Side column: the member record ──────────────────────────────────────── */
+.ogr-record {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.ogr-record__name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.ogr-record__name--empty {
+  font-size: 16px;
+}
+.ogr-record__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ogr-record__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ogr-record__meta .bi {
+  color: var(--text-muted);
+}
+.ogr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: start;
+  margin: 0;
+}
+.ogr-stats > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 16px;
+  border-left: 1px solid var(--ez-rule);
+}
+.ogr-stats > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ogr-stats dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-stats dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.ogr-record__vis {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.ogr-record__label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-recsec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ogr-recsec + .ogr-recsec {
+  padding-top: 16px;
+  border-top: 1px solid var(--ez-rule);
+}
+.ogr-recsec__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ogr-recsec__sub {
+  font-weight: 500;
+}
+.ogr-recsec__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-record .ogr-mini th:not(:first-child),
+.ogr-record .ogr-mini td:not(:first-child) {
+  width: 56px;
+}
+.ogr-record .ogr-mini th:nth-child(2),
+.ogr-record .ogr-mini td:nth-child(2) {
+  width: 64px;
+}
+.ogr-record .ogr-mini--rubric th:not(:first-child),
+.ogr-record .ogr-mini--rubric td:not(:first-child) {
+  width: 56px;
+}
+.ogr-hist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ogr-hist__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.ogr-hist__row:last-child {
+  border-bottom: 0;
+}
+.ogr-hist__pick {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.ogr-hist__pick:hover {
+  color: var(--text-primary);
+}
+.ogr-hist__row.is-on .ogr-hist__pick,
+.ogr-hist__row.is-on .ogr-kind > .bi {
+  color: var(--emerald-text);
+}
+.ogr-hist__score {
+  color: var(--text-primary);
+  text-align: right;
+  white-space: nowrap;
+}
+.ogr-hist__by {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-hist__fb {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ogr-hist__edit {
+  flex: none;
+  font-size: 12px;
+}
+
+/* ── Dialog (the ds Modal: an overlay, so it has a surface) ──────────────── */
+.ogr-dialog .ds-modal-title {
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.ogr-dialog .ds-modal-footer {
+  align-items: center;
+  gap: 8px 20px;
+}
+.ogr-dialog .tcc-flatbtn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: 0;
+}
+.ogr-dialog .tcc-flatbtn:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.ogr-form__trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.ogr-form__fixed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 12px;
+}
+.ogr-form__fixed > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ogr-form__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.ogr-form__value {
+  display: inline-flex;
+  font-family: var(--font-sans);
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.ogr-form__value .bi {
+  color: var(--text-muted);
+}
+.ogr-form__changed {
+  grid-column: 1 / -1;
+  font-family: var(--font-sans);
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ogr-form__rubric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ogr-fielderror {
+  margin: 0;
+  font-size: 12px;
+  color: var(--negative);
+}
+
+/* ── The grade table by the width of its own column ──────────────────────── */
+@container ogrmain (max-width: 719px) {
+  :is(.ogr-page, .ogr-dialog) .ogr-table,
+  :is(.ogr-page, .ogr-dialog) .ogr-table thead,
+  :is(.ogr-page, .ogr-dialog) .ogr-table tbody {
+    display: block;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table :is(thead, tbody) tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 56px 100px 60px 48px 80px 64px;
+    column-gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ez-rule-subtle);
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table thead tr:is(tr) {
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--ez-rule);
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table th,
+  :is(.ogr-page, .ogr-dialog) .ogr-table td {
+    width: auto !important;
+    padding: 0;
+    border-bottom: 0;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table th.ogr-c-fb {
+    display: none;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table td.ogr-c-fb {
+    grid-column: 1 / -1;
+    padding-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table tbody tr.is-on td.ogr-c-fb {
+    color: var(--emerald-text);
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table--member :is(thead, tbody) tr {
+    grid-template-columns: minmax(0, 1fr) 60px 48px minmax(0, 96px) 56px;
+  }
+}
+@container ogrmain (max-width: 469px) {
+  :is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-cohort,
+  :is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-grader {
+    display: none;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table :is(thead, tbody) tr {
+    grid-template-columns: minmax(0, 1fr) 106px 58px 44px 60px;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table--member :is(thead, tbody) tr {
+    grid-template-columns: minmax(0, 1fr) 58px 48px 56px;
+  }
+}
+@container ogrmain (max-width: 359px) {
+  :is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-date,
+  :is(.ogr-page, .ogr-dialog) .ogr-table .ogr-c-letter {
+    display: none;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table :is(thead, tbody) tr {
+    grid-template-columns: minmax(0, 1fr) 92px 58px;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-table--member :is(thead, tbody) tr {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+}
+@container ogrmain (max-width: 480px) {
+  :is(.ogr-page, .ogr-dialog) .ogr-mini--members .ogr-c-role {
+    display: none;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-mini--members th:not(:first-child):not(.ogr-c-role),
+  :is(.ogr-page, .ogr-dialog) .ogr-mini--members td:not(:first-child):not(.ogr-c-role) {
+    width: 72px;
+  }
+  :is(.ogr-page, .ogr-dialog) .ogr-mini--summary th:not(:first-child),
+  :is(.ogr-page, .ogr-dialog) .ogr-mini--summary td:not(:first-child) {
+    width: 84px;
+  }
+}
+
+/* ── Narrow layouts, by the width of the page column ─────────────────────── */
+@container tcc (max-width: 1060px) {
+  .ogr-body {
+    grid-template-columns: minmax(132px, 168px) 1px minmax(0, 1fr);
+  }
+  .ogr-body > .ogr-vrule--side {
+    display: none;
+  }
+  .ogr-side {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .ogr-record {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 64px;
+    align-items: start;
+  }
+  .ogr-record > .ogr-record__head,
+  .ogr-record > .ogr-stats,
+  .ogr-record > .ogr-record__vis {
+    grid-column: 1 / -1;
+  }
+  .ogr-record > .ogr-recsec + .ogr-recsec {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .ogr-record > .ogr-recsec:nth-of-type(3) {
+    grid-column: 2;
+    padding-top: 16px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+@container tcc (max-width: 860px) {
+  .ogr-page .ogr-kpistrip {
+    grid-template-columns: repeat(3, auto);
+  }
+  .ogr-page .ogr-kpistrip .tcc-kpi:nth-child(4n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .ogr-page .ogr-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container tcc (max-width: 760px) {
+  .ogr-body,
+  .ogr-body--noside {
+    display: block;
+  }
+  .ogr-body > .ogr-vrule {
+    display: none;
+  }
+  .ogr-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--ez-rule);
+  }
+  .ogr-views {
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+  }
+  .ogr-search {
+    flex: 1 1 100%;
+    padding: 8px 0;
+  }
+  .ogr-railsec,
+  .ogr-railsec + .ogr-railsec {
+    flex: 1 1 200px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .ogr-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 16px;
+  }
+  .ogr-filter {
+    width: auto;
+  }
+  .ogr-record {
+    display: flex;
+  }
+  .ogr-record > .ogr-recsec + .ogr-recsec,
+  .ogr-record > .ogr-recsec:nth-of-type(3) {
+    padding-top: 16px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+@container tcc (max-width: 620px) {
+  .ogr-page .ogr-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ogr-page .ogr-kpistrip .tcc-kpi,
+  .ogr-page .ogr-kpistrip .tcc-kpi:nth-child(4n + 1),
+  .ogr-page .ogr-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .ogr-page .ogr-kpistrip .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .ogr-page .tcc-kpi__label {
+    white-space: normal;
+  }
+}
+/* The dialog lives in a portal, outside the page column: size it by the window. */
+@media (max-width: 560px) {
+  .ogr-form__trio {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .ogr-form__fixed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (pointer: coarse) {
+  .ogr-filter,
+  .ogr-hist__pick,
+  .ogr-rowbtn {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ogr-filter,
+  .ogr-rowbtn,
+  .ogr-hist__pick,
+  :is(.ogr-page, .ogr-dialog) .ogr-table tbody tr td,
+  :is(.ogr-page, .ogr-dialog) .ogr-mini tbody tr td {
+    transition: none;
+  }
+}
