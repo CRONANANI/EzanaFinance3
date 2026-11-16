@@ -1,86 +1,62 @@
-import { SkeletonRegion, Skeleton, SkeletonCard, SkeletonText, token } from '@/components/ds';
+import { SkeletonRegion } from '@/components/ds';
+import '@/components/org/command-center/command-center.css';
+import '@/components/org/meetings/meetings.css';
+import '@/styles/home-canvas.css';
 
 /**
- * Route-segment loading UI for Meetings. Real header chrome + a ~210px meeting
- * rail, a horizontal card strip, and a detail panel silhouette. No useOrg /
- * no fetch.
+ * Route loading state for Meetings, in the page's final layout: the figures,
+ * then the filters, the meeting and the side column. It renders inside the
+ * shared Team Hub shell, whose sidebar stays painted beside it.
+ * Presentation only: no data, no org context, no import of the page.
  */
-const eyebrowStyle = {
-  margin: 0,
-  fontFamily: token.fontMono,
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: token.textMuted,
-};
-const titleStyle = {
-  margin: '4px 0 0',
-  fontFamily: token.fontSans,
-  fontSize: 26,
-  fontWeight: 700,
-  color: token.textPrimary,
-};
+const bar = (w, h = 12) => (
+  <span className="tcc-skel" style={{ width: w, height: h }} aria-hidden="true" />
+);
 
 export default function MeetingsLoading() {
   return (
-    <SkeletonRegion label="Loading meetings…" style={{ padding: '20px 24px 40px' }}>
-      <p style={eyebrowStyle}>Team Hub</p>
-      <h1 style={titleStyle}>Meetings</h1>
-
-      <div style={{ marginTop: 22, display: 'flex', gap: 18 }}>
-        {/* Left meeting rail */}
-        <div
-          style={{
-            flex: '0 0 210px',
-            width: 210,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                border: `1px solid ${token.border}`,
-                background: token.surface,
-                borderRadius: token.radiusMd,
-                padding: 12,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              <Skeleton width="70%" height={12} />
-              <Skeleton width="45%" height={10} />
-            </div>
-          ))}
-        </div>
-
-        {/* Strip + detail */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} style={{ flex: '0 0 200px' }}>
-                <SkeletonCard rows={2} />
+    <SkeletonRegion
+      label="Loading meetings"
+      className="dashboard-page-inset ez-canvas tcc-page omt-page"
+    >
+      <div className="tcc-top">
+        <div className="tcc-kpis">
+          <div className="tcc-kpistrip omt-kpistrip">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="tcc-kpi">
+                <span className="tcc-kpi__icon">{bar(20, 20)}</span>
+                {bar(72, 10)}
+                {bar(48, 16)}
               </div>
             ))}
           </div>
-          <div
-            style={{
-              border: `1px solid ${token.border}`,
-              background: token.surface,
-              borderRadius: token.radiusLg,
-              padding: 18,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 14,
-            }}
-          >
-            <Skeleton width="50%" height={20} />
-            <SkeletonText lines={4} />
-            <Skeleton width="100%" height={160} radius={token.radiusMd} />
+        </div>
+      </div>
+      <div className="omt-body">
+        <div className="omt-rail">
+          <div className="omt-skel">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <span key={i}>{bar(`${90 - i * 6}%`, 12)}</span>
+            ))}
+          </div>
+        </div>
+        <span className="tcc-vrule omt-vrule omt-vrule--rail" aria-hidden="true" />
+        <div className="omt-main">
+          <div className="omt-skel">
+            {bar('100%', 32)}
+            {bar('55%', 22)}
+            {bar('35%', 12)}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i}>{bar('100%', 14)}</span>
+            ))}
+          </div>
+        </div>
+        <span className="tcc-vrule omt-vrule omt-vrule--side" aria-hidden="true" />
+        <div className="omt-side">
+          <div className="omt-skel">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i}>{bar(`${92 - i * 9}%`, 12)}</span>
+            ))}
           </div>
         </div>
       </div>

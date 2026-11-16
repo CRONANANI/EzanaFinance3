@@ -92,20 +92,26 @@ async function getSectorCapPct(supabase, orgId) {
   return finite(v.pct) ?? finite(v.max) ?? finite(v.limit) ?? null;
 }
 
-/** What changed since the council last met. Null when there are no meetings. */
-async function sinceLastMeeting(supabase, orgId, rows) {
+/**
+ * What changed since the council last met: the most recent meeting whose
+ * scheduled date has passed (never a future meeting, never one without a
+ * date). Null when there is none.
+ */
+export async function sinceLastMeeting(supabase, orgId, rows, now = Date.now()) {
   const { data: meetings } = await supabase
     .from('org_meetings')
-    .select('id, title, started_at, created_at')
+    .select('id, title, scheduled_at')
     .eq('org_id', orgId)
-    .order('started_at', { ascending: false, nullsFirst: false })
+    .not('scheduled_at', 'is', null)
+    .lte('scheduled_at', new Date(now).toISOString())
+    .order('scheduled_at', { ascending: false })
     .limit(1);
   const meeting = (meetings || [])[0];
-  const sinceIso = meeting?.started_at || meeting?.created_at;
-  if (!sinceIso) return null;
+  const sinceIso = meeting?.scheduled_at;
+  if (!sinceIso || Date.parse(sinceIso) > now) return null;
 
   const sinceDate = sinceIso.slice(0, 10);
-  const days = Math.max(0, Math.round((Date.now() - Date.parse(sinceIso)) / 86400000));
+  const days = Math.max(0, Math.round((now - Date.parse(sinceIso)) / 86400000));
 
   /* Fund value and return change, from the daily records either side of the
      meeting date. */

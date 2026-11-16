@@ -3,14 +3,13 @@ import { httpUrlOrNull } from '@/lib/sanitize';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { confirmsQuorum, isVoterRole, meetingBallotView } from '@/lib/org-meetings-model';
+import { countMeetingBallots, loadRoster } from '../_loader';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
-// The Investment Committee votes: executives + portfolio managers. Eligibility
-// is derived from org-chart roles, never a hardcoded member list.
-const IC_VOTER_ROLES = ['executive', 'portfolio_manager'];
 const CATEGORIES = ['ic', 'sector', 'general', 'exec', 'education'];
 const RECORDING_SOURCES = ['zoom', 'otter', 'fireflies', 'read_ai', 'upload'];
 
@@ -18,31 +17,16 @@ async function resolveParams(context) {
   return (await context?.params) || {};
 }
 
-/** Build the vote tally + quorum picture for a meeting from live rows. */
-function buildVoteState(meeting, votes, eligibleCount, presentCount, myMemberId) {
-  const tally = { buy: 0, pass: 0, abstain: 0 };
-  let myVote = null;
-  for (const v of votes) {
-    if (tally[v.vote] !== undefined) tally[v.vote] += 1;
-    if (v.voter_member_id === myMemberId) myVote = v.vote;
-  }
-  const total = tally.buy + tally.pass + tally.abstain;
-  const quorumPct = Number.isFinite(meeting.quorum_pct) ? meeting.quorum_pct : 50;
-  const quorumMet = eligibleCount > 0 && (presentCount / eligibleCount) * 100 >= quorumPct;
-  return {
-    tally,
-    total,
-    myVote,
-    eligibleCount,
-    presentCount,
-    quorumPct,
-    quorumMet,
-  };
-}
+/* GET /api/org/meetings/:id: full detail. Meeting, attendees (with names and
+   roles), documents discussed, the committee vote as the viewer may see it,
+   the roster (for the attendee picker), the linked pitch and what the viewer
+   may do.
 
-/* GET /api/org/meetings/:id — full detail: meeting + attendees (with member
-   names/roles), deliverables, per-tier sentiment, IC vote state, roster (for
-   the attendee picker), linked-pitch pre-read, and viewer capabilities. */
+   Committee vote: until the meeting is completed only the number of ballots
+   received, quorum and the viewer's own vote leave the server; no running
+   Buy, Pass or Abstain count and no other member's ballot. Quorum counts
+   voting members (executives and portfolio managers) who replied yes or were
+   marked as attended. */
 export const GET = withApiGuard(
   async (request, user, context) => {
     const supabase = getUserClient();
@@ -60,16 +44,11 @@ export const GET = withApiGuard(
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!meeting) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    // Org roster (org chart) — used both for the attendee picker and to
-    // resolve attendee/vote member names + IC eligibility counts.
-    const { data: roster } = await supabase
-      .from('org_members')
-      .select('id, user_id, display_name, role')
-      .eq('org_id', member.org_id)
-      .eq('is_active', true);
-    const byMemberId = new Map((roster || []).map((m) => [m.id, m]));
+    const roster = await loadRoster(supabase, member.org_id);
+    const byMemberId = new Map(roster.map((m) => [m.id, m]));
+    const completed = meeting.status === 'closed';
 
-    const [attendeesRes, deliverablesRes, sentimentRes, votesRes] = await Promise.all([
+    const [attendeesRes, deliverablesRes, votesRes, counts] = await Promise.all([
       supabase
         .from('org_meeting_attendees')
         .select('*')
@@ -81,16 +60,16 @@ export const GET = withApiGuard(
         .eq('meeting_id', id)
         .eq('org_id', member.org_id)
         .order('created_at'),
-      supabase
-        .from('org_meeting_sentiment')
-        .select('*')
-        .eq('meeting_id', id)
-        .eq('org_id', member.org_id),
-      supabase
-        .from('org_meeting_votes')
-        .select('*')
-        .eq('meeting_id', id)
-        .eq('org_id', member.org_id),
+      meeting.category === 'ic'
+        ? supabase
+            .from('org_meeting_votes')
+            .select('voter_member_id, vote')
+            .eq('meeting_id', id)
+            .eq('org_id', member.org_id)
+        : { data: [] },
+      meeting.category === 'ic' && !completed
+        ? countMeetingBallots(supabase, member.org_id, [id])
+        : null,
     ]);
 
     const attendees = (attendeesRes.data || []).map((a) => {
@@ -100,26 +79,24 @@ export const GET = withApiGuard(
         member_id: a.member_id,
         display_name: m?.display_name || 'Member',
         role: m?.role || null,
+        sub_role: m?.sub_role || null,
         rsvp: a.rsvp,
         attended: a.attended,
       };
     });
 
-    // Present = RSVP'd yes OR marked attended. Used for quorum.
-    const presentCount = attendees.filter((a) => a.attended || a.rsvp === 'yes').length;
-    const eligibleCount = (roster || []).filter((m) => IC_VOTER_ROLES.includes(m.role)).length;
-    const voteState = buildVoteState(
-      meeting,
-      votesRes.data || [],
-      eligibleCount,
-      presentCount,
-      member.id,
-    );
-
-    const sentiment = (sentimentRes.data || []).map((s) => ({
-      tier: s.tier,
-      score: Number(s.score),
-    }));
+    const votes =
+      meeting.category === 'ic'
+        ? meetingBallotView({
+            votes: votesRes.data || [],
+            completed,
+            viewerMemberId: member.id,
+            eligible: roster.filter((m) => isVoterRole(m.role)).length,
+            confirmed: attendees.filter(confirmsQuorum).length,
+            quorumPct: meeting.quorum_pct,
+            received: counts ? counts[id] : null,
+          })
+        : null;
 
     // Auto-bundled pre-read: the linked pitch (IC meetings) + its library docs.
     let preRead = [];
@@ -140,16 +117,20 @@ export const GET = withApiGuard(
       }
     }
 
-    const isICVoter = meeting.category === 'ic' && IC_VOTER_ROLES.includes(member.role);
+    const isICVoter = meeting.category === 'ic' && isVoterRole(member.role);
 
     return NextResponse.json({
       meeting,
       attendees,
       deliverables: deliverablesRes.data || [],
-      sentiment,
-      votes: voteState,
+      votes,
       preRead,
-      roster: (roster || []).map((m) => ({ id: m.id, display_name: m.display_name, role: m.role })),
+      roster: roster.map((m) => ({
+        id: m.id,
+        display_name: m.display_name,
+        role: m.role,
+        sub_role: m.sub_role || null,
+      })),
       viewer: {
         userId: member.user_id,
         memberId: member.id,

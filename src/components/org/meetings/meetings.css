@@ -1,0 +1,887 @@
+/* ============================================================================
+   Meetings (/org-team-hub/meetings). Page-scoped: every class starts with
+   omt-. Built on the Command Center's tcc- atoms (KPI strip, text buttons,
+   toggles, states) so the Team Hub pages read as one. Flat sections on the
+   canvas: no card surface, hairlines only, text-only toggles, one filled
+   button. Tokens only.
+   ============================================================================ */
+
+/* ── Figures: five cells on one line, wrapping by the page width ─────────── */
+.omt-page .omt-kpistrip {
+  grid-template-columns: repeat(5, auto);
+}
+.omt-page .omt-kpistrip .tcc-kpi:nth-child(4n + 1) {
+  padding-left: 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.omt-page .omt-kpistrip .tcc-kpi:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.omt-kpilink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--emerald-text);
+  font: inherit;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-kpilink:hover {
+  color: var(--text-primary);
+}
+.omt-count {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ── Body: rail | main | side. Every column can shrink (min-width: 0). ───── */
+.omt-body {
+  display: grid;
+  grid-template-columns: minmax(132px, 168px) 1px minmax(0, 1fr) 1px minmax(0, 260px);
+  column-gap: 31.5px; /* 64px between sections, the rule centred */
+  padding: 24px 0 0;
+}
+.omt-rail,
+.omt-main,
+.omt-side {
+  min-width: 0;
+}
+.omt-main {
+  container: omtmain / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.omt-side {
+  display: flex;
+  flex-direction: column;
+}
+.omt-side > .omt-sidesec + .omt-sidesec {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.omt-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Rail ────────────────────────────────────────────────────────────────── */
+.omt-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.omt-tabs {
+  gap: 4px 14px;
+}
+.omt-tabs .tcc-toggle {
+  font-size: 14px;
+}
+.omt-railsec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.omt-railhead {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.omt-cats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.omt-cat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-cat:hover {
+  color: var(--text-primary);
+}
+.omt-cat.is-on {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.omt-cat__n {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.omt-cat.is-on .omt-cat__n {
+  color: var(--emerald-text);
+}
+.omt-term {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.omt-term__name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.omt-term__dates {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.omt-term__step {
+  color: var(--text-muted);
+}
+.omt-railnote {
+  align-self: flex-start;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* ── Strip of meetings ───────────────────────────────────────────────────── */
+.omt-strip__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+}
+.omt-strip__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.omt-strip__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.omt-strip__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+  padding: 0 0 20px;
+  list-style: none;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.omt-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-pick__title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.omt-pick__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.omt-pick__flag {
+  font-size: 12px;
+}
+.omt-pick:hover .omt-pick__title {
+  color: var(--text-primary);
+}
+.omt-pick.is-on .omt-pick__title,
+.omt-pick.is-on .omt-pick__meta {
+  color: var(--emerald-text);
+}
+
+/* Term view */
+.omt-termlist {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.omt-termgroup + .omt-termgroup {
+  margin-top: 14px;
+}
+.omt-termgroup__head {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.omt-termrows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.omt-termrows > li {
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.omt-termrow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  width: 100%;
+  padding: 7px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-termrow__date,
+.omt-termrow__status {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.omt-termrow__title {
+  overflow-wrap: anywhere;
+}
+.omt-termrow:hover {
+  color: var(--text-primary);
+}
+.omt-termrow.is-on,
+.omt-termrow.is-on .omt-termrow__date {
+  color: var(--emerald-text);
+}
+
+/* ── Notice line ─────────────────────────────────────────────────────────── */
+.omt-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.omt-notice > .bi {
+  color: var(--positive);
+}
+.omt-notice--error > .bi {
+  color: var(--negative);
+}
+
+/* ── The open meeting ────────────────────────────────────────────────────── */
+.omt-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.omt-dhead {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.omt-dhead__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+.omt-dhead__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.omt-copy {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.omt-dhead__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.omt-dhead__meta .bi {
+  color: var(--text-muted);
+}
+.omt-dhead__meta .tcc-warn .bi {
+  color: var(--warning);
+}
+.omt-dhead__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 4px;
+}
+.omt-yourreply,
+.omt-myvote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 20px;
+  font-size: 14px;
+}
+.omt-yourreply .tcc-toggle,
+.omt-myvote .tcc-toggle {
+  font-size: 14px;
+}
+.omt-myvote__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.omt-yourreply__hint {
+  font-size: 12px;
+}
+
+/* Sections inside the meeting: a heading and a hairline above. */
+.omt-sec {
+  min-width: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.omt-sec__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 10px;
+}
+.omt-sec__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Tables: 11px grey caps header, hairlines between rows, numbers right. */
+.omt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.omt-table th {
+  padding: 0 12px 6px 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--ez-rule);
+}
+.omt-table td {
+  padding: 7px 12px 7px 0;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  overflow-wrap: break-word;
+}
+.omt-table th:last-child,
+.omt-table td:last-child {
+  padding-right: 0;
+}
+.omt-table .omt-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.omt-agenda .omt-num:first-child {
+  width: 24px;
+  text-align: left;
+}
+.omt-agenda__label,
+.omt-attn__name {
+  color: var(--text-primary);
+}
+.omt-rowctl {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+.omt-rowctl .tcc-textbtn + .tcc-textbtn {
+  margin-left: 12px;
+}
+.omt-danger:hover {
+  color: var(--negative);
+}
+.omt-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.omt-mark {
+  display: inline-flex;
+  gap: 12px;
+}
+.omt-mark .tcc-toggle {
+  font-size: 12px;
+}
+.omt-docs__kind {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* Add rows: borderless fields on a hairline. */
+.omt-addrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+.omt-field {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.omt-field--grow {
+  flex: 1 1 200px;
+}
+.omt-field--min {
+  flex: 0 0 64px;
+}
+.omt-input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+}
+.omt-input.tcc-mono {
+  font-family: var(--font-mono);
+}
+.omt-input::placeholder {
+  color: var(--text-muted);
+}
+.omt-input:focus-visible {
+  border-bottom-color: var(--emerald-text);
+}
+.omt-select {
+  cursor: pointer;
+}
+.omt-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.omt-fielderror {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--negative);
+}
+.omt-foot {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.omt-foot--top {
+  margin: -8px 0 10px;
+}
+
+/* Attendees beside the quorum tracker when the column is wide enough. */
+.omt-people {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0;
+}
+.omt-people__rule {
+  display: none;
+}
+@container omtmain (min-width: 640px) {
+  .omt-people {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 200px);
+    column-gap: 31.5px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .omt-people > .omt-sec {
+    border-top: 0;
+  }
+  .omt-people__rule {
+    display: block;
+    margin-top: 20px;
+  }
+}
+.omt-dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.omt-dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.omt-dl dt {
+  color: var(--text-muted);
+}
+.omt-dl dd {
+  margin: 0;
+  color: var(--text-primary);
+  text-align: right;
+}
+.omt-dl--row {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px 24px;
+}
+.omt-dl--row > div {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
+.omt-dl--row dd {
+  text-align: left;
+}
+.omt-dl--row dd.tcc-mono {
+  white-space: nowrap;
+}
+.omt-roles td,
+.omt-roles th {
+  font-size: 12px;
+}
+
+/* Pre-read and notes */
+.omt-preread {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.omt-preread > li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 6px 0;
+}
+.omt-preread > li > .bi {
+  color: var(--text-muted);
+}
+.omt-preread__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.omt-preread__note {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.omt-notes {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ── Side column ─────────────────────────────────────────────────────────── */
+.omt-sidetitle {
+  font-size: 15px;
+}
+.omt-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.omt-brief__title {
+  align-self: flex-start;
+  margin-bottom: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--emerald-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-brief__title:hover {
+  color: var(--text-primary);
+}
+.omt-brief__line {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.omt-siderows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.omt-siderows > li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.omt-siderows > li:last-child {
+  border-bottom: 0;
+}
+.omt-siderow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+}
+.omt-siderow:hover,
+.omt-siderow:hover .omt-siderow__title {
+  color: var(--emerald-text);
+}
+.omt-siderow__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.omt-siderow__meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.omt-session {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.omt-session__pitches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 12px;
+}
+.omt-session__ticker {
+  color: var(--text-secondary);
+}
+.omt-sidelink {
+  align-self: flex-start;
+  margin-top: 10px;
+}
+
+/* Focus for the page's own controls. */
+.omt-pick:focus-visible,
+.omt-termrow:focus-visible,
+.omt-cat:focus-visible,
+.omt-siderow:focus-visible,
+.omt-brief__title:focus-visible,
+.omt-kpilink:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Dialogs (overlays keep the library's surface) ───────────────────────── */
+.omt-dialog .ds-modal-title {
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.omt-dialog .ds-modal-footer {
+  align-items: center;
+  gap: 8px 20px;
+}
+.omt-dialog .tcc-flatbtn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: 0;
+}
+.omt-dialog .tcc-flatbtn:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.omt-dialog__text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ── Narrow layouts, by the width of the page column ─────────────────────── */
+@container tcc (max-width: 1060px) {
+  .omt-body {
+    grid-template-columns: minmax(140px, 168px) 1px minmax(0, 1fr);
+  }
+  .omt-body > .omt-vrule--side {
+    display: none;
+  }
+  .omt-side {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 64px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ez-rule);
+  }
+  .omt-side > .omt-sidesec + .omt-sidesec {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .omt-side > .omt-sidesec:nth-child(n + 3) {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+@container tcc (max-width: 860px) {
+  .omt-page .omt-kpistrip {
+    grid-template-columns: repeat(3, auto);
+  }
+  .omt-page .omt-kpistrip .tcc-kpi:nth-child(4n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .omt-page .omt-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container tcc (max-width: 760px) {
+  .omt-body {
+    display: block;
+  }
+  .omt-body > .omt-vrule {
+    display: none;
+  }
+  .omt-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--ez-rule);
+  }
+  .omt-tabs {
+    flex: 1 1 100%;
+  }
+  .omt-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+  .omt-cat {
+    width: auto;
+    gap: 6px;
+  }
+  .omt-railsec {
+    flex: 1 1 auto;
+  }
+  .omt-term__name {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .omt-term {
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  .omt-side {
+    display: flex;
+  }
+  .omt-side > .omt-sidesec + .omt-sidesec,
+  .omt-side > .omt-sidesec:nth-child(n + 3) {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ez-rule);
+  }
+}
+@container tcc (max-width: 620px) {
+  .omt-page .omt-kpistrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .omt-page .omt-kpistrip .tcc-kpi,
+  .omt-page .omt-kpistrip .tcc-kpi:nth-child(4n + 1),
+  .omt-page .omt-kpistrip .tcc-kpi:nth-child(3n + 1) {
+    padding: 0 0 0 16px;
+    border-left: 1px solid var(--ez-rule);
+  }
+  .omt-page .omt-kpistrip .tcc-kpi:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .omt-agenda th:nth-child(4),
+  .omt-agenda td:nth-child(4) {
+    display: none;
+  }
+  .omt-railnote {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .omt-pick,
+  .omt-cat,
+  .omt-siderow,
+  .omt-termrow,
+  .omt-yourreply .tcc-toggle,
+  .omt-myvote .tcc-toggle {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .omt-pick,
+  .omt-cat,
+  .omt-siderow,
+  .omt-termrow,
+  .omt-kpilink,
+  .omt-brief__title {
+    transition: none;
+  }
+}
