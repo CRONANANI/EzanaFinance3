@@ -171,3 +171,52 @@ answer reads only rows marked verified.
 
 Not verified against production rows: the overlays were tested on fixtures
 only. The build workspace has no member session.
+
+## Production release, Nov 17, 2026
+
+### Lobbying: published
+
+|                                    | Before         | After             |
+| ---------------------------------- | -------------- | ----------------- |
+| Published client links             | 35             | 1,229             |
+| Tickers with lobbying              | 33             | 957               |
+| 2024+ spend attributed to a ticker | (not measured) | $3.00B of $17.68B |
+
+1,194 links were published by the exact legal-name rule (status `name_identity`): the
+client's name is the SEC registrant's name once case and punctuation are removed, it maps
+to one ticker, the ticker has one CIK and the CIK one ticker, and no existing mapping
+conflicts. Each row carries its evidence and the date. Sonar's lobbying answer says when a
+link is a name match and not a confirmation from the company. 939 possible matches (name
+variants, subsidiaries such as Spirit AeroSystems under Boeing) stay unpublished. Undo:
+`select public.lobbying_unpublish_name_identity();` (service role).
+
+Resolve now: LMT, RTX, GD, BA, LHX, HII, LDOS, SAIC, CACI, PSN, GE, HON, PFE, MCK, HUM, CNC.
+Still unresolved (name variant or subsidiary, awaiting review): NOC, KBR, ACN, IBM (filed
+as Red Hat), CVS, BAH (no filings).
+
+The lobbying page's "public companies only" filter and the feed now read published links
+only; before, they read every row, including unreviewed matches.
+
+### 13F: backfill running in production
+
+`/api/cron/sec-13f-backfill` (every 10 minutes except :35) works Q1, Q2 and Q3 2026.
+Discovery reads each tracked filer's EDGAR submissions feed: full-text search returned
+only 50 13F filings on the Nov 16 deadline day.
+
+| Quarter | Filings indexed before | After discovery      | Materialised filers             |
+| ------- | ---------------------- | -------------------- | ------------------------------- |
+| Q1 2026 | 99 (93 filers)         | 1,690 (1,591 filers) | 77, unchanged until complete    |
+| Q2 2026 | 1,550 (1,508)          | 1,807 (1,655)        | 1,499, unchanged until complete |
+| Q3 2026 | 150 (148)              | 1,650 (1,571)        | 148, unchanged until complete   |
+
+A quarter is rebuilt only when `sec_13f_quarter_completeness()` passes every check: all
+filers read and filing days searched, at most 2% of filings unparsed, declared row counts
+known for 90% of parsed filings and matching for 99%, every amendment typed (RESTATEMENT
+or NEW HOLDINGS), and filers with holdings at least 90% of the reference. The hourly
+snapshot does not rebuild a quarter under backfill. Progress:
+`select period, completeness, status from sec_13f_backfill_quarters;`
+
+Found while doing this: none of the 546 stored 13F amendments had an amendment type, so a
+partial NEW HOLDINGS amendment could stand in for a filer's whole quarter in the
+materialised Q2. The parser now records the type, and Q2 is rebuilt once its 144
+amendments are typed.
