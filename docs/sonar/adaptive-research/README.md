@@ -117,28 +117,33 @@ market, a named successor and every feed down.
 - IPS wording: a rule is "marked blocking in the IPS". Sonar does not place,
   stop or approve trades and each answer says so.
 
-## Streaming (plan only)
+## Streaming
 
-Not built, by decision: it follows stable live validation.
+Signed-in readers' adaptive pings are streamed as server-sent events from the same
+handler that answers JSON, so auth, quotas, the single charge and the fallback do not
+change. Events: `ack`, `plan` (scenario, evidence), `step` (an evidence step starts, ends
+or fails; progress only), `fallback`, `sources`, `section` (each validated section, lead
+first), `done` (the exact JSON body). Nothing about evidence or conclusions is sent before
+the report passes validation. Guests get JSON: their count rides on a cookie that must be
+set with the answer. The loading screen shows real progress (`stream-progress.js`); the
+report is drawn from validated sections; Save and follow-ups wait for `done`.
+`SONAR_ADAPTIVE_STREAM=off` returns every ping to JSON.
 
-1. The route already produces sections in a fixed order. Emit them as
-   server-sent events: `plan`, then one `section` per validated section, then
-   `sources`, then `done` with the same report the JSON response returns today.
-2. Validate each section before it is sent. A section the validator would
-   remove is never shown and then withdrawn.
-3. Settle the ping once, on `done`. An aborted stream cancels the reservation,
-   as an aborted request does now.
-4. The client keeps the JSON path as the fallback and as the only path when
-   `SONAR_ADAPTIVE_STREAM` is not `on`.
-5. Saved research and the session thread store the final report only.
+Honest limit: an executor builds its report once all its evidence is in, so sections
+arrive together, right after validation. What streams live is the evidence progress.
+
+## Switches
+
+| Variable                    | Default | Effect                                                    |
+| --------------------------- | ------- | --------------------------------------------------------- |
+| `SONAR_ADAPTIVE`            | on      | `off` returns every ping to the previous pipelines        |
+| `SONAR_ADAPTIVE_STREAM`     | on      | `off` answers adaptive pings as JSON only                 |
+| `SONAR_ADAPTIVE_WEB_SEARCH` | off     | `on` lets adaptive research steps search the web          |
+| `SONAR_WEB_SEARCH`          | off     | `true` allows web search for every Sonar caller that asks |
 
 ## Not built
 
-- **Streaming.** Plan above.
-- **Live validation.** The runner exists; it has not been executed against
-  production. See `IMPLEMENTATION_MATRIX.md`.
-- **A real 13F dry run and backfill, and published lobbying identities.**
-  Both wait for approval; see `DATA_COVERAGE.md`.
+- **Web search in production.** Off until `SONAR_ADAPTIVE_WEB_SEARCH=on`.
 - **Overlay write paths.** Attaching research to a pitch or sharing a report
   is not done from Sonar.
 - **Hybrid classification.** Routing is deterministic. An ambiguous question

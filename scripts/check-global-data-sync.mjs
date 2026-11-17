@@ -759,7 +759,7 @@ test('every adapter honours the contract and source ids are unique', () => {
 });
 
 test('rotator skips dedicated, disabled and missing-env adapters', async () => {
-  assert.equal(adapterStatus(ADAPTERS.bcb, {}), 'dedicated cron');
+  assert.equal(adapterStatus(ADAPTERS.bcb, {}), 'scheduled separately');
   assert.equal(adapterStatus(ADAPTERS.banrep, {}), 'disabled');
   assert.match(adapterStatus(ADAPTERS.ucdp, {}), /UCDP_ACCESS_TOKEN/);
   assert.equal(adapterStatus(ADAPTERS.ucdp, { UCDP_ACCESS_TOKEN: 't' }), null);
@@ -771,7 +771,7 @@ test('rotator skips dedicated, disabled and missing-env adapters', async () => {
   const res = await runDue({}, fake, { env: {}, now: new Date('2026-11-03T00:00:00Z') });
   assert.deepEqual(
     res.map((r) => r.reason),
-    ['disabled', 'dedicated cron', 'missing env NOPE'],
+    ['disabled', 'scheduled separately', 'missing env NOPE'],
   );
 });
 

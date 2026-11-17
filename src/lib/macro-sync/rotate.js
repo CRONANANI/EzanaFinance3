@@ -40,7 +40,7 @@ async function readStates(db) {
 /** Why an adapter is not runnable here, or null when it is. */
 export function adapterStatus(adapter, env = process.env) {
   if (adapter.enabled === false) return 'disabled';
-  if (adapter.dedicatedCron) return 'dedicated cron';
+  if (adapter.dedicatedCron) return 'scheduled separately';
   const missing = (adapter.requiresEnv || []).filter((k) => !env[k]);
   if (missing.length) return `missing env ${missing.join(', ')}`;
   return null;
