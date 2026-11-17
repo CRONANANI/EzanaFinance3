@@ -2,6 +2,10 @@
 
 /**
  * SonarExemplaryBrief (Nov 16, 2026): the evidence-led Sonar response page.
+ * Nov 17: this is the layout template for Sonar answers. The question with its follow-ups
+ * directly under it; the lead, takeaways and analysis beside Research Controls; the market
+ * chart and what happened on one row, in view when the page opens on a desktop screen.
+ *
  * One reading canvas that scrolls once: the question, an anchor row, the lead
  * insight, three takeaways, a full-width market chart, what happened, how the
  * market may read it, where the impact could travel, the operating baseline,
@@ -23,6 +27,7 @@
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import { followUpContext } from '@/lib/sonar/workspace';
+import { SonarResearchControls } from '../SonarResearchControls';
 import SonarExemplaryChart, { dayLabel } from './SonarExemplaryChart';
 import './sonar-exemplary-brief.css';
 
@@ -72,6 +77,7 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
   const [active, setActive] = useState('overview');
   const inputRef = useRef(null);
   const rootRef = useRef(null);
+  const marketRef = useRef(null);
   const qId = useId();
   const fId = useId();
   const { sources } = brief;
@@ -80,6 +86,33 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
   useEffect(() => {
     document.body.classList.add('sonar-exemplary-active');
     return () => document.body.classList.remove('sonar-exemplary-active');
+  }, []);
+
+  /* On a desktop screen the market chart is sized to the room left under the takeaways, so
+     the whole chart (plot, dates and legend) is in view when the page opens. Measured once
+     the layout settles and again on resize; below 1200px the stylesheet's own height applies. */
+  useEffect(() => {
+    const row = marketRef.current;
+    if (!row) return undefined;
+    const fit = () => {
+      if (window.innerWidth < 1200) {
+        row.style.removeProperty('--sxb-plot-h');
+        return;
+      }
+      const top = row.getBoundingClientRect().top + window.scrollY;
+      /* Row padding and the chart's title row above the plot; the dates and the legend under it. */
+      const chrome = 14 + 59 + 24 + 30 + 8;
+      const room = window.innerHeight - top - chrome;
+      row.style.setProperty('--sxb-plot-h', `${Math.round(Math.max(150, Math.min(300, room)))}px`);
+    };
+    fit();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
+    if (ro && row.previousElementSibling) ro.observe(row.previousElementSibling);
+    window.addEventListener('resize', fit);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', fit);
+    };
   }, []);
 
   /* The anchor row follows the section in view. */
@@ -159,6 +192,17 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
         </button>
       </form>
 
+      {/* Follow-up questions sit directly under the question, where the next step is taken. */}
+      <div className="sxb-related sxb-related--top">
+        <span>Follow-ups</span>
+        {brief.followUp.related.map((q) => (
+          <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
+            {q}
+            <i className="bi bi-arrow-up-right" aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+
       <nav className="sxb-tabs" aria-label="Sections of this brief">
         {ANCHORS.map(([id, label]) => (
           <a
@@ -172,75 +216,119 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
         ))}
       </nav>
 
-      <header className="sxb-hero" id="sxb-overview" data-anchor="overview">
-        <h1>{brief.headline}</h1>
-        <p className="sxb-deck">{brief.deck}</p>
-        <p className="sxb-provenance">
-          {brief.provenance.map((line, i) => (
-            <span key={line}>
-              {i === 0 ? <i className="sxb-dot" aria-hidden="true" /> : null}
-              {line}
-            </span>
-          ))}
-          <a href="#sxb-sources" className="sxb-provenance-sources">
-            {brief.sourcesLabel}
-          </a>
-        </p>
-      </header>
+      {/* The answer template's top zone: the lead and takeaways on the left, Research Controls
+          in a narrow column on the right. */}
+      <div className="sxb-top">
+        <div className="sxb-top-main">
+          <header className="sxb-hero" id="sxb-overview" data-anchor="overview">
+            <h1>{brief.headline}</h1>
+            <p className="sxb-deck">{brief.deck}</p>
+            <p className="sxb-provenance">
+              {brief.provenance.map((line, i) => (
+                <span key={line}>
+                  {i === 0 ? <i className="sxb-dot" aria-hidden="true" /> : null}
+                  {line}
+                </span>
+              ))}
+              <a href="#sxb-sources" className="sxb-provenance-sources">
+                {brief.sourcesLabel}
+              </a>
+            </p>
+          </header>
 
-      <section className="sxb-block" aria-labelledby="sxb-takeaways-h">
-        <p className="sxb-kicker" id="sxb-takeaways-h">
-          Three takeaways
-        </p>
-        <div className="sxb-findings">
-          {brief.takeaways.map((t, i) => (
-            <article key={t.title} className="sxb-finding">
-              <p className="sxb-finding-count">
-                {pad2(i + 1)} / {t.kicker}
-              </p>
-              <h3>{t.title}</h3>
-              <p>
-                {t.text}
-                {t.note ? <span className="sxb-finding-note"> {t.note}</span> : null}
-                <Cites ids={t.cites} sources={sources} />
-              </p>
-            </article>
-          ))}
+          <section className="sxb-takeaways" aria-labelledby="sxb-takeaways-h">
+            <p className="sxb-kicker" id="sxb-takeaways-h">
+              Three takeaways
+            </p>
+            <div className="sxb-findings">
+              {brief.takeaways.map((t, i) => (
+                <article key={t.title} className="sxb-finding">
+                  <p className="sxb-finding-count">
+                    {pad2(i + 1)} / {t.kicker}
+                  </p>
+                  <h3>{t.title}</h3>
+                  <p>
+                    {t.text}
+                    {t.note ? <span className="sxb-finding-note"> {t.note}</span> : null}
+                    <Cites ids={t.cites} sources={sources} />
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+        <aside className="sxb-rail" aria-label="Research controls">
+          <SonarResearchControls variant="flat" />
+        </aside>
+      </div>
 
-      <section className="sxb-block" id="sxb-market" data-anchor="market">
-        <SonarExemplaryChart chart={brief.chart} />
-      </section>
+      {/* Sonar's own reading of the takeaways, across the full canvas so it stays short. */}
+      {brief.analysis?.length ? (
+        <div className="sxb-analysis">
+          <p className="sxb-analysis-label">Sonar analysis</p>
+          <div>
+            {brief.analysis.map((a) => (
+              <p key={a.text}>
+                {a.text}
+                <Cites ids={a.cites} sources={sources} />
+              </p>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
-      <section className="sxb-block sxb-two" id="sxb-happened" data-anchor="happened">
-        <div className="sxb-part">
+      {/* The market chart and what happened share one row; the chart is sized to be in view
+          when the page opens on a desktop screen. */}
+      <section className="sxb-block sxb-market-row" ref={marketRef}>
+        <div id="sxb-market" data-anchor="market">
+          <SonarExemplaryChart chart={brief.chart} />
+        </div>
+        <div className="sxb-happened" id="sxb-happened" data-anchor="happened">
           <h2 className="sxb-mid-title">What happened</h2>
-          {brief.timeline.map((e) => (
-            <div key={e.date} className="sxb-event">
-              <time dateTime={e.date}>{dayLabel(e.date)}</time>
-              <div>
-                <h3>{e.title}</h3>
-                <p>
-                  {e.text}
-                  <Cites ids={e.cites} sources={sources} />
-                </p>
-              </div>
-            </div>
-          ))}
+          <ol className="sxb-vtimeline">
+            {brief.timeline.map((e) => (
+              <li key={e.date}>
+                <span className="sxb-vtimeline-icon" aria-hidden="true">
+                  <i className={`bi ${e.icon || 'bi-dot'}`} />
+                </span>
+                <div>
+                  <time dateTime={e.date}>{dayLabel(e.date)}</time>
+                  <h3>{e.title}</h3>
+                  <p>
+                    {e.text}
+                    <Cites ids={e.cites} sources={sources} />
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
-        <div className="sxb-part">
-          <h2 className="sxb-mid-title">How the market may interpret it</h2>
+      </section>
+
+      <section className="sxb-block" aria-labelledby="sxb-interpret-h">
+        <div className="sxb-section-top">
+          <h2 className="sxb-section-title" id="sxb-interpret-h">
+            How the market may interpret it
+          </h2>
+          <p className="sxb-section-note">Analyst interpretation, not a forecast</p>
+        </div>
+        <div className="sxb-interpret-grid">
           {brief.interpretation.map((it) => (
-            <div key={it.title} className="sxb-interpret">
-              <span className="sxb-interpret-icon" aria-hidden="true">
-                <i className={`bi ${it.icon}`} />
-              </span>
-              <div>
-                <h3>{it.title}</h3>
-                <p>{it.text}</p>
-              </div>
-            </div>
+            <article key={it.title} className="sxb-interpret-col">
+              <h3>
+                <span className="sxb-interpret-icon" aria-hidden="true">
+                  <i className={`bi ${it.icon}`} />
+                </span>
+                {it.title}
+              </h3>
+              <p className="sxb-interpret-lead">{it.text}</p>
+              {it.detail ? (
+                <p>
+                  {it.detail}
+                  <Cites ids={it.cites} sources={sources} />
+                </p>
+              ) : null}
+            </article>
           ))}
         </div>
       </section>
@@ -369,15 +457,6 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
             <i className="bi bi-arrow-up-right" aria-hidden="true" />
           </button>
         </form>
-        <div className="sxb-related">
-          <span>Related questions</span>
-          {brief.followUp.related.map((q) => (
-            <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
-              {q}
-              <i className="bi bi-arrow-up-right" aria-hidden="true" />
-            </button>
-          ))}
-        </div>
       </section>
 
       <footer className="sxb-foot">

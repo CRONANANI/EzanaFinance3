@@ -19,6 +19,7 @@
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import { followUpContext } from '@/lib/sonar/workspace';
+import { SonarResearchControls } from '../SonarResearchControls';
 import SonarExemplaryChart, { dayLabel } from '../exemplary/SonarExemplaryChart';
 import SonarTechnicalChart from './SonarTechnicalChart';
 import '../exemplary/sonar-exemplary-brief.css';
@@ -484,6 +485,18 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
         </button>
       </form>
 
+      {follow ? (
+        <div className="sxb-related sxb-related--top">
+          <span>Follow-ups</span>
+          {follow.related.map((q) => (
+            <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
+              {q}
+              <i className="bi bi-arrow-up-right" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <nav className="sxb-tabs" aria-label="Sections of this answer">
         <a
           href="#sar-overview"
@@ -504,29 +517,37 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
         ))}
       </nav>
 
-      <header className="sxb-hero" id="sar-overview" data-anchor="overview">
-        <h1>{lead.headline}</h1>
-        <p className="sxb-deck">
-          {lead.text}
-          <Cites ids={lead.cites} sources={sources} />
-        </p>
-        <p className="sxb-provenance">
-          <span>
-            <i className="sxb-dot" aria-hidden="true" />
-            {report.scenario.label}
-          </span>
-          <span>Research as of {dayLabel(report.asOf)}</span>
-          {lead.computed ? <span>Figures computed from daily prices</span> : null}
-          {report.degraded?.includes('live_research') ? (
-            <span>Verification did not complete</span>
-          ) : null}
-          {sources.length ? (
-            <a href="#sar-sources" className="sxb-provenance-sources">
-              {sources.length} {sources.length === 1 ? 'source' : 'sources'} cited
-            </a>
-          ) : null}
-        </p>
-      </header>
+      {/* The answer template's top zone: the lead on the left, Research Controls on the right. */}
+      <div className="sxb-top">
+        <div className="sxb-top-main">
+          <header className="sxb-hero" id="sar-overview" data-anchor="overview">
+            <h1>{lead.headline}</h1>
+            <p className="sxb-deck">
+              {lead.text}
+              <Cites ids={lead.cites} sources={sources} />
+            </p>
+            <p className="sxb-provenance">
+              <span>
+                <i className="sxb-dot" aria-hidden="true" />
+                {report.scenario.label}
+              </span>
+              <span>Research as of {dayLabel(report.asOf)}</span>
+              {lead.computed ? <span>Figures computed from daily prices</span> : null}
+              {report.degraded?.includes('live_research') ? (
+                <span>Verification did not complete</span>
+              ) : null}
+              {sources.length ? (
+                <a href="#sar-sources" className="sxb-provenance-sources">
+                  {sources.length} {sources.length === 1 ? 'source' : 'sources'} cited
+                </a>
+              ) : null}
+            </p>
+          </header>
+        </div>
+        <aside className="sxb-rail" aria-label="Research controls">
+          <SonarResearchControls variant="flat" />
+        </aside>
+      </div>
 
       {body.map((s) => {
         const content = render(s);
@@ -572,15 +593,6 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
               <i className="bi bi-arrow-up-right" aria-hidden="true" />
             </button>
           </form>
-          <div className="sxb-related">
-            <span>Related questions</span>
-            {follow.related.map((q) => (
-              <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
-                {q}
-                <i className="bi bi-arrow-up-right" aria-hidden="true" />
-              </button>
-            ))}
-          </div>
         </section>
       ) : null}
 

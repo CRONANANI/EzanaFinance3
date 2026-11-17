@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { SonarQueryBar } from './SonarQueryBar';
+import { SonarResearchControls } from './SonarResearchControls';
 
 /**
  * SonarHero — State 01 (pre-search). The rings-gradient centered stack: eyebrow,
@@ -52,6 +53,10 @@ export function SonarHero({
           </p>
         </>
       )}
+
+      {/* Nov 17: Research Controls on the Sonar home page, one row above the Ping field (the map's
+          connector runs under it). They shape the next research run, the same store the answer page's controls use. */}
+      {bare ? <SonarResearchControls variant="inline" /> : null}
 
       <SonarQueryBar
         value={value}

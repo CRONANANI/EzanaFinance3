@@ -309,3 +309,11 @@
   min-height: 96px;
   margin-top: 16px;
 }
+
+/* A generated headline can be any length, so it wraps; only a reviewed brief's headline is
+   held to one line. */
+.sar .sxb-hero h1 {
+  font-size: clamp(1.25rem, 2.5cqi, 1.75rem);
+  white-space: normal;
+  text-wrap: balance;
+}

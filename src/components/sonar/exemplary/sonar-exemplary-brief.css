@@ -7,6 +7,10 @@
    Type: the dataset system. Plus Jakarta Sans for reading text, JetBrains
    Mono for kickers, dates, codes and figures. */
 
+/* The template sits a little higher than a research run, to keep the chart in view. */
+.sdr-run:has(> .sxb) {
+  padding-top: 12px;
+}
 .sxb {
   --sxb-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
   --sxb-rule-strong: color-mix(in srgb, var(--text-primary) 14%, transparent);
@@ -51,28 +55,25 @@ body.sonar-exemplary-active .dso-ground-bg {
   display: none;
 }
 
-/* ---------- question row ---------- */
+/* ---------- question row ----------
+   The search pill has no fill and no outline (branding guide 6.4): the only focus cue is the
+   text cursor. Ping is the app's primary button: solid emerald, white label, 8px radius, no
+   border, no glow. */
 .sxb-question {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 17px;
+  gap: 16px;
 }
 .sxb-query {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 54px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 0 18px;
-  border: 1px solid color-mix(in srgb, var(--emerald) 36%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--emerald) 5%, transparent);
-  transition: border-color 0.15s ease;
-}
-.sxb-query:focus-within {
-  border-color: color-mix(in srgb, var(--emerald) 70%, transparent);
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 .sxb-query > .bi {
   flex: none;
@@ -108,7 +109,7 @@ body.sonar-exemplary-active .dso-ground-bg {
 }
 .sxb-query-edit {
   flex: none;
-  min-height: 44px;
+  min-height: 36px;
   font-size: var(--type-caption-size);
   color: var(--sxb-muted);
 }
@@ -121,29 +122,23 @@ body.sonar-exemplary-active .dso-ground-bg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  height: 36px;
+  padding: 0 18px;
   border: none;
   border-radius: var(--radius-md);
-  background: var(--emerald);
+  background: var(--btn-primary-bg);
+  box-shadow: none;
   font-family: var(--font-sans);
-  font-weight: var(--weight-strong);
-  color: var(--bg-primary);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  color: var(--btn-primary-fg);
   cursor: pointer;
   transition: background 0.15s ease;
 }
-.sxb-ping {
-  height: 48px;
-  padding: 0 27px;
-  font-size: var(--type-body-size);
-}
-.sxb-ask {
-  height: 38px;
-  padding: 0 20px;
-  font-size: var(--type-value-sm-size);
-}
 .sxb-ping:hover,
 .sxb-ask:hover {
-  background: var(--emerald-text);
+  background: var(--btn-primary-bg-hover);
 }
 .sxb-ping:disabled,
 .sxb-ask:disabled {
@@ -152,7 +147,7 @@ body.sonar-exemplary-active .dso-ground-bg {
 }
 .sxb-ping .bi,
 .sxb-ask .bi {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
 }
 .sxb :is(button, a, [tabindex]):focus-visible {
   outline: 2px solid var(--border-focus);
@@ -164,9 +159,10 @@ body.sonar-exemplary-active .dso-ground-bg {
 .sxb-tabs {
   display: flex;
   align-items: stretch;
-  gap: 29px;
-  height: 43px;
-  margin-bottom: 34px;
+  gap: 28px;
+  height: 34px;
+  margin-top: 2px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--sxb-rule-strong);
   overflow-x: auto;
   scrollbar-width: none;
@@ -196,27 +192,44 @@ body.sonar-exemplary-active .dso-ground-bg {
   scroll-margin-top: calc(var(--navbar-height, 64px) + 24px);
 }
 
+/* ---------- top zone: lead and takeaways, with Research Controls on the right ---------- */
+.sxb-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 216px;
+  gap: 40px;
+  align-items: start;
+}
+.sxb-top-main {
+  min-width: 0;
+  container-type: inline-size;
+}
+/* One vertical rule before the side column, with clear space on its text side. */
+.sxb-rail {
+  padding-left: 24px;
+  border-left: 1px solid var(--sxb-rule);
+}
+
 /* ---------- lead insight ---------- */
+/* The headline stays on one line: its size follows the width of its column. */
 .sxb-hero h1 {
-  max-width: 1040px;
-  margin-bottom: 15px;
-  font-size: clamp(1.625rem, 1.1rem + 1.6vw, 2.3125rem);
+  margin-bottom: 6px;
+  font-size: clamp(1.125rem, 2.24cqi, 1.875rem);
   font-weight: var(--weight-strong);
-  line-height: 1.16;
+  line-height: 1.2;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 .sxb-deck {
-  max-width: 1110px;
-  font-size: 1.03125rem;
-  line-height: 1.72;
+  font-size: 0.8125rem;
+  line-height: 1.5;
   color: var(--sxb-body);
 }
 .sxb-provenance {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 18px;
-  margin-top: 17px !important;
+  gap: 4px 18px;
+  margin-top: 6px !important;
   font-size: var(--type-micro-size);
   color: var(--sxb-muted);
 }
@@ -293,16 +306,47 @@ body.sonar-exemplary-active .dso-ground-bg {
 }
 
 /* ---------- three takeaways ---------- */
+.sxb-takeaways {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sxb-rule);
+}
 .sxb-findings {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 22px;
+  margin-top: 8px;
+}
+/* Sonar's own reading, one paragraph under each takeaway. */
+.sxb-analysis {
+  margin-top: 12px;
+}
+.sxb-analysis-label {
+  margin-bottom: 4px !important;
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--sxb-muted);
+}
+.sxb-analysis > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.sxb-analysis > div > p {
+  padding-right: 20px;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--sxb-body);
+}
+.sxb-analysis > div > p + p {
+  padding-left: 22px;
+  border-left: 1px solid var(--sxb-rule-strong);
 }
 .sxb-finding {
-  padding-right: 28px;
+  padding-right: 20px;
 }
 .sxb-finding + .sxb-finding {
-  padding-left: 30px;
+  padding-left: 22px;
   border-left: 1px solid var(--sxb-rule-strong);
 }
 .sxb-finding-count {
@@ -313,14 +357,14 @@ body.sonar-exemplary-active .dso-ground-bg {
   color: var(--emerald-text);
 }
 .sxb-finding h3 {
-  margin: 10px 0 8px;
-  font-size: 1rem;
+  margin: 4px 0 3px;
+  font-size: 0.9375rem;
   font-weight: var(--weight-medium);
   letter-spacing: -0.01em;
 }
 .sxb-finding p:last-child {
-  font-size: 0.8125rem;
-  line-height: 1.52;
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
   color: var(--sxb-muted);
 }
 .sxb-finding-note {
@@ -573,35 +617,152 @@ body.sonar-exemplary-active .dso-ground-bg {
   text-transform: uppercase;
   color: var(--emerald-text);
 }
-.sxb-event h3,
-.sxb-interpret h3 {
+.sxb-event h3 {
   margin-bottom: 5px;
   font-size: 0.8125rem;
   font-weight: var(--weight-medium);
 }
-.sxb-event p,
-.sxb-interpret p {
+.sxb-event p {
   font-size: 0.8125rem;
   line-height: 1.58;
   color: var(--sxb-muted);
 }
-.sxb-interpret {
-  display: flex;
-  gap: 15px;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--sxb-rule);
-}
 .sxb-interpret-icon {
   flex: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 25px;
   height: 25px;
+  margin-right: 10px;
   border: 1px solid color-mix(in srgb, var(--emerald) 42%, transparent);
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   color: var(--emerald-text);
+  vertical-align: middle;
+}
+
+/* ---------- market chart and what happened, one row ----------
+   The plot's height follows the screen, so the chart is in view when the page opens on a
+   desktop display. */
+.sxb-market-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(260px, 1fr);
+  gap: 48px;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+/* In this row the chart's title carries the section; the kicker above it is dropped to keep
+   the chart in view. */
+.sxb-market-row .sxb-kicker {
+  display: none;
+}
+.sxb-market-row .sxb-section-title {
+  margin-top: 0;
+  font-size: 1.1875rem;
+}
+.sxb-market-row > div {
+  min-width: 0;
+}
+.sxb-market-row .sxb-chart {
+  margin-top: 26px;
+  grid-template-rows: auto 24px;
+}
+/* --sxb-plot-h is measured by the page (the room left on screen when it opens); without it
+   the plot takes a sensible fixed height. */
+.sxb-market-row .sxb-chart-plot,
+.sxb-market-row .sxb-chart-state {
+  height: var(--sxb-plot-h, 220px);
+  min-height: 0;
+}
+.sxb-market-row .sxb-chart-state {
+  margin-top: 26px;
+}
+.sxb-happened {
+  padding-left: 24px;
+  border-left: 1px solid var(--sxb-rule);
+}
+.sxb-happened .sxb-mid-title {
+  margin-bottom: 12px !important;
+}
+/* Three events down a line, each with its icon. */
+.sxb-vtimeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 14px;
+  padding-bottom: 14px;
+}
+.sxb-vtimeline li:last-child {
+  padding-bottom: 0;
+}
+.sxb-vtimeline li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13.5px;
+  top: 30px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--sxb-rule-strong);
+}
+.sxb-vtimeline-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 42%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--emerald-text);
+}
+.sxb-vtimeline time {
+  display: block;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.sxb-vtimeline h3 {
+  margin: 3px 0 3px;
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+}
+.sxb-vtimeline p {
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--sxb-muted);
+}
+
+/* ---------- how the market may interpret it: its own row, three columns ---------- */
+.sxb-interpret-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+.sxb-interpret-col {
+  padding-right: 28px;
+}
+.sxb-interpret-col + .sxb-interpret-col {
+  padding-left: 30px;
+  border-left: 1px solid var(--sxb-rule-strong);
+}
+.sxb-interpret-col h3 {
+  margin-bottom: 10px;
+  font-size: 0.9375rem;
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
+}
+.sxb-interpret-col p {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--sxb-muted);
+}
+.sxb-interpret-col .sxb-interpret-lead {
+  margin-bottom: 8px;
+  color: var(--sxb-body);
 }
 
 /* ---------- impact table ---------- */
@@ -758,14 +919,11 @@ body.sonar-exemplary-active .dso-ground-bg {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 54px;
-  padding: 0 8px 0 18px;
-  border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--emerald) 4%, transparent);
-}
-.sxb-followup:focus-within {
-  border-color: color-mix(in srgb, var(--emerald) 60%, transparent);
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--sxb-rule-strong);
+  background: transparent;
 }
 .sxb-followup input {
   flex: 1 1 auto;
@@ -782,11 +940,22 @@ body.sonar-exemplary-active .dso-ground-bg {
 .sxb-followup input::placeholder {
   color: var(--sxb-muted);
 }
+.sxb-related--top {
+  margin-top: 2px !important;
+  padding-left: 28px;
+}
+.sxb-related--top > span {
+  font-family: var(--font-mono);
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
 .sxb-related {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 28px;
+  gap: 2px 26px;
   margin-top: 16px;
   font-size: var(--type-caption-size);
   color: var(--sxb-ink);
@@ -795,7 +964,7 @@ body.sonar-exemplary-active .dso-ground-bg {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 32px;
+  min-height: 28px;
   font-size: var(--type-caption-size);
   color: var(--sxb-body);
   text-align: left;
@@ -829,7 +998,63 @@ body.sonar-exemplary-active .dso-ground-bg {
 }
 
 /* ---------- breakpoints: one document scroll, tables scroll in their own region ---------- */
+@media (max-width: 1199px) {
+  .sxb-top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .sxb-rail {
+    padding: 16px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--sxb-rule);
+  }
+  .sxb-rail .src--flat {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 24px;
+  }
+  .sxb-rail .src--flat :is(.san-card-head, .src-note) {
+    grid-column: 1 / -1;
+  }
+  .sxb-market-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .sxb-market-row .sxb-chart-plot,
+  .sxb-market-row .sxb-chart-state {
+    height: clamp(200px, 34vw, 300px);
+  }
+  .sxb-market-row .sxb-kicker {
+    display: block;
+  }
+  .sxb-happened {
+    padding: 20px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--sxb-rule);
+  }
+}
 @media (max-width: 1023px) {
+  .sxb-hero h1 {
+    font-size: 1.375rem;
+    white-space: normal;
+    text-wrap: balance;
+  }
+  .sxb-analysis > div,
+  .sxb-interpret-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .sxb-analysis > div > p,
+  .sxb-analysis > div > p + p,
+  .sxb-interpret-col,
+  .sxb-interpret-col + .sxb-interpret-col {
+    padding: 0;
+    border-left: none;
+  }
+  .sxb-interpret-col + .sxb-interpret-col {
+    padding-top: 16px;
+    border-top: 1px solid var(--sxb-rule);
+  }
   .sxb-two,
   .sxb-two--even {
     grid-template-columns: minmax(0, 1fr);
@@ -862,15 +1087,14 @@ body.sonar-exemplary-active .dso-ground-bg {
   }
 }
 @media (max-width: 639px) {
-  .sxb-question {
-    flex-wrap: wrap;
+  .sxb-related--top {
+    padding-left: 0;
   }
-  .sxb-ping {
-    width: 100%;
+  .sxb-rail .src--flat {
+    grid-template-columns: minmax(0, 1fr);
   }
   .sxb-tabs {
     gap: 22px;
-    margin-bottom: 24px;
   }
   .sxb-tabs a,
   .sxb-range,
@@ -883,6 +1107,10 @@ body.sonar-exemplary-active .dso-ground-bg {
   .sxb-event {
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;
+  }
+  .sxb-ping,
+  .sxb-ask {
+    height: 44px;
   }
   .sxb-legend-note {
     margin-left: 0;

@@ -42,7 +42,13 @@ function Field({ id, label, value, options, onChange, disabled }) {
   );
 }
 
-export function SonarResearchControls() {
+/**
+ * variant 'card' (default): the workspace rail's card. 'flat': the same three selects with no
+ * card surface, for the answer template's right column (sonar-exemplary-brief.css styles it).
+ * 'inline': one compact row, for the Sonar home page above the Ping field (that page's hero is
+ * always dark, so the row carries force-dark-theme).
+ */
+export function SonarResearchControls({ variant = 'card' }) {
   const id = useId();
   const plan = useSonarPlan();
   const [controls, setControls] = useResearchControls();
@@ -50,7 +56,14 @@ export function SonarResearchControls() {
   const custom = !isDefaultControls(controls);
   const set = (key) => (value) => setControls({ ...controls, [key]: value });
   return (
-    <section className="san-card src" aria-labelledby={`${id}-h`}>
+    <section
+      className={
+        variant === 'card'
+          ? 'san-card src'
+          : `src src--${variant}${variant === 'inline' ? ' force-dark-theme' : ''}`
+      }
+      aria-labelledby={`${id}-h`}
+    >
       <h2 id={`${id}-h`} className="san-card-head">
         <i className="bi bi-sliders" aria-hidden="true" />
         Research controls

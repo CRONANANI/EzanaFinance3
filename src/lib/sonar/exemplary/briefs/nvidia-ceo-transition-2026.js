@@ -15,7 +15,7 @@
  */
 export const NVIDIA_CEO_TRANSITION_2026 = {
   slug: 'nvidia-ceo-transition-2026',
-  version: 1,
+  version: 2,
   template: 'event_impact',
   verifiedAsOf: '2026-11-16',
   reviewAfter: '2026-11-17',
@@ -69,6 +69,23 @@ export const NVIDIA_CEO_TRANSITION_2026 = {
     },
   ],
 
+  /* Sonar's own reading of the takeaways. Each paragraph says what it rests on; the last
+     sentence of the third is interpretation and is worded as such. */
+  analysis: [
+    {
+      text: 'The company\u2019s own disclosures confirm three things: the departure, the interim appointment and a search for a permanent chief executive. The filing and the announcement reviewed here do not name a permanent successor.',
+      cites: ['S1', 'S2'],
+    },
+    {
+      text: 'The business going into the change was growing quickly: revenue of $96.2B in the most recently reported quarter, $89.0B of it from Data Center, with a third-quarter revenue outlook of $108B. Those figures predate the resignation, so they describe the starting point and not the effect.',
+      cites: ['S3'],
+    },
+    {
+      text: 'The first dated test is the fiscal third-quarter report scheduled for November 17, where results, guidance and management commentary can show whether the outlook has moved. Until then a view on the shares rests on interpretation, not on evidence that demand has changed.',
+      cites: ['S2'],
+    },
+  ],
+
   chart: {
     kicker: 'Market context',
     title: 'NVIDIA vs. semiconductor sector',
@@ -81,18 +98,21 @@ export const NVIDIA_CEO_TRANSITION_2026 = {
   timeline: [
     {
       date: '2026-11-11',
+      icon: 'bi-box-arrow-right',
       title: 'Resignation effective',
       text: 'NVIDIA’s board accepted Huang’s resignation as president, CEO and director. It appointed Colette Kress interim CEO.',
       cites: ['S1'],
     },
     {
       date: '2026-11-12',
+      icon: 'bi-megaphone',
       title: 'Company announcement',
       text: 'NVIDIA publicly announced the leadership transition and said its board had begun a search for a permanent CEO.',
       cites: ['S2'],
     },
     {
       date: '2026-11-17',
+      icon: 'bi-calendar-event',
       title: 'Next scheduled financial results',
       text: 'The company is scheduled to report fiscal Q3 results. Guidance and customer commentary may clarify whether the transition affects operations.',
       cites: ['S2'],
@@ -104,16 +124,25 @@ export const NVIDIA_CEO_TRANSITION_2026 = {
       icon: 'bi-arrow-up-right',
       title: 'Near term: valuation and confidence',
       text: 'A founder-led company can face higher uncertainty while investors evaluate its next leadership structure. This is a risk channel, not a measured price forecast.',
+      detail:
+        'Huang led NVIDIA for 33 years, so there is no record of the company under another chief executive to reason from. In that position investors can widen the range of outcomes they consider until the board names a permanent leader, which may show up as larger price swings without any change in the underlying business. This describes how risk could travel. It says nothing about direction or size.',
+      cites: ['S2'],
     },
     {
       icon: 'bi-diamond-half',
       title: 'Medium term: product roadmap execution',
       text: 'The key test is whether product schedules, customer relationships, and growth targets remain intact under interim leadership.',
+      detail:
+        'The interim CEO is also the finance chief and has held that post since 2013, which gives continuity on reporting and on the numbers the company guides to. Product and technology direction is the open part: it now sits with a leadership team working without its founder. The evidence that would settle it is concrete: whether announced product schedules hold, whether large customers restate their commitments, and whether guidance is maintained.',
+      cites: ['S2'],
     },
     {
       icon: 'bi-diamond',
       title: 'Sector effects: uneven',
       text: 'Suppliers depend on actual customer orders. Competitors may see investor interest, but no competitive share shift has been established by this event alone.',
+      detail:
+        'A leadership change at a company of NVIDIA\u2019s weight can move sentiment across semiconductor shares in the same sessions, because the group often trades together. Revenue is a slower and separate matter. Foundries and component suppliers are affected only if NVIDIA\u2019s orders change, and rivals gain only if customers move purchases. Neither is reported in the sources reviewed here.',
+      cites: [],
     },
   ],
 
