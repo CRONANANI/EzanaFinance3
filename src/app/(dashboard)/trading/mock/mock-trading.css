@@ -1105,8 +1105,11 @@
 /* Under 1024px: one column, Place order first (the primary action), then
    the chart, positions and activity, then movers. */
 @media (max-width: 1024px) {
+  /* nowrap: a wrapping column stretches every card to its widest line's
+     content, which pushed the cards past the right edge on phones. */
   .mock-layout {
     flex-direction: column;
+    flex-wrap: nowrap;
     align-items: stretch;
   }
   .mock-left-col,

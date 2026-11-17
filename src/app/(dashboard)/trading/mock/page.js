@@ -12,6 +12,7 @@ import {
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { useChecklist } from '@/hooks/useChecklist';
@@ -49,10 +50,27 @@ import {
 } from '@/lib/trading/mock-thesis';
 import { buildMockJournalCsv } from '@/lib/trading/mock-portfolio-csv';
 import { riskSnapshot } from '@/lib/trading/mock-risk';
+import { useCouncilSandbox } from '@/components/trading/mock/council/useCouncilSandbox';
 
 /* The reset modal only renders after a click: its own lazy chunk. The charts
    load lazily inside PerformanceCard. */
 const ResetPortfolioModal = dynamic(() => import('@/components/trading/ResetPortfolioModal'), {
+  ssr: false,
+  loading: () => null,
+});
+/* Council sandbox (Nov 2026): council members only, once membership is
+   known. Its own lazy chunk, so the retail page never loads the council
+   model. Nothing in it places, changes or blocks a paper order. */
+const councilChunk = () => import('@/components/trading/mock/council/CouncilSandbox');
+const CouncilHeader = dynamic(() => councilChunk().then((m) => m.CouncilHeader), {
+  ssr: false,
+  loading: () => null,
+});
+const CouncilCards = dynamic(() => councilChunk().then((m) => m.CouncilCards), {
+  ssr: false,
+  loading: () => null,
+});
+const CouncilOrderCheck = dynamic(() => councilChunk().then((m) => m.CouncilOrderCheck), {
   ssr: false,
   loading: () => null,
 });
@@ -117,6 +135,10 @@ const MOCK_QUOTE_CHUNK = 45;
 ────────────────────────────────────────── */
 function MockTradingPageInner() {
   const { user } = useAuth();
+  /* Council sandbox: council members only, once membership is known. */
+  const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
+  const councilReady = Boolean(isOrgUser && !orgLoading);
+  const [compareRange, setCompareRange] = useState('3M');
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
   /* Getting Started checklist: opening the paper portfolio reviews its P&L. */
@@ -270,6 +292,8 @@ function MockTradingPageInner() {
   const [exporting, setExporting] = useState(false);
   /* Sector by ticker (from the stock stats response), fetched once each. */
   const [sectors, setSectors] = useState({});
+  /* Market cap text by ticker, from the same response (council check only). */
+  const [marketCaps, setMarketCaps] = useState({});
   const sectorsAsked = useRef(new Set());
 
   const fetchQuote = useCallback(async (sym) => {
@@ -574,6 +598,22 @@ function MockTradingPageInner() {
     [riskSeries, positionRows, summary.totalValue],
   );
 
+  /* Council sandbox data (fetches nothing unless councilReady). The value
+     series is read again after each trade, like the risk series. */
+  const council = useCouncilSandbox(councilReady, {
+    range: compareRange,
+    tradesKey: dbTrades.length,
+  });
+  const councilReal = useMemo(
+    () => ({
+      positions: positionRows,
+      cash: portfolio.cash,
+      startingCash: effectiveStart,
+      loading: portfolioLoading && !portfolioFromHook,
+    }),
+    [positionRows, portfolio.cash, effectiveStart, portfolioLoading, portfolioFromHook],
+  );
+
   const sortedPositions = useMemo(
     () => filterPositions(sortPositions(positionRows, posSort.key, posSort.dir), posFilter),
     [positionRows, posSort, posFilter],
@@ -732,8 +772,11 @@ function MockTradingPageInner() {
     .filter(Boolean)
     .join(',');
   const hasActiveThesis = Boolean(theses.active);
+  /* The council layer reads the same sectors (and market caps) for its IPS
+     check; for everyone else this runs only with an active thesis, as before. */
+  const wantSectors = hasActiveThesis || councilReady;
   useEffect(() => {
-    if (!hasActiveThesis) return;
+    if (!wantSectors) return;
     /* No cancellation: each ticker is asked once, and its answer is kept even
        if the effect runs again before it lands. */
     const wanted = [...new Set(sectorSymbolsKey.split(',').filter(Boolean))].filter(
@@ -743,12 +786,15 @@ function MockTradingPageInner() {
       sectorsAsked.current.add(sym);
       fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(sym)}`)
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => setSectors((m) => ({ ...m, [sym]: d?.sector || null })))
+        .then((d) => {
+          setSectors((m) => ({ ...m, [sym]: d?.sector || null }));
+          setMarketCaps((m) => ({ ...m, [sym]: d?.mcap || null }));
+        })
         .catch(() => {
           sectorsAsked.current.delete(sym);
         });
     }
-  }, [sectorSymbolsKey, hasActiveThesis]);
+  }, [sectorSymbolsKey, wantSectors]);
 
   /* One fit result feeds the ticket's check line, the alignment card, the
      risk card's cap notice, the panel's Current trade fit and the review. */
@@ -769,6 +815,32 @@ function MockTradingPageInner() {
     fit?.checks.concentration === 'over' && projection
       ? { symbol: projection.symbol, cap: cap.toFixed(1) }
       : null;
+
+  /* The order being typed, for the council's IPS check (descriptive only). */
+  const councilAmount = parseAmount(amount);
+  const councilOrder = useMemo(
+    () =>
+      selectedSymbol && councilAmount > 0
+        ? { side, symbol: selectedSymbol, amount: councilAmount }
+        : null,
+    [side, selectedSymbol, councilAmount],
+  );
+  const councilCheck = (variant) =>
+    councilReady ? (
+      <CouncilOrderCheck
+        council={council}
+        real={councilReal}
+        marketSectors={sectors}
+        order={councilOrder}
+        marketCapText={selectedSymbol ? (marketCaps[selectedSymbol] ?? null) : null}
+        variant={variant}
+      />
+    ) : null;
+  /* Load into ticket (council pitches): fills the ticket, never submits. */
+  const loadIntoTicket = (sym, nm) => {
+    selectAsset(sym, nm, 'Stock');
+    searchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const runThesis = async (fn, done) => {
     const r = await fn();
@@ -897,6 +969,15 @@ function MockTradingPageInner() {
         enrichedPositions={enrichedPositions}
       />
 
+      {councilReady ? (
+        <CouncilHeader
+          council={council}
+          real={councilReal}
+          marketSectors={sectors}
+          councilName={orgData?.org?.name || null}
+        />
+      ) : null}
+
       <div className="mock-layout">
         <div className="mock-left-col">
           <PerformanceCard
@@ -967,6 +1048,16 @@ function MockTradingPageInner() {
               ) : null
             }
           />
+          {councilReady ? (
+            <CouncilCards
+              council={council}
+              real={councilReal}
+              marketSectors={sectors}
+              range={compareRange}
+              onRange={setCompareRange}
+              onLoadTicker={loadIntoTicket}
+            />
+          ) : null}
         </div>
 
         <aside className="mock-right-col" aria-label="Thesis and trade">
@@ -1007,6 +1098,7 @@ function MockTradingPageInner() {
               onReview={() => setReviewOpen(true)}
               projection={projection}
               clauses={clauses}
+              extra={councilCheck('ticket')}
             />
           </div>
           <MarketMoversCard onSelect={(sym, nm) => selectAsset(sym, nm, 'Stock')} />
@@ -1032,6 +1124,7 @@ function MockTradingPageInner() {
         pending={tradePending}
         onCancel={() => setReviewOpen(false)}
         onPlace={(note) => executeTrade(note)}
+        extra={councilCheck('review')}
       />
 
       <ThesisModal

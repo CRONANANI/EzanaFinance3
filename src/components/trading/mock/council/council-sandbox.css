@@ -1,0 +1,651 @@
+/* Council sandbox: the council layer of Mock Portfolio (/trading/mock),
+   council members only. Page-scoped `cmk-` classes on the flat canvas (the
+   page root carries .ez-canvas, which defines --ez-rule and
+   --ez-rule-subtle): no fills, borders, shadows or radius on sections;
+   hairlines divide and never enclose; tokens only. The paper account's own
+   styles (mock-trading.css) are untouched. */
+
+.cmk-head,
+.cmk-band,
+.cmk-check {
+  min-width: 0;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  text-align: left;
+}
+.cmk-head *,
+.cmk-band *,
+.cmk-check * {
+  box-sizing: border-box;
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────── */
+.cmk-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cmk-muted {
+  color: var(--text-muted);
+}
+.cmk-faint {
+  color: var(--text-faint);
+}
+.cmk-soft {
+  color: var(--text-secondary);
+}
+.cmk-small {
+  font-size: 12px;
+}
+.cmk-up {
+  color: var(--positive);
+}
+.cmk-down {
+  color: var(--negative);
+}
+.cmk-warn {
+  color: var(--warning);
+}
+.cmk-ellipsis {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.cmk-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-text);
+}
+.cmk-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cmk-word.cmk-muted {
+  font-weight: 500;
+}
+
+/* Text links and text buttons: emerald text, no box. */
+.cmk-link,
+.cmk-tb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 13px var(--font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.cmk-link {
+  color: var(--emerald-text);
+}
+.cmk-link:hover {
+  color: var(--text-primary);
+}
+.cmk-link--start {
+  align-self: flex-start;
+}
+.cmk-tb {
+  color: var(--text-secondary);
+}
+.cmk-tb:hover {
+  color: var(--emerald-text);
+}
+:is(.cmk-head, .cmk-band, .cmk-check) :is(button, a):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ── States ────────────────────────────────────────────────────────────── */
+.cmk-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+.cmk-chart-skel {
+  padding: 8px 0;
+}
+.cmk-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.cmk-state p {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.cmk-state--error p {
+  color: var(--negative);
+}
+
+/* ── Header and strip ─────────────────────────────────────────────────── */
+.cmk-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cmk-head__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 32px;
+}
+.cmk-head__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  min-width: 0;
+}
+.cmk-head__title h2,
+.cmk-band__head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.cmk-head__title h2 > .bi,
+.cmk-band__head h2 > .bi {
+  font-size: 18px;
+  color: var(--emerald-text);
+}
+.cmk-head__title > span {
+  font-size: 13px;
+}
+.cmk-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+}
+.cmk-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cmk-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--ez-rule-subtle);
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.cmk-kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 24px;
+}
+.cmk-kpi:first-child {
+  padding-left: 0;
+}
+.cmk-kpi + .cmk-kpi {
+  border-left: 1px solid var(--ez-rule-subtle);
+}
+.cmk-kpi__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 15px;
+  color: var(--emerald-text);
+}
+.cmk-kpi__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cmk-kpi__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.cmk-kpi__value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* ── The council band (bottom of the left column) ─────────────────────── */
+.cmk-band {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ez-rule);
+}
+.cmk-band__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
+.cmk-sec {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.cmk-sec:last-child {
+  border-bottom: 0;
+}
+.cmk-sec__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  min-height: 32px;
+}
+.cmk-sec__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.cmk-sec__title > .bi {
+  font-size: 18px;
+  color: var(--emerald-text);
+}
+.cmk-sec__aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Two sections side by side: 64px apart with a centred rule. */
+.cmk-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  column-gap: 31px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.cmk-pair > .cmk-sec {
+  border-bottom: 0;
+}
+.cmk-pair__rule {
+  margin: 20px 0;
+  background: var(--ez-rule-subtle);
+}
+
+/* ── Range and view toggles: text only ────────────────────────────────── */
+.cmk-ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.cmk-range {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 13px var(--font-sans);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.cmk-range.cmk-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.cmk-range:hover {
+  color: var(--text-primary);
+}
+.cmk-range.is-on {
+  color: var(--emerald-text);
+}
+.cmk-sec__head .cmk-ranges + .cmk-sec__aside {
+  margin-left: auto;
+}
+
+/* ── Sandbox versus real fund ─────────────────────────────────────────── */
+.cmk-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 32px;
+  align-items: start;
+}
+.cmk-compare__chart {
+  min-width: 0;
+}
+.cmk-svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+.cmk-grid {
+  stroke: var(--ez-rule-subtle);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.cmk-zero {
+  stroke: var(--ez-rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.cmk-tick {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.cmk-line {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.cmk-line--sandbox {
+  stroke: var(--emerald);
+}
+.cmk-line--fund {
+  stroke: var(--chart-cat-3);
+}
+.cmk-line--spy {
+  stroke: var(--text-secondary);
+}
+.cmk-compare__side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cmk-compare__side p {
+  margin: 0;
+}
+.cmk-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.cmk-legend li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.cmk-swatch {
+  display: block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid var(--emerald);
+}
+.cmk-swatch--fund {
+  border-top-color: var(--chart-cat-3);
+}
+.cmk-swatch--spy {
+  border-top: 2px dashed var(--text-secondary);
+}
+
+/* ── Rule lists (IPS snapshot and the order check) ────────────────────── */
+.cmk-rules {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.cmk-rules li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.cmk-rules li:last-child {
+  border-bottom: 0;
+}
+.cmk-rules__label {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.cmk-rules__detail {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cmk-sec p {
+  margin: 0;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+.cmk-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.cmk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.cmk-table--pitches {
+  min-width: 640px;
+}
+.cmk-table th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.cmk-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.cmk-table :is(th, td):first-child {
+  padding-left: 0;
+}
+.cmk-table :is(th, td):last-child {
+  padding-right: 0;
+}
+.cmk-table .is-num {
+  text-align: right;
+}
+.cmk-table tbody tr:hover td {
+  color: var(--text-primary);
+}
+.cmk-table .cmk-link {
+  min-height: 28px;
+}
+.cmk-ticker {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Fund challenge standing ───────────────────────────────────────────── */
+.cmk-challenges {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cmk-challenges li {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.4fr) repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px 24px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.cmk-challenges li:last-child {
+  border-bottom: 0;
+}
+.cmk-challenges__name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.cmk-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cmk-stat__label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cmk-stat__value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── The order check (inside the ticket and the review dialog) ─────────── */
+.cmk-check {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0 4px;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+.cmk-check p {
+  margin: 0;
+}
+.cmk-check__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cmk-check__title > .bi {
+  color: var(--emerald-text);
+}
+.cmk-check__title .cmk-sample {
+  margin-left: auto;
+}
+.cmk-rules--compact li {
+  padding: 5px 0;
+}
+.cmk-check--review {
+  margin-top: 4px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .cmk-compare {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .cmk-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cmk-pair__rule {
+    display: none;
+  }
+  .cmk-pair > .cmk-sec + .cmk-pair__rule + .cmk-sec {
+    border-top: 1px solid var(--ez-rule-subtle);
+  }
+  .cmk-challenges li {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cmk-challenges__name {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .cmk-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cmk-kpi,
+  .cmk-kpi:first-child {
+    padding: 0;
+  }
+  .cmk-kpi + .cmk-kpi {
+    border-left: 0;
+  }
+  .cmk-head__title h2,
+  .cmk-band__head h2 {
+    font-size: 20px;
+  }
+  .cmk-sec__aside {
+    margin-left: 0;
+  }
+  .cmk-ellipsis {
+    max-width: 160px;
+  }
+}
+@media (pointer: coarse) {
+  .cmk-range,
+  .cmk-link,
+  .cmk-tb {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmk-link,
+  .cmk-tb,
+  .cmk-range,
+  .cmk-table td {
+    transition: none;
+  }
+}
+.cmk-table td > .bi {
+  margin-left: 6px;
+}

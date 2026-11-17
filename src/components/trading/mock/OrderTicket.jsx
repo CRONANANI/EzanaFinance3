@@ -114,6 +114,7 @@ export function OrderTicket({
   onReview,
   projection = null,
   clauses = [],
+  extra = null,
 }) {
   const [more, setMore] = useState(false);
   const checkKey = clauses.map((c) => c.text).join('|');
@@ -289,6 +290,10 @@ export function OrderTicket({
           </>
         ) : null}
       </div>
+
+      {/* Council members only: the council's IPS check, descriptive (null for
+          everyone else, so the ticket is unchanged). */}
+      {extra}
 
       <button
         type="button"

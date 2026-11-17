@@ -16,6 +16,8 @@ import { fmtPct, fmtQty, fmtUSD } from '@/lib/trading/mock-ticket';
  * order    { side, symbol, amount, shares, cashAfter, weightAfter } or null
  * clauses  fitClauses() for the order ([] with no active thesis)
  * onPlace  async (note) => void
+ * extra    council members only: the council's IPS check (descriptive; it
+ *          never changes or blocks the order). null for everyone else.
  */
 export function ReviewOrderModal({
   open,
@@ -25,6 +27,7 @@ export function ReviewOrderModal({
   pending,
   onCancel,
   onPlace,
+  extra = null,
 }) {
   const id = useId();
   const [note, setNote] = useState('');
@@ -96,6 +99,7 @@ export function ReviewOrderModal({
               </ul>
             </div>
           ) : null}
+          {extra}
           <Textarea
             id={`${id}-note`}
             label="Thesis note (optional)"
