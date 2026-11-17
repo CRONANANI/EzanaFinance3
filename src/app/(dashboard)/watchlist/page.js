@@ -11,6 +11,11 @@
  * the command bar is the control.
  *
  * URL state: ?list=<id>&class=stocks&symbol=AAPL&range=1M (defaults dropped).
+ * Council watch (Nov 2026): council members, once org loading has finished,
+ * also see a council section under the personal watchlist (held names, open
+ * pitches, owners, research dates, policy caps). Nobody else fetches or sees
+ * any of it; the personal watchlist is unchanged for everyone.
+ *
  * Flat home canvas: root keeps `ez-canvas`, home-canvas.css stays the last
  * CSS import, and the shells check-home-canvas expects (.wl-chart-panel,
  * .wl-side, .wl-strip-card) stay in place.
@@ -61,12 +66,18 @@ import {
 import './watchlist.css';
 import '@/styles/home-canvas.css';
 import { markChecklistView } from '@/lib/onboarding/markView';
+import { useCouncilWatchlist } from '@/components/watchlist/council/useCouncilWatchlist';
 
 const OrgSendToTeamModal = dynamic(
   () =>
     import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
   { ssr: false, loading: () => null },
 );
+
+const CouncilWatch = dynamic(() => import('@/components/watchlist/council/CouncilWatch'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const PREFS_KEY = 'ezana.watchlistPrefs';
 const itemKey = (i) => `${i.type}:${i.ticker}`;
@@ -106,7 +117,10 @@ function WatchlistMonitor() {
   const url = useMemo(() => readUrlState(searchParams), [searchParams]);
 
   const { completeTask } = useChecklist();
-  const { isOrgUser, hasPermission } = useOrg();
+  const { isOrgUser, hasPermission, isLoading: orgLoading, orgData } = useOrg();
+  /* Council watch: council members only, once membership is known. */
+  const councilReady = Boolean(isOrgUser && !orgLoading);
+  const council = useCouncilWatchlist(councilReady);
   const {
     watchlists,
     loading,
@@ -397,6 +411,34 @@ function WatchlistMonitor() {
 
   const canSend = isOrgUser && typeof hasPermission === 'function' && hasPermission('send_to_team');
 
+  /* Council watch: add a council name to the viewer's own active list. A
+     sample row is never saved. */
+  const onActiveList = useCallback((ticker) => existing.has(`stock:${ticker}`), [existing]);
+  const addCouncilName = useCallback(
+    async (row, { sample } = {}) => {
+      if (sample) {
+        notify('Sample content. Nothing was saved.');
+        return;
+      }
+      if (!activeList) {
+        notify('Create a list first, then add council names to it.');
+        return;
+      }
+      const r = await addItem(activeList.id, {
+        type: 'stock',
+        ticker: row.ticker,
+        name: row.name || row.ticker,
+        sector: row.sector || undefined,
+      });
+      if (r && r.ok === false) {
+        notify(r.reason || 'Could not add it.');
+        return;
+      }
+      notify(`Added ${row.ticker} to ${activeList.label}`);
+    },
+    [activeList, addItem, notify],
+  );
+
   /* ---------------- render ---------------- */
   return (
     <div className="wl-page wlm-page dashboard-page-inset ez-canvas">
@@ -538,6 +580,17 @@ function WatchlistMonitor() {
           />
         </aside>
       </div>
+
+      {councilReady ? (
+        <CouncilWatch
+          council={council}
+          councilName={orgData?.org?.name || null}
+          listLabel={activeList?.label || null}
+          onList={onActiveList}
+          onAddToList={addCouncilName}
+          onSendToTeam={canSend ? setSendTicker : null}
+        />
+      ) : null}
 
       <NoteModal
         open={noteModal.open}

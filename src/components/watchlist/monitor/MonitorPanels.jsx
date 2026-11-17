@@ -283,6 +283,15 @@ export function AssetDetail({
             >
               <i className="bi bi-activity" aria-hidden="true" /> Ping Sonar
             </Link>
+            {onSendToTeam && item.type === 'stock' ? (
+              <button
+                type="button"
+                className="wlm-btn wlm-btn--text wlm-btn--sm"
+                onClick={() => onSendToTeam(item)}
+              >
+                <i className="bi bi-send" aria-hidden="true" /> Send to team
+              </button>
+            ) : null}
             <Dropdown
               align="right"
               trigger={
@@ -291,11 +300,6 @@ export function AssetDetail({
                 </span>
               }
             >
-              {onSendToTeam && item.type === 'stock' ? (
-                <MenuItem icon="bi-send" onClick={() => onSendToTeam(item)}>
-                  Send to team
-                </MenuItem>
-              ) : null}
               {canPaperTrade(item) ? (
                 <MenuItem
                   icon="bi-graph-up-arrow"
