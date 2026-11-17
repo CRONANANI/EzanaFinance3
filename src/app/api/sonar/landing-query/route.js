@@ -18,6 +18,8 @@ import {
 import { guestIpDailyCap, landingRunMode, memberDailyPingCap } from '@/lib/sonar/estimate';
 import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
+import { embedViaSupabase } from '@/lib/embeddings-gte';
+import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -153,6 +155,42 @@ const POST_HANDLER = withApiGuard(
         { error: `Keep pings under ${SONAR_QUERY_MAX} characters.` },
         { status: 400 },
       );
+    }
+
+    /* Nov 16, 2026: an exemplary brief (src/lib/sonar/exemplary) is a
+       hand-reviewed answer to one question. When this ping is that question
+       it is served as is: no retrieval, no model call, so nothing is reserved
+       or spent and the guest cookie is left alone. A re-ping that pins an
+       entity or refuses the correction asked for something else and runs the
+       pipeline. Only a host that can draw the brief asks for one
+       (body.formats). The lookup never fails a ping. */
+    if (
+      Array.isArray(body?.formats) &&
+      body.formats.includes('exemplary') &&
+      !body?.force &&
+      !body?.noCorrect
+    ) {
+      try {
+        const curated = await findExemplaryBrief(query, {
+          embed: embedViaSupabase,
+          getAdmin: getAdminClient,
+        });
+        if (curated) {
+          console.log('[sonar/landing] exemplary', {
+            slug: curated.brief.slug,
+            via: curated.via,
+            score: Number(curated.score.toFixed(3)),
+          });
+          return NextResponse.json({
+            exemplary: publicBrief(curated.brief),
+            query,
+            understood: { display: curated.brief.question },
+            disclaimer: DISCLAIMER,
+          });
+        }
+      } catch (e) {
+        console.warn('[sonar/landing] exemplary lookup failed', e?.name);
+      }
     }
 
     /* A signed-in visitor (the Datasets search page reuses this pipeline) is

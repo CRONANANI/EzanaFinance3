@@ -37,6 +37,12 @@ import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
 import { parseSseBlock } from '@/lib/sonar/research-state';
 
+/* Nov 16: the evidence-led response page for an exemplary brief, loaded only when one is
+   served. */
+const SonarExemplaryBrief = dynamic(() => import('./exemplary/SonarExemplaryBrief'), {
+  ssr: false,
+});
+
 const SonarBand = dynamic(
   () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
   { ssr: false, loading: () => <SonarBandLoading /> },
@@ -197,6 +203,9 @@ export function SonarExperience({
   const [standardRun, setStandardRun] = useState(null);
   /* Nov 13: a research answer shown again from the session thread (no request). */
   const [restored, setRestored] = useState(null);
+  /* Nov 16: an exemplary brief the server served for this exact question ({ query, brief }).
+     It takes the page like a research run; the band stays under it. */
+  const [exemplary, setExemplary] = useState(null);
   /* Nov 2026, estimates: POST /api/sonar/estimate for the latest ping
      ({ query, data }), fired by the band on submit just before the ping. It
      times the answer in progress and fills the deep research card. */
@@ -325,11 +334,29 @@ export function SonarExperience({
         : { query, phase: 'sweeping', leaving: false, hold: 'standard' },
     );
   }
+  /* Nov 16: the ping was the question of an exemplary brief. Nothing ran, so the loading
+     screen goes straight to its hand-off and the brief is underneath when it clears. */
+  function showExemplary(query, brief) {
+    if (!brief) return;
+    setDeepOffer(null);
+    setDeepRun(null);
+    setStandardRun(null);
+    setRestored(null);
+    setExemplary({ query, brief });
+    setShownQuery(brief.question || query);
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
+    loaderTimers.current.push(
+      setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
+    );
+  }
   function startStandard(query, opts = {}) {
     const { classification = null, goDeeper: hint = null, extra = null } = opts;
     setDeepRun(null);
     setDeepOffer(null);
     setRestored(null);
+    setExemplary(null);
     /* Nov 13: a follow-up carries { followUp, attachment } into the research request. */
     setStandardRun({ query, classification, goDeeper: hint, extra, nonce: Date.now() });
     holdLoaderFor(query);
@@ -342,6 +369,7 @@ export function SonarExperience({
     setDeepOffer(null);
     setDeepRun(null);
     setStandardRun(null);
+    setExemplary(null);
     if (entry.kind === 'research' && entry.state) {
       setRestored(entry);
       return;
@@ -377,6 +405,7 @@ export function SonarExperience({
     setDeepRun(null);
     setStandardRun(null);
     setRestored(null);
+    setExemplary(null);
     setQueryText(q);
     if (bandControlRef.current?.ping?.(q)) return;
     /* No band handle yet: start the band on the question (it auto-pings its query). */
@@ -664,6 +693,7 @@ export function SonarExperience({
     }
     setDeepOffer(null);
     setStandardRun(null);
+    setExemplary(null);
     setDeepRun({ query, estimate: deepEstimate(query), supersedes: supersede, fromCard: true });
     try {
       const url = new URL(window.location.href);
@@ -772,6 +802,17 @@ export function SonarExperience({
               onRestore={restoreEntry}
             />
           ) : null}
+          {exemplary && !deepRun && !standardRun && !restored ? (
+            <div className="sdr-run force-dark-theme">
+              <SonarExemplaryBrief
+                key={exemplary.brief.slug}
+                brief={exemplary.brief}
+                onPing={pingFromRun}
+                onFollowUp={followUpRun}
+                onDeep={() => chooseDeep(exemplary.brief.question, { signup: !signedIn })}
+              />
+            </div>
+          ) : null}
           {restored && !deepRun && !standardRun ? (
             <div className="sdr-run force-dark-theme">
               <div className="sdr-report">
@@ -838,7 +879,8 @@ export function SonarExperience({
               startStandard(query, { classification, goDeeper: hint || null, extra: extra || null })
             }
             onRestoreResearch={restoreEntry}
-            hidden={Boolean(deepRun || standardRun || restored)}
+            onExemplary={showExemplary}
+            hidden={Boolean(deepRun || standardRun || restored || exemplary)}
             onEstimate={(query, data) => setEstimate({ query, data })}
             afterAnswer={
               answeredQuery && estimateFor(answeredQuery) ? (

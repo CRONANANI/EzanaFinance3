@@ -832,6 +832,9 @@ export function SonarSection({
      the research engine at standard depth. A host without it never gets a
      standard result (the band does not ask for one). */
   onStandardResearch = null,
+  /* Nov 16: the host can draw an exemplary brief (a hand-reviewed answer served for the
+     exact question it answers). Called with (query, brief); the band shows nothing for it. */
+  onExemplary = null,
   /* Nov 13 (research workspace): shows a research answer from the session thread again (the
      host owns research runs); a quick ping's entry is shown here. */
   onRestoreResearch = null,
@@ -2664,6 +2667,7 @@ export function SonarSection({
           ...(opts.mode !== 'quick' && typeof onStandardResearch === 'function'
             ? { research: ['standard', 'deep'] }
             : {}),
+          ...(typeof onExemplary === 'function' ? { formats: ['exemplary'] } : {}),
         }),
         signal: controller.signal,
       });
@@ -2671,7 +2675,17 @@ export function SonarSection({
       /* Answered, gated or "no coverage" all end the loading screen; only a
          failed request turns it into its error state. */
       settle = { settled: true, ok: Boolean(res.ok || data?.gate) };
-      if (data?.deepSuggested) {
+      if (data?.exemplary && typeof onExemplary === 'function') {
+        /* A hand-reviewed brief for this exact question. Nothing was spent; the host draws
+           it, and the band keeps what it showed before. */
+        settle = { settled: true, ok: true, deep: true };
+        if (!hadPinged) {
+          hasPingedRef.current = false;
+          setHasPinged(false);
+        }
+        setQueryValue(q);
+        onExemplary(q, data.exemplary);
+      } else if (data?.deepSuggested) {
         /* Nothing was spent. The band keeps what it showed before; the host
            asks whether to run deep research. */
         settle = { settled: true, ok: true, deep: true };
