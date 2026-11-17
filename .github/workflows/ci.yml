@@ -145,8 +145,12 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-16 postgresql-16-pgvector
-          test -f /usr/share/postgresql/16/extension/vector.control
-          test -x /usr/lib/postgresql/16/bin/postgres
+          # The harness uses the newest server installed (the image may already carry a
+          # newer one), so every installed version gets pgvector.
+          for v in $(ls /usr/lib/postgresql); do
+            sudo apt-get install -y -qq "postgresql-$v-pgvector"
+            test -f "/usr/share/postgresql/$v/extension/vector.control"
+          done
 
       - name: Unit tests (node:test suites)
         # Business-logic unit tests: whale score, house disclosures,
