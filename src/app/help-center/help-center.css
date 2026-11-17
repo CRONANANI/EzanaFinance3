@@ -341,27 +341,36 @@
   text-decoration-color: var(--emerald-hover);
 }
 
-/* ── Callouts (Note / Tip / Caution), usable inside content strings ── */
+/* ── Callouts (Note / Tip / Caution), usable inside content strings ──
+   Flat: one rule on the left with clear space before the text, no box. */
 .hc-callout {
-  border: 1px solid var(--border-primary);
-  border-left: 3px solid var(--emerald);
-  border-radius: var(--radius-md);
-  background: var(--emerald-bg-subtle);
-  padding: 0.875rem 1.125rem;
+  border-left: 2px solid var(--emerald);
+  padding: 0.125rem 0 0.125rem 1.25rem;
   font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
 }
 .hc-callout strong:first-child {
   display: block;
   margin-bottom: 0.25rem;
-  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
 }
 .hc-callout--tip {
   border-left-color: var(--blue);
-  background: color-mix(in srgb, var(--blue) 5%, transparent);
+}
+.hc-callout--tip strong:first-child {
+  color: var(--blue);
 }
 .hc-callout--caution {
   border-left-color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 6%, transparent);
+}
+.hc-callout--caution strong:first-child {
+  color: var(--warning);
 }
 
 /* ── Three-column article shell ── */
@@ -501,43 +510,268 @@
   padding-left: 12px;
 }
 
-/* ── Article meta row ── */
+/* ══════════════════════════════════════════════════════════════════════
+   Article layout (Nov 2026 redesign)
+
+   Same type system as the dataset pages: Plus Jakarta Sans for reading text,
+   JetBrains Mono for eyebrows, labels, step numbers and meta, sized off the
+   platform --type-* ramp. Flat throughout, per the branding guide: no boxed
+   cards, hairlines divide and never enclose, links and choices are text.
+   ══════════════════════════════════════════════════════════════════════ */
+.hc-doc {
+  --hc-rule: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  max-width: 47.5rem;
+}
+
+/* ── Breadcrumb ── */
+.hc-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-bottom: 1.75rem;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+.hc-crumbs a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.hc-crumbs a:hover {
+  color: var(--emerald-text);
+}
+.hc-crumbs .bi {
+  font-size: var(--type-micro-size);
+}
+
+/* ── Article header ── */
+.hc-doc-head {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--hc-rule);
+}
+.hc-doc-eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.hc-doc-title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.25rem);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: 1.15;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
 .hc-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 1.75rem;
+  align-items: center;
+  margin: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
   color: var(--text-faint);
 }
+.hc-meta span + span::before {
+  content: '/';
+  margin: 0 0.75rem;
+  opacity: 0.6;
+}
 
-/* ── Previous / next pager ── */
+/* ── Article body ──
+   .hc-prose-html wraps the authored HTML only, so these rules never reach
+   the live components (tables, the institution directory) an article hosts. */
+.hc-doc .hc-prose {
+  font-size: var(--type-prose-size);
+  line-height: 1.7;
+}
+.hc-prose-html > :is(p, ul, ol, .hc-callout) {
+  margin: 0 0 1.125rem;
+}
+.hc-prose-html > :last-child {
+  margin-bottom: 0;
+}
+.hc-prose-html > .hc-lede {
+  margin-bottom: 0.5rem;
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
+  color: var(--text-primary);
+}
+.hc-prose-html strong {
+  font-weight: var(--weight-medium);
+}
+
+/* Section headings: a hairline above each one gives the article its
+   structure. Articles are authored with <h3> sections. */
+.hc-prose-html > :is(h2, h3) {
+  margin: 2.5rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hc-rule);
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
+  line-height: var(--type-section-leading);
+}
+.hc-prose-html > :is(h2, h3):first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Bulleted lists: a small square marker in the margin. */
+.hc-prose-html > ul {
+  padding-left: 0;
+}
+.hc-prose-html > ul > li {
+  position: relative;
+  padding-left: 1.375rem;
+  list-style: none;
+}
+.hc-prose-html > ul > li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
+  background: var(--text-faint);
+}
+.hc-prose-html li + li {
+  margin-top: 0.625rem;
+}
+.hc-prose-html li > :is(ul, ol) {
+  margin-top: 0.5rem;
+}
+
+/* Numbered steps: mono numerals in the margin, like a dataset table key. */
+.hc-prose-html > ol {
+  padding-left: 0;
+  counter-reset: hc-step;
+}
+.hc-prose-html > ol > li {
+  position: relative;
+  padding-left: 2.5rem;
+  list-style: none;
+  counter-increment: hc-step;
+}
+.hc-prose-html > ol > li::before {
+  content: counter(hc-step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-medium);
+  line-height: 1.7;
+  color: var(--emerald-text);
+}
+.hc-prose-html > ol > li + li {
+  margin-top: 0.875rem;
+}
+
+.hc-prose-html a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* FAQ: question over answer, hairline between pairs. */
+.hc-faq-item {
+  padding: 1.125rem 0;
+  border-top: 1px solid var(--hc-rule);
+}
+.hc-prose-html > :is(h2, h3) + .hc-faq-item {
+  padding-top: 0;
+  border-top: none;
+}
+.hc-faq-item:last-child {
+  padding-bottom: 0;
+}
+.hc-faq-q {
+  margin: 0 0 0.375rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+.hc-faq-a {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* ── Small caps label shared by the footer sections ── */
+.hc-doc-label {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Related articles: a plain list of links, no card ── */
+.hc-doc-related {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hc-rule);
+}
+.hc-doc-related ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hc-doc-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.hc-doc-row .bi {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  transition: color 0.15s ease;
+}
+.hc-doc-row:hover,
+.hc-doc-row:hover .bi {
+  color: var(--emerald-text);
+}
+
+/* ── Previous / next: two text links, no boxes ── */
 .hc-pager {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 2.5rem;
+  gap: 32px;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hc-rule);
 }
-.hc-pager-card {
+.hc-pager-link {
   display: block;
-  padding: 14px 16px;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
   text-decoration: none;
-  transition: border-color 0.18s ease;
 }
-.hc-pager-card:hover {
-  border-color: var(--emerald-border);
-}
-.hc-pager-card--next {
+.hc-pager-link--next {
   text-align: right;
   grid-column: 2;
 }
 .hc-pager-eyebrow {
-  display: block;
-  margin-bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
   font-family: var(--font-mono);
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
@@ -547,13 +781,205 @@
 }
 .hc-pager-title {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
   color: var(--text-primary);
-  line-height: 1.35;
+  line-height: 1.4;
+  transition: color 0.15s ease;
 }
-.hc-pager-card:hover .hc-pager-title {
+.hc-pager-link:hover .hc-pager-title {
   color: var(--emerald-text);
+}
+
+/* ── Was this article helpful? ── */
+.hc-feedback {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hc-rule);
+}
+.hc-feedback-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+}
+.hc-feedback-question {
+  margin: 0;
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+.hc-feedback-choices {
+  display: flex;
+  gap: 20px;
+}
+/* Text buttons: no border, no fill. Selected is emerald, with a filled thumb. */
+.hc-feedback-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-regular);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.hc-feedback-choice:hover,
+.hc-feedback-choice[aria-pressed='true'] {
+  color: var(--emerald-text);
+}
+.hc-feedback-choice[aria-pressed='true'] {
+  font-weight: var(--weight-medium);
+}
+.hc-feedback-choice:focus-visible,
+.hc-feedback-submit:focus-visible,
+.hc-doc-contact:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.hc-feedback-form {
+  max-width: 30rem;
+  margin-top: 1.25rem;
+}
+.hc-feedback-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+/* No box: transparent, borderless, and flush left with the label above it.
+   16px on phones, or iOS Safari zooms the page on focus. */
+.hc-feedback-input {
+  display: block;
+  width: 100%;
+  min-height: 4.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  resize: vertical;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.hc-feedback-input:focus {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+.hc-feedback-input::placeholder {
+  color: var(--text-faint);
+}
+.hc-feedback-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0.5rem;
+}
+.hc-feedback-count {
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+}
+.hc-feedback-error {
+  font-size: var(--type-caption-size);
+  color: var(--negative);
+}
+.hc-feedback-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  color: var(--btn-primary-fg);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.hc-feedback-submit:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.hc-feedback-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.hc-feedback-thanks {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
+  color: var(--emerald-text);
+}
+
+/* ── Article footer: back link and contact support ── */
+.hc-doc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hc-rule);
+}
+.hc-doc-foot a,
+.hc-doc-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--type-value-sm-size);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.hc-doc-foot a {
+  color: var(--text-muted);
+}
+.hc-doc-foot a:hover {
+  color: var(--emerald-text);
+}
+.hc-doc-contact {
+  font-weight: var(--weight-medium);
+  color: var(--emerald-text);
+}
+.hc-doc-contact:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.hc-doc-foot .bi {
+  font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-doc *,
+  .hc-doc *::before {
+    transition: none;
+  }
 }
 
 @keyframes hcPulse {
@@ -650,10 +1076,15 @@
 @media (max-width: 640px) {
   .hc-pager {
     grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
   }
-  .hc-pager-card--next {
+  .hc-pager-link--next {
     grid-column: 1;
     text-align: left;
+  }
+  .hc-feedback-choice,
+  .hc-doc-row {
+    min-height: 44px;
   }
   .hc-popular {
     grid-template-columns: minmax(0, 1fr);

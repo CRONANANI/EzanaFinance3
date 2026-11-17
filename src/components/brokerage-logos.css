@@ -402,36 +402,25 @@ body.light-mode .bl-heading {
   align-items: center;
   gap: 0.5rem;
   min-height: 44px;
-  padding: 0.625rem 1.375rem;
-  border-radius: 999px;
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-fg);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--emerald-text);
   font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition:
-    background 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
+/* Text link, per the branding guide: emerald label and icon, no fill, no
+   border. The icon inherits the label colour. */
 .bl-cta:hover {
-  background: var(--btn-primary-bg-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--emerald-glow);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .bl-cta:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bl-cta {
-    transition: none;
-  }
-  .bl-cta:hover {
-    transform: none;
-  }
+  border-radius: var(--radius-sm);
 }

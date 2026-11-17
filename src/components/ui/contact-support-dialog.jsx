@@ -108,7 +108,7 @@ const eyebrowStyle = {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function ContactSupportDialog({ open, onOpenChange }) {
+export function ContactSupportDialog({ open, onOpenChange, source }) {
   const [phase, setPhase] = React.useState("form");
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -217,6 +217,9 @@ export function ContactSupportDialog({ open, onOpenChange }) {
           email: email.trim(),
           topic,
           message: message.trim(),
+          // Optional: where the form was opened from (e.g. a Help Center
+          // article), so support has the context. The API ignores it if absent.
+          ...(source ? { source } : {}),
         }),
       });
       if (!res.ok) {

@@ -16,6 +16,7 @@ const TOPIC_LABELS = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_NAME = 120;
 const MAX_MESSAGE = 1000;
+const MAX_SOURCE = 200;
 
 function validate(body) {
   const errors = {};
@@ -36,7 +37,10 @@ function validate(body) {
   else if (message.length > MAX_MESSAGE)
     errors.message = `Message must be ${MAX_MESSAGE} characters or fewer`;
 
-  return { errors, data: { name, email, topic, message } };
+  /* Optional and never a reason to reject: where the form was opened from. */
+  const source = typeof body?.source === 'string' ? body.source.trim().slice(0, MAX_SOURCE) : '';
+
+  return { errors, data: { name, email, topic, message, source } };
 }
 
 function escapeHtml(str) {
@@ -48,8 +52,9 @@ function escapeHtml(str) {
     .replaceAll("'", '&#39;');
 }
 
-function renderHtmlBody({ name, email, topic, message }) {
+function renderHtmlBody({ name, email, topic, message, source }) {
   const topicLabel = TOPIC_LABELS[topic] || topic;
+  const origin = source ? escapeHtml(source) : 'the Ezana landing page contact form';
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; max-width: 600px;">
       <h2 style="margin:0 0 16px; font-size: 18px;">New support request</h2>
@@ -59,7 +64,7 @@ function renderHtmlBody({ name, email, topic, message }) {
         <tr><td style="padding: 6px 0; color:#64748b;">Topic</td><td style="padding: 6px 0;">${escapeHtml(topicLabel)}</td></tr>
       </table>
       <div style="padding: 16px; border-radius: 8px; background: #f8fafb; border: 1px solid rgba(0,0,0,0.08); white-space: pre-wrap; font-size: 14px; line-height: 1.55;">${escapeHtml(message)}</div>
-      <p style="margin: 16px 0 0; font-size: 12px; color:#94a3b8;">Submitted via the Ezana landing page contact form. Reply directly to this email to respond to the sender.</p>
+      <p style="margin: 16px 0 0; font-size: 12px; color:#94a3b8;">Submitted via ${origin}. Reply directly to this email to respond to the sender.</p>
     </div>
   `;
 }
@@ -107,7 +112,10 @@ export const POST = withApiGuard(
         subject: `[${topicLabel}] ${data.name}`,
         html: renderHtmlBody(data),
         text:
-          `From: ${data.name} <${data.email}>\n` + `Topic: ${topicLabel}\n\n` + `${data.message}\n`,
+          `From: ${data.name} <${data.email}>\n` +
+          `Topic: ${topicLabel}\n` +
+          (data.source ? `Sent from: ${data.source}\n` : '') +
+          `\n${data.message}\n`,
       });
 
       if (sendError) {
