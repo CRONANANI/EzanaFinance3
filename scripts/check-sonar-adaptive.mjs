@@ -42,6 +42,7 @@ const { buildRankingsPayload } = await import('@/lib/sonar/macro/rank.js');
 const { ANALYSTS } = await import('@/lib/sonar/analysts/registry.js');
 const V = await import('./lib/sonar-validation.mjs');
 const CP = await import('@/lib/sonar/adaptive/controls-plan.js');
+const OV = await import('@/lib/sonar/adaptive/overlays.js');
 const { cleanSaveBody } = await import('@/lib/sonar/saved.js');
 
 const NOW = new Date('2026-11-16T12:00:00Z');
@@ -2291,6 +2292,306 @@ test('C06: sanctions listings are matched by name, and a match is not an identif
   );
   assert.match(none.sections[0].headline, /^No current sanctions list entry names Huawei$/);
   assert.match(none.sections[0].text, /can still be restricted in other ways/);
+});
+
+/* ── phase 4: council overlays ── */
+
+const fixtureFund = () => ({
+  orgId: '11111111-1111-4111-8111-111111111111',
+  fundName: 'Example Council Fund',
+  benchmark: 'SPY',
+  thesis: 'Quality compounders.',
+  style: 'Long only',
+  horizon: '3 to 5 years',
+  focusSectors: [],
+  excludedSectors: ['Tobacco'],
+  minMarketCapMusd: null,
+  ips: [
+    {
+      type: 'prohibited_ticker',
+      value: { ticker: 'NVDA', severity: 'block' },
+      label: 'Board restriction',
+    },
+    {
+      type: 'max_position',
+      value: { pct: 10, severity: 'warning' },
+      label: 'Single position limit',
+    },
+  ],
+  holdings: [
+    { ticker: 'AAPL', sector: 'Technology', weightPct: 40 },
+    { ticker: 'MSFT', sector: 'Technology', weightPct: 35 },
+    { ticker: 'XOM', sector: 'Energy', weightPct: 25 },
+  ],
+});
+const orgCtx = (over = {}) => ({
+  orgId: '11111111-1111-4111-8111-111111111111',
+  role: 'analyst',
+  deps: {
+    fund: async () => fixtureFund(),
+    companyFacts: async (t) => ({
+      ticker: t,
+      name: 'NVIDIA',
+      sector: 'Technology',
+      industry: 'Semiconductors',
+      marketCap: 3e12,
+    }),
+    pitches: async () => [],
+    reports: async () => [],
+    ...over,
+  },
+});
+
+test('an overlay never runs without a verified organization, and never from the public table', async () => {
+  const p = plan('Does NVDA fit our council fund?');
+  assert.equal(p.primaryScenario, 'D01');
+  /* The public executor table has no overlay: runAdaptive cannot produce one, whatever it is handed. */
+  assert.equal(p.executable, false);
+  assert.equal(
+    await O.runAdaptive(
+      { ...p, executable: true },
+      { fund: async () => fixtureFund() },
+      { now: NOW },
+    ),
+    null,
+  );
+  /* No organization context: nothing is read and nothing is returned. */
+  let read = 0;
+  const spy = orgCtx({ fund: async () => ((read += 1), fixtureFund()) });
+  for (const org of [null, undefined, {}, { orgId: null, deps: spy.deps }, { orgId: 'x' }])
+    assert.equal(await OV.runOverlay(p, org, {}, { now: NOW }), null);
+  assert.equal(read, 0);
+  /* A personal question is not an overlay plan, even with an organization context to hand. */
+  for (const q of [
+    'Is NVIDIA technically oversold?',
+    'Which institutions hold NVDA?',
+    'What are NVDA’s biggest risks?',
+  ]) {
+    assert.equal(OV.isOverlayPlan(plan(q)), false, q);
+    assert.equal(await OV.runOverlay(plan(q), spy, {}, { now: NOW }), null, q);
+  }
+  assert.equal(read, 0);
+  for (const q of [
+    'Does NVDA fit our council fund?',
+    'Show me our organization positions.',
+    'How should a council analyst investigate this idea?',
+  ])
+    assert.equal(OV.isOverlayPlan(plan(q)), true, q);
+});
+
+test('the route and the organization readers enforce tenancy in code', () => {
+  const src = (f) => fs.readFileSync(f, 'utf8');
+  const route = src('src/app/api/sonar/landing-query/route.js');
+  /* Overlays need a signed-in member and an overlay question; the org is resolved on the server. */
+  assert.match(
+    route,
+    /adaptiveEnabled\(\) && member && !runsAdaptive && isOverlayPlan\(adaptivePlan\)/,
+  );
+  assert.match(route, /resolveOrgContext\(request, member, getAdminClient\(\)\)/);
+  assert.doesNotMatch(
+    route,
+    /body\??\.(orgId|org_id|org)\b/,
+    'the organization is never read from the request body',
+  );
+  const deps = src('src/lib/sonar/adaptive/org-deps.js');
+  assert.doesNotMatch(deps, /\bbody\b|searchParams|request\.json/);
+  assert.match(deps, /getOrgMemberForUser\(admin, user\.id/);
+  assert.match(deps, /member\.user_id !== user\.id/);
+  /* Per-document reads use the caller's own token and are filtered to their organization. */
+  assert.match(deps, /headers: \{ Authorization: header \}/);
+  assert.equal(
+    deps.split("mine\n        .from('org_pitches')").length -
+      1 +
+      deps.split("mine.from('org_pitches')").length -
+      1,
+    1,
+  );
+  assert.equal(
+    (deps.match(/\.eq\('org_id', orgId\)/g) || []).length,
+    2,
+    'pitches and reports are both scoped',
+  );
+  assert.doesNotMatch(
+    deps,
+    /admin\s*\.from\('(org_pitches|org_sonar_reports)'\)/,
+    'documents are never read past row-level security',
+  );
+  assert.doesNotMatch(deps, /\.(insert|update|upsert|delete)\(/, 'the overlays never write');
+  const ov = src('src/lib/sonar/adaptive/overlays.js');
+  assert.doesNotMatch(
+    ov,
+    /synthesize|retrieveMarkets|news\(/,
+    'no model or web call sees organization data',
+  );
+  /* Organization research is refused by the personal save route. */
+  assert.deepEqual(
+    [
+      cleanSaveBody({
+        kind: 'ping',
+        question: 'q',
+        snapshot: { adaptive: { org: true, sections: [] } },
+      }).status,
+    ],
+    [403],
+  );
+  assert.match(
+    src('src/components/sonar/adaptive/SonarAdaptiveReport.jsx'),
+    /report\.org\s*\? null\s*: actions/,
+  );
+});
+
+test('D01 fund fit: recorded rules against public facts, with enforcement described truthfully', async () => {
+  const p = plan('Does NVDA fit our council fund?');
+  const report = await OV.runOverlay(p, orgCtx(), {}, { now: NOW });
+  assert.equal(report.org, true);
+  const by = Object.fromEntries(report.sections.map((x) => [x.type, x]));
+  assert.match(
+    by.lead.headline,
+    /^NVDA falls outside Example Council Fund’s mandate on the checks Sonar can run$/,
+  );
+  assert.match(by.lead.text, /1 involves a rule the IPS marks as blocking/);
+  const prohibited = by.portfolio_attribution.rows.find((r) => /prohibited/i.test(r.cells.check));
+  assert.deepEqual(
+    [prohibited.cells.result, prohibited.cells.blocking],
+    ['Outside', 'Marked blocking'],
+  );
+  /* A blocking rule is described as marked blocking; Sonar never claims to stop a trade. */
+  const text = JSON.stringify(report.sections);
+  assert.match(text, /does not place, stop or approve trades/);
+  assert.doesNotMatch(
+    text,
+    /\b(trade (is|was|will be|has been) blocked|automatically (blocked|enforced|prevented)|cannot be traded|will be rejected)\b/i,
+  );
+  assert.match(by.limitations.items.join(' '), /not saved to your personal research/);
+  assert.doesNotMatch(text, /\b(buy|sell|recommend)\b/i);
+  /* No company named: the rules on record. */
+  const rules = await OV.runOverlay(
+    plan('What does the IPS say about this proposed position?'),
+    orgCtx(),
+    {},
+    { now: NOW },
+  );
+  assert.match(rules.sections[0].headline, /has 2 active IPS rules on record/);
+  /* Records unreadable: said, not guessed. */
+  const dark = await OV.runOverlay(p, orgCtx({ fund: async () => null }), {}, { now: NOW });
+  assert.match(dark.sections[0].headline, /not available right now/);
+});
+
+test('D03 holdings: concentration is arithmetic on the book; overlap is by ticker or sector', async () => {
+  const report = await OV.runOverlay(
+    plan('Show me our organization positions.'),
+    orgCtx(),
+    {
+      earnings: async (t) =>
+        t === 'AAPL' ? [{ date: '2026-11-20', epsActual: null, epsEstimated: 2 }] : [],
+    },
+    { now: NOW },
+  );
+  const by = Object.fromEntries(report.sections.map((x) => [x.type, x]));
+  assert.equal(
+    by.lead.headline,
+    'Example Council Fund holds 3 positions; the largest is AAPL at 40.0%',
+  );
+  /* 1 / (0.4^2 + 0.35^2 + 0.25^2) = 2.9 */
+  assert.match(
+    by.lead.text,
+    /five largest positions are 100\.0% of the book, which is as concentrated as 2\.9 equally weighted positions/,
+  );
+  assert.match(by.lead.text, /largest sector is Technology at 75\.0%/);
+  assert.deepEqual(by.series_chart.series[0].values, [40, 35, 25]);
+  assert.deepEqual(
+    by.catalyst_calendar.rows.map((r) => r.cells.ticker),
+    ['AAPL'],
+  );
+  const over = await OV.runOverlay(
+    plan('Which of our holdings overlap with NVDA?'),
+    orgCtx(),
+    {},
+    { now: NOW },
+  );
+  const o = Object.fromEntries(over.sections.map((x) => [x.type, x]));
+  assert.match(
+    o.lead.headline,
+    /^2 of Example Council Fund’s 3 positions share NVDA’s sector or ticker$/,
+  );
+  assert.match(o.lead.text, /Sharing a sector is not the same as sharing a risk/);
+  assert.deepEqual(
+    o.portfolio_attribution.rows.map((r) => r.cells.overlap),
+    ['Same sector', 'Same sector', 'None found'],
+  );
+});
+
+test('D02 and D04: only what the member may see, and nothing is written', async () => {
+  const pp = plan('How should a council analyst investigate the NVDA pitch?');
+  assert.equal(pp.primaryScenario, 'D02');
+  let asked = null;
+  const pitches = async (o) => {
+    asked = o;
+    return [
+      {
+        id: 'p1',
+        ticker: 'NVDA',
+        company: 'NVIDIA',
+        type: 'long',
+        stage: 'pm_review',
+        status: 'active',
+        thesis: 'AI demand.',
+        whyNow: null,
+        catalysts: 0,
+        risks: 2,
+        targetPrice: 250,
+        priceAtSubmission: 200,
+        horizon: '12m',
+        updatedAt: '2026-11-10',
+      },
+    ];
+  };
+  const pitch = await OV.runOverlay(pp, orgCtx({ pitches }), {}, { now: NOW });
+  assert.deepEqual(asked, { ticker: 'NVDA' });
+  const by = Object.fromEntries(pitch.sections.map((x) => [x.type, x]));
+  assert.match(
+    by.lead.headline,
+    /^The NVDA pitch is at portfolio manager review, with 2 open items in its file$/,
+  );
+  assert.deepEqual(
+    by.key_findings.items.map((i) => i.title),
+    ['No catalysts are listed', 'No "why now" is recorded'],
+  );
+  assert.match(by.lead.text, /not whether the idea is good/);
+  /* None visible: Sonar does not say whether one exists. */
+  const none = await OV.runOverlay(pp, orgCtx(), {}, { now: NOW });
+  assert.equal(none.sections[0].headline, 'No pitch for NVDA is visible to you');
+  assert.match(none.sections[0].text, /does not look past what you are allowed to see/);
+  /* The research library lists readable reports and states that Sonar does not attach or share. */
+  const lp = plan('Can you attach this research to my council pitch for NVDA?');
+  assert.equal(lp.primaryScenario, 'D04');
+  const lib = await OV.runOverlay(
+    lp,
+    orgCtx({
+      reports: async () => [
+        {
+          id: 'r1',
+          kind: 'fund_fit',
+          title: 'NVDA fund fit',
+          ticker: 'NVDA',
+          visibility: 'My desk',
+          status: 'Approved',
+          updatedAt: '2026-11-01',
+        },
+      ],
+    }),
+    {},
+    { now: NOW },
+  );
+  assert.match(lib.sections[0].headline, /^1 council research report you can read covers NVDA$/);
+  assert.match(
+    lib.sections[0].text,
+    /does not attach research to a pitch, move it or change who can see it/,
+  );
+  assert.equal(
+    lib.sections.find((x) => x.type === 'portfolio_attribution').rows[0].cells.visibility,
+    'My desk',
+  );
 });
 
 /* ── research controls, saving and the session thread ── */

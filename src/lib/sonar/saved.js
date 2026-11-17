@@ -89,6 +89,16 @@ export function cleanSaveBody(body) {
     return { ok: false, status: 400, error: 'A research run is needed to save it.' };
   if (!b.snapshot || typeof b.snapshot !== 'object' || Array.isArray(b.snapshot))
     return { ok: false, status: 400, error: 'Nothing to save.' };
+  /* An answer built from an organization's records (a council overlay) is not saved to
+     personal research: it stays with the organization's own reports. Checked on the server,
+     so a request that skips the page is refused too. */
+  if (b.snapshot.org === true || b.snapshot.adaptive?.org === true)
+    return {
+      ok: false,
+      status: 403,
+      error:
+        'Organization research is kept with your organization’s reports, not in personal saved research.',
+    };
   const snapshot = stripPrivate(b.snapshot);
   if (snapshotBytes(snapshot) > SAVED_SNAPSHOT_MAX_BYTES)
     return { ok: false, status: 413, error: 'This answer is too large to save.' };

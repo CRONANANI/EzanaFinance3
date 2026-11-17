@@ -23,6 +23,8 @@ import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
 import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
+import { resolveOrgContext } from '@/lib/sonar/adaptive/org-deps';
+import { runOverlay, isOverlayPlan } from '@/lib/sonar/adaptive/overlays';
 import { sanitizeThread } from '@/lib/sonar/adaptive/thread-context';
 import { getDailyOhlcv } from '@/lib/prices/daily-bars';
 import { newsEvidence } from '@/lib/sonar/landing-research';
@@ -290,6 +292,8 @@ const POST_HANDLER = withApiGuard(
     if (
       (thread || adaptivePlan?.controls) &&
       !runsAdaptive &&
+      /* A question about the reader's own fund is settled below, once their membership is known. */
+      !isOverlayPlan(adaptivePlan) &&
       Array.isArray(body?.research) &&
       body.research.includes('standard') &&
       standardResearchEnabled()
@@ -327,6 +331,21 @@ const POST_HANDLER = withApiGuard(
     const unknownSession = !member && carriesSession && Boolean(memberRes.timedOut);
     if (memberRes.timedOut)
       console.warn('[sonar/landing] auth lookup timed out', { carriesSession });
+    /* Council overlays (fund fit, pitches, holdings, the research library). Organization
+       data is read only when ALL of these hold: the question itself is about the reader's
+       own fund (the router's overlay scenarios), the request is from a signed-in user, and
+       that user is an active member of an organization. The organization is their own
+       membership, resolved here on the server; it is never taken from the request. A guest,
+       a personal account or any other question never reaches this. Nothing is spent yet. */
+    let overlayOrg = null;
+    if (adaptiveEnabled() && member && !runsAdaptive && isOverlayPlan(adaptivePlan)) {
+      const orgRes = await withTimeout(
+        resolveOrgContext(request, member, getAdminClient()),
+        2500,
+        'org',
+      );
+      overlayOrg = orgRes.ok ? orgRes.value || null : null;
+    }
     const memberCap = memberDailyPingCap();
     const isGuestPing = !member && !unknownSession;
     const admin = getAdminClient();
@@ -500,22 +519,29 @@ const POST_HANDLER = withApiGuard(
     /* Adaptive research runs on the reservation made above: one ping, settled once. A run
        that returns no usable report falls through to the pipeline on the same reservation,
        so a failed adaptive run is never a second charge. */
-    if (runsAdaptive) {
-      const adaptiveP = runAdaptive(
-        adaptivePlan,
-        {
-          admin,
-          getOhlcv: getDailyOhlcv,
-          news: async (args) =>
-            (await newsEvidence(admin, args)).map((a) => ({ ...a, publisher: a.source })),
-          retrieveMarkets,
-          synthesize: synthesizeWithFallback,
-          ...adaptiveDataDeps(admin),
-        },
-        {
-          deadlineAt:
-            startedAt + (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
-        },
+    if (runsAdaptive || overlayOrg) {
+      const adaptiveP = (
+        overlayOrg
+          ? /* The overlay gets the member's organization readers and, of the public readers,
+               only the earnings calendar. No model call, no web search. */
+            runOverlay(adaptivePlan, overlayOrg, { earnings: adaptiveDataDeps(admin).earnings })
+          : runAdaptive(
+              adaptivePlan,
+              {
+                admin,
+                getOhlcv: getDailyOhlcv,
+                news: async (args) =>
+                  (await newsEvidence(admin, args)).map((a) => ({ ...a, publisher: a.source })),
+                retrieveMarkets,
+                synthesize: synthesizeWithFallback,
+                ...adaptiveDataDeps(admin),
+              },
+              {
+                deadlineAt:
+                  startedAt +
+                  (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
+              },
+            )
       ).catch((e) => {
         console.warn('[sonar/landing] adaptive run failed', e?.message || e);
         return null;

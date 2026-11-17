@@ -45,6 +45,7 @@ const ANCHOR_LABELS = {
   macro_timeseries: 'Series',
   catalyst_calendar: 'Calendar',
   heatmap: 'Returns',
+  portfolio_attribution: 'Fund',
   risk: 'Risks',
   fundamentals: 'Baseline',
   forecast_market: 'Markets',
@@ -698,6 +699,7 @@ export default function SonarAdaptiveReport({
       case 'macro_timeseries':
       case 'catalyst_calendar':
       case 'heatmap':
+      case 'portfolio_attribution':
         return <DataTable s={s} sources={sources} />;
       case 'series_chart':
         return <SeriesChart s={s} sources={sources} />;
@@ -832,6 +834,9 @@ export default function SonarAdaptiveReport({
                 {report.scenario.label}
               </span>
               <span>Research as of {dayLabel(report.asOf)}</span>
+              {report.org ? (
+                <span>From your organization’s records, visible to you as a member</span>
+              ) : null}
               {lead.computed ? <span>Figures computed from the records cited</span> : null}
               {report.degraded?.includes('live_research') ? (
                 <span>Verification did not complete</span>
@@ -846,12 +851,15 @@ export default function SonarAdaptiveReport({
               ) : null}
             </p>
             <div className="sar-actions">
-              {actions || (
-                <SonarSaveActions
-                  getSave={getSave}
-                  question={report.resolvedQuestion || report.question}
-                />
-              )}
+              {/* Organization research is not offered for saving to personal research. */}
+              {report.org
+                ? null
+                : actions || (
+                    <SonarSaveActions
+                      getSave={getSave}
+                      question={report.resolvedQuestion || report.question}
+                    />
+                  )}
             </div>
           </header>
           {body[0] ? block(body[0]) : null}

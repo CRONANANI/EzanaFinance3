@@ -42,6 +42,15 @@ create table public.echo_articles (id uuid primary key default gen_random_uuid()
 alter table public.echo_articles enable row level security;
 create policy "Anyone can read published articles" on public.echo_articles for select using (article_status = 'published');
 create policy "Authors manage own articles" on public.echo_articles for all using (auth.uid() = author_id);
+create table public.lobbying_client_tickers (client_name text primary key, ticker text not null, exchange text,
+  company_label text, verified boolean not null default true, match_method text, source text,
+  created_at timestamptz not null default now());
+alter table public.lobbying_client_tickers enable row level security;
+create policy "public read lct" on public.lobbying_client_tickers for select using (true);
+revoke insert, update, delete on public.lobbying_client_tickers from anon, authenticated;
+grant select on public.lobbying_client_tickers to anon, authenticated;
+create table if not exists public.sec_fundamentals (id bigint generated always as identity primary key,
+  ticker text, cik text, entity_name text);
 ${['plaid_accounts', 'plaid_holdings', 'plaid_transactions']
   .map(
     (
@@ -412,6 +421,43 @@ test('sonar_exemplary_briefs: service role only, for the table and its match fun
   denied(() => asA(call));
   denied(() => pg.sql(`set role anon; ${call}`));
   assert.equal(pg.sql(`set role service_role; ${call}`), '0');
+});
+
+test('lobbying client identity: browsers cannot write a mapping or call the matcher; a published mapping needs evidence', (t) => {
+  if (skip(t)) return;
+  const ins = `insert into public.lobbying_client_tickers (client_name, ticker, verified) values ('EXAMPLE CORP', 'EXM', false)`;
+  const call = `select count(*) from public.lobbying_client_candidates(2024)`;
+  denied(() => asA(ins));
+  denied(() => pg.sql(`set role anon; ${ins}`));
+  denied(() => asA(call));
+  denied(() => pg.sql(`set role anon; ${call}`));
+  assert.equal(
+    pg.sql(
+      `select has_function_privilege('service_role', 'public.lobbying_client_candidates(int)', 'execute')::text`,
+    ),
+    'true',
+  );
+  /* Rows that were published before the migration were given their evidence by it. */
+  assert.equal(
+    pg.sql(
+      `select count(*) from public.lobbying_client_tickers where verified and (status <> 'verified' or evidence is null or verified_at is null or relationship is null)`,
+    ),
+    '0',
+  );
+  /* Not even the service role can publish a mapping without evidence, a relationship and a date. */
+  assert.throws(() =>
+    pg.sql(
+      `insert into public.lobbying_client_tickers (client_name, ticker, verified) values ('NO EVIDENCE INC', 'NEV', true)`,
+    ),
+  );
+  pg.sql(
+    `insert into public.lobbying_client_tickers (client_name, ticker, verified, status) values ('POSSIBLE INC', 'PSB', false, 'possible')`,
+  );
+  assert.throws(() =>
+    pg.sql(
+      `update public.lobbying_client_tickers set verified = true where client_name = 'POSSIBLE INC'`,
+    ),
+  );
 });
 
 test('the harness refuses to run without a dependency a migration needs', async () => {

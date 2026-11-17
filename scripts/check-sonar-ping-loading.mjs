@@ -66,7 +66,7 @@ test('a research answer has a ping bar that pings through the band', () => {
   );
   assert.match(host, /function pingFromRun\(query\)/);
   assert.match(host, /bandControlRef\.current\?\.ping\?\.\(q\)/);
-  assert.match(band, /ping: \(q\) => \{/);
+  assert.match(band, /ping: \(q, opts = \{\}\) => \{/);
   assert.match(bar, /role="search"/);
   assert.match(bar, /<label htmlFor=\{id\}/, 'the input has a label');
   assert.ok(!bar.includes('—') && !host.includes('— '), 'no em dashes');

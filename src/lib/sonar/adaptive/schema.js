@@ -84,6 +84,7 @@ const RULES = {
   policy_tracker: (s) => table(s),
   macro_timeseries: (s) => table(s),
   heatmap: (s) => table(s),
+  portfolio_attribution: (s) => table(s),
   catalyst_calendar: (s) => table(s),
   series_chart: (s) => chart(s),
   risk: (s) => (s.items?.length ? null : 'no items'),
