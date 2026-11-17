@@ -540,6 +540,11 @@ export async function runLobbying(plan, deps, now, telemetry) {
       items: [
         'Reports are quarterly and rounded to the nearest $10,000. Spending under $5,000 in a quarter is not itemised.',
         'Trade-association lobbying and state-level lobbying are not in these filings.',
+        ...(roll.linkBasis
+          ? [
+              `The filings are attributed to ${symbol} because the client's registered name is the SEC registrant's legal name${roll.linkBasis.entity ? ` (${roll.linkBasis.entity})` : ''}. That is an exact name match, not a confirmation from the company.`,
+            ]
+          : []),
       ],
     },
   };

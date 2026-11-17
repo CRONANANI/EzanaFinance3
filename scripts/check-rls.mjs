@@ -458,6 +458,21 @@ test('lobbying client identity: browsers cannot write a mapping or call the matc
       `update public.lobbying_client_tickers set verified = true where client_name = 'POSSIBLE INC'`,
     ),
   );
+  /* The name-identity rule and its reversal are service role only. */
+  for (const fn of ['lobbying_publish_name_identity', 'lobbying_unpublish_name_identity']) {
+    denied(() => asA(`select public.${fn}()`));
+    denied(() => pg.sql(`set role anon; select public.${fn}()`));
+    assert.equal(
+      pg.sql(`select has_function_privilege('service_role', 'public.${fn}()', 'execute')::text`),
+      'true',
+    );
+  }
+  /* A rule-published row must carry evidence like any other published row. */
+  assert.throws(() =>
+    pg.sql(
+      `update public.lobbying_client_tickers set verified = true, status = 'name_identity' where client_name = 'POSSIBLE INC'`,
+    ),
+  );
 });
 
 test('the harness refuses to run without a dependency a migration needs', async () => {

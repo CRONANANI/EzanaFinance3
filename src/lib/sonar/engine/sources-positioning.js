@@ -489,7 +489,7 @@ export async function lobbyingProfile({ ticker, name, peers = [] }, { admin, now
   const tickers = [t, ...peers.map((p) => String(p.ticker || p).toUpperCase())].slice(0, 7);
   const { data: links } = await admin
     .from('lobbying_client_tickers')
-    .select('client_name, ticker')
+    .select('client_name, ticker, status, sec_entity_name, cik')
     .in('ticker', tickers)
     .eq('verified', true)
     .limit(200);
@@ -499,6 +499,23 @@ export async function lobbyingProfile({ ticker, name, peers = [] }, { admin, now
     namesBy.set(k, [...(namesBy.get(k) || []), l.client_name]);
   }
   if (!namesBy.get(t)?.length) return { items: [] };
+  /* How the company's own client names were linked: reviewed by a person ('verified'), or
+     published by the exact legal-name rule ('name_identity'), which is a name match and not
+     a confirmation from the company. Said in the answer when it applies. */
+  const own = (links || []).filter((l) => String(l.ticker).toUpperCase() === t);
+  const ruleLinked = own.filter((l) => l.status === 'name_identity');
+  const linkBasis = ruleLinked.length
+    ? {
+        rule: 'legal_name_identity',
+        entity: ruleLinked[0].sec_entity_name || null,
+        cik: ruleLinked[0].cik || null,
+        clients: ruleLinked.map((l) => l.client_name),
+        reviewed: own.length - ruleLinked.length,
+      }
+    : null;
+  const basisNote = linkBasis
+    ? ` These filings are attributed to ${t} because the client's registered name is the SEC registrant's legal name${linkBasis.entity ? ` (${linkBasis.entity}${linkBasis.cik ? `, CIK ${linkBasis.cik}` : ''})` : ''}. That is an exact name match, not a confirmation from the company.`
+    : '';
   const y = new Date(now).getUTCFullYear();
   const from = y - 5;
   const { data: rows, error } = await admin
@@ -542,10 +559,10 @@ export async function lobbyingProfile({ ticker, name, peers = [] }, { admin, now
               .map((f) => `${f.firm} ${usdM(f.amount)}`)
               .join('; ')}.`
           : ''
-      }`,
+      }${basisNote}`,
       date: `${me.lastYear}-12-31`,
       period: { from: `${me.firstYear}-01-01`, to: `${me.lastYear}-12-31`, label: span },
-      data: { metric: 'lobbying_profile', ticker: t, ...me },
+      data: { metric: 'lobbying_profile', ticker: t, ...me, linkBasis },
       entities: [t, label, ...me.firms.slice(0, 3).map((f) => f.firm)],
     },
   ];

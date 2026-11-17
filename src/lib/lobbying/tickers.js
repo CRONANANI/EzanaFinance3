@@ -2,9 +2,11 @@
  * Curated lobbying client → public-ticker join helpers (SERVER ONLY).
  *
  * The lobbying_client_tickers table maps an UPPERCASE client legal name to a
- * verified public stock ticker. lobbying_filings.client_name is stored
- * uppercase, so matching is exact on the uppercased name. A filing/spender is
- * "public" iff its client name has a row here — never fuzzy-guessed.
+ * public stock ticker. lobbying_filings.client_name is stored uppercase, so
+ * matching is exact on the uppercased name. A filing/spender is "public" iff
+ * its client name has a PUBLISHED row here (verified = true): reviewed by a
+ * person, or matched by the exact legal-name rule. Rows awaiting review
+ * (status 'possible') are not used, so a name variant is never shown as public.
  */
 
 /**
@@ -30,7 +32,8 @@ export async function fetchTickerMap(admin, clientNames) {
     const { data, error } = await admin
       .from('lobbying_client_tickers')
       .select('client_name,ticker,exchange,company_label')
-      .in('client_name', chunk);
+      .in('client_name', chunk)
+      .eq('verified', true);
     if (!error && Array.isArray(data)) {
       for (const r of data) map.set(String(r.client_name).toUpperCase(), r);
     }
@@ -40,7 +43,10 @@ export async function fetchTickerMap(admin, clientNames) {
 
 /** All public client names (UPPERCASE) — for onlyPublic DB filtering. */
 export async function fetchPublicClientNames(admin) {
-  const { data, error } = await admin.from('lobbying_client_tickers').select('client_name');
+  const { data, error } = await admin
+    .from('lobbying_client_tickers')
+    .select('client_name')
+    .eq('verified', true);
   if (error || !Array.isArray(data)) return [];
   return data.map((r) => String(r.client_name).toUpperCase());
 }

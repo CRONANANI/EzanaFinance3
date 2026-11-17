@@ -38,7 +38,8 @@ export const GET = withApiGuard(
       const { data, error } = await admin
         .from('lobbying_client_tickers')
         .select('client_name')
-        .eq('ticker', ticker);
+        .eq('ticker', ticker)
+        .eq('verified', true); /* published mappings only; 'possible' rows await review */
       if (error) {
         console.error('[lobbying/feed] tickers:', error.message);
         return NextResponse.json([], { status: 503, headers: { 'Cache-Control': 'no-store' } });
