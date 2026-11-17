@@ -21,6 +21,7 @@ import { withTimeout } from '@/lib/with-timeout';
 import { embedViaSupabase } from '@/lib/embeddings-gte';
 import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
+import { SCENARIO_BY_ID } from '@/lib/sonar/adaptive/profiles';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
 import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
 import { ADAPTIVE_BUDGET_MS, adaptiveRunDeps } from '@/lib/sonar/adaptive/runtime';
@@ -167,8 +168,94 @@ const FORCE_KINDS = new Set(['ticker', 'country', 'industry', 'sector', 'state_p
 
 const POST_HANDLER = withApiGuard(
   async (request) => {
-    const startedAt = Date.now();
     const body = await request.json().catch(() => ({}));
+    /* Streaming (Nov 2026): a signed-in reader's adaptive ping can be streamed as server-sent
+       events. Guests are not streamed: their ping count rides on a cookie that must be set on
+       the response, and a stream's headers are sent before the answer exists. The streamed
+       handler is the same handler; its final event carries the exact JSON body. */
+    if (body?.stream === true && streamEnabled()) {
+      /* Signed in? Resolved once here and handed to the handler, so it is not looked up twice
+         and a guest can never take the streamed path. */
+      const auth = await withTimeout(getAuthUser(request), AUTH_MS, 'auth');
+      const user = auth.ok ? auth.value || null : null;
+      if (user) return streamPing(request, body, user);
+    }
+    return handlePing(request, body, null);
+  },
+  /* The limiter's database call is bounded by the ping profile
+     (PROFILE.rateLimitMs); a miss falls back to the per-instance count
+     (persistent-rate-limit.js). */
+  { requireAuth: false, strict: true, rateLimitTimeoutMs: PROFILE.rateLimitMs },
+);
+
+const streamEnabled = () => process.env.SONAR_ADAPTIVE_STREAM !== 'off';
+
+/**
+ * Run the ping and stream its progress. Events (each `data: {json}`):
+ *   ack       at once
+ *   plan      the research plan: scenario and the evidence it will examine
+ *   step      an evidence step starting, done or failed (progress only, no content)
+ *   fallback  the adaptive run produced no usable report; the standard pipeline answers
+ *   sources   the validated report's sources
+ *   section   one validated section, in order (lead first)
+ *   done      { status, body }: the exact body the JSON response would have carried
+ * Nothing about evidence or conclusions is sent before the report has passed validation.
+ */
+function streamPing(request, body, user) {
+  const enc = new TextEncoder();
+  let ctrl = null;
+  let open = true;
+  const readable = new ReadableStream({
+    start(c) {
+      ctrl = c;
+    },
+    cancel() {
+      open = false;
+    },
+  });
+  const emit = (ev) => {
+    if (!open || !ctrl) return;
+    try {
+      ctrl.enqueue(enc.encode(`data: ${JSON.stringify(ev)}\n\n`));
+    } catch {
+      open = false;
+    }
+  };
+  emit({ t: 'ack', at: new Date().toISOString() });
+  (async () => {
+    let res;
+    try {
+      res = await handlePing(request, body, emit, user);
+    } catch (e) {
+      console.warn('[sonar/landing] stream failed', e?.message || e);
+      res = NextResponse.json({ error: 'Sonar could not answer right now.' }, { status: 500 });
+    }
+    let payload = null;
+    try {
+      payload = await res.json();
+    } catch {
+      payload = null;
+    }
+    emit({ t: 'done', status: res.status, body: payload });
+    open = false;
+    try {
+      ctrl.close();
+    } catch {
+      /* already closed by the reader */
+    }
+  })();
+  return new Response(readable, {
+    headers: {
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-store, no-transform',
+      'x-accel-buffering': 'no',
+    },
+  });
+}
+
+async function handlePing(request, body, emit, preAuthUser = null) {
+  {
+    const startedAt = Date.now();
     const query = String(body?.query || '')
       // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
@@ -287,7 +374,7 @@ const POST_HANDLER = withApiGuard(
        it is still unknown the ping runs uncounted by the guest cookie (the
        per-IP cap in reservePing still applies, so a fake cookie buys
        nothing). */
-    const lookup = getAuthUser(request);
+    const lookup = preAuthUser ? Promise.resolve(preAuthUser) : getAuthUser(request);
     let memberRes = await withTimeout(lookup, AUTH_MS, 'auth');
     const carriesSession = hasSessionCredentials(request);
     if (memberRes.timedOut && carriesSession) {
@@ -486,15 +573,34 @@ const POST_HANDLER = withApiGuard(
        that returns no usable report falls through to the pipeline on the same reservation,
        so a failed adaptive run is never a second charge. */
     if (runsAdaptive || overlayOrg) {
+      const onStep = emit ? (ev) => emit({ t: 'step', ...ev }) : null;
+      if (emit) {
+        const profile = SCENARIO_BY_ID[adaptivePlan.primaryScenario];
+        emit({
+          t: 'plan',
+          scenario: profile
+            ? { id: profile.id, label: profile.label }
+            : { id: adaptivePlan.primaryScenario },
+          question: adaptivePlan.resolvedQuestion,
+          evidence: adaptivePlan.requiredEvidence || [],
+          organization: Boolean(overlayOrg),
+        });
+      }
       const adaptiveP = (
         overlayOrg
           ? /* The overlay gets the member's organization readers and, of the public readers,
                only the earnings calendar. No model call, no web search. */
-            runOverlay(adaptivePlan, overlayOrg, { earnings: adaptiveDataDeps(admin).earnings })
+            runOverlay(
+              adaptivePlan,
+              overlayOrg,
+              { earnings: adaptiveDataDeps(admin).earnings },
+              { onStep },
+            )
           : runAdaptive(adaptivePlan, adaptiveRunDeps(admin), {
               deadlineAt:
                 startedAt +
                 (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
+              onStep,
             })
       ).catch((e) => {
         console.warn('[sonar/landing] adaptive run failed', e?.message || e);
@@ -507,6 +613,14 @@ const POST_HANDLER = withApiGuard(
         return cancelledResponse();
       }
       if (report) {
+        /* The report has passed validation (runAdaptive / runOverlay return only validated
+           reports): sources first, so every citation resolves, then each section in order. */
+        if (emit) {
+          emit({ t: 'sources', sources: report.sources || [] });
+          report.sections.forEach((section, index) =>
+            emit({ t: 'section', index, total: report.sections.length, section }),
+          );
+        }
         const durationMs = Date.now() - startedAt;
         console.log('[sonar/landing] adaptive', {
           scenario: adaptivePlan.primaryScenario,
@@ -565,6 +679,8 @@ const POST_HANDLER = withApiGuard(
         if (!member && !unknownSession) setGuestCount(res, nextUsedAdaptive);
         return res;
       }
+      /* No usable adaptive report: the pipeline answers on the same reservation. */
+      if (emit) emit({ t: 'fallback', reason: 'adaptive research did not complete' });
     }
 
     let result;
@@ -684,12 +800,8 @@ const POST_HANDLER = withApiGuard(
     });
     if (!member && !unknownSession) setGuestCount(res, nextUsed);
     return res;
-  },
-  /* The limiter's database call is bounded by the ping profile
-     (PROFILE.rateLimitMs); a miss falls back to the per-instance count
-     (persistent-rate-limit.js). */
-  { requireAuth: false, strict: true, rateLimitTimeoutMs: PROFILE.rateLimitMs },
-);
+  }
+}
 
 /* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
 export const POST = withNoEmDash(POST_HANDLER);

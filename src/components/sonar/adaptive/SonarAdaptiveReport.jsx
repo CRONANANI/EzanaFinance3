@@ -575,6 +575,7 @@ const clock = (t) =>
  * report      the validated report
  * onPing      a new question from the answer's own field
  * onFollowUp  a follow-up asked under this answer (carries its thread)
+ * streaming   true while the report is drawn from a stream (Save and follow-ups wait)
  * onDeep      run deep research on the question
  * onRestore   show an earlier answer from this session again (no request)
  * sessionId   this answer's entry in the session thread
@@ -588,6 +589,9 @@ export default function SonarAdaptiveReport({
   onRestore = null,
   sessionId = null,
   actions = null,
+  /* Nov 17: drawn from a stream's validated sections while the rest arrive. Save and
+     follow-ups wait for the final report. */
+  streaming = false,
 }) {
   const session = useSessionThread();
   const { sections, sources } = report;
@@ -787,7 +791,7 @@ export default function SonarAdaptiveReport({
         </button>
       </form>
 
-      {follow ? (
+      {follow && !streaming ? (
         <div className="sxb-related sxb-related--top">
           <span>Follow-ups</span>
           {follow.related.map((q) => (
@@ -837,6 +841,11 @@ export default function SonarAdaptiveReport({
               {report.org ? (
                 <span>From your organization’s records, visible to you as a member</span>
               ) : null}
+              {streaming ? (
+                <span className="sar-streaming" role="status">
+                  Adding verified sections
+                </span>
+              ) : null}
               {lead.computed ? <span>Figures computed from the records cited</span> : null}
               {report.degraded?.includes('live_research') ? (
                 <span>Verification did not complete</span>
@@ -852,7 +861,7 @@ export default function SonarAdaptiveReport({
             </p>
             <div className="sar-actions">
               {/* Organization research is not offered for saving to personal research. */}
-              {report.org
+              {report.org || streaming
                 ? null
                 : actions || (
                     <SonarSaveActions
@@ -896,7 +905,7 @@ export default function SonarAdaptiveReport({
         </section>
       ) : null}
 
-      {follow ? (
+      {follow && !streaming ? (
         <section className="sxb-block" aria-labelledby="sar-continue-h">
           <h2 className="sxb-mid-title" id="sar-continue-h">
             Continue your research

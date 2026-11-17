@@ -5,7 +5,8 @@
  *   1. The organization is never taken from the request. It is the caller's own active
  *      membership, resolved on the server from their verified session.
  *   2. Per-document data (pitches, council research reports) is read with a client bound to
- *      the caller's own token, so row-level security decides what this member may see, and
+ *      the caller's own session (getAuthContext: bearer token or cookie), so row-level
+ *      security decides what this member may see, and
  *      every query is also filtered to the member's organization.
  *   3. Fund-level context (mandate, IPS rules, the position book) is read the way the
  *      research route already reads it: with the service client, scoped to the verified
@@ -15,26 +16,13 @@
  * resolveOrgContext() returns null for a guest, for a member of no organization and for an
  * inactive member; the overlays then do not run.
  */
-import { createClient } from '@supabase/supabase-js';
+import { getAuthContext } from '@/lib/supabase';
 import { getOrgMemberForUser } from '@/lib/org-trading-server';
 import { loadFundContext } from '@/lib/org-sonar/fund-context';
 import { VISIBILITY_LABEL, STATUS_LABEL } from '@/lib/org-sonar/reports';
 import { fmp } from '@/lib/sonar/engine/sources-memo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function callerClient(request) {
-  const header = request.headers.get('authorization') || '';
-  if (!header.startsWith('Bearer ')) return null;
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: { headers: { Authorization: header } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    },
-  );
-}
 
 /**
  * @param {Request} request  the incoming request (for the caller's own token)
@@ -51,8 +39,11 @@ export async function resolveOrgContext(request, user, admin) {
   /* Defence in depth: the row must be this user's. */
   if (member.user_id !== user.id) return null;
   const orgId = member.org_id;
-  const mine = callerClient(request);
-  if (!mine) return null;
+  /* A client bound to the caller's own session (bearer token or cookie), so row-level
+     security decides what this member may read. It must be the same user. */
+  const ctx = await getAuthContext(request);
+  const mine = ctx?.supabase || null;
+  if (!mine || ctx.user?.id !== user.id) return null;
 
   const deps = {
     fund: () => loadFundContext(admin, orgId),

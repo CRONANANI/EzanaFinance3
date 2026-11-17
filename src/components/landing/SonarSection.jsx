@@ -101,6 +101,7 @@ import { IndustryStack } from './SonarIndustryStack';
 import { IndustryLayout } from '@/components/sonar/industry/IndustryLayout';
 import { CountryRankPanel } from '@/components/sonar/macro/CountryRankPanel';
 import { useAuth } from '@/components/auth-context';
+import { readSonarStream } from '@/lib/sonar/stream-client';
 import { SonarCommodityChart } from './SonarCommodityChart';
 import { commoditySegments, windowStart } from '@/lib/sonar/commodity-stats';
 
@@ -838,6 +839,8 @@ export function SonarSection({
   /* Nov 16: the host can draw an adaptive research report (src/lib/sonar/adaptive): a
      question-specific ordered list of sections. Called with (query, report). */
   onAdaptive = null,
+  /* Nov 17: progress of a streamed adaptive ping: (query, event) for each event. */
+  onAdaptiveProgress = null,
   /* Nov 13 (research workspace): shows a research answer from the session thread again (the
      host owns research runs); a quick ping's entry is shown here. */
   onRestoreResearch = null,
@@ -2688,13 +2691,28 @@ export function SonarSection({
           ...(typeof onAdaptive === 'function' && controlsNeedResearch()
             ? { controls: readControls() }
             : {}),
+          /* Nov 17: an adaptive host takes the answer as a stream (signed-in readers; the
+             server answers a guest with plain JSON, handled the same way below). */
+          ...(typeof onAdaptive === 'function' && typeof ReadableStream !== 'undefined'
+            ? { stream: true }
+            : {}),
         }),
         signal: controller.signal,
       });
-      const data = await res.json().catch(() => null);
+      /* A streamed answer ends with the same body the JSON answer carries; its status is the
+         one inside the stream, not the stream's own 200. */
+      let streamed = null;
+      if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
+        streamed = await readSonarStream(res.body, (ev) => {
+          if (typeof onAdaptiveProgress === 'function') onAdaptiveProgress(q, ev);
+        });
+      }
+      const resOk = streamed ? streamed.status >= 200 && streamed.status < 300 : res.ok;
+      const resStatus = streamed ? streamed.status : res.status;
+      const data = streamed ? streamed.body : await res.json().catch(() => null);
       /* Answered, gated or "no coverage" all end the loading screen; only a
          failed request turns it into its error state. */
-      settle = { settled: true, ok: Boolean(res.ok || data?.gate) };
+      settle = { settled: true, ok: Boolean(resOk || data?.gate) };
       if (data?.exemplary && typeof onExemplary === 'function') {
         /* A hand-reviewed brief for this exact question. Nothing was spent; the host draws
            it, and the band keeps what it showed before. */
@@ -2745,7 +2763,7 @@ export function SonarSection({
           sub: 'Create a free account to keep pinging across every Ezana dataset.',
         });
         setLive((l) => (l ? { ...l, remaining: 0 } : l));
-      } else if (res.ok && data?.answer) {
+      } else if (resOk && data?.answer) {
         const nextLive = {
           answer: data.answer,
           sources: data.sources || [],
@@ -2792,7 +2810,7 @@ export function SonarSection({
         }
         startTypewriter(data.answer);
         setPingPulse((n) => n + 1);
-      } else if (res.ok) {
+      } else if (resOk) {
         /* The ping worked; the datasets just had nothing on this subject. That
            is a finding, not a failure, and telling the visitor to try again
            would be telling them to retry something a retry cannot fix. The
@@ -2802,11 +2820,11 @@ export function SonarSection({
             ? `No dataset coverage for that ping yet. ${data.remaining} free pings left.`
             : 'No dataset coverage for that ping yet.',
         );
-      } else if (res.status === 429) {
+      } else if (resStatus === 429) {
         /* The strict per-IP limiter, not a broken ping. Naming it stops a
            visitor retrying into the same wall. */
         setPingError('Too many pings too fast. Wait a minute and try again.');
-      } else if (res.status === 503) {
+      } else if (resStatus === 503) {
         /* Our side is overloaded (the database or a limiter could not answer
            in time). Nothing was spent; say so in Sonar's voice rather than
            echoing the guard's generic line. */

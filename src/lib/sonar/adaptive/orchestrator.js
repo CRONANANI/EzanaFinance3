@@ -561,11 +561,17 @@ const EXECUTORS = {
  * @returns {Promise<null | object>} the report, or null when the plan cannot be run or the
  *          result has no usable lead (the caller then answers the old way)
  */
-export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = null } = {}) {
+export async function runAdaptive(
+  plan,
+  deps,
+  { now = new Date(), deadlineAt = null, onStep = null } = {},
+) {
   const run = plan?.executable ? EXECUTORS[plan.primaryScenario] : null;
   if (!run) return null;
   const t0 = Date.now();
   const telemetry = { steps: [], degraded: [], model: [] };
+  /* Streaming progress (not serialised: removed before the report is returned). */
+  if (typeof onStep === 'function') Object.defineProperty(telemetry, 'onStep', { value: onStep });
   /* Research Controls: only the readers the chosen data sources allow, and the focus and
      horizon given to every research step as a directive. */
   const narrowed = narrowDeps(deps, plan.controls);

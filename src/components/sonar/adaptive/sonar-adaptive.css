@@ -532,3 +532,28 @@
   color: var(--sxb-muted);
   white-space: nowrap;
 }
+
+/* Nov 17: a report drawn from a stream while its last sections arrive. */
+.sar-streaming {
+  color: var(--emerald-text);
+}
+.sar-streaming::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: var(--emerald);
+  animation: sar-stream-pulse 1.2s ease-in-out infinite;
+}
+@keyframes sar-stream-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sar-streaming::before {
+    animation: none;
+  }
+}

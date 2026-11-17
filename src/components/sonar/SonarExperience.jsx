@@ -23,6 +23,7 @@ import { supabase } from '@/lib/supabase-browser';
 import '@/app/(dashboard)/sonar/sonar.css';
 import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { SonarPingLoader } from '@/components/sonar/SonarPingLoader';
+import { progressFromEvents, partialReport } from '@/lib/sonar/adaptive/stream-progress';
 import { pingEntityLabel } from '@/lib/sonar/ping-entity';
 import '@/app/datasets/datasets-loading.css';
 
@@ -214,6 +215,10 @@ export function SonarExperience({
   const [exemplary, setExemplary] = useState(null);
   /* Nov 16: an adaptive research report ({ query, report }), drawn like a run. */
   const [adaptive, setAdaptive] = useState(null);
+  /* Nov 17: a streamed adaptive ping's events, for the loading screen and the partial report. */
+  const [streamEvents, setStreamEvents] = useState({ query: null, events: [] });
+  const streamNonceRef = useRef(null);
+  const streamRef = useRef({ query: null, events: [] });
   /* Nov 2026, estimates: POST /api/sonar/estimate for the latest ping
      ({ query, data }), fired by the band on submit just before the ping. It
      times the answer in progress and fills the deep research card. */
@@ -360,6 +365,38 @@ export function SonarExperience({
       setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
     );
   }
+  /* Nov 17: a streamed adaptive ping. Progress goes to the loading screen; once validated
+     sections arrive the report is drawn from them, and the final report replaces it. */
+  function adaptiveProgress(query, ev) {
+    if (!ev) return;
+    const cur = streamRef.current;
+    const events = ev.t === 'ack' || cur.query !== query ? [ev] : [...cur.events, ev];
+    streamRef.current = { query, events };
+    if (ev.t === 'ack') streamNonceRef.current = null;
+    setStreamEvents(streamRef.current);
+    if (ev.t === 'section') {
+      const partial = partialReport(events, query);
+      if (partial) showAdaptivePartial(query, partial);
+    }
+  }
+  function showAdaptivePartial(query, report) {
+    if (streamNonceRef.current == null) {
+      streamNonceRef.current = Date.now();
+      setDeepOffer(null);
+      setDeepRun(null);
+      setStandardRun(null);
+      setRestored(null);
+      setExemplary(null);
+      loaderTimers.current.forEach(clearTimeout);
+      loaderTimers.current = [];
+      setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
+      loaderTimers.current.push(
+        setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
+      );
+    }
+    setAdaptive({ query, report, nonce: streamNonceRef.current, sessionId: null, streaming: true });
+    setShownQuery(report.resolvedQuestion || query);
+  }
   /* Nov 16: an adaptive report has landed: hand off the loading screen and show it. */
   function showAdaptive(query, report) {
     if (!report) return;
@@ -368,7 +405,9 @@ export function SonarExperience({
     setStandardRun(null);
     setRestored(null);
     setExemplary(null);
-    const nonce = Date.now();
+    /* A streamed report keeps the nonce its partial was drawn under, so it is not remounted. */
+    const nonce = streamNonceRef.current ?? Date.now();
+    streamNonceRef.current = null;
     const sessionId = `adaptive:${nonce}:${report.scenario?.id || ''}`;
     setAdaptive({ query, report, nonce, sessionId });
     setShownQuery(report.resolvedQuestion || query);
@@ -883,6 +922,7 @@ export function SonarExperience({
               <SonarAdaptiveReport
                 key={adaptive.nonce}
                 report={adaptive.report}
+                streaming={Boolean(adaptive.streaming)}
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
                 onRestore={restoreEntry}
@@ -963,6 +1003,7 @@ export function SonarExperience({
             onRestoreResearch={restoreEntry}
             onExemplary={showExemplary}
             onAdaptive={showAdaptive}
+            onAdaptiveProgress={adaptiveProgress}
             hidden={Boolean(deepRun || standardRun || restored || exemplary || adaptive)}
             onEstimate={(query, data) => setEstimate({ query, data })}
             afterAnswer={
@@ -1018,6 +1059,11 @@ export function SonarExperience({
               <SonarLoadingState
                 key={loader.query}
                 query={loader.query}
+                events={
+                  streamEvents.query === loader.query && streamEvents.events.length
+                    ? progressFromEvents(streamEvents.events)
+                    : null
+                }
                 estimate={estimateFor(loader.query)?.answer || null}
                 isComplete={loader.phase === 'ready'}
                 dismissed={loader.leaving && loader.phase === 'sweeping'}

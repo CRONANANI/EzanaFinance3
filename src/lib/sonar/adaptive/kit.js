@@ -31,9 +31,20 @@ export const ADJUSTMENT = {
 };
 
 /* Bounded step: a result, or null with the failure recorded. Never throws. */
+/* Streaming (Nov 2026): a run may carry telemetry.onStep, told when a step starts and ends.
+   It reports progress only, never evidence or conclusions. */
+const notify = (telemetry, ev) => {
+  try {
+    telemetry?.onStep?.(ev);
+  } catch {
+    /* progress is best effort */
+  }
+};
+
 export async function step(telemetry, name, ms, fn) {
   const t0 = Date.now();
   let timer;
+  notify(telemetry, { step: name, state: 'start' });
   try {
     const value = await Promise.race([
       fn(),
@@ -42,6 +53,7 @@ export async function step(telemetry, name, ms, fn) {
       }),
     ]);
     telemetry.steps.push({ step: name, ms: Date.now() - t0, ok: true });
+    notify(telemetry, { step: name, state: 'done', ms: Date.now() - t0 });
     return value;
   } catch (e) {
     telemetry.steps.push({
@@ -51,6 +63,7 @@ export async function step(telemetry, name, ms, fn) {
       error: e?.message || 'error',
     });
     telemetry.degraded.push(name);
+    notify(telemetry, { step: name, state: 'failed', ms: Date.now() - t0 });
     return null;
   } finally {
     clearTimeout(timer);

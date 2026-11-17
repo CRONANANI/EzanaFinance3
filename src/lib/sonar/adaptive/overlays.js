@@ -603,11 +603,12 @@ export const isOverlayPlan = (plan) =>
  * @param {object} deps  the public readers the overlay may also use (earnings)
  * @returns {Promise<null | object>} a validated report flagged `org`, or null
  */
-export async function runOverlay(plan, org, deps = {}, { now = new Date() } = {}) {
+export async function runOverlay(plan, org, deps = {}, { now = new Date(), onStep = null } = {}) {
   const run = isOverlayPlan(plan) ? OVERLAYS[plan.primaryScenario] : null;
   if (!run || !org?.orgId || !org.deps) return null;
   const t0 = Date.now();
   const telemetry = { steps: [], degraded: [], model: [] };
+  if (typeof onStep === 'function') Object.defineProperty(telemetry, 'onStep', { value: onStep });
   const out = await run(plan, org.deps, deps, now, telemetry);
   if (!out?.built?.lead) return null;
   const { sections, omitted } = selectComponents(plan, {

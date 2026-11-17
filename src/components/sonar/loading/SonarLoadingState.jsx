@@ -88,7 +88,8 @@ export default function SonarLoadingState({
     ? 'Your research brief is ready'
     : slow
       ? 'Taking longer than usual. Still working.'
-      : TICKER_PHRASES[phraseIndex];
+      : /* A streamed ping says which evidence is being read (real progress). */
+        events?.phrase || TICKER_PHRASES[phraseIndex];
 
   return (
     <div
@@ -101,7 +102,7 @@ export default function SonarLoadingState({
             <SonarCube active={focus} stage={stage} complete={completed} />
             <div className="sl-ticker" aria-live="polite">
               <span
-                key={completed ? 'ready' : slow ? 'slow' : phraseIndex}
+                key={completed ? 'ready' : slow ? 'slow' : events?.phrase || phraseIndex}
                 className="sl-ticker__phrase"
               >
                 {ticker}

@@ -43,6 +43,8 @@ const { ANALYSTS } = await import('@/lib/sonar/analysts/registry.js');
 const V = await import('./lib/sonar-validation.mjs');
 const CP = await import('@/lib/sonar/adaptive/controls-plan.js');
 const OV = await import('@/lib/sonar/adaptive/overlays.js');
+const SP = await import('@/lib/sonar/adaptive/stream-progress.js');
+const SC = await import('@/lib/sonar/stream-client.js');
 const { cleanSaveBody } = await import('@/lib/sonar/saved.js');
 
 const NOW = new Date('2026-11-16T12:00:00Z');
@@ -2294,6 +2296,137 @@ test('C06: sanctions listings are matched by name, and a match is not an identif
   assert.match(none.sections[0].text, /can still be restricted in other ways/);
 });
 
+/* ── streaming ── */
+
+const sseOf = (events, cut = 7) => {
+  const text = events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join('');
+  const enc = new TextEncoder();
+  const chunks = [];
+  for (let k = 0; k < text.length; k += cut) chunks.push(enc.encode(text.slice(k, k + cut)));
+  return new ReadableStream({
+    start(c) {
+      chunks.forEach((x) => c.enqueue(x));
+      c.close();
+    },
+  });
+};
+
+test('the stream reader delivers each event in order and resolves with the final body', async () => {
+  const seen = [];
+  const lead = { type: 'lead', headline: 'H', text: 'T' };
+  const out = await SC.readSonarStream(
+    sseOf([
+      { t: 'ack', at: '2026-11-17T00:00:00Z' },
+      { t: 'plan', scenario: { id: 'B01', label: 'Technical analysis' } },
+      { t: 'step', step: 'daily_bars', state: 'start' },
+      { t: 'section', index: 0, total: 1, section: lead },
+      { t: 'done', status: 200, body: { adaptive: { sections: [lead] } } },
+    ]),
+    (e) => seen.push(e.t),
+  );
+  assert.deepEqual(seen, ['ack', 'plan', 'step', 'section']);
+  assert.deepEqual(out, { status: 200, body: { adaptive: { sections: [lead] } } });
+  /* A stream that ends without its final event is a failure, never a silent success. */
+  const cut = await SC.readSonarStream(sseOf([{ t: 'ack' }]));
+  assert.equal(cut.status, 502);
+  /* The in-stream status is what counts (a gated or failed ping inside a 200 stream). */
+  const gated = await SC.readSonarStream(sseOf([{ t: 'done', status: 429, body: { gate: true } }]));
+  assert.deepEqual(gated, { status: 429, body: { gate: true } });
+});
+
+test('streamed progress is real: rows move only on evidence steps and never read Complete', () => {
+  const p = SP.progressFromEvents([
+    { t: 'ack' },
+    { t: 'plan', scenario: { id: 'B08', label: 'Lobbying' } },
+    { t: 'step', step: 'lobbying_filings', state: 'start' },
+    { t: 'step', step: 'earnings_NVDA', state: 'start' },
+    { t: 'step', step: 'earnings_NVDA', state: 'done' },
+    { t: 'step', step: 'news_cache', state: 'failed' },
+  ]);
+  assert.deepEqual(p.dimensions, { capitol: 'linking', lighthouse: 'cross-checking' });
+  assert.equal(p.stage, 2);
+  assert.equal(p.label, 'Lobbying');
+  assert.equal(p.phrase, 'Reading the earnings calendar');
+  assert.deepEqual(p.failed, ['news_cache']);
+  const after = SP.progressFromEvents([
+    { t: 'step', step: 'holdings_13f', state: 'done' },
+    { t: 'sources', sources: [] },
+  ]);
+  assert.deepEqual(after.dimensions, { titans: 'synthesizing' });
+  for (const v of Object.values(after.dimensions)) assert.notEqual(v, 'complete');
+  assert.equal(SP.stepKey('earnings_BRK.B'), 'earnings');
+  assert.equal(SP.stepKey('something_else'), 'something_else');
+});
+
+test('a partial report starts at the validated lead and keeps sections in their order', () => {
+  const lead = { type: 'lead', headline: 'H', text: 'T' };
+  const chart = { type: 'series_chart', title: 'C' };
+  assert.equal(SP.partialReport([{ t: 'section', index: 1, section: chart }], 'q'), null);
+  const r = SP.partialReport(
+    [
+      { t: 'ack', at: '2026-11-17T01:00:00Z' },
+      { t: 'plan', scenario: { id: 'B01', label: 'Technical analysis' }, question: 'Q?' },
+      { t: 'sources', sources: [{ id: 's1', title: 'x' }] },
+      { t: 'section', index: 1, section: chart },
+      { t: 'section', index: 0, section: lead },
+    ],
+    'q',
+  );
+  assert.deepEqual(
+    r.sections.map((x) => x.type),
+    ['lead', 'series_chart'],
+  );
+  assert.equal(r.sources.length, 1);
+  assert.equal(r.resolvedQuestion, 'Q?');
+  assert.equal(r.partial, true);
+  /* No plan seen: still renders with a neutral label rather than crashing. */
+  assert.equal(
+    SP.partialReport([{ t: 'section', index: 0, section: lead }], 'q').scenario.label,
+    'Research',
+  );
+});
+
+test('the route streams only for a signed-in reader, and only validated content', () => {
+  const route = fs.readFileSync('src/app/api/sonar/landing-query/route.js', 'utf8');
+  /* A guest (cookie-counted) is never streamed; the user is resolved before choosing. */
+  assert.match(
+    route,
+    /if \(body\?\.stream === true && streamEnabled\(\)\) \{[\s\S]{0,400}if \(user\) return streamPing\(request, body, user\);/,
+  );
+  assert.match(
+    route,
+    /const streamEnabled = \(\) => process\.env\.SONAR_ADAPTIVE_STREAM !== 'off';/,
+  );
+  /* The streamed handler is the same handler, and its last event is the JSON body. */
+  assert.match(route, /res = await handlePing\(request, body, emit, user\);/);
+  assert.match(route, /emit\(\{ t: 'done', status: res\.status, body: payload \}\);/);
+  /* Sections and sources are emitted only inside `if (report)`, i.e. after validation. */
+  const at = route.indexOf("emit({ t: 'sources'");
+  const guard = route.lastIndexOf('if (report) {', at);
+  assert.ok(
+    guard > 0 && at - guard < 600,
+    'sources are emitted inside the validated-report branch',
+  );
+  assert.ok(route.indexOf("t: 'section'") > at);
+  assert.match(route, /emit\(\{ t: 'fallback'/);
+  /* The pre-resolved user replaces the lookup; nothing else about auth changes. */
+  assert.match(
+    route,
+    /const lookup = preAuthUser \? Promise\.resolve\(preAuthUser\) : getAuthUser\(request\);/,
+  );
+  /* The client asks for a stream only for an adaptive host, and reads the in-stream status. */
+  const band = fs.readFileSync('src/components/landing/SonarSection.jsx', 'utf8');
+  assert.match(band, /typeof onAdaptive === 'function' && typeof ReadableStream !== 'undefined'/);
+  assert.match(
+    band,
+    /const resOk = streamed \? streamed\.status >= 200 && streamed\.status < 300 : res\.ok;/,
+  );
+  /* Save and follow-ups wait for the final report. */
+  const rep = fs.readFileSync('src/components/sonar/adaptive/SonarAdaptiveReport.jsx', 'utf8');
+  assert.match(rep, /report\.org \|\| streaming/);
+  assert.equal((rep.match(/\{follow && !streaming \?/g) || []).length, 2);
+});
+
 /* ── phase 4: council overlays ── */
 
 const fixtureFund = () => ({
@@ -2397,8 +2530,9 @@ test('the route and the organization readers enforce tenancy in code', () => {
   assert.doesNotMatch(deps, /\bbody\b|searchParams|request\.json/);
   assert.match(deps, /getOrgMemberForUser\(admin, user\.id/);
   assert.match(deps, /member\.user_id !== user\.id/);
-  /* Per-document reads use the caller's own token and are filtered to their organization. */
-  assert.match(deps, /headers: \{ Authorization: header \}/);
+  /* Per-document reads use the caller's own session and are filtered to their organization. */
+  assert.match(deps, /getAuthContext\(request\)/);
+  assert.match(deps, /ctx\.user\?\.id !== user\.id/);
   assert.equal(
     deps.split("mine\n        .from('org_pitches')").length -
       1 +
@@ -2436,7 +2570,7 @@ test('the route and the organization readers enforce tenancy in code', () => {
   );
   assert.match(
     src('src/components/sonar/adaptive/SonarAdaptiveReport.jsx'),
-    /report\.org\s*\? null\s*: actions/,
+    /report\.org \|\| streaming\s*\? null\s*: actions/,
   );
 });
 
