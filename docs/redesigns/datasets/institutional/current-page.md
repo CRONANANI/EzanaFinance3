@@ -31,19 +31,19 @@ Desktop. Cards are white rounded panels with soft shadows, two per row, each wit
 
 **Cards, in rows.**
 
-| Card | Contents | Controls |
-| --- | --- | --- |
-| Filing season clock (open quarter) | Managers filed by day of 45 against last quarter, a cumulative curve, early movers | A mover opens its panel |
-| Net flow board | Eight tickers: sellers bar, buyers bar, net count | Tabs: net buyers, net sellers, newly entering; row opens stock |
-| Consensus vs conviction | Scatter of holders against median weight, dot size by value, four quadrants (Hidden conviction, Crowded core, Index ballast, Long tail), hover readout | Sector chips; dot opens stock |
-| Sector rotation | Per sector: share of value then and now (dumbbell), dollar flow (diverging bar) | None |
-| Fresh conviction and clean exits | Five largest new positions and five full exits over $100M: manager, ticker, percent of book, value, Whale Score | Open panels |
-| Signal convergence | Eight tickers with dots for 13F net buyers, insider buys, Congress buys, activist stake, "(n) of 4" | Dots link to other datasets |
-| The lag tax | Ten most net-bought tickers, price change since quarter end | Row opens stock |
-| Manager universe | Every filer by value against effective positions, top 25 labelled | Dot opens manager |
-| Hedge overlay | Eight tickers: put and call notional, put to call ratio | Row opens stock |
-| Find a manager | Rank, name and CIK, value, positions, top holding, filed date and lag | Filter; opens panels |
-| Find a security | Ticker or issuer, CUSIP, holders and change, value, shares, net breadth | Filter; opens stock |
+| Card                               | Contents                                                                                                                                               | Controls                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Filing season clock (open quarter) | Managers filed by day of 45 against last quarter, a cumulative curve, early movers                                                                     | A mover opens its panel                                        |
+| Net flow board                     | Eight tickers: sellers bar, buyers bar, net count                                                                                                      | Tabs: net buyers, net sellers, newly entering; row opens stock |
+| Consensus vs conviction            | Scatter of holders against median weight, dot size by value, four quadrants (Hidden conviction, Crowded core, Index ballast, Long tail), hover readout | Sector chips; dot opens stock                                  |
+| Sector rotation                    | Per sector: share of value then and now (dumbbell), dollar flow (diverging bar)                                                                        | None                                                           |
+| Fresh conviction and clean exits   | Five largest new positions and five full exits over $100M: manager, ticker, percent of book, value, Whale Score                                        | Open panels                                                    |
+| Signal convergence                 | Eight tickers with dots for 13F net buyers, insider buys, Congress buys, activist stake, "(n) of 4"                                                    | Dots link to other datasets                                    |
+| The lag tax                        | Ten most net-bought tickers, price change since quarter end                                                                                            | Row opens stock                                                |
+| Manager universe                   | Every filer by value against effective positions, top 25 labelled                                                                                      | Dot opens manager                                              |
+| Hedge overlay                      | Eight tickers: put and call notional, put to call ratio                                                                                                | Row opens stock                                                |
+| Find a manager                     | Rank, name and CIK, value, positions, top holding, filed date and lag                                                                                  | Filter; opens panels                                           |
+| Find a security                    | Ticker or issuer, CUSIP, holders and change, value, shares, net breadth                                                                                | Filter; opens stock                                            |
 
 Each card asks its question as the title and has its own skeleton and empty line.
 
@@ -69,21 +69,21 @@ Each card asks its question as the title and has its own skeleton and empty line
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Missing for |
-| --- | --- | --- | --- | --- |
-| Filers, reported value, positions | Quarter totals and prior-quarter change | Form 13F-HR | Several times an hour; page cache 15 minutes | Partial during filing season |
-| Filing progress | Filed, expected, pace, deadline, last update | Form 13F-HR | Same | Prior pace when records are short |
-| Net breadth | Managers buying, selling, net, newly entering | Calculated from share counts | Same | Managers without a prior quarter |
-| Holders, median weight, combined value | Ownership breadth and depth per security | Calculated | Same | Options lines excluded |
-| Sector shares and flow | Share of equity value and flow by sector | Calculated | Same | Unmapped value ("Unclassified") |
-| New positions, exits | Manager, ticker, value, percent of book | Calculated | Same | Under $100M |
-| Whale Score | Ezana's 0 to 100 measure | Ezana calculation | Same | None |
-| Convergence | Insider buys, Congress buys, activist stake per ticker | Form 4; House and Senate disclosures; Schedules 13D and 13G | Same | Unmapped tickers |
-| Price since quarter end | Percent change | Daily closing prices | Daily | Some tickers |
-| Put and call notional | Underlying value and filer counts | Form 13F-HR | Same | None |
-| Manager detail | Holdings, turnover, sector tilt, twins, filing link | Form 13F-HR | Same | Prior quarter needed for changes |
-| Security detail | Holders, ladder, largest holders, percent of outstanding | Form 13F-HR; issuer cover pages | Same | Outstanding shares for some issuers |
-| Ticker, sector | Mapped from the security identifier | Identifier mapping | Fills in over days | Unmapped securities |
+| Field                                  | What it means                                            | Public source                                               | Freshness                                    | Missing for                         |
+| -------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------- | ----------------------------------- |
+| Filers, reported value, positions      | Quarter totals and prior-quarter change                  | Form 13F-HR                                                 | Several times an hour; page cache 15 minutes | Partial during filing season        |
+| Filing progress                        | Filed, expected, pace, deadline, last update             | Form 13F-HR                                                 | Same                                         | Prior pace when records are short   |
+| Net breadth                            | Managers buying, selling, net, newly entering            | Calculated from share counts                                | Same                                         | Managers without a prior quarter    |
+| Holders, median weight, combined value | Ownership breadth and depth per security                 | Calculated                                                  | Same                                         | Options lines excluded              |
+| Sector shares and flow                 | Share of equity value and flow by sector                 | Calculated                                                  | Same                                         | Unmapped value ("Unclassified")     |
+| New positions, exits                   | Manager, ticker, value, percent of book                  | Calculated                                                  | Same                                         | Under $100M                         |
+| Whale Score                            | Ezana's 0 to 100 measure                                 | Ezana calculation                                           | Same                                         | None                                |
+| Convergence                            | Insider buys, Congress buys, activist stake per ticker   | Form 4; House and Senate disclosures; Schedules 13D and 13G | Same                                         | Unmapped tickers                    |
+| Price since quarter end                | Percent change                                           | Daily closing prices                                        | Daily                                        | Some tickers                        |
+| Put and call notional                  | Underlying value and filer counts                        | Form 13F-HR                                                 | Same                                         | None                                |
+| Manager detail                         | Holdings, turnover, sector tilt, twins, filing link      | Form 13F-HR                                                 | Same                                         | Prior quarter needed for changes    |
+| Security detail                        | Holders, ladder, largest holders, percent of outstanding | Form 13F-HR; issuer cover pages                             | Same                                         | Outstanding shares for some issuers |
+| Ticker, sector                         | Mapped from the security identifier                      | Identifier mapping                                          | Fills in over days                           | Unmapped securities                 |
 
 ## 5. Data we do not have
 

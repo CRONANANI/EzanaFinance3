@@ -54,23 +54,23 @@ The page shows what about 50 of the largest US-listed ETFs hold, which of them h
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Missing for |
-| --- | --- | --- | --- | --- |
-| Fund ticker, name | Identity | SEC fund records | Daily | Funds outside the 50-fund universe |
-| Report date | Quarter end the holdings describe | Form N-PORT | Public about 60 days after quarter end | None |
-| Net assets | Fund size on the report date | Form N-PORT | Same | Rare |
-| Holdings count | Lines in the report | Form N-PORT | Same | None |
-| Holding name, title | Issuer and security description | Form N-PORT | Same | None |
-| Holding ticker | Mapped from the security identifier | Identifier mapping | Fills in over days | Bonds, cash, derivatives, many foreign lines |
-| CUSIP, ISIN | Security identifiers | Form N-PORT | Same | Some lines; not shown today |
-| Weight | Percent of net assets | Form N-PORT | Same | Rare |
-| Value | Dollar value of the line | Form N-PORT | Same | Rare |
-| Asset category | Equity, debt, derivative and so on | Form N-PORT | Same | Some lines |
-| Country | Issuer country code | Form N-PORT | Same | Some lines |
-| Previous report | The prior quarter's holdings | Form N-PORT | Same | Not shown today; available |
-| Holders of a ticker | Tracked ETFs holding it, weight, value | Calculated | Page cache | Untracked funds |
-| Overlap | Sum of the smaller weight per shared security | Calculated | Page cache | None |
-| Not covered list | Universe tickers with no N-PORT and why | Universe plus filings | Daily | None |
+| Field               | What it means                                 | Public source         | Freshness                              | Missing for                                  |
+| ------------------- | --------------------------------------------- | --------------------- | -------------------------------------- | -------------------------------------------- |
+| Fund ticker, name   | Identity                                      | SEC fund records      | Daily                                  | Funds outside the 50-fund universe           |
+| Report date         | Quarter end the holdings describe             | Form N-PORT           | Public about 60 days after quarter end | None                                         |
+| Net assets          | Fund size on the report date                  | Form N-PORT           | Same                                   | Rare                                         |
+| Holdings count      | Lines in the report                           | Form N-PORT           | Same                                   | None                                         |
+| Holding name, title | Issuer and security description               | Form N-PORT           | Same                                   | None                                         |
+| Holding ticker      | Mapped from the security identifier           | Identifier mapping    | Fills in over days                     | Bonds, cash, derivatives, many foreign lines |
+| CUSIP, ISIN         | Security identifiers                          | Form N-PORT           | Same                                   | Some lines; not shown today                  |
+| Weight              | Percent of net assets                         | Form N-PORT           | Same                                   | Rare                                         |
+| Value               | Dollar value of the line                      | Form N-PORT           | Same                                   | Rare                                         |
+| Asset category      | Equity, debt, derivative and so on            | Form N-PORT           | Same                                   | Some lines                                   |
+| Country             | Issuer country code                           | Form N-PORT           | Same                                   | Some lines                                   |
+| Previous report     | The prior quarter's holdings                  | Form N-PORT           | Same                                   | Not shown today; available                   |
+| Holders of a ticker | Tracked ETFs holding it, weight, value        | Calculated            | Page cache                             | Untracked funds                              |
+| Overlap             | Sum of the smaller weight per shared security | Calculated            | Page cache                             | None                                         |
+| Not covered list    | Universe tickers with no N-PORT and why       | Universe plus filings | Daily                                  | None                                         |
 
 ## 5. Data we do not have
 

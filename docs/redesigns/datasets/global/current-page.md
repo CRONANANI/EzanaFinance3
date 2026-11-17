@@ -39,10 +39,10 @@ States: route skeleton (centred title, five pills, a ten-row table). Search with
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Macro snapshot rows | Five headline readings | None: hard-coded sample | Never updated | Everything |
-| Wealth rows | Name, net worth, linked ticker, country, YTD change | None: hard-coded sample | Never updated | Everything |
+| Field               | Meaning                                             | Public source           | Freshness     | Gaps       |
+| ------------------- | --------------------------------------------------- | ----------------------- | ------------- | ---------- |
+| Macro snapshot rows | Five headline readings                              | None: hard-coded sample | Never updated | Everything |
+| Wealth rows         | Name, net worth, linked ticker, country, YTD change | None: hard-coded sample | Never updated | Everything |
 
 No source is connected. For a design, the closest real data Ezana already has elsewhere in this dimension is annual country indicators (World Bank and OECD pages) and the monthly geopolitical risk index; none of it feeds this page today.
 

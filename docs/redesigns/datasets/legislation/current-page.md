@@ -19,13 +19,13 @@ The page is new: one shared template filled with this dataset's settings, with n
 
 Admin and demo accounts, desktop, top to bottom (shared dataset canvas, about 1400px centred with a 32px gutter):
 
-| Section | What it shows and does |
-| --- | --- |
-| Green band | Shared chrome with Regulatory Winds lit. No ticker. |
-| Identity row | Eyebrow "DATASETS · REGULATORY WINDS", name "New laws and policy legislation", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action. |
-| EzanaQL row | "Query this data with EzanaQL on the Regulatory Winds hub" with Share. |
-| One table | Title "Recently moved bills" with "Sample content" on the right. Columns Bill, Title, Latest action, Sectors touched and Date. Five invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
-| Source line | "Planned source: congressional bill records and federal legislative publications." plus a sample-content note and "Nothing here is investment advice." |
+| Section      | What it shows and does                                                                                                                                                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Green band   | Shared chrome with Regulatory Winds lit. No ticker.                                                                                                                                                                                          |
+| Identity row | Eyebrow "DATASETS · REGULATORY WINDS", name "New laws and policy legislation", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action.                 |
+| EzanaQL row  | "Query this data with EzanaQL on the Regulatory Winds hub" with Share.                                                                                                                                                                       |
+| One table    | Title "Recently moved bills" with "Sample content" on the right. Columns Bill, Title, Latest action, Sectors touched and Date. Five invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
+| Source line  | "Planned source: congressional bill records and federal legislative publications." plus a sample-content note and "Nothing here is investment advice."                                                                                       |
 
 Everyone else, signed in or out: the identity row without the label, then a plug icon, "This dataset's source is not connected yet." and a text link "Back to datasets". No EzanaQL row, no description, nothing else.
 
@@ -42,35 +42,35 @@ States: the shared route skeleton, then a small skeleton (title bar and eight-ro
 
 Live data: none. Nothing on this page is a real record today. The only thing rendered is the layout skeleton below, filled with invented rows for admin and demo accounts. These columns are the layout skeleton, not fields we hold:
 
-| Column (skeleton) | What it would mean | Planned public source |
-| --- | --- | --- |
-| Bill | Bill number, such as H.R. 9001 or S. 4410 | Congressional bill records |
-| Title | Short title of the bill | Same |
-| Latest action | Latest step, such as Introduced, Hearing held, Passed House, Signed into law | Same |
-| Sectors touched | Market sectors the bill could affect | Ezana's mapping from policy area to sector |
-| Date | Date of the latest action | Same |
+| Column (skeleton) | What it would mean                                                           | Planned public source                      |
+| ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| Bill              | Bill number, such as H.R. 9001 or S. 4410                                    | Congressional bill records                 |
+| Title             | Short title of the bill                                                      | Same                                       |
+| Latest action     | Latest step, such as Introduced, Hearing held, Passed House, Signed into law | Same                                       |
+| Sectors touched   | Market sectors the bill could affect                                         | Ezana's mapping from policy area to sector |
+| Date              | Date of the latest action                                                    | Same                                       |
 
 Freshness and gaps for every skeleton column: not connected, sample rows only.
 
 Data that exists in Ezana but is not connected to this page (it could be wired with little new collection work):
 
-| Field | What it means | Public source | Gaps |
-| --- | --- | --- | --- |
-| Bill identity | Congress number, bill type (House or Senate bill, joint or concurrent resolution) and number | Congressional bill records | Current Congress only; about 90 bills, not the full set |
-| Title, policy area | Bill title and its one official policy area | Same | One policy area per bill |
-| Latest action and date | Text and date of the newest action | Same | None noted |
-| Introduced date, last update date | When filed and when the record last changed | Same | None noted |
-| Sponsor and party | The sponsoring member's identifier and party (D, R, I) | Same | Name must be joined from member records |
-| Cosponsors | Total cosponsors, and how many are Democrats and Republicans | Same | No cosponsor names stored |
-| Cost estimate | The budget office's aggregate cost figure, where one exists | Same | Blank for most bills |
-| Stage | One of seven steps derived from the actions: Introduced, In committee, Reported, Floor, Passed chamber, Passed both, Became law | Calculated by Ezana from action text | Rule based; can misread unusual actions |
-| Passage estimate | A transparent scorecard estimate of the chance the bill becomes law, with the factors behind it | Calculated by Ezana | Labelled estimate; base rates are priors, not measured |
-| Subjects | Many legislative subject terms per bill | Same | Not every bill has them |
-| Action history | Every action with date, code and text, in order | Same | Up to 30 shown in the existing bill lookup |
-| House roll-call votes | Question, result, yea and nay totals and the party split | Same | House only; Senate votes are not in this source |
-| Committee meetings | Chamber, committee, date, title, related bills and document links | Same | Recent meetings only |
-| Sector link | A curated map from policy areas and key subjects to sectors, sector funds and representative tickers | Ezana editorial mapping | Representative tickers, not bill-specific companies |
-| Sector legislative momentum | A per-sector score over 30 or 90 days, weighted by stage, cost and bipartisanship | Calculated | Built on the small bill set |
+| Field                             | What it means                                                                                                                   | Public source                        | Gaps                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------- |
+| Bill identity                     | Congress number, bill type (House or Senate bill, joint or concurrent resolution) and number                                    | Congressional bill records           | Current Congress only; about 90 bills, not the full set |
+| Title, policy area                | Bill title and its one official policy area                                                                                     | Same                                 | One policy area per bill                                |
+| Latest action and date            | Text and date of the newest action                                                                                              | Same                                 | None noted                                              |
+| Introduced date, last update date | When filed and when the record last changed                                                                                     | Same                                 | None noted                                              |
+| Sponsor and party                 | The sponsoring member's identifier and party (D, R, I)                                                                          | Same                                 | Name must be joined from member records                 |
+| Cosponsors                        | Total cosponsors, and how many are Democrats and Republicans                                                                    | Same                                 | No cosponsor names stored                               |
+| Cost estimate                     | The budget office's aggregate cost figure, where one exists                                                                     | Same                                 | Blank for most bills                                    |
+| Stage                             | One of seven steps derived from the actions: Introduced, In committee, Reported, Floor, Passed chamber, Passed both, Became law | Calculated by Ezana from action text | Rule based; can misread unusual actions                 |
+| Passage estimate                  | A transparent scorecard estimate of the chance the bill becomes law, with the factors behind it                                 | Calculated by Ezana                  | Labelled estimate; base rates are priors, not measured  |
+| Subjects                          | Many legislative subject terms per bill                                                                                         | Same                                 | Not every bill has them                                 |
+| Action history                    | Every action with date, code and text, in order                                                                                 | Same                                 | Up to 30 shown in the existing bill lookup              |
+| House roll-call votes             | Question, result, yea and nay totals and the party split                                                                        | Same                                 | House only; Senate votes are not in this source         |
+| Committee meetings                | Chamber, committee, date, title, related bills and document links                                                               | Same                                 | Recent meetings only                                    |
+| Sector link                       | A curated map from policy areas and key subjects to sectors, sector funds and representative tickers                            | Ezana editorial mapping              | Representative tickers, not bill-specific companies     |
+| Sector legislative momentum       | A per-sector score over 30 or 90 days, weighted by stage, cost and bipartisanship                                               | Calculated                           | Built on the small bill set                             |
 
 All of these are refreshed by a scheduled background sync; its exact cadence and the current row count were not checked.
 

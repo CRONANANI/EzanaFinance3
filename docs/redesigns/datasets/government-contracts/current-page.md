@@ -21,13 +21,13 @@ Desktop, top to bottom. The app draws the navigation bar, the full-bleed green c
 
 **Left filter rail (240px).**
 
-| Control | What it does |
-| --- | --- |
-| Generate report | Filled button that only links to the Capitol Watch hub. |
-| Fiscal year | Custom dropdown: All years, then every year on file (FY2008 on), keyboard operable. Drives every figure except the explorer table. |
-| Min award value | Slider $0B to $130B+ on a recipient's total. |
+| Control         | What it does                                                                                                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Generate report | Filled button that only links to the Capitol Watch hub.                                                                                                                                                                  |
+| Fiscal year     | Custom dropdown: All years, then every year on file (FY2008 on), keyboard operable. Drives every figure except the explorer table.                                                                                       |
+| Min award value | Slider $0B to $130B+ on a recipient's total.                                                                                                                                                                             |
 | Awarding agency | Agency count, borderless "Filter agencies" search, then every agency as a row (colour bar, name, award count, share). Click toggles (multi-select); "N selected" and Clear appear. No match: "No agency matches (term)". |
-| Contract type | A note: not available. |
+| Contract type   | A note: not available.                                                                                                                                                                                                   |
 
 **Three metric cards (boxed, coloured top edge).** Total obligated (with an agency share strip and "(n) agencies", or "sample" on the bundled fallback); Awards (with a per-year sparkline when two or more years exist); Most awards issued (the agency issuing the largest share of awards, with its average award).
 
@@ -60,19 +60,19 @@ Desktop, top to bottom. The app draws the navigation bar, the full-bleed green c
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Recipient, parent | Who was awarded | Federal award records | Daily; page rebuilt every 10 min | Parent often blank |
-| Awarding agency, sub-agency, funding agency | Who awarded and paid | Federal award records | Daily | Funding agency only on ticker awards |
-| Amount, action date, fiscal year | Obligated dollars and when | Federal award records | Daily | None |
-| PIID, NAICS, PSC, place, description | Identifiers, codes, location, source text | Federal award records | Daily | Ticker awards only; description often blank |
-| Award type | Type letter A to D | Federal award records | Daily | Stored, not shown |
-| Ticker | Listed security | Ezana matching | Daily | Most recipients; always empty in yearly totals |
-| Recipient totals by year and agency | Sum and count | Ezana roll-up | Periodic job | Top recipients per year only |
-| Agency totals by year, coverage | Every agency; years and counts on file | Ezana roll-up | Periodic job | None |
-| Latest awards feed | Newest 60 awards | Federal award records | Periodic | None |
-| AI award analysis | Summary, sectors, uncertainty | Generated from the record, cached | On demand | Unanalysed awards |
-| Price history, company ratios | Market context | Market data, delayed | Delayed | No ticker |
+| Field                                       | Meaning                                   | Public source                     | Freshness                        | Gaps                                           |
+| ------------------------------------------- | ----------------------------------------- | --------------------------------- | -------------------------------- | ---------------------------------------------- |
+| Recipient, parent                           | Who was awarded                           | Federal award records             | Daily; page rebuilt every 10 min | Parent often blank                             |
+| Awarding agency, sub-agency, funding agency | Who awarded and paid                      | Federal award records             | Daily                            | Funding agency only on ticker awards           |
+| Amount, action date, fiscal year            | Obligated dollars and when                | Federal award records             | Daily                            | None                                           |
+| PIID, NAICS, PSC, place, description        | Identifiers, codes, location, source text | Federal award records             | Daily                            | Ticker awards only; description often blank    |
+| Award type                                  | Type letter A to D                        | Federal award records             | Daily                            | Stored, not shown                              |
+| Ticker                                      | Listed security                           | Ezana matching                    | Daily                            | Most recipients; always empty in yearly totals |
+| Recipient totals by year and agency         | Sum and count                             | Ezana roll-up                     | Periodic job                     | Top recipients per year only                   |
+| Agency totals by year, coverage             | Every agency; years and counts on file    | Ezana roll-up                     | Periodic job                     | None                                           |
+| Latest awards feed                          | Newest 60 awards                          | Federal award records             | Periodic                         | None                                           |
+| AI award analysis                           | Summary, sectors, uncertainty             | Generated from the record, cached | On demand                        | Unanalysed awards                              |
+| Price history, company ratios               | Market context                            | Market data, delayed              | Delayed                          | No ticker                                      |
 
 ## 5. Data we do not have
 

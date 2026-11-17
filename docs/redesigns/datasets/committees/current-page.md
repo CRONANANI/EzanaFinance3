@@ -21,28 +21,28 @@ Desktop: the green band (Capitol Watch active), then ten cards under one sticky 
 
 ### Sticky control bar
 
-| Control | What it does |
-| --- | --- |
-| View: Committees, Members | Written to the address; no card changes (section 7) |
-| Chamber: All, House, Senate, Joint | Filters most cards |
-| Party: ALL, D, R, I | Filters gavels, seat load and trades |
-| Search committees or members | Up to 5 committees and 6 members, grouped; arrows, Enter, Esc. Also narrows the atlas. "No committee or member matches." |
-| Sector chips: All plus each mapped sector | Filters most cards |
+| Control                                   | What it does                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| View: Committees, Members                 | Written to the address; no card changes (section 7)                                                                      |
+| Chamber: All, House, Senate, Joint        | Filters most cards                                                                                                       |
+| Party: ALL, D, R, I                       | Filters gavels, seat load and trades                                                                                     |
+| Search committees or members              | Up to 5 committees and 6 members, grouped; arrows, Enter, Esc. Also narrows the atlas. "No committee or member matches." |
+| Sector chips: All plus each mapped sector | Filters most cards                                                                                                       |
 
 ### Cards
 
-| # | Card | What it shows and does |
-| --- | --- | --- |
-| 1 | Congress at a glance | Committees, Subcommittees, Seats, Members holding a seat, and a majority versus minority bar with counts |
-| 2 | Committee atlas (wide) | Tiles grouped by chamber, sized by seats: short name, code, majority bar, "N seats · N sub", two sector chips. Eight per chamber, then "+N more". A tile opens the profile |
-| 3 | Gavels (narrow) | Chairs or Ranking members toggle. Headshot, name, party, committee, code; nine rows then "All N committees". Person opens the member panel, code opens the profile |
-| 4 | Committee profile | Name, code, chamber, counts, Official site link. Jurisdiction, sector chips, subcommittee chips that swap the roster, and "N trades by this committee's members in its sectors in the last 3 months" (jumps to card 7 filtered). Majority and Minority roster columns with headshot, party, leader badge, ten each |
-| 5 | Oversight map | Committees left, sectors right, curved links lit on hover. A sector sets the page filter; a committee opens its profile |
-| 6 | Seat load | Column chart of seats per member; top five members by seats |
-| 7 | Trades in overseen sectors | Summary: trades in the 3-month window, buys versus sells bar, members who traded, unmapped tickers, and "A trade in an overseen sector is a disclosure pattern, not evidence of wrongdoing." Table: Date, Member, Side, Ticker, Amount range, Sector, Committee; 25 per page. All, Buys, Sells toggle; committee dropdown |
-| 8 | Holdings matrix | Committees against seven most held tickers; a cell counts members with an inferred open position. Hover: buyers, sellers since 180 days, four names |
-| 9 | Hearings | Always "Hearing schedules are not available yet." over a faint weekday grid |
-| 10 | Sign-up band (signed out) | "Follow the committees that move your sectors", Create free account, Sign in (outlined) |
+| #   | Card                       | What it shows and does                                                                                                                                                                                                                                                                                                    |
+| --- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Congress at a glance       | Committees, Subcommittees, Seats, Members holding a seat, and a majority versus minority bar with counts                                                                                                                                                                                                                  |
+| 2   | Committee atlas (wide)     | Tiles grouped by chamber, sized by seats: short name, code, majority bar, "N seats · N sub", two sector chips. Eight per chamber, then "+N more". A tile opens the profile                                                                                                                                                |
+| 3   | Gavels (narrow)            | Chairs or Ranking members toggle. Headshot, name, party, committee, code; nine rows then "All N committees". Person opens the member panel, code opens the profile                                                                                                                                                        |
+| 4   | Committee profile          | Name, code, chamber, counts, Official site link. Jurisdiction, sector chips, subcommittee chips that swap the roster, and "N trades by this committee's members in its sectors in the last 3 months" (jumps to card 7 filtered). Majority and Minority roster columns with headshot, party, leader badge, ten each        |
+| 5   | Oversight map              | Committees left, sectors right, curved links lit on hover. A sector sets the page filter; a committee opens its profile                                                                                                                                                                                                   |
+| 6   | Seat load                  | Column chart of seats per member; top five members by seats                                                                                                                                                                                                                                                               |
+| 7   | Trades in overseen sectors | Summary: trades in the 3-month window, buys versus sells bar, members who traded, unmapped tickers, and "A trade in an overseen sector is a disclosure pattern, not evidence of wrongdoing." Table: Date, Member, Side, Ticker, Amount range, Sector, Committee; 25 per page. All, Buys, Sells toggle; committee dropdown |
+| 8   | Holdings matrix            | Committees against seven most held tickers; a cell counts members with an inferred open position. Hover: buyers, sellers since 180 days, four names                                                                                                                                                                       |
+| 9   | Hearings                   | Always "Hearing schedules are not available yet." over a faint weekday grid                                                                                                                                                                                                                                               |
+| 10  | Sign-up band (signed out)  | "Follow the committees that move your sectors", Create free account, Sign in (outlined)                                                                                                                                                                                                                                   |
 
 Below: the source line and the sector mapping note.
 
@@ -70,18 +70,18 @@ Under 1100px paired cards stack. Under 720px: chamber chips plus a Filters chip 
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Committee name, code, chamber | Every House, Senate and joint committee and subcommittee | Public-domain roster of Congress (House Clerk, Senate records) | Daily | None |
-| Jurisdiction, site, seats, majority, minority | Coverage and seat counts | Same | Daily | Some subcommittees lack a site |
-| Chair, ranking member, rank, title | Leaders and roster order | Same | Daily | Vacancies; some ranks |
-| Member name, party, state, district, chamber | Identity | Same | Daily | None |
-| Headshot | Member photo | Official photos | Static | Gavels and rosters only |
-| Overseen sectors | Sectors per committee | Ezana's reading of published jurisdiction | Editorial | Many committees have none |
-| Overseen-sector trades | Date, member, side, ticker, range, sector, committee | Congressional periodic transaction reports | Daily; 3-month card window | Unmapped tickers only counted |
-| Window summary | Buys, sells, members, unmapped | Same | Daily | None |
-| Committee and ticker holders | Members holding a ticker, inferred (bought, not fully sold); buyers and sellers since 180 days | Same | Daily | Counts and names, never dollars |
-| Member timeline | 24 months of overseen-sector trades | Same | Daily | Ranges only |
+| Field                                         | What it means                                                                                  | Public source                                                  | Freshness                  | Gaps                            |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------- | ------------------------------- |
+| Committee name, code, chamber                 | Every House, Senate and joint committee and subcommittee                                       | Public-domain roster of Congress (House Clerk, Senate records) | Daily                      | None                            |
+| Jurisdiction, site, seats, majority, minority | Coverage and seat counts                                                                       | Same                                                           | Daily                      | Some subcommittees lack a site  |
+| Chair, ranking member, rank, title            | Leaders and roster order                                                                       | Same                                                           | Daily                      | Vacancies; some ranks           |
+| Member name, party, state, district, chamber  | Identity                                                                                       | Same                                                           | Daily                      | None                            |
+| Headshot                                      | Member photo                                                                                   | Official photos                                                | Static                     | Gavels and rosters only         |
+| Overseen sectors                              | Sectors per committee                                                                          | Ezana's reading of published jurisdiction                      | Editorial                  | Many committees have none       |
+| Overseen-sector trades                        | Date, member, side, ticker, range, sector, committee                                           | Congressional periodic transaction reports                     | Daily; 3-month card window | Unmapped tickers only counted   |
+| Window summary                                | Buys, sells, members, unmapped                                                                 | Same                                                           | Daily                      | None                            |
+| Committee and ticker holders                  | Members holding a ticker, inferred (bought, not fully sold); buyers and sellers since 180 days | Same                                                           | Daily                      | Counts and names, never dollars |
+| Member timeline                               | 24 months of overseen-sector trades                                                            | Same                                                           | Daily                      | Ranges only                     |
 
 ## 5. Data we do not have
 

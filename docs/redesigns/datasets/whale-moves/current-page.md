@@ -29,24 +29,24 @@ Desktop, in the older marketing page shell.
 
 **Controls.** Three labelled bordered drop-downs and a count:
 
-| Control | Options |
-| --- | --- |
-| Filer | All filers, Institutional (13F), Activist (Schedule 13D/13G) |
-| Tier | All tiers, then every tier present in the data |
-| Sort by | Whale Score, Position value, Conviction % (all high to low) |
-| Count | "(n) shown" |
+| Control | Options                                                      |
+| ------- | ------------------------------------------------------------ |
+| Filer   | All filers, Institutional (13F), Activist (Schedule 13D/13G) |
+| Tier    | All tiers, then every tier present in the data               |
+| Sort by | Whale Score, Position value, Conviction % (all high to low)  |
+| Count   | "(n) shown"                                                  |
 
 **Moves table.** Up to 120 moves, no paging.
 
-| Column | Content |
-| --- | --- |
-| Filer | Manager or activist name |
-| Ticker / issuer | Ticker chip and issuer name |
-| Tier | Coloured pill (see below) |
-| Conviction | Institutional: percent of the manager's book. Activist: percent of the share class |
-| Δ vs prior qtr | Institutional: New, Doubled, Added, Trimmed, Exited or Flat, coloured. Activist: "Escalated" or the form name |
-| Value | Position value, compact dollars, or a dash |
-| Score | A thin bar and the 0 to 100 number |
+| Column          | Content                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------- |
+| Filer           | Manager or activist name                                                                                      |
+| Ticker / issuer | Ticker chip and issuer name                                                                                   |
+| Tier            | Coloured pill (see below)                                                                                     |
+| Conviction      | Institutional: percent of the manager's book. Activist: percent of the share class                            |
+| Δ vs prior qtr  | Institutional: New, Doubled, Added, Trimmed, Exited or Flat, coloured. Activist: "Escalated" or the form name |
+| Value           | Position value, compact dollars, or a dash                                                                    |
+| Score           | A thin bar and the 0 to 100 number                                                                            |
 
 Tiers: Fresh conviction, Doubling down, Activist stake (green); Adding, Quiet accumulation, New position (pale green); Holding (grey); Trimming, Heading for the exit (red). Empty: "No moves match the current filters." or "No scored moves yet. Scores appear once two quarters of 13F filings are loaded."
 
@@ -77,21 +77,21 @@ Tiers: Fresh conviction, Doubling down, Activist stake (green); Adding, Quiet ac
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Missing for |
-| --- | --- | --- | --- | --- |
-| Filer name | Manager or activist | SEC Form 13F-HR, Schedules 13D and 13G | Scored hourly; page about 15 minutes | None |
-| Kind | Institutional or activist | Same | Same | None |
-| Ticker, issuer | The stock | Same, ticker mapped from the security identifier | Same | Unmapped securities (issuer only) |
-| Quarter, filed date | Period and filing date | Same | Same | Stored, not shown |
-| Position value | Dollar value at quarter end | Form 13F-HR | Same | Activist rows often |
-| Conviction | Percent of the manager's book | Calculated from 13F | Same | Activist rows |
-| Change type | New, Doubled, Added, Trimmed, Exited, Flat | Calculated, quarter against quarter | Same | Activist rows |
-| Percent of class | Activist stake size | Schedule 13D or 13G | Same | Institutional rows |
-| Form | 13D or 13G | Same | Same | Institutional rows |
-| Escalated | Stake grew since the last filing | Calculated | Same | Institutional rows |
-| Whale Score, tier | 0 to 100 and its band | Ezana calculation | Same | Moves under $100M or without a prior quarter |
-| Burry final holdings | Issuer, ticker, type, value, share of reported value | His firm's final 13F | Fixed (no newer filing exists) | None |
-| Echo articles, news | Title, outlet, date, link | Ezana Echo; major outlets | Hourly; six-hourly | Can be empty |
+| Field                | What it means                                        | Public source                                    | Freshness                            | Missing for                                  |
+| -------------------- | ---------------------------------------------------- | ------------------------------------------------ | ------------------------------------ | -------------------------------------------- |
+| Filer name           | Manager or activist                                  | SEC Form 13F-HR, Schedules 13D and 13G           | Scored hourly; page about 15 minutes | None                                         |
+| Kind                 | Institutional or activist                            | Same                                             | Same                                 | None                                         |
+| Ticker, issuer       | The stock                                            | Same, ticker mapped from the security identifier | Same                                 | Unmapped securities (issuer only)            |
+| Quarter, filed date  | Period and filing date                               | Same                                             | Same                                 | Stored, not shown                            |
+| Position value       | Dollar value at quarter end                          | Form 13F-HR                                      | Same                                 | Activist rows often                          |
+| Conviction           | Percent of the manager's book                        | Calculated from 13F                              | Same                                 | Activist rows                                |
+| Change type          | New, Doubled, Added, Trimmed, Exited, Flat           | Calculated, quarter against quarter              | Same                                 | Activist rows                                |
+| Percent of class     | Activist stake size                                  | Schedule 13D or 13G                              | Same                                 | Institutional rows                           |
+| Form                 | 13D or 13G                                           | Same                                             | Same                                 | Institutional rows                           |
+| Escalated            | Stake grew since the last filing                     | Calculated                                       | Same                                 | Institutional rows                           |
+| Whale Score, tier    | 0 to 100 and its band                                | Ezana calculation                                | Same                                 | Moves under $100M or without a prior quarter |
+| Burry final holdings | Issuer, ticker, type, value, share of reported value | His firm's final 13F                             | Fixed (no newer filing exists)       | None                                         |
+| Echo articles, news  | Title, outlet, date, link                            | Ezana Echo; major outlets                        | Hourly; six-hourly                   | Can be empty                                 |
 
 ## 5. Data we do not have
 

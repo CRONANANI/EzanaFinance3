@@ -17,17 +17,17 @@ The page lists open crowd forecasting questions on politics, markets and world e
 
 Desktop, top to bottom. The page uses the generic shared dataset template (a narrower, centred marketing layout), not a bespoke design.
 
-| Section | What it shows and does |
-| --- | --- |
-| Green band | Drawn by the shared chrome with The Hive active. This page publishes no ticker. |
-| Hero (centred) | Eyebrow "Datasets", title "Crowd forecasts", a long lead sentence. |
-| EzanaQL row | "Query this data with EzanaQL on The Hive hub" with Share. |
-| Search row | One labelled search field, "Question search", placeholder "Search questions…". It filters the table as you type, matching the question text and the hidden category. |
-| Most forecast (boxed card) | Badge "Most forecast", a people icon, title "Questions with the most forecasters", a one-line description, then a numbered list of the top five: question, "(N) forecasters", and the probability on the right in mono. Rows are not clickable. Empty: "Questions appear here as they are indexed." |
-| Open crowd forecasts | Section title, a note "Probabilities as of (date)", then a table: Question (a link to the forecasting site in a new tab), Probability (whole percent), Forecasters, Closes. Up to 150 rows, ordered by number of forecasters, all on one page, no sorting, no paging. Empty: "No open questions indexed yet." After a search with no hits: "No matching records." |
-| How we source it (boxed card) | Two sentences: the questions come from a public forecasting site and use play money; for real-money odds, see the prediction markets dataset. |
-| Call to action | A solid emerald button "See prediction markets" with an arrow. |
-| Shared dataset footer | Drawn by the layout. |
+| Section                       | What it shows and does                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Green band                    | Drawn by the shared chrome with The Hive active. This page publishes no ticker.                                                                                                                                                                                                                                                                                   |
+| Hero (centred)                | Eyebrow "Datasets", title "Crowd forecasts", a long lead sentence.                                                                                                                                                                                                                                                                                                |
+| EzanaQL row                   | "Query this data with EzanaQL on The Hive hub" with Share.                                                                                                                                                                                                                                                                                                        |
+| Search row                    | One labelled search field, "Question search", placeholder "Search questions…". It filters the table as you type, matching the question text and the hidden category.                                                                                                                                                                                              |
+| Most forecast (boxed card)    | Badge "Most forecast", a people icon, title "Questions with the most forecasters", a one-line description, then a numbered list of the top five: question, "(N) forecasters", and the probability on the right in mono. Rows are not clickable. Empty: "Questions appear here as they are indexed."                                                               |
+| Open crowd forecasts          | Section title, a note "Probabilities as of (date)", then a table: Question (a link to the forecasting site in a new tab), Probability (whole percent), Forecasters, Closes. Up to 150 rows, ordered by number of forecasters, all on one page, no sorting, no paging. Empty: "No open questions indexed yet." After a search with no hits: "No matching records." |
+| How we source it (boxed card) | Two sentences: the questions come from a public forecasting site and use play money; for real-money odds, see the prediction markets dataset.                                                                                                                                                                                                                     |
+| Call to action                | A solid emerald button "See prediction markets" with an arrow.                                                                                                                                                                                                                                                                                                    |
+| Shared dataset footer         | Drawn by the layout.                                                                                                                                                                                                                                                                                                                                              |
 
 Page states: while loading, the shared dataset skeleton. If the read fails, the server quietly returns no rows, so a failure looks the same as an empty dataset ("No open questions indexed yet."). There is no error message and no Retry.
 
@@ -43,16 +43,16 @@ Tablet and phone: the layout is a single column already; the table scrolls sidew
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Question | The forecasting question as written | A public play-money forecasting site | Every six hours; page reads on each visit | Only open questions that have not passed their close date |
-| Probability | Current crowd probability, shown as a whole percent | Same | Same | Play money; not comparable with real-money odds |
-| Forecasters | Number of people who have forecast | Same | Same | Can be blank |
-| Close date | When the question closes | Same | Same | Can be blank (open-ended) |
-| Category | The site's topic label | Same | Same | Stored and searchable but not displayed |
-| Link | The question's page on the site | Same | Same | Can be missing |
-| Probabilities as of | Newest refresh time across the rows | Calculated | Same | Date only |
-| Top five | The five questions with most forecasters | Calculated | Same | Same ordering as the table |
+| Field               | What it means                                       | Public source                        | Freshness                                 | Gaps                                                      |
+| ------------------- | --------------------------------------------------- | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------- |
+| Question            | The forecasting question as written                 | A public play-money forecasting site | Every six hours; page reads on each visit | Only open questions that have not passed their close date |
+| Probability         | Current crowd probability, shown as a whole percent | Same                                 | Same                                      | Play money; not comparable with real-money odds           |
+| Forecasters         | Number of people who have forecast                  | Same                                 | Same                                      | Can be blank                                              |
+| Close date          | When the question closes                            | Same                                 | Same                                      | Can be blank (open-ended)                                 |
+| Category            | The site's topic label                              | Same                                 | Same                                      | Stored and searchable but not displayed                   |
+| Link                | The question's page on the site                     | Same                                 | Same                                      | Can be missing                                            |
+| Probabilities as of | Newest refresh time across the rows                 | Calculated                           | Same                                      | Date only                                                 |
+| Top five            | The five questions with most forecasters            | Calculated                           | Same                                      | Same ordering as the table                                |
 
 Only the 150 questions with the most forecasters are loaded.
 

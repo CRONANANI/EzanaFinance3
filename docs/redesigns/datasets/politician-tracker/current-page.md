@@ -27,12 +27,12 @@ The body is two columns: a wide left column and a 380px right column.
 
 **Toolbar:**
 
-| Control | What it does |
-| --- | --- |
-| Search a member | Name filter with a clear button; Esc clears. |
-| Chamber | Both, House, Senate. Bordered segmented group, selection filled with ink. |
-| Party | ALL, D, R, I. Same style, mono. |
-| Period | 30D 90D 6M 1Y 2Y ALL (default 1Y). Changes which disclosures are loaded and every figure. |
+| Control         | What it does                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| Search a member | Name filter with a clear button; Esc clears.                                              |
+| Chamber         | Both, House, Senate. Bordered segmented group, selection filled with ink.                 |
+| Party           | ALL, D, R, I. Same style, mono.                                                           |
+| Period          | 30D 90D 6M 1Y 2Y ALL (default 1Y). Changes which disclosures are loaded and every figure. |
 
 **Status lines (when needed):** "Disclosures are temporarily unavailable. Try again shortly." with an outlined Retry; or, when an older snapshot is being served, "Last updated (date, time)" with Retry.
 
@@ -44,12 +44,12 @@ The body is two columns: a wide left column and a 380px right column.
 
 ### Right column
 
-| Block | What it shows | Controls |
-| --- | --- | --- |
-| Trades by state | US map (dot size trades, tint volume), totals, busiest five states; a state lists its members. | Window pills 1 year, 3 years, All time. A member opens the panel. Error line on failure. |
-| Most held companies | Top ten tickers as a column chart, count of members holding on each cap. Note: positions are inferred from disclosures, which report ranges. | None. Empty: "No open positions inferred from the disclosures on file." |
-| Rank by | Disclosed volume, Most trades, Latest trade. | Segmented. |
-| House vs Senate | Period heading, feed warnings ("HOUSE FEED UNAVAILABLE"), the window "(from) TO (to) · (n) DISCLOSURES", two boxed chamber cards (volume, members, trades), four split-bar rows (Active members, Disclosed trades, Trades per member, Disclosed volume), a note. | None. |
+| Block               | What it shows                                                                                                                                                                                                                                                    | Controls                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Trades by state     | US map (dot size trades, tint volume), totals, busiest five states; a state lists its members.                                                                                                                                                                   | Window pills 1 year, 3 years, All time. A member opens the panel. Error line on failure. |
+| Most held companies | Top ten tickers as a column chart, count of members holding on each cap. Note: positions are inferred from disclosures, which report ranges.                                                                                                                     | None. Empty: "No open positions inferred from the disclosures on file."                  |
+| Rank by             | Disclosed volume, Most trades, Latest trade.                                                                                                                                                                                                                     | Segmented.                                                                               |
+| House vs Senate     | Period heading, feed warnings ("HOUSE FEED UNAVAILABLE"), the window "(from) TO (to) · (n) DISCLOSURES", two boxed chamber cards (volume, members, trades), four split-bar rows (Active members, Disclosed trades, Trades per member, Disclosed volume), a note. | None.                                                                                    |
 
 A compliance line closes the page: disclosures are public records under the STOCK Act, amounts are disclosed ranges, nothing here is investment advice.
 
@@ -57,17 +57,17 @@ A compliance line closes the page: disclosures are public records under the STOC
 
 Opened from a card, row, state map or similar member. Header "POLITICIAN TRACKER / (CHAMBER)", close. Focus trapped; Esc and Back close.
 
-| Section | Content |
-| --- | --- |
-| Identity | Large headshot, name, chamber chip, party, seat. |
-| Stats | Trades, Buys, Sells, Volume (midpoints). |
-| Committees | Chips with committee and role, each opening Committee Assignments filtered to it. Hidden when none. |
-| Portfolio, top holdings | Estimated open positions sized from range midpoints over every disclosure on file, "(n) stocks · est. (total)". |
-| Sector breakdown | The same estimate by sector. |
-| Trade activity | Buys and sells per month chart, then a table: Asset (ticker, name), Type (BUY, SELL, EXCH chips), Amount range, Traded date, source filing link. Ten rows, "Show all (n) trades". |
-| Trades most like | Members whose traded tickers overlap most: headshot, name, chamber, shared tickers, overlap percent. Empty: "No other member shares two or more of these tickers in the loaded window." |
-| Government contractors they trade | Traded tickers that are top federal contractors: company, top agency, last award, fiscal-year total and award count, last trade side and date. |
-| Note | Public records, disclosed ranges, not investment advice. |
+| Section                           | Content                                                                                                                                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity                          | Large headshot, name, chamber chip, party, seat.                                                                                                                                        |
+| Stats                             | Trades, Buys, Sells, Volume (midpoints).                                                                                                                                                |
+| Committees                        | Chips with committee and role, each opening Committee Assignments filtered to it. Hidden when none.                                                                                     |
+| Portfolio, top holdings           | Estimated open positions sized from range midpoints over every disclosure on file, "(n) stocks · est. (total)".                                                                         |
+| Sector breakdown                  | The same estimate by sector.                                                                                                                                                            |
+| Trade activity                    | Buys and sells per month chart, then a table: Asset (ticker, name), Type (BUY, SELL, EXCH chips), Amount range, Traded date, source filing link. Ten rows, "Show all (n) trades".       |
+| Trades most like                  | Members whose traded tickers overlap most: headshot, name, chamber, shared tickers, overlap percent. Empty: "No other member shares two or more of these tickers in the loaded window." |
+| Government contractors they trade | Traded tickers that are top federal contractors: company, top agency, last award, fiscal-year total and award count, last trade side and date.                                          |
+| Note                              | Public records, disclosed ranges, not investment advice.                                                                                                                                |
 
 Each section has its own skeleton and failure line.
 
@@ -92,20 +92,20 @@ Under 1000px the page is one column: cards two across, the right column under th
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Member name, chamber, party, state, district | Who filed | Congressional member records | Daily | Former members may lack seat |
-| Headshot | Official portrait | Public member portraits | Static | Some members show initials |
-| Trade: ticker, asset name, side, amount range, trade date, source link | One disclosed trade | House and Senate STOCK Act disclosures | Daily ingest; feed cached 15 min | Ticker missing for some assets (funds, bonds) |
-| Disclosed volume | Sum of range midpoints | Ezana calculation | Per load | An estimate, never an exact sum |
-| Trades, buys, sells, last trade, top tickers, rank, percent of first, chamber comparison, window | Derived per member and per chamber | Ezana calculation | Per load; summary cached 15 min | None |
-| Feed status | House or Senate feed down | Ingest status | Per load | None |
-| Most held companies | Members holding each ticker | Inferred from disclosures | Per load | Inference, ranges only |
-| Trades by state | Trades, members, volume by home state | Ezana calculation | Cached | Trades without a home state |
-| Estimated portfolio and sectors | Open positions from midpoints | Inferred from all disclosures | Per member | Not for fixture members; no prices applied |
-| Committees and roles | Assignments | Congressional committee records | Periodic | Members with no seat |
-| Trades most like | Ticker overlap between members | Ezana calculation | Per load | Needs two shared tickers |
-| Contractors they trade | Contract total, awards, top agency, last award | Federal award records | Daily | Only top contractors with tickers |
+| Field                                                                                            | Meaning                                        | Public source                          | Freshness                        | Gaps                                          |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------- | -------------------------------------- | -------------------------------- | --------------------------------------------- |
+| Member name, chamber, party, state, district                                                     | Who filed                                      | Congressional member records           | Daily                            | Former members may lack seat                  |
+| Headshot                                                                                         | Official portrait                              | Public member portraits                | Static                           | Some members show initials                    |
+| Trade: ticker, asset name, side, amount range, trade date, source link                           | One disclosed trade                            | House and Senate STOCK Act disclosures | Daily ingest; feed cached 15 min | Ticker missing for some assets (funds, bonds) |
+| Disclosed volume                                                                                 | Sum of range midpoints                         | Ezana calculation                      | Per load                         | An estimate, never an exact sum               |
+| Trades, buys, sells, last trade, top tickers, rank, percent of first, chamber comparison, window | Derived per member and per chamber             | Ezana calculation                      | Per load; summary cached 15 min  | None                                          |
+| Feed status                                                                                      | House or Senate feed down                      | Ingest status                          | Per load                         | None                                          |
+| Most held companies                                                                              | Members holding each ticker                    | Inferred from disclosures              | Per load                         | Inference, ranges only                        |
+| Trades by state                                                                                  | Trades, members, volume by home state          | Ezana calculation                      | Cached                           | Trades without a home state                   |
+| Estimated portfolio and sectors                                                                  | Open positions from midpoints                  | Inferred from all disclosures          | Per member                       | Not for fixture members; no prices applied    |
+| Committees and roles                                                                             | Assignments                                    | Congressional committee records        | Periodic                         | Members with no seat                          |
+| Trades most like                                                                                 | Ticker overlap between members                 | Ezana calculation                      | Per load                         | Needs two shared tickers                      |
+| Contractors they trade                                                                           | Contract total, awards, top agency, last award | Federal award records                  | Daily                            | Only top contractors with tickers             |
 
 ## 5. Data we do not have
 

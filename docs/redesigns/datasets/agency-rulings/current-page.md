@@ -19,13 +19,13 @@ The page is new: one shared template filled with this dataset's settings, with n
 
 Admin and demo accounts, desktop, top to bottom (shared dataset canvas, about 1400px centred with a 32px gutter):
 
-| Section | What it shows and does |
-| --- | --- |
-| Green band | Shared chrome with Regulatory Winds lit. No ticker. |
-| Identity row | Eyebrow "DATASETS · REGULATORY WINDS", name "Government agency rulings and decisions", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action. |
-| EzanaQL row | "Query this data with EzanaQL on the Regulatory Winds hub" with Share. |
-| One table | Title "Latest rulings and decisions" with "Sample content" on the right. Columns Decision, Agency, Ticker, Type and Date. Four invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
-| Source line | "Planned source: the federal daily register of agency rules and notices." plus a sample-content note and "Nothing here is investment advice." |
+| Section      | What it shows and does                                                                                                                                                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Green band   | Shared chrome with Regulatory Winds lit. No ticker.                                                                                                                                                                                     |
+| Identity row | Eyebrow "DATASETS · REGULATORY WINDS", name "Government agency rulings and decisions", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action.    |
+| EzanaQL row  | "Query this data with EzanaQL on the Regulatory Winds hub" with Share.                                                                                                                                                                  |
+| One table    | Title "Latest rulings and decisions" with "Sample content" on the right. Columns Decision, Agency, Ticker, Type and Date. Four invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
+| Source line  | "Planned source: the federal daily register of agency rules and notices." plus a sample-content note and "Nothing here is investment advice."                                                                                           |
 
 Everyone else, signed in or out: the identity row without the label, then a plug icon, "This dataset's source is not connected yet." and a text link "Back to datasets". No EzanaQL row, no description, nothing else.
 
@@ -42,13 +42,13 @@ States: the shared route skeleton, then a small skeleton (title bar and eight-ro
 
 Live data: none. Nothing on this page is a real record today. The only thing rendered is the layout skeleton below, filled with invented rows for admin and demo accounts. These columns are the layout skeleton, not fields we hold:
 
-| Column (skeleton) | What it would mean | Planned public source |
-| --- | --- | --- |
-| Decision | Short description of the ruling or decision | Federal daily register; agency approval releases |
-| Agency | Agency that issued it | Same |
-| Ticker | Listed company the decision names, N/A for broad rules | Ezana matching |
-| Type | Approval, denial, final rule, proposed rule, notice | Same |
-| Date | Publication or decision date | Same |
+| Column (skeleton) | What it would mean                                     | Planned public source                            |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| Decision          | Short description of the ruling or decision            | Federal daily register; agency approval releases |
+| Agency            | Agency that issued it                                  | Same                                             |
+| Ticker            | Listed company the decision names, N/A for broad rules | Ezana matching                                   |
+| Type              | Approval, denial, final rule, proposed rule, notice    | Same                                             |
+| Date              | Publication or decision date                           | Same                                             |
 
 Freshness and gaps for every skeleton column: not connected, sample rows only.
 

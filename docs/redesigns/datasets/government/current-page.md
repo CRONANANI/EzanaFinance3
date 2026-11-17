@@ -17,18 +17,18 @@ The overview of federal government activity: the largest contract awards in Ezan
 
 Desktop, top to bottom. This route still renders inside the older marketing shell, not the dataset family frame: there is no green category band, no ticker and no EzanaQL row.
 
-| Element | What it shows | Controls |
-| --- | --- | --- |
-| Top bar | "Back to home" with an arrow on the left, "Get started" button on the right | Links to home and sign in |
-| Dataset tab row | Six pill tabs: Congressional and Political, Government activity (active), Institutional holdings, Alternative signals, Prediction markets, Global and macro | Links |
-| Government sub-tabs | Overview (active), Government contracts | Links |
-| Hero | Eyebrow "Datasets", large centred title "Government activity data", and a lead that promises contract awards, lobbying spend and patent filings | None |
-| Search row | Two bordered fields: "Recipient search" ("Search by company…", matches recipient or ticker) and "Agency search" ("Search by agency…") | Filter only the 15 rows already in the table, as you type |
-| Top recipients card | Badge "Live" or "Sample", trophy icon, "Top contract recipients this fiscal year", a description, five ranked rows: name, ticker and agency, total value | When live, a row opens the recipient popup |
-| Awards table | "Recent federal contract awards" with a freshness note ("Federal contract data via (source), synced (date)." or the sample note). Columns Recipient, Awarding agency, Ticker (or a muted dash), Amount, Award date. 15 rows | When live, a row with an award id opens the award popup. "View all contracts" link below |
-| Legislative tailwinds | Source badge, intro, up to six sectors: name, sector fund symbol, bill count, furthest stage, momentum level; a methodology line | None |
-| How we source it | A bordered card: two paragraphs on source, sync and ticker matching | None |
-| Call to action | "Explore in the app" solid emerald button | Opens sign in |
+| Element               | What it shows                                                                                                                                                                                                               | Controls                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Top bar               | "Back to home" with an arrow on the left, "Get started" button on the right                                                                                                                                                 | Links to home and sign in                                                                |
+| Dataset tab row       | Six pill tabs: Congressional and Political, Government activity (active), Institutional holdings, Alternative signals, Prediction markets, Global and macro                                                                 | Links                                                                                    |
+| Government sub-tabs   | Overview (active), Government contracts                                                                                                                                                                                     | Links                                                                                    |
+| Hero                  | Eyebrow "Datasets", large centred title "Government activity data", and a lead that promises contract awards, lobbying spend and patent filings                                                                             | None                                                                                     |
+| Search row            | Two bordered fields: "Recipient search" ("Search by company…", matches recipient or ticker) and "Agency search" ("Search by agency…")                                                                                       | Filter only the 15 rows already in the table, as you type                                |
+| Top recipients card   | Badge "Live" or "Sample", trophy icon, "Top contract recipients this fiscal year", a description, five ranked rows: name, ticker and agency, total value                                                                    | When live, a row opens the recipient popup                                               |
+| Awards table          | "Recent federal contract awards" with a freshness note ("Federal contract data via (source), synced (date)." or the sample note). Columns Recipient, Awarding agency, Ticker (or a muted dash), Amount, Award date. 15 rows | When live, a row with an award id opens the award popup. "View all contracts" link below |
+| Legislative tailwinds | Source badge, intro, up to six sectors: name, sector fund symbol, bill count, furthest stage, momentum level; a methodology line                                                                                            | None                                                                                     |
+| How we source it      | A bordered card: two paragraphs on source, sync and ticker matching                                                                                                                                                         | None                                                                                     |
+| Call to action        | "Explore in the app" solid emerald button                                                                                                                                                                                   | Opens sign in                                                                            |
 
 Then the shared dataset footer.
 
@@ -58,17 +58,17 @@ Under 640px the search fields stack and long names wrap; the table keeps its col
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Recipient | Company receiving the award | Federal spending record (U.S. Treasury) | Daily sync | Name as filed, not parent company |
-| Awarding agency | Agency that made the award | Same | Daily | None |
-| Ticker | Ezana's match of a recipient to a listed company | Ezana entity matching | Daily | Most recipients unmatched (dash) |
-| Amount | Award value | Same | Daily | None |
-| Award date | Action date | Same | Daily | None |
-| Top recipients | Five recipients by total value across the synced set, with ticker and main agency | Derived | Daily | Synced set is a few hundred of the largest current-year awards |
-| Award detail | Obligation, base and options, dates, period, funding agency, NAICS, PSC, place, business categories, parent award, modifications | Same record, fetched on open | On open | Many fields "Not disclosed" |
-| Recipient recent awards | Up to eight recent awards for a recipient | Same | On open | None |
-| Legislative tailwinds | Sectors with rising bill activity in 90 days, bill count, furthest stage, momentum, sector fund symbol | Congress.gov bill actions with Ezana's sector map | Daily | Empty until bills are tracked |
+| Field                   | What it means                                                                                                                    | Public source                                     | Freshness  | Gaps                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ---------- | -------------------------------------------------------------- |
+| Recipient               | Company receiving the award                                                                                                      | Federal spending record (U.S. Treasury)           | Daily sync | Name as filed, not parent company                              |
+| Awarding agency         | Agency that made the award                                                                                                       | Same                                              | Daily      | None                                                           |
+| Ticker                  | Ezana's match of a recipient to a listed company                                                                                 | Ezana entity matching                             | Daily      | Most recipients unmatched (dash)                               |
+| Amount                  | Award value                                                                                                                      | Same                                              | Daily      | None                                                           |
+| Award date              | Action date                                                                                                                      | Same                                              | Daily      | None                                                           |
+| Top recipients          | Five recipients by total value across the synced set, with ticker and main agency                                                | Derived                                           | Daily      | Synced set is a few hundred of the largest current-year awards |
+| Award detail            | Obligation, base and options, dates, period, funding agency, NAICS, PSC, place, business categories, parent award, modifications | Same record, fetched on open                      | On open    | Many fields "Not disclosed"                                    |
+| Recipient recent awards | Up to eight recent awards for a recipient                                                                                        | Same                                              | On open    | None                                                           |
+| Legislative tailwinds   | Sectors with rising bill activity in 90 days, bill count, furthest stage, momentum, sector fund symbol                           | Congress.gov bill actions with Ezana's sector map | Daily      | Empty until bills are tracked                                  |
 
 ## 5. Data we do not have
 

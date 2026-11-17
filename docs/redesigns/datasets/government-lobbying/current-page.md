@@ -21,32 +21,32 @@ Desktop, top to bottom. The app draws the navigation bar, the green category ban
 
 ### Sticky filter bar (two rows, full width)
 
-| Control | What it does |
-| --- | --- |
-| Period | Segmented: two prior fiscal years, YTD, Quarter, 90 days (default last full year). Quarter reveals a quarter select from 2024 Q1. |
-| Government entity | Segmented: All, Congress, Agencies, White House. |
-| Min | Slider over stops $0 to $10M, commits after a short pause. |
-| Public companies only | A switch chip. |
-| Search clients or firms | Borderless search, commits on pause or Enter. |
-| Reset | Text link, disabled with no filters. |
-| Issue chips (second row) | "All", the top 12 issues, "All (n) issues" opening a searchable modal list. Hovering an issue prefetches. |
+| Control                  | What it does                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Period                   | Segmented: two prior fiscal years, YTD, Quarter, 90 days (default last full year). Quarter reveals a quarter select from 2024 Q1. |
+| Government entity        | Segmented: All, Congress, Agencies, White House.                                                                                  |
+| Min                      | Slider over stops $0 to $10M, commits after a short pause.                                                                        |
+| Public companies only    | A switch chip.                                                                                                                    |
+| Search clients or firms  | Borderless search, commits on pause or Enter.                                                                                     |
+| Reset                    | Text link, disabled with no filters.                                                                                              |
+| Issue chips (second row) | "All", the top 12 issues, "All (n) issues" opening a searchable modal list. Hovering an issue prefetches.                         |
 
 Each card refetches only when a filter it uses changes, dimming its last answer meanwhile; lower cards load near the viewport.
 
 ### Cards, in order
 
-| Card | What it shows | Controls |
-| --- | --- | --- |
-| 1 Influence pulse (full width) | Five tiles: Disclosed spend, Filings, Distinct clients, Distinct firms, Revolving-door lobbyists, each with a YoY pill. | YoY shows a middle dot until both periods are 95 percent loaded, with a footer note. |
-| 2 Spend leaderboard (7 of 12) | Top 15: rank, name, ticker tag (solid check verified, dashed badge name match), bar, spend, share. Footer with the period total. | Rank by Clients or Firms. A row opens the client or firm drawer. |
-| 3 Share of filings by issue (5 of 12) | Each issue's share of filings, with a note that the source gives no dollars per issue and shares total more than 100 percent. | A row sets or clears the issue filter. |
-| 4 Pressure map (full width) | Heatmap of the top 12 issues by the top 10 government bodies contacted; each cell is a filing count, legend Fewer to More filings. Hover shows the top three clients. | Row labels set the issue filter. |
-| 5 Quarterly rhythm (half) | Bars of spend per quarter and a line of filing counts from 2024 Q1 to the end of this year. Unended quarters are dashed ghosts labelled "Not yet filed"; a quarter still inside its filing window is faded with the percent received. | None. |
-| 6 Former officials now lobbying (half) | Share of filings naming a lobbyist with a prior covered government position, distinct lobbyists, firms ranked by them. Footer: a named position is a disclosure requirement, not a finding. | A firm row expands to show the covered positions as filed. |
-| 7 Public company lens (full width) | Tiles for listed companies that lobbied: ticker, name, mapping badge, spend, filings, top issue, six-month sparkline, price and day change (quotes delayed). | A tile opens the company modal. |
-| 8 Lobbying vs contracts (half) | Log-log scatter of lobbying spend against federal contract awards per listed company; name-matched companies are hollow dots. A list "Awards per lobbying dollar". Page filters do not apply. | Window 1y or 2y. |
-| 9 Money to members (half) | Contributions reported by lobbyists and registrants: total, reports, type counts. Names as filed, never linked. | Type chips (multi-select); tabs Top honorees, Top committees, Largest items. |
-| 10 Disclosures (full width) | Posted, Client, Firm, Amount (or "Registration"), Issues (three chips and a count), Lobbyists, View. | Modes Public companies, Largest, Most recent. Export CSV (signed in; signed out it is disabled with "Sign in to export CSV"). Previous and next page. View opens the filing. |
+| Card                                   | What it shows                                                                                                                                                                                                                         | Controls                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Influence pulse (full width)         | Five tiles: Disclosed spend, Filings, Distinct clients, Distinct firms, Revolving-door lobbyists, each with a YoY pill.                                                                                                               | YoY shows a middle dot until both periods are 95 percent loaded, with a footer note.                                                                                         |
+| 2 Spend leaderboard (7 of 12)          | Top 15: rank, name, ticker tag (solid check verified, dashed badge name match), bar, spend, share. Footer with the period total.                                                                                                      | Rank by Clients or Firms. A row opens the client or firm drawer.                                                                                                             |
+| 3 Share of filings by issue (5 of 12)  | Each issue's share of filings, with a note that the source gives no dollars per issue and shares total more than 100 percent.                                                                                                         | A row sets or clears the issue filter.                                                                                                                                       |
+| 4 Pressure map (full width)            | Heatmap of the top 12 issues by the top 10 government bodies contacted; each cell is a filing count, legend Fewer to More filings. Hover shows the top three clients.                                                                 | Row labels set the issue filter.                                                                                                                                             |
+| 5 Quarterly rhythm (half)              | Bars of spend per quarter and a line of filing counts from 2024 Q1 to the end of this year. Unended quarters are dashed ghosts labelled "Not yet filed"; a quarter still inside its filing window is faded with the percent received. | None.                                                                                                                                                                        |
+| 6 Former officials now lobbying (half) | Share of filings naming a lobbyist with a prior covered government position, distinct lobbyists, firms ranked by them. Footer: a named position is a disclosure requirement, not a finding.                                           | A firm row expands to show the covered positions as filed.                                                                                                                   |
+| 7 Public company lens (full width)     | Tiles for listed companies that lobbied: ticker, name, mapping badge, spend, filings, top issue, six-month sparkline, price and day change (quotes delayed).                                                                          | A tile opens the company modal.                                                                                                                                              |
+| 8 Lobbying vs contracts (half)         | Log-log scatter of lobbying spend against federal contract awards per listed company; name-matched companies are hollow dots. A list "Awards per lobbying dollar". Page filters do not apply.                                         | Window 1y or 2y.                                                                                                                                                             |
+| 9 Money to members (half)              | Contributions reported by lobbyists and registrants: total, reports, type counts. Names as filed, never linked.                                                                                                                       | Type chips (multi-select); tabs Top honorees, Top committees, Largest items.                                                                                                 |
+| 10 Disclosures (full width)            | Posted, Client, Firm, Amount (or "Registration"), Issues (three chips and a count), Lobbyists, View.                                                                                                                                  | Modes Public companies, Largest, Most recent. Export CSV (signed in; signed out it is disabled with "Sign in to export CSV"). Previous and next page. View opens the filing. |
 
 Every card shares one frame: title, a subtitle naming the active filters (or "All filings"), a skeleton, an error line with Retry, an empty sentence naming the narrowest filter with a "Reset filters" chip, and a partial chip ("(quarter) is still being filed, (n)% received").
 
@@ -80,18 +80,18 @@ Under 1200px pulse tiles go three across and lens tiles two. Under 1100px paired
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Filing: client, firm, amount, type, posted date, period | One quarterly report or registration | Senate lobbying disclosures | Scheduled copy; coverage per quarter shown | Registrations have no amount; late filings keep arriving |
-| Issues on a filing, activity text | Issue codes and descriptions | Senate lobbying disclosures | Same | No dollars per issue |
-| Government entities contacted | Bodies named on a filing | Senate lobbying disclosures | Same | Sometimes not specified |
-| Lobbyists and covered positions | Named lobbyists and prior roles as filed | Senate lobbying disclosures | Same | Free text, typos |
-| Pulse totals, YoY, leaderboard, issue shares, pressure cells, quarterly series | Aggregates of the filings | Ezana aggregates | Cached | YoY gated on coverage; counts only for issues and bodies; nothing before 2024 |
-| Ticker mapping | Client to listed ticker | Ezana matching | Periodic | Verified or name match; most clients unmapped |
-| Price, day change, six-month and since-2024 candles | Market context | Market data | Delayed | No price history for some tickers |
-| Contract awards per ticker | For the scatter | Federal award records | Daily | Listed companies with both only |
-| Contributions (honoree, payee, committee, type, amount, date) | Lobbyist and registrant contributions | Semiannual contribution reports | Twice a year | Names as filed, cannot be joined to members |
-| Coverage | Percent of filings received per quarter, last sync | Ingest status | Per load | None |
+| Field                                                                          | Meaning                                            | Public source                   | Freshness                                  | Gaps                                                                          |
+| ------------------------------------------------------------------------------ | -------------------------------------------------- | ------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
+| Filing: client, firm, amount, type, posted date, period                        | One quarterly report or registration               | Senate lobbying disclosures     | Scheduled copy; coverage per quarter shown | Registrations have no amount; late filings keep arriving                      |
+| Issues on a filing, activity text                                              | Issue codes and descriptions                       | Senate lobbying disclosures     | Same                                       | No dollars per issue                                                          |
+| Government entities contacted                                                  | Bodies named on a filing                           | Senate lobbying disclosures     | Same                                       | Sometimes not specified                                                       |
+| Lobbyists and covered positions                                                | Named lobbyists and prior roles as filed           | Senate lobbying disclosures     | Same                                       | Free text, typos                                                              |
+| Pulse totals, YoY, leaderboard, issue shares, pressure cells, quarterly series | Aggregates of the filings                          | Ezana aggregates                | Cached                                     | YoY gated on coverage; counts only for issues and bodies; nothing before 2024 |
+| Ticker mapping                                                                 | Client to listed ticker                            | Ezana matching                  | Periodic                                   | Verified or name match; most clients unmapped                                 |
+| Price, day change, six-month and since-2024 candles                            | Market context                                     | Market data                     | Delayed                                    | No price history for some tickers                                             |
+| Contract awards per ticker                                                     | For the scatter                                    | Federal award records           | Daily                                      | Listed companies with both only                                               |
+| Contributions (honoree, payee, committee, type, amount, date)                  | Lobbyist and registrant contributions              | Semiannual contribution reports | Twice a year                               | Names as filed, cannot be joined to members                                   |
+| Coverage                                                                       | Percent of filings received per quarter, last sync | Ingest status                   | Per load                                   | None                                                                          |
 
 ## 5. Data we do not have
 

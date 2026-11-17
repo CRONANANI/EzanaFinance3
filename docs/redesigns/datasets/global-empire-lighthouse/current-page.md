@@ -18,20 +18,20 @@ The home page of the Global Empire Lighthouse dimension. It ranks about 60 count
 
 Desktop, top to bottom, in a column up to 1320px wide. It wears the older in-app Empire Rankings look: filled rounded cards on a two-column grid, gold accents, bordered chip groups.
 
-- Frame: navigation bar, green band, and a ticker of the top 30 countries ("#1  Country  71.4"); an item opens that country.
+- Frame: navigation bar, green band, and a ticker of the top 30 countries ("#1 Country 71.4"); an item opens that country.
 - Hero: "Back to Global Market Analysis" link, globe icon tile, title, a lead sentence ("Power measured across 11 of 18 dimensions for N ranked countries, built only from sourced data."), and a badge "LIVE · 11/18 DIMENSIONS · (year)" or "REFRESHING".
 - Layers banner (only when arriving with layers): "Showing data for your selected Global Power Map layers", the layer names as tags, dismiss button.
 
-| Card | What it shows | Controls |
-| --- | --- | --- |
-| Global Power Rankings | Horizontal bars of the composite (0 to 100), ISO codes on the axis; bar 1 gold, 2 to 3 emerald, then two grey tiers. Tooltip: rank, name, score. | Scope (World, G20, G7, BRICS, NATO), Show (Top 5, 10, All), Sort (Strongest, Weakest). A bar opens the country. |
-| Country panel | Inserted under the rankings: "Nth of N on the composite · score · X of 11 live dimensions · year" (or "Not ranked"); a radar against the leader; "Ranks highest in" and "Ranks lowest in" (three each); links to the World Bank page and the country on the OECD page. | Close. A dimension link opens that dimension's table with the country highlighted. |
-| Country Scorecards | Tiles per ranked country: ISO code, name, "9/11 dims", rank, composite, a bar. | Scope, Sort by (Rank, Name, Coverage). A tile opens the country. |
-| Power Dimension Comparison | Radar of two countries across live dimensions, default the top two. | A and B selects, Focus (All, Economic, Military, Social). Under three axes: "Fewer than three live dimensions in this focus." |
-| Spotlight cards | Half-width ranked bars for Debt Burden, Military Strength, Trade, Innovation and Technology, Infrastructure. | Scope select, Top 5 or 10, Sort. |
-| Every Dimension | Dimension pills grouped by category (Economic, Fundamentals, Social), then the full table: Rank, Country (a "Your search" tag on the open one), Score. Scrolls inside its box. | Pills. A row opens the country. |
-| Composite Ranking | Rank, Country, Composite, Coverage, Strongest, Weakest. Countries under 70 percent coverage follow unranked ("n/a, too few dimensions"). | A row opens the country. |
-| Pending Dimensions, How We Score It | The 7 unscored names; the method (weekly load, 0 to 100 blend, lower-is-better inverted, 70 percent rule, not an official index). | None |
+| Card                                | What it shows                                                                                                                                                                                                                                                          | Controls                                                                                                                      |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Global Power Rankings               | Horizontal bars of the composite (0 to 100), ISO codes on the axis; bar 1 gold, 2 to 3 emerald, then two grey tiers. Tooltip: rank, name, score.                                                                                                                       | Scope (World, G20, G7, BRICS, NATO), Show (Top 5, 10, All), Sort (Strongest, Weakest). A bar opens the country.               |
+| Country panel                       | Inserted under the rankings: "Nth of N on the composite · score · X of 11 live dimensions · year" (or "Not ranked"); a radar against the leader; "Ranks highest in" and "Ranks lowest in" (three each); links to the World Bank page and the country on the OECD page. | Close. A dimension link opens that dimension's table with the country highlighted.                                            |
+| Country Scorecards                  | Tiles per ranked country: ISO code, name, "9/11 dims", rank, composite, a bar.                                                                                                                                                                                         | Scope, Sort by (Rank, Name, Coverage). A tile opens the country.                                                              |
+| Power Dimension Comparison          | Radar of two countries across live dimensions, default the top two.                                                                                                                                                                                                    | A and B selects, Focus (All, Economic, Military, Social). Under three axes: "Fewer than three live dimensions in this focus." |
+| Spotlight cards                     | Half-width ranked bars for Debt Burden, Military Strength, Trade, Innovation and Technology, Infrastructure.                                                                                                                                                           | Scope select, Top 5 or 10, Sort.                                                                                              |
+| Every Dimension                     | Dimension pills grouped by category (Economic, Fundamentals, Social), then the full table: Rank, Country (a "Your search" tag on the open one), Score. Scrolls inside its box.                                                                                         | Pills. A row opens the country.                                                                                               |
+| Composite Ranking                   | Rank, Country, Composite, Coverage, Strongest, Weakest. Countries under 70 percent coverage follow unranked ("n/a, too few dimensions").                                                                                                                               | A row opens the country.                                                                                                      |
+| Pending Dimensions, How We Score It | The 7 unscored names; the method (weekly load, 0 to 100 blend, lower-is-better inverted, 70 percent rule, not an official index).                                                                                                                                      | None                                                                                                                          |
 
 Below the cards (the old hub): dataset cards for the other lighthouse datasets (two marked Soon; live ones show a lead figure, freshest date and "Open"), the EzanaQL bar with example prompts, and four cross-dataset cards (OECD moves, World Bank moves, risk leaders, new sanctions) whose rows offer "Watchlist / Save" and "Query this".
 
@@ -49,17 +49,17 @@ States: a generic skeleton while loading; with no scores, "Rankings are refreshi
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Composite score and rank | Mean of live dimension scores, 0 to 100 | Ezana scoring of World Bank indicators | Weekly | Under 70 percent coverage: unranked |
-| Coverage | Live dimensions scored, out of 11 | Same | Weekly | None |
-| Strongest, weakest dimension | Best and worst by rank | Same | Weekly | Unranked countries |
-| Dimension score and rank | One dimension, 0 to 100, higher is stronger; ties share a rank | Weighted World Bank series | Weekly | 7 pending dimensions |
-| Scoring year | Latest year with scores | Same | Weekly | One year only |
-| Country, ISO code | About 60 included countries | Ezana country list | Static | Others |
-| Group membership | G20, G7, BRICS, NATO | Public membership lists | 2026 | Other blocs |
-| Dataset card figures | Lead number and freshest date per lighthouse dataset | Those datasets | Per dataset | Soon datasets |
-| Cross-dataset rows | OECD moves, World Bank moves, risk leaders, new sanctions | Those datasets | Per dataset | Empty until loaded |
+| Field                        | Meaning                                                        | Public source                          | Freshness   | Gaps                                |
+| ---------------------------- | -------------------------------------------------------------- | -------------------------------------- | ----------- | ----------------------------------- |
+| Composite score and rank     | Mean of live dimension scores, 0 to 100                        | Ezana scoring of World Bank indicators | Weekly      | Under 70 percent coverage: unranked |
+| Coverage                     | Live dimensions scored, out of 11                              | Same                                   | Weekly      | None                                |
+| Strongest, weakest dimension | Best and worst by rank                                         | Same                                   | Weekly      | Unranked countries                  |
+| Dimension score and rank     | One dimension, 0 to 100, higher is stronger; ties share a rank | Weighted World Bank series             | Weekly      | 7 pending dimensions                |
+| Scoring year                 | Latest year with scores                                        | Same                                   | Weekly      | One year only                       |
+| Country, ISO code            | About 60 included countries                                    | Ezana country list                     | Static      | Others                              |
+| Group membership             | G20, G7, BRICS, NATO                                           | Public membership lists                | 2026        | Other blocs                         |
+| Dataset card figures         | Lead number and freshest date per lighthouse dataset           | Those datasets                         | Per dataset | Soon datasets                       |
+| Cross-dataset rows           | OECD moves, World Bank moves, risk leaders, new sanctions      | Those datasets                         | Per dataset | Empty until loaded                  |
 
 ## 5. Data we do not have
 

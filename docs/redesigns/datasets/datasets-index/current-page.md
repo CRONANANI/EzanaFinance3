@@ -59,16 +59,16 @@ Cards run seven across, four under 1280px, two under 960px (where the belt hides
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Dimension name, icon, tagline, colour | The seven dimensions | Ezana dataset catalogue | With each release | None |
-| Dataset name, live or soon, link | Every dataset per dimension | Same | With each release | Soon datasets have no page |
-| Live counts | Datasets live per dimension and overall | Same | With each release | None |
-| Signal headline, meta, dimension | One recent finding from a live dataset (a disclosed trade, an award, an insider buy, a new sanctions entry) | Each dataset's own public source | Every five minutes while open | Slow datasets can be missing on a given read |
-| Signal stats and findings | Up to four figures and five plain findings | Same | Same | Varies by dataset |
-| Dataset context and chart | Headline figures and one chart series per dataset | Same | Same | Some datasets have no chart |
-| Through date | Last date covered by the dataset | Same | Same | Some datasets |
-| Pings left today | The account's remaining Sonar allowance | Ezana account | On load | Not shown when unknown |
+| Field                                 | What it means                                                                                               | Public source                    | Freshness                     | Gaps                                         |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------------------- | -------------------------------------------- |
+| Dimension name, icon, tagline, colour | The seven dimensions                                                                                        | Ezana dataset catalogue          | With each release             | None                                         |
+| Dataset name, live or soon, link      | Every dataset per dimension                                                                                 | Same                             | With each release             | Soon datasets have no page                   |
+| Live counts                           | Datasets live per dimension and overall                                                                     | Same                             | With each release             | None                                         |
+| Signal headline, meta, dimension      | One recent finding from a live dataset (a disclosed trade, an award, an insider buy, a new sanctions entry) | Each dataset's own public source | Every five minutes while open | Slow datasets can be missing on a given read |
+| Signal stats and findings             | Up to four figures and five plain findings                                                                  | Same                             | Same                          | Varies by dataset                            |
+| Dataset context and chart             | Headline figures and one chart series per dataset                                                           | Same                             | Same                          | Some datasets have no chart                  |
+| Through date                          | Last date covered by the dataset                                                                            | Same                             | Same                          | Some datasets                                |
+| Pings left today                      | The account's remaining Sonar allowance                                                                     | Ezana account                    | On load                       | Not shown when unknown                       |
 
 ## 5. Data we do not have
 

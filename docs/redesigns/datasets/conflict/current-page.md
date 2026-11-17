@@ -22,17 +22,17 @@ Desktop, top to bottom, filled cards. One selection (the country) is shared by t
 - Header: eyebrow "Datasets · Uppsala Conflict Data Program", title "Armed conflict tracker", a lead sentence; then the EzanaQL row.
 - As-of line: "Latest recorded event (date). Last 12 months: (from) to (to)."
 
-| Section | What it shows | Controls |
-| --- | --- | --- |
-| Headline measures (four filled tiles) | Deaths in organized violence, last 12 months (with change against the prior 12 and "Range low to high"); Active state-based conflicts ("N at war level (1,000+ deaths)"); Countries with active conflict ("N countries recorded deaths"); Civilian deaths (share of all deaths). | None |
-| Where organized violence is happening | Countries shaded by deaths over 12 months, with event cells on a 1 degree grid as circles sized by deaths and coloured by the deadliest violence type; legend bins 1 to 24 up to 10,000+. | Period 3M, 12M, 36M; Violence type All, State-based, Non-state, One-sided; Map or Ranked view; a country opens its panel. |
-| Fastest rising (beside the map) | Up to six countries with 100 or more deaths that rose against the prior year. | A row opens the country. |
-| Country panel (inserted when a country is picked) | Tiles: deaths last 12 months (with range), recorded events, civilian deaths (share), share of global deaths; monthly deaths by type; deadliest conflicts (up to 8); most active parties (up to 8); latest recorded events (10: date, pairing, type). | Close. |
-| Deaths in organized violence by month | Worldwide, 36 months, stacked by violence type; preliminary months hatched. | None |
-| Countries, last 12 months | Country, Deaths, Change, Events, Civilians, Main type, Deadliest conflict. Top 15, then "Show all N countries". | Sort by Deaths, Change, Events, Civilians; region filter (a native select); a row opens the country. |
-| Deadliest conflicts, last 12 months | Ten conflicts: name, type, countries, number of pairings, last event, best estimate with low to high range, change on the prior year. | None |
-| Deaths by region | Paired bars per region, last 12 months against prior 12. | None |
-| About this data | What is counted, releases in use (monthly preliminary, revised later; annual), coverage, attribution. | None |
+| Section                                           | What it shows                                                                                                                                                                                                                                                                    | Controls                                                                                                                  |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Headline measures (four filled tiles)             | Deaths in organized violence, last 12 months (with change against the prior 12 and "Range low to high"); Active state-based conflicts ("N at war level (1,000+ deaths)"); Countries with active conflict ("N countries recorded deaths"); Civilian deaths (share of all deaths). | None                                                                                                                      |
+| Where organized violence is happening             | Countries shaded by deaths over 12 months, with event cells on a 1 degree grid as circles sized by deaths and coloured by the deadliest violence type; legend bins 1 to 24 up to 10,000+.                                                                                        | Period 3M, 12M, 36M; Violence type All, State-based, Non-state, One-sided; Map or Ranked view; a country opens its panel. |
+| Fastest rising (beside the map)                   | Up to six countries with 100 or more deaths that rose against the prior year.                                                                                                                                                                                                    | A row opens the country.                                                                                                  |
+| Country panel (inserted when a country is picked) | Tiles: deaths last 12 months (with range), recorded events, civilian deaths (share), share of global deaths; monthly deaths by type; deadliest conflicts (up to 8); most active parties (up to 8); latest recorded events (10: date, pairing, type).                             | Close.                                                                                                                    |
+| Deaths in organized violence by month             | Worldwide, 36 months, stacked by violence type; preliminary months hatched.                                                                                                                                                                                                      | None                                                                                                                      |
+| Countries, last 12 months                         | Country, Deaths, Change, Events, Civilians, Main type, Deadliest conflict. Top 15, then "Show all N countries".                                                                                                                                                                  | Sort by Deaths, Change, Events, Civilians; region filter (a native select); a row opens the country.                      |
+| Deadliest conflicts, last 12 months               | Ten conflicts: name, type, countries, number of pairings, last event, best estimate with low to high range, change on the prior year.                                                                                                                                            | None                                                                                                                      |
+| Deaths by region                                  | Paired bars per region, last 12 months against prior 12.                                                                                                                                                                                                                         | None                                                                                                                      |
+| About this data                                   | What is counted, releases in use (monthly preliminary, revised later; annual), coverage, attribution.                                                                                                                                                                            | None                                                                                                                      |
 
 States: route skeleton; nothing loaded: "Conflict data has not loaded yet. It refreshes weekly from UCDP."; map: "Loading events..." and "The event map could not be loaded."; panel: "Loading the country picture...", "UCDP has no recorded events for this country in the last three years.", "The country picture could not be loaded. Try again shortly."; rising: "No country with 100 or more deaths rose against the prior year." Tablet and phone: pairs stack; breakpoints not verified.
 
@@ -46,18 +46,18 @@ States: route skeleton; nothing loaded: "Conflict data has not loaded yet. It re
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Deaths (best, low, high) | Estimated deaths in organized violence | Uppsala Conflict Data Program event data | Weekly load; recent months preliminary | Recent months revised later |
-| Events | Recorded events with at least one death | Same | Same | Same |
-| Civilian deaths | Deaths among civilians | Same | Same | Same |
-| Violence type | State-based, non-state, one-sided | Same | Same | None |
-| Country, region | Where the events happened | Same | Same | None |
-| Conflict name, pairings, parties | Named conflicts and the pairs of actors | Same | Same | None |
-| Event date, location cell | Event end date, binned to a 1 degree grid | Same | Same | Exact points not shown |
-| Monthly deaths by type | 36 months worldwide and per country | Same | Same | Preliminary months hatched |
-| Changes | Last 12 months against the prior 12 | Ezana from the above | Same | Countries with no prior deaths |
-| Share of global deaths | Country deaths over the world total | Same | Same | None |
+| Field                            | Meaning                                   | Public source                            | Freshness                              | Gaps                           |
+| -------------------------------- | ----------------------------------------- | ---------------------------------------- | -------------------------------------- | ------------------------------ |
+| Deaths (best, low, high)         | Estimated deaths in organized violence    | Uppsala Conflict Data Program event data | Weekly load; recent months preliminary | Recent months revised later    |
+| Events                           | Recorded events with at least one death   | Same                                     | Same                                   | Same                           |
+| Civilian deaths                  | Deaths among civilians                    | Same                                     | Same                                   | Same                           |
+| Violence type                    | State-based, non-state, one-sided         | Same                                     | Same                                   | None                           |
+| Country, region                  | Where the events happened                 | Same                                     | Same                                   | None                           |
+| Conflict name, pairings, parties | Named conflicts and the pairs of actors   | Same                                     | Same                                   | None                           |
+| Event date, location cell        | Event end date, binned to a 1 degree grid | Same                                     | Same                                   | Exact points not shown         |
+| Monthly deaths by type           | 36 months worldwide and per country       | Same                                     | Same                                   | Preliminary months hatched     |
+| Changes                          | Last 12 months against the prior 12       | Ezana from the above                     | Same                                   | Countries with no prior deaths |
+| Share of global deaths           | Country deaths over the world total       | Same                                     | Same                                   | None                           |
 
 ## 5. Data we do not have
 

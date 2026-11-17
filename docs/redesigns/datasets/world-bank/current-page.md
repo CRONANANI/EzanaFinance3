@@ -37,17 +37,17 @@ States: route skeleton (centred title, five pills, ten-row table); a failed read
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Country name and code | Every country the World Bank reports, aggregates excluded | World Bank indicators | Weekly load | None |
-| Real GDP growth | Percent a year, latest reported year | Same | Weekly load; figures are annual, often a year or two behind | Some small economies |
-| Inflation | Consumer prices, percent a year | Same | Same | Some countries |
-| Unemployment | Percent of labour force | Same | Same | Some countries |
-| Central government debt | Percent of GDP | Same | Same | Many countries |
-| GDP per person | Current US dollars | Same | Same | Few |
-| Year | Year of the GDP growth figure | Same | Same | Other columns may be a different year |
-| Loaded, not shown | Current account balance (% of GDP), exports (% of GDP), total reserves (US dollars) | Same | Same | Not on the page today |
-| Loaded, not shown | The prior year's value for every indicator, and annual history from 2000 | Same | Same | Not on the page today |
+| Field                   | Meaning                                                                             | Public source         | Freshness                                                   | Gaps                                  |
+| ----------------------- | ----------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------- | ------------------------------------- |
+| Country name and code   | Every country the World Bank reports, aggregates excluded                           | World Bank indicators | Weekly load                                                 | None                                  |
+| Real GDP growth         | Percent a year, latest reported year                                                | Same                  | Weekly load; figures are annual, often a year or two behind | Some small economies                  |
+| Inflation               | Consumer prices, percent a year                                                     | Same                  | Same                                                        | Some countries                        |
+| Unemployment            | Percent of labour force                                                             | Same                  | Same                                                        | Some countries                        |
+| Central government debt | Percent of GDP                                                                      | Same                  | Same                                                        | Many countries                        |
+| GDP per person          | Current US dollars                                                                  | Same                  | Same                                                        | Few                                   |
+| Year                    | Year of the GDP growth figure                                                       | Same                  | Same                                                        | Other columns may be a different year |
+| Loaded, not shown       | Current account balance (% of GDP), exports (% of GDP), total reserves (US dollars) | Same                  | Same                                                        | Not on the page today                 |
+| Loaded, not shown       | The prior year's value for every indicator, and annual history from 2000            | Same                  | Same                                                        | Not on the page today                 |
 
 ## 5. Data we do not have
 

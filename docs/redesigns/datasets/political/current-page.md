@@ -21,16 +21,16 @@ Desktop, top to bottom. The green band has no ticker; the page draws its own str
 
 ### Left filter rail (148px) and main column
 
-| Element | What it does |
-| --- | --- |
-| Export data | CSV of the filtered rows (with an empty excess return column) |
-| Party | All, Democrat, Republican, Independent, with member counts and colour dots |
-| Chamber | All, House, Senate |
-| Transaction | All, Purchases, Sales |
-| Min trade value | Slider $0 to $5M, against the bottom of each range |
-| Period | Last 90 days, Year to date, All time (from the newest trade) |
-| Stat cards | Disclosed volume (range midpoints), Disclosed trades, Top performer (the volume leader's surname, in red, excess a dash), Members tracked |
-| Party legend chips | Democrat, Republican, Independent: a second party filter |
+| Element               | What it does                                                                                                                                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Export data           | CSV of the filtered rows (with an empty excess return column)                                                                                                                                                                      |
+| Party                 | All, Democrat, Republican, Independent, with member counts and colour dots                                                                                                                                                         |
+| Chamber               | All, House, Senate                                                                                                                                                                                                                 |
+| Transaction           | All, Purchases, Sales                                                                                                                                                                                                              |
+| Min trade value       | Slider $0 to $5M, against the bottom of each range                                                                                                                                                                                 |
+| Period                | Last 90 days, Year to date, All time (from the newest trade)                                                                                                                                                                       |
+| Stat cards            | Disclosed volume (range midpoints), Disclosed trades, Top performer (the volume leader's surname, in red, excess a dash), Members tracked                                                                                          |
+| Party legend chips    | Democrat, Republican, Independent: a second party filter                                                                                                                                                                           |
 | Top traders · (party) | Leaderboard or Share of volume. Eight portrait cards (rank, party badge, headshot with party ring, name, chamber, state, a dash for excess, an empty sparkline, "Portfolio" with no value), or a donut of midpoint volume by party |
 
 None of the filters are in the address.
@@ -53,7 +53,7 @@ A centred two-column dialog: headshot, name, party, chamber, state; Portfolio va
 
 ### States
 
-Route skeleton: centred title, pills, table. Then "Loading live congressional disclosures…", error "Live congressional data is temporarily unavailable, try again shortly.", empty "No members match the current filters." 
+Route skeleton: centred title, pills, table. Then "Loading live congressional disclosures…", error "Live congressional data is temporarily unavailable, try again shortly.", empty "No members match the current filters."
 
 ### Tablet and phone
 
@@ -68,16 +68,16 @@ Under 900px the rail becomes a wrapped chip row above the main column; cards sta
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Ticker, transaction, traded and filed dates | One disclosed trade | House Clerk and Senate STOCK Act disclosures | Daily; last good copy served if a refresh fails | Newest 300 of the last year only |
-| Amount range, midpoint | Disclosed range and its midpoint | Same | Daily | Ranges, never exact |
-| Member name, party, chamber, state | Who traded | Same, plus the congressional roster | Daily | Some states missing |
-| Headshot | Member photo | Official photos | Static | Initials when missing |
-| Totals (volume, trades, members, per party) | Sums over loaded rows | Derived | On load | Loaded rows only |
-| Ticker lookup results | Every member trade in one ticker with inferred position status | Same disclosures | Daily | Inferred, not reported holdings |
-| Legislative context | Sectors with moving bills in 90 days, stage, momentum, matched to the member's tickers | Congress.gov bill actions and Ezana's sector map | Daily | Tickers outside the map |
-| Campaign finance | Raised, PAC money, cash on hand, spent, donors by occupation or employer, outside money for and against | Federal Election Commission filings | As loaded; 2026 and 2024 cycles | Empty when not loaded |
+| Field                                       | What it means                                                                                           | Public source                                    | Freshness                                       | Gaps                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- | -------------------------------- |
+| Ticker, transaction, traded and filed dates | One disclosed trade                                                                                     | House Clerk and Senate STOCK Act disclosures     | Daily; last good copy served if a refresh fails | Newest 300 of the last year only |
+| Amount range, midpoint                      | Disclosed range and its midpoint                                                                        | Same                                             | Daily                                           | Ranges, never exact              |
+| Member name, party, chamber, state          | Who traded                                                                                              | Same, plus the congressional roster              | Daily                                           | Some states missing              |
+| Headshot                                    | Member photo                                                                                            | Official photos                                  | Static                                          | Initials when missing            |
+| Totals (volume, trades, members, per party) | Sums over loaded rows                                                                                   | Derived                                          | On load                                         | Loaded rows only                 |
+| Ticker lookup results                       | Every member trade in one ticker with inferred position status                                          | Same disclosures                                 | Daily                                           | Inferred, not reported holdings  |
+| Legislative context                         | Sectors with moving bills in 90 days, stage, momentum, matched to the member's tickers                  | Congress.gov bill actions and Ezana's sector map | Daily                                           | Tickers outside the map          |
+| Campaign finance                            | Raised, PAC money, cash on hand, spent, donors by occupation or employer, outside money for and against | Federal Election Commission filings              | As loaded; 2026 and 2024 cycles                 | Empty when not loaded            |
 
 ## 5. Data we do not have
 

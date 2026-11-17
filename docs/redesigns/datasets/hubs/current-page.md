@@ -17,13 +17,13 @@ Each data dimension has a hub: its datasets, the EzanaQL bar scoped to it, and c
 
 Below the green band (dimension active, no ticker):
 
-| Section | What it shows and does |
-| --- | --- |
-| Header | "Datasets · (Dimension)" eyebrow, a large title, tagline, blurb, and a stat strip: Live datasets "N of M", Records, Latest data |
-| EzanaQL | A split editor: the hub's seed query loaded but not run, an "Ezana AI" field ("Describe a report in plain English"), example prompt chips, Run, Edit, Saved reports; on the right the result table ("Run a query to see results here.") with Save report, CSV and JSON for accounts. Without queryable data: "EzanaQL queries open when this dimension's first dataset goes live." |
-| Card canvas | A 12-column canvas, empty for every visitor at first: three cards show faintly under a veil beside "Your canvas is empty." and "Open the card drawer" |
-| Card drawer and cards | A "Cards" tab opens "Customize this hub": every card with Add, On page or Members (locked). Guests may place three; a locked card opens a waitlist dialog. Placed cards drag by a grip (or arrow keys), resize from a corner, remove with X; the layout is saved in this browser |
-| Sources | One line listing every public source |
+| Section               | What it shows and does                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Header                | "Datasets · (Dimension)" eyebrow, a large title, tagline, blurb, and a stat strip: Live datasets "N of M", Records, Latest data                                                                                                                                                                                                                                                    |
+| EzanaQL               | A split editor: the hub's seed query loaded but not run, an "Ezana AI" field ("Describe a report in plain English"), example prompt chips, Run, Edit, Saved reports; on the right the result table ("Run a query to see results here.") with Save report, CSV and JSON for accounts. Without queryable data: "EzanaQL queries open when this dimension's first dataset goes live." |
+| Card canvas           | A 12-column canvas, empty for every visitor at first: three cards show faintly under a veil beside "Your canvas is empty." and "Open the card drawer"                                                                                                                                                                                                                              |
+| Card drawer and cards | A "Cards" tab opens "Customize this hub": every card with Add, On page or Members (locked). Guests may place three; a locked card opens a waitlist dialog. Placed cards drag by a grip (or arrow keys), resize from a corner, remove with X; the layout is saved in this browser                                                                                                   |
+| Sources               | One line listing every public source                                                                                                                                                                                                                                                                                                                                               |
 
 Cards a template hub can offer:
 
@@ -67,14 +67,14 @@ No hub has its own loading screen; the shared dataset skeleton shows (centred ti
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Dimension, datasets, live state | Catalogue | Ezana dataset catalogue | Each release | None |
-| Live datasets, Records, Latest data | Hub totals | Each dataset's source | 15 minutes | Missing datasets count as zero |
-| Dataset lead and second figure, freshest date | Per dataset | Same | 15 minutes | Soon datasets |
-| Linkage rows | Cross-dataset matches with labelled figures | Congressional disclosures, federal awards, lobbying and campaign filings, SEC ownership filings, shipping and patent records, prediction markets, bill actions | 15 minutes; windows named per card | Empty until both datasets have rows |
-| Query results | Rows from the dimension's queryable datasets | Same | On run | Closed for Whispers and Regulatory |
-| Capitol Watch modules and details | Events, heatmap, leaderboard, states, portfolio; member and company detail | The same public filings, plus market prices and news | 15 minutes; details on open | Holdings inferred; ranges |
+| Field                                         | What it means                                                              | Public source                                                                                                                                                  | Freshness                          | Gaps                                |
+| --------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------- |
+| Dimension, datasets, live state               | Catalogue                                                                  | Ezana dataset catalogue                                                                                                                                        | Each release                       | None                                |
+| Live datasets, Records, Latest data           | Hub totals                                                                 | Each dataset's source                                                                                                                                          | 15 minutes                         | Missing datasets count as zero      |
+| Dataset lead and second figure, freshest date | Per dataset                                                                | Same                                                                                                                                                           | 15 minutes                         | Soon datasets                       |
+| Linkage rows                                  | Cross-dataset matches with labelled figures                                | Congressional disclosures, federal awards, lobbying and campaign filings, SEC ownership filings, shipping and patent records, prediction markets, bill actions | 15 minutes; windows named per card | Empty until both datasets have rows |
+| Query results                                 | Rows from the dimension's queryable datasets                               | Same                                                                                                                                                           | On run                             | Closed for Whispers and Regulatory  |
+| Capitol Watch modules and details             | Events, heatmap, leaderboard, states, portfolio; member and company detail | The same public filings, plus market prices and news                                                                                                           | 15 minutes; details on open        | Holdings inferred; ranges           |
 
 ## 5. Data we do not have
 

@@ -27,14 +27,14 @@ Desktop, top to bottom, in a column up to 1,400px wide.
 
 **Largest buys and sales.** Two bordered, rounded cards side by side: "Largest open-market buys, last 30 days" and "Largest open-market sales, last 30 days", each up to 25 trades with a reported value, largest first.
 
-| Column | Content |
-| --- | --- |
-| Date | Transaction date |
-| Ticker | Mono chip, or "None" |
-| Company | Issuer name |
-| Insider | Name, then a muted title ("Chief Financial Officer", or "Director, 10% owner") |
-| Shares, Price, Value, Owned after | Right-aligned mono; missing reads "Not reported", never zero |
-| Filing | External-link icon opening the filing index on SEC EDGAR in a new tab |
+| Column                            | Content                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| Date                              | Transaction date                                                               |
+| Ticker                            | Mono chip, or "None"                                                           |
+| Company                           | Issuer name                                                                    |
+| Insider                           | Name, then a muted title ("Chief Financial Officer", or "Director, 10% owner") |
+| Shares, Price, Value, Owned after | Right-aligned mono; missing reads "Not reported", never zero                   |
+| Filing                            | External-link icon opening the filing index on SEC EDGAR in a new tab          |
 
 Empty: "No open-market buys with a reported price yet." (same for sales).
 
@@ -63,23 +63,23 @@ Empty: "No open-market buys with a reported price yet." (same for sales).
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Missing for |
-| --- | --- | --- | --- | --- |
-| Transaction date | When the insider traded | SEC Form 4 | Collected several times an hour; page cache about 15 minutes | Rare lines |
-| Ticker | Issuer symbol as filed | SEC Form 4 | Same | Unlisted issuers ("None") |
-| Company | Issuer name | SEC Form 4 | Same | None |
-| Insider name | Reporting person | SEC Form 4 | Same | None |
-| Title or role | Officer title, or Director and 10% owner | SEC Form 4 | Same | Some filings |
-| Transaction code | P, S, A, M, F, G and others | SEC Form 4 | Same | None |
-| Derivative flag | Option or other derivative line | SEC Form 4 | Same | None |
-| Shares, Owned after | Shares traded and held after | SEC Form 4 | Same | Some lines |
-| Price | Price per share | SEC Form 4 | Same | Grants, gifts, many derivative lines |
-| Value | Shares times price | Calculated | Same | Wherever price is missing |
-| Filing link | Filing index | SEC EDGAR | Same | None |
-| 30-day counts and totals | Open-market buys and sales | Calculated | Page cache | None |
-| Cluster buys | Company, window, insiders, trades, value | Calculated over 90 days | Page cache | Top 15 only |
-| Search results | All codes, 12 months, up to 500 rows | SEC Form 4 | Page cache | Older than 12 months |
-| Security title, direct or indirect, role flags | Stored per line | SEC Form 4 | Same | Not shown today; available |
+| Field                                          | What it means                            | Public source           | Freshness                                                    | Missing for                          |
+| ---------------------------------------------- | ---------------------------------------- | ----------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| Transaction date                               | When the insider traded                  | SEC Form 4              | Collected several times an hour; page cache about 15 minutes | Rare lines                           |
+| Ticker                                         | Issuer symbol as filed                   | SEC Form 4              | Same                                                         | Unlisted issuers ("None")            |
+| Company                                        | Issuer name                              | SEC Form 4              | Same                                                         | None                                 |
+| Insider name                                   | Reporting person                         | SEC Form 4              | Same                                                         | None                                 |
+| Title or role                                  | Officer title, or Director and 10% owner | SEC Form 4              | Same                                                         | Some filings                         |
+| Transaction code                               | P, S, A, M, F, G and others              | SEC Form 4              | Same                                                         | None                                 |
+| Derivative flag                                | Option or other derivative line          | SEC Form 4              | Same                                                         | None                                 |
+| Shares, Owned after                            | Shares traded and held after             | SEC Form 4              | Same                                                         | Some lines                           |
+| Price                                          | Price per share                          | SEC Form 4              | Same                                                         | Grants, gifts, many derivative lines |
+| Value                                          | Shares times price                       | Calculated              | Same                                                         | Wherever price is missing            |
+| Filing link                                    | Filing index                             | SEC EDGAR               | Same                                                         | None                                 |
+| 30-day counts and totals                       | Open-market buys and sales               | Calculated              | Page cache                                                   | None                                 |
+| Cluster buys                                   | Company, window, insiders, trades, value | Calculated over 90 days | Page cache                                                   | Top 15 only                          |
+| Search results                                 | All codes, 12 months, up to 500 rows     | SEC Form 4              | Page cache                                                   | Older than 12 months                 |
+| Security title, direct or indirect, role flags | Stored per line                          | SEC Form 4              | Same                                                         | Not shown today; available           |
 
 ## 5. Data we do not have
 

@@ -37,15 +37,15 @@ States: route skeleton (centred title, five pills, ten-row table); a failed read
 
 ## 4. Data we have
 
-| Field | Meaning | Public source | Freshness | Gaps |
-| --- | --- | --- | --- | --- |
-| Global index | Share of newspaper articles about adverse geopolitical events and threats, scaled | Geopolitical Risk index (Caldara and Iacoviello) | Monthly index, loaded weekly | None |
-| Country index | Share of those articles that also name the country | Same | Same | Only 44 countries |
-| Month before | The prior month's country index | Same | Same | None |
-| Change | Latest minus prior, in index points | Ezana from the above | Same | None |
-| Month | Month of the latest reading | Same | Same | None |
-| Loaded, not shown | Monthly history of the global and country indexes back to 1985 | Same | Same | Not on the page today |
-| Loaded elsewhere, not shown | Global "threats" and "acts" sub-indexes (monthly) | Same | Same | Not wired to this page |
+| Field                       | Meaning                                                                           | Public source                                    | Freshness                    | Gaps                   |
+| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------- | ---------------------- |
+| Global index                | Share of newspaper articles about adverse geopolitical events and threats, scaled | Geopolitical Risk index (Caldara and Iacoviello) | Monthly index, loaded weekly | None                   |
+| Country index               | Share of those articles that also name the country                                | Same                                             | Same                         | Only 44 countries      |
+| Month before                | The prior month's country index                                                   | Same                                             | Same                         | None                   |
+| Change                      | Latest minus prior, in index points                                               | Ezana from the above                             | Same                         | None                   |
+| Month                       | Month of the latest reading                                                       | Same                                             | Same                         | None                   |
+| Loaded, not shown           | Monthly history of the global and country indexes back to 1985                    | Same                                             | Same                         | Not on the page today  |
+| Loaded elsewhere, not shown | Global "threats" and "acts" sub-indexes (monthly)                                 | Same                                             | Same                         | Not wired to this page |
 
 ## 5. Data we do not have
 

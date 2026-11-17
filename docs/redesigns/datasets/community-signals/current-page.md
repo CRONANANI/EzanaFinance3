@@ -19,13 +19,13 @@ The page is new: one shared template filled with this dataset's settings, with n
 
 Admin and demo accounts, desktop, top to bottom (shared dataset canvas, about 1400px centred with a 32px gutter):
 
-| Section | What it shows and does |
-| --- | --- |
-| Green band | Shared chrome with The Hive lit. No ticker. |
-| Identity row | Eyebrow "DATASETS · THE HIVE", name "Platform community signals", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action. |
-| EzanaQL row | "Query this data with EzanaQL on the The Hive hub" with Share. |
-| One table | Title "Most added to watchlists this week" with "Sample content" on the right. Columns Ticker, Company, Watchlist adds, Posts and Change vs last week. Five invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
-| Source line | "Planned source: aggregate, anonymous activity on Ezana (watchlist adds and posts)." plus a sample-content note and "Nothing here is investment advice." |
+| Section      | What it shows and does                                                                                                                                                                                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Green band   | Shared chrome with The Hive lit. No ticker.                                                                                                                                                                                                                          |
+| Identity row | Eyebrow "DATASETS · THE HIVE", name "Platform community signals", and on the right a grey "Sample content" label with an eye icon (hover: shown to admin and demo accounts only). No freshness line, no action.                                                      |
+| EzanaQL row  | "Query this data with EzanaQL on the The Hive hub" with Share.                                                                                                                                                                                                       |
+| One table    | Title "Most added to watchlists this week" with "Sample content" on the right. Columns Ticker, Company, Watchlist adds, Posts and Change vs last week. Five invented rows. No sorting, filters, search, paging, row click or detail panel. Missing values print N/A. |
+| Source line  | "Planned source: aggregate, anonymous activity on Ezana (watchlist adds and posts)." plus a sample-content note and "Nothing here is investment advice."                                                                                                             |
 
 Everyone else, signed in or out: the identity row without the label, then a plug icon, "This dataset's source is not connected yet." and a text link "Back to datasets". No EzanaQL row, no description, nothing else.
 
@@ -42,24 +42,24 @@ States: the shared route skeleton, then a small skeleton (title bar and eight-ro
 
 Live data: none. Nothing on this page is a real record today. The only thing rendered is the layout skeleton below, filled with invented rows for admin and demo accounts. These columns are the layout skeleton, not fields we hold:
 
-| Column (skeleton) | What it would mean | Planned source |
-| --- | --- | --- |
-| Ticker | The ticker being watched | Ezana activity, aggregated |
-| Company | Company name | Ezana company records |
-| Watchlist adds | Times the ticker was added to any watchlist this week | Aggregate count |
-| Posts | Community posts mentioning the ticker this week | Aggregate count |
-| Change vs last week | Percent change in adds against the prior week | Calculated |
+| Column (skeleton)   | What it would mean                                    | Planned source             |
+| ------------------- | ----------------------------------------------------- | -------------------------- |
+| Ticker              | The ticker being watched                              | Ezana activity, aggregated |
+| Company             | Company name                                          | Ezana company records      |
+| Watchlist adds      | Times the ticker was added to any watchlist this week | Aggregate count            |
+| Posts               | Community posts mentioning the ticker this week       | Aggregate count            |
+| Change vs last week | Percent change in adds against the prior week         | Calculated                 |
 
 Freshness and gaps for every skeleton column: not connected, sample rows only.
 
 First-party activity that exists and could become an aggregate source (counts only, never who):
 
-| Field | What it means | Freshness | Limits |
-| --- | --- | --- | --- |
-| Watchlist entries | Each entry records a ticker, its asset type (stock, crypto, commodity or politician), name, sector and the date added | As members act | Private to each member today; only anonymous counts with a minimum threshold could ever be shown |
-| Community posts | Public posts with an optional mentioned ticker, likes, comments, reposts and, for partners, a post format (analyst take, trade idea, market brief) | As members post | Ticker tagging is optional; volume may be small |
-| Community pulse snapshots | Periodic figures: net sentiment, posts in the last hour, active investors, discussions started, the hottest ticker and its mentions, a sector breakdown | Computed on request in Community | Shown to signed-in members only today; sentiment is a simple keyword reading |
-| Conviction reading | Per ticker, the share of last-day posts reading bullish or bearish by keywords | Last 24 hours | Keyword based; signed-in only today |
+| Field                     | What it means                                                                                                                                           | Freshness                        | Limits                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Watchlist entries         | Each entry records a ticker, its asset type (stock, crypto, commodity or politician), name, sector and the date added                                   | As members act                   | Private to each member today; only anonymous counts with a minimum threshold could ever be shown |
+| Community posts           | Public posts with an optional mentioned ticker, likes, comments, reposts and, for partners, a post format (analyst take, trade idea, market brief)      | As members post                  | Ticker tagging is optional; volume may be small                                                  |
+| Community pulse snapshots | Periodic figures: net sentiment, posts in the last hour, active investors, discussions started, the hottest ticker and its mentions, a sector breakdown | Computed on request in Community | Shown to signed-in members only today; sentiment is a simple keyword reading                     |
+| Conviction reading        | Per ticker, the share of last-day posts reading bullish or bearish by keywords                                                                          | Last 24 hours                    | Keyword based; signed-in only today                                                              |
 
 ## 5. Data we do not have
 

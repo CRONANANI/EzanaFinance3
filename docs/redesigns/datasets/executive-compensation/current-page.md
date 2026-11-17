@@ -35,16 +35,16 @@ Desktop, top to bottom.
 
 **Main table.** One row per company, its latest fiscal year, every company at once (no paging).
 
-| Column | Content |
-| --- | --- |
-| Ticker | Mono text button; clicking opens the company detail |
-| Company | Name |
-| Fiscal year | Year of the latest table |
-| CEO total pay | Compact dollars ($24.6M) |
-| Compensation actually paid | Compact dollars; can be negative |
-| Company TSR ($100) | Value of $100 invested at the start of the period ($184) |
-| Peer TSR ($100) | Same for the company's chosen peer group |
-| Net income | Compact dollars |
+| Column                     | Content                                                  |
+| -------------------------- | -------------------------------------------------------- |
+| Ticker                     | Mono text button; clicking opens the company detail      |
+| Company                    | Name                                                     |
+| Fiscal year                | Year of the latest table                                 |
+| CEO total pay              | Compact dollars ($24.6M)                                 |
+| Compensation actually paid | Compact dollars; can be negative                         |
+| Company TSR ($100)         | Value of $100 invested at the start of the period ($184) |
+| Peer TSR ($100)            | Same for the company's chosen peer group                 |
+| Net income                 | Compact dollars                                          |
 
 Every header sorts (a small triangle marks it). Default: CEO total pay, highest first; missing values sort last. Missing cells read "Not reported". When a company had two CEOs in a year, the one with the larger total pay represents it.
 
@@ -68,22 +68,22 @@ Empty: "No pay versus performance data loaded yet. Companies are added daily fro
 
 ## 4. Data we have
 
-| Field | What it means | Public source | Freshness | Missing for |
-| --- | --- | --- | --- | --- |
-| Ticker, company | Identity | SEC filer records | Daily collection, monthly revisit | A few filers without a ticker |
-| Fiscal year | Year of each row | Proxy statement | Same | None |
-| CEO name | The principal executive for that year | Proxy pay versus performance table | Same | Some filings ("Not reported") |
-| CEO total pay | Summary compensation table total | Same | Same | Some years |
-| Compensation actually paid | SEC-defined adjusted pay | Same | Same | Some years |
-| Other named officers, average total and actually paid | Average for the other named executives | Same | Same | Some years |
-| Company TSR | Value of $100 invested at the start of the period | Same | Same | Some years |
-| Peer group TSR | Same for the company's peer group | Same | Same | Companies that report none |
-| Net income | As reported in the table | Same | Same | Some years |
-| Company-selected measure | Name and value of the measure the company chose | Same | Same | Many companies |
-| History | Up to about five fiscal years per company | Same | Same | Newer filers have fewer years |
-| Proxy link | Filing index | SEC EDGAR | Same | None |
-| Filed date | Proxy filing date | SEC EDGAR | Same | Stored, not shown |
-| Company count, latest fiscal year | Page stats | Calculated | Page cache | None |
+| Field                                                 | What it means                                     | Public source                      | Freshness                         | Missing for                   |
+| ----------------------------------------------------- | ------------------------------------------------- | ---------------------------------- | --------------------------------- | ----------------------------- |
+| Ticker, company                                       | Identity                                          | SEC filer records                  | Daily collection, monthly revisit | A few filers without a ticker |
+| Fiscal year                                           | Year of each row                                  | Proxy statement                    | Same                              | None                          |
+| CEO name                                              | The principal executive for that year             | Proxy pay versus performance table | Same                              | Some filings ("Not reported") |
+| CEO total pay                                         | Summary compensation table total                  | Same                               | Same                              | Some years                    |
+| Compensation actually paid                            | SEC-defined adjusted pay                          | Same                               | Same                              | Some years                    |
+| Other named officers, average total and actually paid | Average for the other named executives            | Same                               | Same                              | Some years                    |
+| Company TSR                                           | Value of $100 invested at the start of the period | Same                               | Same                              | Some years                    |
+| Peer group TSR                                        | Same for the company's peer group                 | Same                               | Same                              | Companies that report none    |
+| Net income                                            | As reported in the table                          | Same                               | Same                              | Some years                    |
+| Company-selected measure                              | Name and value of the measure the company chose   | Same                               | Same                              | Many companies                |
+| History                                               | Up to about five fiscal years per company         | Same                               | Same                              | Newer filers have fewer years |
+| Proxy link                                            | Filing index                                      | SEC EDGAR                          | Same                              | None                          |
+| Filed date                                            | Proxy filing date                                 | SEC EDGAR                          | Same                              | Stored, not shown             |
+| Company count, latest fiscal year                     | Page stats                                        | Calculated                         | Page cache                        | None                          |
 
 ## 5. Data we do not have
 
