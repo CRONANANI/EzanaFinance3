@@ -35,6 +35,14 @@ export const CANDIDATE_BASES = {
 const isHttps = (u) => /^https:\/\/[^\s]+$/.test(String(u || ''));
 const text = (v) => typeof v === 'string' && v.trim().length > 0;
 
+/* A table needs its columns and at least one row, and every row a cell per column. */
+const table = (s) =>
+  s.columns?.length &&
+  s.rows?.length &&
+  s.rows.every((r) => r.cells && s.columns.every((c) => c.key in r.cells))
+    ? null
+    : 'needs columns and complete rows';
+
 const RULES = {
   lead: (s) => (text(s.headline) && text(s.text) ? null : 'needs a headline and text'),
   verified_event_status: (s) =>
@@ -52,6 +60,10 @@ const RULES = {
   news_timeline: (s) => (s.items?.length ? null : 'no items'),
   scenario_matrix: (s) => (s.rows?.length ? null : 'no scenarios'),
   impact_network: (s) => (s.rows?.length ? null : 'no rows'),
+  valuation: (s) => table(s),
+  ranking: (s) => table(s),
+  data_table: (s) => table(s),
+  risk: (s) => (s.items?.length ? null : 'no items'),
   fundamentals: (s) => (s.items?.length ? null : 'no figures'),
   watchpoints: (s) => (s.items?.length ? null : 'no items'),
   limitations: (s) => (s.items?.length ? null : 'no items'),
@@ -138,7 +150,7 @@ export function validateReport(input) {
           return ok;
         });
     }
-    if (s.type === 'key_findings') {
+    if (s.type === 'key_findings' || s.type === 'risk') {
       s.items = (s.items || [])
         .map((i) => ({ ...i, cites: keepCites(i.cites) }))
         .map((i) =>

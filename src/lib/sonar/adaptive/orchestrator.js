@@ -39,6 +39,14 @@ import {
   tooSimilar,
 } from './kit';
 import { runLeadershipImpact, runMoveAttribution } from './executors-events';
+import {
+  runValuation,
+  runFundamentals,
+  runCompetition,
+  runInstitutional,
+  runCongressTrades,
+  runCountryRanking,
+} from './executors-company';
 
 /* ── B01: price action and technical analysis ───────────────────────────── */
 
@@ -501,6 +509,12 @@ const EXECUTORS = {
   A02: runSuccession,
   A03: runLeadershipImpact,
   A05: runMoveAttribution,
+  B02: runFundamentals,
+  B03: runValuation,
+  B05: runCompetition,
+  B06: runInstitutional,
+  B07: runCongressTrades,
+  C02: runCountryRanking,
 };
 
 /**

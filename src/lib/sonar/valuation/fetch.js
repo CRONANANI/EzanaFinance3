@@ -13,7 +13,7 @@
  */
 import { fmp } from '@/lib/sonar/engine/sources-memo';
 import { buildValuationHistory, valuationSnapshot, LOOKBACK_YEARS } from './history';
-import { buildValuationModel } from './model';
+import { buildValuationModel, peerComparison } from './model';
 import { industryPeers } from './peers';
 
 const num = (v) => {
@@ -87,6 +87,25 @@ async function peerRow(t, ms) {
       num(R.operatingProfitMarginTTM) != null ? num(R.operatingProfitMarginTTM) * 100 : null,
     beta: num(P.beta),
   };
+}
+
+/**
+ * A company and its industry peers on the same trailing measures, with the peer medians:
+ * peerComparison() output, or null when the company or its peers cannot be read.
+ */
+export async function fetchPeerSet(ticker, { ms = 5000, max = 6 } = {}) {
+  const t = String(ticker || '').toUpperCase();
+  try {
+    const subject = await peerRow(t, ms);
+    const sel = industryPeers(subject.industry, t, { max });
+    const peers = (
+      await Promise.all(sel.peers.map((p) => peerRow(p, ms).catch(() => null)))
+    ).filter((p) => p && (p.pe != null || p.evEbitda != null || p.ps != null));
+    if (!peers.length) return null;
+    return peerComparison(subject, peers, sel.logic);
+  } catch {
+    return null;
+  }
 }
 
 /** The deep research valuation model, or null. */

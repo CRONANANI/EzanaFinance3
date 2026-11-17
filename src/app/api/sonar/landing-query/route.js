@@ -22,6 +22,7 @@ import { embedViaSupabase } from '@/lib/embeddings-gte';
 import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
+import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
 import { sanitizeThread } from '@/lib/sonar/adaptive/thread-context';
 import { getDailyOhlcv } from '@/lib/prices/daily-bars';
 import { newsEvidence } from '@/lib/sonar/landing-research';
@@ -90,7 +91,18 @@ const GUEST_LIMIT = 5;
    adaptive run that produces no usable report, goes through the pipeline below as before.
    Budgets are from the handler's start and sit under maxDuration. */
 const adaptiveEnabled = () => process.env.SONAR_ADAPTIVE !== 'off';
-const ADAPTIVE_BUDGET_MS = { B01: 14_000, A02: 45_000, A03: 45_000, A05: 30_000 };
+const ADAPTIVE_BUDGET_MS = {
+  B01: 14_000,
+  A02: 45_000,
+  A03: 45_000,
+  A05: 30_000,
+  B02: 40_000,
+  B03: 22_000,
+  B05: 40_000,
+  B06: 12_000,
+  B07: 12_000,
+  C02: 12_000,
+};
 /* The second wait for a visitor whose request carries a session. */
 const AUTH_GRACE_MS = 1_500;
 
@@ -461,6 +473,7 @@ const POST_HANDLER = withApiGuard(
             (await newsEvidence(admin, args)).map((a) => ({ ...a, publisher: a.source })),
           retrieveMarkets,
           synthesize: synthesizeWithFallback,
+          ...adaptiveDataDeps(admin),
         },
         {
           deadlineAt:

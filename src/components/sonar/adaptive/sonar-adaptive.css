@@ -326,3 +326,20 @@
   padding-left: 0;
   border-left: 0;
 }
+
+/* Generic data tables: figures right-aligned in the mono face, the subject row marked. */
+.sar-data th.sar-num,
+.sar-data td.sar-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.sar-data .sar-row--subject th,
+.sar-data .sar-row--subject td {
+  color: var(--sxb-ink);
+  font-weight: 600;
+}
+.sar-data .sar-row--summary th,
+.sar-data .sar-row--summary td {
+  color: var(--sxb-muted);
+  border-top: 1px solid var(--sxb-rule-strong);
+}

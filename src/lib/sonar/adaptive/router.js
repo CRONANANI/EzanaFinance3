@@ -23,6 +23,7 @@ import { mentionedCompanies } from '@/lib/sonar/company-mentions';
 import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
 import { SCENARIOS, SCENARIO_BY_ID, PROFILE_VERSION } from './profiles';
+import { rankingMetricOf } from './company-metrics';
 import { resolveReferences, personFromText } from './thread-context';
 
 const PLAN_VERSION = 'arie-plan-v1';
@@ -184,6 +185,14 @@ export function planAdaptive(question, opts = {}) {
   if (primary?.id === 'B01' && !company?.ticker) {
     executable = false;
     missing.push('no listed security named: daily bars need a ticker');
+  }
+  if (['B02', 'B03', 'B05', 'B06', 'B07'].includes(primary?.id) && !company?.ticker) {
+    executable = false;
+    missing.push('no listed company named: this pipeline reads one company’s records');
+  }
+  if (primary?.id === 'C02' && !rankingMetricOf(text)) {
+    executable = false;
+    missing.push('not a measure Sonar ranks from stored series (GDP, GDP per capita, growth)');
   }
   if (primary?.id === 'A05' && !company?.ticker) {
     executable = false;

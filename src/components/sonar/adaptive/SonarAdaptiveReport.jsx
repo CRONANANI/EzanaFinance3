@@ -33,6 +33,10 @@ const ANCHOR_LABELS = {
   key_findings: 'Takeaways',
   metric_table: 'Readings',
   impact_network: 'Exposure',
+  valuation: 'Peers',
+  ranking: 'Table',
+  data_table: 'Quarters',
+  risk: 'Risks',
   fundamentals: 'Baseline',
   forecast_market: 'Markets',
   candidate_table: 'Candidates',
@@ -384,6 +388,55 @@ function Baseline({ s, sources }) {
   );
 }
 
+function DataTable({ s, sources }) {
+  return (
+    <>
+      <div className="sxb-section-top">
+        <h2 className="sxb-section-title">{s.title}</h2>
+        <p className="sxb-section-note">
+          {s.note}
+          <Cites ids={s.cites} sources={sources} />
+        </p>
+      </div>
+      <div className="sxb-table-scroll">
+        <table className="sxb-table sar-data">
+          <thead>
+            <tr>
+              {s.columns.map((c) => (
+                <th key={c.key} scope="col" className={c.num ? 'sar-num' : undefined}>
+                  {c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {s.rows.map((r) => (
+              <tr
+                key={r.id}
+                className={
+                  r.emphasis ? 'sar-row--subject' : r.summary ? 'sar-row--summary' : undefined
+                }
+              >
+                {s.columns.map((c, i) =>
+                  i === 0 ? (
+                    <th key={c.key} scope="row" className={c.num ? 'sar-num' : undefined}>
+                      {r.cells[c.key]}
+                    </th>
+                  ) : (
+                    <td key={c.key} className={c.num ? 'sar-num' : undefined}>
+                      {r.cells[c.key]}
+                    </td>
+                  ),
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 function ListBlock({ title, items }) {
   return (
     <>
@@ -513,7 +566,12 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
       case 'price_comparison':
         return <SonarExemplaryChart chart={s.chart} />;
       case 'key_findings':
+      case 'risk':
         return <Findings s={s} sources={sources} />;
+      case 'valuation':
+      case 'ranking':
+      case 'data_table':
+        return <DataTable s={s} sources={sources} />;
       case 'impact_network':
         return <Impact s={s} sources={sources} />;
       case 'fundamentals':
@@ -645,7 +703,7 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
                 {report.scenario.label}
               </span>
               <span>Research as of {dayLabel(report.asOf)}</span>
-              {lead.computed ? <span>Figures computed from daily prices</span> : null}
+              {lead.computed ? <span>Figures computed from the records cited</span> : null}
               {report.degraded?.includes('live_research') ? (
                 <span>Verification did not complete</span>
               ) : null}
