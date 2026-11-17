@@ -23,7 +23,7 @@ import {
   buildActivistRow,
 } from '@/lib/sec/schedule13-meta';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
-import { explicitPeriods, parseDeclaredTotals } from '@/lib/sec/13f-backfill';
+import { explicitPeriods, parseCover } from '@/lib/sec/13f-backfill';
 
 /**
  * Phase 2: parse holdings for filings already in sec_filings.
@@ -58,12 +58,17 @@ async function recordDeclaredTotals(admin, index, f) {
   const doc = items.find((it) => /primary_?doc\.xml$/i.test(it?.name || ''));
   if (!doc) return;
   const { base } = edgarUrls({ accessionNo: f.accession_no, cik: f.cik });
-  const totals = parseDeclaredTotals(await secFetchText(`${base}/${doc.name}`));
-  if (totals.entries == null) return;
-  await admin
-    .from('sec_filings')
-    .update({ table_entry_total: totals.entries, table_value_total: totals.value })
-    .eq('accession_no', f.accession_no);
+  const cover = parseCover(await secFetchText(`${base}/${doc.name}`));
+  const patch = {};
+  if (cover.entries != null) {
+    patch.table_entry_total = cover.entries;
+    patch.table_value_total = cover.value;
+  }
+  /* RESTATEMENT replaces the original; NEW HOLDINGS adds to it. The quarter's filing set
+     (titans_13f_filing_set) depends on the difference. */
+  if (cover.amendmentType) patch.amendment_type = cover.amendmentType;
+  if (!Object.keys(patch).length) return;
+  await admin.from('sec_filings').update(patch).eq('accession_no', f.accession_no);
 }
 
 export const dynamic = 'force-dynamic';

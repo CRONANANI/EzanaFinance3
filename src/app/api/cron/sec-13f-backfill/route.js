@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
-import { getFilingIndexJson, edgarUrls, secFetchText } from '@/lib/sec-edgar';
-import { filingWindow, parseDeclaredTotals } from '@/lib/sec/13f-backfill';
+import { getFilingIndexJson, edgarUrls, secFetchText, getSubmissions } from '@/lib/sec-edgar';
+import { filingWindow, parseCover, submissionsRows } from '@/lib/sec/13f-backfill';
 import { GET as ingestFilings } from '../ingest-sec-filings/route';
 import { GET as ingestHoldings } from '../ingest-sec-holdings/route';
 
@@ -13,12 +13,17 @@ import { GET as ingestHoldings } from '../ingest-sec-holdings/route';
  * nothing runs until a row exists). Each run does ONE phase, so it stays inside one
  * function's time limit:
  *
+ *   0. filers    every tracked 13F filer's EDGAR submissions feed, which lists each filing
+ *                with its report date. This is the complete source: full-text search returns
+ *                only a fraction of 13F filings (50 on the Nov 16, 2026 deadline day).
+ *                New accession numbers are inserted; existing rows are left as they are.
  *   1. discover  filing days still pending: the existing filings route in its backfill mode,
  *                one day per call (?from=D&to=D&forms=13F-HR,13F-HR/A&pages=60). A day whose
  *                EDGAR total exceeds what was collected is marked 'truncated', not 'done'.
  *   2. parse     the existing holdings route with ?periods= for these quarters. A named-period
  *                run never applies retention, and retention elsewhere keeps these quarters.
- *   3. declare   parsed filings with no declared row count: read the cover page only.
+ *   3. declare   parsed filings with no declared row count, and amendments with no amendment
+ *                type: read the cover page only.
  *   4. check     sec_13f_materialise_if_complete(period): materialises only when every
  *                completeness check passes; otherwise records why and changes nothing.
  *
@@ -32,6 +37,7 @@ export const maxDuration = 300;
 
 const DISCOVER_BUDGET_MS = 200_000;
 const DECLARE_BUDGET_MS = 200_000;
+const FILERS_BUDGET_MS = 200_000;
 const MAX_ATTEMPTS = 4;
 
 function internal(request, path) {
@@ -103,13 +109,61 @@ async function discover(request, admin, periods, started) {
   return done;
 }
 
+async function discoverFilers(admin, periods, started) {
+  const { data: filers, error } = await admin
+    .from('sec_13f_backfill_filers')
+    .select('cik, attempts')
+    .is('checked_at', null)
+    .lt('attempts', MAX_ATTEMPTS)
+    .order('cik')
+    .limit(1500);
+  if (error) throw new Error(`filers: ${error.message}`);
+  let checked = 0;
+  let found = 0;
+  let failed = 0;
+  for (const f of filers || []) {
+    if (Date.now() - started > FILERS_BUDGET_MS) break;
+    let rows = [];
+    let err = null;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      rows = submissionsRows(await getSubmissions(f.cik), periods, edgarUrls);
+      if (rows.length) {
+        // eslint-disable-next-line no-await-in-loop
+        const { error: e } = await admin
+          .from('sec_filings')
+          .upsert(rows, { onConflict: 'accession_no', ignoreDuplicates: true });
+        if (e) err = e.message;
+      }
+    } catch (e) {
+      err = String(e?.message || e);
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await admin
+      .from('sec_13f_backfill_filers')
+      .update({
+        attempts: f.attempts + 1,
+        checked_at: err ? null : new Date().toISOString(),
+        filings_found: err ? null : rows.length,
+        error: err ? err.slice(0, 300) : null,
+      })
+      .eq('cik', f.cik);
+    if (err) failed += 1;
+    else {
+      checked += 1;
+      found += rows.length;
+    }
+  }
+  return { checked, found, failed, queued: (filers || []).length };
+}
+
 async function declareTotals(admin, periods, started) {
   const { data: rows } = await admin
     .from('sec_filings')
     .select('accession_no, cik')
     .eq('form_family', 'institutional')
     .in('period_of_report', periods)
-    .is('table_entry_total', null)
+    .or('table_entry_total.is.null,and(form_type.ilike.*/A,amendment_type.is.null)')
     .limit(400);
   let recorded = 0;
   let checked = 0;
@@ -133,13 +187,16 @@ async function declareTotals(admin, periods, started) {
       if (!doc) continue;
       const { base } = edgarUrls({ accessionNo: f.accession_no, cik: f.cik });
       // eslint-disable-next-line no-await-in-loop
-      const totals = parseDeclaredTotals(await secFetchText(`${base}/${doc.name}`));
-      if (totals.entries == null) continue;
+      const cover = parseCover(await secFetchText(`${base}/${doc.name}`));
+      const patch = {};
+      if (cover.entries != null) {
+        patch.table_entry_total = cover.entries;
+        patch.table_value_total = cover.value;
+      }
+      if (cover.amendmentType) patch.amendment_type = cover.amendmentType;
+      if (!Object.keys(patch).length) continue;
       // eslint-disable-next-line no-await-in-loop
-      await admin
-        .from('sec_filings')
-        .update({ table_entry_total: totals.entries, table_value_total: totals.value })
-        .eq('accession_no', f.accession_no);
+      await admin.from('sec_filings').update(patch).eq('accession_no', f.accession_no);
       recorded += 1;
     } catch {
       /* next filing */
@@ -160,6 +217,24 @@ async function run(request) {
   if (!periods.length) return NextResponse.json({ ok: true, idle: true });
 
   await seedDays(admin, periods);
+
+  // 0. Filers: the complete source for which filings exist.
+  const { count: filersOpen } = await admin
+    .from('sec_13f_backfill_filers')
+    .select('cik', { count: 'exact', head: true })
+    .is('checked_at', null)
+    .lt('attempts', MAX_ATTEMPTS);
+  if (filersOpen) {
+    const filers = await discoverFilers(admin, periods, started);
+    console.log('[sec-13f-backfill] filers', JSON.stringify(filers));
+    return NextResponse.json({
+      ok: true,
+      phase: 'filers',
+      periods,
+      filers,
+      open_before: filersOpen,
+    });
+  }
 
   // 1. Discover.
   const { count: open } = await admin
