@@ -27,11 +27,15 @@ jobs:
         #   GHSA-2xp9-vwfh-vxw4 — Next.js Image Optimizer AVIF RCE (self-hosted).
         #     On Vercel, image optimization is served by Vercel's platform
         #     optimizer, which Vercel patches platform-side.
-        # Real fix for both: upgrade next 14 -> 16 (tracked in
+        #   GHSA-2464-fhr4-w9xw — Next.js Image Optimization RCE via sharp
+        #     (glibc Linux). Documented workaround: sharp >= 0.35.5, pinned in
+        #     package.json overrides. Vercel also serves image optimization
+        #     from its own platform. Accepted Nov 17, 2026 (approved by Noah).
+        # Real fix for all three: upgrade next 14 -> 16 (tracked in
         # docs/REFACTOR_ROADMAP.md). Do NOT add entries here without a
         # written justification.
         run: |
-          ACCEPTED='GHSA-p293-qw3h-jr36 GHSA-2xp9-vwfh-vxw4'
+          ACCEPTED='GHSA-p293-qw3h-jr36 GHSA-2xp9-vwfh-vxw4 GHSA-2464-fhr4-w9xw'
           UNACCEPTED=$(npm audit --json 2>/dev/null | jq -r --arg accepted "$ACCEPTED" '
             [.vulnerabilities[]?.via[]? | objects | select(.severity == "critical")
              | .url | split("/") | last | select(. as $id | ($accepted | split(" ") | index($id)) == null)]
