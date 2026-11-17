@@ -76,6 +76,12 @@ export const VALIDATION_SET = [
   },
   { id: 'C06', q: 'What sanctions affect Huawei?', model: false },
   { id: 'C07', q: 'How is Bitcoin doing?', model: false, lead: 'metric_table', chart: true },
+  /* Nov 17: the five scenarios the first production runs did not cover. */
+  { id: 'A06', q: 'Is Microsoft going to acquire another company?', model: true },
+  { id: 'A07', q: 'What does the FTC lawsuit mean for Meta?', model: true },
+  { id: 'A10', q: 'What is the market narrative around Tesla right now?', model: true },
+  { id: 'C05', q: 'What is the sovereign credit risk of Argentina?', model: false },
+  { id: 'C10', q: 'How would a Taiwan Strait blockade affect Apple’s supply chain?', model: true },
 ].map((c) => ({ key: c.id, ...c }));
 
 /** Follow-up chains: each step is asked under the thread of the answer before it. */
