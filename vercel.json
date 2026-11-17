@@ -179,6 +179,10 @@
       "schedule": "30 * * * *"
     },
     {
+      "path": "/api/cron/sonar-validate",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/cron/sec-13f-backfill",
       "schedule": "5,15,25,45,55 * * * *"
     },

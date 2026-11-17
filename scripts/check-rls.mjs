@@ -475,16 +475,32 @@ test('lobbying client identity: browsers cannot write a mapping or call the matc
   );
 });
 
+test('Sonar validation results are service role only', (t) => {
+  if (skip(t)) return;
+  assert.equal(
+    pg.sql(
+      `select relrowsecurity::text from pg_class where oid = 'public.sonar_validation_results'::regclass`,
+    ),
+    'true',
+  );
+  denied(() => asA('select count(*) from public.sonar_validation_results'));
+  denied(() => pg.sql('set role anon; select count(*) from public.sonar_validation_results'));
+});
+
 test('13F backfill: plan tables and completeness functions are service role only', (t) => {
   if (skip(t)) return;
-  for (const tbl of ['sec_13f_backfill_days', 'sec_13f_backfill_quarters']) {
+  for (const tbl of [
+    'sec_13f_backfill_days',
+    'sec_13f_backfill_quarters',
+    'sonar_validation_runs',
+  ]) {
     assert.equal(
       pg.sql(`select relrowsecurity::text from pg_class where oid = 'public.${tbl}'::regclass`),
       'true',
     );
     denied(() => asA(`select count(*) from public.${tbl}`));
     denied(() => pg.sql(`set role anon; select count(*) from public.${tbl}`));
-    denied(() => asA(`insert into public.${tbl} (period) values ('2026-03-31')`));
+    denied(() => asA(`insert into public.${tbl} default values`));
   }
   for (const fn of [
     "sec_13f_quarter_completeness('2026-03-31'::date)",

@@ -23,13 +23,10 @@ import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
 import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
+import { ADAPTIVE_BUDGET_MS, adaptiveRunDeps } from '@/lib/sonar/adaptive/runtime';
 import { resolveOrgContext } from '@/lib/sonar/adaptive/org-deps';
 import { runOverlay, isOverlayPlan } from '@/lib/sonar/adaptive/overlays';
 import { sanitizeThread } from '@/lib/sonar/adaptive/thread-context';
-import { getDailyOhlcv } from '@/lib/prices/daily-bars';
-import { newsEvidence } from '@/lib/sonar/landing-research';
-import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
-import { retrieve as retrieveMarkets } from '@/lib/research-copilot/retrievers/markets';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -106,38 +103,7 @@ function validationRequested(request) {
   if (secret.length < 32 || sent.length !== secret.length) return false;
   return crypto.timingSafeEqual(Buffer.from(sent), Buffer.from(secret));
 }
-const ADAPTIVE_BUDGET_MS = {
-  B01: 14_000,
-  A02: 45_000,
-  A03: 45_000,
-  A05: 30_000,
-  B02: 40_000,
-  B03: 22_000,
-  B05: 40_000,
-  B06: 14_000,
-  B07: 14_000,
-  C02: 14_000,
-  A04: 14_000,
-  B04: 14_000,
-  B08: 14_000,
-  B10: 14_000,
-  C01: 14_000,
-  C04: 14_000,
-  C05: 14_000,
-  C09: 12_000,
-  C03: 40_000,
-  C08: 12_000,
-  A07: 45_000,
-  A08: 45_000,
-  A10: 45_000,
-  C10: 45_000,
-  A01: 45_000,
-  A06: 45_000,
-  A09: 14_000,
-  B09: 16_000,
-  C06: 14_000,
-  C07: 14_000,
-};
+
 /* The second wait for a visitor whose request carries a session. */
 const AUTH_GRACE_MS = 1_500;
 
@@ -525,23 +491,11 @@ const POST_HANDLER = withApiGuard(
           ? /* The overlay gets the member's organization readers and, of the public readers,
                only the earnings calendar. No model call, no web search. */
             runOverlay(adaptivePlan, overlayOrg, { earnings: adaptiveDataDeps(admin).earnings })
-          : runAdaptive(
-              adaptivePlan,
-              {
-                admin,
-                getOhlcv: getDailyOhlcv,
-                news: async (args) =>
-                  (await newsEvidence(admin, args)).map((a) => ({ ...a, publisher: a.source })),
-                retrieveMarkets,
-                synthesize: synthesizeWithFallback,
-                ...adaptiveDataDeps(admin),
-              },
-              {
-                deadlineAt:
-                  startedAt +
-                  (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
-              },
-            )
+          : runAdaptive(adaptivePlan, adaptiveRunDeps(admin), {
+              deadlineAt:
+                startedAt +
+                (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
+            })
       ).catch((e) => {
         console.warn('[sonar/landing] adaptive run failed', e?.message || e);
         return null;
