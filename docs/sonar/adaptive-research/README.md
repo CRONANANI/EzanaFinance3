@@ -99,29 +99,50 @@ contract, the layout planner, and both executors end to end with every source
 faked (`scripts/fixtures/sonar-adaptive-data.mjs`), including no prices, no
 market, a named successor and every feed down.
 
+## Council overlays
+
+`overlays.js` holds D01 to D04; `org-deps.js` builds their readers. The rules:
+
+- An overlay runs only when the question's primary scenario is an overlay,
+  the request is signed in, and `resolveOrgContext()` finds an active
+  membership for that user. The organization id is that membership's. It is
+  never read from the request.
+- Pitches and council reports are read with the caller's own token, so
+  row-level security decides what is visible, and are also filtered to the
+  organization. Fund context is read with the service client scoped to the
+  verified organization id, as the org research route already does.
+- No model or web call sees organization data. Nothing is written.
+- The answer is flagged `org: true`. The page hides Save Research and the save
+  route refuses it, so council content does not enter personal research.
+- IPS wording: a rule is "marked blocking in the IPS". Sonar does not place,
+  stop or approve trades and each answer says so.
+
+## Streaming (plan only)
+
+Not built, by decision: it follows stable live validation.
+
+1. The route already produces sections in a fixed order. Emit them as
+   server-sent events: `plan`, then one `section` per validated section, then
+   `sources`, then `done` with the same report the JSON response returns today.
+2. Validate each section before it is sent. A section the validator would
+   remove is never shown and then withdrawn.
+3. Settle the ping once, on `done`. An aborted stream cancels the reservation,
+   as an aborted request does now.
+4. The client keeps the JSON path as the fallback and as the only path when
+   `SONAR_ADAPTIVE_STREAM` is not `on`.
+5. Saved research and the session thread store the final report only.
+
 ## Not built
 
-- **Executors for 6 scenarios and 4 overlays.** The state of every scenario,
-  with its data limits, is in `IMPLEMENTATION_MATRIX.md`; what the data holds
-  is in `DATA_COVERAGE.md`. Executors live in `executors-events.js`,
-  `executors-company.js`, `executors-disclosures.js` and `executors-macro.js`;
-  every stored-data read is in `data-deps.js`.
-- **Council overlays (D01 to D04).** Plans mark them as needing an
-  organization and exclude org data without one. No org data is read.
-- **Saved research and the session thread.** An adaptive report is not saved
-  and does not appear under "In this session". Deep research from a report
-  works (it opens the existing deep run).
-- **Streaming.** The report arrives whole behind the loading screen.
+- **Streaming.** Plan above.
+- **Live validation.** The runner exists; it has not been executed against
+  production. See `IMPLEMENTATION_MATRIX.md`.
+- **A real 13F dry run and backfill, and published lobbying identities.**
+  Both wait for approval; see `DATA_COVERAGE.md`.
+- **Overlay write paths.** Attaching research to a pitch or sharing a report
+  is not done from Sonar.
 - **Hybrid classification.** Routing is deterministic. An ambiguous question
   is left to the existing classifier, not sent to a model.
-- **Contract price history.** `polymarketHistory` and `kalshiHistory` exist
-  but are not wired; the succession answer shows the last indexed price only.
-- **Spread, bid and ask, structured resolution rules.** Not in the index.
-- **Event study, sector heatmaps, valuation distribution charts.** Section
-  types are reserved; no renderer yet.
-- **Migrating the exemplary brief to the section schema.** The brief and the
-  adaptive report share styles and the chart, not yet one renderer.
-- **Screenshots of five question types.** Four types are implemented; all
-  were captured from fixture data.
-- **Live verification.** No provider was called during this work. The first
-  production pings of each scenario should be read in the logs.
+- **Contract price history, spread, bid and ask, resolution rules.**
+- **Event study, sector heatmaps, valuation distribution charts.**
+- **Migrating the exemplary brief to the section schema.**

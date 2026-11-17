@@ -1,87 +1,92 @@
 # Adaptive research: implementation matrix
 
-Last updated Nov 17, 2026 (phase 2 completed, phase 3 added). Keep this file
-in step with `EXECUTORS` in `src/lib/sonar/adaptive/orchestrator.js` and
-`executable` in `profiles.js`. Data coverage and what was verified live are in
-`DATA_COVERAGE.md`.
+Last updated Nov 17, 2026 (phase 4: validation tooling, save and controls, the
+remaining scenarios, council overlays). Keep this file in step with `EXECUTORS`
+in `src/lib/sonar/adaptive/orchestrator.js`, `OVERLAYS` in `overlays.js` and
+`executable` in `profiles.js`. What the data holds is in `DATA_COVERAGE.md`.
 
-## What the columns mean
+## The four levels of evidence
 
-**Build**
+A pipeline is only as proven as the highest level it has reached. They are not
+interchangeable, and passing fixtures does not make a pipeline production-ready.
 
-- **Built**: routes, runs its own executor, validates its output, has a
-  truthful unavailable state, renders, and has end-to-end tests.
-- **Built, limited**: as above, but stored data covers only part of what the
-  scenario asks. The limit is named.
-- **Classified only**: the router recognises the question; the answer comes
-  from the existing Sonar pipelines.
+| Level                      | Meaning                                                                                                                                | Where it stands                           |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Fixture-tested             | The executor runs end to end on fixture data in `npm run test:sonar-adaptive`; its output passes the schema                            | All 30 scenarios and 4 overlays           |
+| Database-verified          | The tables or functions its reader calls were queried read-only in production and shapes and figures checked                           | Marked "DB" below                         |
+| Live-provider-tested       | `npm run validate:sonar -- --run` executed the question against the deployed route with real providers and its checks passed           | None yet: the run needs your test account |
+| Fully production-validated | Live-provider-tested, plus source links opened, charge and kill switch confirmed, and a person has read the answer against its sources | None yet                                  |
 
-**Live** (what has been checked against production)
+**No pipeline is production-validated.** The "Live" column stays "Not run"
+until the validation runner has been executed against production; see
+"Production validation" below.
 
-- **Data**: the tables or functions the reader calls were queried read-only
-  in production and the shapes and figures checked (Nov 17, 2026).
-- **Not run**: needs a provider key or the deployed route, neither available
-  in the build workspace.
-
-No pipeline is production-validated yet. That needs the eleven-step check at
-the end of this file, run on the deployed app.
+Column key: **Cite/calc** says how citations and figures are checked today.
+"Schema" means the report validator drops any claim without a source and any
+chart or table that fails its rules. "Arithmetic tested" means the figures are
+recomputed in tests from fixture rows.
 
 ## Events and the news cycle
 
-| ID  | Scenario                      | Build           | Live    | Notes                                                                                                                                                                                                    |
-| --- | ----------------------------- | --------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A01 | Event verification            | Classified only |         |                                                                                                                                                                                                          |
-| A02 | Executive succession          | Built           | Not run | Model and news needed                                                                                                                                                                                    |
-| A03 | Leadership impact             | Built           | Not run | Model, news and prices needed                                                                                                                                                                            |
-| A04 | Earnings preview and surprise | Built, limited  | Not run | Next date (labelled not confirmed), consensus, eight reports against estimates, two-session price move, chart. No guidance changes or call commentary; EPS basis is the provider's, labelled as not GAAP |
-| A05 | Why is it moving              | Built           | Not run | Listed securities, daily closes                                                                                                                                                                          |
-| A06 | M&A                           | Classified only |         |                                                                                                                                                                                                          |
-| A07 | Regulatory and legal          | Built, limited  | Not run | Sourced brief from a validated research call, news cache and matching contracts. No structured docket data                                                                                               |
-| A08 | Geopolitical shock            | Built, limited  | Not run | Same shape as A07                                                                                                                                                                                        |
-| A09 | Live event watch              | Classified only |         |                                                                                                                                                                                                          |
-| A10 | Narrative and sentiment       | Built, limited  | Not run | Sourced brief with coverage and a price comparison. No sentiment score is computed                                                                                                                       |
+| ID  | Scenario                      | Implementation | Data coverage                                                               | Live    | Cite/calc                        | Known limitations                                                                                         | Remaining dependencies      |
+| --- | ----------------------------- | -------------- | --------------------------------------------------------------------------- | ------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------- |
+| A01 | Event verification            | Built, limited | News cache and one validated research call; prediction contracts as context | Not run | Schema; status vocabulary tested | A claim is confirmed, contradicted or not established by the sources found; no primary-document retrieval | Model and news providers    |
+| A02 | Executive succession          | Built          | News, filings mentions, contracts index                                     | Not run | Schema; candidates need a source | Last indexed contract price only, no price history                                                        | Model and news providers    |
+| A03 | Leadership impact             | Built          | News and daily closes                                                       | Not run | Schema; arithmetic tested        | Impact links are labelled interpretation unless sourced                                                   | Model, news, prices         |
+| A04 | Earnings preview and surprise | Built, limited | Calendar, consensus, eight reports                                          | Not run | Arithmetic tested                | Dates labelled not confirmed; no guidance or call commentary; EPS basis is the provider's, not GAAP       | Earnings provider           |
+| A05 | Why is it moving              | Built          | Daily closes, news                                                          | Not run | Arithmetic tested                | Listed securities, daily closes only; attribution is labelled, never asserted as cause                    | Prices, news, model         |
+| A06 | M&A                           | Built, limited | News and one validated research call                                        | Not run | Schema                           | Sourced brief. No deal-terms table, no filings parser for merger documents                                | Model and news providers    |
+| A07 | Regulatory and legal          | Built, limited | News, matching contracts                                                    | Not run | Schema                           | No structured docket data                                                                                 | Model and news providers    |
+| A08 | Geopolitical shock            | Built, limited | News, matching contracts                                                    | Not run | Schema                           | Same shape as A07                                                                                         | Model and news providers    |
+| A09 | Live event watch (catalysts)  | Built, limited | Earnings calendar; dated events found in sourced coverage                   | Not run | Schema; dates carry a source     | Not a live feed: dated events on record when asked. No push or refresh                                    | Earnings and news providers |
+| A10 | Narrative and sentiment       | Built, limited | News and daily closes                                                       | Not run | Schema                           | No sentiment score is computed                                                                            | Model and news providers    |
 
 ## Companies and markets
 
-| ID  | Scenario                                    | Build           | Live    | Notes                                                                                                                                                                                                                                                                                             |
-| --- | ------------------------------------------- | --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B01 | Technical analysis                          | Built           | Not run | Prices needed                                                                                                                                                                                                                                                                                     |
-| B02 | Fundamentals, risks and thesis              | Built           | Not run | Statements and model needed                                                                                                                                                                                                                                                                       |
-| B03 | Valuation and peers                         | Built           | Not run | Statements and prices needed                                                                                                                                                                                                                                                                      |
-| B04 | Government contracts and revenue dependency | Built           | Data    | Obligations by fiscal year and agency for 786 tickers, agency concentration, chart, a stated-cut sensitivity. Segment revenue only where the company reports a government segment. Obligations are never divided by revenue. No lobbying or policy feed inside this answer (B08 is its follow-up) |
-| B05 | Industry competition and supply chains      | Built, limited  | Data    | Peer table, customer and commitment disclosures quoted from filings (about 20 tickers), registry value chain (semiconductors only), sourced findings. No market-share series, no facilities or capacity data: both tables are empty                                                               |
-| B06 | Institutional ownership                     | Built, limited  | Data    | Share counts, concentration, same-filer changes, fund holdings table. One quarter is indexed widely, so no manager history or cross-quarter chart yet                                                                                                                                             |
-| B07 | Congressional and insider transactions      | Built, limited  | Data    | Named member, company and chamber views; committee seats as context; insider filings in a separate table. Insider data starts Sep 30, 2026. No sector view and no bill-level legislative context                                                                                                  |
-| B08 | Lobbying                                    | Built, limited  | Data    | Spending by year and policy area. Only 33 tickers have a verified client link, so most companies return "no disclosures found"                                                                                                                                                                    |
-| B09 | Cross-asset and sector performance          | Classified only |         |                                                                                                                                                                                                                                                                                                   |
-| B10 | Quant: risk and return                      | Built, limited  | Not run | Volatility, drawdown, beta, correlation from daily closes for one security. No backtests or factor models                                                                                                                                                                                         |
+| ID  | Scenario                                    | Implementation | Data coverage                                                                                      | Live    | Cite/calc                                            | Known limitations                                                                                                   | Remaining dependencies                                         |
+| --- | ------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| B01 | Technical analysis                          | Built          | Daily closes                                                                                       | Not run | Arithmetic tested                                    | Daily bars only                                                                                                     | Price provider                                                 |
+| B02 | Fundamentals, risks and thesis              | Built          | Statements; risk text from filings                                                                 | Not run | Schema; arithmetic tested                            | Risks are the company's own reported risks plus sourced findings                                                    | Statements provider, model                                     |
+| B03 | Valuation and peers                         | Built          | Statements and prices                                                                              | Not run | Arithmetic tested                                    | Peer set from the provider                                                                                          | Statements and price providers                                 |
+| B04 | Government contracts and revenue dependency | Built          | DB: obligations by fiscal year and agency for 786 tickers                                          | Not run | Arithmetic tested; figures spot-checked against rows | Segment revenue only where reported. Obligations are never divided by revenue                                       | None beyond providers                                          |
+| B05 | Industry competition and supply chains      | Built, limited | DB: peer table; filing disclosures for about 20 tickers; registry for semiconductors only          | Not run | Schema                                               | No market-share series, no facilities or capacity data (both tables are empty)                                      | Industry tables need data                                      |
+| B06 | Institutional ownership                     | Built, limited | DB: Q2 2026 widely indexed (1,499 managers); Q1 77 of 99 filings with no holdings rows; Q3 partial | Not run | Arithmetic tested                                    | One full quarter, so no manager history or cross-quarter chart. Changes are share counts, never inferred from value | **13F backfill** (dry run awaiting your review)                |
+| B07 | Congressional and insider transactions      | Built, limited | DB: chamber trades (6,920 rows, paged); insider filings from Sep 30, 2026                          | Not run | Arithmetic tested                                    | No sector view, no bill-level context. Timing is never described as causal or improper                              | Longer insider history                                         |
+| B08 | Lobbying                                    | Built, limited | DB: 35 verified client links (33 tickers) of 28,593 clients                                        | Not run | Arithmetic tested                                    | Most companies return "no disclosures found" until identities are verified                                          | **Lobbying identity migration and review** (awaiting approval) |
+| B09 | Cross-asset and sector performance          | Built, limited | Daily closes for sector funds or the securities named                                              | Not run | Arithmetic tested                                    | Matched windows from daily closes. No intraday, no factor attribution                                               | Price provider                                                 |
+| B10 | Quant: risk and return                      | Built, limited | Daily closes                                                                                       | Not run | Arithmetic tested                                    | One security; no backtests or factor models                                                                         | Price provider                                                 |
 
 ## Macro and global
 
-| ID  | Scenario                     | Build           | Live    | Notes                                                                                                                                                                                                                           |
-| --- | ---------------------------- | --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C01 | Country macro                | Built           | Data    | A country's stored series with periods, sources, projection flags and a history chart                                                                                                                                           |
-| C02 | Country rankings             | Built           | Data    | GDP measures plus twelve families (oil and gas, inflation, unemployment, debt, fiscal balance, current account, policy rate, goods exports). Period mix stated. Reserves and energy consumption are not stored in rankable form |
-| C03 | Commodities                  | Built           | Not run | Price in its one-year range with chart, sourced drivers. No inventories or supply tables                                                                                                                                        |
-| C04 | Rates, inflation, credit     | Built           | Data    | Same reader as C01 on rate and inflation families; "the Fed" and other central banks resolve to their country                                                                                                                   |
-| C05 | FX and sovereign risk        | Built           | Data    | Same reader on currency and external families                                                                                                                                                                                   |
-| C06 | Sanctions and trade exposure | Classified only |         |                                                                                                                                                                                                                                 |
-| C07 | Crypto                       | Classified only |         |                                                                                                                                                                                                                                 |
-| C08 | Prediction markets           | Built           | Data    | Contracts that name the entity; none is said plainly                                                                                                                                                                            |
-| C09 | Country comparison           | Built, limited  | Data    | Two to six named economies on GDP, GDP per capita and growth. Other measures are not in the comparison yet                                                                                                                      |
-| C10 | Supply chain shock           | Built, limited  | Not run | Sourced brief; relationships only with a source                                                                                                                                                                                 |
+| ID  | Scenario                     | Implementation | Data coverage                                                    | Live    | Cite/calc                 | Known limitations                                                                                            | Remaining dependencies          |
+| --- | ---------------------------- | -------------- | ---------------------------------------------------------------- | ------- | ------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| C01 | Country macro                | Built          | DB: stored series with periods, sources and projection flags     | Not run | Figures from stored rows  | Only families that are stored                                                                                | None                            |
+| C02 | Country rankings             | Built          | DB: GDP measures and twelve families                             | Not run | Arithmetic tested         | Reserves and energy consumption are not stored in rankable form; period mix is stated                        | None                            |
+| C03 | Commodities                  | Built          | Daily closes, sourced drivers                                    | Not run | Arithmetic tested; schema | No inventories or supply tables                                                                              | Price and news providers, model |
+| C04 | Rates, inflation, credit     | Built          | DB: same reader as C01                                           | Not run | Figures from stored rows  | No forward curve; a "will they cut" question gets the data and contracts, not a forecast                     | None                            |
+| C05 | FX and sovereign risk        | Built          | DB: same reader as C01                                           | Not run | Figures from stored rows  | No live FX quote in this answer                                                                              | None                            |
+| C06 | Sanctions and trade exposure | Built, limited | DB: sanctions listings by name or country, by list and programme | Not run | Schema; counts from rows  | A name match on a list is shown as a match to review, never as a finding about a company. No trade-flow data | Trade data not stored           |
+| C07 | Crypto                       | Built, limited | Daily closes for the asset                                       | Not run | Arithmetic tested         | Price, range and risk statistics only. No on-chain, flows or exchange data                                   | Price provider                  |
+| C08 | Prediction markets           | Built          | DB: contracts index                                              | Not run | Schema                    | Last indexed price; no spread or resolution rules                                                            | None                            |
+| C09 | Country comparison           | Built, limited | DB: GDP, GDP per capita, growth                                  | Not run | Arithmetic tested         | Two to six economies; other measures not yet in the comparison                                               | None                            |
+| C10 | Supply chain shock           | Built, limited | News and one validated research call                             | Not run | Schema                    | Relationships only with a source                                                                             | Model and news providers        |
 
 ## Council overlays
 
-| ID  | Overlay                             | Build           | Notes                                                 |
-| --- | ----------------------------------- | --------------- | ----------------------------------------------------- |
-| D01 | Fund fit (IPS)                      | Classified only | Phase 4. No organization data is read by any executor |
-| D02 | Pitch due diligence                 | Classified only | Phase 4                                               |
-| D03 | Fund risk and catalysts (holdings)  | Classified only | Phase 4                                               |
-| D04 | Research handoff (Research Library) | Classified only | Phase 4                                               |
+These run through `overlays.js`, not the public executor table. Organization
+data is read only when the question is about the reader's own fund, the
+request is signed in, and the user is an active member; the organization is
+their own membership, resolved on the server. No model or web call is made.
 
-**Totals: 24 of 30 scenarios have an executor (13 built, 11 built with a
-named limit); 6 classified only; 4 overlays classified only.**
+| ID  | Overlay                   | Implementation | Data coverage                                              | Live    | Cite/calc                        | Known limitations                                                                                                                                                                     | Remaining dependencies                            |
+| --- | ------------------------- | -------------- | ---------------------------------------------------------- | ------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| D01 | Fund fit (IPS)            | Built          | The fund's mandate, IPS rules and position book            | Not run | Existing `mandateChecks`, tested | Reports each rule and whether the IPS marks it blocking. **Sonar does not place, stop or approve trades, and the answer says so.** Unreadable facts are "not checked", never "passed" | A member account for live validation              |
+| D02 | Pitch due diligence       | Built, limited | Pitches the member may read (row-level security)           | Not run | Read from the pitch's fields     | A checklist of what the file does not record, not a judgement of the idea. An invisible pitch is neither counted nor described                                                        | Same                                              |
+| D03 | Fund risk and catalysts   | Built, limited | Position book, sectors, earnings calendar for the top five | Not run | Arithmetic tested                | Weights use stored prices or cost, not live valuations. Overlap is same ticker or same sector. No factor or correlation risk yet                                                      | Same                                              |
+| D04 | Research Library, handoff | Built, limited | Council reports the member may read (row-level security)   | Not run | Lists rows as stored             | Read-only. Sonar does not attach research to a pitch, move it or change who can see it, and says so                                                                                   | A write path would need its own permission design |
+
+**Totals: all 30 scenarios and all 4 overlays have an executor. 14 built, 20
+built with a named limit. 0 live-provider-tested. 0 production-validated.**
 
 ## Charts
 
@@ -96,66 +101,45 @@ the schema removes unless each series holds at least two real numbers.
 | A04                | Earnings per share, estimate against reported                                            |
 | B04                | Obligations by fiscal year                                                               |
 | C01, C04, C05      | The first series' five-year history                                                      |
-| C03                | One year of daily closes                                                                 |
+| C03, C07           | One year of daily closes                                                                 |
+| B09                | Returns of the sectors or securities over the window                                     |
+| D03                | Weight of the largest positions                                                          |
 | A02, A03, A05, B10 | Price comparison against the benchmark (existing chart)                                  |
 | B01                | Price, moving averages and RSI (existing chart)                                          |
 
 ## Cross-cutting
 
-| Item                                       | State                                                                    |
-| ------------------------------------------ | ------------------------------------------------------------------------ |
-| Exemplary brief expiry                     | Done                                                                     |
-| Follow-ups across pipelines                | Done for built pipelines; each follow-up is re-planned and re-researched |
-| Saving adaptive answers                    | Not built                                                                |
-| Streaming                                  | Not built                                                                |
-| Research Controls applied to adaptive runs | Not built                                                                |
-| Kill switch                                | `SONAR_ADAPTIVE=off` returns every ping to the previous pipelines        |
+| Item                        | State                                                                                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exemplary brief expiry      | Done                                                                                                                                                           |
+| Follow-ups across pipelines | Done; each follow-up is re-planned and re-researched                                                                                                           |
+| Save Research               | Done. The saved snapshot carries the adaptive report and reopens read-only. Council overlay answers are refused by the save route                              |
+| Session history             | Done. Adaptive answers appear under "In this session" and restore from memory                                                                                  |
+| Research Controls           | Done. Sources, focus and horizon narrow the readers an executor may use; required readers cannot be switched off; the applied settings are shown on the answer |
+| Streaming                   | Planned only, as asked. Plan in `README.md`. To be built once live validation is stable                                                                        |
+| Kill switch                 | `SONAR_ADAPTIVE=off` returns every ping to the previous pipelines, overlays included                                                                           |
+| Database test environment   | pgvector installed locally and in CI. A missing dependency fails the suite; nothing is skipped or excluded                                                     |
 
-## Open item needing a decision
+## Production validation
 
-`npm run test:rls` fails in the build workspace: its local Postgres has no
-pgvector, and `20261122090000_sonar_exemplary_briefs.sql` (Nov 16) creates a
-vector column. The security test was not changed. Either the harness needs
-pgvector, or that migration needs to be kept out of the harness the way
-`live_only` files are; that is a change to a security test and is left for
-review.
+`npm run validate:sonar` prints the plan and runs nothing. With `--run` it
+signs in as a dedicated test account, sends each question in
+`scripts/lib/sonar-validation.mjs` (26 questions and the follow-up chains) to
+the deployed route, and writes a report to `validation/` (git-ignored). It
+checks scenario and plan, sources, citations, calculations, freshness, charts,
+follow-up routing, latency, model cost, error handling, one charge per ping,
+and, with `--kill-switch`, the previous pipeline. `--links` opens every source.
 
-## Production validation, still to do
+What a run costs and changes, so you can approve it first:
 
-On the deployed app, signed in, for each built pipeline:
+- **Usage charges**: one model-backed research run per question for the
+  pipelines that use a model, and provider calls for prices and news. The
+  report prints the measured token cost per question.
+- **Production writes**: one ping reservation and one research log row per
+  question, on the test account only. No other user's data is read or written.
+- **Not covered**: the council overlays, until the test account is made a
+  member of a test organization.
 
-1. Ping the question in the table below.
-2. Read the `[sonar/landing] adaptive` log line: scenario, ms, `degraded`.
-3. `degraded` is empty.
-4. Every figure in a table matches its chart.
-5. Every source link opens.
-6. No candidate, catalyst, risk, relationship or figure appears without a citation or an interpretation label.
-7. The unavailable state appears when a source is switched off.
-8. A stale input (an old quarter, an old close) is dated on the page.
-9. A follow-up routes to the neighbouring pipeline and carries the subject.
-10. The ping is charged once.
-11. `SONAR_ADAPTIVE=off` restores the previous answer.
-
-| Pipeline | Question                                                            |
-| -------- | ------------------------------------------------------------------- |
-| B01      | Is NVIDIA technically oversold?                                     |
-| A02      | Who will replace Jensen Huang?                                      |
-| A03      | How will the CEO change affect NVIDIA and the chip industry?        |
-| A05      | Why is NVDA stock down this week?                                   |
-| B03      | Is NVIDIA expensive compared with its peers?                        |
-| B02      | What are NVDA’s biggest risks?                                      |
-| B05      | Which semiconductor companies benefit if NVIDIA loses market share? |
-| B06      | Which institutions hold NVDA?                                       |
-| B07      | What has Nancy Pelosi been buying?                                  |
-| B07      | Are insiders selling NVDA?                                          |
-| A04      | When does NVDA report earnings next?                                |
-| B04      | How dependent is Lockheed Martin on government contracts?           |
-| B08      | How much does Microsoft spend on lobbying?                          |
-| B10      | What is NVDA’s volatility and max drawdown?                         |
-| C02      | Which countries produce the most crude oil?                         |
-| C01      | How is Turkey’s lira doing?                                         |
-| C04      | Will the Fed cut rates next month?                                  |
-| C09      | Compare the economies of India and Brazil                           |
-| C03      | Where could Brent oil trade if OPEC supply rises?                   |
-| C08      | Does any prediction market price NVIDIA’s next CEO?                 |
-| A08      | How would new chip export restrictions affect ASML?                 |
+A pipeline moves to "live-provider-tested" when its row in that report passes,
+and to "production-validated" when a person has also read the answer against
+its sources.

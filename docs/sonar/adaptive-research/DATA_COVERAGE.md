@@ -103,3 +103,71 @@ industrial production.
 These checks ran as SQL against the same tables and functions the readers
 call. They confirm the data and the shapes. They are not a run of the
 deployed route: that needs the production environment (see the matrix).
+
+## 13F backfill: what it would take (read-only assessment, Nov 17, 2026)
+
+Nothing was written. Figures are from read-only queries on production.
+
+| Quarter | State                                                    |
+| ------- | -------------------------------------------------------- |
+| Q2 2026 | Widely indexed: 1,499 managers                           |
+| Q1 2026 | 99 filings indexed, 77 of them with no raw holdings rows |
+| Q3 2026 | 148 filings so far (the filing window is still open)     |
+| Earlier | Not indexed                                              |
+
+- One full quarter is about 1,550 filings and 527,000 raw rows, roughly
+  260 MB. The database is 3.6 GB, so four more quarters is about 1 GB.
+- Q1 2026 must not be re-materialised from what is stored: most of its filings
+  have no holdings rows, so the result would look like mass selling.
+- `sec_13f_holdings` has 3,746 groups of identical rows. A filing can
+  legitimately list the same security on several lines (different managers or
+  discretion), so these are reported, not deleted.
+- `scripts/backfill-13f-datasets.mjs` now writes a per-quarter dry-run report
+  (`validation/13f-backfill-dry-run-<date>.md`): filings and rows it would
+  write, amendments and which filing they replace, duplicates, unresolved
+  identities, and a row-count check per filing. `--materialise` is a separate
+  step and runs only for quarters that are fully written and matched.
+- The dry run needs the SEC quarterly archives, which the build workspace
+  cannot reach. **It has not been run.** No backfill happens until you have
+  read the dry-run report and approved it.
+
+## Lobbying client coverage (read-only assessment, Nov 17, 2026)
+
+`lobbying_client_tickers` is what links a lobbying client to a company. The
+answer reads only rows marked verified.
+
+| Group                                                                                                                                 | Clients      | Tickers  | 2024+ spend                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- | --------------------------------------------------------- |
+| Verified today                                                                                                                        | 35           | 33       |                                                           |
+| Legal-name identity: the client name is the SEC registrant's name once case and punctuation are removed, and it belongs to one ticker | 1,214        | 950      | $2.79B of $17.68B                                         |
+| Name variant: equal only after dropping a corporate suffix or "and subsidiaries". Possible, awaiting review                           | 825          | 341 more |                                                           |
+| Ambiguous: the name maps to more than one ticker                                                                                      | 4            |          |                                                           |
+| Unmatched                                                                                                                             | about 26,500 |          | Trade groups, private companies, governments, non-profits |
+
+- Lockheed Martin: `LOCKHEED MARTIN CORPORATION` matches LMT (CIK 936468) in
+  the legal-name tier.
+- Of the 50 largest federal contractors with a ticker, 3 are covered today and
+  36 would be with the legal-name tier. Still unresolved: USFD, FMS, ASGN,
+  AUTLY, GSK, BAESY, CAE, NOC, VVX, KBR, SCTBY, ACN, RYCEY, IBM. Most file
+  under a subsidiary or a US arm, which is the "verified subsidiary" case and
+  needs a person to confirm each one.
+- `supabase/migrations/20261123090000_lobbying_client_identity.sql` (not
+  applied) adds the SEC identity, relationship (direct or subsidiary), status
+  (verified, possible, rejected), evidence, and who verified it and when. A row
+  cannot be published without evidence, a relationship and a date: the
+  database refuses it. The matching function proposes; it verifies nothing.
+- A name variant is never published automatically. The legal-name tier is not
+  a fuzzy match, but publishing it is still a decision for you: the statement
+  that would do it is in the project doc `SQL_03`, for review.
+
+## Council overlays: what is read
+
+| Overlay | Reads                                     | How                                                                                  |
+| ------- | ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| D01     | Fund mandate, IPS rules, position book    | Service client, scoped to the member's own organization id                           |
+| D03     | Position book; earnings calendar (public) | Same                                                                                 |
+| D02     | `org_pitches`                             | The caller's own token, so row-level security decides; also filtered by organization |
+| D04     | `org_sonar_reports`                       | Same                                                                                 |
+
+Not verified against production rows: the overlays were tested on fixtures
+only. The build workspace has no member session.
