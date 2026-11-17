@@ -196,3 +196,117 @@ export const FIXTURE_NEWS = [
     publishedAt: '2026-11-15T09:00:00Z',
   },
 ];
+
+/* A leadership-impact reply with things the validator must remove or relabel. */
+export const FIXTURE_IMPACT_REPLY = JSON.stringify({
+  company: 'NVIDIA',
+  ticker: 'NVDA',
+  industry: 'Semiconductors',
+  person: 'Sam Founder',
+  headline: 'The departure is confirmed; the effect depends on execution (fixture)',
+  answer: 'The company confirmed the change. The effect on the business is not yet reported.',
+  event: {
+    status: 'event_verified',
+    summary: 'The chief executive resigned and an interim was named (fixture).',
+    effectiveDate: '2026-11-11',
+    announcedDate: '2026-11-12',
+    interim: { name: 'Alex Interim', role: 'Chief Financial Officer' },
+    permanentSuccessor: null,
+    sourceUrls: ['https://www.sec.gov/Archives/edgar/data/0000000/example-8k.htm'],
+  },
+  findings: [
+    {
+      label: 'Succession',
+      title: 'The change is confirmed',
+      text: 'A filing records the departure.',
+      sourceUrls: ['https://www.sec.gov/Archives/edgar/data/0000000/example-8k.htm'],
+    },
+    {
+      label: 'Industry',
+      title: 'Spillovers are not established',
+      text: 'No source reports a change in orders.',
+      sourceUrls: ['https://made-up.example.org/not-retrieved'],
+    },
+  ],
+  channels: [
+    { horizon: 'near', title: 'Confidence', text: 'A risk channel, not a forecast.' },
+    { horizon: 'sector', title: 'Uneven', text: 'Depends on orders.' },
+    { horizon: 'someday', title: 'Dropped', text: 'Unknown horizon.' },
+  ],
+  exposures: [
+    {
+      name: 'NVIDIA',
+      ticker: 'NVDA',
+      relation: 'direct',
+      channel: 'Succession and roadmap continuity',
+      evidence: 'A named successor and guidance',
+      assessment: 'confirmed',
+      sourceUrls: ['https://www.sec.gov/Archives/edgar/data/0000000/example-8k.htm'],
+    },
+    {
+      name: 'Rival Chips',
+      ticker: 'RVL',
+      relation: 'peer',
+      channel: 'Share shifts if customers move',
+      evidence: 'Customer wins',
+      assessment: 'confirmed',
+      sourceUrls: [],
+    },
+    {
+      name: 'Guess Co',
+      ticker: 'not a ticker',
+      relation: 'friend',
+      channel: 'x',
+      evidence: 'y',
+      assessment: 'certain',
+    },
+  ],
+  baseline: [
+    {
+      label: 'Revenue',
+      value: '$10.0B',
+      detail: 'Latest quarter',
+      sourceUrls: ['https://investor.example.com/news/ceo-transition'],
+    },
+    { label: 'Margin', value: '70%', detail: null, sourceUrls: [] },
+    {
+      label: 'Outlook',
+      value: 'strong',
+      sourceUrls: ['https://investor.example.com/news/ceo-transition'],
+    },
+  ],
+  timeline: [
+    {
+      date: '2026-11-12',
+      title: 'Announcement (fixture)',
+      text: 'The company announced the change.',
+      sourceUrls: ['https://investor.example.com/news/ceo-transition'],
+    },
+  ],
+  watch: ['The search timetable'],
+  followups: ['What does the interim chief executive control?'],
+});
+
+/* A catalyst reply: one in the window with a source, one unsourced, one out of the window. */
+export const FIXTURE_CATALYST_REPLY = JSON.stringify({
+  summary: 'Reporting in the window covers a leadership announcement (fixture).',
+  catalysts: [
+    {
+      date: '2026-11-12',
+      title: 'CEO resigns (fixture)',
+      text: 'The company announced its chief executive resigned.',
+      scope: 'company',
+      sourceUrls: ['https://www.reuters.com/business/example-board-weighs-candidates'],
+    },
+    { date: '2026-11-13', title: 'Rumour', text: 'No source.', scope: 'company', sourceUrls: [] },
+    {
+      date: '2026-06-01',
+      title: 'Old news',
+      text: 'Months before the window.',
+      scope: 'sector',
+      sourceUrls: ['https://www.reuters.com/business/example-board-weighs-candidates'],
+    },
+  ],
+  watch: ['The next results date'],
+  followups: [],
+});

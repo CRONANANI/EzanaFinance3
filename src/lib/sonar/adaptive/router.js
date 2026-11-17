@@ -125,6 +125,7 @@ function scoreProfile(profile, text, entities) {
   /* A profile about a security or a person is a better fit when one is named. */
   if (profile.id === 'B01' && (hasCompany || entities.some((e) => e.type === 'crypto'))) score += 1;
   if (profile.id === 'A02' && (hasPerson || hasCompany)) score += 1;
+  if (profile.id === 'A05' && hasCompany) score += 1;
   if (profile.id === 'A01' && hasPerson) score += 0.5;
   return { score, reasons };
 }
@@ -183,6 +184,15 @@ export function planAdaptive(question, opts = {}) {
   if (primary?.id === 'B01' && !company?.ticker) {
     executable = false;
     missing.push('no listed security named: daily bars need a ticker');
+  }
+  if (primary?.id === 'A05' && !company?.ticker) {
+    executable = false;
+    missing.push('no listed security named: a move is measured from daily bars');
+  }
+  if (primary?.id === 'A03' && !company && !person) {
+    executable = false;
+    needsDisambiguation = true;
+    missing.push('no company or person named');
   }
   if (primary?.id === 'A02' && !company && !person) {
     executable = false;

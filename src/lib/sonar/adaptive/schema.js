@@ -51,6 +51,8 @@ const RULES = {
     s.rows?.length || text(s.emptyText) ? null : 'no rows and no empty state',
   news_timeline: (s) => (s.items?.length ? null : 'no items'),
   scenario_matrix: (s) => (s.rows?.length ? null : 'no scenarios'),
+  impact_network: (s) => (s.rows?.length ? null : 'no rows'),
+  fundamentals: (s) => (s.items?.length ? null : 'no figures'),
   watchpoints: (s) => (s.items?.length ? null : 'no items'),
   limitations: (s) => (s.items?.length ? null : 'no items'),
   followups: (s) => (s.related?.length ? null : 'no questions'),
@@ -125,6 +127,35 @@ export function validateReport(input) {
         if (!ok) removed.push(`market ${m.id || '?'}: missing link, time or price`);
         return ok;
       });
+    }
+    /* A reported figure with no source behind it is not shown. */
+    if (s.type === 'fundamentals') {
+      s.items = (s.items || [])
+        .map((i) => ({ ...i, cites: keepCites(i.cites) }))
+        .filter((i) => {
+          const ok = text(i.label) && text(i.value) && i.cites.length > 0;
+          if (!ok) removed.push(`figure ${i.label || '?'}: no citation`);
+          return ok;
+        });
+    }
+    if (s.type === 'key_findings') {
+      s.items = (s.items || [])
+        .map((i) => ({ ...i, cites: keepCites(i.cites) }))
+        .map((i) =>
+          /* A takeaway that lost its source is a reading, and says so. */
+          i.cites.length || i.note ? i : { ...i, note: 'Analyst interpretation' },
+        )
+        .filter((i) => text(i.title) && text(i.text));
+    }
+    if (s.type === 'impact_network') {
+      s.rows = (s.rows || [])
+        .map((r) => ({ ...r, cites: keepCites(r.cites) }))
+        .map((r) =>
+          r.assessment === 'confirmed' && !r.cites.length
+            ? { ...r, assessment: 'scenario', assessmentLabel: 'Scenario only' }
+            : r,
+        )
+        .filter((r) => text(r.name) && text(r.channel));
     }
     if (s.type === 'news_timeline') {
       s.items = (s.items || []).filter((i) => {

@@ -101,11 +101,11 @@ market, a named successor and every feed down.
 
 ## Not built
 
-- **Executors for 28 scenarios and 4 overlays.** They route and plan; the
-  answer comes from the existing pipelines. Next in order of readiness, since
-  their data helpers already exist: A03 leadership impact and A05 market
-  reaction (price comparison plus news), B03 valuation (`multiples` in
-  quant.js), B06 and B07 (13F and congressional disclosures), C02 rankings.
+- **Executors for 26 scenarios and 4 overlays.** They route and plan; the
+  answer comes from the existing pipelines. The state of every scenario is in
+  `IMPLEMENTATION_MATRIX.md`. A03 leadership impact and A05 move attribution
+  were added Nov 17 (`executors-events.js`, `event-research.js`,
+  `move-attribution.js`).
 - **Council overlays (D01 to D04).** Plans mark them as needing an
   organization and exclude org data without one. No org data is read.
 - **Saved research and the session thread.** An adaptive report is not saved
@@ -119,11 +119,9 @@ market, a named successor and every feed down.
 - **Spread, bid and ask, structured resolution rules.** Not in the index.
 - **Event study, sector heatmaps, valuation distribution charts.** Section
   types are reserved; no renderer yet.
-- **Exemplary brief expiry.** A brief has `reviewAfter` but is not withdrawn
-  automatically when it passes or when a newer official event supersedes it.
 - **Migrating the exemplary brief to the section schema.** The brief and the
   adaptive report share styles and the chart, not yet one renderer.
-- **Screenshots of five question types.** Two types are implemented; both
+- **Screenshots of five question types.** Four types are implemented; all
   were captured from fixture data.
 - **Live verification.** No provider was called during this work. The first
   production pings of each scenario should be read in the logs.

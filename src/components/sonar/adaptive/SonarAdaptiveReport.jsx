@@ -30,7 +30,10 @@ const pad2 = (n) => String(n).padStart(2, '0');
 const ANCHOR_LABELS = {
   verified_event_status: 'Status',
   ohlcv_technical: 'Chart',
+  key_findings: 'Takeaways',
   metric_table: 'Readings',
+  impact_network: 'Exposure',
+  fundamentals: 'Baseline',
   forecast_market: 'Markets',
   candidate_table: 'Candidates',
   news_timeline: 'Reporting',
@@ -248,7 +251,7 @@ function Scenarios({ s }) {
       <div className="sxb-findings sar-scenarios">
         {s.rows.map((r, i) => (
           <article key={r.title} className="sxb-finding">
-            <p className="sxb-finding-count">Scenario {pad2(i + 1)}</p>
+            <p className="sxb-finding-count">{r.kicker || `Scenario ${pad2(i + 1)}`}</p>
             <h3>{r.title}</h3>
             <p>{r.text}</p>
           </article>
@@ -290,6 +293,93 @@ function Metrics({ s, sources }) {
           </tbody>
         </table>
       </div>
+    </>
+  );
+}
+
+function Findings({ s, sources }) {
+  return (
+    <>
+      <div className="sxb-section-top">
+        <h2 className="sxb-section-title">{s.title}</h2>
+        {s.label ? <p className="sxb-section-note">{s.label}</p> : null}
+      </div>
+      <div className={`sxb-findings${s.items.length > 3 ? ' sar-findings--wrap' : ''}`}>
+        {s.items.map((f, i) => (
+          <article key={`${f.title}-${f.kicker || i}`} className="sxb-finding">
+            <p className="sxb-finding-count">{f.kicker || pad2(i + 1)}</p>
+            <h3>{f.title}</h3>
+            <p>
+              {f.text}
+              <Cites ids={f.cites} sources={sources} />
+              {f.note ? <span className="sxb-finding-note"> {f.note}</span> : null}
+            </p>
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function Impact({ s, sources }) {
+  return (
+    <>
+      <div className="sxb-section-top">
+        <h2 className="sxb-section-title">{s.title}</h2>
+        {s.note ? <p className="sxb-section-note">{s.note}</p> : null}
+      </div>
+      <div className="sxb-table-scroll">
+        <table className="sxb-table">
+          <thead>
+            <tr>
+              <th scope="col">Exposure</th>
+              <th scope="col">Transmission channel</th>
+              <th scope="col">Evidence that would matter</th>
+              <th scope="col">Current assessment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {s.rows.map((r) => (
+              <tr key={`${r.name}-${r.tag}`}>
+                <th scope="row">
+                  {r.name} <span className="sxb-table-role">{r.tag}</span>
+                </th>
+                <td>{r.channel}</td>
+                <td>{r.evidence}</td>
+                <td className={r.assessment === 'confirmed' ? 'sxb-table-confirmed' : undefined}>
+                  {r.assessmentLabel}
+                  <Cites ids={r.cites} sources={sources} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function Baseline({ s, sources }) {
+  return (
+    <>
+      <div className="sxb-section-top">
+        <h2 className="sxb-section-title">{s.title}</h2>
+      </div>
+      <dl className="sxb-kpis">
+        {s.items.map((c) => (
+          <div key={c.label} className="sxb-kpi">
+            <dt>{c.label}</dt>
+            <dd>
+              <strong>{c.value}</strong>
+              <span>
+                {c.sub}
+                <Cites ids={c.cites} sources={sources} />
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {s.note ? <p className="sxb-footnote">{s.note}</p> : null}
     </>
   );
 }
@@ -422,6 +512,12 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
         return <Metrics s={s} sources={sources} />;
       case 'price_comparison':
         return <SonarExemplaryChart chart={s.chart} />;
+      case 'key_findings':
+        return <Findings s={s} sources={sources} />;
+      case 'impact_network':
+        return <Impact s={s} sources={sources} />;
+      case 'fundamentals':
+        return <Baseline s={s} sources={sources} />;
       case 'watchpoints':
         return <ListBlock title={s.title} items={s.items} />;
       case 'limitations':
@@ -440,6 +536,23 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
       default:
         return null;
     }
+  };
+
+  /* The first section sits beside Research Controls, under the lead, so the top zone is
+     filled by the answer and not by empty space. */
+  const block = (s) => {
+    const content = render(s);
+    if (!content) return null;
+    return (
+      <section
+        key={s.type}
+        className={`sxb-block sar-block sar-block--${s.type}${s.secondary ? ' sar-block--secondary' : ''}`}
+        id={`sar-${s.type}`}
+        data-anchor={ANCHOR_LABELS[s.type] ? s.type : undefined}
+      >
+        {content}
+      </section>
+    );
   };
 
   return (
@@ -543,26 +656,14 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
               ) : null}
             </p>
           </header>
+          {body[0] ? block(body[0]) : null}
         </div>
         <aside className="sxb-rail" aria-label="Research controls">
           <SonarResearchControls variant="flat" />
         </aside>
       </div>
 
-      {body.map((s) => {
-        const content = render(s);
-        if (!content) return null;
-        return (
-          <section
-            key={s.type}
-            className={`sxb-block sar-block sar-block--${s.type}${s.secondary ? ' sar-block--secondary' : ''}`}
-            id={`sar-${s.type}`}
-            data-anchor={ANCHOR_LABELS[s.type] ? s.type : undefined}
-          >
-            {content}
-          </section>
-        );
-      })}
+      {body.slice(1).map(block)}
 
       {follow ? (
         <section className="sxb-block" aria-labelledby="sar-continue-h">

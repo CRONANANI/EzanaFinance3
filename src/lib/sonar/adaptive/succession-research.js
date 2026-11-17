@@ -24,6 +24,7 @@
  * orchestrator then answers from the news cache alone and says so.
  */
 import { canonicalUrl, sourceClass, hostOf } from './news-intelligence';
+import { clip, isoDate, firstJson } from './research-reply';
 
 const SYSTEM = `You are a research analyst at Ezana Sonar establishing facts about an executive succession. Use the web search tool to read current primary sources (the company's own announcements, regulatory filings) and reporting from established news organisations.
 
@@ -59,42 +60,7 @@ Return ONLY one JSON object, no prose around it:
 }
 "event_superseded" means a permanent successor has already been announced. "hypothetical" means the departure has not happened.`;
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const clip = (v, n) =>
-  String(v ?? '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, n);
-const date = (v) => (DATE.test(String(v || '')) && !Number.isNaN(Date.parse(v)) ? String(v) : null);
-
-function firstJson(textIn) {
-  const s = String(textIn || '');
-  const start = s.indexOf('{');
-  if (start === -1) return null;
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < s.length; i += 1) {
-    const ch = s[i];
-    if (inStr) {
-      if (esc) esc = false;
-      else if (ch === '\\') esc = true;
-      else if (ch === '"') inStr = false;
-    } else if (ch === '"') inStr = true;
-    else if (ch === '{') depth += 1;
-    else if (ch === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        try {
-          return JSON.parse(s.slice(start, i + 1));
-        } catch {
-          return null;
-        }
-      }
-    }
-  }
-  return null;
-}
+const date = isoDate;
 
 const BASES = new Set(['board_confirmed', 'reported', 'analysis']);
 const STATUSES = new Set([

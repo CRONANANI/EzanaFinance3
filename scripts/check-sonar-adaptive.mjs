@@ -19,6 +19,8 @@ import {
   FIXTURE_SUCCESSION_REPLY,
   FIXTURE_MARKETS,
   FIXTURE_NEWS,
+  FIXTURE_IMPACT_REPLY,
+  FIXTURE_CATALYST_REPLY,
 } from './fixtures/sonar-adaptive-data.mjs';
 
 const R = await import('@/lib/sonar/adaptive/router.js');
@@ -31,6 +33,8 @@ const S = await import('@/lib/sonar/adaptive/schema.js');
 const SR = await import('@/lib/sonar/adaptive/succession-research.js');
 const L = await import('@/lib/sonar/adaptive/layout-planner.js');
 const O = await import('@/lib/sonar/adaptive/orchestrator.js');
+const MA = await import('@/lib/sonar/adaptive/move-attribution.js');
+const ER = await import('@/lib/sonar/adaptive/event-research.js');
 const { ANALYSTS } = await import('@/lib/sonar/analysts/registry.js');
 
 const NOW = new Date('2026-11-16T12:00:00Z');
@@ -52,7 +56,7 @@ test('30 scenarios and 4 council overlays, each a complete profile on the existi
     for (const a of [...s.analysts, ...s.supportingAnalysts])
       assert.ok(ANALYSTS[a], `${s.id}: ${a}`);
   }
-  assert.deepEqual(P.EXECUTABLE_IDS.sort(), ['A02', 'B01']);
+  assert.deepEqual(P.EXECUTABLE_IDS.sort(), ['A02', 'A03', 'A05', 'B01']);
 });
 
 /* ── routing: one test per evaluation case ── */
@@ -75,8 +79,8 @@ for (const [n, question, want, o = {}] of EVALS) {
       /* Unauthenticated: the organization's own data is excluded from the plan. */
       assert.ok(p.audit.excludedSources.includes('org_positions'));
     }
-    /* Only the two built executors ever take a ping. */
-    if (p.executable) assert.ok(['A02', 'B01'].includes(p.primaryScenario));
+    /* Only a built executor ever takes a ping. */
+    if (p.executable) assert.ok(P.EXECUTABLE_IDS.includes(p.primaryScenario));
   });
 }
 
@@ -634,6 +638,325 @@ test('the route plans before spending, runs on one reservation and falls back', 
   assert.match(host, /onAdaptive=\{showAdaptive\}/);
   assert.match(host, /onFollowUp=\{askFollowUp\}/);
   assert.match(host, /<SonarAdaptiveReport/);
+});
+
+/* ── A05: why is it moving ── */
+
+const flatBars = (closes, { end = '2026-11-16', volumes = null } = {}) => {
+  const days = [];
+  let d = new Date(`${end}T00:00:00Z`);
+  while (days.length < closes.length) {
+    const wd = d.getUTCDay();
+    if (wd !== 0 && wd !== 6) days.push(d.toISOString().slice(0, 10));
+    d = new Date(d.getTime() - 86400000);
+  }
+  days.reverse();
+  return closes.map((close, i) => ({ date: days[i], close, volume: volumes ? volumes[i] : 1000 }));
+};
+/* 80 sessions alternating +1% and -1%, then a final session set by the caller. */
+const wobble = (last) => {
+  const out = [100];
+  for (let i = 1; i < 80; i += 1) out.push(Number((out[i - 1] * (i % 2 ? 1.01 : 0.99)).toFixed(4)));
+  out.push(Number((out[79] * (1 + last / 100)).toFixed(4)));
+  return out;
+};
+
+test('a move is measured: size, ordinary range, benchmark share and volume', () => {
+  const closes = wobble(-6);
+  const vols = closes.map((_, i) => (i === closes.length - 1 ? 3000 : 1000));
+  const bench = flatBars(wobble(-0.5));
+  const m = MA.attributeMove(flatBars(closes, { volumes: vols }), bench, { sessions: 1 });
+  assert.equal(m.movePct, -6);
+  assert.equal(m.direction, 'down');
+  assert.equal(m.asOf, '2026-11-16');
+  assert.equal(m.from, '2026-11-13');
+  /* Daily returns of about plus and minus 1%: one standard deviation is about 1%. */
+  assert.ok(m.sigmaDaily > 0.95 && m.sigmaDaily < 1.05, String(m.sigmaDaily));
+  assert.ok(m.multiple > 5.5 && m.multiple < 6.5);
+  assert.equal(m.size, 'unusual');
+  assert.equal(m.benchPct, -0.5);
+  assert.equal(m.relPct, -5.5);
+  assert.equal(m.scope, 'specific');
+  assert.equal(m.volumeRatio, 3);
+  /* The same fall with the benchmark down as much is a sector move. */
+  assert.equal(
+    MA.attributeMove(flatBars(closes), flatBars(wobble(-5)), { sessions: 1 }).scope,
+    'broad',
+  );
+  /* A small move is ordinary and is not split between company and sector. */
+  const small = MA.attributeMove(flatBars(wobble(0.3)), bench, { sessions: 1 });
+  assert.deepEqual([small.size, small.scope], ['ordinary', 'unclear']);
+  /* Too few bars to know what ordinary is: nothing is said. */
+  assert.equal(MA.attributeMove(flatBars(closes.slice(-20)), bench, { sessions: 1 }), null);
+  assert.equal(MA.attributeMove([], [], { sessions: 1 }), null);
+  /* No benchmark: the move stands alone. */
+  assert.equal(MA.attributeMove(flatBars(closes), [], { sessions: 1 }).benchPct, null);
+});
+
+test('the window and the assumed direction come from the question', () => {
+  assert.equal(MA.moveWindowOf('Why is AAPL down today?').sessions, 1);
+  assert.equal(MA.moveWindowOf('Why is NVDA stock moving this week?').sessions, 5);
+  assert.equal(MA.moveWindowOf('why did TSLA fall over the past month').sessions, 21);
+  assert.equal(MA.assumedDirection('Why is AAPL down today?'), 'down');
+  assert.equal(MA.assumedDirection('why is nvidia surging'), 'up');
+  assert.equal(MA.assumedDirection('Why is NVDA stock moving?'), null);
+  assert.equal(MA.assumedDirection('is it up or down'), null);
+  const s = MA.sinceEvent(flatBars(wobble(-6)), flatBars(wobble(-0.5)), '2026-11-16');
+  assert.deepEqual(
+    [s.from, s.asOf, s.sessions, s.movePct, s.relPct],
+    ['2026-11-13', '2026-11-16', 1, -6, -5.5],
+  );
+  assert.equal(MA.sinceEvent(flatBars(wobble(-6)), [], '2027-01-01'), null);
+});
+
+test('a catalyst needs a retrieved source and a date in the window', () => {
+  const v = ER.validateCatalystReply(FIXTURE_CATALYST_REPLY, FIXTURE_WEB_RESULTS, {
+    from: '2026-11-10',
+    to: '2026-11-16',
+  });
+  assert.deepEqual(
+    v.catalysts.map((c) => c.title),
+    ['CEO resigns (fixture)'],
+  );
+  assert.ok(v.summary);
+  /* With no surviving source the summary of "reporting" is not shown either. */
+  const none = ER.validateCatalystReply(FIXTURE_CATALYST_REPLY, [], {
+    from: '2026-11-10',
+    to: '2026-11-16',
+  });
+  assert.deepEqual([none.catalysts.length, none.summary], [0, '']);
+  assert.equal(ER.validateCatalystReply('not json', FIXTURE_WEB_RESULTS, {}), null);
+});
+
+const moveDeps = (last, over = {}) => ({
+  getOhlcv: async (symbol) => ({
+    bars: flatBars(wobble(symbol === 'AAPL' || symbol === 'NVDA' ? last : -0.5)),
+    source: 'fixture',
+    adjustment: 'splits',
+  }),
+  news: async () => FIXTURE_NEWS,
+  synthesize: async () => ({ answer: FIXTURE_CATALYST_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+  ...over,
+});
+
+test('A05 end to end: "Why is AAPL down today?" measures first, then sets reporting beside it', async () => {
+  const p = plan('Why is AAPL down today?');
+  assert.equal(p.executable, true);
+  const report = await O.runAdaptive(p, moveDeps(-6), { now: NOW });
+  const types = report.sections.map((s) => s.type);
+  assert.deepEqual(types, [
+    'lead',
+    'price_comparison',
+    'metric_table',
+    'key_findings',
+    'watchpoints',
+    'sources',
+    'limitations',
+    'followups',
+  ]);
+  const lead = report.sections[0];
+  assert.match(
+    lead.headline,
+    /^AAPL fell 6\.0% on Nov 16, 2026, about \d\.\d times its ordinary move$/,
+  );
+  assert.match(lead.text, /largely specific to AAPL/);
+  const findings = report.sections[3];
+  /* The news cache holds nothing about this company, so no coverage block is drawn. */
+  assert.equal(findings.items.length, 1, 'only the sourced, in-window catalyst');
+  assert.ok(findings.items[0].cites.length);
+  assert.match(findings.label, /cause is not established by timing/);
+  assert.ok(
+    report.sections[2].rows.every((r) => r.method),
+    'every figure says how it was computed',
+  );
+  /* Timing is reported; cause is never asserted by Sonar. */
+  assert.doesNotMatch(
+    JSON.stringify(report.sections.slice(0, 3)),
+    /\b(because|caused by|due to)\b/i,
+  );
+  /* Follow-ups hand off to the neighbouring pipelines. */
+  const follow = report.sections.at(-1).related;
+  assert.equal(plan(follow.find((q) => /oversold/.test(q))).primaryScenario, 'B01');
+  assert.ok(
+    follow.some((q) => ['A02', 'A03'].includes(plan(q).primaryScenario)),
+    follow.join(' | '),
+  );
+});
+
+test('A05 corrects a wrong premise and survives without the research step', async () => {
+  const p = plan('Why is AAPL down today?');
+  const up = await O.runAdaptive(p, moveDeps(4), { now: NOW });
+  assert.match(up.sections[0].headline, /^AAPL is not down: it rose 4\.0%/);
+  const quiet = await O.runAdaptive(p, moveDeps(0.3), { now: NOW });
+  assert.match(quiet.sections[0].headline, /within its ordinary range/);
+  /* The model is down: the measurement still stands and no cause is offered. */
+  const alone = await O.runAdaptive(
+    p,
+    moveDeps(-6, {
+      synthesize: async () => {
+        throw new Error('provider down');
+      },
+      news: async () => [],
+    }),
+    { now: NOW },
+  );
+  assert.match(alone.sections[0].headline, /AAPL fell 6\.0%/);
+  assert.match(alone.sections[0].text, /did not complete, so no cause is offered/);
+  assert.ok(!alone.sections.some((s) => s.type === 'key_findings'));
+  assert.ok(alone.telemetry.degraded.includes('live_research'));
+  /* No prices: nothing is measured, so nothing is explained and no model is called. */
+  let called = 0;
+  const dark = await O.runAdaptive(
+    p,
+    moveDeps(-6, {
+      getOhlcv: async () => ({ bars: [] }),
+      synthesize: async () => {
+        called += 1;
+        return null;
+      },
+    }),
+    { now: NOW },
+  );
+  assert.match(dark.sections[0].headline, /not available right now/);
+  assert.equal(called, 0);
+  /* A question with no listed security is not taken. */
+  assert.equal(plan('why is the market down today').executable, false);
+});
+
+/* ── A03: leadership impact ── */
+
+test('an impact reply is checked: sources, fixed assessments, figures with a citation', () => {
+  const v = ER.validateImpactReply(FIXTURE_IMPACT_REPLY, FIXTURE_WEB_RESULTS);
+  assert.equal(v.event.status, 'event_verified');
+  assert.deepEqual(
+    v.findings.map((f) => f.interpretation),
+    [false, true],
+    'an unretrieved link makes it a reading',
+  );
+  assert.deepEqual(
+    v.channels.map((c) => c.horizon),
+    ['near', 'sector'],
+  );
+  assert.deepEqual(
+    v.exposures.map((e) => [e.name, e.ticker, e.relation, e.assessment]),
+    [
+      ['NVIDIA', 'NVDA', 'direct', 'confirmed'],
+      ['Rival Chips', 'RVL', 'peer', 'scenario'],
+      ['Guess Co', null, 'peer', 'needs_data'],
+    ],
+  );
+  assert.deepEqual(
+    v.baseline.map((b) => b.label),
+    ['Revenue'],
+    'no source or no number: no figure',
+  );
+  /* Without a strong source the event is not confirmed. */
+  const weak = ER.validateImpactReply(FIXTURE_IMPACT_REPLY, [
+    { url: 'https://randomblog.example.net/my-hot-take', title: 'x' },
+  ]);
+  assert.equal(weak.event.status, 'event_unconfirmed');
+  assert.equal(weak.baseline.length, 0);
+});
+
+const impactDeps = (over = {}) => ({
+  getOhlcv: async (symbol) => ({
+    bars: flatBars(wobble(symbol === 'NVDA' ? -6 : -0.5)),
+    source: 'fixture',
+    adjustment: 'splits',
+  }),
+  news: async () => FIXTURE_NEWS,
+  synthesize: async () => ({ answer: FIXTURE_IMPACT_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+  ...over,
+});
+
+test('A03 end to end: the stale-brief question runs as live research with a measured reaction', async () => {
+  const q = 'how will jensen huangs resignation effect nvidia and the chip industry?';
+  const p = plan(q);
+  assert.deepEqual([p.primaryScenario, p.executable], ['A03', true]);
+  const report = await O.runAdaptive(p, impactDeps(), { now: NOW });
+  const types = report.sections.map((s) => s.type);
+  assert.deepEqual(types, [
+    'lead',
+    'verified_event_status',
+    'key_findings',
+    'price_comparison',
+    'metric_table',
+    'news_timeline',
+    'scenario_matrix',
+    'impact_network',
+    'fundamentals',
+    'watchpoints',
+    'sources',
+    'limitations',
+    'followups',
+  ]);
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.equal(by.key_findings.items[1].note, 'Analyst interpretation');
+  assert.deepEqual(
+    by.scenario_matrix.rows.map((r) => r.kicker),
+    ['Near term', 'Sector'],
+  );
+  assert.equal(by.impact_network.rows[1].assessmentLabel, 'Scenario only');
+  assert.equal(by.fundamentals.items.length, 1);
+  assert.ok(by.fundamentals.items[0].cites.length);
+  /* The reaction is computed from closes around the announcement, not asked of the model. */
+  assert.equal(by.metric_table.title, 'Measured price reaction');
+  assert.ok(by.metric_table.rows.every((r) => r.method));
+  assert.equal(by.price_comparison.chart.event.date, '2026-11-11');
+  assert.ok(by.limitations.items.some((i) => /not shown to have been caused/.test(i)));
+  /* Hand-offs: succession, technicals and move attribution. */
+  const routes = by.followups.related.map(
+    (f) => plan(f, { thread: report.thread }).primaryScenario,
+  );
+  assert.deepEqual(routes, ['A02', 'B01', 'A05'], by.followups.related.join(' | '));
+  assert.equal(report.thread.event, 'event_verified');
+  assert.doesNotMatch(JSON.stringify(report), /\b(buy|sell|price target|recommend)\b/i);
+});
+
+test('A03 without the research step states that plainly and invents nothing', async () => {
+  const p = plan('How will the CEO resignation affect NVIDIA and the chip industry?');
+  const report = await O.runAdaptive(p, impactDeps({ synthesize: async () => null }), { now: NOW });
+  const types = report.sections.map((s) => s.type);
+  assert.match(report.sections[0].headline, /could not verify/);
+  for (const t of [
+    'verified_event_status',
+    'key_findings',
+    'impact_network',
+    'fundamentals',
+    'metric_table',
+  ])
+    assert.ok(!types.includes(t), t);
+  assert.ok(report.telemetry.degraded.includes('live_research'));
+  /* A reply the validator rejects is the same as no reply. */
+  const junk = await O.runAdaptive(
+    p,
+    impactDeps({ synthesize: async () => ({ answer: 'I think so.' }) }),
+    { now: NOW },
+  );
+  assert.match(junk.sections[0].headline, /could not verify/);
+});
+
+test('the schema enforces sourcing on figures, takeaways and exposure readings', () => {
+  const out = S.validateReport({
+    sections: [
+      { type: 'lead', headline: 'h', text: 't' },
+      { type: 'fundamentals', items: [{ label: 'Revenue', value: '$1B', cites: ['S9'] }] },
+      { type: 'key_findings', items: [{ title: 'a', text: 'b', cites: ['S9'] }] },
+      {
+        type: 'impact_network',
+        rows: [{ name: 'X', channel: 'c', assessment: 'confirmed', cites: [] }],
+      },
+    ],
+    sources: [{ id: 'S1', title: 'one', url: 'https://www.sec.gov/x' }],
+  });
+  const by = Object.fromEntries(out.report.sections.map((s) => [s.type, s]));
+  assert.equal(
+    by.fundamentals,
+    undefined,
+    'a figure citing a source that does not exist is removed',
+  );
+  assert.equal(by.key_findings.items[0].note, 'Analyst interpretation');
+  assert.equal(by.impact_network.rows[0].assessment, 'scenario');
 });
 
 test('the adaptive files follow the Ezana rules', () => {

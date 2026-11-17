@@ -90,7 +90,7 @@ const GUEST_LIMIT = 5;
    adaptive run that produces no usable report, goes through the pipeline below as before.
    Budgets are from the handler's start and sit under maxDuration. */
 const adaptiveEnabled = () => process.env.SONAR_ADAPTIVE !== 'off';
-const ADAPTIVE_BUDGET_MS = { B01: 14_000, A02: 45_000 };
+const ADAPTIVE_BUDGET_MS = { B01: 14_000, A02: 45_000, A03: 45_000, A05: 30_000 };
 /* The second wait for a visitor whose request carries a session. */
 const AUTH_GRACE_MS = 1_500;
 
@@ -188,6 +188,8 @@ const POST_HANDLER = withApiGuard(
         const curated = await findExemplaryBrief(query, {
           embed: embedViaSupabase,
           getAdmin: getAdminClient,
+          /* Past its event or review date: not served, and the ping runs as live research. */
+          onStale: (info) => console.log('[sonar/landing] exemplary_stale', info),
         });
         if (curated) {
           console.log('[sonar/landing] exemplary', {

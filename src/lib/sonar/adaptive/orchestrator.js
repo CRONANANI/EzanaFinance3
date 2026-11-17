@@ -20,106 +20,25 @@
  */
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { technicalSnapshot, rsiReading } from './technical';
-import {
-  clusterArticles,
-  rankClusters,
-  sourceClass,
-  hostOf,
-  canonicalUrl,
-} from './news-intelligence';
+import { sourceClass, hostOf, canonicalUrl } from './news-intelligence';
 import { discoverMarkets } from './prediction-intelligence';
 import { researchSuccession } from './succession-research';
 import { selectComponents } from './layout-planner';
 import { validateReport, EVENT_STATUSES, CANDIDATE_BASES, REPORT_VERSION } from './schema';
 import { SCENARIO_BY_ID } from './profiles';
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const day = (iso) => {
-  const [y, m, d] = String(iso || '')
-    .slice(0, 10)
-    .split('-')
-    .map(Number);
-  return y && m && d ? `${MONTHS[m - 1]} ${d}, ${y}` : '';
-};
-const usd = (v) =>
-  v == null
-    ? 'N/A'
-    : `$${Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const pct = (v, d = 1) =>
-  v == null ? 'N/A' : `${v > 0 ? '+' : v < 0 ? '-' : ''}${Math.abs(v).toFixed(d)}%`;
-const aboveBelow = (v) =>
-  v == null ? null : `${Math.abs(v).toFixed(1)}% ${v >= 0 ? 'above' : 'below'}`;
-const isoDaysAgo = (now, n) => new Date(now.getTime() - n * 86400000).toISOString().slice(0, 10);
-
-const ADJUSTMENT = {
-  splits: 'Prices are adjusted for splits. Dividends are not included.',
-  splits_dividends: 'Prices are adjusted for splits and dividends.',
-};
-
-/* Bounded step: a result, or null with the failure recorded. Never throws. */
-async function step(telemetry, name, ms, fn) {
-  const t0 = Date.now();
-  let timer;
-  try {
-    const value = await Promise.race([
-      fn(),
-      new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error('timeout')), ms);
-      }),
-    ]);
-    telemetry.steps.push({ step: name, ms: Date.now() - t0, ok: true });
-    return value;
-  } catch (e) {
-    telemetry.steps.push({
-      step: name,
-      ms: Date.now() - t0,
-      ok: false,
-      error: e?.message || 'error',
-    });
-    telemetry.degraded.push(name);
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-function sourceBook() {
-  const list = [];
-  const byKey = new Map();
-  return {
-    list,
-    /* The same address or record is one source, cited by the same id every time. */
-    add({ key, title, publisher = null, url = null, date = null, detail = null, kind = null }) {
-      const k = key || url || title;
-      if (byKey.has(k)) return byKey.get(k);
-      const id = `S${list.length + 1}`;
-      list.push({
-        id,
-        title,
-        publisher,
-        url,
-        date,
-        detail,
-        sourceClass: kind || (url ? sourceClass(url) : 'dataset'),
-      });
-      byKey.set(k, id);
-      return id;
-    },
-  };
-}
-
-async function newsItems(
-  deps,
-  telemetry,
-  { tickers, phrase, entityTerms, eventTerms, now, limit = 6 },
-) {
-  if (!deps.news) return [];
-  const rows = await step(telemetry, 'news_cache', 3500, () =>
-    deps.news({ tickers, phrase, limit: 14 }),
-  );
-  if (!rows?.length) return [];
-  return rankClusters(clusterArticles(rows), { entityTerms, eventTerms, now }).slice(0, limit);
-}
+import {
+  day,
+  usd,
+  pct,
+  aboveBelow,
+  isoDaysAgo,
+  ADJUSTMENT,
+  step,
+  sourceBook,
+  newsItems,
+  tooSimilar,
+} from './kit';
+import { runLeadershipImpact, runMoveAttribution } from './executors-events';
 
 /* ── B01: price action and technical analysis ───────────────────────────── */
 
@@ -330,23 +249,6 @@ async function runTechnical(plan, deps, now, telemetry) {
 
 /* ── A02: executive succession forecasting ──────────────────────────────── */
 
-const tokens = (s) =>
-  new Set(
-    String(s || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9 ]+/g, ' ')
-      .split(/\s+/)
-      .filter((w) => w.length > 3),
-  );
-function tooSimilar(a, b) {
-  const x = tokens(a);
-  const y = tokens(b);
-  if (!x.size || !y.size) return false;
-  let n = 0;
-  for (const t of x) if (y.has(t)) n += 1;
-  return n / Math.min(x.size, y.size) >= 0.7;
-}
-
 async function runSuccession(plan, deps, now, telemetry, deadlineAt) {
   const person = plan.entities.find((e) => e.type === 'person')?.label || null;
   const planned = plan.entities.find((e) => e.type === 'company') || null;
@@ -547,6 +449,7 @@ async function runSuccession(plan, deps, now, telemetry, deadlineAt) {
 
   const subject = companyName || 'the company';
   const defaults = [
+    `How will the leadership change affect ${subject} and its industry?`,
     `What is the board’s timeline for naming a permanent CEO at ${subject}?`,
     `What would change in ${subject}’s product strategy under new leadership?`,
     `Which customers are most sensitive to a leadership transition at ${subject}?`,
@@ -593,7 +496,12 @@ async function runSuccession(plan, deps, now, telemetry, deadlineAt) {
   };
 }
 
-const EXECUTORS = { B01: runTechnical, A02: runSuccession };
+const EXECUTORS = {
+  B01: runTechnical,
+  A02: runSuccession,
+  A03: runLeadershipImpact,
+  A05: runMoveAttribution,
+};
 
 /**
  * Run an executable plan.
