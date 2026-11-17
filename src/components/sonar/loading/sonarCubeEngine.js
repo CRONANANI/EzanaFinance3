@@ -40,7 +40,7 @@ const CUBE_V = [
 ];
 /* Nov 16, 2026: the shell is no longer a glass box. Each corner draws three
    short arms along its edges, so the cube reads from its corners alone. */
-const CORNER_ARM = 0.34; // arm length; the cube's edge is 2
+const CORNER_ARM = 0.17; // arm length; the cube's edge is 2 (Nov 16: halved from 0.34)
 const WAVE_MS = 3400; // one sonar ping, core to corners
 const WAVE_REACH = 1.8; // just past the corners (sqrt 3 from the core)
 const WAVE_BAND = 0.2; // thickness of the lit front
