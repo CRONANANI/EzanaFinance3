@@ -1522,7 +1522,8 @@
 .sfx-cov-label {
   color: var(--emerald-text);
 }
-.sfx-cov--news .sfx-cov-label {
+.sfx-cov--news .sfx-cov-label,
+.sfx-cov--markets .sfx-cov-label {
   color: var(--text-secondary);
 }
 .sfx-cov-detail {

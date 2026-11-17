@@ -524,7 +524,9 @@ export function EvidenceCoverageGrid({ s }) {
         <ul className="sfx-datasets">
           {s.datasets.map((d) => (
             <li key={d.id} className="sfx-dataset">
-              <span className="sfx-tag sfx-tag--observed">{d.chip}</span>
+              <span className={`sfx-tag ${d.kind === 'markets' ? 'sfx-tag--partial' : 'sfx-tag--observed'}`}>
+                {d.chip}
+              </span>
               <div>
                 <p className="sfx-dataset-title">
                   {d.href ? <a href={d.href}>{d.title}</a> : d.title}

@@ -38,7 +38,8 @@
  *     the expected real rate.
  *   - reserves are gross whenever only gross figures exist; usable liquidity is not inferred.
  *   - pressure is a diagnosis; a crisis is never established from these series alone, and no
- *     score or probability is shown. Prediction markets are not part of this answer.
+ *     score or probability is shown. Prediction markets appear as evidence (crowd odds with
+ *     their platform), never as Ezana's forecast or in the verdict.
  *
  * Pure apart from runFxPressure, which makes the two bounded reads.
  */
@@ -594,9 +595,7 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
 
   /* ================================================================ evidence and coverage */
   const datasets = dossier
-    ? datasetEvidence({ dossier })
-        .filter((r) => r.id !== 'prediction-markets')
-        .map((r) => ({
+    ? datasetEvidence({ dossier }).map((r) => ({
           id: r.id,
           chip: r.chip,
           dataset: r.dataset,
@@ -604,8 +603,12 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
           summary: r.summary || null,
           bullets: (r.bullets || []).map(minus),
           href: r.href && !/^https?:/i.test(r.href) ? r.href : null,
+          /* Prediction markets: crowd odds on open questions naming the country, shown as
+             evidence with their platform; never Ezana's forecast and never in the verdict. */
+          kind: r.id === 'prediction-markets' ? 'markets' : 'dataset',
         }))
     : [];
+  const marketCount = Array.isArray(dossier?.matches?.markets) ? dossier.matches.markets.length : 0;
   const macroSources = (intel.sources || []).filter(Boolean);
   const news = (dossier?.news || [])
     .filter((n) => n && n.title && /^https?:/i.test(n.url || n.link || ''))
@@ -617,13 +620,26 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       date: n.publishedAt || n.date || null,
     }));
   const groups = [
-    datasets.length
-      ? { id: 'ezana', label: 'Ezana datasets', detail: `${datasets.length} matched`, items: datasets.map((d) => `${d.dataset}`) }
+    datasets.some((d) => d.kind === 'dataset')
+      ? {
+          id: 'ezana',
+          label: 'Ezana datasets',
+          detail: `${datasets.filter((d) => d.kind === 'dataset').length} matched`,
+          items: datasets.filter((d) => d.kind === 'dataset').map((d) => `${d.dataset}`),
+        }
       : null,
     macroSources.length
       ? { id: 'macro', label: 'Macro sources', detail: `${macroSources.length} official publishers`, items: macroSources }
       : null,
     news.length ? { id: 'news', label: 'Open web / news', detail: `${news.length} stories`, items: news.map((n) => n.source || n.title) } : null,
+    marketCount
+      ? {
+          id: 'markets',
+          label: 'Prediction markets',
+          detail: `${marketCount} open market${marketCount === 1 ? '' : 's'}`,
+          items: [...new Set(dossier.matches.markets.map((mk) => mk.platform).filter(Boolean))],
+        }
+      : null,
   ].filter(Boolean);
   if (groups.length)
     built.fx_evidence = {
