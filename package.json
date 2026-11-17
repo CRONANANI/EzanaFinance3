@@ -154,6 +154,7 @@
     "test:org-sonar": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-sonar.mjs",
     "test:sonar-deep": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-deep.mjs",
     "test:sonar-research-mode": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-research-mode.mjs",
+    "validate:sonar": "node scripts/validate-sonar-adaptive.mjs",
     "test:sonar-adaptive": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-adaptive.mjs",
     "test:sonar-exemplary": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-exemplary.mjs",
     "test:sonar-loading": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-loading.mjs",

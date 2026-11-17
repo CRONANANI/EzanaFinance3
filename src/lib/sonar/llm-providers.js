@@ -332,7 +332,18 @@ async function anthropicSynthesize({
   }
   const parsed = parseAnthropicContent(data?.content);
   if (!parsed.answer) throw new ProviderUnavailableError('anthropic: empty reply');
-  return parsed;
+  /* Token counts ride along for callers that total a run's usage (adaptive telemetry). */
+  return data?.usage
+    ? {
+        ...parsed,
+        usage: {
+          model: data.model || model,
+          inputTokens: data.usage.input_tokens ?? null,
+          outputTokens: data.usage.output_tokens ?? null,
+          webSearches: data.usage.server_tool_use?.web_search_requests ?? 0,
+        },
+      }
+    : parsed;
 }
 
 /**

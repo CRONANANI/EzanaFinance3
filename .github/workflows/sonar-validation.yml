@@ -1,0 +1,73 @@
+name: Sonar adaptive validation
+
+# Runs the live validation set against a deployment, on request only. It signs
+# in as the dedicated test account, pings each adaptive pipeline once, and
+# uploads the findings. Each ping writes one ledger row on the test account and
+# spends model and data calls, so this never runs on push or on a schedule.
+#
+# Repository secrets needed (Settings, Secrets and variables, Actions):
+#   SONAR_VALIDATION_EMAIL, SONAR_VALIDATION_PASSWORD   the test account
+#   SONAR_VALIDATION_SECRET                             same value as on the deployment (optional)
+# Repository variables:
+#   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY   public project values
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Deployment to test (a preview URL is safest)
+        required: true
+      only:
+        description: Scenario ids, comma separated (blank for all)
+        required: false
+      kill_switch:
+        description: The deployment has SONAR_ADAPTIVE=off
+        type: boolean
+        default: false
+      links:
+        description: Also open each cited source link
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate adaptive pipelines
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run the validation set
+        env:
+          SONAR_BASE_URL: ${{ inputs.base_url }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SONAR_VALIDATION_EMAIL: ${{ secrets.SONAR_VALIDATION_EMAIL }}
+          SONAR_VALIDATION_PASSWORD: ${{ secrets.SONAR_VALIDATION_PASSWORD }}
+          SONAR_VALIDATION_SECRET: ${{ secrets.SONAR_VALIDATION_SECRET }}
+          ONLY: ${{ inputs.only }}
+          KILL: ${{ inputs.kill_switch }}
+          LINKS: ${{ inputs.links }}
+        run: |
+          set -- --run
+          [ -n "$ONLY" ] && set -- "$@" --only "$ONLY"
+          [ "$KILL" = "true" ] && set -- "$@" --kill-switch
+          [ "$LINKS" = "true" ] && set -- "$@" --links
+          node scripts/validate-sonar-adaptive.mjs "$@"
+
+      - name: Upload the findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-adaptive-validation
+          path: validation/
+          if-no-files-found: warn

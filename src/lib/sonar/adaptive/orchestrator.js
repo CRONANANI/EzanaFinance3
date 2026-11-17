@@ -549,7 +549,23 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
   const run = plan?.executable ? EXECUTORS[plan.primaryScenario] : null;
   if (!run) return null;
   const t0 = Date.now();
-  const telemetry = { steps: [], degraded: [] };
+  const telemetry = { steps: [], degraded: [], model: [] };
+  /* Every model call an executor makes is counted here, whatever module makes it. */
+  if (deps?.synthesize) {
+    const synthesize = deps.synthesize;
+    deps = {
+      ...deps,
+      synthesize: async (args) => {
+        const out = await synthesize(args);
+        telemetry.model.push({
+          provider: out?.provider || null,
+          webUsed: Boolean(out?.webUsed),
+          ...(out?.usage || {}),
+        });
+        return out;
+      },
+    };
+  }
   const out = await run(plan, deps, now, telemetry, deadlineAt);
   /* An executor declines a question its data cannot answer; the ping then runs the old way. */
   if (!out?.built?.lead) return null;
@@ -597,6 +613,7 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
     ms: Date.now() - t0,
     steps: telemetry.steps,
     degraded: [...new Set(telemetry.degraded)],
+    model: telemetry.model,
     omitted,
     removed: checked.removed,
     markets: out.marketAudit || null,

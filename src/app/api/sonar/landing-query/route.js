@@ -91,6 +91,19 @@ const GUEST_LIMIT = 5;
    adaptive run that produces no usable report, goes through the pipeline below as before.
    Budgets are from the handler's start and sit under maxDuration. */
 const adaptiveEnabled = () => process.env.SONAR_ADAPTIVE !== 'off';
+
+/* Validation runs (scripts/validate-sonar-adaptive.mjs). A request that carries the
+   validation secret gets the run's audit trail back with the answer: the plan, each step's
+   timing, model usage and the ledger row it was charged to. Off unless
+   SONAR_VALIDATION_SECRET is set to at least 32 characters; compared in constant time. The
+   trail holds no credentials and no other user's data. It changes nothing about how the ping
+   runs, is authenticated or is charged. */
+function validationRequested(request) {
+  const secret = process.env.SONAR_VALIDATION_SECRET || '';
+  const sent = request.headers.get('x-sonar-validation') || '';
+  if (secret.length < 32 || sent.length !== secret.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(sent), Buffer.from(secret));
+}
 const ADAPTIVE_BUDGET_MS = {
   B01: 14_000,
   A02: 45_000,
@@ -546,6 +559,18 @@ const POST_HANDLER = withApiGuard(
           understood: { display: adaptivePlan.resolvedQuestion },
           remaining: member || unknownSession ? null : Math.max(0, GUEST_LIMIT - nextUsedAdaptive),
           disclaimer: DISCLAIMER,
+          ...(validationRequested(request)
+            ? {
+                validation: {
+                  telemetry: report.telemetry,
+                  audit: adaptivePlan.audit,
+                  entities: adaptivePlan.entities,
+                  ledger: { id: reservation.id, usedToday: reservation.used ?? null },
+                  member: Boolean(member),
+                  durationMs,
+                },
+              }
+            : {}),
         });
         if (!member && !unknownSession) setGuestCount(res, nextUsedAdaptive);
         return res;

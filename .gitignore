@@ -59,3 +59,4 @@ public/app-legacy/
 *.mobileprovision
 GoogleService-Info.plist
 google-services.json
+/validation/

@@ -40,6 +40,7 @@ const FR = await import('@/lib/sonar/adaptive/findings-research.js');
 const { peerComparison } = await import('@/lib/sonar/valuation/model.js');
 const { buildRankingsPayload } = await import('@/lib/sonar/macro/rank.js');
 const { ANALYSTS } = await import('@/lib/sonar/analysts/registry.js');
+const V = await import('./lib/sonar-validation.mjs');
 
 const NOW = new Date('2026-11-16T12:00:00Z');
 const plan = (q, o = {}) => R.planAdaptive(q, { now: NOW, ...o });
@@ -1994,6 +1995,100 @@ test('phase 3: quant statistics, commodities, country series, markets and source
     await O.runAdaptive(bp, { synthesize: async () => null, news: async () => [] }, { now: NOW }),
     null,
   );
+});
+
+/* ── live validation checks (the same functions the runner uses) ── */
+
+test('the validation set covers every built pipeline and routes where it says', () => {
+  const built = P.SCENARIOS.filter((x) => x.executable).map((x) => x.id);
+  const covered = new Set(V.VALIDATION_SET.map((c) => c.id));
+  /* Variants of one reader (C05 with C01 and C04; the briefs with A08) share a question. */
+  const shared = { C05: 'C01', A07: 'A08', A10: 'A08', C10: 'A08' };
+  for (const id of built)
+    assert.ok(covered.has(id) || covered.has(shared[id]), `no validation question for ${id}`);
+  for (const c of V.VALIDATION_SET) {
+    const p = plan(c.q);
+    assert.equal(p.primaryScenario, c.id, c.q);
+    if (c.id !== 'C08') assert.equal(p.executable, true, c.q);
+  }
+  for (const chain of V.FOLLOW_UP_CHAINS) {
+    let thread = null;
+    for (const [q, id] of chain.steps) {
+      assert.equal(plan(q, { thread }).primaryScenario, id, `${chain.name}: ${q}`);
+      thread = { question: q, subject: 'NVIDIA', ticker: 'NVDA', person: 'Jensen Huang' };
+    }
+  }
+});
+
+test('a report is checked for citations, labels, charts, freshness and advice', async () => {
+  const good = await O.runAdaptive(
+    plan('Which institutions hold NVDA?'),
+    { positioning13f: async () => fixture13f() },
+    { now: NOW },
+  );
+  const ok = V.checkReport(good, { id: 'B06', lead: 'ranking', chart: true, now: NOW });
+  assert.ok(V.passed(ok), JSON.stringify(ok));
+  const broken = JSON.parse(JSON.stringify(good));
+  broken.sections[0].cites = ['S9'];
+  broken.sections.find((x) => x.type === 'series_chart').series[0].values[0] = 'many';
+  broken.asOf = '2026-01-01T00:00:00Z';
+  broken.sections[0].text += ' You should buy it.';
+  const checks = V.checkReport(broken, { id: 'B07', now: NOW })
+    .filter((f) => f.level === 'fail')
+    .map((f) => f.check);
+  for (const c of ['scenario', 'citations', 'chart', 'freshness', 'advice'])
+    assert.ok(checks.includes(c), c);
+  /* A finding with neither a source nor a label fails; an unavailable state is a warning. */
+  const unlabelled = V.checkReport(
+    {
+      scenario: { id: 'B02' },
+      asOf: NOW.toISOString(),
+      sources: [],
+      sections: [
+        { type: 'lead', headline: 'h', text: 't' },
+        { type: 'risk', items: [{ title: 'x', text: 'y', cites: [] }] },
+      ],
+    },
+    { now: NOW },
+  );
+  assert.ok(unlabelled.some((f) => f.check === 'labels'));
+  const dark = await O.runAdaptive(
+    plan('Which institutions hold NVDA?'),
+    { positioning13f: async () => null },
+    { now: NOW },
+  );
+  const d = V.checkReport(dark, { id: 'B06', lead: 'ranking', chart: true, now: NOW });
+  assert.ok(V.passed(d) && d.some((f) => f.check === 'unavailable'));
+  assert.equal(V.passed(V.checkReport(null)), false);
+  assert.deepEqual(
+    V.modelCost([{ inputTokens: 1e6, outputTokens: 5e5, webSearches: 2 }], {
+      inPerM: 3,
+      outPerM: 15,
+      perSearch: 0.01,
+    }),
+    { calls: 1, tokensIn: 1e6, tokensOut: 5e5, searches: 2, usd: 10.52 },
+  );
+  assert.equal(V.modelCost([{ inputTokens: 10 }]).usd, null, 'no price supplied, no dollar figure');
+});
+
+test('the validation trail is off without a long secret and never changes the run', () => {
+  const route = fs.readFileSync('src/app/api/sonar/landing-query/route.js', 'utf8');
+  assert.match(route, /secret\.length < 32/);
+  assert.match(route, /timingSafeEqual/);
+  const at = route.indexOf('validationRequested(request)\n');
+  assert.ok(
+    route.indexOf('completePing(admin, reservation') <
+      route.lastIndexOf('validationRequested(request)'),
+    'read only after the ping is settled',
+  );
+  const runner = fs.readFileSync('scripts/validate-sonar-adaptive.mjs', 'utf8');
+  /* The runner prints its plan by default and never echoes a credential. */
+  assert.match(runner, /if \(!args\.has\('--run'\)\) plan\(\)/);
+  assert.doesNotMatch(
+    runner,
+    /console\.(log|error)\([^)]*(PASSWORD|access_token|VALIDATION_SECRET\})/,
+  );
+  assert.ok(at !== 0);
 });
 
 test('the adaptive files follow the Ezana rules', () => {
