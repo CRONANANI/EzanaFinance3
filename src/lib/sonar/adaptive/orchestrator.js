@@ -53,6 +53,13 @@ import {
   runPredictionMarkets,
   runSourcedBrief,
 } from './executors-macro';
+import {
+  runVerification,
+  runCatalysts,
+  runPerformance,
+  runSanctions,
+  runCrypto,
+} from './executors-rest';
 
 /* ── B01: price action and technical analysis ───────────────────────────── */
 
@@ -537,6 +544,12 @@ const EXECUTORS = {
   A08: runSourcedBrief,
   A10: runSourcedBrief,
   C10: runSourcedBrief,
+  A01: runVerification,
+  A06: runSourcedBrief,
+  A09: runCatalysts,
+  B09: runPerformance,
+  C06: runSanctions,
+  C07: runCrypto,
 };
 
 /**

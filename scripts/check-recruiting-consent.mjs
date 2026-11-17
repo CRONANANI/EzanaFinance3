@@ -32,7 +32,11 @@ test('sponsoring_firms exposes to both judges and firms', () => {
 });
 
 test('a revocation removes exposure immediately, regardless of scope', () => {
-  const o = { consented: true, consent_scope: 'sponsoring_firms', revoked_at: '2026-06-01T00:00:00Z' };
+  const o = {
+    consented: true,
+    consent_scope: 'sponsoring_firms',
+    revoked_at: '2026-06-01T00:00:00Z',
+  };
   assert.equal(consentAllowsJudges(o), false);
   assert.equal(consentAllowsFirms(o), false);
 });

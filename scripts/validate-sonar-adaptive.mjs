@@ -212,13 +212,11 @@ async function run() {
       const report = await record(`chain:${id}`, { id }, q, thread);
       thread = report?.thread || thread;
       if (thread && !thread.subject && !thread.person)
-        results
-          .at(-1)
-          .findings.push({
-            level: 'warn',
-            check: 'thread',
-            detail: 'the answer carries no subject for the next follow-up',
-          });
+        results.at(-1).findings.push({
+          level: 'warn',
+          check: 'thread',
+          detail: 'the answer carries no subject for the next follow-up',
+        });
     }
   }
   if (!args.has('--kill-switch')) {

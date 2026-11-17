@@ -24,6 +24,7 @@ export const EVENT_STATUSES = {
   event_unconfirmed: 'Not confirmed',
   hypothetical: 'Hypothetical',
   event_superseded: 'Superseded',
+  event_contradicted: 'Contradicted by sources',
 };
 
 export const CANDIDATE_BASES = {
@@ -82,6 +83,7 @@ const RULES = {
   sector_exposure: (s) => table(s),
   policy_tracker: (s) => table(s),
   macro_timeseries: (s) => table(s),
+  heatmap: (s) => table(s),
   catalyst_calendar: (s) => table(s),
   series_chart: (s) => chart(s),
   risk: (s) => (s.items?.length ? null : 'no items'),

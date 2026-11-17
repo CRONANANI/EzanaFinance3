@@ -129,6 +129,12 @@ const ADAPTIVE_BUDGET_MS = {
   A08: 45_000,
   A10: 45_000,
   C10: 45_000,
+  A01: 45_000,
+  A06: 45_000,
+  A09: 14_000,
+  B09: 16_000,
+  C06: 14_000,
+  C07: 14_000,
 };
 /* The second wait for a visitor whose request carries a session. */
 const AUTH_GRACE_MS = 1_500;

@@ -20,7 +20,14 @@ test('expectedScore is 0.5 for equal ratings and symmetric', () => {
 });
 
 test('winning a competition raises rating; losing lowers it', () => {
-  const r = computeCompetitionRatings([{ results: [{ org_id: 'A', rank: 1 }, { org_id: 'B', rank: 2 }] }]);
+  const r = computeCompetitionRatings([
+    {
+      results: [
+        { org_id: 'A', rank: 1 },
+        { org_id: 'B', rank: 2 },
+      ],
+    },
+  ]);
   assert.ok(r.get('A') > 1000);
   assert.ok(r.get('B') < 1000);
 });
@@ -28,11 +35,33 @@ test('winning a competition raises rating; losing lowers it', () => {
 test('beating a STRONG field awards more than beating a weak one', () => {
   // A repeatedly beats strong B (who has beaten others); C beats weak D once.
   const strong = computeCompetitionRatings([
-    { results: [{ org_id: 'B', rank: 1 }, { org_id: 'X', rank: 2 }] },
-    { results: [{ org_id: 'B', rank: 1 }, { org_id: 'Y', rank: 2 }] },
-    { results: [{ org_id: 'A', rank: 1 }, { org_id: 'B', rank: 2 }] }, // A beats a proven-strong B
+    {
+      results: [
+        { org_id: 'B', rank: 1 },
+        { org_id: 'X', rank: 2 },
+      ],
+    },
+    {
+      results: [
+        { org_id: 'B', rank: 1 },
+        { org_id: 'Y', rank: 2 },
+      ],
+    },
+    {
+      results: [
+        { org_id: 'A', rank: 1 },
+        { org_id: 'B', rank: 2 },
+      ],
+    }, // A beats a proven-strong B
   ]);
-  const weak = computeCompetitionRatings([{ results: [{ org_id: 'C', rank: 1 }, { org_id: 'D', rank: 2 }] }]);
+  const weak = computeCompetitionRatings([
+    {
+      results: [
+        { org_id: 'C', rank: 1 },
+        { org_id: 'D', rank: 2 },
+      ],
+    },
+  ]);
   // A's single win over strong B should exceed C's single win over unproven D... not
   // guaranteed by raw numbers, so assert the mechanism: A gains and beating higher-
   // rated opponents yields a larger expected-vs-actual surprise.

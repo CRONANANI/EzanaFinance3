@@ -76,7 +76,11 @@ test('activist: a 13D at 12% outscores a 13G at 6%', () => {
 });
 
 test('activist: below the 5% threshold returns zero', () => {
-  const r = whaleScore({ kind: 'activist', form: 'SC 13D', percentOfClass: MIN_ACTIVIST_PCT - 0.1 });
+  const r = whaleScore({
+    kind: 'activist',
+    form: 'SC 13D',
+    percentOfClass: MIN_ACTIVIST_PCT - 0.1,
+  });
   assert.equal(r.score, 0);
   assert.equal(r.tier, null);
 });

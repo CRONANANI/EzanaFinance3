@@ -49,9 +49,7 @@ function slugFromUrl(u) {
 }
 function itemMatches(item, expectedIds) {
   const slug = slugFromUrl(item.url);
-  return expectedIds.some(
-    (e) => String(item.id) === e || slug === e || item.corpus === e,
-  );
+  return expectedIds.some((e) => String(item.id) === e || slug === e || item.corpus === e);
 }
 
 function loadGolden() {
@@ -124,8 +122,7 @@ async function evalMode(cases, mode) {
     },
     mrr: +mrr(allRanks).toFixed(3),
     ndcg10: +(allNdcg.reduce((a, b) => a + b, 0) / (allNdcg.length || 1)).toFixed(3),
-    emptyStatePrecision:
-      emptyStatePrecision == null ? null : +emptyStatePrecision.toFixed(3),
+    emptyStatePrecision: emptyStatePrecision == null ? null : +emptyStatePrecision.toFixed(3),
     adversarialCases: adversarial.length,
     perCategory,
     failures,
@@ -198,7 +195,9 @@ async function main() {
       console.error('save failed:', error.message);
       process.exitCode = 1;
     } else {
-      console.log(`\nSaved run to rag_eval_runs (sha ${gitSha()}, config ${JSON.stringify(config)})`);
+      console.log(
+        `\nSaved run to rag_eval_runs (sha ${gitSha()}, config ${JSON.stringify(config)})`,
+      );
     }
   }
 }

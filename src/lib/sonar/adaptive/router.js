@@ -224,8 +224,31 @@ export function planAdaptive(question, opts = {}) {
     executable = false;
     missing.push('no entity to match a contract against');
   }
+  const tickers = entities.filter((e) => e.type === 'company' && e.ticker).length;
+  if (primary?.id === 'B09' && !tickers && !/\b(sectors?|industr|asset)/i.test(text)) {
+    executable = false;
+    missing.push('no securities, sectors or asset classes named to compare');
+  }
+  if (primary?.id === 'C07' && !entities.some((e) => e.type === 'crypto')) {
+    executable = false;
+    missing.push('no crypto asset Sonar holds prices for');
+  }
   if (
-    ['B02', 'B03', 'B05', 'B06', 'A04', 'B04', 'B08', 'B10'].includes(primary?.id) &&
+    primary?.id === 'C06' &&
+    !company &&
+    !countryOf(text) &&
+    !/\b(affect|on|against)\s+[A-Z]/.test(text)
+  ) {
+    executable = false;
+    missing.push('no entity or country named to search the lists for');
+  }
+  if (['A01', 'A06'].includes(primary?.id) && !company && !person) {
+    executable = false;
+    needsDisambiguation = true;
+    missing.push('no company or person named');
+  }
+  if (
+    ['B02', 'B03', 'B05', 'B06', 'A04', 'B04', 'B08', 'B10', 'A09'].includes(primary?.id) &&
     !company?.ticker
   ) {
     executable = false;

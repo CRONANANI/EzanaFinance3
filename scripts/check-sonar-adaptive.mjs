@@ -63,10 +63,11 @@ test('30 scenarios and 4 council overlays, each a complete profile on the existi
     for (const a of [...s.analysts, ...s.supportingAnalysts])
       assert.ok(ANALYSTS[a], `${s.id}: ${a}`);
   }
-  /* Every scenario but A01, A06, A09, B09, C06 and C07 has an executor; no overlay does. */
+  /* All thirty scenarios have an executor. The four overlays are run by the organization
+     path (overlays.js), never by the public executor table. */
   assert.deepEqual(
     P.SCENARIOS.filter((x) => !x.overlay && !x.executable).map((x) => x.id),
-    ['A01', 'A06', 'A09', 'B09', 'C06', 'C07'],
+    [],
   );
   assert.ok(P.SCENARIOS.filter((x) => x.overlay).every((x) => !x.executable));
 });
@@ -2005,13 +2006,13 @@ test('the validation set covers every built pipeline and routes where it says', 
   const built = P.SCENARIOS.filter((x) => x.executable).map((x) => x.id);
   const covered = new Set(V.VALIDATION_SET.map((c) => c.id));
   /* Variants of one reader (C05 with C01 and C04; the briefs with A08) share a question. */
-  const shared = { C05: 'C01', A07: 'A08', A10: 'A08', C10: 'A08' };
+  const shared = { C05: 'C01', A07: 'A08', A10: 'A08', C10: 'A08', A06: 'A08' };
   for (const id of built)
     assert.ok(covered.has(id) || covered.has(shared[id]), `no validation question for ${id}`);
   for (const c of V.VALIDATION_SET) {
     const p = plan(c.q);
     assert.equal(p.primaryScenario, c.id, c.q);
-    if (c.id !== 'C08') assert.equal(p.executable, true, c.q);
+    assert.equal(p.executable, true, c.q);
   }
   for (const chain of V.FOLLOW_UP_CHAINS) {
     let thread = null;
@@ -2091,6 +2092,205 @@ test('the validation trail is off without a long secret and never changes the ru
     /console\.(log|error)\([^)]*(PASSWORD|access_token|VALIDATION_SECRET\})/,
   );
   assert.ok(at !== 0);
+});
+
+/* ── the six remaining scenarios ── */
+
+const VERIFY_REPLY = (labels) =>
+  JSON.stringify({
+    headline: 'The company confirmed the resignation (fixture)',
+    answer: 'A filing records it.',
+    findings: labels.map(([label, url], i) => ({
+      label,
+      title: `Item ${i + 1}`,
+      text: 'What the source states.',
+      sourceUrls: url ? [url] : [],
+    })),
+    watch: [],
+    followups: [],
+  });
+const SEC = 'https://www.sec.gov/Archives/edgar/data/0000000/example-8k.htm';
+const BLOG = 'https://randomblog.example.net/my-hot-take';
+
+test('A01: a verdict comes from checked evidence, never from the model’s say-so', async () => {
+  const p = plan('Did Jensen Huang resign?');
+  assert.deepEqual([p.primaryScenario, p.executable], ['A01', true]);
+  const run = (labels) =>
+    O.runAdaptive(
+      p,
+      {
+        synthesize: async () => ({ answer: VERIFY_REPLY(labels), webResults: FIXTURE_WEB_RESULTS }),
+        news: async () => [],
+      },
+      { now: NOW },
+    );
+  const status = (r) => r.sections.find((x) => x.type === 'verified_event_status').status;
+  assert.equal(status(await run([['Supports', SEC]])), 'event_verified');
+  assert.equal(status(await run([['Contradicts', SEC]])), 'event_contradicted');
+  /* A blog is not enough to confirm, sources that disagree settle nothing, and an unsourced
+     "Supports" is only an interpretation. */
+  const weak = await run([['Supports', BLOG]]);
+  assert.equal(status(weak), 'event_unconfirmed');
+  assert.equal(weak.sections[0].headline, 'The sources reviewed do not establish this');
+  assert.match(weak.sections[0].text, /not the same as showing it is false/);
+  assert.equal(
+    status(
+      await run([
+        ['Supports', SEC],
+        ['Contradicts', 'https://www.reuters.com/business/example-board-weighs-candidates'],
+      ]),
+    ),
+    'event_unconfirmed',
+  );
+  assert.equal(status(await run([['Supports', null]])), 'event_unconfirmed');
+  /* Nothing to check against: the executor declines. */
+  assert.equal(
+    await O.runAdaptive(p, { synthesize: async () => null, news: async () => [] }, { now: NOW }),
+    null,
+  );
+  assert.equal(plan('Is this an unsupported rumor?').executable, false);
+});
+
+test('A06 and A09: a deal brief needs sources; a catalyst needs a date on record', async () => {
+  const mp = plan('Is Microsoft going to acquire Discord?');
+  assert.deepEqual([mp.primaryScenario, mp.executable], ['A06', true]);
+  const deal = await O.runAdaptive(
+    mp,
+    {
+      synthesize: async () => ({ answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+      news: async () => [],
+    },
+    { now: NOW },
+  );
+  assert.equal(deal.sections.find((x) => x.type === 'key_findings').title, 'Where the deal stands');
+  assert.ok(deal.sections.some((x) => x.type === 'price_comparison'));
+  const cp = plan('What should I watch for NVDA this week?');
+  assert.deepEqual([cp.primaryScenario, cp.executable], ['A09', true]);
+  const earnings = async () => [{ date: '2026-11-17', epsActual: null, epsEstimated: 1.25 }];
+  const cal = await O.runAdaptive(cp, { earnings, news: async () => [] }, { now: NOW });
+  assert.equal(
+    cal.sections[0].headline,
+    'The next dated event on record for NVDA is its earnings report, expected Nov 17, 2026',
+  );
+  assert.equal(
+    cal.sections.find((x) => x.type === 'catalyst_calendar').rows[0].cells.basis,
+    'Expected date, not confirmed',
+  );
+  const empty = await O.runAdaptive(
+    cp,
+    { earnings: async () => [], news: async () => [] },
+    { now: NOW },
+  );
+  assert.equal(empty.sections[0].headline, 'No dated event is on record for NVDA');
+  assert.ok(!empty.sections.some((x) => x.type === 'catalyst_calendar'));
+});
+
+test('B09 and C07: returns over one matched window, computed from closes', async () => {
+  const bars = (base, drop) => fixtureBars({ base, drop });
+  const getOhlcv = async (sym) => ({
+    bars: bars(
+      sym === 'XLK' || sym === 'NVDA' || sym === 'BTCUSD' ? 200 : 100,
+      sym === 'XLE' || sym === 'SOXX',
+    ),
+    adjustment: 'splits',
+  });
+  const sp = plan('Which sectors are leading the market?');
+  assert.deepEqual([sp.primaryScenario, sp.executable], ['B09', true]);
+  const sectors = await O.runAdaptive(sp, { getOhlcv }, { now: NOW });
+  const heat = sectors.sections.find((x) => x.type === 'heatmap');
+  assert.equal(heat.rows.length, 11);
+  assert.equal(heat.sortable, true);
+  const m3 = heat.rows.map((r) => r.sort.m3);
+  assert.deepEqual(
+    m3,
+    [...m3].sort((a, b) => b - a),
+    'sorted by the window in the headline',
+  );
+  assert.equal(heat.rows.at(-1).cells.name, 'Energy', 'the falling series trails');
+  assert.match(sectors.sections[0].text, /the same window for every row/);
+  /* Two named securities: returns and how closely they moved together. */
+  const pair = await O.runAdaptive(
+    plan('How did NVDA perform relative to SOXX after the announcement?'),
+    { getOhlcv },
+    { now: NOW },
+  );
+  assert.match(pair.sections[0].text, /daily returns had a correlation of -?\d\.\d\d/);
+  assert.match(
+    pair.sections.find((x) => x.type === 'limitations').items.join(' '),
+    /does not show that one moves the other/,
+  );
+  assert.equal(
+    await O.runAdaptive(sp, { getOhlcv: async () => ({ bars: [] }) }, { now: NOW }).then((r) =>
+      /not available right now/.test(r.sections[0].headline),
+    ),
+    true,
+  );
+  /* Crypto: price, range and risk; no on-chain claim. */
+  const bp = plan('How is Bitcoin doing?');
+  assert.deepEqual([bp.primaryScenario, bp.executable], ['C07', true]);
+  let asked = null;
+  const btc = await O.runAdaptive(
+    bp,
+    { getOhlcv: async (s) => ((asked = s), { bars: bars(60000, true) }) },
+    { now: NOW },
+  );
+  assert.equal(asked, 'BTCUSD');
+  assert.match(btc.sections[0].headline, /^Bitcoin is at \$[\d,]+, down \d+\.\d% in a month$/);
+  assert.equal(btc.sections.find((x) => x.type === 'series_chart').kind, 'line');
+  assert.match(
+    btc.sections.find((x) => x.type === 'limitations').items.join(' '),
+    /no on-chain series/,
+  );
+  assert.equal(plan('Which on-chain metrics signal congestion?').executable, false);
+});
+
+test('C06: sanctions listings are matched by name, and a match is not an identification', async () => {
+  const p = plan('What sanctions affect Huawei?');
+  assert.deepEqual([p.primaryScenario, p.executable], ['C06', true]);
+  let asked = null;
+  const sanctions = async (subject, o) => {
+    asked = [subject, o.country];
+    return {
+      byCountry: false,
+      capped: false,
+      syncedAt: '2026-11-15',
+      entries: [
+        {
+          list: 'eu',
+          name: 'HUAWEI EXAMPLE LTD (fixture)',
+          type: 'entity',
+          programs: ['Example regime'],
+          listedOn: '2025-03-01',
+        },
+        {
+          list: 'ofac',
+          name: 'HUAWEI EXAMPLE CO (fixture)',
+          type: 'entity',
+          programs: ['EXAMPLE-EO1', 'Example regime'],
+          listedOn: null,
+        },
+      ],
+    };
+  };
+  const report = await O.runAdaptive(p, { sanctions }, { now: NOW });
+  assert.deepEqual(asked, ['Huawei', null]);
+  const by = Object.fromEntries(report.sections.map((x) => [x.type, x]));
+  assert.equal(by.lead.headline, '2 active sanctions list entries name Huawei');
+  assert.equal(by.policy_tracker.rows[0].cells.program, 'Example regime');
+  assert.equal(by.ranking.rows[1].cells.listed, 'Not recorded');
+  const limits = by.limitations.items.join(' ');
+  assert.match(limits, /A name match is not an identification/);
+  assert.match(limits, /not a compliance screening result/);
+  /* A country is searched by the country recorded on each entry. */
+  await O.runAdaptive(plan('What sanctions apply to Russia?'), { sanctions }, { now: NOW });
+  assert.deepEqual(asked, ['Russia', 'Russia']);
+  const none = await O.runAdaptive(
+    p,
+    { sanctions: async () => ({ entries: [], byCountry: false }) },
+    { now: NOW },
+  );
+  assert.match(none.sections[0].headline, /^No current sanctions list entry names Huawei$/);
+  assert.match(none.sections[0].text, /can still be restricted in other ways/);
 });
 
 /* ── research controls, saving and the session thread ── */

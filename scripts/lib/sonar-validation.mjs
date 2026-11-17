@@ -65,6 +65,17 @@ export const VALIDATION_SET = [
   { id: 'C03', q: 'Where could Brent oil trade if OPEC supply rises?', model: true },
   { id: 'C08', q: 'Does any prediction market price NVIDIA’s next CEO?', model: false },
   { id: 'A08', q: 'How would new chip export restrictions affect ASML?', model: true },
+  { id: 'A01', q: 'Did Jensen Huang resign?', model: true, lead: 'verified_event_status' },
+  { id: 'A09', q: 'What should I watch for NVDA this week?', model: false },
+  {
+    id: 'B09',
+    q: 'Which sectors are leading the market?',
+    model: false,
+    lead: 'heatmap',
+    chart: true,
+  },
+  { id: 'C06', q: 'What sanctions affect Huawei?', model: false },
+  { id: 'C07', q: 'How is Bitcoin doing?', model: false, lead: 'metric_table', chart: true },
 ].map((c) => ({ key: c.id, ...c }));
 
 /** Follow-up chains: each step is asked under the thread of the answer before it. */

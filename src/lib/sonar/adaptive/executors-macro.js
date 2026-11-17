@@ -1181,6 +1181,12 @@ export async function runPredictionMarkets(plan, deps, now, telemetry) {
 /* ── A07, A08, A10, C10: sourced research briefs ────────────────────────── */
 
 const BRIEFS = {
+  A06: {
+    mode: 'merger',
+    title: 'Where the deal stands',
+    markets: true,
+    terms: ['acquire', 'acquisition', 'merger', 'takeover', 'deal', 'bid', 'antitrust', 'divest'],
+  },
   A07: {
     mode: 'regulatory',
     title: 'Where the matter stands',
@@ -1288,7 +1294,7 @@ export async function runSourcedBrief(plan, deps, now, telemetry, deadlineAt) {
       note: 'Each row is one contract’s last indexed price on its own venue. A price is not a forecast.',
       markets: market.markets,
     };
-  if (company?.symbol && plan.primaryScenario === 'A10') {
+  if (company?.symbol && ['A10', 'A06'].includes(plan.primaryScenario)) {
     const bench = benchmarkFor({ ticker: company.symbol, industry: '', sector: '' });
     built.price_comparison = {
       secondary: true,

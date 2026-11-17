@@ -44,6 +44,7 @@ const ANCHOR_LABELS = {
   policy_tracker: 'Policy',
   macro_timeseries: 'Series',
   catalyst_calendar: 'Calendar',
+  heatmap: 'Returns',
   risk: 'Risks',
   fundamentals: 'Baseline',
   forecast_market: 'Markets',
@@ -696,6 +697,7 @@ export default function SonarAdaptiveReport({
       case 'policy_tracker':
       case 'macro_timeseries':
       case 'catalyst_calendar':
+      case 'heatmap':
         return <DataTable s={s} sources={sources} />;
       case 'series_chart':
         return <SeriesChart s={s} sources={sources} />;

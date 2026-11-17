@@ -18,7 +18,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
-import { fetchCommits, summarizeCommits, getIsoWeekRange, getDayRange } from '../src/lib/changelog/git-summarizer.js';
+import {
+  fetchCommits,
+  summarizeCommits,
+  getIsoWeekRange,
+  getDayRange,
+} from '../src/lib/changelog/git-summarizer.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(root, '.env') });
@@ -50,12 +55,18 @@ async function main() {
   console.log(`  GITHUB_TOKEN=${process.env.GITHUB_TOKEN.slice(0, 7)}…`);
   console.log(`  ANTHROPIC_API_KEY=${process.env.ANTHROPIC_API_KEY.slice(0, 10)}…`);
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false },
-  });
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: { persistSession: false },
+    },
+  );
 
   {
-    const { error } = await supabase.from('platform_changelog_entries').select('id', { head: true });
+    const { error } = await supabase
+      .from('platform_changelog_entries')
+      .select('id', { head: true });
     if (error) {
       console.error('❌ Supabase probe failed:', error.message);
       console.error('   Verify SUPABASE_SERVICE_ROLE_KEY is correct and migration ran.');
@@ -81,7 +92,9 @@ async function main() {
       process.exit(1);
     }
     const repoInfo = await res.json();
-    console.log(`✓ GitHub reachable (${repoInfo.full_name}, default branch: ${repoInfo.default_branch})`);
+    console.log(
+      `✓ GitHub reachable (${repoInfo.full_name}, default branch: ${repoInfo.default_branch})`,
+    );
   }
 
   try {
@@ -131,7 +144,9 @@ async function main() {
     }
   }
 
-  console.log(`Mode: ${MODE} — backfilling ${ranges.length} ${MODE === 'weekly' ? 'weeks' : 'days'}`);
+  console.log(
+    `Mode: ${MODE} — backfilling ${ranges.length} ${MODE === 'weekly' ? 'weeks' : 'days'}`,
+  );
   console.log(`Range: ${ranges[0]?.key} → ${ranges[ranges.length - 1]?.key}`);
 
   let inserted = 0;

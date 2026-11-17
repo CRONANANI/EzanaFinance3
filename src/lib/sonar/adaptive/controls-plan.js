@@ -46,6 +46,7 @@ const READER_FAMILY = {
   chamberTrades: 'government',
   lobbying: 'government',
   contracts: 'government',
+  sanctions: 'government',
   countryBrief: 'macro',
   macroRank: 'macro',
   rankings: 'macro',
@@ -80,6 +81,12 @@ const REQUIRED = {
   C09: ['rankings'],
   C03: ['commodity'],
   C08: ['retrieveMarkets'],
+  A01: ['synthesize'],
+  A06: ['synthesize'],
+  A09: [['earnings', 'retrieveMarkets']],
+  B09: ['getOhlcv'],
+  C06: ['sanctions'],
+  C07: ['getOhlcv'],
 };
 
 /* Scenarios a focus leans toward, when they already match the question. */

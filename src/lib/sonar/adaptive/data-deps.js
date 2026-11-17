@@ -316,6 +316,81 @@ export function adaptiveDataDeps(admin) {
       }));
     },
 
+    /* Active sanctions list entries that name a subject (or, for a country, record it), from the
+       OFAC SDN list and the EU, UK and UN consolidated lists. */
+    async sanctions(subject, { country = null } = {}) {
+      if (!admin) return null;
+      const term = String(subject || '')
+        .replace(/[%_,()*\\]/g, ' ')
+        .trim()
+        .slice(0, 80);
+      if (term.length < 3) return { entries: [], byCountry: false };
+      const CAP = 200;
+      const ofac = country
+        ? admin
+            .from('sanctions_entries')
+            .select('ent_num, name, entry_type, programs, countries, synced_at')
+            .is('removed_on', null)
+            .contains('countries', [country])
+            .limit(CAP)
+        : admin
+            .from('sanctions_entries')
+            .select('ent_num, name, entry_type, programs, countries, synced_at')
+            .is('removed_on', null)
+            .ilike('name', `%${term}%`)
+            .limit(CAP);
+      const intl = country
+        ? admin
+            .from('sanctions_intl_entries')
+            .select('list_source, name, entry_type, regimes, listed_on, synced_at')
+            .is('removed_on', null)
+            .contains('countries', [country])
+            .limit(CAP)
+        : admin
+            .from('sanctions_intl_entries')
+            .select('list_source, name, entry_type, regimes, listed_on, synced_at')
+            .is('removed_on', null)
+            .ilike('name', `%${term}%`)
+            .limit(CAP);
+      const [a, b] = await Promise.all([ofac, intl]);
+      if (a.error && b.error) return null;
+      const nums = (a.data || []).map((r) => r.ent_num);
+      const { data: dates } = nums.length
+        ? await admin
+            .from('sanctions_listing_dates')
+            .select('ent_num, listed_on')
+            .in('ent_num', nums.slice(0, 200))
+        : { data: [] };
+      const listed = new Map((dates || []).map((d) => [d.ent_num, d.listed_on]));
+      const entries = [
+        ...(a.data || []).map((r) => ({
+          list: 'ofac',
+          name: r.name,
+          type: r.entry_type,
+          programs: r.programs || [],
+          listedOn: listed.get(r.ent_num) || null,
+        })),
+        ...(b.data || []).map((r) => ({
+          list: r.list_source,
+          name: r.name,
+          type: r.entry_type,
+          programs: r.regimes || [],
+          listedOn: r.listed_on || null,
+        })),
+      ].sort((x, y) => String(y.listedOn || '').localeCompare(String(x.listedOn || '')));
+      const synced = [...(a.data || []), ...(b.data || [])]
+        .map((r) => r.synced_at)
+        .filter(Boolean)
+        .sort()
+        .pop();
+      return {
+        entries,
+        byCountry: Boolean(country),
+        capped: (a.data || []).length >= CAP || (b.data || []).length >= CAP,
+        syncedAt: synced ? String(synced).slice(0, 10) : null,
+      };
+    },
+
     /* Federal prime contract obligations mapped to a ticker, by fiscal year and agency. */
     async contracts(ticker) {
       if (!admin) return null;

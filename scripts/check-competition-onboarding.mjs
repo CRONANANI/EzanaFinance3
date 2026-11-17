@@ -15,7 +15,10 @@ import {
 const cfg = (over) => ({ ...DEFAULT_CONFIG, ...over });
 
 test('invite_only always rejects self-registration', () => {
-  const r = evaluateRegistration(cfg({ admission_mode: 'invite_only' }), { teamCount: 0, orgTeamCount: 0 });
+  const r = evaluateRegistration(cfg({ admission_mode: 'invite_only' }), {
+    teamCount: 0,
+    orgTeamCount: 0,
+  });
   assert.equal(r.ok, false);
 });
 
@@ -60,11 +63,17 @@ test('rejects registration before the window opens and after it closes', () => {
 
 test('side_constraint enforces long_only / short_only', () => {
   assert.equal(
-    evaluateRegistration(cfg({ admission_mode: 'open_signup', side_constraint: 'long_only' }), { side: 'short', orgTeamCount: 0 }).ok,
+    evaluateRegistration(cfg({ admission_mode: 'open_signup', side_constraint: 'long_only' }), {
+      side: 'short',
+      orgTeamCount: 0,
+    }).ok,
     false,
   );
   assert.equal(
-    evaluateRegistration(cfg({ admission_mode: 'open_signup', side_constraint: 'short_only' }), { side: 'short', orgTeamCount: 0 }).ok,
+    evaluateRegistration(cfg({ admission_mode: 'open_signup', side_constraint: 'short_only' }), {
+      side: 'short',
+      orgTeamCount: 0,
+    }).ok,
     true,
   );
 });
@@ -72,14 +81,20 @@ test('side_constraint enforces long_only / short_only', () => {
 test('registrationOutcome respects requires_host_approval_after_signup', () => {
   assert.equal(registrationOutcome(cfg({ admission_mode: 'open_signup' })), 'registered');
   assert.equal(
-    registrationOutcome(cfg({ admission_mode: 'open_signup', requires_host_approval_after_signup: true })),
+    registrationOutcome(
+      cfg({ admission_mode: 'open_signup', requires_host_approval_after_signup: true }),
+    ),
     'invited',
   );
   assert.equal(registrationOutcome(cfg({ admission_mode: 'request_approval' })), 'invited');
 });
 
 test('deliverable completeness tracks required kinds', () => {
-  const config = cfg({ deliverable_deck: true, deliverable_thesis: true, deliverable_model: false });
+  const config = cfg({
+    deliverable_deck: true,
+    deliverable_thesis: true,
+    deliverable_model: false,
+  });
   assert.deepEqual(requiredDeliverableKinds(config), ['deck', 'thesis']);
   assert.equal(deliverablesComplete(config, [{ kind: 'deck' }]), false);
   assert.equal(deliverablesComplete(config, [{ kind: 'deck' }, { kind: 'thesis' }]), true);
