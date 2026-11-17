@@ -2944,3 +2944,578 @@ test('web search stays off unless a deployment switch allows it', async () => {
     assert.match(fs.readFileSync(`src/lib/sonar/adaptive/${f}`, 'utf8'), /scope: 'adaptive'/, f);
   }
 });
+
+/* ── geo-economic impact (Nov 17, 2026) ── */
+
+const GEO = await import('@/lib/sonar/adaptive/geo-economic.js');
+const GNOW = new Date('2026-11-17T12:00:00Z');
+const U = {
+  crs: 'https://www.everycrsreport.com/reports/R48887.html',
+  cbo: 'https://www.cbo.gov/publication/62756',
+  iea: 'https://www.iea.org/about/strait-of-hormuz',
+  eia: 'https://www.eia.gov/international/analysis/special-topics/World_Oil_Transit_Chokepoints',
+  steo: 'https://www.eia.gov/outlooks/steo/marketreview/crude.php',
+  oil: 'https://www.reuters.com/business/energy/oil-prices-fall-2026-11-16/',
+  gold: 'https://www.reuters.com/markets/gold-sinks-1-year-low-2026-11-16/',
+};
+/* The handoff's dated reference facts (as of Nov 17, 2026), as a model reply. */
+const geoReply = (over = {}) =>
+  JSON.stringify({
+    event: { label: '2026 U.S.-Iran conflict', startedOn: '2026-02-28', sourceUrl: U.crs },
+    targetEconomy: 'the United States',
+    headline:
+      'The Iran conflict has hit the U.S. mainly through energy prices, shipping costs and inflation',
+    answer:
+      'The February 2026 outbreak disrupted Gulf oil exports. Fuel and transport costs reached U.S. consumers even though direct imports through Hormuz are limited.',
+    coreFinding:
+      'CBO estimates the conflict pushed energy prices and inflation above its earlier baseline.',
+    metrics: [
+      {
+        label: 'Brent, Nov 16 close',
+        value: 92.44,
+        unit: 'USD per barrel',
+        basis: 'daily_settlement',
+        recordClass: 'observed',
+        date: '2026-11-16',
+        period: 'Nov 16, 2026',
+        scope: 'Brent futures',
+        sourceUrl: U.oil,
+      },
+      {
+        label: 'Hormuz, pre-war',
+        value: 20,
+        unit: 'mb/d',
+        basis: 'baseline',
+        recordClass: 'historical_baseline',
+        date: null,
+        period: '2025',
+        scope: 'all oil',
+        sourceUrl: U.iea,
+      },
+      {
+        label: 'Defense costs',
+        value: 38,
+        unit: 'USD billion',
+        basis: 'estimate',
+        recordClass: 'estimate',
+        date: '2026-08-01',
+        period: 'through Aug 1, 2026',
+        scope: 'DoD only',
+        sourceUrl: U.cbo,
+      },
+      {
+        label: 'Early-2027 PCE',
+        value: 0.5,
+        unit: 'pp',
+        basis: 'projection_change',
+        recordClass: 'forecast',
+        date: null,
+        period: 'Q1 2027 vs Feb 2026 baseline',
+        scope: 'PCE inflation',
+        sourceUrl: U.cbo,
+      },
+      {
+        label: 'Gold, Nov 16 low',
+        value: 3830.74,
+        unit: 'USD per ounce',
+        basis: 'intraday_low',
+        recordClass: 'observed',
+        date: '2026-11-16',
+        period: 'Nov 16, 2026',
+        scope: 'spot',
+        sourceUrl: U.gold,
+      },
+      {
+        label: 'Made-up figure',
+        value: 7,
+        unit: '%',
+        basis: 'annual',
+        recordClass: 'observed',
+        date: '2026-11-01',
+        period: '2026',
+        scope: 'x',
+        sourceUrl: 'https://example.com/not-returned',
+      },
+    ],
+    oilPrices: [
+      {
+        benchmark: 'Brent',
+        value: 114,
+        basis: 'monthly_average',
+        date: '2026-09-30',
+        period: 'September 2026',
+        changePct: null,
+        sourceUrl: U.steo,
+      },
+      {
+        benchmark: 'Brent',
+        value: 124,
+        basis: 'monthly_average',
+        date: '2026-10-31',
+        period: 'October 2026',
+        changePct: null,
+        sourceUrl: U.steo,
+      },
+      {
+        benchmark: 'Brent',
+        value: 92.44,
+        basis: 'daily_settlement',
+        date: '2026-11-16',
+        period: 'Nov 16',
+        changePct: -3.6,
+        sourceUrl: U.oil,
+      },
+      {
+        benchmark: 'WTI',
+        value: 85.72,
+        basis: 'daily_settlement',
+        date: '2026-11-16',
+        period: 'Nov 16',
+        changePct: -3.2,
+        sourceUrl: U.oil,
+      },
+    ],
+    chokepoint: {
+      name: 'Strait of Hormuz',
+      exporters: [
+        {
+          country: 'Iraq',
+          value: 3.63,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'Saudi Arabia',
+          value: 6.23,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'UAE',
+          value: 3.24,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'Iran',
+          value: 2.41,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'Kuwait',
+          value: 2.37,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'Qatar',
+          value: 1.43,
+          unit: 'mb/d',
+          year: 2025,
+          scope: 'Oil total',
+          sourceUrl: U.iea,
+        },
+        {
+          country: 'Oman',
+          value: 0.9,
+          unit: 'mb/d',
+          year: 2024,
+          scope: 'Crude only',
+          sourceUrl: U.iea,
+        },
+      ],
+      destinations: [
+        { country: 'China', sourceUrl: U.eia },
+        { country: 'India', sourceUrl: U.eia },
+        { country: 'Atlantis', sourceUrl: null },
+      ],
+      facts: [
+        {
+          label: 'Share of Hormuz crude and condensate destined for Asia',
+          value: 89,
+          valueHigh: null,
+          unit: '%',
+          period: '1H25',
+          sourceUrl: U.eia,
+        },
+        {
+          label: 'U.S. crude imports from the Gulf via Hormuz',
+          value: 0.4,
+          valueHigh: null,
+          unit: 'mb/d',
+          period: '1H25',
+          sourceUrl: U.eia,
+        },
+        {
+          label: 'Bypass pipeline capacity',
+          value: 3.5,
+          valueHigh: 5.5,
+          unit: 'mb/d',
+          period: '2025',
+          sourceUrl: U.iea,
+        },
+      ],
+    },
+    economyImpact: [
+      {
+        label: 'PCE inflation revision, Q1 2027',
+        value: 0.5,
+        valueHigh: null,
+        unit: 'pp',
+        recordClass: 'forecast',
+        note: 'Against CBO’s February 2026 baseline; not the observed inflation rate.',
+        sourceUrl: U.cbo,
+      },
+      {
+        label: 'Core PCE revision, Q1 2027',
+        value: 0.3,
+        valueHigh: null,
+        unit: 'pp',
+        recordClass: 'forecast',
+        note: '',
+        sourceUrl: U.cbo,
+      },
+      {
+        label: 'U.S. defense costs to Aug 1',
+        value: 38,
+        valueHigh: null,
+        unit: 'USD billion',
+        recordClass: 'estimate',
+        note: '',
+        sourceUrl: U.cbo,
+      },
+      {
+        label: 'Additional month of operations',
+        value: 2,
+        valueHigh: 3,
+        unit: 'USD billion',
+        recordClass: 'estimate',
+        note: 'CBO scenarios',
+        sourceUrl: U.cbo,
+      },
+    ],
+    gold: {
+      value: 3830.74,
+      unit: 'USD per ounce',
+      basis: 'Intraday low',
+      date: '2026-11-16',
+      sourceUrl: U.gold,
+      summary: 'Gold fell as a strong dollar and higher yields outweighed safe-haven demand.',
+      drivers: [
+        {
+          title: 'Geopolitical risk',
+          direction: 'supports',
+          text: 'Can lift demand for defensive assets.',
+          sourceUrls: [U.gold],
+        },
+        {
+          title: 'Dollar strength',
+          direction: 'weighs',
+          text: 'Makes gold dearer for overseas buyers.',
+          sourceUrls: [U.gold],
+        },
+        {
+          title: 'Real yields',
+          direction: 'weighs',
+          text: 'Raise the cost of holding a non-yielding asset.',
+          sourceUrls: [],
+        },
+      ],
+    },
+    channels: [
+      {
+        title: 'Disrupted Gulf exports',
+        text: 'Shipping threats cut product exports.',
+        sourceUrls: [U.iea],
+      },
+      {
+        title: 'Higher fuel costs',
+        text: 'Crude, gasoline and diesel prices rose.',
+        sourceUrls: [U.steo],
+      },
+      {
+        title: 'Consumer inflation',
+        text: 'Transport costs passed into prices.',
+        sourceUrls: [U.cbo],
+      },
+      { title: 'Rate pressure', text: 'Inflation complicates Fed policy.', sourceUrls: [] },
+    ],
+    scenarios: [
+      {
+        name: 'De-escalation',
+        tone: 'lower',
+        conditions: 'Tanker attacks fall and exports normalise.',
+        effects: 'Energy and freight premiums ease.',
+      },
+      {
+        name: 'Extended disruption',
+        tone: 'persistent',
+        conditions: 'Recurring shipping incidents.',
+        effects: 'Product prices stay elevated.',
+      },
+      {
+        name: 'Escalation',
+        tone: 'severe',
+        conditions: 'Sustained closure.',
+        effects: 'Oil could reach $150 with a 40% probability.',
+      },
+    ],
+    timeline: [
+      {
+        date: '2026-02-28',
+        title: 'Conflict begins',
+        text: 'U.S. and Israeli strikes on Iran.',
+        sourceUrl: U.crs,
+      },
+      { date: '2026-06-15', title: 'Memorandum', text: 'An MoU is signed.', sourceUrl: U.crs },
+      { date: '2026-12-01', title: 'Talks resume', text: 'Upcoming.', sourceUrl: U.crs },
+      { date: '2026-04-10', title: 'Ceasefire', text: 'A ceasefire follows.', sourceUrl: null },
+    ],
+    followups: ['How much has the conflict raised U.S. inflation?'],
+    ...over,
+  });
+const geoRetrieved = Object.values(U).map((url) => ({ url, title: url.split('/')[2] }));
+const geoSynth =
+  (reply = geoReply()) =>
+  async () => ({
+    answer: reply,
+    webSources: geoRetrieved,
+    usage: { model: 'test', inputTokens: 1, outputTokens: 1, webSearches: 4 },
+  });
+
+test('geo-economic questions route to A08 with a focus; a currency question switches intent', () => {
+  const t = { question: 'q', event: '2026 U.S.-Iran conflict' };
+  const cases = [
+    [
+      'economic impact on the us economy after involvement with iran war this year',
+      null,
+      'overall',
+    ],
+    ['how would a closure of the Strait of Hormuz affect the US?', null, 'shipping'],
+    ['which countries depend most on the strait of hormuz for oil?', null, 'shipping'],
+    ['why is gold down even though there is a war?', null, 'gold'],
+    ['how has the conflict changed the Fed outlook?', null, 'rates'],
+    ['what has happened to Brent and WTI since February 28?', t, 'oil'],
+    ['how much has the conflict cost the United States?', null, 'cost'],
+    ['how might a ceasefire affect crude and U.S. inflation?', null, 'scenarios'],
+    ['what are the effects on India, China, Japan and South Korea?', t, 'countries'],
+  ];
+  for (const [q, thread, focus] of cases) {
+    const p = plan(q, { thread });
+    assert.equal(p.primaryScenario, 'A08', q);
+    assert.equal(p.geo?.focus, focus, q);
+    assert.equal(p.executable, true, q);
+  }
+  assert.equal(plan('tell me the U.S. effective exchange rate', { thread: t }).geo ?? null, null);
+  /* A company question stays a company brief; a plain rates question stays C04. */
+  assert.equal(plan('How would new chip export restrictions affect ASML?').geo, null);
+  assert.equal(plan('Will the Fed cut rates next month?').primaryScenario, 'C04');
+});
+
+test('the relevance gate keeps the event and its channels and drops the old false matches', () => {
+  for (const off of [
+    'Merck Animal Health Launches NOBIVAC NXT Rabies for Dogs and Cats in the United States',
+    'Spot Solana ETF Volumes',
+    'When Walmart pulls out of town, the stores next door don’t pick up its shoppers',
+    'Twelve Funds, $12.4 Trillion: Inside the World’s Biggest Sovereign Wealth Funds',
+    'Fastest growing economies: Guyana leads real GDP growth in 2025',
+  ])
+    assert.equal(GEO.geoRelevant(off), false, off);
+  for (const on of [
+    'Oil prices fall as Gulf exports through Hormuz recover despite tanker attacks',
+    'Iran conflict pushes up U.S. gasoline prices and PCE inflation, CBO says',
+    'Gold slides as Treasury yields and the dollar rise despite the war with Iran',
+  ])
+    assert.equal(GEO.geoRelevant(on), true, on);
+});
+
+test('the reply check keeps only returned, dated, unit-bearing figures and number-free scenarios', () => {
+  const r = GEO.validateGeoReply(geoReply(), geoRetrieved, { now: GNOW });
+  assert.equal(r.grounded, true);
+  assert.equal(r.metrics.length, 5, 'the figure with an unreturned link is dropped');
+  assert.ok(!r.metrics.some((m) => m.label === 'Made-up figure'));
+  assert.deepEqual(
+    r.scenarios.map((s) => s.name),
+    ['De-escalation', 'Extended disruption'],
+  );
+  assert.ok(r.dropped.some((d) => /Escalation: carried a number or a probability/.test(d)));
+  /* Past, dated, sourced events only, in date order. */
+  assert.deepEqual(
+    r.timeline.map((t) => t.date),
+    ['2026-02-28', '2026-06-15'],
+  );
+  assert.deepEqual(
+    r.chokepoint.destinations.map((d) => d.country),
+    ['China', 'India'],
+  );
+  assert.equal(r.gold.drivers.find((d) => d.title === 'Real yields').urls.length, 0);
+  /* Too little sourced: no headline, the executor says so. */
+  const thin = GEO.validateGeoReply(
+    geoReply({ metrics: [], oilPrices: [], economyImpact: [], chokepoint: null }),
+    geoRetrieved,
+    { now: GNOW },
+  );
+  assert.equal(thin.grounded, false);
+  assert.equal(thin.headline, '');
+});
+
+test('geo analytics compare like with like and never join different bases into a line', () => {
+  const r = GEO.validateGeoReply(geoReply(), geoRetrieved, { now: GNOW });
+  assert.deepEqual(
+    GEO.oilBars(r.oilPrices).map((b) => [b.label, b.value]),
+    [
+      ['Sep avg', 114],
+      ['Oct avg', 124],
+      ['Nov 16 close', 92.44],
+    ],
+  );
+  const same = GEO.sameDayComparison(r.oilPrices);
+  assert.equal(same.date, '2026-11-16');
+  assert.equal(same.spread, 6.72);
+  /* One year and one scope: the 2024 crude-only row is not ranked with 2025 oil totals. */
+  const rank = GEO.exporterRanking(r.chokepoint.exporters);
+  assert.deepEqual(
+    rank.rows.map((e) => e.country),
+    ['Saudi Arabia', 'Iraq', 'UAE', 'Iran', 'Kuwait', 'Qatar'],
+  );
+  assert.equal(rank.year, 2025);
+  /* Daily series are aligned on shared dates only. */
+  const a = [
+    { d: '2026-03-02', v: 80 },
+    { d: '2026-03-03', v: 88 },
+    { d: '2026-03-04', v: 90 },
+  ];
+  const b = [
+    { d: '2026-03-02', v: 76 },
+    { d: '2026-03-04', v: 85.5 },
+  ];
+  const al = GEO.alignedDaily(a, b, '2026-02-28');
+  assert.deepEqual(
+    al.rows.map((x) => x.d),
+    ['2026-03-02', '2026-03-04'],
+  );
+  assert.equal(al.changeA.toFixed(2), '12.50');
+  assert.equal(GEO.formatFigure(92.44, 'USD per barrel'), '$92.44');
+  assert.equal(GEO.formatFigure(0.5, 'pp', { signed: true }), '+0.5 pp');
+  assert.equal(GEO.formatFigure(38, 'USD billion'), '$38B');
+  assert.equal(GEO.formatFigure(2, 'USD billion', { high: 3 }), '$2B to $3B');
+  assert.equal(GEO.formatFigure(3.5, 'mb/d', { high: 5.5 }), '3.5M b/d to 5.5M b/d');
+});
+
+test('A08 geo report: oil, shipping and inflation lead; every figure sourced; order follows focus', async () => {
+  const p = plan('economic impact on the us economy after involvement with iran war this year');
+  const deps = { synthesize: geoSynth(), commodity: async () => ({ points: [] }) };
+  const report = await O.runAdaptive(p, deps, { now: GNOW });
+  assert.ok(report, 'a report');
+  const types = report.sections.map((s) => s.type);
+  assert.deepEqual(types, [
+    'lead',
+    'kpi_strip',
+    'market_comparison',
+    'hormuz_flows',
+    'economic_transmission',
+    'us_impact',
+    'gold_markets',
+    'scenario_table',
+    'event_timeline',
+    'sources',
+    'limitations',
+    'followups',
+  ]);
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.doesNotMatch(by.lead.headline, /exchange rate|REER/i);
+  assert.match(by.lead.headline, /energy prices, shipping costs and inflation/);
+  assert.equal(by.lead.core.length > 0, true);
+  /* Figures: each sourced, with its kind and basis. */
+  assert.equal(by.kpi_strip.items.length, 5);
+  for (const k of by.kpi_strip.items) {
+    assert.ok(k.cites.length, k.label);
+    assert.ok(
+      ['Observed', 'Historical baseline', 'Forecast', 'Estimate'].includes(k.kind),
+      k.label,
+    );
+  }
+  assert.deepEqual(
+    by.kpi_strip.items.map((k) => k.value),
+    ['$92.44', '20M b/d', '$38B', '+0.5 pp', '$3,830.74'],
+  );
+  /* Oil: labelled bars, not a line, and the same-day comparison with its computed spread. */
+  assert.equal(by.market_comparison.chart.kind, 'bar');
+  assert.deepEqual(by.market_comparison.chart.categories, ['Sep avg', 'Oct avg', 'Nov 16 close']);
+  assert.equal(by.market_comparison.comparison.spread, 6.72);
+  assert.equal(by.hormuz_flows.exporters[0].label, 'Saudi Arabia');
+  assert.equal(by.hormuz_flows.exporters.length, 6);
+  assert.equal(
+    by.economic_transmission.steps.find((s) => s.title === 'Rate pressure').analysis,
+    true,
+  );
+  assert.equal(by.us_impact.value, '+0.5 pp');
+  assert.equal(by.us_impact.kind, 'Forecast');
+  assert.match(by.us_impact.note, /not added together/);
+  assert.equal(by.scenario_table.rows.length, 2);
+  for (const r of by.scenario_table.rows)
+    assert.doesNotMatch(`${r.conditions} ${r.effects}`, /\d|%|probab/i);
+  assert.ok(by.event_timeline.items.every((t) => t.date <= '2026-11-17' && t.cites.length));
+  /* Sources: only what is cited, every one returned by the search. */
+  const urls = report.sources.map((s) => s.url);
+  const strip = (u) => String(u).replace('://www.', '://').replace(/\/$/, '');
+  const returned = Object.values(U).map(strip);
+  assert.ok(urls.every((u) => returned.includes(strip(u))), urls.join(' '));
+  assert.match(
+    by.limitations.items.join(' '),
+    /not joined into a line|separate, labelled references/,
+  );
+  assert.equal(report.thread.event, '2026 U.S.-Iran conflict');
+  /* A gold question leads with gold; a Hormuz question with shipping. */
+  const g = await O.runAdaptive(plan('why is gold down even though there is a war?'), deps, {
+    now: GNOW,
+  });
+  assert.equal(g.sections[1].type, 'gold_markets');
+  const h = await O.runAdaptive(
+    plan('which countries depend most on the strait of hormuz for oil?'),
+    deps,
+    { now: GNOW },
+  );
+  assert.equal(h.sections[1].type, 'hormuz_flows');
+});
+
+test('A08 geo report: a real daily series becomes the full-width line; a failed search is said plainly', async () => {
+  const days = Array.from({ length: 30 }, (_, i) => `2026-03-${String(i + 1).padStart(2, '0')}`);
+  const brent = { points: days.map((d, i) => ({ d, v: 80 + i })) };
+  const wti = { points: days.map((d, i) => ({ d, v: 76 + i })) };
+  const deps = {
+    synthesize: geoSynth(),
+    commodity: async (id) => (id === 'brent' ? brent : id === 'oil' ? wti : { points: [] }),
+  };
+  const report = await O.runAdaptive(
+    plan('economic impact on the us economy after involvement with iran war this year'),
+    deps,
+    { now: GNOW },
+  );
+  const mc = report.sections.find((s) => s.type === 'market_comparison');
+  assert.equal(mc.chart.kind, 'line');
+  assert.deepEqual(
+    mc.chart.series.map((s) => s.name),
+    ['Brent', 'WTI'],
+  );
+  assert.equal(mc.chart.categories[0], '2026-03-01', 'the window opens at the sourced event date');
+  /* No sourced figures at all: an honest unavailable answer, not the old macro dashboard. */
+  const empty = await O.runAdaptive(
+    plan('economic impact on the us economy after involvement with iran war this year'),
+    { synthesize: async () => ({ answer: '{}', webSources: [] }), commodity: async () => null },
+    { now: GNOW },
+  );
+  assert.match(empty.sections[0].headline, /could not verify the economic effects/);
+  assert.ok(!empty.sections.some((s) => ['kpi_strip', 'market_comparison'].includes(s.type)));
+});

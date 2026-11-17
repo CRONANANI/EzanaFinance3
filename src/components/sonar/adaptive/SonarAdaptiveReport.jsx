@@ -23,6 +23,17 @@ import { SonarResearchControls } from '../SonarResearchControls';
 import SonarExemplaryChart, { dayLabel } from '../exemplary/SonarExemplaryChart';
 import SonarTechnicalChart from './SonarTechnicalChart';
 import SonarSeriesChart from './SonarSeriesChart';
+import {
+  KpiStrip,
+  MarketComparison,
+  HormuzFlows,
+  Transmission,
+  UsImpact,
+  GoldMarkets,
+  GeoPair,
+  ScenarioTable,
+  EventTimeline,
+} from './SonarGeoSections';
 import { SonarSaveActions } from '../SonarSaveActions';
 import { useSessionThread } from '../session-thread';
 import '../exemplary/sonar-exemplary-brief.css';
@@ -55,7 +66,28 @@ const ANCHOR_LABELS = {
   price_comparison: 'Market context',
   watchpoints: 'Monitor',
   sources: 'Sources',
+  /* Geo-economic impact. */
+  market_comparison: 'Oil & shipping',
+  economic_transmission: 'U.S. economy',
+  us_impact: 'U.S. economy',
+  gold_markets: 'Gold & markets',
+  hormuz_flows: 'Global trade',
+  scenario_table: 'Scenarios',
+  event_timeline: 'Timeline',
 };
+
+/* Sections that span the canvas: never squeezed into the top zone beside the controls. */
+const WIDE = new Set([
+  'kpi_strip',
+  'market_comparison',
+  'hormuz_flows',
+  'economic_transmission',
+  'us_impact',
+  'gold_markets',
+  'scenario_table',
+  'event_timeline',
+]);
+const PAIRED = new Set(['us_impact', 'gold_markets']);
 
 const CLASS_LABELS = {
   official: 'Official',
@@ -598,9 +630,17 @@ export default function SonarAdaptiveReport({
   const lead = sections.find((s) => s.type === 'lead');
   const follow = sections.find((s) => s.type === 'followups');
   const body = sections.filter((s) => s.type !== 'lead' && s.type !== 'followups');
-  const anchors = body.filter(
+  const anchorsAll = body.filter(
     (s) => ANCHOR_LABELS[s.type] && (s.type !== 'sources' || sources.length),
   );
+  /* One tab per label (the economy can be the chain or the impact column). */
+  const anchors = anchorsAll.filter(
+    (sec, i) =>
+      anchorsAll.findIndex((x) => ANCHOR_LABELS[x.type] === ANCHOR_LABELS[sec.type]) === i,
+  );
+  const geo = sections.some((x) => WIDE.has(x.type));
+  const topSection = body[0] && !WIDE.has(body[0].type) ? body[0] : null;
+  const rest = topSection ? body.slice(1) : body;
   const [question, setQuestion] = useState(report.resolvedQuestion || report.question);
   const [followUp, setFollowUp] = useState('');
   const [active, setActive] = useState('overview');
@@ -726,6 +766,22 @@ export default function SonarAdaptiveReport({
         );
       case 'sources':
         return sources.length ? <Sources sources={sources} /> : null;
+      case 'kpi_strip':
+        return <KpiStrip s={s} sources={sources} Cites={Cites} />;
+      case 'market_comparison':
+        return <MarketComparison s={s} sources={sources} Cites={Cites} />;
+      case 'hormuz_flows':
+        return <HormuzFlows s={s} sources={sources} Cites={Cites} />;
+      case 'economic_transmission':
+        return <Transmission s={s} sources={sources} Cites={Cites} />;
+      case 'us_impact':
+        return <UsImpact s={s} sources={sources} Cites={Cites} />;
+      case 'gold_markets':
+        return <GoldMarkets s={s} sources={sources} Cites={Cites} />;
+      case 'scenario_table':
+        return <ScenarioTable s={s} />;
+      case 'event_timeline':
+        return <EventTimeline s={s} sources={sources} Cites={Cites} />;
       default:
         return null;
     }
@@ -778,11 +834,11 @@ export default function SonarAdaptiveReport({
             type="button"
             className="sxb-query-edit"
             onClick={() => {
+              setQuestion('');
               inputRef.current?.focus();
-              inputRef.current?.select();
             }}
           >
-            Edit
+            Clear
           </button>
         </div>
         <button type="submit" className="sxb-ping" disabled={!question.trim()}>
@@ -818,7 +874,7 @@ export default function SonarAdaptiveReport({
             aria-current={active === s.type ? 'true' : undefined}
             onClick={() => setActive(s.type)}
           >
-            {ANCHOR_LABELS[s.type]}
+            {geo && s.type === 'sources' ? 'Evidence' : ANCHOR_LABELS[s.type]}
           </a>
         ))}
       </nav>
@@ -827,11 +883,18 @@ export default function SonarAdaptiveReport({
       <div className="sxb-top">
         <div className="sxb-top-main">
           <header className="sxb-hero" id="sar-overview" data-anchor="overview">
+            {lead.kicker ? <p className="sxb-kicker">{lead.kicker}</p> : null}
             <h1>{lead.headline}</h1>
             <p className="sxb-deck">
               {lead.text}
               <Cites ids={lead.cites} sources={sources} />
             </p>
+            {lead.core ? (
+              <p className="sgeo-core">
+                <span>Core finding</span>
+                {lead.core}
+              </p>
+            ) : null}
             <p className="sxb-provenance">
               <span>
                 <i className="sxb-dot" aria-hidden="true" />
@@ -871,14 +934,28 @@ export default function SonarAdaptiveReport({
                   )}
             </div>
           </header>
-          {body[0] ? block(body[0]) : null}
+          {topSection ? block(topSection) : null}
         </div>
         <aside className="sxb-rail" aria-label="Research controls">
           <SonarResearchControls variant="flat" />
         </aside>
       </div>
 
-      {body.slice(1).map(block)}
+      {rest.map((sec, i) => {
+        /* The economy and gold side by side when they are neighbours. */
+        const next = rest[i + 1];
+        const prev = rest[i - 1];
+        if (PAIRED.has(sec.type) && next && PAIRED.has(next.type) && next.type !== sec.type)
+          return (
+            <GeoPair key={`pair-${sec.type}`}>
+              {block(sec)}
+              {block(next)}
+            </GeoPair>
+          );
+        if (PAIRED.has(sec.type) && prev && PAIRED.has(prev.type) && prev.type !== sec.type)
+          return null;
+        return block(sec);
+      })}
 
       {onRestore && session.length >= 2 ? (
         <section className="sxb-block sar-session" aria-labelledby="sar-session-h">

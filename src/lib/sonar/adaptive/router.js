@@ -19,6 +19,7 @@
  *
  * Pure and deterministic. No I/O.
  */
+import { geoIntent } from './geo-economic';
 import { mentionedCompanies } from '@/lib/sonar/company-mentions';
 import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
@@ -171,6 +172,28 @@ export function planAdaptive(question, opts = {}) {
     )
     .sort((a, b) => b.score - a.score || a.profile.id.localeCompare(b.profile.id));
 
+  /* A question about how a geopolitical event reaches an economy is A08's geo-economic
+     analysis, whatever single word scored highest ("economy" alone must not open the country
+     dashboard). A company question stays with its own scenario. */
+  const geo = geoIntent(text, {
+    thread,
+    hasCompany: entities.some((e) => e.type === 'company'),
+  });
+  if (geo && scored[0]?.profile.id !== 'A08') {
+    const a08 = SCENARIOS.find((s) => s.id === 'A08');
+    const rest = scored.filter((s) => s.profile.id !== 'A08');
+    scored.splice(
+      0,
+      scored.length,
+      {
+        profile: a08,
+        score: (rest[0]?.score || 0) + 2,
+        reasons: [`A08: geo-economic impact (focus ${geo.focus})`],
+      },
+      ...rest,
+    );
+  }
+
   const top = scored[0] || null;
   const second = scored[1] || null;
   const confidence = top
@@ -308,6 +331,7 @@ export function planAdaptive(question, opts = {}) {
     entities,
     objective: primary?.objective || null,
     primaryScenario: primary?.id || null,
+    geo: primary?.id === 'A08' && geo ? geo : null,
     primaryKey: primary?.key || null,
     supportingScenarios: supporting,
     depth,

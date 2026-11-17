@@ -33,7 +33,12 @@ const ABSENCE_NOTES = {
  */
 export function selectComponents(plan, built) {
   const profile = SCENARIO_BY_ID[plan.primaryScenario];
-  const order = profile ? profile.layout : ['lead', 'sources', 'limitations', 'followups'];
+  /* An executor may order its own sections for the question asked (geo-economic.js leads a
+     gold question with gold). Otherwise the scenario's layout decides. */
+  const own = Array.isArray(built._order)
+    ? ['lead', ...built._order.filter((t) => t !== 'lead')]
+    : null;
+  const order = own || (profile ? profile.layout : ['lead', 'sources', 'limitations', 'followups']);
   const sections = [];
   const omitted = [];
   const notes = [];

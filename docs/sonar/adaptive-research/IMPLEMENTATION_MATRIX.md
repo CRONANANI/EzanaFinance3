@@ -91,6 +91,21 @@ below). 0 fully production-validated: model-backed research cannot cite until we
 is switched on (`SONAR_ADAPTIVE_WEB_SEARCH=on`), and no person has yet read the answers
 against their sources.**
 
+## Geo-economic impact (A08, Nov 17, 2026)
+
+A question about how a geopolitical event reaches an economy (war, conflict, blockade,
+sanctions, ceasefire, with an economic channel) is routed to A08 with a focus: overall, oil,
+shipping, gold, cost, rates, inflation, scenarios or countries. Follow-ups inherit the event
+only when they ask about one of its channels; "tell me the effective exchange rate" switches
+intent. `geo-economic.js` runs one web-searched research call (needs
+`SONAR_ADAPTIVE_WEB_SEARCH=on`) whose reply is validated: every number needs a returned link,
+a unit, a basis and a date; scenarios carry no numbers or probabilities; the timeline holds
+dated, sourced past events. Sections (KPI strip, oil comparison, Hormuz flows, transmission,
+economy and gold side by side, scenarios, timeline) are ordered by the focus. Oil is a daily
+line only from Ezana's aligned daily feed; otherwise observed prices are labelled bars, never
+joined. News passes a causal relevance gate. With too few sourced figures the answer says it
+could not verify the effects instead of falling back to the country dashboard.
+
 ## Charts
 
 Every chart is drawn from typed values in the report (`series_chart`), which

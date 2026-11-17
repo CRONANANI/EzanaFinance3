@@ -18,6 +18,7 @@
  * Everything I/O is injected (`deps`), so the same code runs in the route and
  * in the tests with fixtures.
  */
+import { runGeoEconomic } from './geo-economic';
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { technicalSnapshot, rsiReading } from './technical';
 import { sourceClass, hostOf, canonicalUrl } from './news-intelligence';
@@ -541,7 +542,9 @@ const EXECUTORS = {
   C03: runCommodity,
   C08: runPredictionMarkets,
   A07: runSourcedBrief,
-  A08: runSourcedBrief,
+  /* A geo-economic impact question gets its own executor (plan.geo, set by the router). */
+  A08: (plan, ...rest) =>
+    plan.geo ? runGeoEconomic(plan, ...rest) : runSourcedBrief(plan, ...rest),
   A10: runSourcedBrief,
   C10: runSourcedBrief,
   A01: runVerification,

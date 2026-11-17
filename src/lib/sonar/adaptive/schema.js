@@ -93,7 +93,40 @@ const RULES = {
   limitations: (s) => (s.items?.length ? null : 'no items'),
   followups: (s) => (s.related?.length ? null : 'no questions'),
   sources: () => null,
+  /* Geo-economic impact. Each holds only sourced figures (see validateReport). */
+  kpi_strip: (s) => (s.items?.length >= 2 ? null : 'fewer than two sourced figures'),
+  market_comparison: (s) =>
+    (s.chart && chart(s.chart) === null) || s.comparison?.rows?.length >= 2
+      ? null
+      : 'no valid chart and no same-day comparison',
+  hormuz_flows: (s) =>
+    s.exporters?.length >= 2 || s.facts?.length ? null : 'no sourced exporters or facts',
+  economic_transmission: (s) => (s.steps?.length >= 3 ? null : 'fewer than three steps'),
+  us_impact: (s) => (text(s.value) && s.cites?.length ? null : 'no sourced headline figure'),
+  gold_markets: (s) =>
+    (text(s.value) && s.cites?.length) || s.drivers?.length ? null : 'no sourced figure or drivers',
+  scenario_table: (s) => (s.rows?.length >= 2 ? null : 'fewer than two scenarios'),
+  event_timeline: (s) => (s.items?.length ? null : 'no dated, sourced events'),
 };
+
+/* Geo-economic sections hold figures several levels down; every cites list anywhere in them
+   keeps only ids that are real sources. */
+const GEO_TYPES = new Set([
+  'kpi_strip',
+  'market_comparison',
+  'hormuz_flows',
+  'economic_transmission',
+  'us_impact',
+  'gold_markets',
+  'event_timeline',
+]);
+function scrubCites(v, keep) {
+  if (Array.isArray(v)) return v.map((x) => scrubCites(x, keep));
+  if (!v || typeof v !== 'object') return v;
+  const out = {};
+  for (const [k, x] of Object.entries(v)) out[k] = k === 'cites' ? keep(x) : scrubCites(x, keep);
+  return out;
+}
 
 /**
  * Check a report and return it with every failing part removed.
@@ -200,6 +233,31 @@ export function validateReport(input) {
         return ok;
       });
       s.items = s.items.map((i) => ({ ...i, cites: keepCites(i.cites) }));
+    }
+    if (GEO_TYPES.has(s.type)) {
+      Object.assign(s, scrubCites(s, keepCites));
+      /* A figure is shown only with a source behind it. */
+      const sourcedOnly = (list, what) =>
+        (list || []).filter((i) => {
+          const ok = i.cites?.length > 0;
+          if (!ok) removed.push(`${s.type} ${what} ${i.label || i.title || '?'}: no source`);
+          return ok;
+        });
+      if (s.type === 'kpi_strip') s.items = sourcedOnly(s.items, 'figure');
+      if (s.type === 'hormuz_flows') {
+        s.exporters = sourcedOnly(s.exporters, 'exporter');
+        s.facts = sourcedOnly(s.facts, 'fact');
+        s.destinations = sourcedOnly(s.destinations, 'destination');
+      }
+      if (s.type === 'us_impact') s.rows = sourcedOnly(s.rows, 'row');
+      if (s.type === 'event_timeline') s.items = sourcedOnly(s.items, 'event');
+      if (s.type === 'market_comparison') {
+        if (s.chart && (!s.chart.cites?.length || chart(s.chart) !== null)) {
+          removed.push('market_comparison chart: unsourced or invalid');
+          s.chart = null;
+        }
+        if (s.comparison) s.comparison.rows = sourcedOnly(s.comparison.rows, 'price');
+      }
     }
     const rule = RULES[s.type];
     const fault = rule ? rule(s) : null;

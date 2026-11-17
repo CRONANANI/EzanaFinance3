@@ -31,7 +31,7 @@ export const ADAPTIVE_BUDGET_MS = {
   C03: 40_000,
   C08: 12_000,
   A07: 45_000,
-  A08: 45_000,
+  A08: 60_000, // a geo-economic answer searches more sources (geo-economic.js)
   A10: 45_000,
   C10: 45_000,
   A01: 45_000,
