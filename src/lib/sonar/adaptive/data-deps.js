@@ -11,6 +11,7 @@ import { fetchValuationRaw, fetchDeepValuation, fetchPeerSet } from '@/lib/sonar
 import { normalizeInputs } from '@/lib/sonar/valuation/history';
 import { getMacroRankings } from '@/lib/sonar/macro/store';
 import { countryBrief, rankCountries, seriesHistory } from '@/lib/sonar/macro/series-store';
+import { buildCountryIntel } from '@/lib/sonar/macro/intel';
 import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import { fetchRevenueMix } from '@/lib/sonar/revenue-mix';
 import { lobbyingProfile } from '@/lib/sonar/engine/sources-positioning';
@@ -72,6 +73,16 @@ export function adaptiveDataDeps(admin) {
     countryBrief: (iso3, o) => countryBrief(admin, iso3, o),
     macroRank: (familyId, o) => rankCountries(admin, familyId, o),
     seriesHistory: (source, key, o) => seriesHistory(admin, source, key, o),
+    /* Nov 17: the currency picture for one country (best series per family, histories and
+       the deterministic assessment), for the currency-pressure view (fx-pressure.js). */
+    countryIntel: (iso3, { now } = {}) =>
+      buildCountryIntel(admin, {
+        iso3,
+        route: { themes: ['currency'] },
+        timeoutMs: 4000,
+        now: now || new Date(),
+        historyYears: 6,
+      }),
     /* The existing lobbying rollup (verified client-to-ticker links only). { byYear: [] } when
        no filing is linked to the ticker; null when the index could not be read. */
     async lobbying(ticker, name) {

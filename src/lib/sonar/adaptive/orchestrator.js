@@ -19,6 +19,7 @@
  * in the tests with fixtures.
  */
 import { runGeoEconomic } from './geo-economic';
+import { runFxPressure } from './fx-pressure';
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { technicalSnapshot, rsiReading } from './technical';
 import { sourceClass, hostOf, canonicalUrl } from './news-intelligence';
@@ -535,7 +536,10 @@ const EXECUTORS = {
   B04: runGovExposure,
   B08: runLobbying,
   B10: runQuant,
-  C01: runCountryMacro,
+  /* A currency-pressure question (plan.fx, set by the router) gets the fx-pressure-v1 view;
+     if its data cannot answer, the plain country view still can. */
+  C01: async (plan, ...rest) =>
+    (plan.fx ? await runFxPressure(plan, ...rest) : null) || runCountryMacro(plan, ...rest),
   C04: runCountryMacro,
   C05: runCountryMacro,
   C09: runCountryCompare,

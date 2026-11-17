@@ -20,6 +20,7 @@
  * Pure and deterministic. No I/O.
  */
 import { geoIntent } from './geo-economic';
+import { fxIntent } from './fx-pressure';
 import { mentionedCompanies } from '@/lib/sonar/company-mentions';
 import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
@@ -194,6 +195,28 @@ export function planAdaptive(question, opts = {}) {
     );
   }
 
+  /* Nov 17: a one-country currency-pressure question ("is turkeys lira under pressure?",
+     "how resilient are Brazil's reserves?") is C01's currency-pressure strategy
+     (fx-pressure.js). A geo-economic event question, a company question, a same-day move or
+     a comparison keeps its own route (fxIntent returns null for those). */
+  const fx = geo
+    ? null
+    : fxIntent(text, { thread, hasCompany: entities.some((e) => e.type === 'company') });
+  if (fx && scored[0]?.profile.id !== 'C01') {
+    const c01 = SCENARIOS.find((s) => s.id === 'C01');
+    const rest = scored.filter((s) => s.profile.id !== 'C01');
+    scored.splice(
+      0,
+      scored.length,
+      {
+        profile: c01,
+        score: (rest[0]?.score || 0) + 2,
+        reasons: [`C01: currency pressure (focus ${fx.focus})`],
+      },
+      ...rest,
+    );
+  }
+
   const top = scored[0] || null;
   const second = scored[1] || null;
   const confidence = top
@@ -235,7 +258,7 @@ export function planAdaptive(question, opts = {}) {
     executable = false;
     missing.push('no member, company or chamber named');
   }
-  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text)) {
+  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text) && !(primary?.id === 'C01' && fx)) {
     executable = false;
     missing.push('no country named: this pipeline reads one country’s series');
   }
@@ -332,6 +355,7 @@ export function planAdaptive(question, opts = {}) {
     objective: primary?.objective || null,
     primaryScenario: primary?.id || null,
     geo: primary?.id === 'A08' && geo ? geo : null,
+    fx: primary?.id === 'C01' && fx ? fx : null,
     primaryKey: primary?.key || null,
     supportingScenarios: supporting,
     depth,

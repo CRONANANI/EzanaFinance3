@@ -164,3 +164,18 @@ members, and none of the other's; a signed-in user with no membership and an ano
 visitor see nothing. What the runs do not cover: the council overlays end to end (they need
 a member session), the kill switches (environment
 variables), and a person reading answers against their sources.
+
+## Currency pressure (C01, view model `fx-pressure-v1`), Nov 17 2026
+
+A strategy inside the country-macro scenario, not a parallel engine.
+
+| Stage | Where | What it does |
+| --- | --- | --- |
+| Intent | `adaptive/fx-pressure.js` `fxIntent` | One-country currency questions ("is turkeys lira under pressure?", "how resilient are Türkiye's reserves?", "what could stabilize the lira?"). Returns `{ iso3, focus }`; focus is overall, reserves, inflation, crisis or stabilize. Same-day moves ("why did the lira fall today") and comparisons ("compare TRY and ZAR") return null and keep their own route. A follow-up inherits the country from `thread.fx`. |
+| Route | `adaptive/router.js` | Puts C01 first and sets `plan.fx` (geo-economic intent wins when both match). `country-ref.js` now reads "turkeys" and single-country currency words (lira, rand, naira), which is why the reference question used to fall back to the legacy desk summary. |
+| Evidence | `macro/intel.js` `buildCountryIntel` via `deps.countryIntel` | Best stored series per currency family, histories, and the deterministic picture and assessment (`macro/currency.js`, `macro/playbook.js` thresholds). |
+| View model | `buildFxPressure` | Typed sections: `fx_metrics` (four figures, dated, lagged or stale in amber), `fx_trend` (stored series, quote convention stated), `fx_insights`, `fx_drivers` (observed, derived, conceptual), `fx_risk_scope` (pressure and crisis as states, missing measures, no score), `fx_policy`, `fx_buffers`, `fx_monitor` (In data, Partial, Data gap), `fx_outlook` (conditions, no probabilities), `fx_conclusion`. Order follows the focus; a reserves question leads with the buffers. |
+| Gate | `adaptive/schema.js` | Rules per type; charts need two or more dated real observations; figures without a source are removed; an outlook row with a probability fails. |
+| Renderer | `components/sonar/adaptive/SonarFxSections.jsx` | Sections drawn in the existing report shell (search, follow-ups, tabs from the rendered sections, Research Controls rail, sources). |
+
+Deterministic math (exported): `usdInLocalChangePct = (current/prior - 1) * 100`, `localValueInUsdChangePct = (prior/current - 1) * 100`, `exPostRateMinusInflationPp = policyRate - cpiYoy` (labelled ex-post).

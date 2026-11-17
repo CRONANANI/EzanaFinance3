@@ -3,7 +3,8 @@
  * The existing resolver, plus two things it does not do: possessives ("Turkey's lira") and
  * central banks named in place of their country ("the Fed", "the ECB").
  */
-import { mentionedCountry, resolveCountry } from '@/lib/sonar/landing-country';
+import { mentionedCountry, resolveCountry, countryByIso3 } from '@/lib/sonar/landing-country';
+import { findCurrency } from '@/lib/sonar/macro/currencies';
 
 const CENTRAL_BANKS = [
   [/\b(the fed|federal reserve|fomc)\b/i, 'United States'],
@@ -22,10 +23,15 @@ export function countryOf(question) {
   /* The resolver leaves bare "Turkey" alone (it is also a bird). In a question about an
      economy or a currency it is the country. */
   if (
-    /\bturkey\b/i.test(q) &&
+    /\bturkeys?\b/i.test(q) &&
     /\b(lira|econom|inflation|currency|rates?|central bank|gdp|debt|exports?)\b/i.test(q)
   )
     return resolveCountry('Turkey') || null;
   for (const [re, name] of CENTRAL_BANKS) if (re.test(q)) return resolveCountry(name) || null;
+  /* Nov 17: a currency that belongs to one country names it ("is the lira under pressure?",
+     "how is the rand doing?"). Shared words (peso, rupee, dollar) are left alone. */
+  const cur = findCurrency(q);
+  if (cur && !cur.ambiguous && cur.iso3 && cur.iso3 !== 'USA' && cur.iso3 !== 'EUR')
+    return countryByIso3(cur.iso3) || null;
   return null;
 }

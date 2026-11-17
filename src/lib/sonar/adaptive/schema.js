@@ -60,6 +60,14 @@ const chart = (s) => {
   return null;
 };
 
+const FX_BASES = new Set(['observed', 'derived', 'conceptual']);
+const FX_AVAILABILITY = new Set(['in_data', 'partial', 'gap']);
+/* A dated series: at least two points, each a period and a finite number. */
+const points = (list) =>
+  Array.isArray(list) &&
+  list.length >= 2 &&
+  list.every((p) => text(p?.x) && typeof p.y === 'number' && Number.isFinite(p.y));
+
 const RULES = {
   lead: (s) => (text(s.headline) && text(s.text) ? null : 'needs a headline and text'),
   verified_event_status: (s) =>
@@ -107,6 +115,35 @@ const RULES = {
     (text(s.value) && s.cites?.length) || s.drivers?.length ? null : 'no sourced figure or drivers',
   scenario_table: (s) => (s.rows?.length >= 2 ? null : 'fewer than two scenarios'),
   event_timeline: (s) => (s.items?.length ? null : 'no dated, sourced events'),
+  /* Currency pressure (fx-pressure.js). Figures come from stored series; a chart is drawn only
+     from at least two real, dated observations and never padded. */
+  fx_metrics: (s) => (s.items?.length >= 2 ? null : 'fewer than two sourced figures'),
+  fx_trend: (s) => (points(s.points) ? null : 'needs at least two dated observations'),
+  fx_insights: (s) => (s.items?.length ? null : 'no conclusions'),
+  fx_drivers: (s) =>
+    s.rows?.length && s.rows.every((r) => FX_BASES.has(r.basis) && text(r.text))
+      ? null
+      : 'needs rows with a known basis',
+  fx_risk_scope: (s) =>
+    ['established', 'limited', 'not_established'].includes(s.pressure) &&
+    s.crisis === 'not_established' &&
+    s.missing?.length
+      ? null
+      : 'needs a pressure state, a crisis state and the missing measures',
+  fx_policy: (s) => chart(s),
+  fx_buffers: (s) =>
+    s.panels?.length && s.panels.every((p) => points(p.points))
+      ? null
+      : 'needs at least one dated series',
+  fx_monitor: (s) =>
+    s.items?.length && s.items.every((i) => FX_AVAILABILITY.has(i.availability))
+      ? null
+      : 'needs items with a data availability',
+  fx_outlook: (s) =>
+    s.rows?.length >= 2 && s.rows.every((r) => !('probability' in r))
+      ? null
+      : 'needs conditions and no probabilities',
+  fx_conclusion: (s) => (text(s.text) ? null : 'no text'),
 };
 
 /* Geo-economic sections hold figures several levels down; every cites list anywhere in them
@@ -119,6 +156,12 @@ const GEO_TYPES = new Set([
   'us_impact',
   'gold_markets',
   'event_timeline',
+  'fx_metrics',
+  'fx_trend',
+  'fx_insights',
+  'fx_drivers',
+  'fx_policy',
+  'fx_buffers',
 ]);
 function scrubCites(v, keep) {
   if (Array.isArray(v)) return v.map((x) => scrubCites(x, keep));
@@ -243,7 +286,12 @@ export function validateReport(input) {
           if (!ok) removed.push(`${s.type} ${what} ${i.label || i.title || '?'}: no source`);
           return ok;
         });
-      if (s.type === 'kpi_strip') s.items = sourcedOnly(s.items, 'figure');
+      if (s.type === 'kpi_strip' || s.type === 'fx_metrics')
+        s.items = sourcedOnly(s.items, 'figure');
+      if (s.type === 'fx_trend' && !s.cites?.length) {
+        removed.push('fx_trend: unsourced chart');
+        continue;
+      }
       if (s.type === 'hormuz_flows') {
         s.exporters = sourcedOnly(s.exporters, 'exporter');
         s.facts = sourcedOnly(s.facts, 'fact');

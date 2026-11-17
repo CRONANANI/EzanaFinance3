@@ -51,6 +51,7 @@ const READER_FAMILY = {
   macroRank: 'macro',
   rankings: 'macro',
   seriesHistory: 'macro',
+  countryIntel: 'macro',
   synthesize: 'general',
   news: 'general',
 };
@@ -74,7 +75,7 @@ const REQUIRED = {
   A04: ['earnings'],
   B04: ['contracts'],
   B08: ['lobbying'],
-  C01: ['countryBrief'],
+  C01: [['countryBrief', 'countryIntel']],
   C04: ['countryBrief'],
   C05: ['countryBrief'],
   C02: [['rankings', 'macroRank']],

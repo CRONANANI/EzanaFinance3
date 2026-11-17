@@ -50,6 +50,17 @@ export const SECTION_TYPES = [
   'portfolio_attribution',
   'risk',
   'watchpoints',
+  /* Nov 17: currency pressure, view model fx-pressure-v1 (fx-pressure.js). */
+  'fx_metrics',
+  'fx_trend',
+  'fx_insights',
+  'fx_drivers',
+  'fx_risk_scope',
+  'fx_policy',
+  'fx_buffers',
+  'fx_monitor',
+  'fx_outlook',
+  'fx_conclusion',
   /* Nov 17: geo-economic impact (geo-economic.js). */
   'kpi_strip',
   'market_comparison',

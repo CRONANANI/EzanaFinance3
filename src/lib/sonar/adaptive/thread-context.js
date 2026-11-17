@@ -34,6 +34,12 @@ export function sanitizeThread(raw) {
     ticker: clip(raw.ticker, 12).toUpperCase(),
     person: clip(raw.person, 80),
     event: clip(raw.event, 120),
+    /* Nov 17: the currency a currency-pressure answer was about, so "How resilient are its
+       reserves?" stays on that country. ISO3 only. */
+    fx:
+      raw.fx && typeof raw.fx === 'object' && /^[A-Z]{3}$/.test(String(raw.fx.iso3 || ''))
+        ? { iso3: String(raw.fx.iso3) }
+        : null,
   };
   if (t.ticker && !/^[A-Z][A-Z0-9.-]{0,9}$/.test(t.ticker)) t.ticker = '';
   return t.question || t.subject || t.person || t.ticker ? t : null;

@@ -34,6 +34,19 @@ import {
   ScenarioTable,
   EventTimeline,
 } from './SonarGeoSections';
+import {
+  FxMetrics,
+  FxTrend,
+  FxInsights,
+  FxDrivers,
+  FxRiskScope,
+  FxPolicy,
+  FxBuffers,
+  FxMonitor,
+  FxOutlook,
+  FxConclusion,
+  FxPair,
+} from './SonarFxSections';
 import { SonarSaveActions } from '../SonarSaveActions';
 import { useSessionThread } from '../session-thread';
 import '../exemplary/sonar-exemplary-brief.css';
@@ -74,6 +87,12 @@ const ANCHOR_LABELS = {
   hormuz_flows: 'Global trade',
   scenario_table: 'Scenarios',
   event_timeline: 'Timeline',
+  /* Currency pressure (fx-pressure-v1). Tabs come from the sections rendered. */
+  fx_trend: 'Currency trend',
+  fx_policy: 'Inflation & policy',
+  fx_buffers: 'External buffers',
+  fx_risk_scope: 'Risk signals',
+  fx_monitor: 'Risk signals',
 };
 
 /* Sections that span the canvas: never squeezed into the top zone beside the controls. */
@@ -86,8 +105,31 @@ const WIDE = new Set([
   'gold_markets',
   'scenario_table',
   'event_timeline',
+  'fx_metrics',
+  'fx_trend',
+  'fx_insights',
+  'fx_drivers',
+  'fx_risk_scope',
+  'fx_policy',
+  'fx_buffers',
+  'fx_monitor',
+  'fx_outlook',
+  'fx_conclusion',
 ]);
-const PAIRED = new Set(['us_impact', 'gold_markets']);
+/* The geo-economic report calls its sources "Evidence". */
+const GEO_SET = new Set(['kpi_strip', 'market_comparison', 'hormuz_flows', 'us_impact']);
+/* Neighbours drawn side by side, whichever comes first; `wide` gives the first more room. */
+const PAIR_OF = {
+  us_impact: 'gold_markets',
+  gold_markets: 'us_impact',
+  fx_drivers: 'fx_risk_scope',
+  fx_risk_scope: 'fx_drivers',
+  fx_policy: 'fx_buffers',
+  fx_buffers: 'fx_policy',
+  fx_monitor: 'fx_outlook',
+  fx_outlook: 'fx_monitor',
+};
+const PAIR_WIDE = new Set(['fx_drivers', 'fx_monitor']);
 
 const CLASS_LABELS = {
   official: 'Official',
@@ -638,9 +680,16 @@ export default function SonarAdaptiveReport({
     (sec, i) =>
       anchorsAll.findIndex((x) => ANCHOR_LABELS[x.type] === ANCHOR_LABELS[sec.type]) === i,
   );
-  const geo = sections.some((x) => WIDE.has(x.type));
-  const topSection = body[0] && !WIDE.has(body[0].type) ? body[0] : null;
-  const rest = topSection ? body.slice(1) : body;
+  const geo = sections.some((x) => GEO_SET.has(x.type));
+  /* An executor may name the sections that belong in the top zone (fx-pressure: the four
+     figures and the currency chart); otherwise the first narrow section sits there. */
+  const flagged = body.filter((s) => s.top);
+  const topSections = flagged.length
+    ? flagged
+    : body[0] && !WIDE.has(body[0].type)
+      ? [body[0]]
+      : [];
+  const rest = body.filter((s) => !topSections.includes(s));
   const [question, setQuestion] = useState(report.resolvedQuestion || report.question);
   const [followUp, setFollowUp] = useState('');
   const [active, setActive] = useState('overview');
@@ -684,7 +733,7 @@ export default function SonarAdaptiveReport({
     onFollowUp?.(
       q,
       { followUp: { context } },
-      { ...context, person: t.person || null, event: t.event || null },
+      { ...context, person: t.person || null, event: t.event || null, fx: t.fx || null },
     );
   };
 
@@ -782,6 +831,26 @@ export default function SonarAdaptiveReport({
         return <ScenarioTable s={s} />;
       case 'event_timeline':
         return <EventTimeline s={s} sources={sources} Cites={Cites} />;
+      case 'fx_metrics':
+        return <FxMetrics s={s} sources={sources} Cites={Cites} />;
+      case 'fx_trend':
+        return <FxTrend s={s} sources={sources} Cites={Cites} />;
+      case 'fx_insights':
+        return <FxInsights s={s} sources={sources} Cites={Cites} />;
+      case 'fx_drivers':
+        return <FxDrivers s={s} sources={sources} Cites={Cites} />;
+      case 'fx_risk_scope':
+        return <FxRiskScope s={s} />;
+      case 'fx_policy':
+        return <FxPolicy s={s} sources={sources} Cites={Cites} />;
+      case 'fx_buffers':
+        return <FxBuffers s={s} sources={sources} Cites={Cites} />;
+      case 'fx_monitor':
+        return <FxMonitor s={s} />;
+      case 'fx_outlook':
+        return <FxOutlook s={s} />;
+      case 'fx_conclusion':
+        return <FxConclusion s={s} />;
       default:
         return null;
     }
@@ -883,8 +952,14 @@ export default function SonarAdaptiveReport({
       <div className="sxb-top">
         <div className="sxb-top-main">
           <header className="sxb-hero" id="sar-overview" data-anchor="overview">
-            {lead.kicker ? <p className="sxb-kicker">{lead.kicker}</p> : null}
+            {lead.kicker || lead.asOf ? (
+              <div className="sar-kicker-row">
+                {lead.kicker ? <p className="sxb-kicker">{lead.kicker}</p> : <span />}
+                {lead.asOf ? <p className="sar-asof">{lead.asOf}</p> : null}
+              </div>
+            ) : null}
             <h1>{lead.headline}</h1>
+            {lead.verdict ? <p className="sar-verdict">{lead.verdict}</p> : null}
             <p className="sxb-deck">
               {lead.text}
               <Cites ids={lead.cites} sources={sources} />
@@ -934,7 +1009,7 @@ export default function SonarAdaptiveReport({
                   )}
             </div>
           </header>
-          {topSection ? block(topSection) : null}
+          {topSections.map((t) => block(t))}
         </div>
         <aside className="sxb-rail" aria-label="Research controls">
           <SonarResearchControls variant="flat" />
@@ -945,15 +1020,16 @@ export default function SonarAdaptiveReport({
         /* The economy and gold side by side when they are neighbours. */
         const next = rest[i + 1];
         const prev = rest[i - 1];
-        if (PAIRED.has(sec.type) && next && PAIRED.has(next.type) && next.type !== sec.type)
+        if (next && PAIR_OF[sec.type] === next.type) {
+          const Pair = sec.type.startsWith('fx_') ? FxPair : GeoPair;
           return (
-            <GeoPair key={`pair-${sec.type}`}>
+            <Pair key={`pair-${sec.type}`} wide={PAIR_WIDE.has(sec.type)}>
               {block(sec)}
               {block(next)}
-            </GeoPair>
+            </Pair>
           );
-        if (PAIRED.has(sec.type) && prev && PAIRED.has(prev.type) && prev.type !== sec.type)
-          return null;
+        }
+        if (prev && PAIR_OF[prev.type] === sec.type) return null;
         return block(sec);
       })}
 
