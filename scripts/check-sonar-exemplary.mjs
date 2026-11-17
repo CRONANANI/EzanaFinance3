@@ -12,6 +12,9 @@ import fs from 'node:fs';
 
 const M = await import('@/lib/sonar/exemplary/match.js');
 const X = await import('@/lib/sonar/exemplary/index.js');
+const F = await import('@/lib/sonar/exemplary/freshness.js');
+/* A moment while the NVIDIA brief is in date; the expiry tests move the clock. */
+const FRESH = Date.parse('2026-11-16T15:00:00Z');
 const { compareSeries } = await import('@/lib/sonar/market-context.js');
 
 const brief = X.EXEMPLARY_BRIEFS.find((b) => b.slug === 'nvidia-ceo-transition-2026');
@@ -26,7 +29,7 @@ test('the question is served however it is typed', async () => {
     'impact of jensen huang leaving nvidia on the semiconductor sector',
   ]) {
     assert.equal(tier(q), 'serve', q);
-    const hit = await X.findExemplaryBrief(q);
+    const hit = await X.findExemplaryBrief(q, { now: FRESH });
     assert.equal(hit?.brief.slug, brief.slug, q);
     assert.equal(hit.via, 'lexical');
   }
@@ -41,7 +44,7 @@ test('a different question about the same event is never served', async () => {
     'NVDA earnings',
   ]) {
     assert.equal(tier(q), 'none', q);
-    assert.equal(await X.findExemplaryBrief(q), null, q);
+    assert.equal(await X.findExemplaryBrief(q, { now: FRESH }), null, q);
   }
 });
 
@@ -58,15 +61,16 @@ test('the same kind of question about someone else is never served', async () =>
 test('a borderline ping needs the embedding check and is not served without it', async () => {
   const q = 'jensen huang resignation nvidia impact';
   assert.equal(tier(q), 'borderline');
-  assert.equal(await X.findExemplaryBrief(q), null);
+  assert.equal(await X.findExemplaryBrief(q, { now: FRESH }), null);
   /* No vector: not served. */
   assert.equal(
-    await X.findExemplaryBrief(q, { embed: async () => null, getAdmin: () => ({}) }),
+    await X.findExemplaryBrief(q, { embed: async () => null, getAdmin: () => ({}), now: FRESH }),
     null,
   );
   /* The table confirms the same brief: served. */
   const admin = (rows) => ({ rpc: async () => ({ data: rows, error: null }) });
   const yes = await X.findExemplaryBrief(q, {
+    now: FRESH,
     embed: async () => [0.1],
     getAdmin: () => admin([{ slug: brief.slug, similarity: 0.94 }]),
   });
@@ -83,7 +87,7 @@ test('a borderline ping needs the embedding check and is not served without it',
     },
   ]) {
     assert.equal(
-      await X.findExemplaryBrief(q, { embed: async () => [0.1], getAdmin: () => a }),
+      await X.findExemplaryBrief(q, { embed: async () => [0.1], getAdmin: () => a, now: FRESH }),
       null,
     );
   }
@@ -122,7 +126,8 @@ test('a brief carries no chart points, and the page receives no matcher internal
     'title',
   ]);
   const pub = X.publicBrief(brief);
-  for (const k of ['variants', 'concepts', 'reviewAfter']) assert.ok(!(k in pub), k);
+  for (const k of ['variants', 'concepts', 'reviewAfter', 'expiresAt', 'expiryReason'])
+    assert.ok(!(k in pub), k);
   assert.equal(pub.headline, brief.headline);
   assert.ok(X.embeddingText(brief).includes(brief.variants[0]));
   /* Both lines start at 0% on the same first session (the chart's baseline rule). */
@@ -180,4 +185,64 @@ test('the route serves it before anything is reserved, and the host draws it', (
   assert.match(sql, /embedding\s+vector\(384\)/);
   assert.match(sql, /match_sonar_exemplary_briefs/);
   assert.match(sql, /revoke all on public\.sonar_exemplary_briefs from anon, authenticated/);
+});
+
+test('a brief is withdrawn when its event passes, and the ping runs as live research', async () => {
+  const q = 'how will jensen huangs resignation effect nvidia and the chip industry?';
+  const none = new Set();
+  const before = Date.parse('2026-11-17T20:59:00Z');
+  const after = Date.parse('2026-11-17T21:00:00Z');
+  assert.equal(F.briefFreshness(X.EXEMPLARY_BRIEFS[0], { now: before, retired: none }).fresh, true);
+  const gone = F.briefFreshness(X.EXEMPLARY_BRIEFS[0], { now: after, retired: none });
+  assert.deepEqual(
+    [gone.fresh, gone.reason, gone.expiresAt],
+    [false, 'event', '2026-11-17T21:00:00.000Z'],
+  );
+  assert.ok(await X.findExemplaryBrief(q, { now: before }));
+  const seen = [];
+  assert.equal(await X.findExemplaryBrief(q, { now: after, onStale: (i) => seen.push(i) }), null);
+  assert.equal(seen[0].slug, X.EXEMPLARY_BRIEFS[0].slug);
+  assert.equal(seen[0].reason, 'event');
+  /* The embedding path cannot bring a withdrawn brief back. */
+  const admin = { rpc: async () => ({ data: [{ slug: seen[0].slug, similarity: 0.99 }] }) };
+  assert.equal(
+    await X.findExemplaryBrief('what does jensen huang stepping down mean for nvidia', {
+      embed: async () => [0.1],
+      getAdmin: () => admin,
+      now: after,
+    }),
+    null,
+  );
+});
+
+test('review dates, retirement by slug and undated briefs', () => {
+  const none = new Set();
+  const b = { slug: 'x', reviewAfter: '2026-12-01' };
+  const at = (iso) => F.briefFreshness(b, { now: Date.parse(iso), retired: none });
+  assert.equal(at('2026-11-30T23:59:59Z').fresh, true);
+  assert.deepEqual(
+    [at('2026-12-01T00:00:00Z').fresh, at('2026-12-01T00:00:00Z').reason],
+    [false, 'review'],
+  );
+  /* An exact event instant wins over the review day. */
+  const e = { ...b, expiresAt: '2026-11-20T14:30:00Z' };
+  assert.equal(
+    F.briefFreshness(e, { now: Date.parse('2026-11-20T14:30:00Z'), retired: none }).reason,
+    'event',
+  );
+  assert.equal(F.briefFreshness(b, { now: 0, retired: new Set(['x']) }).reason, 'retired');
+  assert.deepEqual([...F.retiredSlugs({ SONAR_EXEMPLARY_RETIRED: ' a, b ,' })], ['a', 'b']);
+  for (const bad of [{ slug: 'y' }, { slug: 'y', reviewAfter: 'soon' }]) {
+    assert.equal(F.briefFreshness(bad, { now: 0, retired: none }).reason, 'undated');
+  }
+  /* Every shipped brief carries a usable date. */
+  for (const brief of X.EXEMPLARY_BRIEFS) {
+    assert.notEqual(
+      F.briefFreshness(brief, { now: 0, retired: none }).reason,
+      'undated',
+      brief.slug,
+    );
+  }
+  const route = fs.readFileSync('src/app/api/sonar/landing-query/route.js', 'utf8');
+  assert.match(route, /exemplary_stale/);
 });

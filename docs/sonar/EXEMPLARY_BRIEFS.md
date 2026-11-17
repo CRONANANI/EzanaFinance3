@@ -70,3 +70,17 @@ A question without a stored brief is planned by the adaptive research layer
 (`docs/sonar/adaptive-research/README.md`). Where its scenario has an executor
 the answer is researched live and drawn in this same visual language with the
 sections that scenario calls for; otherwise it gets the existing Sonar answer.
+
+## Expiry
+
+A brief is withdrawn automatically (`src/lib/sonar/exemplary/freshness.js`):
+
+- `expiresAt` (an ISO instant) with `expiryReason`: a scheduled event that
+  changes the answer, such as a results release.
+- otherwise `reviewAfter` (a day), from 00:00 UTC.
+- `SONAR_EXEMPLARY_RETIRED=slug-a,slug-b`: retire a brief at once for news
+  nobody scheduled. No deploy is needed beyond the environment change.
+
+A withdrawn brief is never shown with a warning. The ping runs as adaptive
+research (leadership impact for the NVIDIA brief) and reads today's evidence.
+To bring a brief back, re-verify it, raise `version`, and set new dates.

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { EXEMPLARY_BRIEFS, embeddingText, publicBrief } from '@/lib/sonar/exemplary';
+import { briefFreshness } from '@/lib/sonar/exemplary/freshness';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
@@ -44,7 +45,8 @@ async function run() {
       brief: publicBrief(brief),
       verified_as_of: brief.verifiedAsOf,
       review_after: brief.reviewAfter || null,
-      active: true,
+      /* A withdrawn brief stays in the table for the record but is not matched. */
+      active: briefFreshness(brief).fresh,
       embedding: JSON.stringify(embedding), // pgvector text form
       indexed_at: stamp,
     });

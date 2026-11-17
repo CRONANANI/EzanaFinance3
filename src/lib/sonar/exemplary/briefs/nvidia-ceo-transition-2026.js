@@ -19,6 +19,10 @@ export const NVIDIA_CEO_TRANSITION_2026 = {
   template: 'event_impact',
   verifiedAsOf: '2026-11-16',
   reviewAfter: '2026-11-17',
+  /* Withdrawn at the US market close on the day of the fiscal Q3 report: results, guidance and
+     management commentary on the transition change this answer. */
+  expiresAt: '2026-11-17T21:00:00Z',
+  expiryReason: 'Fiscal Q3 2027 results',
   question: 'How will Jensen Huang’s resignation affect NVIDIA and the chip industry?',
   /* Other ways the same question is asked. Used by the matcher and embedded
      with the question for retrieval; never shown. */
