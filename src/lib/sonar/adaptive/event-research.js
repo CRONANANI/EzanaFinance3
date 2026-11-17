@@ -242,7 +242,7 @@ async function call(synthesize, { system, user, deadlineAt, maxTokens, maxUses }
       system,
       user,
       maxTokens,
-      webSearch: { enabled: true, maxUses },
+      webSearch: { enabled: true, maxUses, scope: 'adaptive' },
       deadlineAt,
     });
   } catch {

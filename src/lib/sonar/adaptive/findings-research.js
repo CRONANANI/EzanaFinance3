@@ -92,7 +92,7 @@ export async function researchFindings(
         .filter(Boolean)
         .join('\n'),
       maxTokens: 2000,
-      webSearch: { enabled: true, maxUses: 4 },
+      webSearch: { enabled: true, maxUses: 4, scope: 'adaptive' },
       deadlineAt,
     });
   } catch {

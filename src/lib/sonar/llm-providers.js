@@ -25,6 +25,18 @@ import { removeEmDashes } from '@/lib/text/em-dash';
 // ── Typed errors so the chain can distinguish "provider unavailable" (fall through
 //    quietly) from "we sent a bad request" (fall through, but log loudly so a code
 //    bug isn't masked by failover) from a rate limit.
+/**
+ * Whether a call may use web search. The deployment switch SONAR_WEB_SEARCH=true allows it
+ * for every caller that asks. Adaptive research steps (webSearch.scope 'adaptive') can be
+ * allowed on their own with SONAR_ADAPTIVE_WEB_SEARCH=on, leaving the rest of Sonar as it is
+ * (Nov 17, 2026). Off unless one of the two is set. Only the question and the companies it
+ * names are sent; never user data.
+ */
+export function webSearchAllowed(webSearch, env = process.env) {
+  if (env.SONAR_WEB_SEARCH === 'true') return true;
+  return webSearch?.scope === 'adaptive' && env.SONAR_ADAPTIVE_WEB_SEARCH === 'on';
+}
+
 export class ProviderUnavailableError extends Error {
   constructor(message) {
     super(message);
@@ -262,7 +274,7 @@ async function anthropicSynthesize({
      request, answer from the datasets alone rather than not at all. */
   const webOn =
     Boolean(webSearch?.enabled) &&
-    process.env.SONAR_WEB_SEARCH === 'true' &&
+    webSearchAllowed(webSearch) &&
     hopMs(38_000, deadlineAt, reserveMs) >= 20_000;
   const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3);
 
@@ -711,7 +723,7 @@ export async function streamSynthesis(
   };
   const webOn =
     Boolean(webSearch?.enabled) &&
-    process.env.SONAR_WEB_SEARCH === 'true' &&
+    webSearchAllowed(webSearch) &&
     hopMs(38_000, deadlineAt, reserveMs) >= 20_000;
   const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3);
 

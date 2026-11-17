@@ -187,7 +187,7 @@ export async function researchSuccession(
       system: SYSTEM,
       user,
       maxTokens: 2200,
-      webSearch: { enabled: true, maxUses: 4 },
+      webSearch: { enabled: true, maxUses: 4, scope: 'adaptive' },
       deadlineAt,
     });
   } catch {

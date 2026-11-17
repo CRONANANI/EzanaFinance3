@@ -34,11 +34,13 @@ const DEFAULT_BUDGET_MS = 45_000;
 
 function items(run) {
   const only = run.only_items?.length ? new Set(run.only_items) : null;
-  const single = VALIDATION_SET.filter((v) => !only || only.has(v.id)).map((v) => ({
-    item: v.id,
-    question: v.q,
-    expect: v,
-  }));
+  /* Two questions can share a scenario (B07: a member and a company); each gets its own key. */
+  const seen = new Map();
+  const single = VALIDATION_SET.filter((v) => !only || only.has(v.id)).map((v) => {
+    const n = (seen.get(v.id) || 0) + 1;
+    seen.set(v.id, n);
+    return { item: n === 1 ? v.id : `${v.id}.${n}`, question: v.q, expect: v };
+  });
   const chains = run.include_chains
     ? FOLLOW_UP_CHAINS.flatMap((c, ci) =>
         c.steps.map(([question, id], si) => ({
@@ -62,6 +64,8 @@ function environment() {
     flags: {
       SONAR_ADAPTIVE: process.env.SONAR_ADAPTIVE ?? '(unset: on)',
       SONAR_ADAPTIVE_STREAM: process.env.SONAR_ADAPTIVE_STREAM ?? '(unset: on)',
+      SONAR_WEB_SEARCH: process.env.SONAR_WEB_SEARCH ?? '(unset: off)',
+      SONAR_ADAPTIVE_WEB_SEARCH: process.env.SONAR_ADAPTIVE_WEB_SEARCH ?? '(unset: off)',
     },
     keys_present: {
       anthropic: present('ANTHROPIC_API_KEY'),

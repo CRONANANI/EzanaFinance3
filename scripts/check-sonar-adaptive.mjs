@@ -2930,3 +2930,17 @@ test('the adaptive files follow the Ezana rules', () => {
   assert.doesNotMatch(ui, /\bLive\b|real[- ]time/i, 'no live label on indexed data');
   assert.match(ui, /Latest indexed/);
 });
+
+test('web search stays off unless a deployment switch allows it', async () => {
+  const { webSearchAllowed } = await import('@/lib/sonar/llm-providers.js');
+  assert.equal(webSearchAllowed({ enabled: true, scope: 'adaptive' }, {}), false);
+  assert.equal(
+    webSearchAllowed({ enabled: true, scope: 'adaptive' }, { SONAR_ADAPTIVE_WEB_SEARCH: 'on' }),
+    true,
+  );
+  assert.equal(webSearchAllowed({ enabled: true }, { SONAR_ADAPTIVE_WEB_SEARCH: 'on' }), false);
+  assert.equal(webSearchAllowed({ enabled: true }, { SONAR_WEB_SEARCH: 'true' }), true);
+  for (const f of ['succession-research.js', 'findings-research.js', 'event-research.js']) {
+    assert.match(fs.readFileSync(`src/lib/sonar/adaptive/${f}`, 'utf8'), /scope: 'adaptive'/, f);
+  }
+});
