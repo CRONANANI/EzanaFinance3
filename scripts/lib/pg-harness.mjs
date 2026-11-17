@@ -2,8 +2,16 @@
  * A throwaway local Postgres for the reliability SQL checks: initdb into a
  * temp dir, start on a free port with a unix socket, load a stub of the
  * tables the migrations touch, apply the migrations, run SQL through psql.
- * `startPg()` resolves to null when no Postgres binaries are installed, so
- * the check skips (CI) instead of failing.
+ *
+ * Missing dependencies (Nov 17, 2026):
+ *   - On a developer machine with no Postgres binaries, `startPg()` resolves to null and the
+ *     checks skip, as before.
+ *   - Where the suite is required (CI, or REQUIRE_PG=1), a missing Postgres THROWS. A
+ *     security suite that skips every test reports green without having checked anything.
+ *   - An extension a migration needs (pgvector for the embedding tables) is checked before
+ *     any migration is applied. If the server does not ship it, `startPg()` throws with the
+ *     package to install, on every machine: a migration is never dropped from the run to
+ *     make the suite pass.
  */
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, chmodSync, readFileSync, rmSync } from 'node:fs';
@@ -25,6 +33,26 @@ function findBin() {
   } catch {
     return null;
   }
+}
+
+/** True where a skipped database suite must count as a failure. */
+export const pgRequired = () =>
+  process.env.REQUIRE_PG === '1' || (process.env.CI === 'true' && process.env.REQUIRE_PG !== '0');
+
+/* Extensions a migration can ask for, and the Debian/Ubuntu package that provides each. */
+const EXTENSION_PACKAGES = { vector: 'postgresql-<major>-pgvector' };
+
+/** The extensions the given migration files create (lower-cased names). */
+export function extensionsNeeded(files) {
+  const out = new Set();
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8');
+    for (const m of text.matchAll(
+      /create\s+extension\s+(?:if\s+not\s+exists\s+)?"?([a-z_0-9]+)"?/gi,
+    ))
+      out.add(m[1].toLowerCase());
+  }
+  return [...out];
 }
 
 const asRoot = process.getuid?.() === 0;
@@ -236,7 +264,15 @@ create policy "users manage own streak" on public.user_learning_streaks for all
 
 export async function startPg({ migrations = [], extraSchema = '' } = {}) {
   const bin = findBin();
-  if (!bin) return null;
+  if (!bin) {
+    if (pgRequired())
+      throw new Error(
+        'PostgreSQL is required for this suite and no initdb was found. Install the server ' +
+          '(Debian/Ubuntu: postgresql-16 and postgresql-16-pgvector) or set REQUIRE_PG=0 to ' +
+          'skip on a machine that is not expected to run database checks.',
+      );
+    return null;
+  }
   const dir = mkdtempSync(path.join(tmpdir(), 'ezpg-'));
   chmodSync(dir, 0o777);
   const data = path.join(dir, 'data');
@@ -300,6 +336,29 @@ export async function startPg({ migrations = [], extraSchema = '' } = {}) {
           }),
       ),
     );
+
+  /* Every extension the migrations create must be installable here, checked up front so the
+     failure names the missing package and not a line number inside a migration. */
+  const stopNow = () => {
+    try {
+      run(path.join(bin, 'pg_ctl'), ['-D', data, '-m', 'immediate', 'stop'], { stdio: 'pipe' });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+  const available = new Set(sql('select name from pg_available_extensions').split('\n'));
+  const missing = extensionsNeeded(migrations).filter((e) => !available.has(e));
+  if (missing.length) {
+    const major = sql('show server_version').split('.')[0];
+    stopNow();
+    throw new Error(
+      `The local PostgreSQL ${major} server does not provide: ${missing.join(', ')}. ` +
+        `Install ${missing
+          .map((e) => (EXTENSION_PACKAGES[e] || e).replace('<major>', major))
+          .join(', ')}. ` +
+        'The migrations that need it are part of the security suite and are not skipped.',
+    );
+  }
 
   sql(STUB_SCHEMA);
   /* Tables the QA remediation migrations touch (buckets, mock portfolio,

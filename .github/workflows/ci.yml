@@ -130,11 +130,24 @@ jobs:
         run: npm run lint:dead
         continue-on-error: true
 
+      - name: PostgreSQL with pgvector for the database suites
+        # The RLS, reliability and org-guard suites apply the real migrations to
+        # a throwaway local Postgres. Some migrations create a vector column, so
+        # the server needs pgvector. With REQUIRE_PG set, a missing server or
+        # extension FAILS the job (scripts/lib/pg-harness.mjs): a security suite
+        # that skips every test must not report green.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-16 postgresql-16-pgvector
+          test -f /usr/share/postgresql/16/extension/vector.control
+
       - name: Unit tests (node:test suites)
         # Business-logic unit tests: whale score, house disclosures,
         # competition onboarding, judge scoring, recruiting consent,
         # council ELO, profile financial metrics, security guards.
         run: npm test
+        env:
+          REQUIRE_PG: '1'
 
   build:
     name: Production build

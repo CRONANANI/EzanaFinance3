@@ -388,3 +388,51 @@ test('no owner FOR ALL policy remains on mock_portfolios, user_course_progress, 
   );
   assert.equal(n, '0');
 });
+
+/* Nov 17, 2026: the exemplary-brief table (pgvector) is part of this suite. It is read by the
+   server with the service role only; a signed-in user and a visitor get nothing from it. */
+test('sonar_exemplary_briefs: service role only, for the table and its match function', (t) => {
+  if (skip(t)) return;
+  assert.equal(
+    pg.sql(
+      `select relrowsecurity::text from pg_class where oid = 'public.sonar_exemplary_briefs'::regclass`,
+    ),
+    'true',
+  );
+  assert.equal(
+    pg.sql(
+      `select count(*) from pg_policies where schemaname = 'public' and tablename = 'sonar_exemplary_briefs'`,
+    ),
+    '0',
+    'no policy opens the table to a client role',
+  );
+  denied(() => asA('select slug from sonar_exemplary_briefs'));
+  denied(() => pg.sql('set role anon; select slug from sonar_exemplary_briefs'));
+  const call = `select count(*) from match_sonar_exemplary_briefs(array_fill(0, array[384])::vector, 0.5, 1)`;
+  denied(() => asA(call));
+  denied(() => pg.sql(`set role anon; ${call}`));
+  assert.equal(pg.sql(`set role service_role; ${call}`), '0');
+});
+
+test('the harness refuses to run without a dependency a migration needs', async () => {
+  const { extensionsNeeded, pgRequired } = await import('./lib/pg-harness.mjs');
+  assert.ok(
+    extensionsNeeded(MIGRATIONS).includes('vector'),
+    'the pgvector migration is loaded by this suite, not excluded from it',
+  );
+  const was = { ci: process.env.CI, req: process.env.REQUIRE_PG };
+  try {
+    process.env.CI = 'true';
+    delete process.env.REQUIRE_PG;
+    assert.equal(pgRequired(), true, 'required in CI: a missing Postgres fails the job');
+    delete process.env.CI;
+    assert.equal(pgRequired(), false, 'optional on a developer machine');
+    process.env.REQUIRE_PG = '1';
+    assert.equal(pgRequired(), true);
+  } finally {
+    if (was.ci === undefined) delete process.env.CI;
+    else process.env.CI = was.ci;
+    if (was.req === undefined) delete process.env.REQUIRE_PG;
+    else process.env.REQUIRE_PG = was.req;
+  }
+});
