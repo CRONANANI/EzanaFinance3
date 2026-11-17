@@ -536,7 +536,7 @@ const EXECUTORS = {
   B04: runGovExposure,
   B08: runLobbying,
   B10: runQuant,
-  /* A currency-pressure question (plan.fx, set by the router) gets the fx-pressure-v1 view;
+  /* A currency-pressure question (plan.fx, set by the router) gets the fx-pressure-v2 view;
      if its data cannot answer, the plain country view still can. */
   C01: async (plan, ...rest) =>
     (plan.fx ? await runFxPressure(plan, ...rest) : null) || runCountryMacro(plan, ...rest),

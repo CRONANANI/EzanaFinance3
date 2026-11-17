@@ -12,6 +12,8 @@ import { normalizeInputs } from '@/lib/sonar/valuation/history';
 import { getMacroRankings } from '@/lib/sonar/macro/store';
 import { countryBrief, rankCountries, seriesHistory } from '@/lib/sonar/macro/series-store';
 import { buildCountryIntel } from '@/lib/sonar/macro/intel';
+import { buildCountryDossier, countryByIso3 } from '@/lib/sonar/landing-country';
+import { matchEcho } from '@/lib/sonar/landing-sources';
 import { getCommoditySeries } from '@/lib/sonar/commodity-series';
 import { fetchRevenueMix } from '@/lib/sonar/revenue-mix';
 import { lobbyingProfile } from '@/lib/sonar/engine/sources-positioning';
@@ -83,6 +85,13 @@ export function adaptiveDataDeps(admin) {
         now: now || new Date(),
         historyYears: 6,
       }),
+    /* Nov 17 (v2): the country dossier the board used (OECD ranks, Key chart, Key indicators,
+       Global Empire Rankings, Echo, country news), for the currency answer's detailed
+       analysis. Each leg is bounded inside buildCountryDossier. */
+    countryDossier: (iso3, { query = '' } = {}) => {
+      const country = countryByIso3(iso3);
+      return country ? buildCountryDossier(country, admin, { matchEcho, query }) : null;
+    },
     /* The existing lobbying rollup (verified client-to-ticker links only). { byYear: [] } when
        no filing is linked to the ticker; null when the index could not be read. */
     async lobbying(ticker, name) {

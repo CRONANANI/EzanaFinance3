@@ -35,13 +35,16 @@ import {
   EventTimeline,
 } from './SonarGeoSections';
 import {
-  FxMetrics,
-  FxTrend,
-  FxInsights,
+  FxLeadBrief,
+  CountryPressureOverview,
+  FxFindings,
+  EvidenceCoverageGrid,
+  FxCharts,
+  PressureTransmissionFlow,
+  CountryHistoricalAnchorChart,
+  CountryIndicatorTable,
   FxDrivers,
   FxRiskScope,
-  FxPolicy,
-  FxBuffers,
   FxMonitor,
   FxOutlook,
   FxConclusion,
@@ -87,10 +90,13 @@ const ANCHOR_LABELS = {
   hormuz_flows: 'Global trade',
   scenario_table: 'Scenarios',
   event_timeline: 'Timeline',
-  /* Currency pressure (fx-pressure-v1). Tabs come from the sections rendered. */
-  fx_trend: 'Currency trend',
-  fx_policy: 'Inflation & policy',
-  fx_buffers: 'External buffers',
+  /* Currency pressure (fx-pressure-v2). Tabs come from the sections rendered. */
+  fx_findings: 'Key findings',
+  fx_evidence: 'Evidence',
+  fx_charts: 'Charts',
+  fx_flow: 'Transmission',
+  fx_anchor: 'Long-run view',
+  fx_indicators: 'Indicators',
   fx_risk_scope: 'Risk signals',
   fx_monitor: 'Risk signals',
 };
@@ -105,13 +111,15 @@ const WIDE = new Set([
   'gold_markets',
   'scenario_table',
   'event_timeline',
-  'fx_metrics',
-  'fx_trend',
-  'fx_insights',
+  'fx_overview',
+  'fx_findings',
+  'fx_evidence',
+  'fx_charts',
+  'fx_flow',
+  'fx_anchor',
+  'fx_indicators',
   'fx_drivers',
   'fx_risk_scope',
-  'fx_policy',
-  'fx_buffers',
   'fx_monitor',
   'fx_outlook',
   'fx_conclusion',
@@ -124,8 +132,6 @@ const PAIR_OF = {
   gold_markets: 'us_impact',
   fx_drivers: 'fx_risk_scope',
   fx_risk_scope: 'fx_drivers',
-  fx_policy: 'fx_buffers',
-  fx_buffers: 'fx_policy',
   fx_monitor: 'fx_outlook',
   fx_outlook: 'fx_monitor',
 };
@@ -831,20 +837,24 @@ export default function SonarAdaptiveReport({
         return <ScenarioTable s={s} />;
       case 'event_timeline':
         return <EventTimeline s={s} sources={sources} Cites={Cites} />;
-      case 'fx_metrics':
-        return <FxMetrics s={s} sources={sources} Cites={Cites} />;
-      case 'fx_trend':
-        return <FxTrend s={s} sources={sources} Cites={Cites} />;
-      case 'fx_insights':
-        return <FxInsights s={s} sources={sources} Cites={Cites} />;
+      case 'fx_overview':
+        return <CountryPressureOverview s={s} sources={sources} Cites={Cites} />;
+      case 'fx_findings':
+        return <FxFindings s={s} sources={sources} Cites={Cites} />;
+      case 'fx_evidence':
+        return <EvidenceCoverageGrid s={s} />;
+      case 'fx_charts':
+        return <FxCharts s={s} sources={sources} Cites={Cites} />;
+      case 'fx_flow':
+        return <PressureTransmissionFlow s={s} />;
+      case 'fx_anchor':
+        return <CountryHistoricalAnchorChart s={s} sources={sources} Cites={Cites} />;
+      case 'fx_indicators':
+        return <CountryIndicatorTable s={s} />;
       case 'fx_drivers':
         return <FxDrivers s={s} sources={sources} Cites={Cites} />;
       case 'fx_risk_scope':
         return <FxRiskScope s={s} />;
-      case 'fx_policy':
-        return <FxPolicy s={s} sources={sources} Cites={Cites} />;
-      case 'fx_buffers':
-        return <FxBuffers s={s} sources={sources} Cites={Cites} />;
       case 'fx_monitor':
         return <FxMonitor s={s} />;
       case 'fx_outlook':
@@ -964,6 +974,7 @@ export default function SonarAdaptiveReport({
               {lead.text}
               <Cites ids={lead.cites} sources={sources} />
             </p>
+            <FxLeadBrief lead={lead} />
             {lead.core ? (
               <p className="sgeo-core">
                 <span>Core finding</span>

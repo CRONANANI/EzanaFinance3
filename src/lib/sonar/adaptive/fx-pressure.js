@@ -1,5 +1,5 @@
 /**
- * Sonar adaptive research: currency pressure (Nov 17, 2026). View model `fx-pressure-v1`.
+ * Sonar adaptive research: currency pressure (Nov 17, 2026). View model `fx-pressure-v2`.
  *
  * "Is Türkiye's lira under pressure?", "How resilient are Brazil's reserves?", "What could
  * stabilize the rand?": one country's currency judged from Ezana's stored official series.
@@ -7,14 +7,27 @@
  * router sets plan.fx, the C01 executor hands the plan here, and the report goes through the
  * same layout planner, schema gate, sources and renderer as every adaptive answer.
  *
- *   evidence   buildCountryIntel (macro/intel.js): the best stored series per currency
- *              family, their histories, and the deterministic picture (macro/currency.js)
- *              including assessCurrencyPressure (macro/playbook.js, "Ezana's thresholds")
- *   plan       buildFxPressure(): a typed view model. Every figure is computed here from the
- *              stored observations and carries its period, its freshness and its source.
- *              Nothing is estimated, interpolated or written by a model.
- *   renderer   SonarFxSections.jsx draws the sections; the order follows the question's
- *              focus (a reserves question leads with the external buffers).
+ * v2 (data preservation): the answer is an executive brief followed by the full analysis the
+ * country board used to show, recomposed rather than trimmed. Nothing the stored data holds
+ * is dropped because a wireframe did not draw it.
+ *
+ *   evidence   buildCountryIntel (macro/intel.js): best stored series per currency family,
+ *              histories, the deterministic picture and assessment (macro/currency.js,
+ *              macro/playbook.js thresholds), the transmission map
+ *              buildCountryDossier (landing-country.js): OECD headline ranks, the Key chart
+ *              stories, Key indicators, Global Empire Rankings, Echo, country news
+ *              fxFindings (macro/fx-findings.js): the four computed findings
+ *   model      buildFxPressure(): typed blocks, each figure with its period and source
+ *                lead           executive verdict, narrative, why-it-matters bullets, driver chips
+ *                fx_overview    country intelligence: header, four dated KPIs, pressure breakdown
+ *                fx_findings    the four findings (evidence, meaning, why, caution)
+ *                fx_evidence    source coverage, grouped (Ezana datasets, macro, web and news)
+ *                fx_charts      the four charts (FX, inflation vs policy, REER, reserves)
+ *                fx_flow        how pressure can travel (nodes and edges)
+ *                fx_anchor      the long-run Key chart
+ *                fx_indicators  the Key indicators table
+ *                fx_drivers / fx_risk_scope / fx_monitor / fx_outlook / fx_conclusion
+ *   renderer   SonarFxSections.jsx; the order follows the question's focus.
  *
  * Rules carried from the methodology:
  *   - a rising "local per USD" series means the local currency is weaker; both conventions
@@ -25,19 +38,23 @@
  *     the expected real rate.
  *   - reserves are gross whenever only gross figures exist; usable liquidity is not inferred.
  *   - pressure is a diagnosis; a crisis is never established from these series alone, and no
- *     score or probability is shown.
+ *     score or probability is shown. Prediction markets are not part of this answer.
  *
- * Pure. The one read (deps.countryIntel) happens in runFxPressure.
+ * Pure apart from runFxPressure, which makes the two bounded reads.
  */
+import countries from 'i18n-iso-countries';
 import { countryOf } from './country-ref';
 import { countryByIso3 } from '@/lib/sonar/landing-country';
 import { findCurrency, currencyOf, CURRENCY_OF } from '@/lib/sonar/macro/currencies';
 import { periodLabel, periodEnd, fmtNum } from '@/lib/sonar/macro/catalog';
 import { CURRENCY_LEVELS } from '@/lib/sonar/macro/playbook';
+import { assessmentRows } from '@/lib/sonar/macro/intel-brief';
+import { fxFindings, compactMetrics } from '@/lib/sonar/macro/fx-findings';
+import { storyHeadline } from '@/lib/sonar/key-chart';
+import { datasetEvidence } from '@/lib/sonar/country-board';
 import { step, sourceBook, freshQuestions } from './kit';
 
-export const FX_VIEW_MODEL = 'fx-pressure-v1';
-
+export const FX_VIEW_MODEL = 'fx-pressure-v2';
 /* ------------------------------------------------------------------ deterministic math */
 
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
@@ -174,26 +191,27 @@ export function fxIntent(text, { thread = null, hasCompany = false } = {}) {
   return null;
 }
 
+
 /* ------------------------------------------------------------------ the view model */
 
+/* Brief first (lead, overview, findings), then the detailed analysis. A focus moves the
+   blocks that answer it forward; nothing is removed. */
 const ORDER = {
-  overall: ['fx_metrics', 'fx_trend', 'fx_insights', 'fx_drivers', 'fx_risk_scope', 'fx_policy', 'fx_buffers', 'fx_monitor', 'fx_outlook'],
-  reserves: ['fx_metrics', 'fx_buffers', 'fx_policy', 'fx_risk_scope', 'fx_drivers', 'fx_insights', 'fx_trend', 'fx_monitor', 'fx_outlook'],
-  inflation: ['fx_metrics', 'fx_policy', 'fx_buffers', 'fx_insights', 'fx_drivers', 'fx_risk_scope', 'fx_trend', 'fx_monitor', 'fx_outlook'],
-  crisis: ['fx_metrics', 'fx_risk_scope', 'fx_drivers', 'fx_trend', 'fx_insights', 'fx_policy', 'fx_buffers', 'fx_monitor', 'fx_outlook'],
-  stabilize: ['fx_metrics', 'fx_outlook', 'fx_monitor', 'fx_trend', 'fx_insights', 'fx_policy', 'fx_buffers', 'fx_drivers', 'fx_risk_scope'],
+  overall: ['fx_overview', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_monitor', 'fx_outlook'],
+  reserves: ['fx_overview', 'fx_charts', 'fx_findings', 'fx_risk_scope', 'fx_drivers', 'fx_evidence', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
+  inflation: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_drivers', 'fx_risk_scope', 'fx_evidence', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
+  crisis: ['fx_overview', 'fx_risk_scope', 'fx_drivers', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
+  stabilize: ['fx_overview', 'fx_outlook', 'fx_monitor', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope'],
 };
-/* Sections drawn in the top zone, beside Research Controls. */
-const TOP = {
-  overall: ['fx_metrics', 'fx_trend'],
-  reserves: ['fx_metrics'],
-  inflation: ['fx_metrics'],
-  crisis: ['fx_metrics', 'fx_trend'],
-  stabilize: ['fx_metrics', 'fx_trend'],
+/* Which chart and finding lead for a focus. */
+const PANEL_ORDER = {
+  reserves: ['reserves', 'reer', 'fx', 'policy'],
+  inflation: ['policy', 'fx', 'reer', 'reserves'],
 };
-const METRIC_ORDER = {
-  reserves: ['reserves', 'fx', 'policy', 'inflation'],
-  inflation: ['inflation', 'policy', 'fx', 'reserves'],
+const FINDING_ORDER = {
+  reserves: ['crisis', 'real', 'pace', 'policy'],
+  crisis: ['crisis', 'pace', 'policy', 'real'],
+  inflation: ['policy', 'pace', 'real', 'crisis'],
 };
 
 const HEADLINE = {
@@ -205,9 +223,10 @@ const HEADLINE = {
 };
 
 const lvl = (l) => (l ? CURRENCY_LEVELS.indexOf(l) : -1);
-const pct = (v, d = 1) => `${fmtNum(Math.abs(v)) == null ? '' : Math.abs(v).toFixed(d)}%`;
+const pct = (v, d = 1) => `${Math.abs(v).toFixed(d)}%`;
 const signedPct = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}%`;
 const pp = (v) => `${Math.abs(v).toFixed(1)} pp`;
+const minus = (s) => String(s ?? '').replace(/(^|[\s(])-(?=\d)/g, '$1−');
 
 /** Reserves value in US dollars, from the stored unit. */
 function reservesUsd(value, unit) {
@@ -227,13 +246,81 @@ function money(v) {
 const rate = (v) =>
   num(v) == null ? null : Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(2);
 
+/** Month-end points of a daily series ('YYYY-MM' labelled), for rolling changes. */
+function monthEnds(points) {
+  const by = new Map();
+  for (const p of points) by.set(String(p.x).slice(0, 7), p);
+  return [...by.entries()].map(([k, p]) => ({ x: k, y: p.y }));
+}
+
+/** Rolling 12-month change in the dollar price of the currency, per month. */
+function rolling12m(series) {
+  const monthly = series.map((p) => ({ x: String(p.x).slice(0, 7), y: p.y }));
+  const by = new Map(monthly.map((p) => [p.x, p.y]));
+  const out = [];
+  for (const p of monthly) {
+    const [y, m] = p.x.split('-').map(Number);
+    const prior = by.get(`${y - 1}-${String(m).padStart(2, '0')}`);
+    if (num(prior)) out.push({ x: p.x, y: r1(usdInLocalChangePct(prior, p.y)) });
+  }
+  return out;
+}
+
+/** Up to n points spread evenly (first and last kept), for a sparkline. */
+function thin(points, n = 24) {
+  if (points.length <= n) return points.map((p) => p.y);
+  const out = [];
+  for (let i = 0; i < n; i += 1) out.push(points[Math.round((i * (points.length - 1)) / (n - 1))].y);
+  return out;
+}
+
+/** A Key chart story -> the typed anchor-chart tab. */
+function anchorStory(s, projectionFrom) {
+  const pts = (s.points || []).filter((p) => num(p.value) != null);
+  if (pts.length < 2) return null;
+  const label = (p) => p.label ?? String(Math.floor(p.year));
+  const d = s.decimals ?? 1;
+  const fmt = (v) => `${minus(v.toFixed(d))}${/%/.test(s.unit || '') ? '%' : ''}`;
+  return {
+    slug: s.slug,
+    short: s.short || s.label,
+    label: s.label,
+    headline: s.headline || storyHeadline(s),
+    unit: s.unit,
+    percent: /%/.test(s.unit || ''),
+    points: pts.map((p) => ({
+      x: label(p),
+      y: p.value,
+      proj: Boolean(p.proj || (projectionFrom && !p.label && p.year >= projectionFrom)),
+      est: Boolean(p.est),
+    })),
+    median: num(s.median) != null ? s.median : null,
+    normYears: s.normYears || null,
+    stats: [
+      { label: 'Latest', value: fmt(s.latest.value), note: label(s.latest) },
+      num(s.median) != null
+        ? {
+            label: `${s.normYears}Y median`,
+            value: fmt(s.median),
+            note: num(s.z) != null ? `${Math.abs(s.z).toFixed(1)} sd ${s.z >= 0 ? 'above' : 'below'}` : null,
+          }
+        : null,
+      s.peak ? { label: 'Peak', value: fmt(s.peak.value), note: label(s.peak) } : null,
+      s.trough ? { label: 'Trough', value: fmt(s.trough.value), note: label(s.trough) } : null,
+    ].filter(Boolean),
+    note: `${s.seriesName || s.label}, ${s.unit}. Source: ${s.source || 'OECD Economic Outlook'}.${(s.points || []).some((p) => p.proj) ? ' Dashed years are projections.' : ''}${s.estimate ? ` ${s.estimate}.` : ''}`,
+  };
+}
+
 /**
  * The typed view model for one country's currency.
- * @param {object} intel  buildCountryIntel() output
+ * @param {object} intel    buildCountryIntel() output
+ * @param {object} dossier  buildCountryDossier() output (optional; adds the Key chart, Key
+ *                          indicators and dataset evidence)
  * @param {{ focus?: string, now?: Date, plan?: object }} o
  * @returns {null | { built, sources, thread, model }}  null when no exchange-rate history
  */
-export function buildFxPressure(intel, { focus = 'overall', now = new Date(), plan = null } = {}) {
+export function buildFxPressure(intel, dossier = null, { focus = 'overall', now = new Date(), plan = null } = {}) {
   if (!intel || intel.empty || !intel.picture) return null;
   const m = intel.picture.metrics || {};
   const fx = m.fx;
@@ -246,6 +333,7 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
   const code = currency.code || 'local currency';
   const shortName = currency.short || currency.name || 'currency';
   const place = DISPLAY_NAME[intel.iso3] || countryByIso3(intel.iso3)?.name || intel.place;
+  const missing = (intel.picture.missing || []).filter(Boolean);
 
   /* Sources: one per stored series family, each with the series and its observation range. */
   const sources = sourceBook();
@@ -268,6 +356,18 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
   const polCites = src(charts.policy, 'policy');
   const resCites = src(charts.reserves, 'reserves');
   const reerCites = src(charts.reer, 'reer');
+  const keyCites =
+    dossier?.keyIndicators?.length || dossier?.keyChart?.stories?.length
+      ? [
+          sources.add({
+            key: `fx:dossier:${intel.iso3}`,
+            title: `${place}: Key chart and Key indicators`,
+            publisher: [...new Set((dossier.keyIndicators || []).map((r) => r.source).filter(Boolean))].join(', ') || 'OECD Economic Outlook',
+            detail: 'Latest observed values per headline indicator, with the long-run series behind the Key chart. Estimates and projections are labelled.',
+            kind: 'dataset',
+          }),
+        ]
+      : [];
 
   /* ---- the computed facts the narrative uses (all deterministic) */
   const y1 = fx.y1;
@@ -290,8 +390,9 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
   const persistent = weaker && m3ValueChg != null && m3ValueChg < 0;
   const pressureLevel = Math.max(lvl(depLevel), lvl(overall));
   const pressure = pressureLevel >= 1 ? 'established' : weaker ? 'limited' : 'not_established';
+  const ca = m.external?.currentAccount;
 
-  /* ---- lead */
+  /* ================================================================ executive brief */
   let verdict;
   if (pressureLevel >= 2)
     verdict = `Yes. The ${shortName} is ${persistent ? 'depreciating persistently' : 'markedly weaker than a year ago'}, but the available data do not establish an imminent currency crisis.`;
@@ -302,27 +403,72 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
   else
     verdict = `No. The ${shortName} has strengthened against the dollar over the year; the stored data show no exchange-rate pressure.`;
 
-  const ctx = [];
-  ctx.push(
+  let ctxText = `${
     usdUp >= 0
       ? `The dollar costs ${pct(usdUp)} more ${shortName} than a year earlier`
-      : `The dollar costs ${pct(usdUp)} less ${shortName} than a year earlier`,
-  );
-  if (infl)
-    ctx.push(
-      `annual inflation is ${pct(infl.annual.value)} (${periodLabel(infl.annual.period)})${infl.trend && infl.annualYearAgo ? `, ${infl.trend === 'falling' ? 'down' : infl.trend === 'rising' ? 'up' : 'unchanged'} from ${pct(infl.annualYearAgo.value)} a year earlier` : ''}`,
-    );
-  let ctxText = `${ctx.join(', while ')}.`;
+      : `The dollar costs ${pct(usdUp)} less ${shortName} than a year earlier`
+  }${
+    infl
+      ? `, while annual inflation is ${pct(infl.annual.value)} (${periodLabel(infl.annual.period)})${infl.trend && infl.annualYearAgo ? `, ${infl.trend === 'falling' ? 'down' : infl.trend === 'rising' ? 'up' : 'unchanged'} from ${pct(infl.annualYearAgo.value)} a year earlier` : ''}`
+      : ''
+  }.`;
   if (pol && spread != null)
     ctxText +=
       spread > 0
-        ? ` A ${pct(pol.level.value)} policy rate sits ${pp(spread)} above latest inflation, which provides some monetary restraint`
-        : ` The ${pct(pol.level.value)} policy rate sits ${pp(spread)} below latest inflation, so monetary policy offers little restraint`;
-  else if (pol) ctxText += ` The policy rate is ${pct(pol.level.value)}`;
-  ctxText += pol ? '; ' : ' ';
-  ctxText += `${pol ? 'whether' : 'Whether'} external buffers can absorb new shocks depends on more than gross reserves alone.`;
+        ? ` A ${pct(pol.level.value)} policy rate sits ${pp(spread)} above latest inflation, which provides some monetary restraint;`
+        : ` The ${pct(pol.level.value)} policy rate sits ${pp(spread)} below latest inflation, so monetary policy offers little restraint;`;
+  ctxText += `${pol && spread != null ? ' whether' : ' Whether'} external buffers can absorb new shocks depends on more than gross reserves alone.`;
   if (fxFresh === 'stale')
     ctxText += ` The latest stored exchange rate is from ${periodLabel(fx.latest.period)}, so later moves are not captured.`;
+
+  /* Why it matters: one line per driver the data hold, each with what it shows. */
+  const bullets = [
+    {
+      id: 'fx',
+      text: `${code} per USD rose ${pct(usdUp)} in twelve months to ${rate(fx.latest.value)} (${periodLabel(fx.latest.period)}); the ${shortName} lost ${pct(valueChg)} of its dollar value${m3ValueChg != null ? `, ${pct(m3ValueChg)} of it in the last three months` : ''}.`,
+      basis: 'supported',
+    },
+    infl
+      ? {
+          id: 'inflation',
+          text: `Annual inflation is ${pct(infl.annual.value)} (${periodLabel(infl.annual.period)})${infl.annualYearAgo ? `, ${infl.trend === 'falling' ? 'down' : infl.trend === 'rising' ? 'up' : 'unchanged'} from ${pct(infl.annualYearAgo.value)}` : ''}: ${infl.annual.value >= 10 ? 'persistent price growth keeps eroding the currency' : 'not the main source of pressure'}.`,
+          basis: 'supported',
+        }
+      : null,
+    spread != null
+      ? {
+          id: 'policy',
+          text: `The ${pct(pol.level.value)} policy rate is ${pp(spread)} ${spread >= 0 ? 'above' : 'below'} inflation on an ex-post basis${pol.change12mPp != null && pol.change12mPp < 0 ? `, after ${pp(pol.change12mPp)} of cuts in a year` : ''}: ${spread >= 0 ? 'restrictive, yet depreciation continues' : 'too loose to anchor the currency'}.`,
+          basis: 'interpretation',
+        }
+      : null,
+    res
+      ? {
+          id: 'reserves',
+          text: `Gross reserves are ${money(resNow)} (${periodLabel(res.level.period)})${res.change3mPct != null ? `, ${res.change3mPct >= 0 ? 'up' : 'down'} ${pct(res.change3mPct)} over three months` : ''}${num(res.importMonths) != null ? `, about ${res.importMonths.toFixed(1)} months of goods imports` : ''}; usable (net) reserves are not in the data.`,
+          basis: 'supported',
+        }
+      : null,
+    {
+      id: 'external',
+      text: ca && num(ca.value) != null
+        ? `The current account is ${minus(fmtNum(ca.value))}% of GDP (${periodLabel(ca.period)}); short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, cannot be assessed here.`
+        : 'Short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, are not in Ezana’s data.',
+      basis: 'cannot_conclude',
+    },
+  ].filter(Boolean);
+
+  /* Driver chips: the assessment components with their levels. */
+  const CHIP = {
+    depreciation: 'FX depreciation',
+    inflation: 'Inflation persistence',
+    policy: 'Policy stance',
+    external: 'Reserves and liquidity',
+    stress: 'External vulnerability',
+  };
+  const chips = assessment.components
+    .filter((c) => CHIP[c.id] && c.level)
+    .map((c) => ({ id: c.id, label: CHIP[c.id], level: c.level }));
 
   const built = {};
   built.lead = {
@@ -330,160 +476,327 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
     headline: HEADLINE[focus](place, shortName),
     verdict,
     text: ctxText,
+    bullets,
+    chips,
     asOf: `Observations through ${periodLabel(fx.latest.period)}`,
     computed: true,
     cites: [...fxCites, ...inflCites, ...polCites].slice(0, 3),
   };
 
-  /* ---- metrics: exactly the four that frame the question, each with its own date */
-  const tiles = {};
-  tiles.fx = {
+  /* ================================================================ country intelligence */
+  const tiles = [];
+  const fxSparkSrc = cleanPoints(fxChart?.points);
+  tiles.push({
     id: 'fx',
     label: `${code} per USD`,
     value: rate(fx.latest.value),
-    delta: `${usdUp >= 0 ? '↑' : '↓'} ${pct(usdUp)} vs. a year earlier`,
+    delta: `Dollar ${usdUp >= 0 ? '+' : '−'}${pct(usdUp)} in a year`,
     tone: usdUp > 0 ? 'negative' : 'positive',
     period: `${periodLabel(fx.latest.period)} · higher = weaker ${code}`,
     freshness: fxFresh,
+    spark: thin(lastMonths(fxSparkSrc, 12)),
     cites: fxCites,
-  };
+  });
   if (infl)
-    tiles.inflation = {
+    tiles.push({
       id: 'inflation',
       label: 'Annual inflation',
       value: pct(infl.annual.value),
       delta: infl.annualYearAgo
-        ? `${infl.trend === 'falling' ? '↓' : infl.trend === 'rising' ? '↑' : '→'} from ${pct(infl.annualYearAgo.value)}`
+        ? `${infl.trend === 'falling' ? 'Falling' : infl.trend === 'rising' ? 'Rising' : 'Unchanged'} from ${pct(infl.annualYearAgo.value)}`
         : null,
       tone: infl.trend === 'falling' ? 'positive' : infl.trend === 'rising' ? 'negative' : 'neutral',
       period: `${periodLabel(infl.annual.period)} · year over year${infl.computedFromIndex ? ', from the CPI index' : ''}`,
       freshness: freshnessOf(infl.annual.period, 'monthly', now),
+      spark: thin(lastMonths(cleanPoints(charts.inflation?.points), 12)),
       cites: inflCites,
-    };
+    });
   if (pol)
-    tiles.policy = {
+    tiles.push({
       id: 'policy',
       label: 'Policy interest rate',
       value: pct(pol.level.value),
       delta:
         spread != null
-          ? `${spread >= 0 ? '+' : '−'}${pp(spread)} ${spread >= 0 ? 'above' : 'below'} latest inflation*`
+          ? `${spread >= 0 ? '+' : '−'}${pp(spread)} vs. inflation*`
           : pol.change12mPp != null
             ? `${pol.change12mPp >= 0 ? '+' : '−'}${pp(pol.change12mPp)} in a year`
             : null,
       tone: 'neutral',
-      period: periodLabel(pol.level.period),
+      period: `${periodLabel(pol.level.period)}${pol.change12mPp != null ? ` · ${pol.change12mPp >= 0 ? '+' : '−'}${pp(pol.change12mPp)} in a year` : ''}`,
       freshness: freshnessOf(pol.level.period, 'policy', now),
-      footnote:
-        spread != null
-          ? `* ${pct(pol.level.value)} minus ${pct(infl.annual.value)} = ${spread >= 0 ? '' : '−'}${pp(spread)}, an ex-post spread; it is not the forward-looking real policy rate.`
-          : null,
+      spark: thin(lastMonths(cleanPoints(charts.policy?.points), 12)),
       cites: [...polCites, ...(spread != null ? inflCites : [])],
-    };
+    });
   if (res)
-    tiles.reserves = {
+    tiles.push({
       id: 'reserves',
       label: 'Gross official reserves',
       value: money(resNow) || fmtNum(res.level.value, { money: true }),
       delta:
-        res.change3mPct != null
-          ? `${res.change3mPct >= 0 ? '↑' : '↓'} ${pct(res.change3mPct)} over 3 months`
-          : null,
+        res.change3mPct != null ? `${res.change3mPct >= 0 ? '+' : '−'}${pct(res.change3mPct)} in 3 months` : null,
       tone: res.change3mPct > 0 ? 'positive' : res.change3mPct < 0 ? 'negative' : 'neutral',
-      period: periodLabel(res.level.period),
+      period: `${periodLabel(res.level.period)}${num(res.importMonths) != null ? ` · ${res.importMonths.toFixed(1)} months of imports` : ''}`,
       freshness: freshnessOf(res.level.period, 'monthly', now),
+      spark: thin(lastMonths(cleanPoints(charts.reserves?.points), 12)),
       cites: resCites,
-    };
-  const order = METRIC_ORDER[focus] || ['fx', 'inflation', 'policy', 'reserves'];
-  built.fx_metrics = {
-    items: order.map((k) => tiles[k]).filter(Boolean),
-    footnote: tiles.policy?.footnote || null,
+    });
+  const metricOrder = { reserves: ['reserves', 'fx', 'policy', 'inflation'], inflation: ['inflation', 'policy', 'fx', 'reserves'] }[focus];
+  if (metricOrder) tiles.sort((a, b) => metricOrder.indexOf(a.id) - metricOrder.indexOf(b.id));
+  built.fx_overview = {
+    eyebrow: 'Country intelligence / FX risk',
+    place,
+    iso2: (intel.iso3 && countries.alpha3ToAlpha2(intel.iso3)) || null,
+    currency: `${currency.name || shortName}${currency.code ? ` (${currency.code})` : ''}`,
+    level: overall,
+    levelLabel: intel.assessmentLabel || (overall ? `${overall[0].toUpperCase()}${overall.slice(1)} pressure` : null),
+    asOf: `As of ${periodLabel(fx.latest.period)}`,
+    items: tiles,
+    footnote:
+      spread != null
+        ? `* ${pct(pol.level.value)} minus ${pct(infl.annual.value)} = ${spread >= 0 ? '' : '−'}${pp(spread)}, an ex-post spread; it is not the forward-looking real policy rate.`
+        : null,
+    breakdown: assessment.overall
+      ? assessmentRows(intel.picture, null).map((r) => ({
+          id: r.id,
+          label: r.label,
+          level: r.level,
+          reading: r.evidence && typeof r.evidence === 'object' ? null : r.evidence || null,
+        }))
+      : [],
+    breakdownNote: 'Qualitative assessment against Ezana’s thresholds, not a calibrated risk score.',
   };
 
-  /* ---- the primary chart: the stored series itself, never joined or smoothed */
-  const fxPoints = cleanPoints(fxChart?.points);
-  const window = lastMonths(fxPoints, 12);
-  if (window.length >= 2) {
-    const first = window[0];
-    const last = window[window.length - 1];
-    built.fx_trend = {
-      eyebrow: 'Primary chart / Currency trend',
-      title: `${code} per U.S. dollar, ${fx.frequency === 'daily' ? 'daily observations' : 'monthly averages'}`,
-      note: `A rising series means the ${shortName} is depreciating against the dollar.`,
-      quote: `${code} per USD`,
-      points: lastMonths(fxPoints, 60).map((p) => ({ x: p.x, y: p.y })),
+  /* ================================================================ key findings */
+  const ID_OF = { 0: 'pace', 1: 'policy', 2: 'real', 3: 'crisis' };
+  const raw = fxFindings({
+    metrics: compactMetrics(m, { reerBasis: intel.reerBasis || null }),
+    currency,
+    place,
+    missing,
+  });
+  const findingCites = { fx: fxCites, policy: [...polCites, ...inflCites], reer: reerCites, reserves: resCites };
+  let findings = raw.map((f) => ({
+    key: /policy/i.test(f.title) ? 'policy' : /real/i.test(f.title) ? 'real' : /establish|scope/i.test(f.title) ? 'crisis' : /depreciation|pace/i.test(f.title) ? 'pace' : ID_OF[raw.indexOf(f)],
+    title: f.title,
+    status: f.status,
+    headline: minus(f.headline),
+    evidence: (f.evidence || []).map(minus),
+    meaning: f.interpretation || null,
+    why: f.why || null,
+    caution: f.qualification || null,
+    chart: f.chart || null,
+    cites: findingCites[f.chart] || fxCites,
+  }));
+  const fo = FINDING_ORDER[focus];
+  if (fo) findings = [...findings].sort((a, b) => fo.indexOf(a.key) - fo.indexOf(b.key));
+  if (findings.length) built.fx_findings = { eyebrow: 'Key findings', items: findings };
+
+  /* ================================================================ evidence and coverage */
+  const datasets = dossier
+    ? datasetEvidence({ dossier })
+        .filter((r) => r.id !== 'prediction-markets')
+        .map((r) => ({
+          id: r.id,
+          chip: r.chip,
+          dataset: r.dataset,
+          title: r.title,
+          summary: r.summary || null,
+          bullets: (r.bullets || []).map(minus),
+          href: r.href && !/^https?:/i.test(r.href) ? r.href : null,
+        }))
+    : [];
+  const macroSources = (intel.sources || []).filter(Boolean);
+  const news = (dossier?.news || [])
+    .filter((n) => n && n.title && /^https?:/i.test(n.url || n.link || ''))
+    .slice(0, 4)
+    .map((n) => ({
+      title: n.title,
+      url: n.url || n.link,
+      source: n.source || n.publisher || null,
+      date: n.publishedAt || n.date || null,
+    }));
+  const groups = [
+    datasets.length
+      ? { id: 'ezana', label: 'Ezana datasets', detail: `${datasets.length} matched`, items: datasets.map((d) => `${d.dataset}`) }
+      : null,
+    macroSources.length
+      ? { id: 'macro', label: 'Macro sources', detail: `${macroSources.length} official publishers`, items: macroSources }
+      : null,
+    news.length ? { id: 'news', label: 'Open web / news', detail: `${news.length} stories`, items: news.map((n) => n.source || n.title) } : null,
+  ].filter(Boolean);
+  if (groups.length)
+    built.fx_evidence = {
+      eyebrow: 'Evidence and source coverage',
+      groups,
+      datasets,
+      news,
+    };
+
+  /* ================================================================ the four charts */
+  const panels = [];
+  const fxPts = cleanPoints(charts.fx?.points);
+  const fxMonthlyPts = cleanPoints(charts.fxMonthly?.points);
+  const fxBase = fxPts.length >= 2 ? fxPts : fxMonthlyPts;
+  if (fxBase.length >= 2) {
+    const monthly = fxMonthlyPts.length >= 13 ? fxMonthlyPts : monthEnds(fxBase);
+    const chg = rolling12m(monthly);
+    const last = fxBase[fxBase.length - 1];
+    panels.push({
+      id: 'fx',
+      title: `${code} per US dollar`,
+      ranges: ['3M', '1Y', '3Y', '5Y'],
       defaultRange: '1Y',
-      ranges: fx.frequency === 'daily' ? ['1M', '3M', '6M', 'YTD', '1Y'] : ['6M', 'YTD', '1Y', '5Y'],
-      frequency: fx.frequency,
-      summary: `${rate(first.y)} (${periodLabel(first.x)}) to ${rate(last.y)} (${periodLabel(last.x)}): the dollar price in ${shortName} ${usdInLocalChangePct(first.y, last.y) >= 0 ? 'rose' : 'fell'} ${pct(usdInLocalChangePct(first.y, last.y))}; the ${shortName}’s dollar value changed ${signedPct(localValueInUsdChangePct(first.y, last.y))}.`,
-      caption: `Source: ${fxChart.source}. Each point is a stored observation with its own date; gaps are not filled.`,
+      views: [
+        { id: 'level', label: 'Level', unit: 'rate', series: [{ name: `${code} per USD`, tone: 'primary', points: fxBase }] },
+        chg.length >= 2
+          ? { id: 'change', label: '12M change', unit: '%', zero: true, series: [{ name: 'Dollar price, 12-month change', tone: 'primary', points: chg }] }
+          : null,
+      ].filter(Boolean),
+      latest: `${periodLabel(last.x)} · ${rate(last.y)}`,
+      caption: `Unit: ${code} per USD, ${fx.frequency === 'daily' ? 'daily' : 'monthly'} observations. Source: ${(charts.fx || charts.fxMonthly).source}. A higher line means a weaker ${code}. The 12M change is the change in the dollar’s price, not the ${shortName}’s loss of dollar value.`,
       cites: fxCites,
+    });
+  }
+  const inflPts = cleanPoints(charts.inflation?.points);
+  const polPts = cleanPoints(charts.policy?.points);
+  if (inflPts.length >= 2) {
+    const months = lastMonths(inflPts, 36);
+    const aligned = months.map((p) => ({ x: p.x, inflation: p.y, policy: polPts.length ? valueAt(polPts, p.x)?.y ?? null : null }));
+    const withPolicy = aligned.filter((r) => r.policy != null).length >= 2;
+    const realPts = aligned
+      .filter((r) => r.policy != null)
+      .map((r) => ({ x: r.x, y: r1(exPostRateMinusInflationPp(r.policy, r.inflation)) }));
+    panels.push({
+      id: 'policy',
+      title: withPolicy ? 'Inflation and the policy rate' : 'Annual inflation',
+      views: [
+        {
+          id: 'rates',
+          label: 'Rates',
+          unit: '%',
+          series: [
+            { name: 'Inflation', tone: 'primary', points: aligned.map((r) => ({ x: r.x, y: r.inflation })) },
+            withPolicy ? { name: 'Policy rate', tone: 'reference', points: aligned.map((r) => ({ x: r.x, y: r.policy })) } : null,
+          ].filter(Boolean),
+        },
+        realPts.length >= 2
+          ? { id: 'real', label: 'Real rate', unit: 'pp', zero: true, series: [{ name: 'Ex-post real rate (policy minus inflation)', tone: 'primary', points: realPts }] }
+          : null,
+      ].filter(Boolean),
+      latest:
+        infl && pol
+          ? `${periodLabel(pol.level.period)} · Inflation ${pct(infl.annual.value)} · Policy rate ${pct(pol.level.value)}`
+          : infl
+            ? `${periodLabel(infl.annual.period)} · ${pct(infl.annual.value)}`
+            : null,
+      caption: `Annual inflation (solid) monthly${withPolicy ? ' and the policy rate in force at each month end (dashed)' : ''}, %. Source: ${[charts.inflation?.source, withPolicy ? charts.policy?.source : null].filter(Boolean).join('; ')}.${spread != null ? ` Latest ex-post real rate: ${spread >= 0 ? '+' : '−'}${pp(spread)}. Ex-post means policy rate minus the latest inflation print; it is not the expected real rate.` : ''}`,
+      cites: [...inflCites, ...polCites],
+    });
+  }
+  const reerPts = cleanPoints(charts.reer?.points);
+  if (reerPts.length >= 12) {
+    const sorted = [...reerPts.map((p) => p.y)].sort((a, b) => a - b);
+    const k = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 ? sorted[k] : (sorted[k - 1] + sorted[k]) / 2;
+    panels.push({
+      id: 'reer',
+      title: 'Real effective exchange rate (BIS, broad)',
+      views: [
+        {
+          id: 'level',
+          label: 'Index',
+          unit: 'index',
+          ref: { value: median, label: `Median ${median.toFixed(1)}` },
+          series: [{ name: 'REER', tone: 'primary', points: reerPts }],
+        },
+      ],
+      latest: `${periodLabel(reerPts[reerPts.length - 1].x)} · ${reerPts[reerPts.length - 1].y.toFixed(1)}`,
+      caption: `Unit: index; a higher line means a stronger currency in real terms. Latest ${reerPts[reerPts.length - 1].y.toFixed(1)} (${periodLabel(reerPts[reerPts.length - 1].x)})${reer?.percentile != null ? `, the ${ordinal(reer.percentile)} percentile of its own history since ${periodLabel(reer.since)}` : ''}${reer?.change1yPct != null ? `; ${signedPct(reer.change1yPct)} on a year earlier` : ''}. Not by itself a measure of over- or undervaluation. Source: ${charts.reer.source}.`,
+      cites: reerCites,
+    });
+  }
+  const resPts = cleanPoints(charts.reserves?.points).map((p) => ({ x: p.x, y: reservesUsd(p.y, resUnit) }));
+  if (resPts.length >= 2) {
+    panels.push({
+      id: 'reserves',
+      title: 'Official reserves',
+      views: [{ id: 'level', label: 'Gross', unit: 'usd', series: [{ name: 'Gross official reserves', tone: 'primary', points: resPts }] }],
+      latest: `${periodLabel(resPts[resPts.length - 1].x)} · ${money(resPts[resPts.length - 1].y)}`,
+      freshness: res ? freshnessOf(res.level.period, 'monthly', now) : null,
+      caption: `Unit: US dollars, gross. ${charts.reserves.period}. Source: ${charts.reserves.source}. Gross reserves are not the same as usable (net) liquidity${num(res?.importMonths) != null ? `; the latest level covers about ${res.importMonths.toFixed(1)} months of goods imports` : ''}.`,
+      cites: resCites,
+    });
+  }
+  const po = PANEL_ORDER[focus];
+  if (po) panels.sort((a, b) => po.indexOf(a.id) - po.indexOf(b.id));
+  if (panels.length) built.fx_charts = { eyebrow: 'Key data visualizations', panels };
+
+  /* ================================================================ how pressure can travel */
+  const tm = intel.transmission;
+  if (tm?.nodes?.length >= 2 && tm.edges?.length) {
+    const ids = new Set(tm.nodes.map((n) => n.id));
+    const edges = tm.edges.filter(([a, b]) => ids.has(a) && ids.has(b));
+    const layer = {};
+    const depth = (id, seen = new Set()) => {
+      if (layer[id] != null) return layer[id];
+      if (seen.has(id)) return 0;
+      seen.add(id);
+      const ins = edges.filter(([, b]) => b === id).map(([a]) => a);
+      layer[id] = ins.length ? Math.max(...ins.map((a) => depth(a, seen))) + 1 : 0;
+      return layer[id];
+    };
+    tm.nodes.forEach((n) => depth(n.id));
+    const outgoing = new Set(edges.map(([a]) => a));
+    built.fx_flow = {
+      eyebrow: 'How pressure can travel',
+      title: 'From domestic drivers to the exchange rate and beyond',
+      nodes: tm.nodes.map((n) => ({
+        id: n.id,
+        label: n.label,
+        layer: layer[n.id] || 0,
+        kind: !outgoing.has(n.id) ? 'effect' : n.supported ? 'supported' : 'conceptual',
+        supported: Boolean(n.supported),
+        feeds: edges.filter(([a]) => a === n.id).map(([, b]) => tm.nodes.find((x) => x.id === b)?.label),
+      })),
+      edges: edges.map(([from, to]) => ({ from, to })),
+      caption: `${tm.caption || 'Conceptual channels, not a fitted causal model.'} “Supported by data” means the stored series show that link’s starting condition today.`,
     };
   }
 
-  /* ---- reading the pressure: three conclusions, each from computed figures */
-  const insights = [];
-  insights.push({
-    title: persistent
-      ? 'Depreciation is persistent, not just a one-day move'
-      : weaker
-        ? `The ${shortName} is weaker than a year ago`
-        : `The ${shortName} has strengthened against the dollar`,
-    text:
-      `${code} per USD moved from ${rate(y1.from)} (${periodLabel(y1.fromPeriod)}) to ${rate(y1.to)} (${periodLabel(y1.toPeriod)}). ` +
-      `That is a ${pct(usdUp)} ${usdUp >= 0 ? 'rise' : 'fall'} in the dollar price in ${shortName}, equivalent to a ${pct(valueChg)} ${valueChg < 0 ? 'fall' : 'rise'} in the ${shortName}’s dollar value.` +
-      (m3ValueChg != null
-        ? ` Over the last three months the ${shortName}’s dollar value changed ${signedPct(m3ValueChg)}.`
-        : ''),
-    emphasis: [`${pct(usdUp)} ${usdUp >= 0 ? 'rise' : 'fall'} in the dollar price`, `${pct(valueChg)} ${valueChg < 0 ? 'fall' : 'rise'} in the ${shortName}’s dollar value`],
-    cites: fxCites,
-  });
-  if (infl) {
-    const hi = infl.annual.value >= 10;
-    insights.push({
-      title:
-        infl.trend === 'falling'
-          ? hi
-            ? 'Inflation has cooled, but remains a major pressure'
-            : 'Inflation has cooled'
-          : infl.trend === 'rising'
-            ? 'Inflation is rising'
-            : hi
-              ? 'Inflation remains a major pressure'
-              : 'Inflation is not the main pressure',
-      text:
-        `Annual inflation was ${pct(infl.annual.value)} in ${periodLabel(infl.annual.period)}` +
-        (infl.annualYearAgo
-          ? `, ${infl.trend === 'falling' ? 'down' : infl.trend === 'rising' ? 'up' : 'unchanged'} from ${pct(infl.annualYearAgo.value)} a year earlier`
-          : '') +
-        `.${hi ? ' That is still a high rate of domestic price growth, which weighs on the currency’s purchasing power.' : ''}`,
-      cites: inflCites,
-    });
+  /* ================================================================ long-run anchor and indicators */
+  const kc = dossier?.keyChart || (dossier?.oecd?.stories?.length ? dossier.oecd : null);
+  const stories = (kc?.stories || []).map((s) => anchorStory(s, kc.projectionFrom)).filter(Boolean);
+  if (stories.length) {
+    const def = Math.min(Math.max(0, kc.storyIndex ?? 0), stories.length - 1);
+    built.fx_anchor = {
+      eyebrow: `${intel.iso3} / Key chart`,
+      place,
+      stories,
+      defaultIndex: def,
+      cites: keyCites,
+    };
   }
-  if (res) {
-    insights.push({
-      title:
-        res.change3mPct != null && res.change3mPct < 0
-          ? 'Gross reserves are falling'
-          : 'Buffers exist, but crisis risk cannot be concluded',
-      text:
-        `Gross official reserves were ${money(resNow)} in ${periodLabel(res.level.period)}` +
-        (res.change3mPct != null
-          ? `, ${res.change3mPct >= 0 ? 'up' : 'down'} ${pct(res.change3mPct)} over three months`
-          : '') +
-        '. Net usable reserves, funding rollover and CDS spreads are not in Sonar’s data, so a crisis assessment cannot rest on them.',
-      cites: resCites,
-    });
-  } else if (pol && spread != null) {
-    insights.push({
-      title: spread > 0 ? 'Policy is restrictive on an ex-post basis' : 'Policy offers little restraint',
-      text: `The ${pct(pol.level.value)} policy rate is ${pp(spread)} ${spread >= 0 ? 'above' : 'below'} latest annual inflation, an ex-post arithmetic difference, not the expected real rate. Reserve data are not available, so external buffers are not assessed.`,
-      cites: [...polCites, ...inflCites],
-    });
-  }
-  built.fx_insights = { title: 'Reading the pressure', items: insights.slice(0, 3) };
+  const rows = (dossier?.keyIndicators || []).filter((r) => r && r.label && r.value != null);
+  if (rows.length)
+    built.fx_indicators = {
+      eyebrow: `${intel.iso3} / Key indicators`,
+      place,
+      rows: rows.map((r) => ({
+        id: r.id || r.label,
+        label: r.label,
+        value: minus(r.value),
+        period: r.period || '',
+        change: r.change ? minus(r.change) : null,
+        source: r.source || '',
+        attribution: r.attribution || null,
+        note: r.estimate || r.projection || null,
+      })),
+      note: 'Latest observed values. IMF staff estimates and projections are labelled and never shown as outcomes.',
+      cites: keyCites,
+    };
 
-  /* ---- what drives it: each row says whether it is observed, derived or conceptual */
+  /* ================================================================ interpretation and scope */
   const drivers = [];
   if (infl)
     drivers.push({
@@ -499,13 +812,12 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
       text: `The ${pct(pol.level.value)} rate is ${pp(spread)} ${spread >= 0 ? 'above' : 'below'} latest observed inflation (an ex-post arithmetic difference, not the expected real policy rate)${pol.change12mPp != null && pol.change12mPp < 0 ? `; the rate is ${pp(pol.change12mPp)} lower than a year earlier` : ''}.`,
       cites: [...polCites, ...inflCites],
     });
-  const ca = m.external?.currentAccount;
   drivers.push(
     ca && num(ca.value) != null
       ? {
           driver: 'External financing',
           basis: 'observed',
-          text: `The current account was ${fmtNum(ca.value)}${ca.unit && String(ca.unit).startsWith('%') ? ca.unit : ' % of GDP'} in ${periodLabel(ca.period)}${ca.estimate ? ` (${ca.estimate})` : ''}. ${ca.value < 0 ? 'A deficit has to be financed from abroad, which can amplify FX pressure when funding tightens.' : 'A surplus reduces reliance on foreign funding.'} Current net financing stress is not directly measured here.`,
+          text: `The current account was ${minus(fmtNum(ca.value))}% of GDP in ${periodLabel(ca.period)}${ca.estimate ? ` (${ca.estimate})` : ''}. ${ca.value < 0 ? 'A deficit has to be financed from abroad, which can amplify FX pressure when funding tightens.' : 'A surplus reduces reliance on foreign funding.'} Current net financing stress is not directly measured here.`,
           cites: [],
         }
       : {
@@ -523,106 +835,32 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
       cites: reerCites,
     });
   built.fx_drivers = {
-    eyebrow: 'Why the currency is under pressure',
+    eyebrow: 'What the data support, and what is interpretation',
     title: 'How the macro forces connect',
     note: 'Observed: a stored series. Derived: arithmetic on stored series. Conceptual: a channel, not measured here.',
     rows: drivers,
   };
 
-  /* ---- is a crisis imminent: scope, never a score */
-  const missing = [
-    'Net usable reserves',
-    'Short-term external debt',
-    'Forward FX obligations',
-    'Bank FX funding',
-    'Sovereign CDS spreads',
-    'Capital flows',
-    'Inflation expectations',
-  ];
-  const alsoMissing = (assessment.missing || []).filter(
-    (x) => !/cds|inflation expectations/i.test(x),
-  );
   built.fx_risk_scope = {
-    eyebrow: 'What would signal a crisis?',
+    eyebrow: 'What cannot yet be concluded',
     pressure,
     crisis: 'not_established',
     text:
       pressure === 'established'
         ? 'Currency weakness is observable in the stored exchange rate. Determining whether a disorderly break is near requires more direct external-liquidity and market-stress measures.'
         : 'The stored exchange rate does not show sustained weakness by Ezana’s thresholds. A crisis judgment would still need external-liquidity and market-stress measures.',
-    missing,
-    alsoMissing,
-    thresholdsNote: overall
-      ? `Pressure level by Ezana’s thresholds: ${overall}. A level, not a probability.`
-      : null,
+    missing: [
+      'Net usable reserves',
+      'Short-term external debt',
+      'Forward FX obligations',
+      'Bank FX funding',
+      'Sovereign CDS spreads',
+      'Capital flows',
+      'Inflation expectations',
+    ],
+    alsoMissing: missing.filter((x) => !/cds|inflation expectations|net usable|short-term external|capital flow/i.test(x)),
+    thresholdsNote: overall ? `Pressure level by Ezana’s thresholds: ${overall}. A level, not a probability.` : null,
   };
-
-  /* ---- policy and external buffers: two complementary pictures */
-  const inflPts = cleanPoints(charts.inflation?.points);
-  const polPts = cleanPoints(charts.policy?.points);
-  if (inflPts.length >= 2 && polPts.length >= 2) {
-    const months = lastMonths(inflPts, 24);
-    const aligned = months.map((p) => ({ x: p.x, inflation: p.y, policy: valueAt(polPts, p.x)?.y ?? null }));
-    if (aligned.filter((r) => r.policy != null).length >= 2) {
-      const falling = infl?.trend === 'falling';
-      built.fx_policy = {
-        eyebrow: 'Inflation / Policy rate',
-        title:
-          spread != null && spread > 0 && falling
-            ? 'Disinflation against still-high interest rates'
-            : spread != null && spread < 0
-              ? 'Policy rate below inflation'
-              : 'Inflation and the policy rate',
-        categories: aligned.map((r) => r.x),
-        series: [
-          { name: 'Annual inflation', values: aligned.map((r) => r.inflation), tone: 'primary' },
-          { name: 'Policy rate', values: aligned.map((r) => r.policy), tone: 'reference' },
-        ],
-        unit: '%',
-        caption:
-          'Inflation: monthly, year over year. Policy rate: the setting in force at each month end. The gap between them is an ex-post spread, not the expected real rate.',
-        cites: [...inflCites, ...polCites],
-      };
-    }
-  }
-  const reerPts = charts.reer ? lastMonths(cleanPoints(charts.reer.points), 24) : [];
-  const resPts = lastMonths(cleanPoints(charts.reserves?.points), 24);
-  if (reerPts.length >= 2 || resPts.length >= 2) {
-    built.fx_buffers = {
-      eyebrow: reerPts.length >= 2 ? 'REER / External reserves' : 'External reserves',
-      title:
-        reer?.change1yPct > 0 && weaker
-          ? 'Nominal depreciation, real strength and reserves'
-          : reerPts.length >= 2
-            ? 'Real exchange rate and reserves'
-            : 'Gross official reserves',
-      panels: [
-        reerPts.length >= 2
-          ? {
-              id: 'reer',
-              label: 'BIS real effective exchange rate (index, higher = stronger in real terms)',
-              points: reerPts,
-              latest: `${fmtNum(reer.latest.value)} (${periodLabel(reer.latest.period)})`,
-              change: reer.change1yPct != null ? `${signedPct(reer.change1yPct)} over a year` : null,
-              cites: reerCites,
-            }
-          : null,
-        resPts.length >= 2
-          ? {
-              id: 'reserves',
-              label: `Gross official reserves (${resUnit || 'US$'})`,
-              points: resPts,
-              latest: `${money(resNow)} (${periodLabel(res.level.period)})`,
-              change: res?.change3mPct != null ? `${signedPct(res.change3mPct)} over 3 months` : null,
-              freshness: res ? freshnessOf(res.level.period, 'monthly', now) : null,
-              cites: resCites,
-            }
-          : null,
-      ].filter(Boolean),
-      caption:
-        'Real effective rates are price-adjusted baskets and do not measure the probability of an FX crisis. Gross reserves are not the same as usable liquidity.',
-    };
-  }
 
   /* ---- monitoring checklist: what to watch, and whether Sonar holds it */
   const resFresh = res ? freshnessOf(res.level.period, 'monthly', now) : null;
@@ -635,14 +873,10 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
         availability: fx.frequency === 'daily' && fxFresh !== 'stale' ? 'in_data' : 'partial',
         reading:
           fx.volatility3m != null && fx.volatility5yMedian != null
-            ? `3-month volatility ${fx.volatility3m < fx.volatility5yMedian ? 'below' : 'above'} its 5-year median`
+            ? `3-month volatility of daily moves ${fx.volatility3m.toFixed(2)}%, ${fx.volatility3m < fx.volatility5yMedian ? 'below' : 'above'} its 5-year median of ${fx.volatility5yMedian.toFixed(2)}%`
             : null,
       },
-      {
-        signal: 'Inflation expectations',
-        why: 'Whether expected inflation is falling alongside observed inflation.',
-        availability: 'gap',
-      },
+      { signal: 'Inflation expectations', why: 'Whether expected inflation is falling alongside observed inflation.', availability: 'gap' },
       {
         signal: 'Monetary decisions',
         why: 'The policy path and its credibility against incoming inflation, not only the ex-post spread.',
@@ -654,15 +888,10 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
         availability: res ? 'partial' : 'gap',
         reading: res ? `Gross only, ${periodLabel(res.level.period)}${resFresh === 'fresh' ? '' : `, ${resFresh}`}` : null,
       },
-      {
-        signal: 'Funding market stress',
-        why: 'CDS spreads, external refinancing and capital flows could change the risk assessment.',
-        availability: 'gap',
-      },
+      { signal: 'Funding market stress', why: 'CDS spreads, external refinancing and capital flows could change the risk assessment.', availability: 'gap' },
     ],
   };
 
-  /* ---- conditional outlook: conditions, not forecasts; no probabilities */
   built.fx_outlook = {
     eyebrow: 'Conditional outlook / No probabilities',
     rows: [
@@ -671,16 +900,8 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
         tone: 'calm',
         text: `The ${shortName}’s monthly depreciation slows, inflation keeps falling${spread != null ? ' with the policy rate above it' : ''}, and external buffers hold or rise.`,
       },
-      {
-        name: 'Continued pressure',
-        tone: 'mid',
-        text: 'Disinflation is slow while depreciation persists and financing remains costly.',
-      },
-      {
-        name: 'Stress escalation',
-        tone: 'high',
-        text: 'Reserves fall, rollover conditions tighten, or exchange-rate volatility shifts abruptly.',
-      },
+      { name: 'Continued pressure', tone: 'mid', text: 'Disinflation is slow while depreciation persists and financing remains costly.' },
+      { name: 'Stress escalation', tone: 'high', text: 'Reserves fall, rollover conditions tighten, or exchange-rate volatility shifts abruptly.' },
     ],
   };
 
@@ -693,11 +914,10 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
 
   built.limitations = {
     items: [
-      'Every figure is a stored official observation with its own date; daily, monthly and quarterly series are labelled and never mixed into one line.',
+      'Every figure is a stored official observation with its own date; daily, monthly and annual series are labelled and never mixed into one line.',
       'Pressure levels use Ezana’s published thresholds. They are a diagnosis, not a probability or a forecast.',
-      fx.frequency === 'monthly'
-        ? 'The exchange rate is a monthly average, so moves within the latest month are not captured.'
-        : null,
+      fx.frequency === 'monthly' ? 'The exchange rate is a monthly average, so moves within the latest month are not captured.' : null,
+      missing.length ? `Not in Ezana’s data for ${place}: ${missing.join('; ')}.` : null,
     ].filter(Boolean),
   };
 
@@ -707,17 +927,14 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
     compare: `Compare ${code} against emerging-market currencies`,
     inflation: `How are inflation and rates bearing on the ${shortName}?`,
   };
-  const related = [rel.stabilize, rel.reserves, rel.compare, rel.inflation].filter(
-    (q) => q !== rel[focus],
-  );
+  const related = [rel.stabilize, rel.reserves, rel.compare, rel.inflation].filter((q) => q !== rel[focus]);
   built.followups = {
     placeholder: `Ask a follow-up about the ${shortName}…`,
     related: plan ? freshQuestions(plan, related) : related.slice(0, 3),
   };
 
   const sectionOrder = ORDER[focus].filter((t) => built[t]);
-  const top = new Set(TOP[focus]);
-  for (const t of sectionOrder) if (top.has(t)) built[t].top = true;
+  built.fx_overview.top = true;
   built._order = ['lead', ...sectionOrder, 'fx_conclusion', 'sources', 'limitations', 'followups'];
 
   return {
@@ -733,16 +950,25 @@ export function buildFxPressure(intel, { focus = 'overall', now = new Date(), pl
   };
 }
 
+const ordinal = (k) => {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = k % 100;
+  return `${k}${s[(v - 20) % 10] || s[v] || s[0]}`;
+};
+
 /* ------------------------------------------------------------------ executor */
 
 /** The C01 strategy for a currency-pressure plan. null lets the caller answer the old way. */
 export async function runFxPressure(plan, deps, now, telemetry) {
   const iso3 = plan.fx?.iso3;
   if (!iso3 || !deps.countryIntel) return null;
-  const intel = await step(telemetry, 'macro_series', 10000, () =>
-    deps.countryIntel(iso3, { now }),
-  ).catch(() => null);
-  const out = buildFxPressure(intel, { focus: plan.fx.focus, now, plan });
+  const [intel, dossier] = await Promise.all([
+    step(telemetry, 'macro_series', 10000, () => deps.countryIntel(iso3, { now })).catch(() => null),
+    deps.countryDossier
+      ? step(telemetry, 'country_dossier', 9000, () => deps.countryDossier(iso3, { query: plan.resolvedQuestion || plan.question || '' })).catch(() => null)
+      : null,
+  ]);
+  const out = buildFxPressure(intel, dossier, { focus: plan.fx.focus, now, plan });
   if (!out) return null;
   return { built: out.built, sources: out.sources, thread: out.thread, audit: out.model };
 }
