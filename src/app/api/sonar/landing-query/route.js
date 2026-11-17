@@ -262,7 +262,9 @@ const POST_HANDLER = withApiGuard(
       !body?.noCorrect
     ) {
       try {
-        adaptivePlan = planAdaptive(query, { thread });
+        /* Research Controls are part of the plan: they change the route, the readers an
+           executor may call and the windows it measures over. */
+        adaptivePlan = planAdaptive(query, { thread, controls: body?.controls || null });
       } catch (e) {
         console.warn('[sonar/landing] adaptive plan failed', e?.name);
       }
@@ -277,8 +279,10 @@ const POST_HANDLER = withApiGuard(
         missing: adaptivePlan.audit.missing,
       });
     }
+    /* A follow-up, or a question asked with non-default Research Controls, that no executor
+       takes is handed back as standard research, which honours both. */
     if (
-      thread &&
+      (thread || adaptivePlan?.controls) &&
       !runsAdaptive &&
       Array.isArray(body?.research) &&
       body.research.includes('standard') &&
@@ -287,7 +291,7 @@ const POST_HANDLER = withApiGuard(
       return NextResponse.json({
         researchMode: 'standard',
         query: adaptivePlan?.resolvedQuestion || query,
-        followUp: true,
+        followUp: Boolean(thread),
         classification: null,
         goDeeper: null,
         disclaimer: DISCLAIMER,

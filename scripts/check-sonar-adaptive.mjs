@@ -41,6 +41,8 @@ const { peerComparison } = await import('@/lib/sonar/valuation/model.js');
 const { buildRankingsPayload } = await import('@/lib/sonar/macro/rank.js');
 const { ANALYSTS } = await import('@/lib/sonar/analysts/registry.js');
 const V = await import('./lib/sonar-validation.mjs');
+const CP = await import('@/lib/sonar/adaptive/controls-plan.js');
+const { cleanSaveBody } = await import('@/lib/sonar/saved.js');
 
 const NOW = new Date('2026-11-16T12:00:00Z');
 const plan = (q, o = {}) => R.planAdaptive(q, { now: NOW, ...o });
@@ -650,7 +652,7 @@ test('the route plans before spending, runs on one reservation and falls back', 
   assert.equal(route.split('reservePing(admin').length - 1, 1, 'one reservation, never two');
   assert.match(route, /body\.formats\.includes\('adaptive'\)/);
   assert.match(route, /!runsAdaptive &&/);
-  assert.match(route, /followUp: true/);
+  assert.match(route, /followUp: Boolean\(thread\)/);
   assert.match(route, /telemetry: _telemetry, \.\.\.publicReport/);
   const band = fs.readFileSync('src/components/landing/SonarSection.jsx', 'utf8');
   assert.match(band, /onAdaptive\(q, data\.adaptive\)/);
@@ -2089,6 +2091,193 @@ test('the validation trail is off without a long secret and never changes the ru
     /console\.(log|error)\([^)]*(PASSWORD|access_token|VALIDATION_SECRET\})/,
   );
   assert.ok(at !== 0);
+});
+
+/* ── research controls, saving and the session thread ── */
+
+test('default controls change nothing; non-default controls are part of the plan', () => {
+  const q = 'Is NVIDIA technically oversold?';
+  const base = plan(q);
+  assert.equal(base.controls, null);
+  assert.deepEqual(
+    plan(q, { controls: { focus: 'general', horizon: 'any', sources: 'all' } }),
+    base,
+  );
+  const short = plan(q, { controls: { horizon: 'short' } });
+  assert.deepEqual(short.controls.window, {
+    chartDays: 130,
+    range: '1M',
+    moveSessions: 5,
+    lookbackDays: 90,
+  });
+  assert.deepEqual(short.controls.labels, ['Short term']);
+  assert.equal(short.executable, true);
+  /* Data sources that exclude the scenario's own evidence: not run here, handed back. */
+  const macroOnly = plan(q, { controls: { sources: 'macro' } });
+  assert.equal(macroOnly.executable, false);
+  assert.match(macroOnly.audit.missing.join(' '), /data sources narrowed to macro/);
+  assert.equal(plan(q, { controls: { sources: 'market' } }).executable, true);
+  /* A model-led scenario cannot run on a narrowed family: web research is general context. */
+  assert.equal(
+    plan('Who will replace Jensen Huang?', { controls: { sources: 'filings' } }).executable,
+    false,
+  );
+  /* Unknown values are ignored, never trusted. */
+  assert.equal(plan(q, { controls: { focus: 'everything', sources: 'secret' } }).controls, null);
+  /* A focus tips a close call between scenarios that already match; it never creates a match. */
+  const both = 'What are NVDA’s biggest risks and its volatility?';
+  assert.equal(plan(both, { controls: { focus: 'fundamentals' } }).primaryScenario, 'B02');
+  assert.equal(plan(both, { controls: { focus: 'market' } }).primaryScenario, 'B10');
+  assert.equal(plan('hello there', { controls: { focus: 'macro' } }).primaryScenario, null);
+});
+
+test('controls change the run: readers, windows, the research directive and what is said', async () => {
+  const bars = fixtureBars();
+  /* Horizon: the technical chart shows the chosen window. */
+  const tech = await O.runAdaptive(
+    plan('Is NVIDIA technically oversold?', { controls: { horizon: 'short' } }),
+    techDeps(bars),
+    { now: NOW },
+  );
+  assert.equal(tech.sections.find((x) => x.type === 'ohlcv_technical').series.length, 130);
+  assert.deepEqual(tech.controls, {
+    focus: 'general',
+    horizon: 'short',
+    sources: 'all',
+    labels: ['Short term'],
+  });
+  assert.ok(
+    tech.sections
+      .find((x) => x.type === 'limitations')
+      .items.some((i) =>
+        /^Research Controls applied\. Charts and lookbacks are set for the short term/.test(i),
+      ),
+  );
+  /* Sources: a market-only run of "why is it moving" measures the move and calls nothing general. */
+  let modelCalls = 0;
+  let newsCalls = 0;
+  const deps = {
+    getOhlcv: async () => ({ bars, adjustment: 'splits' }),
+    synthesize: async () => {
+      modelCalls += 1;
+      return { answer: FIXTURE_CATALYST_REPLY, webResults: FIXTURE_WEB_RESULTS };
+    },
+    news: async () => {
+      newsCalls += 1;
+      return FIXTURE_NEWS;
+    },
+  };
+  const move = await O.runAdaptive(
+    plan('Why is NVDA stock down today?', { controls: { sources: 'market', horizon: 'medium' } }),
+    deps,
+    { now: NOW },
+  );
+  assert.deepEqual([modelCalls, newsCalls], [0, 0]);
+  assert.match(
+    move.sections[0].headline,
+    /over the 21 sessions/,
+    'no window in the question: the horizon sets it',
+  );
+  assert.equal(move.sections.find((x) => x.type === 'price_comparison').chart.defaultRange, '6M');
+  assert.ok(
+    move.sections
+      .find((x) => x.type === 'limitations')
+      .items.some((i) => /narrowed to market data, so news and web research were not used/.test(i)),
+  );
+  /* A window named in the question wins over the horizon. */
+  const named = await O.runAdaptive(
+    plan('Why is NVDA stock down this week?', { controls: { horizon: 'long' } }),
+    deps,
+    { now: NOW },
+  );
+  assert.match(named.sections[0].headline, /over the 5 sessions/);
+  /* Focus: the directive reaches the research step, and risk turns on the risk reading. */
+  let seen = '';
+  const risk = await O.runAdaptive(
+    plan('How have NVDA’s revenue, margins and free cash flow trended?', {
+      controls: { focus: 'risk' },
+    }),
+    {
+      statements: async () => fixtureInputs(),
+      synthesize: async (a) => {
+        seen = a.user;
+        return { answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS };
+      },
+    },
+    { now: NOW },
+  );
+  assert.match(seen, /Reader's research settings\. Weight the analysis toward risk/);
+  assert.ok(risk.sections.some((x) => x.type === 'risk'));
+  /* narrowDeps keeps the admin handle and only drops readers outside the family. */
+  const n = CP.narrowDeps(
+    { admin: {}, getOhlcv() {}, news() {}, lobbying() {}, countryBrief() {} },
+    { sources: 'government' },
+  );
+  assert.deepEqual(
+    [Object.keys(n.deps).sort(), n.dropped.sort()],
+    [
+      ['admin', 'lobbying'],
+      ['countryBrief', 'getOhlcv', 'news'],
+    ],
+  );
+});
+
+test('an adaptive answer is saved, reopened and kept in the session like any other', async () => {
+  const report = await O.runAdaptive(
+    plan('Which institutions hold NVDA?'),
+    { positioning13f: async () => fixture13f() },
+    { now: NOW },
+  );
+  /* The save body the report builds is accepted by the existing save contract, intact. */
+  const body = {
+    kind: 'ping',
+    question: report.resolvedQuestion,
+    subject: report.thread.subject,
+    ticker: report.thread.ticker,
+    depth: 'quick',
+    snapshot: {
+      question: report.resolvedQuestion,
+      headline: report.sections[0].headline,
+      summary: report.sections[0].text,
+      depth: 'quick',
+      answeredAt: report.asOf,
+      sources: report.sources.map((x) => ({ name: x.title, url: x.url || null })),
+      takeaways: [],
+      adaptive: report,
+    },
+  };
+  const clean = cleanSaveBody(body);
+  assert.equal(clean.ok, true);
+  assert.equal(clean.row.ticker, 'NVDA');
+  assert.equal(clean.row.title, report.sections[0].headline);
+  assert.deepEqual(
+    clean.row.snapshot.adaptive.sections,
+    report.sections,
+    'nothing in a report is a private key',
+  );
+  assert.deepEqual(
+    clean.row.snapshot.adaptive.thread,
+    report.thread,
+    'the follow-up context is kept',
+  );
+  const src = (f) => fs.readFileSync(f, 'utf8');
+  const view = src('src/components/sonar/adaptive/SonarAdaptiveReport.jsx');
+  assert.match(view, /<SonarSaveActions/);
+  assert.match(view, /adaptive: report/);
+  assert.match(view, /In this session/);
+  const saved = src('src/components/sonar/workspace-pages/SavedItemClient.jsx');
+  assert.match(saved, /<SonarAdaptiveReport\s+report=\{adaptive\}/);
+  const host = src('src/components/sonar/SonarExperience.jsx');
+  assert.match(host, /kind: 'adaptive'/);
+  assert.match(host, /entry\.kind === 'adaptive' && entry\.report/);
+  assert.match(host, /onRestore=\{restoreEntry\}/);
+  /* The band sends the controls with an adaptive ping instead of bypassing the pipeline. */
+  const band = src('src/components/landing/SonarSection.jsx');
+  assert.match(band, /controls: readControls\(\)/);
+  assert.match(band, /typeof onAdaptive !== 'function'/);
+  const route = src('src/app/api/sonar/landing-query/route.js');
+  assert.match(route, /controls: body\?\.controls \|\| null/);
+  assert.match(route, /\(thread \|\| adaptivePlan\?\.controls\) &&/);
 });
 
 test('the adaptive files follow the Ezana rules', () => {

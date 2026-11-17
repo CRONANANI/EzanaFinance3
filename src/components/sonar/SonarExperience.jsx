@@ -36,6 +36,7 @@ import SonarLoadingState from '@/components/sonar/loading/SonarLoadingState';
 import { useAuth } from '@/components/auth-context';
 import { SonarSignupCta } from './SonarSignupCta';
 import { parseSseBlock } from '@/lib/sonar/research-state';
+import { addSessionEntry } from './session-thread';
 
 /* Nov 16: the evidence-led response page for an exemplary brief, loaded only when one is
    served. */
@@ -367,8 +368,20 @@ export function SonarExperience({
     setStandardRun(null);
     setRestored(null);
     setExemplary(null);
-    setAdaptive({ query, report, nonce: Date.now() });
+    const nonce = Date.now();
+    const sessionId = `adaptive:${nonce}:${report.scenario?.id || ''}`;
+    setAdaptive({ query, report, nonce, sessionId });
     setShownQuery(report.resolvedQuestion || query);
+    /* Nov 17: an adaptive answer joins the session thread like any other, with the report
+       and the thread it carries, so it can be shown again and followed up from memory. */
+    addSessionEntry({
+      id: sessionId,
+      kind: 'adaptive',
+      question: report.resolvedQuestion || query,
+      headline: report.sections?.[0]?.headline || null,
+      mode: 'quick',
+      report,
+    });
     loaderTimers.current.forEach(clearTimeout);
     loaderTimers.current = [];
     setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
@@ -411,6 +424,17 @@ export function SonarExperience({
     setAdaptive(null);
     if (entry.kind === 'research' && entry.state) {
       setRestored(entry);
+      return;
+    }
+    if (entry.kind === 'adaptive' && entry.report) {
+      setRestored(null);
+      setAdaptive({
+        query: entry.question,
+        report: entry.report,
+        nonce: entry.at,
+        sessionId: entry.id,
+      });
+      setShownQuery(entry.question);
       return;
     }
     setRestored(null);
@@ -861,6 +885,8 @@ export function SonarExperience({
                 report={adaptive.report}
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
+                onRestore={restoreEntry}
+                sessionId={adaptive.sessionId || null}
                 onDeep={() =>
                   chooseDeep(adaptive.report.resolvedQuestion || adaptive.query, {
                     signup: !signedIn,

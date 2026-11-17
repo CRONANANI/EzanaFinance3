@@ -251,7 +251,8 @@ const RISK_QUESTION =
 export async function runFundamentals(plan, deps, now, telemetry, deadlineAt) {
   const who = subjectOf(plan);
   const { symbol, name } = who;
-  const wantsRisks = RISK_QUESTION.test(plan.resolvedQuestion);
+  /* A risk question, or any fundamentals question asked with the focus set to risk. */
+  const wantsRisks = RISK_QUESTION.test(plan.resolvedQuestion) || plan.controls?.focus === 'risk';
   const [inputs, research] = await Promise.all([
     deps.statements
       ? step(telemetry, 'financial_statements', 9000, () => deps.statements(symbol, { now }))

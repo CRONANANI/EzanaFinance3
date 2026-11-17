@@ -490,3 +490,45 @@
     grid-row: 2;
   }
 }
+
+/* Save, Share and More under the lead. */
+.sar-actions {
+  margin-top: 10px;
+}
+/* In this session: earlier answers, shown again from memory. */
+.sar-session-list {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sar-session-item {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  inline-size: 100%;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--sxb-rule);
+  cursor: pointer;
+  font-size: var(--type-caption-size);
+  color: var(--sxb-body);
+}
+.sar-session-item:hover .sar-session-q,
+.sar-session-item[aria-current='true'] .sar-session-q {
+  color: var(--emerald);
+}
+.sar-session-item:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.sar-session-q {
+  color: var(--sxb-ink);
+  min-inline-size: 0;
+}
+.sar-session-meta {
+  flex: none;
+  color: var(--sxb-muted);
+  white-space: nowrap;
+}

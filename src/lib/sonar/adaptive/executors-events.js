@@ -356,7 +356,7 @@ export async function runMoveAttribution(plan, deps, now, telemetry, deadlineAt)
   const name = company.label || symbol;
   const sources = sourceBook();
   const built = {};
-  const window = moveWindowOf(plan.resolvedQuestion);
+  const window = moveWindowOf(plan.resolvedQuestion, plan.controls?.window?.moveSessions || null);
   const bench = benchmarkFor({ ticker: symbol, industry: '', sector: '' });
 
   const [data, benchData] = await Promise.all([

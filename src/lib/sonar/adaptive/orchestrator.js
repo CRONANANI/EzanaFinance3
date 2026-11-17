@@ -26,6 +26,7 @@ import { researchSuccession } from './succession-research';
 import { selectComponents } from './layout-planner';
 import { validateReport, EVENT_STATUSES, CANDIDATE_BASES, REPORT_VERSION } from './schema';
 import { SCENARIO_BY_ID } from './profiles';
+import { narrowDeps, controlsNote } from './controls-plan';
 import {
   day,
   usd,
@@ -66,7 +67,9 @@ async function runTechnical(plan, deps, now, telemetry) {
   const data = await step(telemetry, 'daily_bars', 9000, () =>
     deps.getOhlcv(symbol, isoDaysAgo(now, 620)),
   );
-  const snap = data?.bars?.length ? technicalSnapshot(data.bars, { windowDays: 260 }) : null;
+  const snap = data?.bars?.length
+    ? technicalSnapshot(data.bars, { windowDays: plan.controls?.window?.chartDays || 260 })
+    : null;
   const related = [
     `How has ${symbol} performed against its sector over the past three months?`,
     `What is driving ${symbol}’s recent price move?`,
@@ -550,13 +553,20 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
   if (!run) return null;
   const t0 = Date.now();
   const telemetry = { steps: [], degraded: [], model: [] };
+  /* Research Controls: only the readers the chosen data sources allow, and the focus and
+     horizon given to every research step as a directive. */
+  const narrowed = narrowDeps(deps, plan.controls);
+  deps = narrowed.deps;
+  const directive = plan.controls?.directive || '';
   /* Every model call an executor makes is counted here, whatever module makes it. */
   if (deps?.synthesize) {
     const synthesize = deps.synthesize;
     deps = {
       ...deps,
       synthesize: async (args) => {
-        const out = await synthesize(args);
+        const out = await synthesize(
+          directive ? { ...args, user: `${args.user}\n${directive}` } : args,
+        );
         telemetry.model.push({
           provider: out?.provider || null,
           webUsed: Boolean(out?.webUsed),
@@ -569,6 +579,12 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
   const out = await run(plan, deps, now, telemetry, deadlineAt);
   /* An executor declines a question its data cannot answer; the ping then runs the old way. */
   if (!out?.built?.lead) return null;
+  /* What the reader's own controls changed is said on the answer. */
+  const note = controlsNote(plan.controls, narrowed.dropped);
+  if (note) out.built.limitations = { items: [...(out.built.limitations?.items || []), note] };
+  /* The horizon sets the range a price comparison opens on. */
+  if (plan.controls?.window && out.built.price_comparison?.chart)
+    out.built.price_comparison.chart.defaultRange = plan.controls.window.range;
   const { sections, omitted } = selectComponents(plan, {
     ...out.built,
     sources: { title: 'Evidence and sources' },
@@ -580,6 +596,14 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
     question: plan.originalQuestion,
     resolvedQuestion: plan.resolvedQuestion,
     asOf: now.toISOString(),
+    controls: plan.controls
+      ? {
+          focus: plan.controls.focus,
+          horizon: plan.controls.horizon,
+          sources: plan.controls.sources,
+          labels: plan.controls.labels,
+        }
+      : null,
     sections,
     sources: out.sources,
     thread: { question: plan.resolvedQuestion, ...out.thread },

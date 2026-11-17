@@ -13,6 +13,7 @@ import ResearchReport from '../research/ResearchReport';
 import { stateFromSnapshot } from '@/lib/org-sonar/reports';
 import { SonarSaveActions } from '../SonarSaveActions';
 import { SavedAnswerView } from './SavedAnswerView';
+import SonarAdaptiveReport from '../adaptive/SonarAdaptiveReport';
 import { dateLabel } from './ResearchWorkspaceShell';
 import './research-workspace.css';
 
@@ -42,6 +43,18 @@ export default function SavedItemClient({ id }) {
       item?.kind === 'research' && item?.snapshot?.report ? stateFromSnapshot(item.snapshot) : null,
     [item],
   );
+
+  /* A saved adaptive answer carries its whole report; anything malformed falls back to the
+     summary view. */
+  const adaptive =
+    item?.snapshot?.adaptive &&
+    Array.isArray(item.snapshot.adaptive.sections) &&
+    Array.isArray(item.snapshot.adaptive.sources)
+      ? item.snapshot.adaptive
+      : null;
+  const runInSonar = (q) => {
+    window.location.assign(`/sonar?q=${encodeURIComponent(String(q || '').slice(0, 600))}`);
+  };
 
   if (state === 'loading') return <p className="srw-note srw-pad">Loading.</p>;
   if (state !== 'ready') {
@@ -75,6 +88,17 @@ export default function SavedItemClient({ id }) {
       </div>
       {research ? (
         <ResearchReport state={research} />
+      ) : adaptive ? (
+        /* A saved adaptive answer reopens in the layout it was saved in. It is read-only:
+           a new question or a follow-up leaves for Sonar and runs there as live research. */
+        <div className="sdr-run force-dark-theme">
+          <SonarAdaptiveReport
+            report={adaptive}
+            onPing={runInSonar}
+            onFollowUp={runInSonar}
+            actions={actions}
+          />
+        </div>
       ) : (
         <SavedAnswerView snapshot={item.snapshot} actions={actions} />
       )}

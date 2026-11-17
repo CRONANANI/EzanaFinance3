@@ -438,7 +438,9 @@ async function memberReport(plan, deps, now, telemetry, person) {
 }
 
 async function chamberReport(plan, deps, now, telemetry) {
-  const since = new Date(now.getTime() - 365 * 86400000).toISOString().slice(0, 10);
+  const since = new Date(now.getTime() - (plan.controls?.window?.lookbackDays || 365) * 86400000)
+    .toISOString()
+    .slice(0, 10);
   const data = await step(telemetry, 'congress_disclosures', 9000, () =>
     deps.chamberTrades({ since }),
   );
@@ -546,7 +548,9 @@ const CONGRESS_QUESTION = /\b(congress|senat|representative|politician|member)/i
 
 async function companyReport(plan, deps, now, telemetry, who) {
   const { symbol, name } = who;
-  const since = new Date(now.getTime() - 365 * 86400000).toISOString().slice(0, 10);
+  const since = new Date(now.getTime() - (plan.controls?.window?.lookbackDays || 365) * 86400000)
+    .toISOString()
+    .slice(0, 10);
   const insiderLed =
     INSIDER_QUESTION.test(plan.resolvedQuestion) && !CONGRESS_QUESTION.test(plan.resolvedQuestion);
   const [trades, insiders] = await Promise.all([

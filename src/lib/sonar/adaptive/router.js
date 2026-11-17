@@ -24,6 +24,7 @@ import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
 import { SCENARIOS, SCENARIO_BY_ID, PROFILE_VERSION } from './profiles';
 import { countryOf } from './country-ref';
+import { planControls, sourcesAllow, FOCUS_BIAS } from './controls-plan';
 import { rankingOf } from './company-metrics';
 import { commodityIdOf } from './series-metrics';
 import { resolveReferences, personFromText } from './thread-context';
@@ -147,7 +148,10 @@ export function planAdaptive(question, opts = {}) {
     now = new Date(),
     orgId = null,
     audience = 'retail',
+    controls: rawControls = null,
   } = opts;
+  const controls = planControls(rawControls);
+  const lean = new Set(controls ? FOCUS_BIAS[controls.focus] || [] : []);
   const original = String(question || '').trim();
   const refs = resolveReferences(original, thread);
   const text = refs.resolvedQuestion;
@@ -155,6 +159,16 @@ export function planAdaptive(question, opts = {}) {
 
   const scored = SCENARIOS.map((profile) => ({ profile, ...scoreProfile(profile, text, entities) }))
     .filter((s) => s.score > 0)
+    /* A focus tips between scenarios that already match; it never makes one match. */
+    .map((s) =>
+      lean.has(s.profile.id)
+        ? {
+            ...s,
+            score: s.score + 1,
+            reasons: [...s.reasons, `${s.profile.id} +1: focus ${controls.focus}`],
+          }
+        : s,
+    )
     .sort((a, b) => b.score - a.score || a.profile.id.localeCompare(b.profile.id));
 
   const top = scored[0] || null;
@@ -235,6 +249,12 @@ export function planAdaptive(question, opts = {}) {
     needsDisambiguation = true;
     missing.push('no company or person named');
   }
+  if (executable && controls && !sourcesAllow(primary.id, controls.sources)) {
+    executable = false;
+    missing.push(
+      `data sources narrowed to ${controls.sources}: this scenario's evidence is outside it`,
+    );
+  }
   /* A lead the triggers barely separate from its runner-up is not confident enough to
      take the ping away from the existing classifier. */
   if (executable && confidence < 0.42) {
@@ -282,6 +302,7 @@ export function planAdaptive(question, opts = {}) {
     budgets: BUDGETS[depth] || BUDGETS.standard,
     confidence,
     executable,
+    controls,
     needsDisambiguation,
     requiresOrg,
     audit: { routeReasons, excludedSources, missing, runnerUp: second?.profile.id || null },

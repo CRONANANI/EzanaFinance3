@@ -23,6 +23,8 @@ import { SonarResearchControls } from '../SonarResearchControls';
 import SonarExemplaryChart, { dayLabel } from '../exemplary/SonarExemplaryChart';
 import SonarTechnicalChart from './SonarTechnicalChart';
 import SonarSeriesChart from './SonarSeriesChart';
+import { SonarSaveActions } from '../SonarSaveActions';
+import { useSessionThread } from '../session-thread';
 import '../exemplary/sonar-exemplary-brief.css';
 import './sonar-adaptive.css';
 
@@ -563,7 +565,29 @@ function Sources({ sources }) {
   );
 }
 
-export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep = null }) {
+const SESSION_MODE = { quick: 'Quick ping', standard: 'Standard research', deep: 'Deep research' };
+const clock = (t) =>
+  new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(t));
+
+/**
+ * report      the validated report
+ * onPing      a new question from the answer's own field
+ * onFollowUp  a follow-up asked under this answer (carries its thread)
+ * onDeep      run deep research on the question
+ * onRestore   show an earlier answer from this session again (no request)
+ * sessionId   this answer's entry in the session thread
+ * actions     replaces the Save control (a saved copy brings its own)
+ */
+export default function SonarAdaptiveReport({
+  report,
+  onPing,
+  onFollowUp,
+  onDeep = null,
+  onRestore = null,
+  sessionId = null,
+  actions = null,
+}) {
+  const session = useSessionThread();
   const { sections, sources } = report;
   const lead = sections.find((s) => s.type === 'lead');
   const follow = sections.find((s) => s.type === 'followups');
@@ -616,6 +640,32 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
       { followUp: { context } },
       { ...context, person: t.person || null, event: t.event || null },
     );
+  };
+
+  /* Save Research: the answer exactly as shown, through the same route and the same Saved
+     Research pages as every other Sonar answer. The whole report rides in the snapshot, so a
+     saved copy reopens in this layout; the summary fields feed the list and the share page. */
+  const getSave = () => {
+    const t = report.thread || {};
+    return {
+      kind: 'ping',
+      question: report.resolvedQuestion || report.question,
+      subject: t.subject || t.person || null,
+      ticker: t.ticker || null,
+      depth: 'quick',
+      controls: report.controls || undefined,
+      snapshot: {
+        question: report.resolvedQuestion || report.question,
+        headline: lead?.headline || null,
+        summary: lead?.text || '',
+        subject: t.subject || t.person || null,
+        depth: 'quick',
+        answeredAt: report.asOf,
+        sources: sources.map((x) => ({ name: x.title, url: x.url || null })),
+        takeaways: [],
+        adaptive: report,
+      },
+    };
   };
 
   const render = (s) => {
@@ -784,12 +834,23 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
               {report.degraded?.includes('live_research') ? (
                 <span>Verification did not complete</span>
               ) : null}
+              {report.controls?.labels?.length ? (
+                <span>Controls: {report.controls.labels.join(', ')}</span>
+              ) : null}
               {sources.length ? (
                 <a href="#sar-sources" className="sxb-provenance-sources">
                   {sources.length} {sources.length === 1 ? 'source' : 'sources'} cited
                 </a>
               ) : null}
             </p>
+            <div className="sar-actions">
+              {actions || (
+                <SonarSaveActions
+                  getSave={getSave}
+                  question={report.resolvedQuestion || report.question}
+                />
+              )}
+            </div>
           </header>
           {body[0] ? block(body[0]) : null}
         </div>
@@ -799,6 +860,31 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
       </div>
 
       {body.slice(1).map(block)}
+
+      {onRestore && session.length >= 2 ? (
+        <section className="sxb-block sar-session" aria-labelledby="sar-session-h">
+          <h2 className="sxb-mid-title" id="sar-session-h">
+            In this session
+          </h2>
+          <ul className="sar-session-list">
+            {session.map((t) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  className="sar-session-item"
+                  aria-current={t.id === sessionId ? 'true' : undefined}
+                  onClick={() => onRestore(t)}
+                >
+                  <span className="sar-session-q">{t.headline || t.question}</span>
+                  <span className="sar-session-meta">
+                    {SESSION_MODE[t.mode] || ''} &middot; {clock(t.at)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {follow ? (
         <section className="sxb-block" aria-labelledby="sar-continue-h">

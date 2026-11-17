@@ -87,7 +87,7 @@ import {
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
 import { SonarAnswerQueryBar } from '@/components/sonar/SonarAnswerQueryBar';
-import { controlsNeedResearch } from '@/components/sonar/research-controls-store';
+import { controlsNeedResearch, readControls } from '@/components/sonar/research-controls-store';
 import { addSessionEntry } from '@/components/sonar/session-thread';
 import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
 import { SonarCongressActivityStack } from './SonarCongressActivityStack';
@@ -2614,7 +2614,11 @@ export function SonarSection({
       !opts.force &&
       opts.mode !== 'quick' &&
       typeof onStandardResearch === 'function' &&
-      controlsNeedResearch()
+      controlsNeedResearch() &&
+      /* Nov 17: with an adaptive host the question is pinged with its controls. An adaptive
+         pipeline honours them in its plan; otherwise the server hands the question back as
+         standard research (one request, one charge either way). */
+      typeof onAdaptive !== 'function'
     ) {
       setQueryValue(q);
       onStandardResearch(q, {});
@@ -2681,6 +2685,9 @@ export function SonarSection({
           /* A follow-up carries what it was asked under, so "him" and "that company" can be
              resolved. Context only; the research verifies it afresh. */
           ...(opts.thread ? { thread: opts.thread } : {}),
+          ...(typeof onAdaptive === 'function' && controlsNeedResearch()
+            ? { controls: readControls() }
+            : {}),
         }),
         signal: controller.signal,
       });

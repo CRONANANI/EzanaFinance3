@@ -13,7 +13,7 @@ const UP =
   /\b(up|ris(e|es|ing)|rose|surg(e|es|ed|ing)|rall(y|ies|ied|ying)|jump(s|ed|ing)?|soar(s|ed|ing)?|spik(e|ed|ing)|climb(s|ed|ing)?|gain(s|ed|ing)?|pop(ped|ping)?)\b/i;
 
 /** The window a question asks about, in trading sessions. */
-export function moveWindowOf(question) {
+export function moveWindowOf(question, fallbackSessions = null) {
   const q = String(question || '');
   if (/\b(this|past|last) (month|30 days|four weeks)\b|\bmonth to date\b/i.test(q))
     return { sessions: 21, label: 'the past month', range: '3M' };
@@ -23,6 +23,13 @@ export function moveWindowOf(question) {
     )
   )
     return { sessions: 5, label: 'the past five sessions', range: '1M' };
+  /* The question names no window: a chosen time horizon sets it. */
+  if (fallbackSessions)
+    return {
+      sessions: fallbackSessions,
+      label: `the past ${fallbackSessions} sessions`,
+      range: fallbackSessions > 21 ? '6M' : '3M',
+    };
   return { sessions: 1, label: 'the latest session', range: '1M' };
 }
 
