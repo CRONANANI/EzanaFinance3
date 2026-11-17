@@ -53,6 +53,7 @@
     "test:council-echo": "node --no-warnings --test scripts/check-council-echo.mjs",
     "test:council-quant-lab": "node --no-warnings --test scripts/check-council-quant-lab.mjs",
     "test:council-watchlist": "node --no-warnings --test scripts/check-council-watchlist.mjs",
+    "test:council-learning": "node --no-warnings --test scripts/check-council-learning.mjs",
     "test:org-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-qa.mjs && node --no-warnings --test scripts/check-org-positions-sql.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-pitch-stages.mjs",
     "test:org-a": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-p1.mjs && node --no-warnings --test scripts/check-org-guards.mjs && node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-org-subrole.mjs",
     "test:retail-b": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-retail-qa.mjs && node --no-warnings --test scripts/check-retail-qa-sql.mjs",

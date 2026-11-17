@@ -17,9 +17,18 @@
  *
  * The same page serves retail, org and partner accounts. Master admin and
  * demo accounts can see sample content (useLearningHub), labelled as such.
+ *
+ * Council learning (Nov 2026): council members, once org loading has
+ * finished, also get the "Council learning" band under the KPI strip
+ * (src/components/learning/council). Everyone else sees the hub unchanged;
+ * the band's hook fetches nothing for them.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useOrg } from '@/contexts/OrgContext';
+import { useCouncilLearning } from '@/components/learning/council/useCouncilLearning';
+import { DEFAULT_PATH } from '@/lib/org-learning-model';
 import { Modal, VisuallyHidden } from '@/components/ds';
 import { useBeginnerLevelOptional } from '@/contexts/BeginnerLevelContext';
 import { InvestingBasicsCard } from '@/components/beginner/InvestingBasicsCard';
@@ -57,12 +66,23 @@ import {
   TracksCard,
 } from './HubCards';
 
+const CouncilLearning = dynamic(() => import('@/components/learning/council/CouncilLearning'), {
+  ssr: false,
+  loading: () => null,
+});
+
 export function LearningHub() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hub = useLearningHub();
   const beginner = useBeginnerLevelOptional();
+  const { isOrgUser, isLoading: orgLoading } = useOrg();
+  const councilReady = Boolean(isOrgUser && !orgLoading);
+  const council = useCouncilLearning(councilReady, {
+    sampleOn: hub.sampleOn,
+    sampleKnown: hub.sampleKnown,
+  });
 
   const [range, setRange] = useState('3M');
   const [savedOpen, setSavedOpen] = useState(false);
@@ -89,7 +109,12 @@ export function LearningHub() {
 
   const cur = useMemo(() => currentLevel(trackId, progressById), [trackId, progressById]);
   const shownLevel = level || cur;
-  useEffect(() => setLevel(null), [trackId]);
+  /* A track change resets the level, unless the council path asked for one. */
+  const pendingLevel = useRef(null);
+  useEffect(() => {
+    setLevel(pendingLevel.current);
+    pendingLevel.current = null;
+  }, [trackId]);
 
   const selectTrack = useCallback(
     (id) => {
@@ -185,6 +210,25 @@ export function LearningHub() {
 
   const retryCourses = () => hub.retry('courses');
 
+  /* Council path: the viewer's own counts for the default levels, and opening
+     one of them in the active path. */
+  const pathCounts = useMemo(() => {
+    if (coursesStatus !== 'ready') return null;
+    const out = {};
+    for (const s of DEFAULT_PATH)
+      out[`${s.track}:${s.level}`] = levelCounts(s.track, progressById)[s.level];
+    return out;
+  }, [coursesStatus, progressById]);
+  const openLevel = useCallback(
+    (track, lvl) => {
+      if (track !== trackId) pendingLevel.current = lvl;
+      selectTrack(track);
+      setLevel(lvl);
+      requestAnimationFrame(() => document.getElementById('lh-path')?.focus());
+    },
+    [selectTrack, trackId],
+  );
+
   return (
     <div className="lh-page dashboard-page-inset ez-canvas">
       <VisuallyHidden>
@@ -215,6 +259,10 @@ export function LearningHub() {
           <div className="lh-beginner">
             <InvestingBasicsCard />
           </div>
+        ) : null}
+
+        {councilReady ? (
+          <CouncilLearning council={council} pathCounts={pathCounts} onOpenLevel={openLevel} />
         ) : null}
 
         <div className="lh-row lh-row--2">

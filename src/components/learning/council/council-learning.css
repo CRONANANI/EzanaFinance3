@@ -1,0 +1,450 @@
+/* ══════════════════════════════════════════════════════════
+   COUNCIL LEARNING (Learning Center, council members only)
+
+   Page-scoped (lcc-), tokens only. Sections are flat: a title,
+   hairlines and whitespace, never a surface. Text sits on the
+   canvas lines. Tabs are text only, emerald when selected.
+   Row hover is a colour change. Status is a word with an icon,
+   never colour alone; scores are never red or green. The band
+   adds no filled button: Resume learning stays the page's one.
+   It reuses the hub's atoms (lh-title, lh-head, lh-error,
+   lh-link, lh-text-btn, lh-skel, lh-info, lh-num).
+   ══════════════════════════════════════════════════════════ */
+
+.lcc-band {
+  --lcc-gap: 64px;
+  border-top: 1px solid var(--ez-rule);
+  padding-top: 20px;
+  min-width: 0;
+}
+
+/* ── Heading and jump tabs ──────────────────────────────── */
+.lcc-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px 48px;
+}
+.lcc-heading {
+  margin: 0;
+  font-size: 22px;
+  font-weight: var(--weight-strong);
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.lcc-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+.lcc-tab {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.lcc-tab:hover,
+.lcc-tab.is-on {
+  color: var(--emerald-text);
+}
+.lcc-sample {
+  margin-left: auto;
+}
+
+/* ── Context strip ──────────────────────────────────────── */
+.lcc-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 0;
+  margin: 16px 0 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--ez-rule);
+}
+.lcc-strip__cell {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 24px;
+  border-left: 1px solid var(--ez-rule);
+}
+.lcc-strip__cell:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.lcc-strip dt {
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+.lcc-strip dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.lcc-strip dd.lh-num {
+  font-size: 18px;
+}
+
+/* ── Rows of cards ──────────────────────────────────────── */
+.lcc-row3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--lcc-gap);
+  border-top: 1px solid var(--ez-rule);
+}
+.lcc-row3--n2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.lcc-row3--n1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.lcc-col {
+  position: relative;
+  min-width: 0;
+  padding: 20px 0;
+}
+.lcc-col:focus {
+  outline: none;
+}
+/* The vertical rule sits in the middle of the 64px gap. */
+.lcc-col + .lcc-col::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--lcc-gap) / -2);
+  width: 1px;
+  background: var(--ez-rule);
+}
+.lcc-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+/* Tooltips open from the title's left edge so they never pass the canvas. */
+.lcc-title {
+  position: relative;
+}
+.lcc-band .lcc-title .ds-tooltip-wrap {
+  position: static;
+}
+.lcc-band .lcc-title .ds-tooltip {
+  left: 0;
+  right: auto;
+  transform: none;
+  max-width: min(280px, 100%);
+}
+.lcc-title > .bi {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+/* ── Lists ──────────────────────────────────────────────── */
+.lcc-list,
+.lcc-checks,
+.lcc-grades,
+.lcc-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lcc-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto 96px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.lcc-row--3 {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+}
+.lcc-row--queue {
+  grid-template-columns: 20px minmax(0, 1fr) 96px;
+}
+a.lcc-row:hover .lh-row-title {
+  color: var(--emerald-text);
+}
+.lcc-row .lh-row-title {
+  transition: color 0.15s ease;
+}
+.lcc-list__icon {
+  color: var(--text-muted);
+  font-size: 15px;
+}
+.lcc-list__title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.lcc-due {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.lcc-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: var(--type-caption-size);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.lcc-warn {
+  color: var(--warning);
+}
+.lcc-faint {
+  font-size: var(--type-caption-size);
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* Onboarding checklist (read-only: completion is recorded elsewhere) */
+.lcc-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.lcc-check > .bi {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+.lcc-check > .lcc-check--done {
+  color: var(--emerald-text);
+}
+.lcc-check > .lcc-faint {
+  margin-left: auto;
+}
+.lcc-gate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--ez-rule);
+  font-size: var(--type-value-sm-size);
+}
+
+/* Grades */
+.lcc-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 40px;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+.lcc-grade__score {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.lcc-grade__letter {
+  justify-self: end;
+  color: var(--text-primary);
+  font-weight: var(--weight-strong);
+}
+.lcc-grade__note {
+  grid-column: 1 / -1;
+}
+
+/* Council path */
+.lcc-note {
+  margin: 0;
+  padding: 12px 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.lcc-sub {
+  margin: 16px 0 4px;
+}
+.lcc-step {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto 14px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lcc-step__n {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.lcc-step > .bi {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.lcc-step:hover .lh-row-title {
+  color: var(--emerald-text);
+}
+
+/* Team progress table */
+.lcc-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.lcc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lcc-table thead th {
+  padding: 10px 0 8px;
+  font-family: var(--font-sans);
+  border-bottom: 1px solid var(--ez-rule);
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+.lcc-table tbody th,
+.lcc-table td {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  text-align: left;
+  font-weight: var(--weight-regular);
+}
+.lcc-table tbody th {
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.lcc-table .is-num {
+  padding-left: 12px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.lcc-table tbody tr:hover .lh-row-title {
+  color: var(--emerald-text);
+}
+
+/* Footers and states */
+.lcc-foot {
+  margin: 12px 0 0;
+}
+.lcc-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 16px 0;
+  font-size: var(--type-value-sm-size);
+  color: var(--text-muted);
+}
+.lcc-skel {
+  display: flex;
+  flex-direction: column;
+}
+.lcc-skel__row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+}
+
+.lcc-tab:focus-visible,
+.lcc-row:focus-visible,
+.lcc-step:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Tablet: cards stack ────────────────────────────────── */
+@media (max-width: 1279px) {
+  .lcc-row3,
+  .lcc-row3--n2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lcc-col + .lcc-col {
+    border-top: 1px solid var(--ez-rule);
+  }
+  .lcc-col + .lcc-col::before {
+    display: none;
+  }
+}
+
+/* ── Phone ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .lh-rows > .lcc-band {
+    order: 2;
+  }
+  .lcc-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .lcc-sample {
+    margin-left: 0;
+  }
+  .lcc-tabs {
+    gap: 0 24px;
+  }
+  .lcc-tab,
+  .lcc-step {
+    min-height: 44px;
+  }
+  .lcc-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .lcc-strip__cell:first-child {
+    grid-column: 1 / -1;
+  }
+  .lcc-strip__cell:nth-child(2),
+  .lcc-strip__cell:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .lcc-row {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+  }
+  .lcc-row .lcc-due {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .lcc-row--3 .lcc-faint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lcc-tab,
+  .lcc-row .lh-row-title {
+    transition: none;
+  }
+  .lcc-band .lh-skel {
+    animation: none;
+  }
+}

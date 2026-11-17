@@ -671,3 +671,18 @@ export function applySampleAction(bundle, action, now = Date.now()) {
       return { ok: false, error: 'Unknown action' };
   }
 }
+
+/**
+ * The Learning category of each sample member's council rating (member id to
+ * a 0 to 100 score, or null while pending), the same figure sampleScorecard
+ * shows. The viewer's own is pending. Used by the Learning Center's council
+ * band so both pages agree.
+ */
+export function sampleLearningScores() {
+  return Object.fromEntries(
+    Object.entries(N).map(([k, n]) => {
+      const learning = ACTIVITY[k]?.[2];
+      return [memberOf(n), learning == null ? null : round2(clamp(learning / 50, 0, 100))];
+    }),
+  );
+}

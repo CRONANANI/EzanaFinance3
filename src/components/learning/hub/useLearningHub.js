@@ -184,6 +184,7 @@ export function useLearningHub() {
       bookmarksStatus: view.bookmarks.status,
       mainTrack: view.main.data?.main_track || null,
       sampleAvailable: !!sample,
+      sampleKnown: sample !== undefined,
       sampleOn,
       setSampleShown,
       retry: loadOne,
