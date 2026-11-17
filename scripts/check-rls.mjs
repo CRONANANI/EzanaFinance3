@@ -475,6 +475,28 @@ test('lobbying client identity: browsers cannot write a mapping or call the matc
   );
 });
 
+test('13F backfill: plan tables and completeness functions are service role only', (t) => {
+  if (skip(t)) return;
+  for (const tbl of ['sec_13f_backfill_days', 'sec_13f_backfill_quarters']) {
+    assert.equal(
+      pg.sql(`select relrowsecurity::text from pg_class where oid = 'public.${tbl}'::regclass`),
+      'true',
+    );
+    denied(() => asA(`select count(*) from public.${tbl}`));
+    denied(() => pg.sql(`set role anon; select count(*) from public.${tbl}`));
+    denied(() => asA(`insert into public.${tbl} (period) values ('2026-03-31')`));
+  }
+  for (const fn of [
+    "sec_13f_quarter_completeness('2026-03-31'::date)",
+    "sec_13f_materialise_if_complete('2026-03-31'::date)",
+    'titans_materialisable_quarter()',
+    'refresh_titans_institutional_latest()',
+  ]) {
+    denied(() => asA(`select public.${fn}`));
+    denied(() => pg.sql(`set role anon; select public.${fn}`));
+  }
+});
+
 test('the harness refuses to run without a dependency a migration needs', async () => {
   const { extensionsNeeded, pgRequired } = await import('./lib/pg-harness.mjs');
   assert.ok(

@@ -23,6 +23,7 @@ import {
   buildActivistRow,
 } from '@/lib/sec/schedule13-meta';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { explicitPeriods, parseDeclaredTotals } from '@/lib/sec/13f-backfill';
 
 /**
  * Phase 2: parse holdings for filings already in sec_filings.
@@ -52,6 +53,19 @@ import { cronRoute } from '@/lib/cron/with-cron-lock';
  * Auth: CRON_SECRET bearer only (cronRoute).
  *   GET /api/cron/ingest-sec-holdings?max13f=40&maxActivist=40[&maxReparse=20]
  */
+async function recordDeclaredTotals(admin, index, f) {
+  const items = index?.directory?.item || [];
+  const doc = items.find((it) => /primary_?doc\.xml$/i.test(it?.name || ''));
+  if (!doc) return;
+  const { base } = edgarUrls({ accessionNo: f.accession_no, cik: f.cik });
+  const totals = parseDeclaredTotals(await secFetchText(`${base}/${doc.name}`));
+  if (totals.entries == null) return;
+  await admin
+    .from('sec_filings')
+    .update({ table_entry_total: totals.entries, table_value_total: totals.value })
+    .eq('accession_no', f.accession_no);
+}
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -207,19 +221,36 @@ async function staleActivist(admin, cap) {
   return data || [];
 }
 
+/** Quarters under backfill and not yet materialised: their raw holdings are kept. */
+async function protectedPeriods(admin) {
+  const { data, error } = await admin
+    .from('sec_13f_backfill_quarters')
+    .select('period, status')
+    .neq('status', 'materialised');
+  /* Table absent (migration not applied): nothing is protected, as before. A read error
+     on a present table protects everything older, so a backfill is never deleted. */
+  if (error) return error.code === '42P01' || error.code === 'PGRST205' ? [] : null;
+  return (data || []).map((r) => String(r.period).slice(0, 10));
+}
+
 /** Delete holdings of filings older than the parse window, by accession. */
 async function applyRetention(admin, oldestKept, errors) {
   let removed = 0;
   const accs = [];
+  const keep = await protectedPeriods(admin);
+  if (keep === null) {
+    errors.push('retention: backfill quarters unreadable; nothing removed');
+    return 0;
+  }
   for (let from = 0; ; from += 1000) {
-    // eslint-disable-next-line no-await-in-loop
-    const { data, error } = await admin
+    let q = admin
       .from('sec_filings')
       .select('accession_no')
       .eq('form_family', 'institutional')
-      .lt('period_of_report', oldestKept)
-      .order('accession_no')
-      .range(from, from + 999);
+      .lt('period_of_report', oldestKept);
+    if (keep.length) q = q.not('period_of_report', 'in', `(${keep.join(',')})`);
+    // eslint-disable-next-line no-await-in-loop
+    const { data, error } = await q.order('accession_no').range(from, from + 999);
     if (error) {
       errors.push(`retention list: ${error.message}`);
       return removed;
@@ -248,7 +279,10 @@ async function run(request) {
 
   const admin = getAdminClient();
   const errors = [];
-  const periods = recentPeriods(new Date());
+  /* ?periods=2026-03-31,2026-09-30 parses named quarters (the 13F backfill). Only quarter
+     ends that are not in the future, at most four. Without it: the rolling window. */
+  const named = explicitPeriods(searchParams.get('periods'));
+  const periods = named || recentPeriods(new Date());
   let filings13f = 0;
   let holdingsRows = 0;
   let mappedAtInsert = 0;
@@ -276,6 +310,10 @@ async function run(request) {
       const xml = await secFetchText(url);
       const parsed = parseInfoTable(xml);
       if (!parsed.length) continue;
+      /* The cover page declares how many rows the information table holds; recorded so
+         completeness can be checked filing by filing. Best effort. */
+      // eslint-disable-next-line no-await-in-loop
+      await recordDeclaredTotals(admin, index, f).catch(() => {});
       // eslint-disable-next-line no-await-in-loop
       const known = await tickersFor(
         admin,
@@ -407,8 +445,9 @@ async function run(request) {
   }
 
   // ── Retention: holdings only for the parse window ─────────────────────────
+  /* A named-period run is a backfill: it never removes anything. */
   const oldestKept = periods[periods.length - 1];
-  const removed = await applyRetention(admin, oldestKept, errors);
+  const removed = named ? 0 : await applyRetention(admin, oldestKept, errors);
   if (removed)
     console.log(
       `[ingest-sec-holdings] retention removed ${removed} holdings older than ${oldestKept}`,

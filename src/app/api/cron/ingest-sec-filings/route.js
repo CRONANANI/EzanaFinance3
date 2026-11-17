@@ -135,7 +135,7 @@ function mapHit(hit, family, cikTicker) {
  *  A run that stops before efts' reported total (page cap reached, or a page
  *  failed) is TRUNCATED: it is logged, because the 13F filing-progress
  *  indicator and every 13F card silently undercount EDGAR when it happens. */
-async function fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, errors }) {
+async function fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, errors, stats }) {
   const byAcc = new Map();
   let total = 0;
   let hitsSeen = 0;
@@ -159,6 +159,11 @@ async function fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, er
     }
     total = Number(json?.hits?.total?.value ?? json?.hits?.total ?? 0) || total;
     if (hits.length < PAGE_SIZE || (total && (page + 1) * PAGE_SIZE >= total)) break;
+  }
+  if (stats) {
+    stats.total = total;
+    stats.hitsSeen = hitsSeen;
+    stats.truncated = Boolean(pageError) || Boolean(total && hitsSeen < total);
   }
   if (pageError || (total && hitsSeen < total)) {
     console.warn(
@@ -235,7 +240,17 @@ async function run(request) {
         { status: 500 },
       );
     }
-    const rows = await fetchFamily({ family, forms, startdt, enddt, pages, cikTicker, errors });
+    const stats = {};
+    const rows = await fetchFamily({
+      family,
+      forms,
+      startdt,
+      enddt,
+      pages,
+      cikTicker,
+      errors,
+      stats,
+    });
     const keep = rows.filter((r) => tracked.has(r.cik));
     const res = await upsertChunked(admin, 'sec_filings', keep, 'accession_no');
     errors.push(...res.errors);
@@ -244,6 +259,9 @@ async function run(request) {
       mode: 'backfill',
       window: { startdt, enddt, pages },
       seen: rows.length,
+      edgar_total: stats.total ?? null,
+      hits_seen: stats.hitsSeen ?? null,
+      truncated: Boolean(stats.truncated),
       tracked_filers: tracked.size,
       indexed: res.count,
       periods: keep.reduce((acc, r) => {
