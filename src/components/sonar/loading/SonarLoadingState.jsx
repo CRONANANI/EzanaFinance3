@@ -20,6 +20,10 @@
  * state fades, and `onExited` tells the page to show the brief. A ping that
  * settles without a brief (`dismissed`) fades quietly, never "ready".
  *
+ * Nov 16, 2026: the cube is drawn by its eight corners only, the scan is a
+ * sonar ping leaving the core (it was a plane sweeping up and down), the
+ * floor glow is fainter, and the dimension rows lost their coloured dot.
+ *
  * Branding guide: tokens only, page-scoped under .sonar-loading, Bootstrap
  * Icons, always dark (force-dark-theme), no em dashes in copy, findings
  * only.
@@ -115,7 +119,6 @@ export default function SonarLoadingState({
                   data-status={d.status}
                   style={{ '--dim-color': `var(${d.colorVar})` }}
                 >
-                  <span className="sl-dim__dot" aria-hidden="true" />
                   <span className="sl-dim__name">{d.name}</span>
                   <span className="sl-dim__status">
                     {d.status === 'complete' ? (

@@ -2,9 +2,11 @@
  * Sonar cube engine
  * ------------------------------------------------------------------
  * Framework-agnostic Canvas 2D renderer for the Sonar research cube.
- * One translucent cube (the "shell"), a seven-colour neural network
- * inside it (one cluster per Ezana data dimension) and a synthesis
- * core at the centre.
+ * Eight corner brackets that mark out a cube (the "shell"), a
+ * seven-colour neural network inside it (one cluster per Ezana data
+ * dimension) and a synthesis core at the centre. The scan is a sonar
+ * ping: a wavefront that leaves the core, travels out through the
+ * network and lights each node and link as it passes.
  *
  * Colours are NOT hardcoded here. They are read at start-up from CSS
  * custom properties on `colorSource` (any CSS colour, resolved to RGB):
@@ -36,32 +38,16 @@ const CUBE_V = [
   [1, 1, 1],
   [-1, 1, 1],
 ];
-const CUBE_E = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 0],
-  [4, 5],
-  [5, 6],
-  [6, 7],
-  [7, 4],
-  [0, 4],
-  [1, 5],
-  [2, 6],
-  [3, 7],
-];
-const CUBE_F = [
-  [0, 1, 2, 3],
-  [4, 5, 6, 7],
-  [0, 1, 5, 4],
-  [3, 2, 6, 7],
-  [0, 3, 7, 4],
-  [1, 2, 6, 5],
-];
+/* Nov 16, 2026: the shell is no longer a glass box. Each corner draws three
+   short arms along its edges, so the cube reads from its corners alone. */
+const CORNER_ARM = 0.34; // arm length; the cube's edge is 2
+const WAVE_MS = 3400; // one sonar ping, core to corners
+const WAVE_REACH = 1.8; // just past the corners (sqrt 3 from the core)
+const WAVE_BAND = 0.2; // thickness of the lit front
 
 const NODES_PER_DIM = 14;
 const HUB_RADIUS = 0.55; // distance of each dimension's hub from centre (cube half-size = 1)
-const NODE_LIMIT = 0.88; // nodes fill the cube out to this bound, just inside the glass
+const NODE_LIMIT = 0.88; // nodes fill the cube out to this bound, just inside the corners
 const CORE_CLEARANCE = 0.22; // empty zone around the synthesis core
 const MAX_PULSES = 170;
 const SEED = 20261105; // fixed seed: every user sees the same network, like a brand mark
@@ -243,6 +229,7 @@ export function createSonarCube(canvas, options = {}) {
   const CO = coreRgb.join(',');
 
   const P = new Float32Array(N.length * 4);
+  const dist = new Float32Array(N.length); // each node's distance from the core, per frame
   const flash = new Float32Array(Ed.length);
   const energy = [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3];
   const pulses = [];
@@ -375,62 +362,43 @@ export function createSonarCube(canvas, options = {}) {
     ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, W, H);
 
-    // floor shadow
+    // floor shadow: a faint pool of light, kept well under the network
     ctx.save();
     ctx.translate(cx, cyc + S * 0.445);
     ctx.scale(1, 0.12);
-    let g = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.3);
-    g.addColorStop(0, `rgba(${A},0.18)`);
+    let g = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.26);
+    g.addColorStop(0, `rgba(${A},0.055)`);
     g.addColorStop(1, `rgba(${A},0)`);
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(0, 0, S * 0.3, 0, 6.2832);
+    ctx.arc(0, 0, S * 0.26, 0, 6.2832);
     ctx.fill();
     ctx.restore();
 
-    // ---- LAYER 1: SHELL ----
-    const V = CUBE_V.map((v) => proj(v[0], v[1], v[2], [0, 0, 0, 0]));
-    for (const fc of CUBE_F) {
-      const z = (V[fc[0]][2] + V[fc[1]][2] + V[fc[2]][2] + V[fc[3]][2]) / 4;
-      ctx.fillStyle = `rgba(${SH},${z > 0 ? 0.024 : 0.012})`;
+    // ---- LAYER 1: SHELL (corner brackets) ----
+    const far = [0, 0, 0, 0];
+    ctx.lineWidth = 1.25;
+    ctx.lineCap = 'square';
+    for (const v of CUBE_V) {
+      const c = proj(v[0], v[1], v[2], [0, 0, 0, 0]);
+      ctx.strokeStyle = `rgba(${SH},${(0.14 + 0.5 * dn01(c[2])).toFixed(3)})`;
       ctx.beginPath();
-      ctx.moveTo(V[fc[0]][0], V[fc[0]][1]);
-      for (let j = 1; j < 4; j++) ctx.lineTo(V[fc[j]][0], V[fc[j]][1]);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.lineWidth = 1;
-    for (const [ia, ib] of CUBE_E) {
-      const a = V[ia],
-        b = V[ib];
-      const z = (a[2] + b[2]) / 2;
-      ctx.setLineDash(z < -0.35 ? [2, 4] : []); // back edges dashed like a drafting view
-      ctx.strokeStyle = `rgba(${SH},${(0.08 + 0.26 * dn01(z)).toFixed(3)})`;
-      ctx.beginPath();
-      ctx.moveTo(a[0], a[1]);
-      ctx.lineTo(b[0], b[1]);
+      for (let axis = 0; axis < 3; axis++) {
+        const e = [v[0], v[1], v[2]];
+        e[axis] -= v[axis] * CORNER_ARM; // step along this edge, toward the next corner
+        proj(e[0], e[1], e[2], far);
+        ctx.moveTo(c[0], c[1]);
+        ctx.lineTo(far[0], far[1]);
+      }
       ctx.stroke();
     }
-    ctx.setLineDash([]);
-    // (Nov 8, 2026) The bright corner brackets that were drawn here are gone;
-    // the shell is the faces and the thin edges above.
-    // sonar sweep plane (9 s period)
-    const sy = Math.sin(T * 0.0007) * 0.86;
-    const q = [
-      [-0.97, sy, -0.97],
-      [0.97, sy, -0.97],
-      [0.97, sy, 0.97],
-      [-0.97, sy, 0.97],
-    ].map((p) => proj(p[0], p[1], p[2], [0, 0, 0, 0]));
-    ctx.fillStyle = `rgba(${A},0.035)`;
-    ctx.strokeStyle = `rgba(${A},0.22)`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(q[0][0], q[0][1]);
-    for (let j = 1; j < 4; j++) ctx.lineTo(q[j][0], q[j][1]);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // sonar ping: the radius of the wavefront leaving the core, and its strength
+    const wp = (T % WAVE_MS) / WAVE_MS;
+    const wr = WAVE_REACH * (1 - (1 - wp) * (1 - wp)); // fast out of the core, easing at the corners
+    const wa = Math.min(1, wp * 6) * (1 - wp * wp * wp);
+    const lit = (r) => Math.max(0, 1 - Math.abs(r - wr) / WAVE_BAND) * wa;
 
     // ---- LAYER 2: NETWORK (additive light) ----
     ctx.globalCompositeOperation = 'lighter';
@@ -446,12 +414,26 @@ export function createSonarCube(canvas, options = {}) {
       const x = n.ox + 0.035 * Math.sin(T * 0.0005 + n.ph);
       const y = n.oy + 0.035 * Math.sin(T * 0.00043 + n.ph * 1.3);
       const z = n.oz + 0.035 * Math.cos(T * 0.00047 + n.ph * 0.7);
-      n.y = y;
+      dist[i] = Math.sqrt(x * x + y * y + z * z);
       proj(x, y, z, tmp);
       P[i * 4] = tmp[0];
       P[i * 4 + 1] = tmp[1];
       P[i * 4 + 2] = tmp[2];
       P[i * 4 + 3] = tmp[3];
+    }
+
+    // the wavefront itself: two thin rings around the core, the second trailing the first
+    {
+      const o = core * 4;
+      ctx.lineWidth = 1;
+      for (let k = 0; k < 2; k++) {
+        const rr = (wr - k * 0.16) * P[o + 3];
+        if (rr <= 0) continue;
+        ctx.strokeStyle = `rgba(${A},${((k === 0 ? 0.2 : 0.08) * wa).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(P[o], P[o + 1], rr, 0, 6.2832);
+        ctx.stroke();
+      }
     }
 
     for (let i = 0; i < Ed.length; i++) {
@@ -465,7 +447,10 @@ export function createSonarCube(canvas, options = {}) {
       if (e.type === 0) {
         const d = N[e.a].d;
         c = rgb[d];
-        a = (0.05 + 0.22 * energy[d]) * df;
+        // the ping lights each link as the front crosses it
+        const hit = lit((dist[e.a] + dist[e.b]) / 2);
+        a = (0.05 + 0.22 * energy[d] + 0.4 * hit) * df;
+        w = 0.8 + 0.5 * hit;
       } else if (e.type === 1) {
         a = (0.03 + 0.55 * flash[i]) * df;
         w = 0.7 + 1.1 * flash[i];
@@ -561,9 +546,9 @@ export function createSonarCube(canvas, options = {}) {
         d = n.d,
         en = energy[d];
       const dn = Math.max(0, Math.min(1, (P[o + 2] + 1) / 2));
-      const boost = Math.max(0, 1 - Math.abs(n.y - sy) / 0.1); // sweep plane lights nodes it crosses
-      const r = (2 + 2.2 * n.sz) * (0.7 + 0.5 * dn) * (0.85 + 0.5 * en) * sc;
-      ctx.globalAlpha = Math.min(1, (0.22 + 0.7 * en + 0.6 * boost) * (0.5 + 0.5 * dn));
+      const boost = lit(dist[i]); // the ping lights each node as the front reaches it
+      const r = (2 + 2.2 * n.sz) * (0.7 + 0.5 * dn) * (0.85 + 0.5 * en + 0.35 * boost) * sc;
+      ctx.globalAlpha = Math.min(1, (0.22 + 0.7 * en + 0.75 * boost) * (0.5 + 0.5 * dn));
       ctx.drawImage(sprites[d], P[o] - r * 2.4, P[o + 1] - r * 2.4, r * 4.8, r * 4.8);
       if (n.hub) {
         const c = rgb[d];

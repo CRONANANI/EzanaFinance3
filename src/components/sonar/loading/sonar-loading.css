@@ -87,7 +87,7 @@
   inset: 0;
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--sl-accent) 9%, transparent),
+    color-mix(in srgb, var(--sl-accent) 6%, transparent),
     transparent
   );
   pointer-events: none;
@@ -121,7 +121,7 @@
 }
 .sonar-loading .sl-dim {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   column-gap: 12px;
   row-gap: 8px;
   align-items: center;
@@ -132,13 +132,6 @@
   transition:
     background 500ms var(--sl-ease),
     box-shadow 500ms var(--sl-ease);
-}
-.sonar-loading .sl-dim__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dim-color);
-  transition: box-shadow 500ms var(--sl-ease);
 }
 .sonar-loading .sl-dim__name {
   font-size: 14px;
@@ -166,7 +159,7 @@
   font-size: 12px;
 }
 .sonar-loading .sl-dim__bar {
-  grid-column: 2 / 4;
+  grid-column: 1 / -1;
   height: 2px;
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--sonar-ping-ink) 6%, transparent);
@@ -187,11 +180,6 @@
 .sonar-loading .sl-dim[data-focused='true'] {
   background: color-mix(in srgb, var(--dim-color) 6%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dim-color) 34%, transparent);
-}
-.sonar-loading .sl-dim[data-focused='true'] .sl-dim__dot {
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--dim-color) 14%, transparent),
-    0 0 14px color-mix(in srgb, var(--dim-color) 70%, transparent);
 }
 .sonar-loading .sl-dim[data-focused='true'] .sl-dim__name {
   color: var(--sl-text);
@@ -273,7 +261,6 @@
   .sonar-loading,
   .sonar-loading .sl-ticker__phrase,
   .sonar-loading .sl-dim,
-  .sonar-loading .sl-dim__dot,
   .sonar-loading .sl-dim__bar > span {
     animation: none;
     transition: none;
