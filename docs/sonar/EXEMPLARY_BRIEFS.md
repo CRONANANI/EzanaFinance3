@@ -64,10 +64,9 @@ alone.
 4. After deploy, run the indexer once so the retrieval table has its
    embedding.
 
-## Not built yet
+## Other questions
 
-The response page draws a stored brief. Producing this format for an
-arbitrary question (another executive's departure, a merger, a ruling) needs a
-research pipeline that verifies the event against primary sources and returns
-this typed shape. Until that exists, a question without a stored brief gets
-the existing Sonar answer.
+A question without a stored brief is planned by the adaptive research layer
+(`docs/sonar/adaptive-research/README.md`). Where its scenario has an executor
+the answer is researched live and drawn in this same visual language with the
+sections that scenario calls for; otherwise it gets the existing Sonar answer.

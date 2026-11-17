@@ -168,7 +168,7 @@ test('the route serves it before anything is reserved, and the host draws it', (
   assert.match(route, /body\.formats\.includes\('exemplary'\)/);
   assert.match(route, /exemplary: publicBrief\(curated\.brief\)/);
   const band = fs.readFileSync('src/components/landing/SonarSection.jsx', 'utf8');
-  assert.match(band, /formats: \['exemplary'\]/);
+  assert.match(band, /typeof onExemplary === 'function' \? \['exemplary'\] : \[\]/);
   assert.match(band, /onExemplary\(q, data\.exemplary\)/);
   const host = fs.readFileSync('src/components/sonar/SonarExperience.jsx', 'utf8');
   assert.match(host, /onExemplary=\{showExemplary\}/);

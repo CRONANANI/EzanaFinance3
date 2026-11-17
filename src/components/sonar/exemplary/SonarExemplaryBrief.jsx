@@ -18,7 +18,7 @@
  *
  * brief        the public brief (publicBrief())
  * onPing(q)    a new question from the top field: the host pings it
- * onFollowUp(q, extra)  a follow-up: the host's standard research path
+ * onFollowUp(q, extra, thread)  a follow-up: routed by the host with the thread it was asked in
  * onDeep()     deep research on this question (optional)
  */
 import { useEffect, useId, useRef, useState } from 'react';
@@ -108,17 +108,20 @@ export default function SonarExemplaryBrief({ brief, onPing, onFollowUp, onDeep 
       .trim()
       .slice(0, 600);
     if (!q) return;
-    onFollowUp?.(q, {
-      followUp: {
-        context: followUpContext({
-          question: brief.question,
-          headline: brief.headline,
-          summary: brief.deck,
-          subject: brief.entities?.subject || null,
-          ticker: brief.entities?.tickers?.[0] || null,
-        }),
-      },
+    const context = followUpContext({
+      question: brief.question,
+      headline: brief.headline,
+      summary: brief.deck,
+      subject: brief.entities?.subject || null,
+      ticker: brief.entities?.tickers?.[0] || null,
     });
+    /* The thread this follow-up is asked in: lets the server resolve "him" and route the
+       question to the research it needs. Context only; it is verified again. */
+    onFollowUp?.(
+      q,
+      { followUp: { context } },
+      { ...context, person: brief.entities?.people?.[0] || null },
+    );
   };
 
   return (

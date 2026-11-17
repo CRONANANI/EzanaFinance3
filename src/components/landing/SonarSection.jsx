@@ -835,6 +835,9 @@ export function SonarSection({
   /* Nov 16: the host can draw an exemplary brief (a hand-reviewed answer served for the
      exact question it answers). Called with (query, brief); the band shows nothing for it. */
   onExemplary = null,
+  /* Nov 16: the host can draw an adaptive research report (src/lib/sonar/adaptive): a
+     question-specific ordered list of sections. Called with (query, report). */
+  onAdaptive = null,
   /* Nov 13 (research workspace): shows a research answer from the session thread again (the
      host owns research runs); a quick ping's entry is shown here. */
   onRestoreResearch = null,
@@ -2667,7 +2670,17 @@ export function SonarSection({
           ...(opts.mode !== 'quick' && typeof onStandardResearch === 'function'
             ? { research: ['standard', 'deep'] }
             : {}),
-          ...(typeof onExemplary === 'function' ? { formats: ['exemplary'] } : {}),
+          ...(typeof onExemplary === 'function' || typeof onAdaptive === 'function'
+            ? {
+                formats: [
+                  ...(typeof onExemplary === 'function' ? ['exemplary'] : []),
+                  ...(typeof onAdaptive === 'function' ? ['adaptive'] : []),
+                ],
+              }
+            : {}),
+          /* A follow-up carries what it was asked under, so "him" and "that company" can be
+             resolved. Context only; the research verifies it afresh. */
+          ...(opts.thread ? { thread: opts.thread } : {}),
         }),
         signal: controller.signal,
       });
@@ -2685,6 +2698,15 @@ export function SonarSection({
         }
         setQueryValue(q);
         onExemplary(q, data.exemplary);
+      } else if (data?.adaptive && typeof onAdaptive === 'function') {
+        /* An adaptive research report for this question; the host draws it. */
+        settle = { settled: true, ok: true, deep: true };
+        if (!hadPinged) {
+          hasPingedRef.current = false;
+          setHasPinged(false);
+        }
+        setQueryValue(q);
+        onAdaptive(q, data.adaptive);
       } else if (data?.deepSuggested) {
         /* Nothing was spent. The band keeps what it showed before; the host
            asks whether to run deep research. */
@@ -2703,9 +2725,12 @@ export function SonarSection({
           setHasPinged(false);
         }
         setQueryValue(q);
-        onStandardResearch(q, {
+        /* A follow-up comes back written out in full ("him" named), and keeps the context it
+           was sent with. */
+        onStandardResearch(data.followUp && data.query ? data.query : q, {
           classification: data.classification || null,
           goDeeper: data.goDeeper || null,
+          ...(opts.extra ? { extra: opts.extra } : {}),
         });
       } else if (data?.gate) {
         openGate({
@@ -2820,11 +2845,11 @@ export function SonarSection({
       quick: (q) => runPingRef.current(q || lastPingRef.current, { mode: 'quick' }),
       /* Nov 7: a new question asked from a research answer's ping bar. The band pings it
          like one typed in its own bar (the host's loading screen follows onPing). */
-      ping: (q) => {
+      ping: (q, opts = {}) => {
         const words = String(q || '').trim();
         if (!words) return false;
         setQueryValue(words);
-        runPingRef.current(words);
+        runPingRef.current(words, opts);
         return true;
       },
       /* Nov 13: show a quick ping from the session thread again, from memory. */

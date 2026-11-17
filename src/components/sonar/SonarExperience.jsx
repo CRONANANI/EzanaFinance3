@@ -43,6 +43,11 @@ const SonarExemplaryBrief = dynamic(() => import('./exemplary/SonarExemplaryBrie
   ssr: false,
 });
 
+/* Nov 16: the adaptive research report (question-specific sections), loaded when one arrives. */
+const SonarAdaptiveReport = dynamic(() => import('./adaptive/SonarAdaptiveReport'), {
+  ssr: false,
+});
+
 const SonarBand = dynamic(
   () => import('@/components/landing/SonarSection').then((m) => ({ default: m.SonarSection })),
   { ssr: false, loading: () => <SonarBandLoading /> },
@@ -206,6 +211,8 @@ export function SonarExperience({
   /* Nov 16: an exemplary brief the server served for this exact question ({ query, brief }).
      It takes the page like a research run; the band stays under it. */
   const [exemplary, setExemplary] = useState(null);
+  /* Nov 16: an adaptive research report ({ query, report }), drawn like a run. */
+  const [adaptive, setAdaptive] = useState(null);
   /* Nov 2026, estimates: POST /api/sonar/estimate for the latest ping
      ({ query, data }), fired by the band on submit just before the ping. It
      times the answer in progress and fills the deep research card. */
@@ -342,6 +349,7 @@ export function SonarExperience({
     setDeepRun(null);
     setStandardRun(null);
     setRestored(null);
+    setAdaptive(null);
     setExemplary({ query, brief });
     setShownQuery(brief.question || query);
     loaderTimers.current.forEach(clearTimeout);
@@ -351,12 +359,42 @@ export function SonarExperience({
       setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
     );
   }
+  /* Nov 16: an adaptive report has landed: hand off the loading screen and show it. */
+  function showAdaptive(query, report) {
+    if (!report) return;
+    setDeepOffer(null);
+    setDeepRun(null);
+    setStandardRun(null);
+    setRestored(null);
+    setExemplary(null);
+    setAdaptive({ query, report, nonce: Date.now() });
+    setShownQuery(report.resolvedQuestion || query);
+    loaderTimers.current.forEach(clearTimeout);
+    loaderTimers.current = [];
+    setLoader((l) => (l ? { ...l, phase: 'ready', leaving: false } : l));
+    loaderTimers.current.push(
+      setTimeout(() => setLoader((l) => (l && l.phase === 'ready' ? null : l)), 2600),
+    );
+  }
+  /* A follow-up asked under an exemplary brief or an adaptive report. It is pinged through
+     the band with the thread it was asked in, so the server can resolve "him" and route it:
+     an adaptive scenario answers it, or it comes back as standard research with its context.
+     The answer it was asked under stays up until the new one lands. */
+  function askFollowUp(query, extra = null, thread = null) {
+    const q = String(query || '')
+      .trim()
+      .slice(0, 600);
+    if (!q) return;
+    if (bandControlRef.current?.ping?.(q, { thread, extra })) return;
+    followUpRun(q, extra);
+  }
   function startStandard(query, opts = {}) {
     const { classification = null, goDeeper: hint = null, extra = null } = opts;
     setDeepRun(null);
     setDeepOffer(null);
     setRestored(null);
     setExemplary(null);
+    setAdaptive(null);
     /* Nov 13: a follow-up carries { followUp, attachment } into the research request. */
     setStandardRun({ query, classification, goDeeper: hint, extra, nonce: Date.now() });
     holdLoaderFor(query);
@@ -370,6 +408,7 @@ export function SonarExperience({
     setDeepRun(null);
     setStandardRun(null);
     setExemplary(null);
+    setAdaptive(null);
     if (entry.kind === 'research' && entry.state) {
       setRestored(entry);
       return;
@@ -406,6 +445,7 @@ export function SonarExperience({
     setStandardRun(null);
     setRestored(null);
     setExemplary(null);
+    setAdaptive(null);
     setQueryText(q);
     if (bandControlRef.current?.ping?.(q)) return;
     /* No band handle yet: start the band on the question (it auto-pings its query). */
@@ -694,6 +734,7 @@ export function SonarExperience({
     setDeepOffer(null);
     setStandardRun(null);
     setExemplary(null);
+    setAdaptive(null);
     setDeepRun({ query, estimate: deepEstimate(query), supersedes: supersede, fromCard: true });
     try {
       const url = new URL(window.location.href);
@@ -802,14 +843,29 @@ export function SonarExperience({
               onRestore={restoreEntry}
             />
           ) : null}
-          {exemplary && !deepRun && !standardRun && !restored ? (
+          {exemplary && !adaptive && !deepRun && !standardRun && !restored ? (
             <div className="sdr-run force-dark-theme">
               <SonarExemplaryBrief
                 key={exemplary.brief.slug}
                 brief={exemplary.brief}
                 onPing={pingFromRun}
-                onFollowUp={followUpRun}
+                onFollowUp={askFollowUp}
                 onDeep={() => chooseDeep(exemplary.brief.question, { signup: !signedIn })}
+              />
+            </div>
+          ) : null}
+          {adaptive && !deepRun && !standardRun && !restored ? (
+            <div className="sdr-run force-dark-theme">
+              <SonarAdaptiveReport
+                key={adaptive.nonce}
+                report={adaptive.report}
+                onPing={pingFromRun}
+                onFollowUp={askFollowUp}
+                onDeep={() =>
+                  chooseDeep(adaptive.report.resolvedQuestion || adaptive.query, {
+                    signup: !signedIn,
+                  })
+                }
               />
             </div>
           ) : null}
@@ -880,7 +936,8 @@ export function SonarExperience({
             }
             onRestoreResearch={restoreEntry}
             onExemplary={showExemplary}
-            hidden={Boolean(deepRun || standardRun || restored || exemplary)}
+            onAdaptive={showAdaptive}
+            hidden={Boolean(deepRun || standardRun || restored || exemplary || adaptive)}
             onEstimate={(query, data) => setEstimate({ query, data })}
             afterAnswer={
               answeredQuery && estimateFor(answeredQuery) ? (

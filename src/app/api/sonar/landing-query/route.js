@@ -20,6 +20,13 @@ import { getClientIp } from '@/lib/client-ip';
 import { withTimeout } from '@/lib/with-timeout';
 import { embedViaSupabase } from '@/lib/embeddings-gte';
 import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
+import { planAdaptive } from '@/lib/sonar/adaptive/router';
+import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
+import { sanitizeThread } from '@/lib/sonar/adaptive/thread-context';
+import { getDailyOhlcv } from '@/lib/prices/daily-bars';
+import { newsEvidence } from '@/lib/sonar/landing-research';
+import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { retrieve as retrieveMarkets } from '@/lib/research-copilot/retrievers/markets';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -77,6 +84,13 @@ const RESERVE_MS = PROFILE.reserveMs;
 const LEDGER_MS = PROFILE.ledgerMs;
 
 const GUEST_LIMIT = 5;
+
+/* Nov 2026, adaptive research (src/lib/sonar/adaptive): on unless SONAR_ADAPTIVE=off. A
+   question whose scenario has an executor is planned and run there; every other ping, and any
+   adaptive run that produces no usable report, goes through the pipeline below as before.
+   Budgets are from the handler's start and sit under maxDuration. */
+const adaptiveEnabled = () => process.env.SONAR_ADAPTIVE !== 'off';
+const ADAPTIVE_BUDGET_MS = { B01: 14_000, A02: 45_000 };
 /* The second wait for a visitor whose request carries a session. */
 const AUTH_GRACE_MS = 1_500;
 
@@ -193,6 +207,52 @@ const POST_HANDLER = withApiGuard(
       }
     }
 
+    /* Adaptive research: plan the question (pure, no I/O, nothing spent). `thread` is what a
+       follow-up was asked under; it is context for resolving "him" or "that company", never a
+       fact. A follow-up no executor takes is handed back to the host as standard research,
+       written out in full, which is how follow-ups ran before. */
+    const thread = sanitizeThread(body?.thread);
+    let adaptivePlan = null;
+    if (
+      adaptiveEnabled() &&
+      Array.isArray(body?.formats) &&
+      body.formats.includes('adaptive') &&
+      !body?.force &&
+      !body?.noCorrect
+    ) {
+      try {
+        adaptivePlan = planAdaptive(query, { thread });
+      } catch (e) {
+        console.warn('[sonar/landing] adaptive plan failed', e?.name);
+      }
+    }
+    const runsAdaptive = Boolean(adaptivePlan?.executable);
+    if (adaptivePlan) {
+      console.log('[sonar/landing] adaptive plan', {
+        scenario: adaptivePlan.primaryScenario,
+        supporting: adaptivePlan.supportingScenarios,
+        confidence: adaptivePlan.confidence,
+        executable: runsAdaptive,
+        missing: adaptivePlan.audit.missing,
+      });
+    }
+    if (
+      thread &&
+      !runsAdaptive &&
+      Array.isArray(body?.research) &&
+      body.research.includes('standard') &&
+      standardResearchEnabled()
+    ) {
+      return NextResponse.json({
+        researchMode: 'standard',
+        query: adaptivePlan?.resolvedQuestion || query,
+        followUp: true,
+        classification: null,
+        goDeeper: null,
+        disclaimer: DISCLAIMER,
+      });
+    }
+
     /* A signed-in visitor (the Datasets search page reuses this pipeline) is
        not a guest: no 5-ping cookie cap and no sign-up gate. Their pings are
        capped per account per day instead, counted from the ledger. */
@@ -235,6 +295,8 @@ const POST_HANDLER = withApiGuard(
       body?.mode !== 'quick' &&
       !body?.force &&
       !body?.noCorrect &&
+      /* An adaptive run answers this ping itself; it is not offered deep or standard first. */
+      !runsAdaptive &&
       (deepResearchEnabled() || standardResearchEnabled())
     ) {
       try {
@@ -384,12 +446,93 @@ const POST_HANDLER = withApiGuard(
           }
         : null;
 
+    /* Adaptive research runs on the reservation made above: one ping, settled once. A run
+       that returns no usable report falls through to the pipeline on the same reservation,
+       so a failed adaptive run is never a second charge. */
+    if (runsAdaptive) {
+      const adaptiveP = runAdaptive(
+        adaptivePlan,
+        {
+          admin,
+          getOhlcv: getDailyOhlcv,
+          news: async (args) =>
+            (await newsEvidence(admin, args)).map((a) => ({ ...a, publisher: a.source })),
+          retrieveMarkets,
+          synthesize: synthesizeWithFallback,
+        },
+        {
+          deadlineAt:
+            startedAt + (ADAPTIVE_BUDGET_MS[adaptivePlan.primaryScenario] || PIPELINE_BUDGET_MS),
+        },
+      ).catch((e) => {
+        console.warn('[sonar/landing] adaptive run failed', e?.message || e);
+        return null;
+      });
+      const gone = whenAborted(request.signal);
+      const report = gone ? await Promise.race([adaptiveP, gone]) : await adaptiveP;
+      if (report === ABORTED || request.signal?.aborted) {
+        await withTimeout(failPing(admin, reservation), LEDGER_MS, 'ledger-cancel');
+        return cancelledResponse();
+      }
+      if (report) {
+        const durationMs = Date.now() - startedAt;
+        console.log('[sonar/landing] adaptive', {
+          scenario: adaptivePlan.primaryScenario,
+          sections: report.sections.map((sec) => sec.type),
+          ms: report.telemetry.ms,
+          steps: report.telemetry.steps,
+          degraded: report.telemetry.degraded,
+          markets: report.telemetry.markets
+            ? {
+                considered: report.telemetry.markets.considered,
+                shown: report.telemetry.markets.shown,
+              }
+            : null,
+        });
+        await Promise.all([
+          withTimeout(
+            completePing(admin, reservation, {
+              classification: `adaptive:${adaptivePlan.primaryScenario}`,
+              datasets_searched: adaptivePlan.requiredEvidence,
+              grounded: true,
+            }),
+            LEDGER_MS,
+            'ledger',
+          ),
+          withTimeout(
+            annotatePing(admin, reservation, { mode: 'standard', durationMs }),
+            LEDGER_MS,
+            'ledger-annotate',
+          ),
+        ]);
+        const nextUsedAdaptive = used + 1;
+        /* The audit trail stays in the logs; the page gets what it draws. */
+        const { telemetry: _telemetry, ...publicReport } = report;
+        const res = NextResponse.json({
+          adaptive: {
+            ...publicReport,
+            degraded: report.telemetry.degraded,
+          },
+          query,
+          understood: { display: adaptivePlan.resolvedQuestion },
+          remaining: member || unknownSession ? null : Math.max(0, GUEST_LIMIT - nextUsedAdaptive),
+          disclaimer: DISCLAIMER,
+        });
+        if (!member && !unknownSession) setGuestCount(res, nextUsedAdaptive);
+        return res;
+      }
+    }
+
     let result;
     const pipelineP = runLandingPipeline(query, {
       admin,
       noCorrect,
       force,
-      deadlineAt: startedAt + PIPELINE_BUDGET_MS,
+      /* After an adaptive run that returned nothing, the pipeline still gets a working budget. */
+      deadlineAt: Math.max(
+        startedAt + PIPELINE_BUDGET_MS,
+        Date.now() + (runsAdaptive ? 15_000 : 0),
+      ),
     });
     /* Raced against the visitor leaving, so a cancelled ping is released at
        once rather than when the pipeline finishes for nobody. */
