@@ -111,3 +111,37 @@ export function tooSimilar(a, b) {
   for (const t of x) if (y.has(t)) n += 1;
   return n / Math.min(x.size, y.size) >= 0.7;
 }
+
+export const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+export const NA = 'N/A';
+/** $1.23T, $4.5B, $6.7M, $8,900. */
+export function money(v, d = 1) {
+  if (num(v) == null) return NA;
+  const a = Math.abs(v);
+  const s = v < 0 ? '-' : '';
+  if (a >= 1e12) return `${s}$${(a / 1e12).toFixed(2)}T`;
+  if (a >= 1e9) return `${s}$${(a / 1e9).toFixed(d)}B`;
+  if (a >= 1e6) return `${s}$${(a / 1e6).toFixed(d)}M`;
+  return `${s}$${Math.round(a).toLocaleString('en-US')}`;
+}
+/** 1.94B, 35.2M, 8,900: a count, no currency. */
+export function count(v) {
+  if (num(v) == null) return NA;
+  const a = Math.abs(v);
+  const s = v < 0 ? '-' : '';
+  if (a >= 1e9) return `${s}${(a / 1e9).toFixed(2)}B`;
+  if (a >= 1e6) return `${s}${(a / 1e6).toFixed(1)}M`;
+  return `${s}${Math.round(a).toLocaleString('en-US')}`;
+}
+/** "Q2 2026" for a quarter-end date. */
+export function quarterOf(iso) {
+  const m = /^(\d{4})-(\d{2})/.exec(String(iso || ''));
+  return m ? `Q${Math.ceil(Number(m[2]) / 3)} ${m[1]}` : null;
+}
+/** Follow-up questions that do not repeat the question asked or each other. */
+export const freshQuestions = (plan, list, max = 3) =>
+  list
+    .filter(Boolean)
+    .filter((f) => !tooSimilar(f, plan.resolvedQuestion) && !tooSimilar(f, plan.originalQuestion))
+    .filter((f, i, all) => all.findIndex((g) => tooSimilar(f, g)) === i)
+    .slice(0, max);

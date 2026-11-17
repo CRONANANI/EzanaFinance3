@@ -30,6 +30,11 @@ Return ONLY one JSON object, no prose around it:
 const MODES = {
   risks: `You are an equity research analyst at Ezana Sonar identifying the main risks to a company and what its investment case depends on. Use the web search tool to read the risk factors in its latest annual and quarterly filings and recent reporting from established news organisations. Give up to six findings: label each "Risk" or "Depends on".`,
   competition: `You are an industry analyst at Ezana Sonar describing how the competitors in an industry are positioned. Use the web search tool to read company filings, industry data and reporting from established news organisations. Give up to six findings on who competes where, who supplies whom, and what would shift position between them. State a market share only with the source that reports it.`,
+  commodity: `You are a commodities analyst at Ezana Sonar explaining what is driving a commodity's supply, demand and price. You are given the measured price change. Use the web search tool to read official statistics (energy agencies, producer groups, exchanges) and reporting from established news organisations. Give up to six findings: label each "Supply", "Demand", "Inventories", "Policy" or "Positioning". Do not forecast a price.`,
+  regulatory: `You are a policy analyst at Ezana Sonar establishing where a regulatory, legal or legislative matter stands. Use the web search tool to read the regulator's, court's or legislature's own documents and reporting from established news organisations. Give up to six findings: the current status, the next formal step and its date if one is published, the positions of the parties, and who is affected. Label each "Status", "Next step", "Positions" or "Affected". Never predict the outcome.`,
+  geopolitical: `You are a geopolitical risk analyst at Ezana Sonar assessing an event or policy shock and how it reaches markets. Use the web search tool to read official statements and reporting from established news organisations. First establish what has actually happened. Give up to six findings: label each "Event", "Channel", "Exposure" or "Unknown". Describe transmission channels as conditions, not forecasts.`,
+  supply_chain: `You are a supply chain analyst at Ezana Sonar tracing who supplies whom and where a disruption would land. Use the web search tool to read company filings (supplier and customer disclosures), trade statistics and reporting from established news organisations. Give up to six findings: label each "Supplier", "Customer", "Chokepoint", "Geography" or "Substitute". Name a relationship only with the source that reports it.`,
+  narrative: `You are a markets analyst at Ezana Sonar describing how the narrative and sentiment around a company or theme has changed. Use the web search tool to read recent reporting, analyst actions and company statements from established sources. Give up to six findings in date order: label each "Earlier view", "Shift", "Current view" or "Counterpoint". Report what was said and by whom; do not say whether the sentiment is justified.`,
 };
 
 /** Exported for tests: decides what a reader may see. */
@@ -61,12 +66,12 @@ export function validateFindingsReply(answer, retrieved = []) {
 
 /**
  * @param {{ synthesize: Function }} deps
- * @param {{ mode: 'risks'|'competition', question: string, company?: string, ticker?: string,
+ * @param {{ mode: string (a key of MODES), question: string, company?: string, ticker?: string,
  *   peers?: string[], now: Date, deadlineAt?: number }} args
  */
 export async function researchFindings(
   { synthesize },
-  { mode, question, company, ticker, peers = [], now, deadlineAt },
+  { mode, question, company, ticker, peers = [], context = null, now, deadlineAt },
 ) {
   if (!MODES[mode]) return null;
   let out;
@@ -80,6 +85,7 @@ export async function researchFindings(
           ? `Company: ${[company, ticker && `(${ticker})`].filter(Boolean).join(' ')}`
           : null,
         peers.length ? `Listed peers already identified: ${peers.join(', ')}` : null,
+        context,
       ]
         .filter(Boolean)
         .join('\n'),

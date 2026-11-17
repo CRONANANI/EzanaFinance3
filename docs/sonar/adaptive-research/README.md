@@ -101,11 +101,11 @@ market, a named successor and every feed down.
 
 ## Not built
 
-- **Executors for 26 scenarios and 4 overlays.** They route and plan; the
-  answer comes from the existing pipelines. The state of every scenario is in
-  `IMPLEMENTATION_MATRIX.md`. A03 leadership impact and A05 move attribution
-  were added Nov 17 (`executors-events.js`, `event-research.js`,
-  `move-attribution.js`).
+- **Executors for 6 scenarios and 4 overlays.** The state of every scenario,
+  with its data limits, is in `IMPLEMENTATION_MATRIX.md`; what the data holds
+  is in `DATA_COVERAGE.md`. Executors live in `executors-events.js`,
+  `executors-company.js`, `executors-disclosures.js` and `executors-macro.js`;
+  every stored-data read is in `data-deps.js`.
 - **Council overlays (D01 to D04).** Plans mark them as needing an
   organization and exclude org data without one. No org data is read.
 - **Saved research and the session thread.** An adaptive report is not saved

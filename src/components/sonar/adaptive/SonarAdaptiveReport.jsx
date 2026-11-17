@@ -17,11 +17,12 @@
  * onFollowUp(q, extra, thread)  a follow-up, with the thread it is asked in
  * onDeep()     deep research on this question (optional)
  */
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { followUpContext } from '@/lib/sonar/workspace';
 import { SonarResearchControls } from '../SonarResearchControls';
 import SonarExemplaryChart, { dayLabel } from '../exemplary/SonarExemplaryChart';
 import SonarTechnicalChart from './SonarTechnicalChart';
+import SonarSeriesChart from './SonarSeriesChart';
 import '../exemplary/sonar-exemplary-brief.css';
 import './sonar-adaptive.css';
 
@@ -35,7 +36,12 @@ const ANCHOR_LABELS = {
   impact_network: 'Exposure',
   valuation: 'Peers',
   ranking: 'Table',
-  data_table: 'Quarters',
+  data_table: 'Detail',
+  series_chart: 'Chart',
+  sector_exposure: 'Breakdown',
+  policy_tracker: 'Policy',
+  macro_timeseries: 'Series',
+  catalyst_calendar: 'Calendar',
   risk: 'Risks',
   fundamentals: 'Baseline',
   forecast_market: 'Markets',
@@ -336,10 +342,18 @@ function Impact({ s, sources }) {
         <table className="sxb-table">
           <thead>
             <tr>
-              <th scope="col">Exposure</th>
-              <th scope="col">Transmission channel</th>
-              <th scope="col">Evidence that would matter</th>
-              <th scope="col">Current assessment</th>
+              {(
+                s.columns || [
+                  'Exposure',
+                  'Transmission channel',
+                  'Evidence that would matter',
+                  'Current assessment',
+                ]
+              ).map((c) => (
+                <th key={c} scope="col">
+                  {c}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -389,6 +403,23 @@ function Baseline({ s, sources }) {
 }
 
 function DataTable({ s, sources }) {
+  /* A ranking can be re-sorted by the reader; the values sorted on are the typed ones the
+     report carries beside each formatted cell. */
+  const [sort, setSort] = useState(null);
+  const rows = useMemo(() => {
+    if (!s.sortable || !sort) return s.rows;
+    const dir = sort.dir === 'asc' ? 1 : -1;
+    return [...s.rows].sort((x, y) => {
+      const a = x.sort?.[sort.key];
+      const b = y.sort?.[sort.key];
+      if (typeof a === 'number' && typeof b === 'number') return (a - b) * dir;
+      return String(a ?? '').localeCompare(String(b ?? '')) * dir;
+    });
+  }, [s.rows, s.sortable, sort]);
+  const toggle = (key) =>
+    setSort((cur) =>
+      cur?.key === key ? { key, dir: cur.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' },
+    );
   return (
     <>
       <div className="sxb-section-top">
@@ -403,14 +434,39 @@ function DataTable({ s, sources }) {
           <thead>
             <tr>
               {s.columns.map((c) => (
-                <th key={c.key} scope="col" className={c.num ? 'sar-num' : undefined}>
-                  {c.label}
+                <th
+                  key={c.key}
+                  scope="col"
+                  className={c.num ? 'sar-num' : undefined}
+                  aria-sort={
+                    s.sortable
+                      ? sort?.key === c.key
+                        ? sort.dir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                      : undefined
+                  }
+                >
+                  {s.sortable ? (
+                    <button type="button" onClick={() => toggle(c.key)}>
+                      {c.label}
+                      {sort?.key === c.key ? (
+                        <i
+                          className={`bi ${sort.dir === 'asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short'}`}
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </button>
+                  ) : (
+                    c.label
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {s.rows.map((r) => (
+            {rows.map((r) => (
               <tr
                 key={r.id}
                 className={
@@ -433,6 +489,21 @@ function DataTable({ s, sources }) {
           </tbody>
         </table>
       </div>
+    </>
+  );
+}
+
+function SeriesChart({ s, sources }) {
+  return (
+    <>
+      <div className="sxb-section-top">
+        <h2 className="sxb-section-title">{s.title}</h2>
+        <p className="sxb-section-note">
+          {s.note}
+          <Cites ids={s.cites} sources={sources} />
+        </p>
+      </div>
+      <SonarSeriesChart section={s} />
     </>
   );
 }
@@ -571,7 +642,13 @@ export default function SonarAdaptiveReport({ report, onPing, onFollowUp, onDeep
       case 'valuation':
       case 'ranking':
       case 'data_table':
+      case 'sector_exposure':
+      case 'policy_tracker':
+      case 'macro_timeseries':
+      case 'catalyst_calendar':
         return <DataTable s={s} sources={sources} />;
+      case 'series_chart':
+        return <SeriesChart s={s} sources={sources} />;
       case 'impact_network':
         return <Impact s={s} sources={sources} />;
       case 'fundamentals':

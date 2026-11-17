@@ -7,9 +7,6 @@
  *                            for a risk or thesis question, sourced risks beside the numbers
  *   B05 competition          the company against its listed peers on reported measures, with
  *                            sourced findings on positioning
- *   B06 institutional        the largest reported 13F holders and how their positions changed
- *   B07 congressional trades trades members of Congress disclosed in a security
- *   C02 country rankings     a same-year ranking of economies on one World Bank measure
  *
  * Every figure here is computed from stored or provider data and says how. The model is
  * asked only for what filings and reporting say (risks, positioning) and its reply is
@@ -17,7 +14,7 @@
  */
 import { hostOf } from './news-intelligence';
 import { researchFindings } from './findings-research';
-import { statementTrend, tradeSummary, holderChanges, rankingMetricOf } from './company-metrics';
+import { statementTrend } from './company-metrics';
 import { day, pct, step, sourceBook, tooSimilar } from './kit';
 
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
@@ -431,10 +428,18 @@ export async function runFundamentals(plan, deps, now, telemetry, deadlineAt) {
 export async function runCompetition(plan, deps, now, telemetry, deadlineAt) {
   const who = subjectOf(plan);
   const { symbol, name } = who;
-  const set = deps.peerSet
-    ? await step(telemetry, 'peer_set', 9000, () => deps.peerSet(symbol))
-    : null;
+  const [set, disclosures, chain] = await Promise.all([
+    deps.peerSet ? step(telemetry, 'peer_set', 9000, () => deps.peerSet(symbol)) : null,
+    deps.disclosures
+      ? step(telemetry, 'company_disclosures', 6000, () => deps.disclosures(symbol))
+      : null,
+    deps.valueChain
+      ? step(telemetry, 'industry_registry', 6000, () => deps.valueChain(symbol))
+      : null,
+  ]);
   const comp = set?.rows?.length ? set : null;
+  const disclosed = (disclosures || []).filter((d) => d.url && d.quote);
+  const stages = (chain?.stages || []).filter((st) => st.companies.length);
   const research = deps.synthesize
     ? await step(telemetry, 'live_research', researchBudget(deadlineAt), () =>
         researchFindings(
@@ -453,7 +458,8 @@ export async function runCompetition(plan, deps, now, telemetry, deadlineAt) {
     : null;
   if (deps.synthesize && !research && !telemetry.degraded.includes('live_research'))
     telemetry.degraded.push('live_research');
-  if (!comp && !research) return unavailable(plan, who, 'Peer data');
+  if (!comp && !research && !disclosed.length && !stages.length)
+    return unavailable(plan, who, 'Peer data');
 
   const sources = sourceBook();
   const cite = citer(sources, research);
@@ -499,9 +505,101 @@ export async function runCompetition(plan, deps, now, telemetry, deadlineAt) {
     if (research.watch.length)
       built.watchpoints = { title: 'What to monitor', items: research.watch };
   }
+  /* Relationships the company itself disclosed: customers, purchase commitments, export
+     exposure. Each row is a quotation from a filing, with the filing it came from. A
+     relationship is never inferred from two companies sharing an industry. */
+  if (disclosed.length) {
+    const KIND = {
+      customer_concentration: 'Customer',
+      purchase_obligations: 'Supply commitment',
+      infrastructure_commitments: 'Capacity commitment',
+      export_risk: 'Export exposure',
+      cloud_ai_metrics: 'Reported metric',
+    };
+    const order = Object.keys(KIND);
+    const rows = [...disclosed]
+      .sort(
+        (x, y) =>
+          order.indexOf(x.kind) - order.indexOf(y.kind) ||
+          String(y.filedAt).localeCompare(String(x.filedAt)),
+      )
+      .filter(
+        (d, i, all) =>
+          all.findIndex(
+            (e) => e.kind === d.kind && e.party === d.party && e.period === d.period,
+          ) === i,
+      )
+      .slice(0, 8);
+    built.impact_network = {
+      title: 'Relationships the company has disclosed',
+      note: 'Quoted from the company’s own filings. Each row links to the filing.',
+      columns: ['Type', 'What the filing says', 'Period', 'Filing'],
+      rows: rows.map((d) => ({
+        name: KIND[d.kind] || 'Disclosure',
+        tag: d.party || 'unnamed',
+        channel: String(d.quote).length > 260 ? `${String(d.quote).slice(0, 257)}…` : d.quote,
+        evidence: d.period || NA,
+        assessment: 'confirmed',
+        assessmentLabel: `Form ${d.form}, ${day(d.filedAt)}`,
+        cites: [
+          sources.add({
+            url: d.url,
+            title: `${symbol} Form ${d.form}, filed ${day(d.filedAt)}`,
+            publisher: 'SEC EDGAR',
+            date: d.filedAt,
+          }),
+        ],
+      })),
+    };
+    const customers = [
+      ...new Set(
+        rows.filter((d) => d.kind === 'customer_concentration' && d.party).map((d) => d.party),
+      ),
+    ];
+    if (customers.length)
+      parts.push(`Its filings name ${customers.join(', ')} among its customers.`);
+  }
+  /* The Industry Registry's value chain, where the company's industry is mapped. */
+  if (stages.length) {
+    const reg = sources.add({
+      key: `registry:${chain.industry}`,
+      title: `Ezana Industry Registry: ${chain.industry} value chain`,
+      publisher: 'Ezana Industry Registry',
+      date:
+        stages
+          .flatMap((st) => st.companies.map((c) => c.asOf))
+          .filter(Boolean)
+          .sort()
+          .pop() || null,
+      detail:
+        'Companies by stage of the value chain. A stage lists who operates there; it does not state who supplies whom.',
+      kind: 'dataset',
+    });
+    built.sector_exposure = {
+      title: 'Where it sits in the value chain',
+      note: 'Stages in order from inputs to end products. Companies in the same or a neighbouring stage are not thereby suppliers or customers of one another.',
+      cites: [reg],
+      columns: [
+        { key: 'stage', label: 'Stage' },
+        { key: 'what', label: 'What happens there' },
+        { key: 'who', label: 'Companies in the registry' },
+      ],
+      rows: stages.map((st) => ({
+        id: st.id,
+        emphasis: st.isSubject,
+        cells: {
+          stage: st.label,
+          what: st.description || '',
+          who: st.companies.map((c) => (c.ticker ? `${c.name} (${c.ticker})` : c.name)).join(', '),
+        },
+      })),
+    };
+  }
   const headline =
     research?.headline ||
-    `${name} against ${comp.rows.length} listed peers on reported growth, margins and multiples`;
+    (comp
+      ? `${name} against ${comp.rows.length} listed peers on reported growth, margins and multiples`
+      : `What ${name}’s filings and the Industry Registry show about its position`);
   built.lead = { headline, text: parts.join(' '), cites: src ? [src] : [] };
   built.followups = {
     placeholder: `Ask a follow-up about ${name}’s industry…`,
@@ -512,7 +610,8 @@ export async function runCompetition(plan, deps, now, telemetry, deadlineAt) {
     ]),
   };
   const limits = [
-    'The peer table compares reported company figures. Sonar holds no market-share dataset: a share is shown only where a cited source reports it.',
+    'The peer table compares reported company figures. Sonar holds no verified market-share series for this industry, so no share is computed: a share appears only where a cited source reports it.',
+    'Total industry revenue is not market share, and neither is inferred from the other.',
   ];
   if (!research && deps.synthesize)
     limits.push(
@@ -525,285 +624,5 @@ export async function runCompetition(plan, deps, now, telemetry, deadlineAt) {
     built,
     sources: sources.list,
     thread: { subject: name, ticker: symbol, headline, summary: parts[0] || '' },
-  };
-}
-
-/* ── B06: institutional ownership (13F) ─────────────────────────────────── */
-
-const CHANGE_LABEL = (c) => {
-  const s = String(c || '').toLowerCase();
-  if (/new|open|initiat/.test(s)) return 'New position';
-  if (/increas|add|bought|buy/.test(s)) return 'Added';
-  if (/decreas|reduc|trim|sold|sell/.test(s)) return 'Reduced';
-  if (/unchanged|hold|same/.test(s)) return 'Unchanged';
-  return 'Not stated';
-};
-
-export async function runInstitutional(plan, deps, now, telemetry) {
-  const who = subjectOf(plan);
-  const { symbol, name } = who;
-  const data = deps.holders13f
-    ? await step(telemetry, 'holdings_13f', 8000, () => deps.holders13f(symbol))
-    : null;
-  const rows = (data?.rows || []).filter((r) => r?.filer && num(r.valueUsd) != null);
-  if (!rows.length) return unavailable(plan, who, '13F holdings');
-  const sources = sourceBook();
-  const src = sources.add({
-    key: `13f:${symbol}`,
-    title: `Form 13F holdings of ${symbol}${data.quarter ? `, ${data.quarter}` : ''}`,
-    publisher: 'SEC Form 13F filings',
-    date: data.period || null,
-    detail: 'Quarter-end long positions reported by institutional managers.',
-    kind: 'dataset',
-  });
-  const ch = holderChanges(rows);
-  const top = rows[0];
-  const headline = `${top.filer} is the largest reported 13F holder of ${name}${data.quarter ? ` for ${data.quarter}` : ''}`;
-  const moves = [
-    ch.added && `${ch.added} added`,
-    ch.reduced && `${ch.reduced} reduced`,
-    ch.opened && `${ch.opened} opened a new position`,
-    ch.unchanged && `${ch.unchanged} were unchanged`,
-  ].filter(Boolean);
-  const parts = [
-    `Its reported position was worth ${money(top.valueUsd)} at the quarter end.`,
-    moves.length
-      ? `Of the ${rows.length} largest holders shown, ${moves.join(', ')} against the prior quarter.`
-      : null,
-    'These are quarter-end positions filed up to 45 days later, so they do not show what a manager holds today.',
-  ].filter(Boolean);
-  const built = {
-    lead: { headline, text: parts.join(' '), cites: [src], computed: true },
-    ranking: {
-      title: 'Largest reported holders',
-      note: data.quarter
-        ? `Positions as of the end of ${data.quarter}.`
-        : 'Latest reported quarter.',
-      cites: [src],
-      columns: [
-        { key: 'rank', label: '#', num: true },
-        { key: 'filer', label: 'Manager' },
-        { key: 'value', label: 'Reported value', num: true },
-        { key: 'change', label: 'Against prior quarter' },
-      ],
-      rows: rows.map((r, i) => ({
-        id: `${i}-${r.filer}`,
-        cells: {
-          rank: String(i + 1),
-          filer: r.filer,
-          value: money(r.valueUsd),
-          change: CHANGE_LABEL(r.changeType),
-        },
-      })),
-    },
-    followups: {
-      placeholder: `Ask a follow-up about who holds ${symbol}…`,
-      related: questions(plan, [
-        `Which members of Congress traded ${symbol}?`,
-        `Is ${symbol} expensive compared with its peers?`,
-        `Why is ${symbol} stock moving this week?`,
-      ]),
-    },
-    limitations: {
-      items: [
-        'Form 13F covers long positions in US-listed securities held by managers above the reporting threshold. Short positions, most derivatives and holdings outside the United States are not in it.',
-        'A change in reported value reflects price as well as shares bought or sold.',
-      ],
-    },
-  };
-  return {
-    built,
-    sources: sources.list,
-    thread: { subject: name, ticker: symbol, headline, summary: parts[0] },
-  };
-}
-
-/* ── B07: congressional trading ─────────────────────────────────────────── */
-
-const TRADE_LABEL = {
-  purchase: 'Purchase',
-  sale: 'Sale',
-  sale_partial: 'Partial sale',
-  exchange: 'Exchange',
-};
-const range = (lo, hi) =>
-  num(lo) == null && num(hi) == null
-    ? 'Not stated'
-    : num(hi) == null
-      ? `Over ${money(lo)}`
-      : `${money(lo || 0)} to ${money(hi)}`;
-
-export async function runCongressTrades(plan, deps, now, telemetry) {
-  const who = subjectOf(plan);
-  const { symbol, name } = who;
-  const since = new Date(now.getTime() - 365 * 86400000).toISOString().slice(0, 10);
-  const trades = deps.congressTrades
-    ? await step(telemetry, 'congress_disclosures', 8000, () =>
-        deps.congressTrades(symbol, { since }),
-      )
-    : null;
-  if (!trades) return unavailable(plan, who, 'Congressional trade disclosures');
-  const sources = sourceBook();
-  const src = sources.add({
-    key: `congress:${symbol}`,
-    title: `Congressional periodic transaction reports naming ${symbol}`,
-    publisher: 'House Clerk and Senate financial disclosures',
-    date: trades[0]?.disclosureDate || trades[0]?.transactionDate || null,
-    detail: 'Transactions as disclosed by members. Amounts are reported in ranges.',
-    kind: 'dataset',
-  });
-  const s = tradeSummary(trades);
-  const built = {};
-  let headline;
-  const parts = [];
-  if (!s.total) {
-    headline = `No member of Congress has disclosed a trade in ${name} since ${day(since)}`;
-    parts.push(
-      `Sonar's index of House and Senate transaction reports holds no trade naming ${symbol} in the past twelve months. A trade made recently may not have been reported yet.`,
-    );
-  } else {
-    headline = `${s.members} member${s.members === 1 ? '' : 's'} of Congress disclosed ${s.total} trade${s.total === 1 ? '' : 's'} in ${name} over the past twelve months`;
-    parts.push(
-      `${s.purchases} ${s.purchases === 1 ? 'was a purchase' : 'were purchases'} and ${s.sales} ${s.sales === 1 ? 'was a sale' : 'were sales'}${s.exchanges ? `, with ${s.exchanges} exchange${s.exchanges === 1 ? '' : 's'}` : ''}.`,
-    );
-    if (s.medianLagDays != null)
-      parts.push(
-        `The median report came ${Math.round(s.medianLagDays)} days after the transaction${
-          s.lateCount ? `; ${s.lateCount} came more than 45 days after` : ''
-        }.`,
-      );
-    parts.push('Amounts are disclosed in ranges, so no exact value or total is given.');
-    built.ranking = {
-      title: 'Disclosed transactions',
-      note: `Most recent first, ${day(s.from)} to ${day(s.to)}.`,
-      cites: [src],
-      columns: [
-        { key: 'date', label: 'Transaction' },
-        { key: 'member', label: 'Member' },
-        { key: 'type', label: 'Type' },
-        { key: 'amount', label: 'Disclosed range', num: true },
-        { key: 'reported', label: 'Reported' },
-      ],
-      rows: trades.slice(0, 25).map((t, i) => ({
-        id: `${i}-${t.member}-${t.transactionDate}`,
-        cells: {
-          date: day(t.transactionDate),
-          member: [
-            t.member,
-            t.chamber === 'senate' ? 'Senate' : t.chamber === 'house' ? 'House' : null,
-          ]
-            .filter(Boolean)
-            .join(', '),
-          type: TRADE_LABEL[t.type] || 'Transaction',
-          amount: range(t.amountMin, t.amountMax),
-          reported: t.disclosureDate ? day(t.disclosureDate) : 'Not stated',
-        },
-      })),
-    };
-  }
-  built.lead = { headline, text: parts.join(' '), cites: [src], computed: true };
-  built.followups = {
-    placeholder: `Ask a follow-up about trades in ${symbol}…`,
-    related: questions(plan, [
-      `Which institutions hold ${symbol}?`,
-      `Why is ${symbol} stock moving this week?`,
-      `Is ${symbol} technically oversold?`,
-    ]),
-  };
-  built.limitations = {
-    items: [
-      'A disclosed trade shows that a transaction was reported. It does not show what the member knew or why they traded.',
-      'Trades by spouses and dependants are reported on the member’s form and are included. Company insiders are not covered in this answer.',
-    ],
-  };
-  return {
-    built,
-    sources: sources.list,
-    thread: { subject: name, ticker: symbol, headline, summary: parts[0] },
-  };
-}
-
-/* ── C02: country rankings on a World Bank measure ──────────────────────── */
-
-const rankValue = (id, v) => (id === 'gdp_growth_real' ? pct(v) : money(v));
-
-export async function runCountryRanking(plan, deps, now, telemetry) {
-  const id = rankingMetricOf(plan.resolvedQuestion);
-  const payload = deps.rankings
-    ? await step(telemetry, 'macro_rankings', 8000, () => deps.rankings())
-    : null;
-  const m = payload?.metrics?.[id];
-  const follow = {
-    placeholder: 'Ask a follow-up about these economies…',
-    related: questions(plan, [
-      id === 'gdp_nominal_usd'
-        ? 'Which countries have the highest GDP per capita?'
-        : 'What are the largest economies by GDP?',
-      id === 'gdp_growth_real' ? null : 'Which economies are growing the fastest?',
-    ]),
-  };
-  if (!m?.ranked?.length)
-    return {
-      built: {
-        lead: {
-          headline: 'The country rankings are not available right now',
-          text: 'Sonar ranks economies from stored World Bank series. They could not be read, so no ranking is shown and none is recalled from memory. Try again shortly.',
-        },
-        followups: follow,
-      },
-      sources: [],
-      thread: {},
-    };
-  const sources = sourceBook();
-  const src = sources.add({
-    key: `wb:${id}`,
-    title: `${m.label}, ${m.year}`,
-    publisher: payload.attribution || 'World Bank, World Development Indicators',
-    date: String(m.year),
-    detail: payload.scope || null,
-    kind: 'dataset',
-  });
-  const ranked = m.ranked.map(([iso3, rank, value]) => ({
-    iso3,
-    rank,
-    value,
-    name: payload.names?.[iso3] || iso3,
-  }));
-  const top = ranked.slice(0, 15);
-  const [a, b, c] = top;
-  const headline = `${a.name} ranks first on ${lower(m.label)} in ${m.year}`;
-  const parts = [
-    `${a.name} is at ${rankValue(id, a.value)}${b ? `, followed by ${b.name} at ${rankValue(id, b.value)}` : ''}${c ? ` and ${c.name} at ${rankValue(id, c.value)}` : ''}.`,
-    `The ranking covers ${m.of || ranked.length} economies, all measured for ${m.year}, the latest year most of them have reported.`,
-  ];
-  return {
-    built: {
-      lead: { headline, text: parts.join(' '), cites: [src], computed: true },
-      ranking: {
-        title: `${m.label}, ${m.year}`,
-        note: `${m.unit}. ${payload.scope || ''}`.trim(),
-        cites: [src],
-        columns: [
-          { key: 'rank', label: 'Rank', num: true },
-          { key: 'name', label: 'Economy' },
-          { key: 'value', label: m.label, num: true },
-        ],
-        rows: top.map((r) => ({
-          id: r.iso3,
-          cells: { rank: String(r.rank), name: r.name, value: rankValue(id, r.value) },
-        })),
-      },
-      followups: follow,
-      limitations: {
-        items: [
-          'Every economy is ranked on the same year. A country that has not reported that year is left out, not carried forward.',
-          id === 'gdp_growth_real'
-            ? 'A single year of growth can reflect a rebound from a weak year. Small economies move the most.'
-            : 'Values in current US dollars move with exchange rates as well as output.',
-        ],
-      },
-    },
-    sources: sources.list,
-    thread: { headline, summary: parts[0] },
   };
 }

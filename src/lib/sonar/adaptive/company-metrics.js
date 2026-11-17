@@ -145,3 +145,126 @@ export function rankingMetricOf(question) {
   for (const [id, re] of RANK_METRICS) if (re.test(q)) return id;
   return null;
 }
+
+/* Open-market codes on Forms 4 and 5. Awards, option exercises, tax withholding and gifts are
+   reported on the same forms and are not purchases or sales in the market. */
+const INSIDER_KIND = {
+  P: 'Open-market purchase',
+  S: 'Open-market sale',
+  A: 'Award or grant',
+  M: 'Option exercise',
+  F: 'Shares withheld for tax',
+  G: 'Gift',
+  D: 'Disposition to the issuer',
+  C: 'Conversion',
+  X: 'Option exercise',
+  J: 'Other',
+};
+export const insiderKind = (code) => INSIDER_KIND[String(code || '').toUpperCase()] || 'Other';
+
+/** Counts and values of insider filings, with open-market trades kept apart from the rest. */
+export function insiderSummary(rows = []) {
+  const list = rows.filter((r) => r?.date);
+  const sum = (xs) => xs.reduce((s, r) => s + (Number.isFinite(r.valueUsd) ? r.valueUsd : 0), 0);
+  const buys = list.filter((r) => r.code === 'P');
+  const sells = list.filter((r) => r.code === 'S');
+  const dates = list.map((r) => r.date).sort();
+  return {
+    total: list.length,
+    purchases: buys.length,
+    purchaseValue: sum(buys),
+    sales: sells.length,
+    saleValue: sum(sells),
+    other: list.length - buys.length - sells.length,
+    reporters: new Set(list.map((r) => r.reporter).filter(Boolean)).size,
+    from: dates[0] || null,
+    to: dates.at(-1) || null,
+  };
+}
+
+/** Trades per calendar month, purchases and sales apart, oldest first, gaps filled with 0. */
+export function tradesByMonth(trades = [], { months = 12, now = new Date() } = {}) {
+  const keys = [];
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  for (let i = months - 1; i >= 0; i -= 1) {
+    const m = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - i, 1));
+    keys.push(m.toISOString().slice(0, 7));
+  }
+  const at = new Map(keys.map((k) => [k, { month: k, purchases: 0, sales: 0 }]));
+  for (const t of trades) {
+    const row = at.get(String(t?.transactionDate || '').slice(0, 7));
+    if (!row) continue;
+    if (t.type === 'purchase') row.purchases += 1;
+    else if (t.type === 'sale' || t.type === 'sale_partial') row.sales += 1;
+  }
+  return [...at.values()];
+}
+
+/** The most-traded tickers in a list of disclosed trades. */
+export function topTickers(trades = [], limit = 8) {
+  const by = new Map();
+  for (const t of trades) {
+    if (!t?.ticker) continue;
+    const r = by.get(t.ticker) || {
+      ticker: t.ticker,
+      trades: 0,
+      purchases: 0,
+      sales: 0,
+      members: new Set(),
+    };
+    r.trades += 1;
+    if (t.type === 'purchase') r.purchases += 1;
+    else if (t.type === 'sale' || t.type === 'sale_partial') r.sales += 1;
+    if (t.member) r.members.add(t.member);
+    by.set(t.ticker, r);
+  }
+  return [...by.values()]
+    .map((r) => ({ ...r, members: r.members.size }))
+    .sort((a, b) => b.trades - a.trades || a.ticker.localeCompare(b.ticker))
+    .slice(0, limit);
+}
+
+/* Country-ranking measures held in the macro series store, by the family that ranks them.
+   Most specific first. `asc` when the question asks for the lowest. */
+const RANK_FAMILIES = [
+  [
+    'oil_production',
+    /\b(crude|oil)\b.{0,30}\b(produc|output|pump)|\b(produc\w*|pump\w*)\b.{0,30}\b(crude|oil)\b/i,
+  ],
+  [
+    'gas_production',
+    /\b(natural gas|gas|lng)\b.{0,30}\b(produc|output)|\bproduc\w*\b.{0,30}\b(natural gas|gas)\b/i,
+  ],
+  ['oil_demand', /\boil\b.{0,30}\b(demand|consum)|\bconsum\w*\b.{0,30}\boil\b/i],
+  [
+    'gas_demand',
+    /\b(natural gas|gas)\b.{0,30}\b(demand|consum)|\bconsum\w*\b.{0,30}\b(natural gas|gas)\b/i,
+  ],
+  ['gas_imports', /\b(natural gas|gas|lng)\b.{0,20}\bimport/i],
+  ['inflation_annual', /\binflation\b/i],
+  ['unemployment', /\b(unemployment|jobless)\b/i],
+  [
+    'gov_debt',
+    /\b(government|public|sovereign|national) debt\b|\bdebt[- ]to[- ]gdp\b|\bmost indebted\b/i,
+  ],
+  ['gov_balance', /\b(fiscal|budget) (deficit|balance|surplus)e?s?\b/i],
+  ['current_account', /\bcurrent[- ]account\b/i],
+  ['policy_rate', /\b(policy|interest|central bank) rates?\b/i],
+  [
+    'trade_goods',
+    /\b(largest|biggest|top)\b.{0,20}\bexporters?\b|\bexports?\b.{0,30}\b(most|largest|biggest)\b|\bmost\b.{0,20}\bexports?\b/i,
+  ],
+];
+const LOWEST = /\b(lowest|smallest|least|slowest|weakest)\b/i;
+
+/**
+ * The ranking a question asks for: a GDP measure from the World Bank snapshot
+ * ({ kind: 'gdp', id }), a macro-store family ({ kind: 'family', id, order }), or null.
+ */
+export function rankingOf(question) {
+  const q = String(question || '');
+  for (const [id, re] of RANK_FAMILIES)
+    if (re.test(q)) return { kind: 'family', id, order: LOWEST.test(q) ? 'asc' : 'desc' };
+  const gdp = rankingMetricOf(q);
+  return gdp ? { kind: 'gdp', id: gdp, order: 'desc' } : null;
+}

@@ -23,7 +23,9 @@ import { mentionedCompanies } from '@/lib/sonar/company-mentions';
 import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
 import { SCENARIOS, SCENARIO_BY_ID, PROFILE_VERSION } from './profiles';
-import { rankingMetricOf } from './company-metrics';
+import { countryOf } from './country-ref';
+import { rankingOf } from './company-metrics';
+import { commodityIdOf } from './series-metrics';
 import { resolveReferences, personFromText } from './thread-context';
 
 const PLAN_VERSION = 'arie-plan-v1';
@@ -186,13 +188,38 @@ export function planAdaptive(question, opts = {}) {
     executable = false;
     missing.push('no listed security named: daily bars need a ticker');
   }
-  if (['B02', 'B03', 'B05', 'B06', 'B07'].includes(primary?.id) && !company?.ticker) {
+  /* Disclosed transactions: a named member, a listed company, or Congress as a whole. */
+  if (
+    primary?.id === 'B07' &&
+    !person &&
+    !company?.ticker &&
+    !/\b(congress|senat|house|politician|lawmaker|members?)\b/i.test(text)
+  ) {
+    executable = false;
+    missing.push('no member, company or chamber named');
+  }
+  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text)) {
+    executable = false;
+    missing.push('no country named: this pipeline reads one country’s series');
+  }
+  if (primary?.id === 'C03' && !commodityIdOf(text)) {
+    executable = false;
+    missing.push('no commodity Sonar holds a price series for');
+  }
+  if (primary?.id === 'C08' && !company && !person && !countryOf(text)) {
+    executable = false;
+    missing.push('no entity to match a contract against');
+  }
+  if (
+    ['B02', 'B03', 'B05', 'B06', 'A04', 'B04', 'B08', 'B10'].includes(primary?.id) &&
+    !company?.ticker
+  ) {
     executable = false;
     missing.push('no listed company named: this pipeline reads one company’s records');
   }
-  if (primary?.id === 'C02' && !rankingMetricOf(text)) {
+  if (primary?.id === 'C02' && !rankingOf(text)) {
     executable = false;
-    missing.push('not a measure Sonar ranks from stored series (GDP, GDP per capita, growth)');
+    missing.push('not a measure Sonar ranks from stored series');
   }
   if (primary?.id === 'A05' && !company?.ticker) {
     executable = false;

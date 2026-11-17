@@ -34,6 +34,9 @@ const EVENT_RULES = {
       /\b(next|new|permanent|replace[sd]?|successor|succeed|named|appoint(ed|s)?|become[s]?|who will (be|lead|run)|announce[sd]? .{0,20}ceo)\b/i,
     not: /\b(return|come back|reinstat|rehire|earnings|revenue|stock price|share price|market cap|close above|close below|all[- ]time high)\b/i,
   },
+  /* Any open, priced contract that names the entities asked about. The entity test below
+     does the matching; there is no event wording to require. */
+  topic: { need: /./, about: /./, not: /$^/ },
   leadership_exit: {
     need: /\b(ceo|chief executive)\b/i,
     about: /\b(resign|step down|out as|leave|fired|ousted|depart)\b/i,

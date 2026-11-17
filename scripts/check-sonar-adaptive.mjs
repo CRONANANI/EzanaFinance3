@@ -60,18 +60,12 @@ test('30 scenarios and 4 council overlays, each a complete profile on the existi
     for (const a of [...s.analysts, ...s.supportingAnalysts])
       assert.ok(ANALYSTS[a], `${s.id}: ${a}`);
   }
-  assert.deepEqual(P.EXECUTABLE_IDS.sort(), [
-    'A02',
-    'A03',
-    'A05',
-    'B01',
-    'B02',
-    'B03',
-    'B05',
-    'B06',
-    'B07',
-    'C02',
-  ]);
+  /* Every scenario but A01, A06, A09, B09, C06 and C07 has an executor; no overlay does. */
+  assert.deepEqual(
+    P.SCENARIOS.filter((x) => !x.overlay && !x.executable).map((x) => x.id),
+    ['A01', 'A06', 'A09', 'B09', 'C06', 'C07'],
+  );
+  assert.ok(P.SCENARIOS.filter((x) => x.overlay).every((x) => !x.executable));
 });
 
 /* ── routing: one test per evaluation case ── */
@@ -626,7 +620,18 @@ test('A02 with every feed down: a bounded, honest answer, nothing from memory', 
 });
 
 test('a plan with no executor is never run', async () => {
-  assert.equal(await O.runAdaptive(plan('Which countries produce the most crude oil?'), {}), null);
+  const unbuilt = EVALS.map(([, q, , o = {}]) => plan(q, { thread: o.thread || null })).find(
+    (x) => !x.executable,
+  );
+  assert.equal(await O.runAdaptive(unbuilt, succDeps()), null);
+  /* An executor that declines (no country it can read) is the same as no executor. */
+  assert.equal(
+    await O.runAdaptive(
+      { ...plan('How is Turkey’s lira doing?'), executable: true },
+      { countryBrief: async () => [] },
+    ),
+    null,
+  );
   assert.equal(await O.runAdaptive(plan('Who will replace him?'), succDeps()), null);
   assert.equal(await O.runAdaptive(null, {}), null);
 });
@@ -1221,118 +1226,328 @@ test('B02 end to end: reported trend, and sourced risks only when the question a
   assert.deepEqual([v.headline, v.findings.every((f) => f.interpretation)], ['', true]);
 });
 
-test('B05 end to end: the peer table is computed; positioning needs sources', async () => {
+test('B05 end to end: computed peers, relationships from filings, the registry value chain', async () => {
   const p = plan('Which semiconductor companies benefit if NVIDIA loses market share?');
   assert.deepEqual([p.primaryScenario, p.executable], ['B05', true]);
-  const report = await O.runAdaptive(
-    p,
+  const disclosures = async () => [
     {
-      peerSet: async () => fixturePeers(),
-      synthesize: async () => ({ answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+      kind: 'customer_concentration',
+      party: 'Arrow Electronics',
+      period: 'fiscal 2026',
+      quote: 'Arrow Electronics, our largest distributor, accounted for 11% of our net sales.',
+      figures: [],
+      url: 'https://www.sec.gov/Archives/edgar/data/1/a.htm',
+      form: '10-Q',
+      filedAt: '2026-11-05',
     },
-    { now: NOW },
-  );
+    {
+      kind: 'export_risk',
+      party: null,
+      period: null,
+      quote: 'No link, so not shown.',
+      url: null,
+      form: '10-K',
+      filedAt: '2026-02-01',
+    },
+  ];
+  const valueChain = async () => ({
+    industry: 'semiconductors',
+    stages: [
+      {
+        id: 'design',
+        label: 'Chip design',
+        description: 'Fabless design',
+        isSubject: true,
+        companies: [{ name: 'NVIDIA', ticker: 'NVDA', asOf: '2026-10-01' }],
+      },
+      {
+        id: 'foundry',
+        label: 'Foundry',
+        description: 'Wafer fabrication',
+        isSubject: false,
+        companies: [{ name: 'TSMC', ticker: 'TSM', asOf: '2026-10-01' }],
+      },
+      { id: 'empty', label: 'Empty', description: '', isSubject: false, companies: [] },
+    ],
+  });
+  const deps = {
+    peerSet: async () => fixturePeers(),
+    disclosures,
+    valueChain,
+    synthesize: async () => ({ answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+  };
+  const report = await O.runAdaptive(p, deps, { now: NOW });
   assert.deepEqual(
     report.sections.map((s) => s.type),
-    ['lead', 'ranking', 'key_findings', 'watchpoints', 'sources', 'limitations', 'followups'],
+    [
+      'lead',
+      'ranking',
+      'impact_network',
+      'sector_exposure',
+      'key_findings',
+      'watchpoints',
+      'sources',
+      'limitations',
+      'followups',
+    ],
   );
-  assert.match(
-    report.sections[0].text,
-    /NVDA has the highest reported revenue growth \(\+60\.0%\)/,
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.match(by.lead.text, /NVDA has the highest reported revenue growth \(\+60\.0%\)/);
+  assert.match(by.lead.text, /Its filings name Arrow Electronics among its customers/);
+  /* A disclosed relationship is a quotation with its filing; one without a link is dropped. */
+  assert.equal(by.impact_network.rows.length, 1);
+  assert.equal(by.impact_network.rows[0].tag, 'Arrow Electronics');
+  const cited = report.sources.find((x) => x.id === by.impact_network.rows[0].cites[0]);
+  assert.equal(cited.url, 'https://www.sec.gov/Archives/edgar/data/1/a.htm');
+  /* The value chain lists who operates at a stage and says that is not a supplier claim. */
+  assert.deepEqual(
+    by.sector_exposure.rows.map((r) => r.id),
+    ['design', 'foundry'],
   );
-  assert.ok(
-    report.sections
-      .find((s) => s.type === 'limitations')
-      .items.some((i) => /no market-share dataset/.test(i)),
-  );
+  assert.match(by.sector_exposure.note, /not thereby suppliers or customers/);
+  const limits = by.limitations.items.join(' ');
+  assert.match(limits, /no verified market-share series/);
+  assert.match(limits, /Total industry revenue is not market share/);
   const alone = await O.runAdaptive(
     p,
     { peerSet: async () => fixturePeers(), synthesize: async () => null },
     { now: NOW },
   );
   assert.match(alone.sections[0].headline, /NVIDIA against 3 listed peers/);
-  assert.ok(!alone.sections.some((s) => s.type === 'key_findings'));
+  assert.ok(
+    !alone.sections.some((x) =>
+      ['key_findings', 'impact_network', 'sector_exposure'].includes(x.type),
+    ),
+  );
 });
 
-test('B06 end to end: reported 13F holders with the filing lag stated', async () => {
+const fixture13f = (over = {}) => ({
+  period: '2026-06-30',
+  previousPeriod: '2026-03-31',
+  latestFiledAt: '2026-08-14',
+  filersInPeriod: 1499,
+  comparedFilers: 58,
+  holders: 1074,
+  shares: 5482609601,
+  valueUsd: 1096876976974,
+  top10Share: 0.9445,
+  counts: { opened: 0, exited: 0, added: 24, reduced: 16 },
+  top: [
+    {
+      filer: 'BlackRock, Inc.',
+      shares: 1941918386,
+      valueUsd: 388558449933,
+      shareOfReported: 0.3542,
+    },
+    {
+      filer: 'Vanguard Capital Management LLC',
+      shares: 1540816358,
+      valueUsd: 308301945072,
+      shareOfReported: 0.2811,
+    },
+  ],
+  adds: [{ filer: 'Alpha Capital', shares: 5000000, changeShares: 1200000, status: 'added' }],
+  cuts: [{ filer: 'Beta Partners', shares: 900000, changeShares: -400000, status: 'reduced' }],
+  trend: [
+    {
+      period: '2026-06-30',
+      filers: 1499,
+      holders: 1074,
+      shares: 5482609601,
+      valueUsd: 1096876976974,
+    },
+  ],
+  ...over,
+});
+
+test('B06 end to end: share counts, same-filer changes, and coverage said plainly', async () => {
   const p = plan('Which institutions hold NVDA?');
   assert.deepEqual([p.primaryScenario, p.executable], ['B06', true]);
-  const holders13f = async () => ({
-    period: '2026-09-30',
-    quarter: 'Q3 2026',
-    rows: [
-      { filer: 'Alpha Capital', valueUsd: 9.5e9, changeType: 'increased' },
-      { filer: 'Beta Partners', valueUsd: 4e9, changeType: 'reduced' },
-      { filer: 'Gamma LP', valueUsd: 1e9, changeType: 'new' },
-    ],
-  });
-  const report = await O.runAdaptive(p, { holders13f }, { now: NOW });
-  assert.deepEqual(
-    report.sections.map((s) => s.type),
-    ['lead', 'ranking', 'sources', 'limitations', 'followups'],
-  );
-  assert.equal(
-    report.sections[0].headline,
-    'Alpha Capital is the largest reported 13F holder of NVDA for Q3 2026',
-  );
-  assert.match(report.sections[0].text, /1 added, 1 reduced, 1 opened a new position/);
-  assert.match(report.sections[0].text, /filed up to 45 days later/);
-  assert.deepEqual(
-    report.sections[1].rows.map((r) => r.cells.change),
-    ['Added', 'Reduced', 'New position'],
-  );
-  const none = await O.runAdaptive(p, { holders13f: async () => ({ rows: [] }) }, { now: NOW });
-  assert.match(none.sections[0].headline, /13F holdings for NVDA are not available/);
-});
-
-test('B07 end to end: disclosed trades, ranges kept as ranges, no motive inferred', async () => {
-  const p = plan('Which members of Congress traded NVDA?');
-  assert.deepEqual([p.primaryScenario, p.executable], ['B07', true]);
-  const trades = [
+  const etfHolders = async () => [
     {
-      member: 'Jane Member',
-      chamber: 'house',
-      type: 'purchase',
-      transactionDate: '2026-10-01',
-      disclosureDate: '2026-10-21',
-      amountMin: 1001,
-      amountMax: 15000,
-    },
-    {
-      member: 'John Senator',
-      chamber: 'senate',
-      type: 'sale',
-      transactionDate: '2026-08-01',
-      disclosureDate: '2026-10-30',
-      amountMin: 50001,
-      amountMax: null,
+      etf: 'VTI',
+      fund: 'Total Stock Market ETF',
+      reportDate: '2026-06-30',
+      shares: 729853903,
+      valueUsd: 146036467451,
+      pctOfFund: 6.355,
     },
   ];
-  let asked = null;
   const report = await O.runAdaptive(
     p,
+    { positioning13f: async () => fixture13f(), etfHolders },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    report.sections.map((s) => s.type),
+    [
+      'lead',
+      'ranking',
+      'series_chart',
+      'data_table',
+      'sector_exposure',
+      'sources',
+      'limitations',
+      'followups',
+    ],
+  );
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.equal(
+    by.lead.headline,
+    'BlackRock, Inc. is the largest reported 13F holder of NVDA for Q2 2026',
+  );
+  assert.match(by.lead.text, /It reported 1\.94B shares worth \$388\.6B/);
+  assert.match(by.lead.text, /the ten largest hold 94\.5% of that reported value/);
+  /* The comparison is among managers that filed in both quarters, and its thinness is stated. */
+  assert.match(
+    by.lead.text,
+    /Among the 58 managers with filings indexed for both Q1 2026 and Q2 2026, 24 added shares, 16 reduced/,
+  );
+  assert.match(by.lead.text, /small part of the 1,499 managers/);
+  assert.equal(by.ranking.rows[0].cells.shares, '1.94B');
+  /* Changes are in shares, never inferred from value. */
+  assert.match(by.data_table.note, /Measured in shares reported, not in value/);
+  assert.deepEqual(
+    by.data_table.rows.map((r) => r.cells.change),
+    ['+1.2M', '-400,000'],
+  );
+  /* One quarter indexed widely: the chart compares holders, and says why it is not over time. */
+  assert.match(by.series_chart.note, /One quarter is indexed widely enough/);
+  assert.deepEqual(by.series_chart.series[0].values, [1941918386, 1540816358]);
+  /* Fund holdings are a separate filing and are never called flows. */
+  assert.match(by.sector_exposure.note, /not added together/);
+  const src = report.sources.find((x) => /N-PORT/.test(x.publisher));
+  assert.match(src.detail, /not creations, redemptions or flows/);
+  const limits = by.limitations.items.join(' ');
+  assert.match(limits, /positions at Jun 30, 2026, filed up to 45 days after/);
+  assert.match(limits, /not total institutional ownership/);
+  assert.doesNotMatch(JSON.stringify(report), /\b(inflows?|outflows?|bought|sold)\b/i);
+  /* With several quarters indexed the chart is across time. */
+  const two = fixture13f({
+    trend: [
+      { period: '2026-03-31', filers: 1400, holders: 1000, shares: 5.2e9, valueUsd: 9e11 },
+      { period: '2026-06-30', filers: 1499, holders: 1074, shares: 5.48e9, valueUsd: 1.1e12 },
+    ],
+  });
+  const over = await O.runAdaptive(p, { positioning13f: async () => two }, { now: NOW });
+  const chart = over.sections.find((x) => x.type === 'series_chart');
+  assert.deepEqual(chart.categories, ['Q1 2026', 'Q2 2026']);
+  /* No earlier quarter: no change is claimed. */
+  const single = await O.runAdaptive(
+    p,
     {
-      congressTrades: async (t, o) => {
-        asked = [t, o.since];
-        return trades;
-      },
+      positioning13f: async () =>
+        fixture13f({ previousPeriod: null, comparedFilers: 0, adds: [], cuts: [] }),
     },
     { now: NOW },
   );
+  assert.match(single.sections[0].text, /No earlier quarter is indexed widely enough to compare/);
+  assert.ok(!single.sections.some((x) => x.type === 'data_table'));
+  const none = await O.runAdaptive(p, { positioning13f: async () => null }, { now: NOW });
+  assert.match(none.sections[0].headline, /13F holdings for NVDA are not available/);
+});
+
+const fixtureTrades = [
+  {
+    member: 'Jane Member',
+    chamber: 'house',
+    type: 'purchase',
+    ticker: 'NVDA',
+    transactionDate: '2026-10-01',
+    disclosureDate: '2026-10-21',
+    amountMin: 1001,
+    amountMax: 15000,
+  },
+  {
+    member: 'John Senator',
+    chamber: 'senate',
+    type: 'sale',
+    ticker: 'NVDA',
+    transactionDate: '2026-08-01',
+    disclosureDate: '2026-10-30',
+    amountMin: 50001,
+    amountMax: null,
+  },
+  {
+    member: 'Jane Member',
+    chamber: 'house',
+    type: 'sale',
+    ticker: 'AAPL',
+    transactionDate: '2026-09-10',
+    disclosureDate: '2026-09-25',
+    amountMin: 15001,
+    amountMax: 50000,
+  },
+];
+
+test('B07 company: congressional reports and insider filings stay separate', async () => {
+  const p = plan('Which members of Congress traded NVDA?');
+  assert.deepEqual([p.primaryScenario, p.executable], ['B07', true]);
+  let asked = null;
+  const deps = {
+    congressTrades: async (t, o) => {
+      asked = [t, o.since];
+      return fixtureTrades.filter((x) => x.ticker === 'NVDA');
+    },
+    insiderTrades: async () => [
+      {
+        form: '4',
+        filedAt: '2026-11-06',
+        reporter: 'Pat Officer',
+        title: 'CFO',
+        date: '2026-11-04',
+        code: 'S',
+        side: 'D',
+        shares: 10000,
+        price: 200,
+        valueUsd: 2000000,
+      },
+      {
+        form: '4',
+        filedAt: '2026-10-13',
+        reporter: 'Sam Director',
+        title: 'Director',
+        date: '2026-10-09',
+        code: 'A',
+        side: 'A',
+        shares: 5000,
+        price: 0,
+        valueUsd: 0,
+      },
+    ],
+  };
+  const report = await O.runAdaptive(p, deps, { now: NOW });
   assert.deepEqual(asked, ['NVDA', '2025-11-16']);
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
   assert.equal(
-    report.sections[0].headline,
+    by.lead.headline,
     '2 members of Congress disclosed 2 trades in NVDA over the past twelve months',
   );
-  assert.match(report.sections[0].text, /1 was a purchase and 1 was a sale/);
-  assert.match(report.sections[0].text, /1 came more than 45 days after/);
-  const rows = report.sections[1].rows;
-  assert.equal(rows[0].cells.amount, '$1,001 to $15,000');
-  assert.equal(rows[1].cells.amount, 'Over $50,001');
-  assert.equal(rows[1].cells.member, 'John Senator, Senate');
+  assert.match(by.lead.text, /1 was a purchase and 1 was a sale/);
+  assert.match(by.lead.text, /1 came more than 45 days after/);
+  assert.equal(by.ranking.rows[0].cells.amount, '$1,001 to $15,000');
+  assert.equal(by.ranking.rows[1].cells.amount, 'Over $50,001');
+  /* Insiders: their own table, and an award is not a market trade. */
+  assert.equal(by.data_table.title, 'Company insider filings');
+  assert.deepEqual(
+    by.data_table.rows.map((r) => [r.cells.kind, r.cells.value]),
+    [
+      ['Open-market sale', '$2.0M'],
+      ['Award or grant', 'N/A'],
+    ],
+  );
+  assert.match(by.limitations.items.join(' '), /indexed from September 30, 2026/);
   assert.doesNotMatch(
-    JSON.stringify(report.sections.slice(0, 2)),
-    /\b(insider knowledge|suspicious|tipped|ahead of)\b/i,
+    JSON.stringify(report),
+    /\b(insider knowledge|suspicious|tipped|ahead of the|illegal|unlawful)\b/i,
+  );
+  /* An insider question leads with the insider record. */
+  const ip = plan('Are insiders selling NVDA?');
+  assert.deepEqual([ip.primaryScenario, ip.executable], ['B07', true]);
+  const ir = await O.runAdaptive(ip, deps, { now: NOW });
+  assert.match(
+    ir.sections[0].headline,
+    /^Insiders at NVDA reported 1 open-market sale and 0 open-market purchases since/,
   );
   /* An empty index is an answer; an unreadable one is not. */
   const empty = await O.runAdaptive(p, { congressTrades: async () => [] }, { now: NOW });
@@ -1344,7 +1559,67 @@ test('B07 end to end: disclosed trades, ranges kept as ranges, no motive inferre
   assert.match(dark.sections[0].headline, /not available right now/);
 });
 
-test('C02 end to end: one measure, one year, ranked from stored series', async () => {
+test('B07 member and chamber: a named member, and Congress as a whole', async () => {
+  const p = plan('What has Nancy Pelosi been buying?');
+  assert.deepEqual([p.primaryScenario, p.executable], ['B07', true]);
+  let asked = null;
+  const memberTrades = async (name, o) => {
+    asked = [name, o.since];
+    return {
+      member: { id: 'P000197', name: 'Nancy Pelosi', chamber: 'house', party: 'D', state: 'CA' },
+      committees: ['Committee on Example'],
+      trades: fixtureTrades.map((t) => ({ ...t, member: 'Nancy Pelosi' })),
+    };
+  };
+  const report = await O.runAdaptive(p, { memberTrades }, { now: NOW });
+  assert.deepEqual(asked, ['Nancy Pelosi', '2024-11-16']);
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.equal(
+    by.lead.headline,
+    'Nancy Pelosi disclosed 3 trades over the past two years: 1 purchase and 2 sales',
+  );
+  assert.match(by.lead.text, /NVDA \(2\), AAPL \(1\)/);
+  assert.equal(by.series_chart.categories.length, 24);
+  assert.deepEqual(
+    by.series_chart.series.map((x) => x.name),
+    ['Purchases', 'Sales'],
+  );
+  /* Committee seats are context, and the report says they are not evidence. */
+  assert.match(by.policy_tracker.note, /not evidence about any trade/);
+  assert.equal(report.thread.person, 'Nancy Pelosi');
+  /* A name that matches no single member is said, not guessed. */
+  const unknown = await O.runAdaptive(
+    p,
+    { memberTrades: async () => ({ member: null, trades: [] }) },
+    { now: NOW },
+  );
+  assert.match(unknown.sections[0].headline, /could not match/);
+  /* No member and no company: the chamber view. */
+  const cp = plan('How active has Congress been in the stock market this year?');
+  assert.deepEqual([cp.primaryScenario, cp.executable], ['B07', true]);
+  const cr = await O.runAdaptive(
+    cp,
+    { chamberTrades: async () => ({ capped: false, trades: fixtureTrades }) },
+    { now: NOW },
+  );
+  const cby = Object.fromEntries(cr.sections.map((s) => [s.type, s]));
+  assert.match(
+    cby.lead.headline,
+    /^Members of Congress disclosed 3 trades over the past twelve months$/,
+  );
+  assert.deepEqual(
+    cby.ranking.rows.map((r) => [r.cells.chamber, r.cells.trades]),
+    [
+      ['House', '2'],
+      ['Senate', '1'],
+    ],
+  );
+  assert.equal(cby.data_table.rows[0].cells.ticker, 'NVDA');
+  /* An insider question with no company is not taken. */
+  assert.equal(plan('Are insiders selling?').executable, false);
+});
+
+test('C02 end to end: GDP from the snapshot, other measures from the series store', async () => {
   const rows = [
     ['USA', 'United States', 29e12],
     ['CHN', 'China', 18.7e12],
@@ -1363,25 +1638,97 @@ test('C02 end to end: one measure, one year, ranked from stored series', async (
   const report = await O.runAdaptive(p, { rankings: async () => payload }, { now: NOW });
   assert.deepEqual(
     report.sections.map((s) => s.type),
-    ['lead', 'ranking', 'sources', 'limitations', 'followups'],
+    ['lead', 'series_chart', 'ranking', 'sources', 'limitations', 'followups'],
   );
-  assert.equal(report.sections[0].headline, 'United States ranks first on nominal GDP in 2024');
+  assert.equal(
+    report.sections[0].headline,
+    'United States has the highest nominal GDP in the data for 2024',
+  );
   assert.match(
     report.sections[0].text,
     /\$29\.00T, followed by China at \$18\.70T and Germany at \$4\.70T/,
   );
-  assert.equal(report.sections[1].rows.length, 3);
-  /* A measure Sonar does not hold is left to the existing pipeline, and a missing series is said. */
-  assert.equal(plan('Which countries produce the most crude oil?').executable, false);
+  assert.equal(report.sections[2].sortable, true);
+  assert.deepEqual(
+    report.sections[2].rows.map((r) => r.sort.value),
+    [29e12, 18.7e12, 4.7e12],
+  );
+  /* Crude oil production: the macro store's ranking, with its period mix carried through. */
+  for (const [q, id] of [
+    ['Which countries produce the most crude oil?', 'oil_production'],
+    ['Which countries have the highest inflation?', 'inflation_annual'],
+    ['Which countries have the most government debt?', 'gov_debt'],
+  ])
+    assert.deepEqual(
+      [plan(q).primaryScenario, plan(q).executable, CM.rankingOf(q).id],
+      ['C02', true, id],
+      q,
+    );
+  assert.equal(CM.rankingOf('Which countries have the lowest unemployment?').order, 'asc');
+  /* Reserves have no rankable series in the store, so that question is not taken. */
+  assert.equal(CM.rankingOf('Which countries have the largest foreign exchange reserves?'), null);
+  let asked = null;
+  const macroRank = async (id, o) => {
+    asked = [id, o.order, o.limit];
+    return [
+      {
+        meta: {
+          name: 'Highest crude oil production',
+          attribution: 'U.S. Energy Information Administration',
+          unit: 'thousand barrels per day',
+          period: '2026-07',
+          ranking: {
+            order: 'desc',
+            unit: 'thousand barrels per day',
+            mix: 'latest data: Jul 2026 for 2 countries, older for 1 (back to Jun 2026)',
+            periodMix: { leader: '2026-07', atLeader: 2, older: 1, oldest: '2026-06', dropped: 0 },
+            rows: [
+              { rank: 1, name: 'United States', value: 13400, period: '2026-07' },
+              { rank: 2, name: 'Saudi Arabia', value: 9800, period: '2026-07' },
+              { rank: 3, name: 'Russia', value: 9300, period: '2026-06' },
+            ],
+          },
+        },
+      },
+    ];
+  };
+  const oil = await O.runAdaptive(
+    plan('Which countries produce the most crude oil?'),
+    { macroRank },
+    { now: NOW },
+  );
+  assert.deepEqual(asked, ['oil_production', 'desc', 15]);
+  const oby = Object.fromEntries(oil.sections.map((s) => [s.type, s]));
+  assert.equal(
+    oby.lead.headline,
+    'United States has the highest crude oil production in the data for 2026-07',
+  );
+  assert.match(
+    oby.lead.text,
+    /13,400, followed by Saudi Arabia at 9,800 and Russia at 9,300 \(thousand barrels per day\)/,
+  );
+  /* A mixed-period ranking says so, and shows each country's period. */
+  assert.match(oby.lead.text, /Not every country has reported the same period/);
+  assert.equal(oby.ranking.rows[2].cells.period, '2026-06');
+  assert.match(oil.sources[0].detail, /Unit: thousand barrels per day/);
+  /* Nothing comparable stored: the ping is left to the existing pipeline. An unreadable store is said. */
+  assert.equal(
+    await O.runAdaptive(
+      plan('Which countries produce the most crude oil?'),
+      { macroRank: async () => [] },
+      { now: NOW },
+    ),
+    null,
+  );
   const dark = await O.runAdaptive(p, { rankings: async () => null }, { now: NOW });
   assert.match(dark.sections[0].headline, /not available right now/);
 });
 
-test('a company pipeline needs a listed company, and a table needs complete rows', () => {
+test('a company pipeline needs a listed company; tables and charts need real, complete data', () => {
   for (const q of [
     'Is the market expensive?',
     'Which institutions are buying?',
-    'What did Congress trade last week?',
+    'When is the next earnings date?',
   ])
     assert.equal(plan(q).executable, false, q);
   const out = S.validateReport({
@@ -1393,12 +1740,259 @@ test('a company pipeline needs a listed company, and a table needs complete rows
         columns: [{ key: 'a', label: 'A' }],
         rows: [{ id: '1', cells: { a: 'x' } }],
       },
+      { type: 'series_chart', categories: ['a'], series: [{ name: 's', values: [1] }] },
+      { type: 'series_chart', categories: ['a', 'b'], series: [{ name: 's', values: [1, 'two'] }] },
+      {
+        type: 'series_chart',
+        categories: ['a', 'b', 'c'],
+        series: [{ name: 's', values: [1, null, null] }],
+      },
     ],
     sources: [],
   });
   assert.deepEqual(
     out.report.sections.map((s) => s.type),
     ['lead', 'data_table'],
+  );
+  const ok = S.validateReport({
+    sections: [
+      { type: 'lead', headline: 'h', text: 't' },
+      {
+        type: 'series_chart',
+        categories: ['a', 'b', 'c'],
+        series: [{ name: 's', values: [1, null, 3] }],
+      },
+    ],
+    sources: [],
+  });
+  assert.equal(ok.report.sections.length, 2);
+});
+
+/* ── phase 2 completion and phase 3 ── */
+
+test('A04 end to end: an expected date is not a confirmed one, and the record is arithmetic', async () => {
+  const p = plan('When does NVDA report earnings next?');
+  assert.deepEqual([p.primaryScenario, p.executable], ['A04', true]);
+  const earnings = async () => [
+    { date: '2026-11-17', epsActual: null, epsEstimated: 1.25, revenueEstimated: 54e9 },
+    {
+      date: '2026-08-26',
+      epsActual: 1.1,
+      epsEstimated: 1.0,
+      revenueActual: 46e9,
+      revenueEstimated: 45e9,
+    },
+    {
+      date: '2026-05-27',
+      epsActual: 0.9,
+      epsEstimated: 1.0,
+      revenueActual: 44e9,
+      revenueEstimated: 43e9,
+    },
+    { date: 'bad', epsActual: 9, epsEstimated: 1 },
+  ];
+  const report = await O.runAdaptive(
+    p,
+    { earnings, getOhlcv: async () => ({ bars: fixtureBars(), adjustment: 'splits' }) },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    report.sections.map((s) => s.type),
+    [
+      'lead',
+      'catalyst_calendar',
+      'series_chart',
+      'data_table',
+      'sources',
+      'limitations',
+      'followups',
+    ],
+  );
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  assert.equal(by.lead.headline, 'NVDA is expected to report on Nov 17, 2026');
+  assert.match(by.lead.text, /may be an estimate until the company confirms it/);
+  assert.match(by.lead.text, /above the estimate 1 time and below it 1 time/);
+  assert.match(by.catalyst_calendar.columns[0].label, /not confirmed/);
+  assert.deepEqual(
+    by.data_table.rows.map((r) => r.cells.epsS),
+    ['+10.0%', '-10.0%'],
+  );
+  assert.ok(
+    by.data_table.rows.every((r) => /%$/.test(r.cells.move)),
+    'a measured two-session move per report',
+  );
+  assert.deepEqual(
+    by.series_chart.series.map((x) => x.name),
+    ['Estimate', 'Reported'],
+  );
+  assert.match(by.limitations.items.join(' '), /not labelled GAAP/);
+  const dark = await O.runAdaptive(p, { earnings: async () => null }, { now: NOW });
+  assert.match(dark.sections[0].headline, /not available right now/);
+});
+
+test('B04 end to end: obligations and revenue are separate measures', async () => {
+  const p = plan('How dependent is Palantir on government contracts?');
+  assert.equal(p.primaryScenario, 'B04');
+  const lp = plan('How dependent is LMT on government contracts?');
+  assert.deepEqual([lp.primaryScenario, lp.executable], ['B04', true]);
+  const contracts = async (t) => ({
+    matched: t,
+    syncedAt: '2026-11-15',
+    topAwards: [],
+    years: [
+      {
+        fiscalYear: 2027,
+        total: 5e9,
+        count: 100,
+        topAgency: 'Department of Defense',
+        agencies: [{ agency: 'Department of Defense', total: 5e9 }],
+      },
+      {
+        fiscalYear: 2026,
+        total: 75e9,
+        count: 38000,
+        topAgency: 'Department of Defense',
+        agencies: [
+          { agency: 'Department of Defense', total: 60e9 },
+          { agency: 'NASA', total: 15e9 },
+        ],
+      },
+      {
+        fiscalYear: 2025,
+        total: 50e9,
+        count: 40000,
+        topAgency: 'Department of Defense',
+        agencies: [{ agency: 'Department of Defense', total: 50e9 }],
+      },
+    ],
+  });
+  const report = await O.runAdaptive(lp, { contracts, revenueMix: async () => null }, { now: NOW });
+  const by = Object.fromEntries(report.sections.map((s) => [s.type, s]));
+  /* Nov 2026 is fiscal 2027, still accruing: the last complete year leads. */
+  assert.equal(
+    by.lead.headline,
+    'LMT was obligated $75.0B in federal prime contracts in fiscal 2026',
+  );
+  assert.match(
+    by.lead.text,
+    /up 50\.0% from fiscal 2025\. Department of Defense accounted for 80% of it/,
+  );
+  assert.deepEqual(by.series_chart.categories, ['FY25', 'FY26', 'FY27']);
+  assert.match(by.series_chart.note, /Fiscal 2027 is in progress/);
+  assert.deepEqual(
+    by.ranking.rows.map((r) => r.cells.share),
+    ['80.0%', '20.0%'],
+  );
+  /* The sensitivity is arithmetic on obligations and claims no share of revenue. */
+  assert.deepEqual(
+    by.scenario_matrix.rows.map((r) => r.title),
+    ['$3.8B less obligated', '$7.5B less obligated', '$15.0B less obligated'],
+  );
+  assert.match(by.scenario_matrix.label, /not a share of revenue/);
+  assert.match(by.limitations.items.join(' '), /never divided one by the other/);
+  assert.ok(!by.sector_exposure, 'no revenue share without a reported government segment');
+  assert.doesNotMatch(by.lead.text, /% of (its|the company’s) revenue/);
+});
+
+test('phase 3: quant statistics, commodities, country series, markets and sourced briefs', async () => {
+  /* B10: risk and return are computed from closes. */
+  const qp = plan('What is NVDA’s volatility and max drawdown?');
+  assert.deepEqual([qp.primaryScenario, qp.executable], ['B10', true]);
+  const quant = await O.runAdaptive(
+    qp,
+    { getOhlcv: async () => ({ bars: fixtureBars(), adjustment: 'splits' }) },
+    { now: NOW },
+  );
+  assert.equal(quant.sections[0].type, 'lead');
+  assert.ok(quant.sections.find((x) => x.type === 'metric_table').rows.every((r) => r.method));
+  /* C03: the price is measured; drivers need sources. */
+  const cp = plan('Where could Brent oil trade if OPEC supply rises?');
+  assert.deepEqual([cp.primaryScenario, cp.executable], ['C03', true]);
+  const points = fixtureBars({ n: 260 }).map((b) => ({ date: b.date, value: b.close }));
+  const com = await O.runAdaptive(
+    cp,
+    {
+      commodity: async () => ({ points, proxy: false }),
+      synthesize: async () => ({ answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+    },
+    { now: NOW },
+  );
+  const cby = Object.fromEntries(com.sections.map((s) => [s.type, s]));
+  assert.equal(cby.series_chart.kind, 'line');
+  assert.ok(cby.series_chart.categories.length <= 62);
+  assert.match(cby.limitations.items.join(' '), /does not forecast where the price goes/);
+  assert.doesNotMatch(
+    JSON.stringify(com.sections.slice(0, 3)),
+    /\b(will (rise|fall|trade)|price target)\b/i,
+  );
+  /* C01: a country's stored series, each with its own period, and a history chart. */
+  const tp = plan('How is Turkey’s lira doing?');
+  assert.deepEqual([tp.primaryScenario, tp.executable], ['C01', true]);
+  const item = (name, value, unit, period, projection = false) => ({
+    title: `${name} (${period})`,
+    text: `${name} was ${value}${unit} in ${period}.`,
+    citation: { label: 'BIS' },
+    meta: {
+      name,
+      value,
+      unit,
+      period,
+      projection,
+      attribution: 'Bank for International Settlements',
+      source: 'bis',
+      series_key: `K:${name}`,
+    },
+  });
+  const tr = await O.runAdaptive(
+    tp,
+    {
+      countryBrief: async () => [
+        item('Policy rate', 36, '%', '2026-10'),
+        item('Inflation', 33.1, '% a year', '2026-09', true),
+      ],
+      seriesHistory: async () =>
+        ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'].map((period, i) => ({
+          period,
+          value: 45 - i,
+        })),
+    },
+    { now: NOW },
+  );
+  const tby = Object.fromEntries(tr.sections.map((s) => [s.type, s]));
+  assert.deepEqual(
+    tby.macro_timeseries.rows.map((r) => r.cells.kind),
+    ['Observed', 'Projection'],
+  );
+  assert.deepEqual(tby.series_chart.series[0].values, [45, 44, 43, 42, 41, 40]);
+  assert.match(tby.limitations.items.join(' '), /periods in the table differ/);
+  /* C08: a contract must name the entity; none is an answer, not a widget. */
+  const mp = plan('Does any prediction market price NVIDIA’s next CEO?');
+  assert.equal(mp.primaryScenario, 'C08');
+  const none = await O.runAdaptive(
+    { ...mp, executable: true },
+    { retrieveMarkets: async () => [], admin: fakeAdmin([]) },
+    { now: NOW },
+  );
+  assert.match(none.sections[0].headline, /^No open prediction contract names/);
+  assert.ok(!none.sections.some((x) => x.type === 'forecast_market'));
+  /* A08: a sourced brief; with no research and no coverage the executor declines. */
+  const bp = plan('How would new chip export restrictions affect ASML?');
+  assert.deepEqual([bp.primaryScenario, bp.executable], ['A08', true]);
+  const brief = await O.runAdaptive(
+    bp,
+    {
+      synthesize: async () => ({ answer: RISK_REPLY, webResults: FIXTURE_WEB_RESULTS }),
+      news: async () => [],
+    },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    brief.sections.find((x) => x.type === 'key_findings').items.map((i) => i.note),
+    [null, 'Analyst interpretation'],
+  );
+  assert.equal(
+    await O.runAdaptive(bp, { synthesize: async () => null, news: async () => [] }, { now: NOW }),
+    null,
   );
 });
 

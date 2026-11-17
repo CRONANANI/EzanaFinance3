@@ -43,6 +43,22 @@ const table = (s) =>
     ? null
     : 'needs columns and complete rows';
 
+/* A chart is drawn only from real numbers: every series as long as the category axis, and at
+   least two finite values in each. Anything less is removed, never padded. */
+const chart = (s) => {
+  const n = s.categories?.length || 0;
+  if (n < 2 || !s.series?.length) return 'needs at least two categories and one series';
+  for (const sr of s.series) {
+    if (!text(sr.name) || !Array.isArray(sr.values) || sr.values.length !== n)
+      return 'series do not match the category axis';
+    if (sr.values.some((v) => v != null && !(typeof v === 'number' && Number.isFinite(v))))
+      return 'a series holds a value that is not a number';
+    if (sr.values.filter((v) => typeof v === 'number').length < 2)
+      return 'fewer than two real values in a series';
+  }
+  return null;
+};
+
 const RULES = {
   lead: (s) => (text(s.headline) && text(s.text) ? null : 'needs a headline and text'),
   verified_event_status: (s) =>
@@ -63,6 +79,11 @@ const RULES = {
   valuation: (s) => table(s),
   ranking: (s) => table(s),
   data_table: (s) => table(s),
+  sector_exposure: (s) => table(s),
+  policy_tracker: (s) => table(s),
+  macro_timeseries: (s) => table(s),
+  catalyst_calendar: (s) => table(s),
+  series_chart: (s) => chart(s),
   risk: (s) => (s.items?.length ? null : 'no items'),
   fundamentals: (s) => (s.items?.length ? null : 'no figures'),
   watchpoints: (s) => (s.items?.length ? null : 'no items'),

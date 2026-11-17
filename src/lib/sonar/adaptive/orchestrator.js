@@ -39,14 +39,19 @@ import {
   tooSimilar,
 } from './kit';
 import { runLeadershipImpact, runMoveAttribution } from './executors-events';
+import { runValuation, runFundamentals, runCompetition } from './executors-company';
+import { runInstitutional, runCongressTrades, runCountryRanking } from './executors-disclosures';
 import {
-  runValuation,
-  runFundamentals,
-  runCompetition,
-  runInstitutional,
-  runCongressTrades,
-  runCountryRanking,
-} from './executors-company';
+  runEarnings,
+  runGovExposure,
+  runLobbying,
+  runQuant,
+  runCountryMacro,
+  runCountryCompare,
+  runCommodity,
+  runPredictionMarkets,
+  runSourcedBrief,
+} from './executors-macro';
 
 /* ── B01: price action and technical analysis ───────────────────────────── */
 
@@ -515,6 +520,20 @@ const EXECUTORS = {
   B06: runInstitutional,
   B07: runCongressTrades,
   C02: runCountryRanking,
+  A04: runEarnings,
+  B04: runGovExposure,
+  B08: runLobbying,
+  B10: runQuant,
+  C01: runCountryMacro,
+  C04: runCountryMacro,
+  C05: runCountryMacro,
+  C09: runCountryCompare,
+  C03: runCommodity,
+  C08: runPredictionMarkets,
+  A07: runSourcedBrief,
+  A08: runSourcedBrief,
+  A10: runSourcedBrief,
+  C10: runSourcedBrief,
 };
 
 /**
@@ -532,6 +551,8 @@ export async function runAdaptive(plan, deps, { now = new Date(), deadlineAt = n
   const t0 = Date.now();
   const telemetry = { steps: [], degraded: [] };
   const out = await run(plan, deps, now, telemetry, deadlineAt);
+  /* An executor declines a question its data cannot answer; the ping then runs the old way. */
+  if (!out?.built?.lead) return null;
   const { sections, omitted } = selectComponents(plan, {
     ...out.built,
     sources: { title: 'Evidence and sources' },
