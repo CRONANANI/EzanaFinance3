@@ -14,8 +14,17 @@
 //   --periods 2025-06-30,2025-09-30   only these report quarters (default: all in the zip)
 //   --filers tracked|all              tracked (default): managers already in titans_13f_filers;
 //                                     all: every filer (a quarter is ~3M holdings rows)
-//   --write                           write sec_filings + sec_13f_holdings, then run
-//                                     titans_13f_materialise for each quarter loaded
+//   --write                           write sec_filings + sec_13f_holdings. Each filing is one
+//                                     transaction and its row count is checked against the zip
+//   --materialise                     with --write: rebuild titans_13f_* for a quarter, but ONLY
+//                                     if every filing selected for it was written and its row
+//                                     count matched. A quarter that failed the check is left alone
+//
+// Nov 17, 2026: the dry run now writes a per-quarter report to
+// validation/13f-backfill-dry-run-<date>.md (filings, amendments, holdings rows, what is
+// already indexed, estimated storage). Materialising is a separate, checked step, because
+// titans_13f_materialise deletes a quarter's positions before rebuilding them from
+// sec_13f_holdings: rebuilding a quarter whose raw holdings are incomplete would lose data.
 //
 // Writes go through the same objects the incremental ingest uses: sec_filings
 // rows and the replace_13f_holdings RPC (one transaction per filing), then
@@ -23,6 +32,7 @@
 import { createClient } from '@supabase/supabase-js';
 import yauzl from 'yauzl';
 import readline from 'node:readline';
+import fs from 'node:fs';
 import { datasetDate, filingRow, holdingRow, tsvRow } from '../src/lib/sec/form13f-datasets.js';
 
 const arg = (k, d = null) => {
@@ -33,6 +43,7 @@ const zips = String(arg('zip', '')).split(',').filter(Boolean);
 const periods = new Set(String(arg('periods', '')).split(',').filter(Boolean));
 const filersMode = arg('filers', 'tracked');
 const write = process.argv.includes('--write');
+const materialise = process.argv.includes('--materialise');
 if (!zips.length) {
   console.error('Pass --zip path/to/form13f.zip[,more.zip]');
   process.exit(1);
@@ -114,6 +125,27 @@ async function tickersFor(cusips) {
 const tracked = filersMode === 'all' ? null : await trackedCiks();
 const touched = new Set();
 const totals = { filings: 0, holdings: 0, skippedFilers: 0, failed: 0 };
+/* Per report quarter: what the zips hold, and after a write, what landed. */
+const byPeriod = new Map();
+const stat = (period) => {
+  if (!byPeriod.has(period))
+    byPeriod.set(period, {
+      period,
+      filings: 0,
+      originals: 0,
+      amendments: 0,
+      newHoldingsAmendments: 0,
+      restatements: 0,
+      filers: new Set(),
+      holdings: 0,
+      accessions: [],
+      firstFiled: null,
+      lastFiled: null,
+      written: 0,
+      mismatched: 0,
+    });
+  return byPeriod.get(period);
+};
 
 for (const path of zips) {
   console.log(`\n${path}`);
@@ -151,6 +183,18 @@ for (const path of zips) {
     totals.filings += 1;
     totals.holdings += infos.length;
     touched.add(filing.period_of_report);
+    const st = stat(filing.period_of_report);
+    st.filings += 1;
+    st.holdings += infos.length;
+    st.filers.add(filing.cik);
+    st.accessions.push(acc);
+    if (/\/A$/i.test(filing.form_type)) {
+      st.amendments += 1;
+      if (filing.amendment_type === 'NEW HOLDINGS') st.newHoldingsAmendments += 1;
+      else st.restatements += 1;
+    } else st.originals += 1;
+    if (!st.firstFiled || filing.filed_at < st.firstFiled) st.firstFiled = filing.filed_at;
+    if (!st.lastFiled || filing.filed_at > st.lastFiled) st.lastFiled = filing.filed_at;
     if (!write) continue;
     const tick = await tickersFor(
       infos.map((i) =>
@@ -178,18 +222,87 @@ for (const path of zips) {
     if (h.error) {
       totals.failed += 1;
       console.error(`  ${acc}: ${h.error.message}`);
-    }
+    } else if (Number(h.data) !== rows.length) {
+      /* replace_13f_holdings returns the rows it inserted: it must equal the filing's lines. */
+      st.mismatched += 1;
+      console.error(`  ${acc}: wrote ${h.data} of ${rows.length} holdings rows`);
+    } else st.written += 1;
     n += 1;
     if (n % 100 === 0) console.log(`  ${n}/${subs.size} filings written`);
   }
 }
 
 console.log('\nTotals', totals, 'quarters', [...touched].sort());
+
+/* What is already indexed for the same quarters, for the report. */
+async function indexedFor(st) {
+  let filings = 0;
+  for (let i = 0; i < st.accessions.length; i += 300) {
+    const { count } = await db
+      .from('sec_filings')
+      .select('accession_no', { count: 'exact', head: true })
+      .in('accession_no', st.accessions.slice(i, i + 300));
+    filings += count || 0;
+  }
+  const { count: filers } = await db
+    .from('titans_13f_filers')
+    .select('cik', { count: 'exact', head: true })
+    .eq('period', st.period);
+  return { filings, filers: filers || 0 };
+}
+
+/* Bytes per row measured on the live tables on Nov 17, 2026 (table plus indexes). */
+const BYTES = { holding: 223, position: 405 };
+const mb = (b) => `${(b / 1048576).toFixed(0)} MB`;
+const rows = [];
+for (const st of [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period))) {
+  // eslint-disable-next-line no-await-in-loop
+  const have = await indexedFor(st);
+  rows.push({ ...st, have });
+}
+
 if (write) {
-  for (const p of [...touched].sort()) {
-    const { data, error } = await db.rpc('titans_13f_materialise', { p_period: p });
-    console.log(`materialise ${p}:`, error ? error.message : `${data} positions`);
+  for (const st of rows) {
+    const complete = st.written === st.filings && st.mismatched === 0;
+    if (!materialise) {
+      console.log(
+        `${st.period}: ${st.written}/${st.filings} filings written. Not materialised (pass --materialise).`,
+      );
+      continue;
+    }
+    if (!complete) {
+      console.error(
+        `${st.period}: NOT materialised. ${st.written}/${st.filings} filings written, ${st.mismatched} with a row-count mismatch. Fix and re-run; the existing positions for this quarter are untouched.`,
+      );
+      continue;
+    }
+    // eslint-disable-next-line no-await-in-loop
+    const { data, error } = await db.rpc('titans_13f_materialise', { p_period: st.period });
+    console.log(`materialise ${st.period}:`, error ? error.message : `${data} positions`);
   }
 } else {
-  console.log('Dry run. Add --write to load and rebuild these quarters.');
+  const day = new Date().toISOString().slice(0, 10);
+  const lines = [
+    `# 13F backfill: dry run, ${day}`,
+    '',
+    `Zips: ${zips.map((z) => z.split('/').pop()).join(', ')}. Filers: ${filersMode}${tracked ? ` (${tracked.size.toLocaleString('en-US')} managers already tracked)` : ''}. Nothing was written.`,
+    '',
+    '| Quarter | Filings | Originals | Amendments (new holdings / restatements) | Managers | Holdings rows | Filed | Already indexed (filings / managers) | Est. storage |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ...rows.map(
+      (r) =>
+        `| ${r.period} | ${r.filings} | ${r.originals} | ${r.amendments} (${r.newHoldingsAmendments} / ${r.restatements}) | ${r.filers.size} | ${r.holdings.toLocaleString('en-US')} | ${r.firstFiled} to ${r.lastFiled} | ${r.have.filings} / ${r.have.filers} | ${mb(r.holdings * BYTES.holding + r.holdings * 0.7 * BYTES.position)} |`,
+    ),
+    '',
+    `Total: ${totals.filings.toLocaleString('en-US')} filings, ${totals.holdings.toLocaleString('en-US')} holdings rows; ${totals.skippedFilers.toLocaleString('en-US')} filings skipped because the manager is not tracked.`,
+    '',
+    'How a write behaves: each filing is upserted on its accession number and its holdings are replaced in one transaction, so re-running cannot duplicate rows. Amendments are kept as their own filings; the rebuild counts the latest full filing per manager plus later NEW HOLDINGS amendments. Reporting period and filing date come from the filing and are not changed.',
+    '',
+    'Storage is estimated from the live tables (raw holdings plus about 0.7 materialised positions per raw row). No paid service is called: the source is the SEC Form 13F data sets.',
+  ];
+  fs.mkdirSync('validation', { recursive: true });
+  fs.writeFileSync(`validation/13f-backfill-dry-run-${day}.md`, `${lines.join('\n')}\n`);
+  console.log(
+    `Dry run. Report: validation/13f-backfill-dry-run-${day}.md. Add --write to load, and --materialise to rebuild checked quarters.`,
+  );
 }
