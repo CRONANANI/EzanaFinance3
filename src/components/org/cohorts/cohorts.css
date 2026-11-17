@@ -101,7 +101,7 @@
 .coh-samplelabel {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 .coh-hrule {
@@ -355,7 +355,7 @@
   margin: 0 0 8px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -423,7 +423,7 @@
   background: transparent;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   text-align: left;
   color: var(--text-muted);
@@ -634,7 +634,7 @@ tr.is-on .coh-prov {
 .coh-initials--sm {
   width: 26px;
   height: 26px;
-  font-size: 10px;
+  font-size: var(--type-micro-size);
 }
 .coh-initials--lg {
   width: 40px;

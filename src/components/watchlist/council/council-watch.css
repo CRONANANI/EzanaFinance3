@@ -220,7 +220,7 @@
 .cwl-sort {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -239,7 +239,7 @@
   color: var(--text-primary);
 }
 .cwl-sort > .bi {
-  font-size: 10px;
+  font-size: var(--type-micro-size);
 }
 .cwl-name {
   display: flex;
@@ -457,7 +457,7 @@ a.cwl-ticker:hover {
   margin: 4px 0 -4px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -607,7 +607,7 @@ a.cwl-ticker:hover {
   min-height: 28px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   border-bottom-color: var(--ez-rule);

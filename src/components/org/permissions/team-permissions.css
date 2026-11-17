@@ -132,7 +132,7 @@
 .tpm-table thead .tpm-table__right {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -349,7 +349,7 @@ button.tpm-cell:focus-visible {
   border-bottom-color: var(--ez-rule);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }

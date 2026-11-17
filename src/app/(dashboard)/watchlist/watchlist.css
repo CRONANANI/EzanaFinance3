@@ -1091,7 +1091,7 @@
   cursor: pointer;
 }
 .wlm-sort .bi {
-  font-size: 0.625rem;
+  font-size: var(--type-micro-size);
   opacity: 0.35;
 }
 .wlm-sort .bi.is-on {

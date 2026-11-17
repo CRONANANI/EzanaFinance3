@@ -28,7 +28,7 @@
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -147,7 +147,7 @@
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   text-align: left;
   color: var(--text-muted);

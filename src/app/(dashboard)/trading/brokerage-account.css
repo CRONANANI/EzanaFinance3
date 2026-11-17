@@ -457,7 +457,7 @@
   color: var(--emerald-text);
 }
 .bka-th-btn > .bi {
-  font-size: 8px;
+  font-size: var(--type-micro-size);
 }
 .bka-delta.is-up {
   color: var(--positive);
