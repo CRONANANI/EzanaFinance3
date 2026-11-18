@@ -55,6 +55,11 @@ export const HOME_CARD_IMAGES = {
   },
   // Ossoff's $115.9 Million Machine
   'ossoff-2028-money-2026': { src: card('ossoff-2028-money-2026'), alt: '' },
+  // Five Outages, One Story? (original generated illustration, Ezana)
+  'tokenized-money-outage-theory-2026': {
+    src: card('tokenized-money-outage-theory-2026'),
+    alt: 'Abstract grid of green and dark token tiles crossed by a jagged red line.',
+  },
   // Twelve Funds, $12.4 Trillion
   'sovereign-wealth-league-table-2026': {
     src: card('sovereign-wealth-league-table-2026'),

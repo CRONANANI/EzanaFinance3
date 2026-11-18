@@ -59,6 +59,7 @@ import { grindrPinterestAppianLobbyingQ22026 } from './ezana-echo-article-grindr
 import { mcmasterDficPortfolioScorecard2026 } from './ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 import { industryNetMargins2026 } from './ezana-echo-article-industry-net-margins-2026.js';
 import { ossoff2028Money2026 } from './ezana-echo-article-ossoff-2028-money-2026.js';
+import { tokenizedMoneyOutageTheory2026 } from './ezana-echo-article-tokenized-money-outage-theory-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -97,6 +98,7 @@ const ARTICLES = [
   mcmasterDficPortfolioScorecard2026,
   industryNetMargins2026,
   ossoff2028Money2026,
+  tokenizedMoneyOutageTheory2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';

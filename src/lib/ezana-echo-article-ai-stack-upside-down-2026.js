@@ -489,7 +489,7 @@ export const aiStackUpsideDown2026 = {
   ],
   readTime: 9,
   publishedAt: '2026-10-13',
-  featured: true,
+  featured: false,
   articleOfMonth: false,
   likes: 0,
   comments: 0,

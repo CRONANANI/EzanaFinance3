@@ -44,6 +44,7 @@ import { aiStackUpsideDown2026 } from '@/lib/ezana-echo-article-ai-stack-upside-
 import { mcmasterDficPortfolioScorecard2026 } from '@/lib/ezana-echo-article-mcmaster-dfic-portfolio-scorecard-2026.js';
 import { industryNetMargins2026 } from '@/lib/ezana-echo-article-industry-net-margins-2026.js';
 import { ossoff2028Money2026 } from '@/lib/ezana-echo-article-ossoff-2028-money-2026.js';
+import { tokenizedMoneyOutageTheory2026 } from '@/lib/ezana-echo-article-tokenized-money-outage-theory-2026.js';
 
 const SOURCE = [
   industryNetMargins2026,
@@ -81,6 +82,7 @@ const SOURCE = [
   centralBankGoldCycle2026,
   datacenterPowerCrunch2026,
   ossoff2028Money2026,
+  tokenizedMoneyOutageTheory2026,
 ];
 
 /**
@@ -107,8 +109,11 @@ const SEED_READS = {
 
 // Strip inline entity markup ([[kw:…]]…[[/kw]] and [[person:…]]…[[/person]]) so
 // the plaintext body carries no raw tags — used for the search-indexed body.
+// Numbered source notes ([[src:N]]note[[/src]]) are dropped whole: the note is
+// a citation, not body text.
 function stripKw(s) {
   return String(s || '')
+    .replace(/\[\[src:[^\]]+\]\][\s\S]*?\[\[\/src\]\]/g, '')
     .replace(/\[\[(?:kw|person):[^\]]+\]\]/g, '')
     .replace(/\[\[\/(?:kw|person)\]\]/g, '');
 }
