@@ -50,7 +50,7 @@ export const SECTION_TYPES = [
   'portfolio_attribution',
   'risk',
   'watchpoints',
-  /* Nov 17: currency pressure, view model fx-pressure-v2 (fx-pressure.js). */
+  /* Nov 17: currency pressure, view model fx-pressure-v3 (fx-pressure.js). */
   'fx_overview',
   'fx_findings',
   'fx_evidence',

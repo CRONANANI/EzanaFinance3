@@ -1,5 +1,5 @@
 /**
- * Sonar adaptive research: currency pressure (Nov 17, 2026). View model `fx-pressure-v2`.
+ * Sonar adaptive research: currency pressure (Nov 17, 2026). View model `fx-pressure-v3`.
  *
  * "Is Türkiye's lira under pressure?", "How resilient are Brazil's reserves?", "What could
  * stabilize the rand?": one country's currency judged from Ezana's stored official series.
@@ -10,6 +10,11 @@
  * v2 (data preservation): the answer is an executive brief followed by the full analysis the
  * country board used to show, recomposed rather than trimmed. Nothing the stored data holds
  * is dropped because a wireframe did not draw it.
+ * v3 (layout): a desk summary with a short answer and "See full reading", follow-up chips
+ * under the question, the opening row of country intelligence, pressure breakdown and a
+ * sources card beside Research Controls and Next steps, compact findings, the four charts
+ * in one row, the flow, the long-run chart and indicators, then interpretation and the
+ * evidence (Ezana datasets beside the news).
  *
  *   evidence   buildCountryIntel (macro/intel.js): best stored series per currency family,
  *              histories, the deterministic picture and assessment (macro/currency.js,
@@ -55,7 +60,7 @@ import { storyHeadline } from '@/lib/sonar/key-chart';
 import { datasetEvidence } from '@/lib/sonar/country-board';
 import { step, sourceBook, freshQuestions } from './kit';
 
-export const FX_VIEW_MODEL = 'fx-pressure-v2';
+export const FX_VIEW_MODEL = 'fx-pressure-v3';
 /* ------------------------------------------------------------------ deterministic math */
 
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
@@ -143,7 +148,7 @@ const FOCUS = [
   ['stabilize', /\b(stabili[sz]\w*|recover\w*|turn (it )?around|what (could|would|might) (help|support|save|fix))\b/i],
   ['reserves', RESERVES],
   ['crisis', /\b(crisis|collapse|crash|default|devaluation|break(down)?|disorderly)\b/i],
-  ['inflation', /\b(inflation|policy rate|interest rates?|central bank|monetary policy|real rate)\b/i],
+  ['inflation', /\b(inflation|policy|interest rates?|central bank|real rate)\b/i],
 ];
 
 /* Currency codes as written in capitals ("TRY", "USD/TRY"); case-sensitive on purpose. */
@@ -189,6 +194,9 @@ export function fxIntent(text, { thread = null, hasCompany = false } = {}) {
   if (focus === 'reserves' && RESILIENCE.test(q) && (country || inherited)) return { iso3, focus };
   /* A follow-up asked inside a currency thread about inflation, policy or stabilizing. */
   if (inherited && focus !== 'overall') return { iso3, focus };
+  /* A follow-up chip from a currency answer ("What should we monitor next?"). */
+  if (inherited && /\b(monitor|watch|signals?|ease|easing|exposed|external|financing|devaluation|trigger)\b/i.test(q))
+    return { iso3, focus: 'overall' };
   return null;
 }
 
@@ -198,11 +206,11 @@ export function fxIntent(text, { thread = null, hasCompany = false } = {}) {
 /* Brief first (lead, overview, findings), then the detailed analysis. A focus moves the
    blocks that answer it forward; nothing is removed. */
 const ORDER = {
-  overall: ['fx_overview', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_monitor', 'fx_outlook'],
-  reserves: ['fx_overview', 'fx_charts', 'fx_findings', 'fx_risk_scope', 'fx_drivers', 'fx_evidence', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
-  inflation: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_drivers', 'fx_risk_scope', 'fx_evidence', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
-  crisis: ['fx_overview', 'fx_risk_scope', 'fx_drivers', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook'],
-  stabilize: ['fx_overview', 'fx_outlook', 'fx_monitor', 'fx_findings', 'fx_evidence', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope'],
+  overall: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
+  reserves: ['fx_overview', 'fx_charts', 'fx_findings', 'fx_risk_scope', 'fx_drivers', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
+  inflation: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_drivers', 'fx_risk_scope', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
+  crisis: ['fx_overview', 'fx_risk_scope', 'fx_drivers', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
+  stabilize: ['fx_overview', 'fx_outlook', 'fx_monitor', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_evidence'],
 };
 /* Which chart and finding lead for a focus. */
 const PANEL_ORDER = {
@@ -472,13 +480,38 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     .map((c) => ({ id: c.id, label: CHIP[c.id], level: c.level }));
 
   const built = {};
+  /* The desk summary: a short answer, one paragraph with the figures behind it, and the
+     longer reading under "See full reading". */
+  const LEVEL_WORD = { low: 'low', moderate: 'moderate', elevated: 'elevated', severe: 'severe' };
+  const levelWord = LEVEL_WORD[overall] || LEVEL_WORD[depLevel] || null;
+  const shortAnswer =
+    pressureLevel >= 2
+      ? `Yes. Pressure on the ${shortName} is ${levelWord || 'elevated'}.`
+      : pressureLevel === 1
+        ? `Moderately. The ${shortName} is under some pressure.`
+        : weaker
+          ? `Not materially. The ${shortName} is only slightly weaker.`
+          : `No. The ${shortName} has strengthened against the dollar.`;
+  const deskText =
+    `${levelWord ? `By Ezana’s thresholds, pressure on the ${shortName} is ${levelWord}. ` : ''}` +
+    `Over the year to ${periodLabel(y1.toPeriod)} the dollar ${usdUp >= 0 ? 'costs' : 'cost'} ${pct(usdUp)} ${usdUp >= 0 ? 'more' : 'less'} in ${possessive(place)} ${shortName}, and the ${shortName} ${valueChg < 0 ? 'lost' : 'gained'} ${pct(valueChg)} of its dollar value.` +
+    `${pressureLevel >= 1 ? ' The available data do not establish an imminent currency crisis.' : ''}`;
+
   built.lead = {
-    kicker: 'Foreign exchange / Country intelligence',
-    headline: HEADLINE[focus](place, shortName),
-    verdict,
-    text: ctxText,
+    label: 'Desk summary',
+    kicker: null,
+    question: HEADLINE[focus](place, shortName),
+    headline: shortAnswer,
+    verdict: null,
+    text: deskText,
+    reading: `${verdict} ${ctxText}`,
     bullets,
     chips,
+    nextSteps: [
+      { label: 'Run deep research', sub: 'Multi-source, in-depth analysis', action: 'deep', icon: 'bi-layers' },
+      { label: 'Compare currencies', sub: `The ${shortName} against emerging-market peers`, q: `Compare ${code} against emerging-market currencies`, icon: 'bi-globe2' },
+      { label: 'Historical precedents', sub: 'When conditions last looked like this', q: `When was the ${shortName} last under similar pressure?`, icon: 'bi-clock-history' },
+    ],
     asOf: `Observations through ${periodLabel(fx.latest.period)}`,
     computed: true,
     cites: [...fxCites, ...inflCites, ...polCites].slice(0, 3),
@@ -619,35 +652,37 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       source: n.source || n.publisher || null,
       date: n.publishedAt || n.date || null,
     }));
-  const groups = [
-    datasets.some((d) => d.kind === 'dataset')
-      ? {
-          id: 'ezana',
-          label: 'Ezana datasets',
-          detail: `${datasets.filter((d) => d.kind === 'dataset').length} matched`,
-          items: datasets.filter((d) => d.kind === 'dataset').map((d) => `${d.dataset}`),
-        }
-      : null,
-    macroSources.length
-      ? { id: 'macro', label: 'Macro sources', detail: `${macroSources.length} official publishers`, items: macroSources }
-      : null,
-    news.length ? { id: 'news', label: 'Open web / news', detail: `${news.length} stories`, items: news.map((n) => n.source || n.title) } : null,
-    marketCount
-      ? {
-          id: 'markets',
-          label: 'Prediction markets',
-          detail: `${marketCount} open market${marketCount === 1 ? '' : 's'}`,
-          items: [...new Set(dossier.matches.markets.map((mk) => mk.platform).filter(Boolean))],
-        }
-      : null,
-  ].filter(Boolean);
-  if (groups.length)
+  if (datasets.length || news.length || macroSources.length)
     built.fx_evidence = {
-      eyebrow: 'Evidence and source coverage',
-      groups,
+      eyebrow: 'Evidence',
       datasets,
       news,
+      macroSources,
     };
+  /* The opening row's sources card: how much evidence there is, and the leading datasets. */
+  const evidenceCount = sources.list.length + datasets.length + news.length + marketCount;
+  const sourcesBrief = datasets.length
+    ? {
+        count: evidenceCount,
+        items: datasets.slice(0, 3).map((d) => ({
+          id: d.id,
+          badge: String(d.chip || d.dataset || '?').trim().charAt(0).toUpperCase(),
+          title: d.dataset,
+          sub: d.kind === 'markets' ? 'Market odds, not Ezana forecasts' : 'Ezana dataset',
+        })),
+      }
+    : sources.list.length
+      ? {
+          count: evidenceCount,
+          items: sources.list.slice(0, 3).map((x, k) => ({
+            id: `s${k}`,
+            badge: String(x.publisher || x.title || '?').trim().charAt(0).toUpperCase(),
+            title: x.publisher || x.title,
+            sub: 'Official series',
+          })),
+        }
+      : null;
+  built.fx_overview.sourcesBrief = sourcesBrief;
 
   /* ================================================================ the four charts */
   const panels = [];
@@ -937,16 +972,17 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     ].filter(Boolean),
   };
 
-  const rel = {
-    stabilize: `What could stabilize the ${shortName}?`,
-    reserves: `How resilient are ${possessive(place)} reserves?`,
-    compare: `Compare ${code} against emerging-market currencies`,
-    inflation: `How are inflation and rates bearing on the ${shortName}?`,
-  };
-  const related = [rel.stabilize, rel.reserves, rel.compare, rel.inflation].filter((q) => q !== rel[focus]);
+  /* Follow-up chips under the question: what eases it, peers, policy, exposure, what to watch. */
+  const chips4 = [
+    focus !== 'stabilize' ? `What would ease pressure on the ${shortName}?` : null,
+    focus !== 'inflation' ? `Does monetary policy offset the pressure on the ${shortName}?` : null,
+    focus !== 'reserves' ? `How exposed is ${place} to external financing conditions?` : null,
+    `What could trigger a sharper ${shortName} devaluation?`,
+    `What should we monitor next for the ${shortName}?`,
+  ];
   built.followups = {
-    placeholder: `Ask a follow-up about the ${shortName}…`,
-    related: plan ? freshQuestions(plan, related) : related.slice(0, 3),
+    placeholder: `Ask about the assumptions, risks or another part of this analysis`,
+    related: plan ? freshQuestions(plan, chips4, 4) : chips4.filter(Boolean).slice(0, 4),
   };
 
   const sectionOrder = ORDER[focus].filter((t) => built[t]);

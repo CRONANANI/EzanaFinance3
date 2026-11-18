@@ -36,6 +36,7 @@ import {
 } from './SonarGeoSections';
 import {
   FxLeadBrief,
+  FxNextSteps,
   CountryPressureOverview,
   FxFindings,
   EvidenceCoverageGrid,
@@ -90,7 +91,7 @@ const ANCHOR_LABELS = {
   hormuz_flows: 'Global trade',
   scenario_table: 'Scenarios',
   event_timeline: 'Timeline',
-  /* Currency pressure (fx-pressure-v2). Tabs come from the sections rendered. */
+  /* Currency pressure (fx-pressure-v3). Tabs come from the sections rendered. */
   fx_findings: 'Key findings',
   fx_evidence: 'Evidence',
   fx_charts: 'Charts',
@@ -926,13 +927,13 @@ export default function SonarAdaptiveReport({
         </button>
       </form>
 
+      {/* Nov 17 (v3): follow-ups as chips directly under the question. */}
       {follow && !streaming ? (
-        <div className="sxb-related sxb-related--top">
-          <span>Follow-ups</span>
-          {follow.related.map((q) => (
-            <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
+        <div className="sxb-related sxb-related--top sar-chips" role="group" aria-label="Follow-up questions">
+          {follow.related.map((q, i) => (
+            <button key={q} type="button" className="sxb-related-q sar-chip" onClick={() => ask(q)}>
+              {i === 0 ? <i className="bi bi-stars" aria-hidden="true" /> : null}
               {q}
-              <i className="bi bi-arrow-up-right" aria-hidden="true" />
             </button>
           ))}
         </div>
@@ -962,6 +963,28 @@ export default function SonarAdaptiveReport({
       <div className="sxb-top">
         <div className="sxb-top-main">
           <header className="sxb-hero" id="sar-overview" data-anchor="overview">
+            {/* A desk summary (currency answers): label, run, and the actions on one line. */}
+            {lead.label ? (
+              <div className="sar-desk-row">
+                <p className="sar-desk-label">
+                  <i className="bi bi-broadcast" aria-hidden="true" />
+                  {lead.label}
+                </p>
+                <span className="sar-desk-meta">
+                  Quick ping &middot; {dayLabel(report.asOf)}
+                </span>
+                <div className="sar-actions sar-actions--inline">
+                  {report.org || streaming
+                    ? null
+                    : actions || (
+                        <SonarSaveActions
+                          getSave={getSave}
+                          question={report.resolvedQuestion || report.question}
+                        />
+                      )}
+                </div>
+              </div>
+            ) : null}
             {lead.kicker || lead.asOf ? (
               <div className="sar-kicker-row">
                 {lead.kicker ? <p className="sxb-kicker">{lead.kicker}</p> : <span />}
@@ -1008,9 +1031,9 @@ export default function SonarAdaptiveReport({
                 </a>
               ) : null}
             </p>
-            <div className="sar-actions">
+            <div className="sar-actions" hidden={Boolean(lead.label)}>
               {/* Organization research is not offered for saving to personal research. */}
-              {report.org || streaming
+              {lead.label || report.org || streaming
                 ? null
                 : actions || (
                     <SonarSaveActions
@@ -1024,6 +1047,9 @@ export default function SonarAdaptiveReport({
         </div>
         <aside className="sxb-rail" aria-label="Research controls">
           <SonarResearchControls variant="flat" />
+          {lead.nextSteps?.length && !streaming ? (
+            <FxNextSteps steps={lead.nextSteps} onAsk={ask} onDeep={onDeep} />
+          ) : null}
         </aside>
       </div>
 
@@ -1044,6 +1070,9 @@ export default function SonarAdaptiveReport({
         return block(sec);
       })}
 
+      <div
+        className={`sar-closing${onRestore && session.length >= 2 && follow && !streaming ? ' is-pair' : ''}`}
+      >
       {onRestore && session.length >= 2 ? (
         <section className="sxb-block sar-session" aria-labelledby="sar-session-h">
           <h2 className="sxb-mid-title" id="sar-session-h">
@@ -1072,7 +1101,7 @@ export default function SonarAdaptiveReport({
       {follow && !streaming ? (
         <section className="sxb-block" aria-labelledby="sar-continue-h">
           <h2 className="sxb-mid-title" id="sar-continue-h">
-            Continue your research
+            {lead.label ? 'Ask a follow-up question' : 'Continue your research'}
           </h2>
           <form
             className="sxb-followup"
@@ -1100,6 +1129,7 @@ export default function SonarAdaptiveReport({
           </form>
         </section>
       ) : null}
+      </div>
 
       <footer className="sxb-foot">
         <span>Ezana Sonar &middot; Evidence-led financial research</span>

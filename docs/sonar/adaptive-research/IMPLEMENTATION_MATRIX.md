@@ -165,7 +165,7 @@ visitor see nothing. What the runs do not cover: the council overlays end to end
 a member session), the kill switches (environment
 variables), and a person reading answers against their sources.
 
-## Currency pressure (C01, view model `fx-pressure-v2`), Nov 17 2026
+## Currency pressure (C01, view model `fx-pressure-v3`), Nov 17 2026
 
 A strategy inside the country-macro scenario, not a parallel engine.
 
@@ -180,3 +180,12 @@ A strategy inside the country-macro scenario, not a parallel engine.
 | Renderer | `components/sonar/adaptive/SonarFxSections.jsx` | Sections drawn in the existing report shell (search, follow-ups, tabs from the rendered sections, Research Controls rail, sources). |
 
 Deterministic math (exported): `usdInLocalChangePct = (current/prior - 1) * 100`, `localValueInUsdChangePct = (prior/current - 1) * 100`, `exPostRateMinusInflationPp = policyRate - cpiYoy` (labelled ex-post).
+
+### v3 layout (Nov 17 2026)
+
+- Desk summary: a short answer (`lead.headline`), one paragraph with the computed figures (`lead.text`), and "See full reading" (`lead.reading`, the labelled bullets, the driver chips).
+- Follow-up chips directly under the question (every adaptive answer); a currency follow-up keeps the country through `thread.fx`.
+- Opening row beside Research Controls: country intelligence (four dated KPIs with trends), the pressure breakdown, and a sources card (`fx_overview.sourcesBrief`). Next steps (deep research, compare currencies, historical precedents) sit under Research Controls (`lead.nextSteps`).
+- Key findings as four compact cards; evidence, meaning, why and the caution open under each.
+- One chart system: `SonarResearchChart.jsx`, in the home page comparison chart's language (change chip, platform range pills, dashed grid, filled lead line, end tag, crosshair tooltip, drag to measure). Used by the four charts and the long-run Key chart. Stored observations only; projections dashed.
+- Then the flow, the Key chart, the Key indicators, interpretation (drivers, scope, monitoring, outlook, conclusion), and the evidence: Ezana datasets (prediction markets included) beside the news around it. The session sits beside the follow-up box at the end.

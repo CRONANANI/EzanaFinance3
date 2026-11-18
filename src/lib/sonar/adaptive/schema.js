@@ -123,7 +123,8 @@ const RULES = {
     s.items?.length && s.items.every((f) => text(f.headline) && f.evidence?.length)
       ? null
       : 'needs findings with evidence',
-  fx_evidence: (s) => (s.groups?.length ? null : 'no source coverage'),
+  fx_evidence: (s) =>
+    s.datasets?.length || s.news?.length || s.macroSources?.length ? null : 'no evidence',
   fx_charts: (s) =>
     s.panels?.length &&
     s.panels.every(
