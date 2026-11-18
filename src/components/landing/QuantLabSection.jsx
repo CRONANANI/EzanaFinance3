@@ -19,6 +19,20 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import './quant-lab-section.css';
 
 const STEP_MS = 2800;
+/* Phones run the pipeline faster: the page is held still while it runs. */
+const STEP_MS_PHONE = 1800;
+/* The backtest windows a visitor can pick, in trading days. The figures are
+   seeded walks of that length ending on END, so every visitor sees the same. */
+const PERIODS = [
+  { key: '1Y', days: 252, label: '1 year' },
+  { key: '3Y', days: 756, label: '3 years' },
+  { key: '5Y', days: 1260, label: '5 years' },
+  { key: '10Y', days: 2520, label: '10 years' },
+];
+const END = Date.UTC(2026, 9, 30); // last session of the illustrative test
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/* Most points the chart path draws; the statistics use every day. */
+const MAX_PATH_POINTS = 420;
 const CUTOFF = 36; // where price equals its 200-day average, percent of plot width
 const HOLD = 4; // maximum open positions
 const COMMISSION_BPS = 10;
@@ -52,16 +66,33 @@ const STEPS = [
   },
 ];
 
-// key, value, index of the step that activates the line (-1 = comment)
+// key, value, index of the step that activates the line (-1 = comment), and
+// other settings the engine accepts for that line (src/lib/quants/
+// strategy-spec.js), shown greyed beside it once the run reaches it.
 const RULES = [
-  ['', '# trend with a capitol filter', -1],
-  ['universe', '20 large-cap US stocks', 0],
-  ['signal', 'Close above the 200-day average', 1],
-  ['filter', 'Congress purchase disclosed, last 60 days', 2],
-  ['hold', 'Up to four positions, equal weight', 3],
-  ['exit', 'Close below the 200-day average', 3],
-  ['costs', `${COMMISSION_BPS} bps commission, ${SLIPPAGE_BPS} bps slippage`, 4],
-  ['benchmark', 'S&P 500 (SPY)', 5],
+  ['', '# trend with a capitol filter', -1, []],
+  ['universe', '20 large-cap US stocks', 0, ['Your watchlist', 'Any 20 tickers']],
+  [
+    'signal',
+    'Close above the 200-day average',
+    1,
+    ['RSI below 30', '50-day crosses above 200-day', 'MACD crosses its signal'],
+  ],
+  [
+    'filter',
+    'Congress purchase disclosed, last 60 days',
+    2,
+    ['Insider purchase, last 30 days', 'Volume spike'],
+  ],
+  ['hold', 'Up to four positions, equal weight', 3, ['Percent of equity', 'Up to ten positions']],
+  ['exit', 'Close below the 200-day average', 3, ['8% stop loss', '10% trailing stop', 'Hold 90 days']],
+  [
+    'costs',
+    `${COMMISSION_BPS} bps commission, ${SLIPPAGE_BPS} bps slippage`,
+    4,
+    ['Per-share commission', '20 bps slippage'],
+  ],
+  ['benchmark', 'S&P 500 (SPY)', 5, ['Nasdaq 100 (QQQ)', 'Russell 2000 (IWM)']],
 ];
 
 /* ticker, trend (0-100, x axis: price against its 200-day average), position
@@ -165,20 +196,41 @@ function markAt(vals, i, min, max, h, pad) {
 const pct = (v) => `${v >= 0 ? '+' : '-'}${Math.abs(v * 100).toFixed(2)}%`;
 const two = (n) => String(n).padStart(2, '0');
 
-function buildModel() {
+/* Calendar date of trading day i of n ending on END (252 sessions a year). */
+function dayLabel(i, n) {
+  const d = new Date(END - (n - 1 - i) * (365.25 / 252) * 86400000);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+function thin(vals) {
+  if (vals.length <= MAX_PATH_POINTS) return vals;
+  const step = (vals.length - 1) / (MAX_PATH_POINTS - 1);
+  return Array.from({ length: MAX_PATH_POINTS }, (_, k) => vals[Math.round(k * step)]);
+}
+
+function buildModel(days = 252) {
   const passing = STOCKS.filter((s) => s.filter);
   const held = [...passing]
     .sort((a, b) => a.signalDay - b.signalDay || a.ticker.localeCompare(b.ticker))
     .slice(0, HOLD)
     .map((s) => s.ticker);
-  const S = stats(noise(23, 252).map((x) => 0.0008 - DAILY_COST + x * 0.022));
-  const B = stats(noise(91, 252).map((x) => 0.0004 + x * 0.018));
+  const S = stats(noise(23 + days, days).map((x) => 0.0008 - DAILY_COST + x * 0.022));
+  const B = stats(noise(91 + days, days).map((x) => 0.0004 + x * 0.018));
   const all = S.eq.concat(B.eq);
+  /* The path is drawn from a thinned copy (same x positions); the marks and
+     the statistics read the full daily series. */
+  const SA = thin(S.eq);
+  const SB = thin(B.eq);
   const min = Math.min(...all);
   const max = Math.max(...all);
-  const pathA = linePath(S.eq, min, max, 600, 240, 16);
+  const pathA = linePath(SA, min, max, 600, 240, 16);
   const ddPeak = markAt(S.eq, S.ddFrom, min, max, 240, 16);
   const ddTrough = markAt(S.eq, S.ddTo, min, max, 240, 16);
+  const n = S.eq.length;
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
+    left: f * 100,
+    label: dayLabel(Math.round(f * (n - 1)), n),
+  }));
   return {
     held,
     /* Where the strategy line ends, and its total return for the end tag. */
@@ -189,7 +241,10 @@ function buildModel() {
     nSignal: STOCKS.filter((s) => s.signal).length,
     nFilter: passing.length,
     pathA,
-    pathB: linePath(B.eq, min, max, 600, 240, 16),
+    pathB: linePath(SB, min, max, 600, 240, 16),
+    ticks,
+    from: dayLabel(0, n),
+    to: dayLabel(n - 1, n),
     area: `${pathA} L600 240 L0 240 Z`,
     metrics: [
       { label: 'Return, after costs', value: pct(S.total), tone: S.total >= 0 ? 'pos' : 'neg' },
@@ -208,8 +263,14 @@ function dotKind(stock, step, held) {
 }
 
 export function QuantLabSection({ ctaHref = '/auth/signup' }) {
-  const model = useMemo(buildModel, []);
+  const [period, setPeriod] = useState('3Y');
+  const days = PERIODS.find((p) => p.key === period)?.days ?? 756;
+  const model = useMemo(() => buildModel(days), [days]);
   const stageRef = useRef(null);
+  const sectionRef = useRef(null);
+  const controlsRef = useRef(null);
+  /* Phones: the page is held still while the pipeline runs (see below). */
+  const [locked, setLocked] = useState(false);
   const [step, setStep] = useState(0);
   const [auto, setAuto] = useState(false);
   const started = useRef(false);
@@ -230,28 +291,64 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
     return () => mq.removeEventListener?.('change', sync);
   }, []);
 
-  /* First run starts when the stage scrolls into view, unless motion is
-     reduced. The stage is watched, not the whole section: once the panes
-     stack on a phone the section is taller than the screen and 35% of it
-     could never be visible at once. */
+  /* First run. Desktop: when the stage scrolls into view. Phones (Nov 18):
+     when the step bars reach the upper part of the screen, the section's
+     heading is brought to the top, the page is held still while the six
+     rules run, then it lets go and scrolls to the chart. Reduced motion: no
+     autoplay and no hold. */
   useEffect(() => {
-    const node = stageRef.current;
-    if (!node || typeof IntersectionObserver === 'undefined') return undefined;
+    if (typeof IntersectionObserver === 'undefined') return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const phone = window.matchMedia('(max-width: 767px)').matches;
+    const node = phone ? controlsRef.current : stageRef.current;
+    if (!node) return undefined;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          setBegun(true);
-          setAuto(true);
-          io.disconnect();
+        if (!entry.isIntersecting || started.current) return;
+        started.current = true;
+        io.disconnect();
+        if (phone && sectionRef.current) {
+          sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          /* Hold once the scroll has settled; holding mid-scroll would stop it. */
+          window.setTimeout(() => setLocked(true), 500);
         }
+        setBegun(true);
+        setAuto(true);
       },
-      { threshold: 0.35 },
+      /* Phones: fire once the bars are in the top 60% of the screen. */
+      phone ? { rootMargin: '0px 0px -40% 0px', threshold: 1 } : { threshold: 0.35 },
     );
     io.observe(node);
     return () => io.disconnect();
   }, []);
+
+  /* Hold the page still while locked: no scroll by touch, wheel or keys. */
+  useEffect(() => {
+    if (!locked) return undefined;
+    const html = document.documentElement;
+    const prev = { html: html.style.overflow, body: document.body.style.overflow };
+    html.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    const stop = (e) => e.preventDefault();
+    const keys = (e) => {
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('touchmove', stop, { passive: false });
+    document.addEventListener('wheel', stop, { passive: false });
+    document.addEventListener('keydown', keys);
+    /* Never hold longer than the run itself plus a margin. */
+    const safety = setTimeout(() => setLocked(false), STEPS.length * STEP_MS_PHONE + 4000);
+    return () => {
+      clearTimeout(safety);
+      html.style.overflow = prev.html;
+      document.body.style.overflow = prev.body;
+      document.removeEventListener('touchmove', stop);
+      document.removeEventListener('wheel', stop);
+      document.removeEventListener('keydown', keys);
+    };
+  }, [locked]);
 
   /* Advance one step at a time, stop on Result. On a phone the Result bar gets
      its own fill like the other five, then the page scrolls to the chart once
@@ -265,14 +362,18 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
       }
       const t = setTimeout(() => {
         setAuto(false);
+        setLocked(false);
         if (!scrolledToResult.current && stageRef.current) {
           scrolledToResult.current = true;
-          stageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          /* After the hold lifts, so the scroll is not blocked. */
+          requestAnimationFrame(() =>
+            stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+          );
         }
-      }, STEP_MS);
+      }, STEP_MS_PHONE);
       return () => clearTimeout(t);
     }
-    const t = setTimeout(() => setStep((s) => s + 1), STEP_MS);
+    const t = setTimeout(() => setStep((s) => s + 1), isPhone ? STEP_MS_PHONE : STEP_MS);
     return () => clearTimeout(t);
   }, [auto, step, isPhone]);
 
@@ -280,14 +381,16 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
     started.current = true;
     setBegun(true);
     setAuto(false);
+    setLocked(false);
     setStep(k);
   };
-  const run = () => {
-    started.current = true;
-    scrolledToResult.current = false;
-    setBegun(true);
-    setStep(0);
-    setAuto(true);
+  /* Skip, while the page is held: straight to the result and the chart. */
+  const skip = () => {
+    pick(STEPS.length - 1);
+    scrolledToResult.current = true;
+    requestAnimationFrame(() =>
+      stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
   };
   /* Phones hold the bars and rules back until the run starts. */
   const holding = isPhone && !begun;
@@ -302,7 +405,7 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
   const showCutoff = step === 1 || step === 2;
 
   return (
-    <section className="qls-section" id="quant" aria-labelledby="qls-heading">
+    <section ref={sectionRef} className="qls-section" id="quant" aria-labelledby="qls-heading">
       <div className="qls-container">
         <header className="qls-header">
           <p className="section-eyebrow lf-mono">Quant Lab</p>
@@ -316,7 +419,7 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
         </header>
 
         <div className="qls-body">
-          <div className="qls-controls">
+          <div ref={controlsRef} className="qls-controls">
             <div className="qls-steps">
               {STEPS.map((s, k) => {
                 const on = k === step;
@@ -343,9 +446,11 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                 );
               })}
             </div>
-            <button type="button" className="qls-run" onClick={run}>
-              Run pipeline
-            </button>
+            {locked ? (
+              <button type="button" className="qls-skip" onClick={skip}>
+                Skip to result <i className="bi bi-arrow-down" aria-hidden="true" />
+              </button>
+            ) : null}
           </div>
 
           <div className="qls-panes">
@@ -358,7 +463,7 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
               </div>
 
               <div className={`qls-rules${isPhone ? ' is-revealing' : ''}`}>
-                {RULES.map(([key, val, at]) => {
+                {RULES.map(([key, val, at, alts]) => {
                   const state =
                     at < 0 ? 'comment' : at === step ? 'active' : at > step ? 'pending' : 'done';
                   /* On a phone a rule appears only once its bar has started. */
@@ -367,6 +472,17 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                     <div key={val} className={`qls-rule is-${state}`}>
                       {key ? <span className="qls-rule-key">{key}</span> : null}
                       <span className="qls-rule-val">{val}</span>
+                      {/* Other settings the engine takes for this line, greyed,
+                          once the run has reached it. */}
+                      {alts?.length && state !== 'pending' && state !== 'comment' ? (
+                        <span className="qls-rule-alts" aria-label={`Other options: ${alts.join(', ')}`}>
+                          {alts.map((o) => (
+                            <span key={o} className="qls-rule-alt">
+                              {o}
+                            </span>
+                          ))}
+                        </span>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -393,21 +509,41 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
 
             <div ref={stageRef} className="qls-pane qls-pane-stage">
               <div className="qls-pane-head">
-                <span>Backtesting / {STEPS[step].name}</span>
+                <span>
+                  Backtesting / {STEPS[step].name}
+                  {showResult ? ` / ${PERIODS.find((p) => p.key === period)?.label}` : ''}
+                </span>
                 <span>Illustrative data</span>
               </div>
 
               {showResult ? (
                 <div className="qls-result">
-                  <div className="qls-legend">
-                    <span>
-                      <i className="qls-swatch" aria-hidden="true" />
-                      Strategy, after costs
-                    </span>
-                    <span>
-                      <i className="qls-swatch is-dashed" aria-hidden="true" />
-                      Benchmark
-                    </span>
+                  <div className="qls-result-top">
+                    <div className="qls-legend">
+                      <span>
+                        <i className="qls-swatch" aria-hidden="true" />
+                        Strategy, after costs
+                      </span>
+                      <span>
+                        <i className="qls-swatch is-dashed" aria-hidden="true" />
+                        Benchmark
+                      </span>
+                    </div>
+                    {/* The window the backtest runs over (Nov 18). */}
+                    <div className="qls-periods" role="group" aria-label="Backtest period">
+                      {PERIODS.map((p) => (
+                        <button
+                          key={p.key}
+                          type="button"
+                          className={`qls-period${p.key === period ? ' is-on' : ''}`}
+                          aria-pressed={p.key === period}
+                          aria-label={`Backtest over ${p.label}`}
+                          onClick={() => setPeriod(p.key)}
+                        >
+                          {p.key}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="qls-chart">
                     <svg
@@ -453,6 +589,40 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                       </span>
                     </div>
                   </div>
+                  {/* Dates along the bottom: the window the test ran over. */}
+                  <div className="qls-axis-dates" aria-label={`From ${model.from} to ${model.to}`}>
+                    {model.ticks.map((t, i) => (
+                      <span
+                        key={t.left}
+                        className={`qls-axis-date${i === 0 ? ' is-first' : ''}${i === model.ticks.length - 1 ? ' is-last' : ''}`}
+                        style={{ left: `${t.left}%` }}
+                      >
+                        {t.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* The portfolio the rules produced (Nov 18): the four names
+                      that passed both rules and the weight each one gets. */}
+                  <div key={period} className="qls-alloc">
+                    <p className="qls-alloc-head">
+                      <span className="qls-alloc-n">{model.held.length} stocks</span> passed the
+                      signal and the filter, held at{' '}
+                      <span className="qls-alloc-n">{100 / HOLD}% each</span>
+                    </p>
+                    <ul className="qls-alloc-list">
+                      {[...model.held].sort().map((t, i) => (
+                        <li key={t} className="qls-alloc-row" style={{ '--i': i }}>
+                          <span className="qls-alloc-ticker">{t}</span>
+                          <span className="qls-alloc-why">above 200-day · congress buy</span>
+                          <span className="qls-alloc-bar" aria-hidden="true">
+                            <span style={{ width: `${100 / HOLD}%` }} />
+                          </span>
+                          <span className="qls-alloc-w">{100 / HOLD}%</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   <div className="qls-metrics">
                     {model.metrics.map((m) => (
                       <div key={m.label} className="qls-tile">
@@ -462,18 +632,6 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                         </span>
                       </div>
                     ))}
-                  </div>
-                  <div className="qls-holdings">
-                    <span className="qls-holdings-label">Holdings</span>
-                    <div className="qls-holdings-list">
-                      {[...model.held].sort().map((t) => (
-                        <span key={t}>
-                          <i className="qls-key is-held" aria-hidden="true" />
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="qls-holdings-weight">{100 / HOLD}% each</span>
                   </div>
                 </div>
               ) : (

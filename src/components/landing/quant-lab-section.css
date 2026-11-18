@@ -925,3 +925,237 @@ body.light-mode .qls-section {
     animation: none;
   }
 }
+
+/* ── Nov 18: rule alternatives, backtest period, date axis, portfolio ─── */
+
+/* Other settings the engine takes for a line, greyed beside it: plain text
+   separated by dots, never pills. */
+.qls-rule {
+  flex-wrap: wrap;
+  column-gap: 0;
+}
+.qls-rule-alts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  margin-left: 14px;
+  font-family: var(--font-sans);
+  font-size: 0.75em;
+  color: var(--qls-dim);
+  animation: qls-alt-in 0.5s ease-out both;
+}
+.qls-rule-alt + .qls-rule-alt::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--qls-off);
+}
+.qls-rule-alt {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--qls-dim) 45%, transparent);
+}
+@keyframes qls-alt-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 767px) {
+  /* On a phone the alternatives sit on their own line under the value,
+     starting where the value starts. */
+  .qls-rule-alts {
+    flex-basis: 100%;
+    margin-left: 11ch;
+    margin-top: 2px;
+  }
+}
+
+/* Backtest period: plain text buttons, the chosen one emerald. */
+.qls-result-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.qls-result-top .qls-legend {
+  margin: 0;
+}
+.qls-periods {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: -8px;
+}
+.qls-period {
+  min-width: 36px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--qls-muted);
+  cursor: pointer;
+}
+.qls-period:hover {
+  color: var(--qls-text);
+}
+.qls-period.is-on {
+  color: var(--qls-accent-text);
+  font-weight: 700;
+}
+.qls-period:focus-visible {
+  outline: 2px solid var(--qls-accent);
+  outline-offset: 2px;
+}
+
+/* Dates under the chart, at 0, 25, 50, 75 and 100% of the window. */
+.qls-axis-dates {
+  position: relative;
+  height: 18px;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--qls-muted);
+}
+.qls-axis-date {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.qls-axis-date.is-first {
+  transform: none;
+}
+.qls-axis-date.is-last {
+  transform: translateX(-100%);
+}
+@media (max-width: 480px) {
+  .qls-axis-date:nth-child(2),
+  .qls-axis-date:nth-child(4) {
+    display: none;
+  }
+}
+
+/* The portfolio: the four names and their weight, emphasised as the run
+   ends. Rows rise in one after another and the weight bars fill. */
+.qls-alloc {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 2px solid var(--qls-accent);
+}
+.qls-alloc-head {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--qls-text);
+}
+.qls-alloc-n {
+  color: var(--qls-accent-text);
+}
+.qls-alloc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qls-alloc-row {
+  display: grid;
+  grid-template-columns: 5ch minmax(0, 1fr) minmax(64px, 30%) 4ch;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--qls-line);
+  animation: qls-alloc-in 0.45s ease-out both;
+  animation-delay: calc(var(--i, 0) * 140ms);
+}
+.qls-alloc-ticker {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--qls-held);
+}
+.qls-alloc-why {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--qls-muted);
+}
+.qls-alloc-bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--qls-off);
+  overflow: hidden;
+}
+.qls-alloc-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-sm);
+  background: var(--qls-accent);
+  transform-origin: left;
+  animation: qls-bar-fill 0.7s ease-out both;
+  animation-delay: calc(var(--i, 0) * 140ms + 200ms);
+}
+.qls-alloc-w {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--qls-text);
+}
+@keyframes qls-alloc-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes qls-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (max-width: 480px) {
+  .qls-alloc-row {
+    grid-template-columns: 5ch minmax(0, 1fr) 4ch;
+  }
+  .qls-alloc-why {
+    display: none;
+  }
+}
+
+/* Skip link while a phone holds the page for the run. */
+.qls-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--qls-accent-text);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qls-rule-alts,
+  .qls-alloc-row,
+  .qls-alloc-bar span {
+    animation: none;
+  }
+}
