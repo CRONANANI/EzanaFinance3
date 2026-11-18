@@ -1077,6 +1077,22 @@ export default function BettingMarketsPage() {
           >
             Prediction markets, sports odds &amp; EV analysis
           </p>
+          {/* Nov 18: Ezana's own strategies with a checkable record. */}
+          <Link
+            href="/betting-markets/strategies"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              marginTop: 6,
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--emerald-text)',
+              textDecoration: 'none',
+            }}
+          >
+            Strategy Desk <i className="bi bi-arrow-right" aria-hidden="true" />
+          </Link>
         </div>
 
         <div
