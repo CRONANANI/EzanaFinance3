@@ -1019,3 +1019,23 @@
     min-width: 760px;
   }
 }
+
+/* ── Nov 18 2026: figures centred on phones ──────────────────────────────
+   A figure narrower than the article column sits in its middle, and the
+   radial chart's legend centres under it. Wide figures still scroll from
+   their start (their own min-width rules above). */
+@media (max-width: 720px) {
+  .echo-fig-scroll > svg,
+  .echo-fig-scroll > img,
+  .echo-fig-scroll > div {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .echo-radial-svg {
+    max-width: 520px;
+  }
+  .efig-radial-legend {
+    justify-content: center;
+    text-align: center;
+  }
+}

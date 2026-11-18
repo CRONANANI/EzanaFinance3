@@ -2,7 +2,14 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
-import { clampLabel, labelSpan, packRows, textWidth } from './fit';
+import {
+  clampLabel,
+  figTickLabeller,
+  labelSpan,
+  packRows,
+  textWidth,
+  useFigPhone,
+} from './fit';
 
 const W = 1120;
 const H = 480;
@@ -68,6 +75,8 @@ export function EchoTrajectory({
     for (let v = 0; v <= y1 + 1e-9; v += step) out.push(Number(v.toFixed(6)));
     return out;
   }, [y1]);
+  const phone = useFigPhone();
+  const tickLabel = figTickLabeller(gridY, phone);
 
   return (
     <EchoFigureShell figureLabel={figureLabel} kicker={kicker} hint={hint} source={source}>
@@ -90,7 +99,7 @@ export function EchoTrajectory({
               fontSize="16"
               fill="var(--text-muted)"
             >
-              {v}
+              {tickLabel(v)}
             </text>
           </g>
         ))}

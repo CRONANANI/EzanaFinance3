@@ -2,10 +2,15 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { figNum } from './fit';
 
+/* Nov 18 2026: the donut sits in the middle of the frame (it sat at 250 of
+   640, so the figure read off-centre), and each member's total is printed
+   beside their name as a whole number instead of at the arc's end, where
+   short arcs stacked their totals on top of one another. */
 const W = 640;
 const H = 420;
-const CX = 250;
+const CX = W / 2;
 const CY = 210;
 const INNER_R = 58;
 const OUTER_R = 190;
@@ -172,7 +177,8 @@ export function EchoRadialStack({
                 strokeLinecap="round"
               />
             ))}
-            {/* Category label at the bar start (top), stacked to the left. */}
+            {/* Category label and its total at the bar start (top), stacked
+                to the left: "Ossoff  112". */}
             <text
               x={ring.labelPt.x}
               y={ring.labelPt.y + 5}
@@ -182,20 +188,12 @@ export function EchoRadialStack({
               fill="var(--text-muted)"
             >
               {ring.label}
+              {ring.total > 0 ? (
+                <tspan className="efig-radial-value" fill="var(--text-primary)" dx="10">
+                  {figNum(ring.total, true)}
+                </tspan>
+              ) : null}
             </text>
-            {/* Running total riding the bar end. */}
-            {ring.total > 0 && (
-              <text
-                x={ring.endPt.x}
-                y={ring.endPt.y + 5}
-                textAnchor="middle"
-                className="echo-fig-mono efig-radial-value"
-                fontSize="15"
-                fill="var(--text-faint)"
-              >
-                {ring.total}
-              </text>
-            )}
           </g>
         ))}
       </svg>

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
+import { figTickLabeller, useFigPhone } from './fit';
 
 const W = 680;
 const H = 460;
@@ -223,6 +224,9 @@ export function EchoBubbleField({
   }, [points]);
 
   const { sx, sy, sr, rankByIndex, count, xTicks, yTicks, x0, x1, y0, y1, labels } = model;
+  const phone = useFigPhone();
+  const xTick = figTickLabeller(xTicks, phone);
+  const yTick = figTickLabeller(yTicks, phone);
 
   const plotLeft = PAD.l;
   const plotRight = W - PAD.r;
@@ -310,7 +314,7 @@ export function EchoBubbleField({
               fill="var(--text-muted)"
               style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
             >
-              {v}
+              {yTick(v)}
             </text>
           </g>
         ))}
@@ -335,7 +339,7 @@ export function EchoBubbleField({
               fill="var(--text-muted)"
               style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
             >
-              {v}
+              {xTick(v)}
             </text>
           </g>
         ))}

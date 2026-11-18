@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
-import { textWidth, thinStep, truncate } from './fit';
+import { figNum, textWidth, thinStep, truncate, useFigPhone } from './fit';
 
 /*
  * EchoMultiAxis — block type `multi-axis`.
@@ -67,6 +67,9 @@ function ticksFor(dom) {
 }
 
 export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = [], series = [] }) {
+  /* Nov 18: whole numbers on phones (fit.js). */
+  const phone = useFigPhone();
+  const num = (v) => (phone ? figNum(v, true) : fmt(v));
   const [hover, setHover] = useState(null);
 
   // Only the first three series are rendered; extras are ignored.
@@ -141,7 +144,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
               fontSize="15"
               fill={leftMeta.color}
             >
-              {fmt(v)}
+              {num(v)}
             </text>
           ))}
         {leftMeta && (
@@ -170,7 +173,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                 fontSize="15"
                 fill={axis2Meta.color}
               >
-                {fmt(v)}
+                {num(v)}
               </text>
             ))}
             <text
@@ -200,7 +203,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                 fontSize="15"
                 fill={axis3Meta.color}
               >
-                {fmt(v)}
+                {num(v)}
               </text>
             ))}
             <text x={PLOT.r + 6} y={PLOT.t - 13} style={SERIF} fontSize="15" fill={axis3Meta.color}>
@@ -341,7 +344,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                   fontSize="15"
                   fill="var(--text-primary)"
                 >
-                  {val === undefined ? '–' : `${fmt(val)}${m.s.unit ? ` ${m.s.unit}` : ''}`}
+                  {val === undefined ? '–' : `${num(val)}${m.s.unit ? ` ${m.s.unit}` : ''}`}
                 </text>
               </g>
             );

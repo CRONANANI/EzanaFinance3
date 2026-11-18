@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
-import { spreadVertical, truncate } from './fit';
+import { figNum, spreadVertical, truncate, useFigPhone } from './fit';
 
 const W = 640;
 const H = 440;
@@ -83,6 +83,9 @@ export function EchoVariablePie({
   zLabel = 'magnitude',
   minRadiusPct = 45,
 }) {
+  /* Nov 18: whole numbers on phones (fit.js). */
+  const phone = useFigPhone();
+  const num = (v) => (phone ? figNum(v, true) : fmt(v));
   const model = useMemo(() => {
     const clean = slices.filter((s) => s && Number.isFinite(s.y) && s.y > 0);
     if (clean.length === 0) return { arcs: [], single: false };
@@ -226,7 +229,7 @@ export function EchoVariablePie({
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {/* value · share · radius value; the caption names the units */}
-              {`${fmt(a.y)} · ${Math.round(a.pct)}% · r ${fmt(a.z)}`}
+              {`${num(a.y)} · ${Math.round(a.pct)}% · r ${num(a.z)}`}
             </text>
           </g>
         ))}

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 /**
  * Text fitting for the Echo SVG figures. SVG text neither wraps nor clips,
  * so every label that can be long or can land near an edge goes through
@@ -107,4 +109,46 @@ export function spreadVertical(ys, minGap, min = -Infinity, max = Infinity) {
   const over = Math.max(...out) - max;
   if (over > 0) for (let i = 0; i < out.length; i++) out[i] -= over;
   return out;
+}
+
+/* ── Numbers on phones (Nov 18 2026) ─────────────────────────────────────
+   On a phone a figure is read at a glance, so every number drawn inside a
+   figure is a whole number; on larger screens it keeps up to two decimals
+   with floating-point noise removed (112.20000000000002 reads 112.2). The
+   flag starts false so the server render and first paint agree; phones
+   switch after mount. */
+export const FIG_PHONE_QUERY = '(max-width: 720px)';
+
+export function useFigPhone() {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia(FIG_PHONE_QUERY);
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
+  return phone;
+}
+
+/** A figure number: whole on phones, at most two clean decimals elsewhere. */
+export function figNum(v, phone = false) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v ?? '');
+  if (phone) return String(Math.round(n));
+  const r = Math.round(n * 100) / 100;
+  return String(Object.is(r, -0) ? 0 : r);
+}
+
+/**
+ * Axis tick labels: whole numbers on phones unless rounding would make two
+ * ticks read the same (a 0.5 step), in which case they keep one decimal.
+ * Returns a function from tick value to its label.
+ */
+export function figTickLabeller(values, phone = false) {
+  if (!phone) return (v) => figNum(v, false);
+  const whole = values.map((v) => Math.round(Number(v)));
+  if (new Set(whole).size === values.length) return (v) => String(Math.round(Number(v)));
+  return (v) => String(Math.round(Number(v) * 10) / 10);
 }
