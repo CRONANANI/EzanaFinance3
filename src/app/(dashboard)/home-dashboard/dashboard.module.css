@@ -1149,3 +1149,100 @@
     transition: none;
   }
 }
+
+/* ── Nov 18: phones ────────────────────────────────────────────────────
+   Key metrics: one row of four, each metric read top to bottom (icon,
+   label, value), split by hairlines. */
+@media (max-width: 767px) {
+  .kpis,
+  .kpis.card {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .kpi,
+  .kpi:first-child,
+  .kpi:nth-child(n) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 4px 8px;
+    box-shadow: inset 1px 0 0 var(--db-rule);
+  }
+  .kpi:first-child {
+    padding-left: 0;
+    box-shadow: none;
+  }
+  .kpi:last-child {
+    padding-right: 0;
+  }
+  .kpiSkel {
+    min-width: 0;
+  }
+  .kpiIcon {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  .kpiLabel {
+    white-space: normal;
+    font-size: 11px;
+    line-height: 14px;
+  }
+  .kpiValue {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 15px;
+  }
+  .kpiExtra,
+  .kpiOf {
+    font-size: 10px;
+  }
+  .kpiValue .badge {
+    font-size: 10px;
+  }
+
+  /* Card headers: the title on its own line, the tools on one unbroken line
+     under it. The range buttons scroll sideways if they ever outgrow it;
+     Custom and View full portfolio stay on its right. */
+  .headTools {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+  .seg {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0;
+  }
+  .seg::-webkit-scrollbar {
+    display: none;
+  }
+  .seg button {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+  /* The first range sits on the text edge, like the title above it. */
+  .seg button:first-child {
+    padding-left: 0;
+    text-align: left;
+  }
+  .rangeCustom,
+  .headTools > .linkBox {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .headTools > :is(.seg, .rangeCustom):last-child {
+    margin-right: 0;
+  }
+
+  /* The snapshot chart runs to the card's edges. */
+  .chart {
+    margin: 0 -8px;
+    height: 220px;
+  }
+}

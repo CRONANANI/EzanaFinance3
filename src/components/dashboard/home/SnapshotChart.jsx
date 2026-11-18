@@ -105,7 +105,10 @@ export function SnapshotChart({ rows, range, loading, error, onRetry }) {
   return (
     <figure className={s.chart} role="img" aria-label={summary} ref={ref}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={rows} margin={{ top: 8, right: 0, bottom: 0, left: 8 }}>
+        <AreaChart
+          data={rows}
+          margin={narrow ? { top: 14, right: 0, bottom: 0, left: 0 } : { top: 8, right: 0, bottom: 0, left: 8 }}
+        >
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--emerald)" stopOpacity={0.45} />
@@ -127,17 +130,25 @@ export function SnapshotChart({ rows, range, loading, error, onRetry }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            padding={{ left: 12, right: 12 }}
+            padding={narrow ? { left: 0, right: 4 } : { left: 12, right: 12 }}
           />
+          {/* Narrow charts (Nov 18): the value labels move to the left edge,
+              drawn inside the plot, so the line gets the full width. */}
           <YAxis
-            orientation="right"
+            orientation={narrow ? 'left' : 'right'}
+            mirror={narrow}
             domain={[yTicks[0], yTicks[yTicks.length - 1]]}
             ticks={yTicks}
             tickFormatter={(v) => fmtCompactMoney(v)}
-            tick={{ ...CHART.tick, fontFamily: 'var(--font-mono)' }}
+            tick={
+              narrow
+                ? { ...CHART.tick, fontFamily: 'var(--font-mono)', dy: -7 }
+                : { ...CHART.tick, fontFamily: 'var(--font-mono)' }
+            }
             tickLine={false}
             axisLine={false}
-            width={64}
+            width={narrow ? 1 : 64}
+            tickMargin={narrow ? 2 : undefined}
           />
           <Tooltip
             content={<ChartTooltip rows={rows} range={range} />}

@@ -3274,3 +3274,32 @@ html:has(.landing-page) .landing-footer button {
   outline: none;
   box-shadow: 0 0 0 3px var(--emerald-glow);
 }
+
+/* ── Nov 18: timeframe selectors on phones ─────────────────────────────
+   Every DateSelector row stays on one line (it scrolls sideways if a card is
+   too narrow for it) and its first range starts on the page's text edge, not
+   indented by its own button padding. */
+@media (max-width: 767px) {
+  .ez-range-sel {
+    flex-wrap: nowrap !important;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ez-range-sel::-webkit-scrollbar {
+    display: none;
+  }
+  .ez-range-sel > button {
+    flex: 0 0 auto;
+    min-width: 0 !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .ez-range-sel > button:first-child {
+    padding-left: 0 !important;
+    justify-content: flex-start !important;
+  }
+}

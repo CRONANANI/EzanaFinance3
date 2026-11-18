@@ -20,6 +20,7 @@ import { usePortfolioPositions } from '@/hooks/usePortfolioPositions';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import { NewsCenter } from '@/components/home/NewsCenter';
+import { useHeroReturns } from '@/lib/home/use-hero-returns';
 import { WIRE_NAME } from '@/lib/home/news-center';
 import './broadsheet.css';
 
@@ -60,6 +61,13 @@ const INDEX_API_KEYS = {
   WTI: 'wti',
   '10Y': 'tnx',
 };
+
+/* Hero return figures: signed, two decimals; n/a when the history cannot
+   say. A dash-free n/a keeps the row the same width while it loads. */
+function fmtHeroPct(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return 'n/a';
+  return `${v >= 0 ? '+' : '-'}${Math.abs(v).toFixed(2)}%`;
+}
 
 function indexHistoryPeriod(tf) {
   return tf === '5D' ? '7D' : tf;
@@ -770,6 +778,12 @@ export default function HomePage() {
     'there';
 
   const displayValue = Number.isFinite(currentValue) ? currentValue : 0;
+  /* Nov 18: the hero's 1W, 1M, YTD and Beta, from the same portfolio the
+     hero figure shows (paper portfolio, else the linked brokerage). */
+  const heroReturns = useHeroReturns(
+    useMock ? 'mock' : plaidConnected ? 'linked' : null,
+    Number.isFinite(currentValue) ? currentValue : null,
+  );
   const changePct = valueWindowFromApi?.changePct ?? 0;
   const changeAbs = valueWindowFromApi?.changeAbs ?? 0;
 
@@ -994,12 +1008,15 @@ export default function HomePage() {
                   {fmtMoney(Math.abs(changeAbs))} · today
                 </span>
               </div>
-              <div className="bs-hero-stats">
+              <div className="bs-hero-stats" aria-busy={heroReturns.loading}>
                 {[
-                  ['1W', '+8.42%'],
-                  ['1M', '+12.10%'],
-                  ['YTD', '+24.7%'],
-                  ['Beta', '1.08'],
+                  ['1W', fmtHeroPct(heroReturns.w1)],
+                  ['1M', fmtHeroPct(heroReturns.m1)],
+                  ['YTD', fmtHeroPct(heroReturns.ytd)],
+                  [
+                    'Beta',
+                    Number.isFinite(heroReturns.beta) ? heroReturns.beta.toFixed(2) : 'n/a',
+                  ],
                 ].map(([l, v]) => (
                   <div key={l} className="bs-hero-stat">
                     <div className="bs-hero-stat-label">{l}</div>

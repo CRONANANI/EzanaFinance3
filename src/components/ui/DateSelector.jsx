@@ -167,9 +167,11 @@ export function DateSelector({
   };
   const isCustomActive = value === 'CUSTOM';
 
+  /* `ez-range-sel` (Nov 18): on phones every timeframe selector stays on one
+     unbroken line and its first range sits on the text edge (globals.css). */
   return (
     <div
-      className={className}
+      className={`ez-range-sel${className ? ` ${className}` : ''}`}
       style={{
         display: 'flex',
         alignItems: 'center',
