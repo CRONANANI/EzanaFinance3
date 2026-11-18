@@ -1,0 +1,107 @@
+/* Echo numbered source reference (Nov 18 2026). Tokens only. */
+.echo-src {
+  position: relative;
+  display: inline;
+}
+.echo-src-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  height: 1.4em;
+  margin: 0 0.1em 0 0.15em;
+  padding: 0 0.25em;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.62em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: super;
+  color: var(--emerald-text);
+  cursor: pointer;
+}
+.echo-src-n:hover,
+.echo-src-n.is-open {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.echo-src-n:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.echo-src-card {
+  position: absolute;
+  top: 1.6em;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: max-content;
+  max-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.45;
+  color: var(--text-primary);
+  white-space: normal;
+}
+.echo-src-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.echo-src-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.echo-src-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: -6px -8px -6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.echo-src-text {
+  color: var(--text-secondary);
+}
+.echo-src-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.echo-src-link:hover {
+  text-decoration: underline;
+}
+@media (max-width: 767px) {
+  .echo-src-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(86vw, 340px);
+    max-width: none;
+    transform: translate(-50%, -50%);
+    z-index: 10050;
+  }
+}

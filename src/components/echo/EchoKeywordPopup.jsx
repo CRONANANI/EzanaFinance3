@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useKeywordPopup } from './EchoKeywordContext';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { usDatesDeep } from '@/lib/echo-dates';
+import { stripVerifyDeep } from '@/lib/echo-sources';
 import './echo-keyword-popup.css';
 
 export function EchoKeywordPopup() {
@@ -122,7 +123,7 @@ export function EchoKeywordPopup() {
   const raw = getKeywordById(activeKeywordId);
   if (!raw) return null;
   /* Dates in the definition and "In this article" read month first. */
-  const keyword = usDatesDeep(raw);
+  const keyword = stripVerifyDeep(usDatesDeep(raw));
 
   return (
     <aside

@@ -10,6 +10,7 @@
  */
 import { getAdminClient } from '@/lib/supabase';
 import { usDateText, usDatesDeep } from '@/lib/echo-dates';
+import { citeVerifyBlocks, hasVerify, stripVerify, stripVerifyDeep } from '@/lib/echo-sources';
 import { CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
 import { CHART_OF_THE_WEEK, buildChartOfTheWeek } from '@/lib/echo/chart-of-the-week';
 
@@ -19,7 +20,7 @@ const CARD_COLS =
   'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, tickers, article_meta, is_featured, read_time_minutes, view_count, like_count, published_at';
 
 function mapCard(row) {
-  return usDatesDeep({
+  return stripVerifyDeep(usDatesDeep({
     id: row.article_slug,
     dbId: row.id,
     slug: row.article_slug,
@@ -43,7 +44,7 @@ function mapCard(row) {
     views: row.view_count || 0,
     likes: row.like_count || 0,
     publishedAt: row.published_at,
-  });
+  }));
 }
 
 /* Nov 18: every text an article carries reads dates month first with an
@@ -51,10 +52,24 @@ function mapCard(row) {
 function mapFull(row) {
   return {
     ...mapCard(row),
-    body: usDateText(row.article_body || ''),
-    contentBlocks: row.content_blocks ? usDatesDeep(row.content_blocks) : undefined,
-    contentParagraphs: row.content_paragraphs ? usDatesDeep(row.content_paragraphs) : undefined,
-    globeRail: usDatesDeep(row.globe_rail || CURATED_GLOBE_RAILS[row.article_slug] || null),
+    body: stripVerify(usDateText(row.article_body || '')),
+    /* Fact-check markers become numbered source notes in paragraphs and are
+       removed elsewhere (lib/echo-sources.js); the flag keeps the article
+       noindex while its stored text still carries them. */
+    contentBlocks: row.content_blocks
+      ? citeVerifyBlocks(usDatesDeep(row.content_blocks))
+      : undefined,
+    contentParagraphs: row.content_paragraphs
+      ? stripVerifyDeep(usDatesDeep(row.content_paragraphs))
+      : undefined,
+    globeRail: stripVerifyDeep(
+      usDatesDeep(row.globe_rail || CURATED_GLOBE_RAILS[row.article_slug] || null),
+    ),
+    unverified:
+      hasVerify(row.article_body) ||
+      hasVerify(row.article_title) ||
+      hasVerify(row.article_excerpt) ||
+      (row.content_blocks ? hasVerify(JSON.stringify(row.content_blocks)) : false),
     tickers: row.tickers || [],
     status: row.article_status,
   };
@@ -82,6 +97,7 @@ export async function getPublishedArticles() {
 export const UNVERIFIED_MARKER = '[VERIFY';
 
 export function hasUnverifiedMarkers(article) {
+  if (article?.unverified) return true;
   try {
     return JSON.stringify(article || {}).includes(UNVERIFIED_MARKER);
   } catch {

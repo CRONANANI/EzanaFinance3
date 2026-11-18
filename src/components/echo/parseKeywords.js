@@ -4,6 +4,9 @@
  * Supported tokens:
  *   [[kw:term-id]]display[[/kw]]          -> { type: 'keyword', keywordId, display }
  *   [[person:person-id]]Name[[/person]]   -> { type: 'person',  personId,  display }
+ *   [[src:N]]note[[/src]]                 -> { type: 'source',  n, note }  (Nov 18: a
+ *                                            numbered source reference, see
+ *                                            lib/echo-sources.js)
  *
  * Input:  "Track [[kw:market-indices]]market indices[[/kw]] with [[person:jdoe]]J. Doe[[/person]]."
  * Output: [
@@ -18,7 +21,7 @@
  * (`echo-anchor-term-{id}` / `echo-anchor-person-{id}`) so the Metadata sidebar
  * can jump to it. Author convention: mark each id exactly once.
  */
-const TOKEN_REGEX = /\[\[(kw|person):([a-z0-9-]+)\]\]([\s\S]*?)\[\[\/(?:kw|person)\]\]/g;
+const TOKEN_REGEX = /\[\[(kw|person|src):([a-z0-9-]+)\]\]([\s\S]*?)\[\[\/(?:kw|person|src)\]\]/g;
 
 export function parseKeywords(text) {
   if (typeof text !== 'string' || !text) return [{ type: 'text', content: text || '' }];
@@ -35,7 +38,9 @@ export function parseKeywords(text) {
     const kind = match[1];
     const id = match[2];
     const display = match[3];
-    if (kind === 'person') {
+    if (kind === 'src') {
+      tokens.push({ type: 'source', n: Number(id), note: display });
+    } else if (kind === 'person') {
       tokens.push({ type: 'person', personId: id, display });
     } else {
       tokens.push({ type: 'keyword', keywordId: id, display });

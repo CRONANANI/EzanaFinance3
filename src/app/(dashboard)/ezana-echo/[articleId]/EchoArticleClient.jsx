@@ -30,6 +30,8 @@ import { EchoGlobeRail } from '@/components/echo/EchoGlobeRail';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
+import { EchoSourceRef } from '@/components/echo/EchoSourceRef';
+import '@/components/echo/echo-source-ref.css';
 import { EchoWallTimeline } from '@/components/echo/figures/EchoWallTimeline';
 import { EchoLifelines } from '@/components/echo/figures/EchoLifelines';
 import { EchoTrajectory } from '@/components/echo/figures/EchoTrajectory';
@@ -98,6 +100,11 @@ function ParagraphWithKeywords({ text }) {
     <p>
       {tokens.map((token, i) => {
         if (token.type === 'text') return <span key={i}>{token.content}</span>;
+
+        // Numbered source reference (lib/echo-sources.js).
+        if (token.type === 'source') {
+          return <EchoSourceRef key={i} n={token.n} note={token.note} />;
+        }
 
         // Person mention — emphasized span + scroll anchor for the Metadata sidebar.
         if (token.type === 'person') {

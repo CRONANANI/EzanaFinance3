@@ -59,6 +59,7 @@ function firstSentences(raw, n) {
   const text = String(raw || '')
     .replace(/<[^>]*>/g, ' ')
     .replace(/\[\[kw:[^\]]*\]\]/g, '')
+    .replace(/\s*\[VERIFY:?[^\]]*\]/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (!text) return '';
