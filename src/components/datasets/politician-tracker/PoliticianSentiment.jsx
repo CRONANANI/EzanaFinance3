@@ -11,7 +11,7 @@
  * red text for the reading, no cards or pills.
  */
 import { useEffect, useState } from 'react';
-import { BEAR_AT, BULL_AT } from '@/lib/politicians/sentiment';
+import { BEAR_AT, BULL_AT, OUTLOOK_BAND, OUTLOOK_WEIGHTS } from '@/lib/politicians/sentiment';
 
 const pct = (v, d = 0) => (Number.isFinite(v) ? `${v.toFixed(d)}%` : 'n/a');
 const signedPct = (v) =>
@@ -131,6 +131,94 @@ export default function PoliticianSentiment() {
             </dl>
           </div>
 
+          {/* Economic outlook: breadth plus where the money went. */}
+          {cur.outlook ? (
+            <div className="pts-outlook" aria-live="polite">
+              <div className="pts-outlook-main">
+                <span className="ptk-eyebrow dsc-mn">ECONOMIC OUTLOOK, {cur.year}</span>
+                <span className={`pts-outlook-label is-${cur.outlook.key}`}>
+                  {cur.outlook.label}
+                </span>
+                <span className="pts-now-line">
+                  Score{' '}
+                  <span className="dsc-mn">
+                    {Number.isFinite(cur.outlook.score)
+                      ? `${cur.outlook.score >= 0 ? '+' : '-'}${Math.abs(cur.outlook.score).toFixed(0)}`
+                      : 'n/a'}
+                  </span>{' '}
+                  on a scale of -100 to +100
+                </span>
+              </div>
+              {cur.rotation ? (
+                <dl className="pts-now-figs">
+                  <div>
+                    <dt>Market lean ({Math.round(OUTLOOK_WEIGHTS.lean * 100)}%)</dt>
+                    <dd className="dsc-mn">
+                      {Number.isFinite(cur.outlook.lean)
+                        ? `${cur.outlook.lean >= 0 ? '+' : '-'}${Math.abs(cur.outlook.lean).toFixed(0)}`
+                        : 'n/a'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Rotation to safety ({Math.round(OUTLOOK_WEIGHTS.rotation * 100)}%)</dt>
+                    <dd
+                      className={`dsc-mn ${
+                        (cur.rotation.tilt ?? 0) > 0 ? 'is-bear' : 'is-bull'
+                      }`}
+                    >
+                      {Number.isFinite(cur.rotation.tilt)
+                        ? `${cur.rotation.tilt >= 0 ? '+' : '-'}${Math.abs(cur.rotation.tilt).toFixed(1)} pts`
+                        : 'n/a'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Safe share of buys</dt>
+                    <dd className="dsc-mn">{pct(cur.rotation.safeBuyShare)}</dd>
+                  </div>
+                  <div>
+                    <dt>Safe share of sells</dt>
+                    <dd className="dsc-mn">{pct(cur.rotation.safeSellShare)}</dd>
+                  </div>
+                </dl>
+              ) : null}
+              {cur.rotation ? (
+                <ul className="pts-rows pts-buckets">
+                  {[
+                    ['Bonds and Treasuries', 'safe', cur.rotation.bonds],
+                    ['Defensive sectors', 'safe', cur.rotation.defensive],
+                    ['Cyclical sectors', 'growth', cur.rotation.cyclical],
+                  ].map(([label, kind, b]) => {
+                    const total = b.buys + b.sells;
+                    const share = total > 0 ? (b.buys / total) * 100 : null;
+                    return (
+                      <li key={label} className="pts-row pts-row--static">
+                        <span className="pts-row-label">
+                          {label}
+                          <span className="pts-bucket-kind"> · {kind}</span>
+                        </span>
+                        <Lean breadth={share} />
+                        <span className="pts-row-fig dsc-mn">{pct(share)}</span>
+                        <span className="pts-row-sub dsc-mn">
+                          {b.buys.toLocaleString()} / {b.sells.toLocaleString()}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+              <p className="ptk-note">
+                Money moving into bonds, Treasuries and the defensive sectors (Consumer Staples,
+                Utilities, Health Care) reads as bracing for a slowdown; money moving into cyclical
+                sectors, Consumer Discretionary among them, reads as expecting growth. Rotation to
+                safety is the safe share of buys minus the safe share of sells, by trade count.
+                The score weighs market lean {Math.round(OUTLOOK_WEIGHTS.lean * 100)}% and rotation{' '}
+                {Math.round(OUTLOOK_WEIGHTS.rotation * 100)}%; +{OUTLOOK_BAND} or more reads
+                Expansion, -{OUTLOOK_BAND} or less Slowdown risk. Bars show buys as a share of each
+                group&apos;s trades (buys / sells on the right).
+              </p>
+            </div>
+          ) : null}
+
           <div className="pts-cols">
             {/* Every year on file. A row picks the year for the sectors. */}
             <div className="pts-block">
@@ -152,6 +240,11 @@ export default function PoliticianSentiment() {
                       <span className="pts-row-fig dsc-mn">{pct(y.breadth)}</span>
                       <span className={`pts-row-reading is-${y.reading.key}`}>
                         {y.reading.label}
+                        {y.outlook && y.outlook.key !== 'none' ? (
+                          <span className={`pts-row-outlook is-${y.outlook.key}`}>
+                            {y.outlook.label}
+                          </span>
+                        ) : null}
                       </span>
                     </button>
                   </li>

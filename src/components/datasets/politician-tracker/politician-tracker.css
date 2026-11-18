@@ -1870,3 +1870,52 @@ button.pts-row:focus-visible {
     font-size: 30px;
   }
 }
+
+/* Economic outlook (Nov 18 2026): breadth plus rotation to safety. */
+.pts-outlook {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.pts-outlook-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pts-outlook-main .ptk-eyebrow {
+  margin: 0;
+}
+.pts-outlook-label {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.pts .is-expansion {
+  color: var(--emerald-text);
+}
+.pts .is-slowdown {
+  color: var(--negative);
+}
+.pts .is-mixed {
+  color: var(--text-secondary);
+}
+.pts-buckets {
+  max-width: 720px;
+}
+.pts-bucket-kind {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pts-row-reading {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+.pts-row-outlook {
+  font-size: 10px;
+  font-weight: 500;
+}

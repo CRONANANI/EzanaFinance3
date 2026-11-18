@@ -128,3 +128,68 @@ revoke all on function public.congress_sector_sentiment(int) from public, anon, 
 grant execute on function public.congress_sentiment_by_year() to service_role;
 grant execute on function public.congress_sector_sentiment(int) to service_role;
 ```
+
+## Rotation by year (added Nov 18 2026, applied)
+
+Counts, per transaction year, buys and sells of bonds and Treasuries (bond
+ETF tickers, or asset names that read as Treasuries, municipal issues, notes
+or coupon bonds; money-market funds are left out as cash), of the defensive
+sectors (Consumer Staples, Utilities, Health Care) and of the cyclical
+sectors (Consumer Discretionary, Financials, Industrials, Information
+Technology, Materials, Communication Services, Energy, Real Estate). Read-only;
+service role only.
+
+```sql
+create or replace function public.congress_rotation_by_year()
+returns table (
+  yr int,
+  bond_buys bigint, bond_sells bigint,
+  def_buys bigint, def_sells bigint,
+  cyc_buys bigint, cyc_sells bigint,
+  bond_buy_usd numeric, bond_sell_usd numeric
+)
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  with t as (
+    select extract(year from c.transaction_date)::int as yr,
+           c.type,
+           coalesce(c.amount_mid, 0) as usd,
+           case
+             when upper(coalesce(c.ticker, '')) in (
+               'TLT','IEF','SHY','BND','AGG','LQD','HYG','JNK','SGOV','BIL','GOVT','TIP','SCHP',
+               'VGIT','VGSH','VGLT','MUB','VCIT','VCSH','BSV','BIV','BLV','SCHO','SCHR','SCHZ',
+               'SPTL','SPTS','IGSB','IGIB','USIG','EDV','ZROZ','TLH','IEI','SHV','MINT','JPST',
+               'FLOT','VTEB','TFI','EMB','BNDX','IAGG','STIP','VTIP')
+               or c.asset_name ~* '(treasury|t-bills?\y|\ytreas\y|municipal|\ybonds?\y|\ynts\y|\ynotes? due|rate/coupon|matures:|\d+\.\d+%\s*\d{4,6}|debenture)'
+               then 'bond'
+             when s.sector in ('Consumer Staples', 'Utilities', 'Health Care') then 'defensive'
+             when s.sector in ('Consumer Discretionary', 'Financials', 'Industrials',
+                               'Information Technology', 'Materials', 'Communication Services',
+                               'Energy', 'Real Estate') then 'cyclical'
+             else null
+           end as bucket
+    from public.congress_trades c
+    left join public.ticker_sectors s on upper(s.ticker) = upper(c.ticker)
+    where c.type in ('purchase', 'sale', 'sale_partial')
+      and c.transaction_date is not null
+  )
+  select yr,
+         count(*) filter (where bucket = 'bond' and type = 'purchase'),
+         count(*) filter (where bucket = 'bond' and type <> 'purchase'),
+         count(*) filter (where bucket = 'defensive' and type = 'purchase'),
+         count(*) filter (where bucket = 'defensive' and type <> 'purchase'),
+         count(*) filter (where bucket = 'cyclical' and type = 'purchase'),
+         count(*) filter (where bucket = 'cyclical' and type <> 'purchase'),
+         coalesce(sum(usd) filter (where bucket = 'bond' and type = 'purchase'), 0),
+         coalesce(sum(usd) filter (where bucket = 'bond' and type <> 'purchase'), 0)
+  from t
+  group by yr
+  order by yr;
+$$;
+
+revoke all on function public.congress_rotation_by_year() from public, anon, authenticated;
+grant execute on function public.congress_rotation_by_year() to service_role;
+```
