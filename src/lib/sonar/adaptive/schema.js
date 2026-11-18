@@ -165,6 +165,18 @@ const RULES = {
       ? null
       : 'needs conditions and no probabilities',
   fx_conclusion: (s) => (text(s.text) ? null : 'no text'),
+  /* Financial explainer (explainer.js): reviewed glossary copy, no data series. */
+  ex_definitions: (s) =>
+    s.items?.length && s.items.every((i) => text(i.term) && text(i.text)) ? null : 'needs terms',
+  ex_equations: (s) =>
+    s.items?.length && s.items.every((i) => text(i.expr)) ? null : 'needs equations',
+  ex_measures: (s) =>
+    s.items?.length && s.items.every((i) => text(i.question) && text(i.measure))
+      ? null
+      : 'needs question and measure rows',
+  ex_diagram: (s) => (s.nodes?.length >= 2 ? null : 'needs at least two steps'),
+  ex_method: (s) => (s.items?.length && s.items.every((i) => text(i.title)) ? null : 'needs steps'),
+  ex_sources: (s) => (s.items?.length ? null : 'needs source kinds'),
 };
 
 /* Geo-economic sections hold figures several levels down; every cites list anywhere in them

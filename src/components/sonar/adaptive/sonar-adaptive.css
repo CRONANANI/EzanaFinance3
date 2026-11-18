@@ -2604,3 +2604,453 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ================================================================ flat canvas contract
+   Nov 18, 2026 (eight presentation families). The Branding and UI Guide wins over the v3
+   wireframe: sections are transparent, unfilled, unrounded, borderless and shadowless;
+   hairlines divide, never enclose; 64px between side-by-side sections; selected tabs,
+   toggles and ranges are emerald text only; follow-ups are text links. These rules come
+   last so they override the v3 card treatment above. */
+
+/* Follow-ups: an Explore row of text links. */
+.sar .sar-explore {
+  margin-top: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sar-explore-label {
+  font-size: var(--type-label-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sxb-muted);
+}
+.sar .sar-explore .sxb-related-q .bi {
+  font-size: 10px;
+  color: var(--emerald-text);
+}
+.sar .sar-explore .sxb-related-q:focus-visible,
+.sar-leadlinks a:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Anchor tabs: emerald text, no bar under the label. */
+.sar .sxb-tabs a[aria-current='true'] {
+  border-bottom-color: transparent;
+}
+.sar .sxb-tabs a:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+/* The lead's text links. */
+.sar-leadlinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 10px 0 0;
+  font-size: var(--type-caption-size);
+}
+.sar-leadlinks a {
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.sar-leadlinks a + a {
+  color: var(--sxb-muted);
+}
+.sar-leadlinks a:hover {
+  color: var(--emerald-text);
+  text-decoration: underline;
+}
+
+/* Section titles: the card title of the guide (18px, 700, sentence case). */
+.sar .sfx-eyebrow {
+  margin: 0 0 4px;
+  font-family: var(--font-sans);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text-primary);
+}
+.sar .sfx-eyebrow .bi {
+  display: none;
+}
+.sar .sfx-card-title {
+  margin: 2px 0 12px;
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
+  color: var(--sxb-body);
+}
+
+/* Every card and nested tile is flat. */
+.sar .sfx-card,
+.sar .sfx-panels > .sfx-card.sfx-panel,
+.sar .sfx-finding,
+.sar .sfx-overview,
+.sar .sfx-scope,
+.sar .sfx-conclusion,
+.sar .sfx-next,
+.sar .sfx-card--country .sfx-metric,
+.sar .sfx-card--country .sfx-metric:first-child,
+.sar .sfx-card--country .sfx-metric:nth-child(odd),
+.sar .sfx-card--country .sfx-metric:nth-child(n + 3) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.sar .sfx-card,
+.sar .sfx-panels > .sfx-card.sfx-panel {
+  padding: 0;
+}
+.sar .sfx-conclusion,
+.sar .sfx-scope {
+  padding: 0;
+}
+.sar .sfx-scope-state {
+  font-size: var(--type-card-title-size);
+}
+
+/* Opening row: country intelligence beside the pressure breakdown, 64px apart. */
+.sar .sfx-topgrid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 64px;
+}
+.sar .sfx-topgrid > .sfx-card--country {
+  grid-column: auto;
+}
+.sar .sfx-ov-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.sar .sfx-ov-name {
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-medium);
+}
+.sar .sfx-card--country .sfx-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+}
+.sar .sfx-card--country .sfx-metric {
+  padding: 4px 14px;
+  border-left: 1px solid var(--sxb-rule);
+}
+.sar .sfx-card--country .sfx-metric:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Levels and statuses: text only, the warning colour carries the word. */
+.sar .sfx-level,
+.sar .sfx-level--lg {
+  padding: 0;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--weight-strong);
+}
+.sar .sfx-level.sfx-lvl--elevated,
+.sar .sfx-level.sfx-lvl--severe {
+  color: var(--warning);
+}
+.sar .sfx-level.sfx-lvl--moderate,
+.sar .sfx-level.sfx-lvl--low,
+.sar .sfx-level.sfx-lvl--scope {
+  color: var(--sxb-muted);
+}
+
+/* Driver chips: plain text with the level beside it. */
+.sar .sfx-chip {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.sar .sfx-chips {
+  gap: 6px 20px;
+}
+
+/* Key findings: four flat entries, hairline above each. */
+.sar .sfx-findings {
+  gap: 0 64px;
+}
+.sar .sfx-finding {
+  display: block;
+  padding: 20px 0;
+  border-top: 1px solid var(--sxb-rule);
+}
+.sar .sfx-finding-n {
+  display: inline;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--type-label-size);
+}
+.sar .sfx-finding-body {
+  margin-top: 6px;
+}
+
+/* The four charts: two by two, 64px apart. */
+.sar .sfx-panels.sfx-panels--4,
+.sar .sfx-panels.sfx-panels--3,
+.sar .sfx-panels.sfx-panels--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 64px;
+}
+
+/* Anchor tabs and view switches: text only. */
+.sar .sfx-tab {
+  padding: 4px 0;
+  margin-right: 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.sar .sfx-tab[aria-pressed='true'] {
+  border: 0;
+  background: transparent;
+  color: var(--emerald-text);
+}
+
+/* Flow steps: text and a basis line; supported steps carry emerald text, no box. */
+.sar .sfx-node,
+.sar .sfx-node.sfx-flow--supported,
+.sar .sfx-node.sfx-flow--conceptual,
+.sar .sfx-node.sfx-flow--effect {
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.sar .sfx-flow-key::before {
+  display: none;
+}
+
+/* Evidence beside the news, 64px apart. */
+.sar .sfx-evidence {
+  gap: 20px 64px;
+}
+.sar .sfx-src-badge {
+  border: 0;
+}
+
+/* Side-by-side pairs, 64px apart; the hairline between them is dropped. */
+.sar .sgeo-pair {
+  gap: 20px 64px;
+}
+.sar .sgeo-pair > .sar-block + .sar-block {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* The closing row: the session beside the follow-up box, 64px apart. */
+.sar .sar-closing.is-pair {
+  gap: 20px 64px;
+}
+
+/* Overlay surfaces keep their shadow from the tokens. */
+.src-tip,
+.src-measure {
+  box-shadow: var(--shadow-md);
+}
+
+/* Financial explainer (family 08). */
+.sex-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sex-title {
+  margin: 0;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--weight-strong);
+  color: var(--text-primary);
+}
+.sex-note,
+.sex-caption {
+  font-size: var(--type-caption-size);
+  color: var(--sxb-muted);
+}
+.sex-caption {
+  display: block;
+  margin: 8px 0 0;
+}
+.sex-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sex-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sxb-rule);
+  font-size: var(--type-body-size);
+  color: var(--sxb-body);
+  line-height: 1.5;
+}
+.sex-row strong {
+  color: var(--text-primary);
+  font-weight: var(--weight-strong);
+}
+.sex-n {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--emerald-text);
+}
+.sex-eq {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sex-expr {
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  color: var(--text-primary);
+}
+.sex-eq-note {
+  font-size: var(--type-caption-size);
+  color: var(--sxb-body);
+}
+.sex-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body-size);
+}
+.sex-table thead th {
+  padding: 10px 12px 10px 0;
+  text-align: left;
+  font-size: var(--type-label-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sxb-muted);
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sex-table tbody th,
+.sex-table tbody td {
+  padding: 12px 12px 12px 0;
+  text-align: left;
+  font-weight: var(--weight-regular);
+  color: var(--sxb-body);
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sex-table tbody th {
+  color: var(--text-primary);
+}
+.sex-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 0;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sex-step {
+  position: relative;
+  display: flex;
+  flex: 1 1 140px;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 32px;
+}
+.sex-step-label {
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-strong);
+  color: var(--text-primary);
+}
+.sex-step-basis {
+  font-size: var(--type-caption-size);
+  color: var(--sxb-muted);
+}
+.sex-step-go {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 11px;
+  color: var(--emerald-text);
+}
+.sex-method {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 64px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sex-method-item {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--sxb-rule);
+}
+.sex-method-title {
+  margin: 6px 0 4px;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--weight-strong);
+  color: var(--text-primary);
+}
+.sex-method-text {
+  margin: 0;
+  font-size: var(--type-body-size);
+  color: var(--sxb-body);
+  line-height: 1.5;
+}
+.sex-verify {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sex-verify li {
+  display: flex;
+  flex-direction: column;
+}
+.sex-verify .sex-caption {
+  margin: 2px 0 0;
+}
+.sex-verify-title {
+  font-size: var(--type-body-size);
+  font-weight: var(--weight-strong);
+  color: var(--text-primary);
+}
+
+@media (max-width: 1023px) {
+  .sar .sfx-topgrid,
+  .sar .sfx-panels.sfx-panels--4,
+  .sar .sfx-panels.sfx-panels--3,
+  .sar .sfx-panels.sfx-panels--2,
+  .sex-method {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sar .sfx-card--country .sfx-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sar .sfx-card--country .sfx-metric:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 699px) {
+  .sar .sfx-card--country .sfx-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sar .sfx-card--country .sfx-metric {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .sex-step-go {
+    display: none;
+  }
+}

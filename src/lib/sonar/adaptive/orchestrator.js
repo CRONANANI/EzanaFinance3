@@ -20,6 +20,8 @@
  */
 import { runGeoEconomic } from './geo-economic';
 import { runFxPressure } from './fx-pressure';
+import { runExplainer } from './explainer';
+import { composePresentation, cleanPresentation } from './presentation-families';
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { technicalSnapshot, rsiReading } from './technical';
 import { sourceClass, hostOf, canonicalUrl } from './news-intelligence';
@@ -539,8 +541,12 @@ const EXECUTORS = {
   /* A currency-pressure question (plan.fx, set by the router) gets the fx-pressure-v2 view;
      if its data cannot answer, the plain country view still can. */
   C01: async (plan, ...rest) =>
-    (plan.fx ? await runFxPressure(plan, ...rest) : null) || runCountryMacro(plan, ...rest),
-  C04: runCountryMacro,
+    (plan.explainer ? await runExplainer(plan) : null) ||
+    (plan.fx ? await runFxPressure(plan, ...rest) : null) ||
+    runCountryMacro(plan, ...rest),
+  /* Nov 18: a definitional rates question is a financial explainer (explainer.js). */
+  C04: async (plan, ...rest) =>
+    (plan.explainer ? await runExplainer(plan) : null) || runCountryMacro(plan, ...rest),
   C05: runCountryMacro,
   C09: runCountryCompare,
   C03: runCommodity,
@@ -659,6 +665,12 @@ export async function runAdaptive(
   if (!checked.report.sources.length) {
     checked.report.sections = checked.report.sections.filter((s) => s.type !== 'sources');
   }
+  /* Nov 18: which presentation family the answer reads as, its first zone, the sections it
+     composed and how many data blocks carry sources (presentation-families.js). Stored
+     answers without it render as before. */
+  checked.report.presentation = cleanPresentation(
+    composePresentation(plan, checked.report.sections),
+  );
   checked.report.telemetry = {
     ms: Date.now() - t0,
     steps: telemetry.steps,

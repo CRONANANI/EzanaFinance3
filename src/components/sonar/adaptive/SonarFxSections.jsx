@@ -2,16 +2,14 @@
 
 /**
  * Sonar adaptive research: the currency-pressure blocks (Nov 17, 2026). View model
- * fx-pressure-v3, built by lib/sonar/adaptive/fx-pressure.js and checked by the report schema.
+ * fx-pressure-v3 (flat canvas, Nov 18), built by lib/sonar/adaptive/fx-pressure.js and checked by the report schema.
  *
  * Executive answer
  *   FxLeadBrief           "See full reading": the longer reading, why-it-matters bullets
  *                         (supported / interpretation / cannot conclude) and driver chips
- *   FxNextSteps           the light Next steps block under Research Controls
  * Opening analytical row (fx_overview, beside the rail)
  *   CountryFxRiskCard     country, currency, pressure status, four dated KPIs with trends
  *   PressureBreakdownCard each component's level and the interpretive note
- *   SourcesBriefCard      the evidence count and the leading datasets, linked to the list
  * Narrative and analysis
  *   KeyFindingCards       (fx_findings) four numbered findings; evidence, meaning and why
  *                         open under each
@@ -27,7 +25,6 @@
  */
 import { useMemo, useState } from 'react';
 import { CHART } from '@/lib/chart-theme';
-import { CountryFlag } from '@/components/sonar/CountryFlag';
 import { SonarResearchChart } from './SonarResearchChart';
 
 const BASIS = { observed: 'Observed', derived: 'Derived', conceptual: 'Conceptual' };
@@ -119,38 +116,6 @@ export function FxLeadBrief({ lead }) {
   );
 }
 
-/** Next steps under Research Controls: a follow-up, or deep research when offered. */
-export function FxNextSteps({ steps, onAsk, onDeep }) {
-  const usable = (steps || []).filter((st) => (st.action === 'deep' ? Boolean(onDeep) : st.q));
-  if (!usable.length) return null;
-  return (
-    <section className="sfx-next" aria-labelledby="sfx-next-h">
-      <p className="sfx-eyebrow" id="sfx-next-h">
-        <i className="bi bi-signpost-split" aria-hidden="true" />
-        Next steps
-      </p>
-      <ul>
-        {usable.map((st) => (
-          <li key={st.label}>
-            <button
-              type="button"
-              className="sfx-next-item"
-              onClick={() => (st.action === 'deep' ? onDeep() : onAsk(st.q))}
-            >
-              <i className={`bi ${st.icon || 'bi-arrow-right'}`} aria-hidden="true" />
-              <span className="sfx-next-text">
-                <span className="sfx-next-label">{st.label}</span>
-                <span className="sfx-next-sub">{st.sub}</span>
-              </span>
-              <i className="bi bi-chevron-right sfx-next-go" aria-hidden="true" />
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------------------ opening analytical row */
 
 function CountryFxRiskCard({ s, Cites, sources }) {
@@ -158,13 +123,10 @@ function CountryFxRiskCard({ s, Cites, sources }) {
     <div className="sfx-card sfx-card--country">
       <Eyebrow icon="bi-layers">{s.eyebrow}</Eyebrow>
       <div className="sfx-ov-head">
-        <div className="sfx-ov-id">
-          <CountryFlag iso2={s.iso2} label={s.place} width={40} />
-          <div>
-            <p className="sfx-ov-name">{s.place}</p>
-            <p className="sfx-ov-cur">{s.currency}</p>
-          </div>
-        </div>
+        <p className="sfx-ov-id">
+          <span className="sfx-ov-name">{s.place}</span>
+          <span className="sfx-ov-cur">{s.currency}</span>
+        </p>
         <div className="sfx-ov-status">
           {s.levelLabel ? (
             <span className={`sfx-level sfx-level--lg sfx-lvl--${s.level}`}>{s.levelLabel}</span>
@@ -232,40 +194,11 @@ function PressureBreakdownCard({ rows, note }) {
   );
 }
 
-function SourcesBriefCard({ brief }) {
-  if (!brief?.items?.length) return null;
-  return (
-    <div className="sfx-card sfx-card--sources">
-      <Eyebrow icon="bi-database">
-        Evidence &amp; sources{brief.count ? ` (${brief.count})` : ''}
-      </Eyebrow>
-      <ul className="sfx-src-list">
-        {brief.items.map((it) => (
-          <li key={it.id} className="sfx-src">
-            <span className="sfx-src-badge" aria-hidden="true">
-              {it.badge}
-            </span>
-            <span className="sfx-src-text">
-              <span className="sfx-src-title">{it.title}</span>
-              <span className="sfx-src-sub">{it.sub}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <a className="sfx-jump" href="#sar-fx_evidence">
-        View all sources
-        <i className="bi bi-arrow-right" aria-hidden="true" />
-      </a>
-    </div>
-  );
-}
-
 export function CountryPressureOverview({ s, Cites, sources }) {
   return (
     <div className="sfx-topgrid">
       <CountryFxRiskCard s={s} Cites={Cites} sources={sources} />
       <PressureBreakdownCard rows={s.breakdown} note={s.breakdownNote} />
-      <SourcesBriefCard brief={s.sourcesBrief} />
     </div>
   );
 }
@@ -425,7 +358,7 @@ function sliceRange(points, range) {
   return win.length >= 2 ? win : points.slice(-2);
 }
 
-function ResearchChartPanel({ p, Cites, sources }) {
+function ResearchChartPanel({ p, Cites, sources, syncId }) {
   const [view, setView] = useState(p.views[0].id);
   const [range, setRange] = useState(p.defaultRange || null);
   const v = p.views.find((x) => x.id === view) || p.views[0];
@@ -463,6 +396,7 @@ function ResearchChartPanel({ p, Cites, sources }) {
         onView={(id) => id && setView(id)}
         height={210}
         label={`${p.title}, ${v.label}`}
+        syncId={syncId}
       />
       <p className="sfx-caption">
         {p.caption}
@@ -478,7 +412,7 @@ export function FxCharts({ s, Cites, sources }) {
       <Eyebrow icon="bi-bar-chart-line">{s.eyebrow}</Eyebrow>
       <div className={`sfx-panels sfx-panels--${s.panels.length}`}>
         {s.panels.map((p) => (
-          <ResearchChartPanel key={p.id} p={p} Cites={Cites} sources={sources} />
+          <ResearchChartPanel key={p.id} p={p} Cites={Cites} sources={sources} syncId="sfx-charts" />
         ))}
       </div>
     </>

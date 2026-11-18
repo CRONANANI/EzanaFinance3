@@ -189,3 +189,10 @@ Deterministic math (exported): `usdInLocalChangePct = (current/prior - 1) * 100`
 - Key findings as four compact cards; evidence, meaning, why and the caution open under each.
 - One chart system: `SonarResearchChart.jsx`, in the home page comparison chart's language (change chip, platform range pills, dashed grid, filled lead line, end tag, crosshair tooltip, drag to measure). Used by the four charts and the long-run Key chart. Stored observations only; projections dashed.
 - Then the flow, the Key chart, the Key indicators, interpretation (drivers, scope, monitoring, outlook, conclusion), and the evidence: Ezana datasets (prediction markets included) beside the news around it. The session sits beside the follow-up box at the end.
+
+## Presentation families and the flat canvas (Nov 18 2026)
+
+- Families: `presentation-families.js` (`families-v1`), documented in `PRESENTATION_FAMILIES.md`. Plans carry `plan.presentation`; reports carry `report.presentation` (family, subtype, first zone, composed sections, source coverage). Optional and backwards compatible with stored `arie-report-v1` answers.
+- Family 08: `explainer.js` and the versioned `methodology-glossary.js`, routed through C04 and C01 with `plan.explainer`; six `ex_*` section types.
+- The currency answer (fx-pressure-v3) now follows the Branding and UI Guide's flat canvas: no cards, chips, desk-summary row, flag, sources card or rail Next steps; Explore text links under the question; country intelligence beside the pressure breakdown at full width; charts two by two with a shared crosshair.
+- Data still missing, with the order to ingest it: `DATA_INGESTION_BACKLOG.md`.

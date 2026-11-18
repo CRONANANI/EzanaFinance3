@@ -21,6 +21,8 @@
  */
 import { geoIntent } from './geo-economic';
 import { fxIntent } from './fx-pressure';
+import { explainerIntent } from './explainer';
+import { planPresentation } from './presentation-families';
 import { mentionedCompanies } from '@/lib/sonar/company-mentions';
 import { timeHorizonOf } from '@/lib/sonar/engine/research-spec';
 import { ANALYSTS } from '@/lib/sonar/analysts/registry';
@@ -217,6 +219,29 @@ export function planAdaptive(question, opts = {}) {
     );
   }
 
+  /* Nov 18: a definitional question a reviewed glossary entry covers ("What is the difference
+     between nominal and real interest rates?") presents as a financial explainer, on the
+     entry's scenario. A named country or company keeps the research route. */
+  const explainer =
+    geo || fx
+      ? null
+      : explainerIntent(text, { hasCompany: entities.some((e) => e.type === 'company') });
+  if (explainer && scored[0]?.profile.id !== explainer.scenario) {
+    const host = SCENARIOS.find((s) => s.id === explainer.scenario);
+    const rest = scored.filter((s) => s.profile.id !== explainer.scenario);
+    if (host)
+      scored.splice(
+        0,
+        scored.length,
+        {
+          profile: host,
+          score: (rest[0]?.score || 0) + 2,
+          reasons: [`${explainer.scenario}: financial explainer (${explainer.entry})`],
+        },
+        ...rest,
+      );
+  }
+
   const top = scored[0] || null;
   const second = scored[1] || null;
   const confidence = top
@@ -258,7 +283,7 @@ export function planAdaptive(question, opts = {}) {
     executable = false;
     missing.push('no member, company or chamber named');
   }
-  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text) && !(primary?.id === 'C01' && fx)) {
+  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text) && !(primary?.id === 'C01' && fx) && !(explainer && primary?.id === explainer.scenario)) {
     executable = false;
     missing.push('no country named: this pipeline reads one country’s series');
   }
@@ -343,7 +368,7 @@ export function planAdaptive(question, opts = {}) {
     : [];
 
   const layout = primary ? primary.layout : [];
-  return {
+  const planned = {
     version: PLAN_VERSION,
     profiles: PROFILE_VERSION,
     originalQuestion: original,
@@ -356,6 +381,7 @@ export function planAdaptive(question, opts = {}) {
     primaryScenario: primary?.id || null,
     geo: primary?.id === 'A08' && geo ? geo : null,
     fx: primary?.id === 'C01' && fx ? fx : null,
+    explainer: explainer && primary?.id === explainer.scenario ? explainer : null,
     primaryKey: primary?.key || null,
     supportingScenarios: supporting,
     depth,
@@ -378,4 +404,8 @@ export function planAdaptive(question, opts = {}) {
     requiresOrg,
     audit: { routeReasons, excludedSources, missing, runnerUp: second?.profile.id || null },
   };
+  /* Nov 18: the presentation family the plan proposes (presentation-families.js); the report
+     confirms it against the sections that came back. */
+  planned.presentation = planPresentation(planned, text);
+  return planned;
 }

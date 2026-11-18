@@ -23,6 +23,7 @@
  *   ranges, range, onRange   range pills (the platform's DateSelector)
  *   views, view, onView      view pills ({ id, label })
  *   height, label (accessible name)
+ *   syncId     charts sharing one id share the crosshair, matched by period (Nov 18)
  */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -186,6 +187,7 @@ export function SonarResearchChart({
   onView = null,
   height = 220,
   label = '',
+  syncId = undefined,
 }) {
   const rows = useMemo(() => toRows(series), [series]);
   const lead = series.find((s) => s.tone !== 'reference') || series[0];
@@ -295,6 +297,8 @@ export function SonarResearchChart({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={rows}
+                syncId={syncId}
+                syncMethod="value"
                 margin={{ top: 14, right: 4, left: 0, bottom: 0 }}
                 onMouseDown={onDown}
                 onMouseMove={onMove}
@@ -380,7 +384,7 @@ export function SonarResearchChart({
                         name={s.name}
                         stroke={stroke}
                         strokeWidth={isLead ? 1.75 : 1.5}
-                        strokeDasharray={s.tone === 'reference' ? '5 4' : undefined}
+                        strokeDasharray={s.tone === 'reference' ? '2 3' : undefined}
                         fill={isLead ? `url(#srcFill-${lead.key})` : 'transparent'}
                         dot={false}
                         activeDot={{ r: 3, strokeWidth: 0 }}

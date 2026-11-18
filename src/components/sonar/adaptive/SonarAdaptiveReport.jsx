@@ -35,8 +35,15 @@ import {
   EventTimeline,
 } from './SonarGeoSections';
 import {
+  ExDefinitions,
+  ExEquations,
+  ExMeasures,
+  ExDiagram,
+  ExMethod,
+  ExSources,
+} from './SonarExplainerSections';
+import {
   FxLeadBrief,
-  FxNextSteps,
   CountryPressureOverview,
   FxFindings,
   EvidenceCoverageGrid,
@@ -100,6 +107,11 @@ const ANCHOR_LABELS = {
   fx_indicators: 'Indicators',
   fx_risk_scope: 'Risk signals',
   fx_monitor: 'Risk signals',
+  /* Financial explainer (family 08). */
+  ex_definitions: 'Definitions',
+  ex_equations: 'Formulas',
+  ex_measures: 'Interpretation',
+  ex_method: 'Methods',
 };
 
 /* Sections that span the canvas: never squeezed into the top zone beside the controls. */
@@ -124,6 +136,12 @@ const WIDE = new Set([
   'fx_monitor',
   'fx_outlook',
   'fx_conclusion',
+  'ex_definitions',
+  'ex_equations',
+  'ex_measures',
+  'ex_diagram',
+  'ex_method',
+  'ex_sources',
 ]);
 /* The geo-economic report calls its sources "Evidence". */
 const GEO_SET = new Set(['kpi_strip', 'market_comparison', 'hormuz_flows', 'us_impact']);
@@ -135,6 +153,10 @@ const PAIR_OF = {
   fx_risk_scope: 'fx_drivers',
   fx_monitor: 'fx_outlook',
   fx_outlook: 'fx_monitor',
+  ex_definitions: 'ex_equations',
+  ex_equations: 'ex_definitions',
+  ex_measures: 'ex_diagram',
+  ex_diagram: 'ex_measures',
 };
 const PAIR_WIDE = new Set(['fx_drivers', 'fx_monitor']);
 
@@ -688,6 +710,9 @@ export default function SonarAdaptiveReport({
       anchorsAll.findIndex((x) => ANCHOR_LABELS[x.type] === ANCHOR_LABELS[sec.type]) === i,
   );
   const geo = sections.some((x) => GEO_SET.has(x.type));
+  /* The first findings block, for the lead's "View key findings" link. */
+  const findingsAnchor =
+    body.find((s) => ['fx_findings', 'key_findings'].includes(s.type))?.type || null;
   /* An executor may name the sections that belong in the top zone (fx-pressure: the four
      figures and the currency chart); otherwise the first narrow section sits there. */
   const flagged = body.filter((s) => s.top);
@@ -862,6 +887,18 @@ export default function SonarAdaptiveReport({
         return <FxOutlook s={s} />;
       case 'fx_conclusion':
         return <FxConclusion s={s} />;
+      case 'ex_definitions':
+        return <ExDefinitions s={s} />;
+      case 'ex_equations':
+        return <ExEquations s={s} />;
+      case 'ex_measures':
+        return <ExMeasures s={s} />;
+      case 'ex_diagram':
+        return <ExDiagram s={s} />;
+      case 'ex_method':
+        return <ExMethod s={s} />;
+      case 'ex_sources':
+        return <ExSources s={s} />;
       default:
         return null;
     }
@@ -885,7 +922,12 @@ export default function SonarAdaptiveReport({
   };
 
   return (
-    <div className="sxb sar" ref={rootRef} data-scenario={report.scenario?.key}>
+    <div
+      className="sxb sar"
+      ref={rootRef}
+      data-scenario={report.scenario?.key}
+      data-family={report.presentation?.presentationFamily || undefined}
+    >
       <form
         className="sxb-question"
         role="search"
@@ -927,13 +969,14 @@ export default function SonarAdaptiveReport({
         </button>
       </form>
 
-      {/* Nov 17 (v3): follow-ups as chips directly under the question. */}
+      {/* Follow-ups: two to four text links under the question (Branding and UI Guide). */}
       {follow && !streaming ? (
-        <div className="sxb-related sxb-related--top sar-chips" role="group" aria-label="Follow-up questions">
-          {follow.related.map((q, i) => (
-            <button key={q} type="button" className="sxb-related-q sar-chip" onClick={() => ask(q)}>
-              {i === 0 ? <i className="bi bi-stars" aria-hidden="true" /> : null}
+        <div className="sxb-related sxb-related--top sar-explore" role="group" aria-label="Explore">
+          <span className="sar-explore-label">Explore</span>
+          {follow.related.slice(0, 4).map((q) => (
+            <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
               {q}
+              <i className="bi bi-chevron-right" aria-hidden="true" />
             </button>
           ))}
         </div>
@@ -963,31 +1006,13 @@ export default function SonarAdaptiveReport({
       <div className="sxb-top">
         <div className="sxb-top-main">
           <header className="sxb-hero" id="sar-overview" data-anchor="overview">
-            {/* A desk summary (currency answers): label, run, and the actions on one line. */}
-            {lead.label ? (
-              <div className="sar-desk-row">
-                <p className="sar-desk-label">
-                  <i className="bi bi-broadcast" aria-hidden="true" />
-                  {lead.label}
-                </p>
-                <span className="sar-desk-meta">
-                  Quick ping &middot; {dayLabel(report.asOf)}
-                </span>
-                <div className="sar-actions sar-actions--inline">
-                  {report.org || streaming
-                    ? null
-                    : actions || (
-                        <SonarSaveActions
-                          getSave={getSave}
-                          question={report.resolvedQuestion || report.question}
-                        />
-                      )}
-                </div>
-              </div>
-            ) : null}
-            {lead.kicker || lead.asOf ? (
+            {lead.kicker || lead.asOf || report.presentation?.familyLabel ? (
               <div className="sar-kicker-row">
-                {lead.kicker ? <p className="sxb-kicker">{lead.kicker}</p> : <span />}
+                {lead.kicker || report.presentation?.familyLabel ? (
+                  <p className="sxb-kicker">{lead.kicker || report.presentation.familyLabel}</p>
+                ) : (
+                  <span />
+                )}
                 {lead.asOf ? <p className="sar-asof">{lead.asOf}</p> : null}
               </div>
             ) : null}
@@ -998,6 +1023,15 @@ export default function SonarAdaptiveReport({
               <Cites ids={lead.cites} sources={sources} />
             </p>
             <FxLeadBrief lead={lead} />
+            {/* The lead's own links: to the findings and to the sources, when they exist. */}
+            {findingsAnchor || sources.length ? (
+              <p className="sar-leadlinks">
+                {findingsAnchor ? (
+                  <a href={`#sar-${findingsAnchor}`}>View key findings</a>
+                ) : null}
+                {sources.length ? <a href="#sar-sources">View sources</a> : null}
+              </p>
+            ) : null}
             {lead.core ? (
               <p className="sgeo-core">
                 <span>Core finding</span>
@@ -1031,9 +1065,9 @@ export default function SonarAdaptiveReport({
                 </a>
               ) : null}
             </p>
-            <div className="sar-actions" hidden={Boolean(lead.label)}>
+            <div className="sar-actions">
               {/* Organization research is not offered for saving to personal research. */}
-              {lead.label || report.org || streaming
+              {report.org || streaming
                 ? null
                 : actions || (
                     <SonarSaveActions
@@ -1047,9 +1081,6 @@ export default function SonarAdaptiveReport({
         </div>
         <aside className="sxb-rail" aria-label="Research controls">
           <SonarResearchControls variant="flat" />
-          {lead.nextSteps?.length && !streaming ? (
-            <FxNextSteps steps={lead.nextSteps} onAsk={ask} onDeep={onDeep} />
-          ) : null}
         </aside>
       </div>
 
@@ -1058,7 +1089,7 @@ export default function SonarAdaptiveReport({
         const next = rest[i + 1];
         const prev = rest[i - 1];
         if (next && PAIR_OF[sec.type] === next.type) {
-          const Pair = sec.type.startsWith('fx_') ? FxPair : GeoPair;
+          const Pair = sec.type.startsWith('fx_') || sec.type.startsWith('ex_') ? FxPair : GeoPair;
           return (
             <Pair key={`pair-${sec.type}`} wide={PAIR_WIDE.has(sec.type)}>
               {block(sec)}
@@ -1101,7 +1132,7 @@ export default function SonarAdaptiveReport({
       {follow && !streaming ? (
         <section className="sxb-block" aria-labelledby="sar-continue-h">
           <h2 className="sxb-mid-title" id="sar-continue-h">
-            {lead.label ? 'Ask a follow-up question' : 'Continue your research'}
+            Ask a follow-up
           </h2>
           <form
             className="sxb-followup"

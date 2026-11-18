@@ -20,6 +20,7 @@ import { mandateChecks, fitFromChecks } from '@/lib/org-sonar/fund-fit';
 import { earningsRecord } from './series-metrics';
 import { selectComponents } from './layout-planner';
 import { validateReport, REPORT_VERSION } from './schema';
+import { composePresentation, cleanPresentation } from './presentation-families';
 import { SCENARIO_BY_ID } from './profiles';
 import { day, step, sourceBook, num, NA, money, freshQuestions } from './kit';
 
@@ -641,6 +642,11 @@ export async function runOverlay(plan, org, deps = {}, { now = new Date(), onSte
     },
   });
   if (!checked.ok) return null;
+  /* Nov 18: council answers present as portfolio intelligence (presentation-families.js).
+     Metadata only: section types and counts, no organization records. */
+  checked.report.presentation = cleanPresentation(
+    composePresentation(plan, checked.report.sections),
+  );
   checked.report.telemetry = {
     ms: Date.now() - t0,
     steps: telemetry.steps,

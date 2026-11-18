@@ -498,8 +498,7 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     `${pressureLevel >= 1 ? ' The available data do not establish an imminent currency crisis.' : ''}`;
 
   built.lead = {
-    label: 'Desk summary',
-    kicker: null,
+    kicker: null, // the family label (Currency intelligence) heads the answer
     question: HEADLINE[focus](place, shortName),
     headline: shortAnswer,
     verdict: null,
@@ -507,11 +506,6 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     reading: `${verdict} ${ctxText}`,
     bullets,
     chips,
-    nextSteps: [
-      { label: 'Run deep research', sub: 'Multi-source, in-depth analysis', action: 'deep', icon: 'bi-layers' },
-      { label: 'Compare currencies', sub: `The ${shortName} against emerging-market peers`, q: `Compare ${code} against emerging-market currencies`, icon: 'bi-globe2' },
-      { label: 'Historical precedents', sub: 'When conditions last looked like this', q: `When was the ${shortName} last under similar pressure?`, icon: 'bi-clock-history' },
-    ],
     asOf: `Observations through ${periodLabel(fx.latest.period)}`,
     computed: true,
     cites: [...fxCites, ...inflCites, ...polCites].slice(0, 3),
@@ -986,7 +980,6 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
   };
 
   const sectionOrder = ORDER[focus].filter((t) => built[t]);
-  built.fx_overview.top = true;
   built._order = ['lead', ...sectionOrder, 'fx_conclusion', 'sources', 'limitations', 'followups'];
 
   return {

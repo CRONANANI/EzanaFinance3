@@ -63,6 +63,13 @@ export const SECTION_TYPES = [
   'fx_monitor',
   'fx_outlook',
   'fx_conclusion',
+  /* Nov 18: financial explainer, family 08 (explainer.js). */
+  'ex_definitions',
+  'ex_equations',
+  'ex_measures',
+  'ex_diagram',
+  'ex_method',
+  'ex_sources',
   /* Nov 17: geo-economic impact (geo-economic.js). */
   'kpi_strip',
   'market_comparison',
