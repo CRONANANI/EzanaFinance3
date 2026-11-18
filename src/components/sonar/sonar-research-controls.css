@@ -168,3 +168,13 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Nov 18: the select sits in a wrapper that carries its chevron icon. */
+.src-select-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.src-select-chev {
+  display: none;
+}

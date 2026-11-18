@@ -27,6 +27,7 @@
  * instead, or closes the brief when the dimension has none. Choosing the
  * selected card again, or Escape inside the rail, clears the selection.
  */
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSonarSelection } from './SonarSelection';
 import { usePulse } from './PulseProvider';
@@ -133,6 +134,53 @@ export default function ConsoleRail({ dims }) {
     select(selected === id ? null : id, 'rail');
   };
 
+  /* Nov 18, phones: the cards sit in one sideways row, so they turn on their
+     own, one card every few seconds, back to the first after the last. The
+     turn pauses while a finger is on the row and for a while after, while a
+     card is open, while the row is off screen and when motion is reduced. */
+  const gridRef = useRef(null);
+  const pausedUntil = useRef(0);
+  const visible = useRef(false);
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || typeof window === 'undefined') return undefined;
+    const phone = window.matchMedia('(max-width: 640px)');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const io =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(([e]) => {
+            visible.current = e.isIntersecting;
+          }, { threshold: 0.4 })
+        : null;
+    io?.observe(grid);
+    const hold = () => {
+      pausedUntil.current = Date.now() + 8000;
+    };
+    grid.addEventListener('touchstart', hold, { passive: true });
+    grid.addEventListener('pointerdown', hold);
+    const tick = () => {
+      if (!phone.matches || still.matches || !visible.current) return;
+      if (Date.now() < pausedUntil.current) return;
+      if (grid.querySelector('.dsi-card.is-selected')) return;
+      const cards = Array.from(grid.querySelectorAll('.dsi-card'));
+      if (cards.length < 2) return;
+      const pad = parseFloat(getComputedStyle(grid).scrollPaddingInlineStart) || 0;
+      const box = grid.getBoundingClientRect().left + pad;
+      /* Each card's scroll position: where it would sit at the row's start. */
+      const at = (c) => grid.scrollLeft + c.getBoundingClientRect().left - box;
+      const atEnd = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 4;
+      const next = atEnd ? cards[0] : cards.find((c) => at(c) > grid.scrollLeft + 4) || cards[0];
+      grid.scrollTo({ left: Math.max(0, at(next)), behavior: 'smooth' });
+    };
+    const id = window.setInterval(tick, 3500);
+    return () => {
+      window.clearInterval(id);
+      io?.disconnect();
+      grid.removeEventListener('touchstart', hold);
+      grid.removeEventListener('pointerdown', hold);
+    };
+  }, []);
+
   const onKeyDown = (e) => {
     if (e.key === 'Escape' && selected) {
       e.stopPropagation();
@@ -150,7 +198,7 @@ export default function ConsoleRail({ dims }) {
           <i className="bi bi-chevron-down" />
         </span>
       </div>
-      <div className="dsi-rail__grid">
+      <div className="dsi-rail__grid" ref={gridRef}>
         {dims.map((d) => (
           <Card key={d.id} d={d} on={selected === d.id} onChoose={() => choose(d.id)} />
         ))}

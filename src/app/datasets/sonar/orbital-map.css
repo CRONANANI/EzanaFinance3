@@ -815,3 +815,99 @@
   background: transparent;
   padding: 0;
 }
+
+/* ── Nov 18: readable on every theme and device ────────────────────────
+   Sonar paints its own dark ground, but light-mode heading rules and the
+   phone's native light form controls still reached in: the title, the
+   Research controls head and the dimension names came out dark on dark, and
+   the selects and Ping field drew white. The shell now declares a dark
+   colour scheme (native controls draw dark) and its own ink wins outright. */
+.ds-shell.ds-shell--search {
+  color-scheme: dark;
+}
+.ds-shell.ds-shell--search :is(.dsi-hero__title, .dsi-card__title, .dsi-card__name) {
+  color: var(--dsi-ink) !important;
+  -webkit-text-fill-color: var(--dsi-ink);
+  opacity: 1;
+}
+.ds-shell.ds-shell--search .dsi-hero__lede,
+.ds-shell.ds-shell--search .dsi-card__desc {
+  color: var(--dsi-ink-2) !important;
+  -webkit-text-fill-color: var(--dsi-ink-2);
+  opacity: 1;
+}
+.ds-shell.ds-shell--search .dsi-hero__eyebrow,
+.ds-shell.ds-shell--search .dsi-card__icon {
+  color: var(--emerald) !important;
+}
+.ds-shell.ds-shell--search .src .san-card-head,
+.ds-shell.ds-shell--search .src .san-card-head .bi {
+  color: var(--dsi-ink-2) !important;
+  -webkit-text-fill-color: var(--dsi-ink-2);
+  opacity: 1;
+}
+.ds-shell.ds-shell--search .src .src-label,
+.ds-shell.ds-shell--search .src .src-note {
+  color: var(--dsi-ink-muted) !important;
+}
+
+/* Research controls: black fields, light text, a green chevron on the
+   right, never the native white control. */
+.ds-shell.ds-shell--search .src .src-select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 36px 0 12px !important;
+  border: 1px solid var(--dsi-line-faint) !important;
+  border-radius: var(--radius-sm) !important;
+  background-color: var(--dsi-base) !important;
+  background-image: none !important;
+  color: var(--dsi-ink) !important;
+  -webkit-text-fill-color: var(--dsi-ink);
+  font-size: 16px;
+}
+.ds-shell.ds-shell--search .src .src-select option {
+  background: var(--dsi-base);
+  color: var(--dsi-ink);
+}
+.ds-shell.ds-shell--search .src .src-select:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* The Ping field stays transparent on its dark pill however the page loads
+   (light theme, autofill, the phone's native field). */
+.ds-shell.ds-shell--search .dsi-ping__input,
+.ds-shell.ds-shell--search .dsi-ping__input:hover,
+.ds-shell.ds-shell--search .dsi-ping__input:focus {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--dsi-ink) !important;
+  -webkit-text-fill-color: var(--dsi-ink);
+  caret-color: var(--emerald);
+}
+.ds-shell.ds-shell--search .dsi-ping__input:-webkit-autofill,
+.ds-shell.ds-shell--search .dsi-ping__input:-webkit-autofill:hover,
+.ds-shell.ds-shell--search .dsi-ping__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--dsi-ink);
+  box-shadow: 0 0 0 1000px var(--dsi-ping-bg) inset;
+  transition: background-color 9999s ease-out 0s;
+}
+.ds-shell.ds-shell--search .dsi-ping__input::placeholder {
+  color: var(--dsi-ink-muted) !important;
+  -webkit-text-fill-color: var(--dsi-ink-muted);
+  opacity: 1;
+}
+.ds-shell.ds-shell--search .src .src-select-chev {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: var(--emerald);
+  font-size: 14px;
+  pointer-events: none;
+}

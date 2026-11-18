@@ -25,19 +25,22 @@ function Field({ id, label, value, options, onChange, disabled }) {
       <label htmlFor={id} className="src-label">
         {label}
       </label>
-      <select
-        id={id}
-        className="src-select"
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((o) => (
-          <option key={o.key} value={o.key}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+      <span className="src-select-wrap">
+        <select
+          id={id}
+          className="src-select"
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {options.map((o) => (
+            <option key={o.key} value={o.key}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <i className="bi bi-chevron-expand src-select-chev" aria-hidden="true" />
+      </span>
     </div>
   );
 }
