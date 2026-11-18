@@ -825,9 +825,10 @@ export default function PoliticianTracker({
       <div className="ptk-body">
         <HubQueryLink dimension="capitol" />
 
-        {/* Two columns. Left (about 70%): the controls and the one ranking
-            table. Right (about 30%): Trades by state, Most held companies,
-            House vs Senate. Bull or bear follows under both. */}
+        {/* Two columns. Left (about 60%): the controls and the ranking
+            table, then the Bull or bear headline. Right (about 40%): Trades
+            by state, Most held companies, House vs Senate. The rest of Bull
+            or bear runs full width under both. */}
         <div className="ptk-grid">
           <section className="ptk-main" aria-labelledby="ptk-rank-title">
             <h2 className="ptk-sr" id="ptk-rank-title">
@@ -1296,10 +1297,11 @@ export default function PoliticianTracker({
               </p>
             </section>
           </aside>
-        </div>
 
-        {/* Politician sentiment: bull or bear, directly under the ranking. */}
-        <PoliticianSentiment />
+          {/* Politician sentiment: its headline fills the space under the
+              table beside the rail; the detail runs full width below. */}
+          <PoliticianSentiment />
+        </div>
 
         <p className="dsc-compliance">
           Disclosures are public records filed under the STOCK Act. Amounts are the ranges members

@@ -220,6 +220,9 @@ export default function PoliticianSentiment() {
 
   return (
     <section className="pts" aria-labelledby="pts-title">
+      {/* The headline (reading, what it says, the signal bar) sits beside
+          the tracker's rail under the table; the rest runs full width. */}
+      <div className="pts-top">
       <div className="pts-head">
         <p className="ptk-eyebrow dsc-mn">POLITICIAN SENTIMENT</p>
         <h2 className="pts-title" id="pts-title">
@@ -301,6 +304,14 @@ export default function PoliticianSentiment() {
           </dl>
 
           <Spectrum breadth={cur.breadth} reading={cur.reading.label} />
+        </>
+      ) : (
+        <p className="dsc-note">No disclosures on file yet.</p>
+      )}
+      </div>
+
+      {cur ? (
+        <div className="pts-rest">
 
           {/* ── economic outlook: a separate heuristic on its own scale ── */}
           {cur.outlook ? (
@@ -570,10 +581,8 @@ export default function PoliticianSentiment() {
               <li>A reading of what members disclosed, not investment advice or a forecast.</li>
             </ul>
           </div>
-        </>
-      ) : (
-        <p className="dsc-note">No disclosures on file yet.</p>
-      )}
+        </div>
+      ) : null}
     </section>
   );
 }

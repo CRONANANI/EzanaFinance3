@@ -523,13 +523,50 @@
    Trades by state, Most held companies and House vs Senate, compact so the
    rail is never taller than it needs to be and Bull or bear starts close
    under the table. */
+/* Rows: the table, then the Bull or bear headline beside the rail, then the
+   rest of Bull or bear across both columns. The headline row is the
+   flexible one, so a rail taller than the table leaves its slack below the
+   headline instead of between the table and the headline. */
 .ptk-grid {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
-  grid-template-areas: 'main right';
+  grid-template-columns: minmax(0, 3fr) minmax(340px, 2fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'main right'
+    'senttop right'
+    'sentrest sentrest';
   column-gap: 32px;
   row-gap: 24px;
   align-items: start;
+}
+/* Bull or bear's two parts are placed by this grid directly. */
+.ptk-grid > .pts {
+  display: contents;
+}
+.ptk-grid .pts-top {
+  grid-area: senttop;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-primary);
+}
+.ptk-grid .pts-rest {
+  grid-area: sentrest;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.ptk-grid .pts-top .pts-now-figs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1500px) {
+  .ptk-col-tks .ptk-tk:nth-child(n + 3) {
+    display: none;
+  }
 }
 .ptk-main {
   grid-area: main;
@@ -1192,7 +1229,7 @@
 /* ── responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .ptk-grid {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 320px;
     column-gap: 24px;
   }
   .ptk-right {
@@ -1206,9 +1243,12 @@
   /* The rail moves under the ranking, as two columns where there is room. */
   .ptk-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-template-areas:
       'main'
-      'right';
+      'right'
+      'senttop'
+      'sentrest';
     row-gap: 28px;
   }
   .ptk-right {
@@ -2228,7 +2268,8 @@ button.pts-row:focus-visible {
 /* Sentiment, narrow screens (after the rules above so these win). */
 @media (max-width: 900px) {
   .pts-now-figs,
-  .pts-now-figs--4 {
+  .pts-now-figs--4,
+  .ptk-grid .pts-top .pts-now-figs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .pts-signal,
