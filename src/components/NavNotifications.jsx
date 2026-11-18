@@ -310,6 +310,8 @@ export function NavNotifications() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const dropdownRef = useRef(null);
+  const mobileRef = useRef(null);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const viewTabRefs = useRef([]);
   const bellRef = useRef(null);
 
@@ -364,7 +366,11 @@ export function NavNotifications() {
     });
     if (!user?.id) return;
     try {
-      await supabase.from('user_notifications').update({ read: true }).eq('user_id', user.id);
+      await supabase
+        .from('user_notifications')
+        .update({ read: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
     } catch {
       /* ignore */
     }
@@ -394,25 +400,9 @@ export function NavNotifications() {
     [expandedId],
   );
 
-  const toggleExpand = useCallback(
-    (n) => {
-      setExpandedId((prev) => (prev === n.id ? null : n.id));
-      markAsRead(n.id);
-      if (String(n.id).startsWith('fr-')) return;
-      fetch('/api/notifications/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: 'notification_click',
-          event_data: { notification_id: n.id, type: n.type },
-        }),
-      }).catch(() => {});
-    },
-    [markAsRead],
-  );
-
   const closePanel = useCallback(() => {
     setIsOpen(false);
+    setMobileFilterOpen(false);
     setExpandedId(null);
     setReadThisSession(new Set());
   }, []);
@@ -537,6 +527,13 @@ export function NavNotifications() {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
+      /* Nov 18: the desktop panel stays mounted (hidden) while the phone sheet
+         is open. A tap inside the sheet is not outside the panel, and a hidden
+         panel has nothing to click outside of. Before this, every tap in the
+         phone sheet closed it on mousedown, so Mark all read and the filter
+         never received their click. */
+      if (mobileRef.current && mobileRef.current.contains(e.target)) return;
+      if (dropdownRef.current && dropdownRef.current.offsetParent === null) return;
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target) &&
@@ -574,30 +571,6 @@ export function NavNotifications() {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, closePanel]);
-
-  /* ── Shared notification list ── */
-  const NotifList = ({ className }) => (
-    <div className={className}>
-      {filtered.length === 0 ? (
-        <div className="nn-empty">
-          <i className="bi bi-bell-slash" />
-          <p>No notifications</p>
-        </div>
-      ) : (
-        filtered.map((n) => (
-          <NotificationItem
-            key={n.id}
-            notification={n}
-            expanded={expandedId === n.id}
-            onToggle={() => toggleExpand(n)}
-            onDismiss={(e) => dismissNotification(n, e)}
-            onFriendRespond={respondFriendRequest}
-            onOpen={() => openNotification(n, null, { push: true })}
-          />
-        ))
-      )}
-    </div>
-  );
 
   return (
     <>
@@ -740,39 +713,137 @@ export function NavNotifications() {
       {isOpen &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div className="nn-mobile-overlay" onClick={closePanel}>
-            <div className="nn-mobile-panel" onClick={(e) => e.stopPropagation()}>
-              {/* Header */}
-              <div className="nn-mobile-header">
-                <div className="nn-mobile-header-left">
-                  <i className="bi bi-bell-fill nn-mobile-header-icon" />
-                  <h3>Notifications</h3>
-                  {unreadCount > 0 && <span className="nn-mobile-unread-count">{unreadCount}</span>}
+          <div className="nn-mobile-overlay nnm" onClick={closePanel}>
+            <div
+              ref={mobileRef}
+              className="nn-mobile-panel nnm-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="nnm-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header: title and unread count on the left, Mark all read
+                  and close on the right. Flat, on the canvas. */}
+              <header className="nnm-head">
+                <div className="nnm-head-text">
+                  <p className="nnm-eyebrow">Inbox</p>
+                  <h2 id="nnm-title" className="nnm-title">
+                    Notifications
+                  </h2>
+                  <p className="nnm-sub">
+                    {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+                  </p>
                 </div>
-                <div className="nn-mobile-header-right">
-                  {unreadCount > 0 && (
-                    <button className="nn-mark-all" onClick={markAllRead} type="button">
-                      Mark all read
-                    </button>
-                  )}
+                <div className="nnm-head-actions">
                   <button
-                    className="nn-mobile-x"
-                    onClick={closePanel}
                     type="button"
+                    className="nnm-markall"
+                    onClick={markAllRead}
+                    disabled={unreadCount === 0}
+                  >
+                    <i className="bi bi-check2-all" aria-hidden="true" />
+                    Mark all read
+                  </button>
+                  <button
+                    type="button"
+                    className="nnm-close"
+                    onClick={closePanel}
                     aria-label="Close notifications"
                   >
-                    <i className="bi bi-x-lg" />
+                    <i className="bi bi-x-lg" aria-hidden="true" />
                   </button>
                 </div>
+              </header>
+
+              {/* Filter: one full-width rectangular control; its options open
+                  as flat rows directly under it. */}
+              <div className="nnm-filter">
+                <button
+                  type="button"
+                  className={`nnm-filter-btn${mobileFilterOpen ? ' is-open' : ''}`}
+                  aria-expanded={mobileFilterOpen}
+                  aria-controls="nnm-filter-list"
+                  onClick={() => setMobileFilterOpen((o) => !o)}
+                >
+                  <i className="bi bi-funnel" aria-hidden="true" />
+                  <span className="nnm-filter-label">
+                    {FILTER_TABS.find((f) => f.key === filter)?.label || 'All'}
+                  </span>
+                  <span className="nnm-filter-count">
+                    {filterOptions.find((f) => f.key === filter)?.count || 0} unread
+                  </span>
+                  <i
+                    className={`bi bi-chevron-${mobileFilterOpen ? 'up' : 'down'} nnm-filter-chev`}
+                    aria-hidden="true"
+                  />
+                </button>
+                {mobileFilterOpen && (
+                  <ul id="nnm-filter-list" className="nnm-filter-list" role="listbox">
+                    {filterOptions.map((f) => (
+                      <li key={f.key}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={filter === f.key}
+                          className={`nnm-filter-opt${filter === f.key ? ' is-on' : ''}`}
+                          onClick={() => {
+                            setFilter(f.key);
+                            setMobileFilterOpen(false);
+                          }}
+                        >
+                          <span>{f.label}</span>
+                          {f.count > 0 ? <span className="nnm-filter-n">{f.count}</span> : null}
+                          {filter === f.key ? (
+                            <i className="bi bi-check2 nnm-filter-check" aria-hidden="true" />
+                          ) : null}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              <NotificationFilterMenu
-                filters={filterOptions}
-                value={filter}
-                onChange={setFilter}
-                className="nn-mobile-filters"
-              />
-              <NotifList className="nn-mobile-list" />
+              <div className="nnm-list">
+                {loading ? (
+                  <NotifSkeleton />
+                ) : filtered.length === 0 ? (
+                  <div className="nnm-empty">
+                    <i className="bi bi-check2-all" aria-hidden="true" />
+                    <p className="nnm-empty-title">You&apos;re all caught up</p>
+                    <p className="nnm-empty-line">
+                      {filter === 'all'
+                        ? 'New alerts on your watchlist and portfolio will appear here.'
+                        : 'Nothing in this category yet.'}
+                    </p>
+                  </div>
+                ) : (
+                  [
+                    ['Today', filtered.filter((n) => isToday(n.time))],
+                    ['Earlier', filtered.filter((n) => !isToday(n.time))],
+                  ].map(([label, items]) =>
+                    items.length ? (
+                      <section key={label} className="nnm-group" aria-label={label}>
+                        <h3 className="nnm-group-label">{label}</h3>
+                        {items.map((n) => (
+                          <MobileNotifRow
+                            key={n.id}
+                            n={n}
+                            onOpen={() => openNotification(n, null, { push: true })}
+                            onDismiss={(e) => dismissNotification(n, e)}
+                            onFriendRespond={respondFriendRequest}
+                          />
+                        ))}
+                      </section>
+                    ) : null,
+                  )
+                )}
+              </div>
+
+              <footer className="nnm-foot">
+                <a className="nnm-center" href="/settings?tab=notifications" onClick={closePanel}>
+                  Notification settings <i className="bi bi-arrow-right" aria-hidden="true" />
+                </a>
+              </footer>
             </div>
           </div>,
           document.body,
@@ -781,92 +852,61 @@ export function NavNotifications() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SINGLE NOTIFICATION CARD
-   Used identically in desktop dropdown and mobile overlay.
-   Click to expand/collapse. Shows dismiss X when expanded.
-   ═══════════════════════════════════════════════════════════ */
-function NotificationItem({
-  notification: n,
-  expanded,
-  onToggle,
-  onDismiss,
-  onFriendRespond,
-  onOpen,
-}) {
-  const dest = notificationDestination(n);
+/* Phone sheet row (Nov 18 redesign). A flat ledger row like the desktop
+   panel: unread dot, a meta line (category, priority when it is not routine,
+   tickers, time), the title without its emoji, and a two-line summary. The
+   whole row opens the page the notification is about; Dismiss sits at the
+   end of the meta line. Friend requests carry Accept and Decline. */
+function MobileNotifRow({ n, onOpen, onDismiss, onFriendRespond }) {
+  const cat = categoryMeta(n.type);
+  const sev = severityMeta(n.priority);
   const summary = notificationSummary(n.content);
+  const unread = !n.read;
+  const tickers = Array.isArray(n.tickers) ? n.tickers.slice(0, MAX_TICKERS) : [];
   return (
-    <button
-      type="button"
-      className={`nn-item ${n.read ? 'nn-read' : 'nn-unread'} ${expanded ? 'nn-expanded' : ''}`}
-      onClick={onToggle}
-    >
-      <div className="nn-item-row">
-        <div className={`nn-item-icon nn-icon-${n.type}`}>
-          <i className={`bi ${n.icon || 'bi-bell'}`} />
+    <div className={`nnm-row${unread ? ' is-unread' : ''}`}>
+      <span className="nnm-dot" aria-hidden="true" />
+      <div className="nnm-main">
+        <div className="nnm-meta">
+          <span className="nnm-cat">{cat.label}</span>
+          {sev.key !== 'fyi' && <span className={`nnm-sev is-${sev.key}`}>{sev.label}</span>}
+          {tickers.length > 0 && <span className="nnm-tickers">{tickers.join(' ')}</span>}
+          <span className="nnm-time">{getTimeAgo(n.time)}</span>
         </div>
-        <div className="nn-item-body">
-          <div className="nn-item-top">
-            <span className="nn-item-badge">{n.badge}</span>
-            <span className="nn-item-time">{getTimeAgo(n.time)}</span>
-          </div>
-          <span className="nn-item-title">{n.title}</span>
-          {expanded && summary && <p className="nn-item-content">{summary}</p>}
-          {expanded && onOpen && (
-            <span
-              className="nn-item-open"
-              role="link"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpen();
-              }}
-              onKeyDown={(e) => {
-                if (e.key !== 'Enter') return;
-                e.preventDefault();
-                e.stopPropagation();
-                onOpen();
-              }}
-            >
-              Open {dest.label} <i className="bi bi-arrow-right" aria-hidden="true" />
-            </span>
-          )}
-          {expanded && n.friendRequestId && onFriendRespond && (
-            <div className="nn-friend-actions" onClick={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                className="nn-friend-accept"
-                onClick={() => onFriendRespond(n.friendRequestId, 'accepted')}
-              >
-                Accept
-              </button>
-              <button
-                type="button"
-                className="nn-friend-decline"
-                onClick={() => onFriendRespond(n.friendRequestId, 'rejected')}
-              >
-                Decline
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="nn-item-right">
-          {!n.read && <span className={`nn-unread-dot nn-priority-${n.priority}`} />}
-          {expanded && (
+        <button type="button" className="nnm-open" onClick={onOpen}>
+          <span className="nnm-row-title">{displayTitle(n.title)}</span>
+          {summary ? <span className="nnm-row-summary">{summary}</span> : null}
+          {unread ? <span className="nnm-sr"> (unread)</span> : null}
+        </button>
+        {n.friendRequestId ? (
+          <div className="nnm-friend">
             <button
-              className="nn-item-dismiss"
-              onClick={onDismiss}
               type="button"
-              aria-label="Dismiss"
+              className="nnm-friend-yes"
+              onClick={() => onFriendRespond(n.friendRequestId, 'accepted')}
             >
-              <i className="bi bi-x" />
+              Accept
             </button>
-          )}
-        </div>
+            <button
+              type="button"
+              className="nnm-friend-no"
+              onClick={() => onFriendRespond(n.friendRequestId, 'rejected')}
+            >
+              Decline
+            </button>
+          </div>
+        ) : null}
       </div>
-    </button>
+      {!n.friendRequestId ? (
+        <button
+          type="button"
+          className="nnm-dismiss"
+          aria-label={`Dismiss ${displayTitle(n.title)}`}
+          onClick={onDismiss}
+        >
+          <i className="bi bi-x" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
   );
 }
-
-export default NavNotifications;

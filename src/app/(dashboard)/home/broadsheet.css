@@ -2203,47 +2203,52 @@ body.light-mode .bs-band + .bs-band {
 }
 
 /* ── Nov 18: the comparison chart's series on phones ───────────────────
-   One column under the chart: a row per line (My Portfolio, then each
-   index), the name on the left and its change on the right, split by
-   hairlines. Flat rows, no pills: a line that is on reads in ink with its
-   coloured dot, a line that is off reads muted with a grey dot. */
+   One horizontal line under the chart: My Portfolio, then each index, side
+   by side. The row scrolls sideways when it is wider than the screen and
+   starts on the text edge. Flat items, no pills: a line that is on reads in
+   ink with its coloured dot, a line that is off reads muted with a grey dot,
+   and an emerald rule under the item marks it as on. */
 @media (max-width: 767px) {
   .bs-chart-block .bs-index-strip {
-    flex-direction: column;
+    flex-direction: row;
     flex-wrap: nowrap;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 0;
-    overflow: visible;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: visible;
     scroll-snap-type: none;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bs-chart-block .bs-index-strip::-webkit-scrollbar {
+    display: none;
   }
   .bs-chart-block .bs-index-chip,
   .bs-chart-block .bs-series-chip {
-    display: flex;
-    width: 100%;
-    min-height: 44px;
+    flex: 0 0 auto;
+    min-height: 40px;
     padding: 0;
     border: 0;
-    border-bottom: 1px solid var(--bs-border-subtle);
+    border-bottom: 2px solid transparent;
     border-radius: 0;
     background: transparent;
     font-size: 13px;
+    white-space: nowrap;
     color: var(--bs-text-label);
   }
   .bs-chart-block .bs-index-chip {
-    align-items: center;
-    gap: 10px;
-    text-align: left;
+    gap: 8px;
   }
   .bs-chart-block .bs-series {
-    display: flex;
-    width: 100%;
+    flex: 0 0 auto;
   }
   .bs-chart-block .bs-index-chip--active,
   .bs-chart-block .bs-index-chip--active:hover,
   .bs-chart-block .bs-series-chip--active {
     background: transparent;
-    border-color: var(--bs-border-subtle);
+    border-color: transparent;
+    border-bottom-color: var(--emerald);
     color: var(--bs-text-dark);
   }
   .bs-chart-block .bs-index-chip--active .bs-index-chip-pct {
@@ -2251,26 +2256,33 @@ body.light-mode .bs-band + .bs-band {
   }
   .bs-chart-block .bs-index-chip:not(.bs-index-chip--active):hover,
   .bs-chart-block .bs-series-chip:not(.bs-series-chip--active):hover {
-    border-color: var(--bs-border-subtle);
+    border-color: transparent;
     color: var(--bs-text-dark);
   }
   .bs-chart-block .bs-index-chip-pct {
-    margin-left: auto;
+    margin-left: 0;
     opacity: 1;
   }
   .bs-chart-block .bs-series-main {
-    flex: 1 1 auto;
-    gap: 10px;
+    gap: 8px;
     padding: 0;
     border-radius: 0;
-    text-align: left;
   }
   .bs-chart-block .bs-series-caret {
-    padding: 0 0 0 14px;
-    margin-left: 12px;
+    padding: 0 0 0 8px;
+    margin-left: 8px;
     border-radius: 0;
   }
+  /* The row scrolls, which would clip a menu hung under it: on phones the
+     series menu rises from the bottom of the screen, above the tab bar. */
   .bs-chart-block .bs-series-menu {
-    width: 100%;
+    position: fixed;
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
   }
 }

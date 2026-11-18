@@ -1209,3 +1209,370 @@ body .nn-dropdown.nnx-panel {
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PHONE NOTIFICATIONS SHEET (Nov 18 2026 redesign)
+   Flat canvas in the brand idiom: an eyebrow, title and unread line; Mark
+   all read as emerald text and a bare close glyph; one full-width
+   rectangular filter control with no rule above it; then Today / Earlier
+   ledgers of flat rows split by hairlines. Unread is an emerald dot and a
+   heavier title. No icon tiles, no tinted rows, no pills, no emoji. Mono
+   with tabular numerals for times, counts and tickers. Tokens only.
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .nnm.nn-mobile-overlay {
+    background: color-mix(in srgb, var(--bg-primary) 60%, transparent);
+  }
+  .nnm-sheet.nn-mobile-panel,
+  body.light-mode .nnm-sheet.nn-mobile-panel {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+  .nnm-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 16px;
+  }
+  .nnm-eyebrow {
+    margin: 0 0 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .nnm-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
+  .nnm-sub {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+  }
+  .nnm-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: -10px;
+  }
+  .nnm-markall,
+  .nnm-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .nnm-markall {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--emerald-text);
+  }
+  .nnm-markall:disabled {
+    color: var(--text-muted);
+    opacity: 0.6;
+    cursor: default;
+  }
+  .nnm-close {
+    min-width: 44px;
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+  .nnm-close:active,
+  .nnm-markall:not(:disabled):active {
+    background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  }
+  .nnm-markall:focus-visible,
+  .nnm-close:focus-visible,
+  .nnm-filter-btn:focus-visible,
+  .nnm-filter-opt:focus-visible,
+  .nnm-open:focus-visible,
+  .nnm-dismiss:focus-visible {
+    outline: 2px solid var(--emerald);
+    outline-offset: 2px;
+  }
+
+  /* Filter: full width, rectangular, no rule above. */
+  .nnm-filter {
+    padding: 0 20px 8px;
+  }
+  .nnm-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+  }
+  .nnm-filter-btn.is-open {
+    border-color: var(--emerald);
+  }
+  .nnm-filter-btn .bi-funnel {
+    color: var(--emerald-text);
+  }
+  .nnm-filter-label {
+    flex: 1 1 auto;
+  }
+  .nnm-filter-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+  }
+  .nnm-filter-chev {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .nnm-filter-list {
+    margin: 0;
+    padding: 4px 0 0;
+    list-style: none;
+  }
+  .nnm-filter-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle, var(--border-primary));
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+  }
+  .nnm-filter-opt > span:first-child {
+    flex: 1 1 auto;
+  }
+  .nnm-filter-opt.is-on {
+    color: var(--emerald-text);
+    font-weight: 600;
+  }
+  .nnm-filter-n {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+  }
+  .nnm-filter-check {
+    color: var(--emerald-text);
+  }
+
+  /* List */
+  .nnm-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 20px 16px;
+  }
+  .nnm-group-label {
+    margin: 18px 0 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .nnm-row {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) 36px;
+    column-gap: 10px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-subtle, var(--border-primary));
+  }
+  .nnm-dot {
+    width: 7px;
+    height: 7px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .nnm-row.is-unread .nnm-dot {
+    background: var(--emerald);
+  }
+  .nnm-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--text-muted);
+  }
+  .nnm-cat {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .nnm-sev {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .nnm-sev.is-high {
+    color: var(--negative);
+  }
+  .nnm-sev.is-watch {
+    color: var(--warning, var(--text-secondary));
+  }
+  .nnm-tickers {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .nnm-time {
+    margin-left: auto;
+    flex: none;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .nnm-open {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .nnm-row-title {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--text-secondary);
+  }
+  .nnm-row.is-unread .nnm-row-title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .nnm-row-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-muted);
+  }
+  .nnm-friend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .nnm-friend-yes,
+  .nnm-friend-no {
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .nnm-friend-yes {
+    color: var(--emerald-text);
+  }
+  .nnm-friend-no {
+    color: var(--text-muted);
+  }
+  .nnm-dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-top: -8px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-size: 18px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .nnm-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 56px 16px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .nnm-empty .bi {
+    font-size: 28px;
+    color: var(--emerald-text);
+  }
+  .nnm-empty-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .nnm-empty-line {
+    margin: 0;
+    font-size: 13px;
+  }
+  .nnm-foot {
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border-subtle, var(--border-primary));
+  }
+  .nnm-center {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--emerald-text);
+    text-decoration: none;
+  }
+  .nnm-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}
