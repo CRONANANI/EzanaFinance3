@@ -147,3 +147,11 @@ The slug is the heading text lowercased, punctuation stripped, spaces to
 hyphens (the same id the Contents rail links to; inspect the rendered
 heading's `id` attribute to copy it exactly). An anchor that matches no
 section falls back to auto-detection for that card.
+
+## Date style (Nov 18 2026)
+
+Dates read month first with an ordinal day: "November 2nd", "November 2nd,
+2026", "Aug 5th, 2026" (listMeta), never "2 November". Write new articles this
+way. Existing articles and stored rows are rewritten for display by
+`src/lib/echo-dates.js` (`usDatesDeep`, applied in `src/lib/echo-data.js` and
+the keyword popup), and `formatPublishedDate` renders "November 2nd, 2026".

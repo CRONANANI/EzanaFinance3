@@ -9,6 +9,7 @@
  * Server-only: depends on the service-role admin client.
  */
 import { getAdminClient } from '@/lib/supabase';
+import { usDateText, usDatesDeep } from '@/lib/echo-dates';
 import { CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
 import { CHART_OF_THE_WEEK, buildChartOfTheWeek } from '@/lib/echo/chart-of-the-week';
 
@@ -18,7 +19,7 @@ const CARD_COLS =
   'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, tickers, article_meta, is_featured, read_time_minutes, view_count, like_count, published_at';
 
 function mapCard(row) {
-  return {
+  return usDatesDeep({
     id: row.article_slug,
     dbId: row.id,
     slug: row.article_slug,
@@ -42,16 +43,18 @@ function mapCard(row) {
     views: row.view_count || 0,
     likes: row.like_count || 0,
     publishedAt: row.published_at,
-  };
+  });
 }
 
+/* Nov 18: every text an article carries reads dates month first with an
+   ordinal day (lib/echo-dates.js), without rewriting the stored rows. */
 function mapFull(row) {
   return {
     ...mapCard(row),
-    body: row.article_body || '',
-    contentBlocks: row.content_blocks || undefined,
-    contentParagraphs: row.content_paragraphs || undefined,
-    globeRail: row.globe_rail || CURATED_GLOBE_RAILS[row.article_slug] || null,
+    body: usDateText(row.article_body || ''),
+    contentBlocks: row.content_blocks ? usDatesDeep(row.content_blocks) : undefined,
+    contentParagraphs: row.content_paragraphs ? usDatesDeep(row.content_paragraphs) : undefined,
+    globeRail: usDatesDeep(row.globe_rail || CURATED_GLOBE_RAILS[row.article_slug] || null),
     tickers: row.tickers || [],
     status: row.article_status,
   };

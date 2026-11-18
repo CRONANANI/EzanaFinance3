@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useKeywordPopup } from './EchoKeywordContext';
 import { getKeywordById } from '@/lib/echo-keywords';
+import { usDatesDeep } from '@/lib/echo-dates';
 import './echo-keyword-popup.css';
 
 export function EchoKeywordPopup() {
@@ -118,8 +119,10 @@ export function EchoKeywordPopup() {
   }, [activeKeywordId, closeKeyword]);
 
   if (!activeKeywordId) return null;
-  const keyword = getKeywordById(activeKeywordId);
-  if (!keyword) return null;
+  const raw = getKeywordById(activeKeywordId);
+  if (!raw) return null;
+  /* Dates in the definition and "In this article" read month first. */
+  const keyword = usDatesDeep(raw);
 
   return (
     <aside
