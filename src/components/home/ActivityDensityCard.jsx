@@ -61,6 +61,7 @@ import {
   riseAt,
   smoothstep,
 } from '@/lib/activity-density';
+import { useHomeInsights } from '@/lib/home/use-home-insights';
 import './activity-density.css';
 
 const VIEW_KEY = 'ezana.home.activityView';
@@ -130,24 +131,43 @@ function StatRank({ pct, pending }) {
   );
 }
 
-function Stat({ label, value, unit, sub, pct, pending, href }) {
+/* A note in the rank slot, for the home insights that have no percentile. */
+function StatNote({ note, pending }) {
+  if (pending) return <div className="adc-stat__rank is-pending" aria-hidden="true" />;
+  if (!note) return null;
+  return (
+    <div className={`adc-stat__rank adc-stat__note${note.tone ? ` is-${note.tone}` : ''}`}>
+      {note.icon ? <i className={`bi ${note.icon}`} aria-hidden="true" /> : null}
+      {note.text}
+    </div>
+  );
+}
+
+function Stat({ label, value, unit, sub, pct, pending, href, note, tone }) {
   const rank = percentileLabel(pct);
   const body = (
     <>
       <div className="adc-stat__label">{label}</div>
       <div className="adc-stat__line">
-        <span className="adc-stat__value">{value}</span>
-        <span className="adc-stat__unit">{unit}</span>
+        <span className={`adc-stat__value${tone ? ` is-${tone}` : ''}`}>{value}</span>
+        {unit ? <span className="adc-stat__unit">{unit}</span> : null}
       </div>
       <div className="adc-stat__sub">{sub}</div>
-      <StatRank pct={pct} pending={pending} />
+      {note !== undefined ? (
+        <StatNote note={note} pending={pending} />
+      ) : (
+        <StatRank pct={pct} pending={pending} />
+      )}
       {href ? <i className="bi bi-arrow-up-right adc-stat__go" aria-hidden="true" /> : null}
     </>
   );
   if (!href) return <div className="adc-stat">{body}</div>;
-  const aria = `${label}: ${value} ${unit}, ${sub}. ${
-    rank ? `${rank} on Ezana` : pending ? 'Percentile loading' : 'Not ranked yet'
-  }. Open activity analytics.`;
+  const aria =
+    note !== undefined
+      ? `${label}: ${value}${unit ? ` ${unit}` : ''}, ${sub}.${note?.text ? ` ${note.text}.` : ''}`
+      : `${label}: ${value} ${unit}, ${sub}. ${
+          rank ? `${rank} on Ezana` : pending ? 'Percentile loading' : 'Not ranked yet'
+        }. Open activity analytics.`;
   // In-page anchors on the profile; a route on home.
   return href.startsWith('#') ? (
     <a className="adc-stat adc-stat--link" href={href} aria-label={aria}>
@@ -192,6 +212,7 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
   const { user } = useAuth();
   const [payload, setPayload] = useState({ status: 'loading', ...EMPTY_PAYLOAD });
   const isProfile = variant === 'profile';
+  const insights = useHomeInsights(Boolean(user) && !isProfile);
 
   // Fetch the year once per signed-in user (and per profile). Login history
   // for today is recorded by useLoginHistory on the same page, so a fresh
@@ -1057,6 +1078,86 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
     const { key, anchor } = ACTIVITY_STAT_KEYS[i];
     return { ...b, pct: pct[key] ?? null, pending: pctPending, href: statHref(anchor) };
   });
+  /* Nov 18: on home the tiles read the member's returns, circle and copy
+     trading as well as their streak. The profile keeps the four activity
+     stats its analytics sections below are anchored to. */
+  const tiles = isProfile ? statBlocks : homeTiles();
+  function homeTiles() {
+    const wait = insights.status === 'loading';
+    const signed = (v, d = 1) => `${v >= 0 ? '+' : '-'}${Math.abs(v).toFixed(d)}%`;
+    const p = insights.portfolio;
+    const c = insights.community;
+    const k = insights.copies;
+    const sinceText = (at) => {
+      const t = Date.parse(at);
+      return Number.isFinite(t) && Date.now() - t < 330 * 86400000
+        ? `since ${df.format(t)}`
+        : 'last 12 months';
+    };
+    const portfolioTile = p
+      ? {
+          label: p.kind === 'paper' ? 'Paper portfolio' : 'Portfolio return',
+          value: signed(p.pct),
+          tone: p.pct >= 0 ? 'up' : 'down',
+          sub: sinceText(p.since),
+          note:
+            typeof p.benchPct === 'number' && Number.isFinite(p.benchPct)
+              ? {
+                  icon: p.pct >= p.benchPct ? 'bi-arrow-up-right' : 'bi-arrow-down-right',
+                  text: `${(p.pct - p.benchPct >= 0 ? '+' : '-') + Math.abs(p.pct - p.benchPct).toFixed(1)} pts vs S&P 500`,
+                  tone: p.pct >= p.benchPct ? 'up' : 'down',
+                }
+              : null,
+          href: '/trading',
+        }
+      : {
+          label: 'Portfolio return',
+          value: 'n/a',
+          sub: 'No portfolio connected yet',
+          note: wait ? null : { icon: 'bi-plus-lg', text: 'Connect or start paper trading' },
+          href: '/trading',
+        };
+    const communityTile = {
+      label: 'Your circle',
+      value: c ? nf.format(c.friends) : 'n/a',
+      unit: c ? (c.friends === 1 ? 'friend' : 'friends') : '',
+      sub: c ? `${nf.format(c.following)} following` : 'Community not available',
+      note: c?.unread
+        ? { icon: 'bi-chat-dots', text: 'Messages waiting', tone: 'up' }
+        : c && c.friends === 0
+          ? { icon: 'bi-person-plus', text: 'Add friends to compare' }
+          : null,
+      href: '/community',
+    };
+    const copyTile = {
+      label: 'Copy trading',
+      value: k ? nf.format(k.copying) : 'n/a',
+      unit: k ? (k.copying === 1 ? 'trader copied' : 'traders copied') : '',
+      sub: k
+        ? `${nf.format(k.copiedBy)} ${k.copiedBy === 1 ? 'member copies' : 'members copy'} you`
+        : 'Copy trading not available',
+      note:
+        k && typeof k.avgPct === 'number'
+          ? {
+              icon: 'bi-graph-up-arrow',
+              text: `${signed(k.avgPct)} average on copies`,
+              tone: k.avgPct >= 0 ? 'up' : 'down',
+            }
+          : k && k.copying === 0
+            ? { icon: 'bi-people', text: 'Find traders to copy' }
+            : null,
+      href: '/community',
+    };
+    const streak = statBlocks[3];
+    const streakTile = {
+      ...streak,
+      label: 'Current streak',
+      sub: `Longest ${nf.format(stats.longest.days)} ${stats.longest.days === 1 ? 'day' : 'days'}`,
+    };
+    return [portfolioTile, communityTile, copyTile, streakTile].map((t, i) =>
+      i < 3 ? { ...t, pending: wait } : t,
+    );
+  }
   const hint = is3d
     ? 'Drag to orbit. Double-click to reset.'
     : 'Hover a day for details. Arrow keys to explore.';
@@ -1098,8 +1199,8 @@ export function ActivityDensityCard({ className = '', variant = 'home', userId =
             </div>
           </header>
 
-          <ul className="adc-stats" aria-label="Activity stats">
-            {statBlocks.map((b) => (
+          <ul className="adc-stats" aria-label={isProfile ? 'Activity stats' : 'Your insights'}>
+            {tiles.map((b) => (
               <li key={b.label} className="adc-stats__item">
                 <Stat {...b} />
               </li>

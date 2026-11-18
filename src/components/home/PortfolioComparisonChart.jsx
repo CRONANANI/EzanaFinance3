@@ -265,7 +265,13 @@ export function PortfolioComparisonChart({
         ) : (
           <span />
         )}
-        <DateSelector ranges={ranges} value={timeframe} onChange={onTimeframeChange} size="xs" />
+        <DateSelector
+          className="bs-cmp-ranges"
+          ranges={ranges}
+          value={timeframe}
+          onChange={onTimeframeChange}
+          size="xs"
+        />
       </div>
 
       <div className="bs-cmp-body" style={{ height }}>

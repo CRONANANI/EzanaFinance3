@@ -192,3 +192,41 @@ html
     transition: none;
   }
 }
+
+/* ── Nov 18: phone top bar ─────────────────────────────────────────────
+   The logo, bell and checklist sit together on the left edge instead of in
+   the middle of the bar, with the hamburger alone on the right. The mark is
+   about 35% smaller than the 54px desktop logo (35px), still a touch taller
+   than the 44px icon boxes' glyphs, and centred on the same line as them. */
+@media (max-width: 768px) {
+  #mainNav.main-nav .nav-container {
+    justify-content: space-between;
+  }
+  #mainNav.main-nav .nav-container > .nav-left-zone {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin: 0 0 0 -4px;
+    gap: 2px;
+  }
+  #mainNav.main-nav .nav-left-zone > .nav-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--nav-icon-box);
+    margin: 0 6px 0 0;
+    padding: 0;
+  }
+  #mainNav.main-nav .nav-brand .nav-logo-img--wing {
+    max-height: 35px !important;
+    width: auto !important;
+    height: 35px !important;
+  }
+  #mainNav.main-nav .nav-container > .nav-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}

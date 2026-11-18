@@ -485,3 +485,24 @@ body:not(.light-mode) .adc {
     transform: none;
   }
 }
+
+/* Nov 18: home insight tiles. Returns read green or red; notes without a
+   percentile sit in the rank slot in the label colour unless they carry a
+   tone. */
+.adc-stat__value.is-up {
+  color: var(--positive, var(--adc-accent-text));
+}
+.adc-stat__value.is-down {
+  color: var(--negative);
+}
+.adc-stat__note {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--adc-label);
+}
+.adc-stat__note.is-up {
+  color: var(--adc-accent-text);
+}
+.adc-stat__note.is-down {
+  color: var(--negative);
+}
