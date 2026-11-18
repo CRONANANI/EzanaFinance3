@@ -1784,3 +1784,22 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     padding-top: 28px;
   }
 }
+
+/* Nov 18: Customize bottom bar, above Sign out in the drawer. A plain text
+   row, emerald, no box. */
+.mobile-drawer-customize {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+}

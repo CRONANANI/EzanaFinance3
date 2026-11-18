@@ -42,6 +42,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OPEN_EVENT } from '@/lib/mobile-nav/catalog';
 
 function isActivePath(pathname, href) {
   if (!pathname || !href) return false;
@@ -520,6 +521,18 @@ export function MobileAuthNavDrawer({
 
         {onLogout && (
           <div className="mobile-drawer-footer shrink-0">
+            {/* Nov 18: opens the bottom bar's customise sheet. */}
+            <button
+              type="button"
+              className="mobile-drawer-customize"
+              onClick={() => {
+                onClose();
+                window.dispatchEvent(new CustomEvent(OPEN_EVENT));
+              }}
+            >
+              <i className="bi bi-grid-3x2-gap" aria-hidden="true" />
+              <span>Customize bottom bar</span>
+            </button>
             <button
               type="button"
               onClick={() => {
