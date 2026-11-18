@@ -1665,3 +1665,208 @@
   flex: none;
   margin-right: 2px;
 }
+
+/* ── Politician sentiment (Nov 18 2026) ────────────────────────────────
+   Flat canvas, hairlines, diverging bars around the 50% line. Bullish is
+   emerald text and bars, Bearish is red; nothing is boxed or filled. */
+.pts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-primary);
+}
+.pts-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pts-head .ptk-eyebrow {
+  margin: 0;
+}
+.pts-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.pts-lead,
+.pts-loading {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.pts-now {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 64px;
+}
+.pts-now-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pts-now-year {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.pts-now-reading {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.pts .is-bull {
+  color: var(--emerald-text);
+}
+.pts .is-bear {
+  color: var(--negative);
+}
+.pts .is-neutral, .pts .is-none {
+  color: var(--text-secondary);
+}
+.pts-now-line {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.pts-now-figs {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 8px 32px;
+  margin: 0;
+}
+.pts-now-figs div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pts-now-figs dt {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pts-now-figs dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pts-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 64px;
+}
+.pts-block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.pts-block-head .ptk-eyebrow {
+  margin: 0;
+}
+.pts-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pts-row {
+  display: grid;
+  grid-template-columns: minmax(84px, 1.1fr) minmax(80px, 2fr) 48px minmax(64px, auto);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: left;
+}
+button.pts-row {
+  cursor: pointer;
+}
+button.pts-row:hover .pts-row-label {
+  color: var(--text-primary);
+}
+button.pts-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.pts-row.is-on .pts-row-label {
+  color: var(--emerald-text);
+  font-weight: 700;
+}
+.pts-row-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pts-row-fig {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.pts-row-reading,
+.pts-row-sub {
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+.pts-row-sub {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pts-lean {
+  position: relative;
+  display: block;
+  height: 8px;
+}
+.pts-lean-mid {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 50%;
+  width: 1px;
+  background: var(--border-primary);
+}
+.pts-lean-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-sm);
+}
+.pts-lean-bar.is-bull {
+  background: var(--emerald);
+}
+.pts-lean-bar.is-bear {
+  background: var(--negative);
+}
+@media (max-width: 900px) {
+  .pts-cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .pts-now-figs {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+@media (max-width: 480px) {
+  .pts-row {
+    grid-template-columns: 72px minmax(60px, 1fr) 40px 60px;
+    gap: 8px;
+  }
+  .pts-now-reading {
+    font-size: 30px;
+  }
+}

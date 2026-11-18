@@ -211,71 +211,6 @@ const STAT_CARDS_BASE = [
    in-file SVG line chart + seed-data endpoint (/api/fmp/performance) have
    been replaced. */
 
-const TICKER_SECTOR = {
-  AAPL: 'Technology',
-  MSFT: 'Technology',
-  NVDA: 'Technology',
-  GOOGL: 'Technology',
-  META: 'Technology',
-  AMZN: 'Technology',
-  TSLA: 'Technology',
-  AMD: 'Technology',
-  AVGO: 'Technology',
-  QCOM: 'Technology',
-  TXN: 'Technology',
-  INTC: 'Technology',
-  CRM: 'Technology',
-  NOW: 'Technology',
-  SNOW: 'Technology',
-  PLTR: 'Technology',
-  ADBE: 'Technology',
-  ORCL: 'Technology',
-  IBM: 'Technology',
-  CSCO: 'Technology',
-  JNJ: 'Healthcare',
-  PFE: 'Healthcare',
-  UNH: 'Healthcare',
-  ABBV: 'Healthcare',
-  MRK: 'Healthcare',
-  LLY: 'Healthcare',
-  TMO: 'Healthcare',
-  DHR: 'Healthcare',
-  JPM: 'Finance',
-  BAC: 'Finance',
-  GS: 'Finance',
-  MS: 'Finance',
-  WFC: 'Finance',
-  BLK: 'Finance',
-  V: 'Finance',
-  MA: 'Finance',
-  AXP: 'Finance',
-  C: 'Finance',
-  LMT: 'Defense',
-  RTX: 'Defense',
-  NOC: 'Defense',
-  GD: 'Defense',
-  BA: 'Defense',
-  XOM: 'Energy',
-  CVX: 'Energy',
-  COP: 'Energy',
-  SLB: 'Energy',
-  EOG: 'Energy',
-  WMT: 'Consumer Disc.',
-  HD: 'Consumer Disc.',
-  MCD: 'Consumer Disc.',
-  SBUX: 'Consumer Disc.',
-  NKE: 'Consumer Disc.',
-  TGT: 'Consumer Disc.',
-  GE: 'Industrials',
-  CAT: 'Industrials',
-  HON: 'Industrials',
-  UPS: 'Industrials',
-  NFLX: 'Comm. Services',
-  DIS: 'Comm. Services',
-  CMCSA: 'Comm. Services',
-  T: 'Comm. Services',
-  VZ: 'Comm. Services',
-};
 
 /* ── Spark SVG ── */
 function Spark({ seed = 0, color = '#10b981' }) {
@@ -535,55 +470,62 @@ function InsideTheCapitolContent() {
     };
   }, []);
 
-  const availableYears = useMemo(() => {
-    const years = new Set();
-    for (const trade of latestTrades) {
-      const d = trade.rawDate ? new Date(trade.rawDate) : null;
-      const y = d && !Number.isNaN(d.getTime()) ? d.getFullYear() : null;
-      if (y && y >= 2000 && y <= 2100) years.add(y);
-    }
-    return Array.from(years).sort((a, b) => b - a);
-  }, [latestTrades]);
-
-  const sectorData = useMemo(() => {
-    if (tradesLoading) return [];
-    if (latestTrades.length === 0) return [];
-
-    const effectiveYear = selectedYear ?? availableYears[0] ?? null;
-    if (effectiveYear == null) return [];
-
-    const sectorMap = {};
-    for (const trade of latestTrades) {
-      const d = trade.rawDate ? new Date(trade.rawDate) : null;
-      const y = d && !Number.isNaN(d.getTime()) ? d.getFullYear() : null;
-      if (y !== effectiveYear) continue;
-
-      const sector = TICKER_SECTOR[trade.ticker] || 'Other';
-      if (sector === 'Other') continue;
-      if (!sectorMap[sector]) sectorMap[sector] = { buys: 0, sells: 0 };
-      if (trade.type === 'BUY') sectorMap[sector].buys += 1;
-      else sectorMap[sector].sells += 1;
-    }
-
-    const derived = Object.entries(sectorMap)
-      .map(([sector, counts]) => {
-        const total = counts.buys + counts.sells;
-        if (total === 0) return null;
-        const buyPct = Math.round((counts.buys / total) * 100);
-        return {
-          sector,
-          buy: buyPct,
-          sell: 100 - buyPct,
-          trades: total,
-          vol: '–',
-        };
+  /* Sector activity (Nov 18 2026): read from every stored disclosure in SQL
+     (/api/politicians/sentiment), with GICS sectors for every ticker on
+     file. It used to tally only the trades this page loaded (the latest
+     5,000) and only about 70 hand-mapped tickers, which undercounted every
+     sector and filed Amazon, Tesla, Alphabet and Meta under Technology. */
+  const [sectorState, setSectorState] = useState({ loading: true, years: [], rows: [] });
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setSectorState((s) => ({ ...s, loading: true }));
+    fetch(`/api/politicians/sentiment${selectedYear ? `?year=${selectedYear}` : ''}`, {
+      signal: ctrl.signal,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.ok) {
+          setSectorState({ loading: false, years: [], rows: [] });
+          return;
+        }
+        setSectorState({
+          loading: false,
+          years: (d.years || []).map((y) => y.year).sort((x, y) => y - x),
+          year: d.year,
+          rows: d.sectors || [],
+        });
       })
-      .filter(Boolean)
-      .sort((a, b) => b.trades - a.trades)
-      .slice(0, 10);
+      .catch((e) => {
+        if (e?.name !== 'AbortError') setSectorState({ loading: false, years: [], rows: [] });
+      });
+    return () => ctrl.abort();
+  }, [selectedYear]);
 
-    return derived;
-  }, [latestTrades, tradesLoading, selectedYear, availableYears]);
+  const availableYears = sectorState.years;
+
+  const sectorData = useMemo(
+    () =>
+      sectorState.rows
+        .filter((r) => r.sector !== 'Unclassified' && r.trades > 0)
+        .map((r) => {
+          const buy = Math.round(Number.isFinite(r.buyShare) ? r.buyShare : 0);
+          const usd = (r.buyUsd || 0) + (r.sellUsd || 0);
+          return {
+            sector: r.sector,
+            buy,
+            sell: 100 - buy,
+            trades: r.trades,
+            vol:
+              usd >= 1e9
+                ? `$${(usd / 1e9).toFixed(1)}B`
+                : usd >= 1e6
+                  ? `$${(usd / 1e6).toFixed(1)}M`
+                  : `$${Math.round(usd / 1e3)}K`,
+          };
+        })
+        .slice(0, 10),
+    [sectorState.rows],
+  );
 
   useEffect(() => {
     if (selectedYear === null && availableYears.length > 0) {
@@ -878,7 +820,7 @@ function InsideTheCapitolContent() {
               )}
             </div>
             <div className="itc-body itc-body-pad">
-              {tradesLoading ? (
+              {sectorState.loading && sectorData.length === 0 ? (
                 <div
                   style={{
                     padding: '1.5rem',

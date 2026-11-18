@@ -46,6 +46,7 @@ import Headshot, { AVATAR_SIZE, ChamberChip, PartyTag } from './Headshot';
    opened, so the page's first paint does not carry it. */
 const MemberPanel = dynamic(() => import('./MemberPanel'), { ssr: false });
 import MostHeldChart from './MostHeldChart';
+import PoliticianSentiment from './PoliticianSentiment';
 import StateMap from '@/components/datasets/hub/StateMap';
 import Segmented from './Segmented';
 import GuidedTour from '@/components/tour/GuidedTour';
@@ -1129,6 +1130,9 @@ export default function PoliticianTracker({
             </div>
           </section>
         </div>
+
+        {/* Politician sentiment (Nov 18): bull or bear by year and sector. */}
+        <PoliticianSentiment />
 
         <p className="dsc-compliance">
           Disclosures are public records filed under the STOCK Act. Amounts are the ranges members
