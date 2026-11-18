@@ -61,6 +61,12 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Reliance Industries',
       'Walt Disney',
       'Synapse',
+      'Erebor',
+      'Anduril',
+      'Founders Fund',
+      '8VC',
+      'Lux Capital',
+      'Valar Atomics',
     ],
     government: [
       'Federal Aviation Administration',
@@ -72,6 +78,9 @@ export const tokenizedMoneyOutageTheory2026 = {
       'FEMA',
       'Federal Reserve',
       'Consumer Financial Protection Bureau',
+      'Office of the Comptroller of the Currency',
+      'FDIC',
+      'Senate Banking Committee',
       'US Congress',
       'Government of Canada',
     ],
@@ -85,21 +94,32 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Index Fund Ownership',
       'Financial Privacy',
       'Misinformation',
+      'Stablecoins',
     ],
     datasets: ['SEC Form 13F institutional holdings', 'rwa.xyz tokenized asset tracker'],
     // markets: no exchange or trading venue is discussed as a venue.
     markets: [],
-    investors: ['BlackRock', 'Vanguard', 'State Street'],
+    investors: [
+      'BlackRock',
+      'Vanguard',
+      'State Street',
+      'Founders Fund',
+      '8VC',
+      'Lux Capital',
+      'Peter Thiel',
+      'Joe Lonsdale',
+    ],
   },
   tickers: ['BLK', 'STT', 'JPM', 'BAC', 'WFC', 'MSFT', 'GOOGL', 'WDAY', 'FOXA', 'DIS'],
   entities: {
     people: [
       { id: 'larry-fink', label: 'Larry Fink', role: 'Chairman and CEO, BlackRock' },
       { id: 'bill-gates', label: 'Bill Gates', role: 'Microsoft co-founder; chair, Gates Foundation' },
+      { id: 'palmer-luckey', label: 'Palmer Luckey', role: 'Founder of Oculus and Anduril; co-founder of Erebor Bank' },
     ],
     terms: [{ id: 'tokenization', label: 'Tokenization' }],
   },
-  readTime: 10,
+  readTime: 12,
   publishedAt: '2026-11-18',
   listMeta: 'Nov 18th, 2026',
   featured: true,
@@ -157,6 +177,15 @@ export const tokenizedMoneyOutageTheory2026 = {
         lng: 9.84,
         impact:
           'Larry Fink used the January 2026 World Economic Forum to call for moving very rapidly to tokenize financial assets, citing lower fees. BlackRock runs tokenized funds, so the push is public and commercial.',
+      },
+      {
+        name: 'Columbus',
+        region: 'Ohio',
+        country: 'US',
+        lat: 39.96,
+        lng: -83.0,
+        impact:
+          'Home of Erebor Bank, the Palmer Luckey-backed national bank chartered in February 2026 to be a farmer’s bank for tech, with always-on stablecoin rails and more than $7 billion in deposits by October.',
       },
       {
         name: 'Ottawa',
@@ -476,6 +505,24 @@ export const tokenizedMoneyOutageTheory2026 = {
           ],
         },
         {
+          name: 'Erebor',
+          tag: 'NEW BANK',
+          role: 'Stablecoin-ready national bank for tech, chartered February 6th, 2026.',
+          anchor: 'None (private)',
+          keyRisk:
+            'Private; backed by Founders Fund, 8VC and Lux Capital, with co-founder Palmer Luckey on the board.',
+          dossier: [
+            {
+              label: 'Scale',
+              text: '$4.06 billion in deposits at June 30th, 2026 and more than $7 billion by October, per the Financial Times.',
+            },
+            {
+              label: 'Scrutiny',
+              text: 'Senator Elizabeth Warren is probing how quickly the OCC and FDIC approved its charter and deposit insurance.',
+            },
+          ],
+        },
+        {
           name: 'Binance',
           tag: 'ATTACK',
           role: 'Lost about $6.3 billion on October 29th, the largest crypto theft on record.',
@@ -509,24 +556,44 @@ export const tokenizedMoneyOutageTheory2026 = {
       text: 'The scale matters for judging the theory. Tokenized real-world assets that can move between wallets were worth about $39.5 billion in November 2026 by rwa.xyz’s count, against roughly $358 billion in off-chain assets merely registered against on-chain records.[[src:26]]rwa.xyz dashboard, distributed asset value, November 2026 · https://app.rwa.xyz/[[/src]][[src:27]]Stobox, "State of RWA 2026," citing rwa.xyz, September 27th, 2026 · https://www.stobox.io/reports/state-of-rwa-2026[[/src]] US bank deposits run to trillions. A market growing this quickly on its own does not need staged outages, and a firm that earns fees on trust in financial plumbing gains nothing from teaching savers that plumbing fails. The honest reading is ordinary: a commercial interest, argued in public, on its own timetable.',
     },
 
-    { type: 'heading', text: 'The real risk: money that obeys rules', level: 2 },
+    { type: 'heading', text: 'A farmers’ bank for tech: Palmer Luckey’s Erebor', level: 2 },
     {
       type: 'paragraph',
-      text: 'The theory’s strongest point is not about outages at all. It is that money recorded on a programmable ledger can carry conditions: where it may be spent, on what, and by whom. That risk does not require tokens. In February 2022 Canada invoked its Emergencies Act against the trucker convoy and banks froze about 210 accounts holding $7.8 million.[[src:28]]CBC News, "Most bank accounts frozen under the Emergencies Act are being released, committee hears," March 2022 · https://www.cbc.ca/amp/1.6360769[[/src]] The finance minister said banks could freeze accounts without a court order.[[src:29]]Banking Bureau, "Canada’s plow through financial freedom stopped convoy," 2022 · https://bankingbureau.substack.com/p/canadas-plow-through-financial-freedom[[/src]] Programmable money would make that kind of switch faster, more granular and harder to see, which is why the design and the law around it matter more than the technology.',
+      text: 'The clearest picture of who is building the new money rails is not a staged blackout but a bank charter. Erebor, a digital national bank co-founded by [[person:palmer-luckey]]Palmer Luckey[[/person]], who founded Oculus and the defense contractor Anduril, and backed by Joe Lonsdale’s 8VC and Peter Thiel’s Founders Fund, was built to fill the gap Silicon Valley Bank left in 2023.[[src:28]]Payments Industry Intelligence, "Tech billionaires back Erebor to fill Silicon Valley Bank void," 2025 · https://paymentsindustryintelligence.com/?p=56665[[/src]] It applied to the Office of the Comptroller of the Currency on June 11th, 2025, won conditional approval on October 15th, and on February 6th, 2026 became the first newly created bank to receive a national charter in President Trump’s second term.[[src:29]]Reuters via Yahoo Finance, "Palmer Luckey-backed Erebor receives US national banking charter, WSJ reports," February 6th, 2026 · https://finance.yahoo.com/news/palmer-luckey-backed-erebor-receives-225304165.html[[/src]] It opened for business on a Sunday, February 8th,[[src:30]]Fintech Business Weekly, "What it means to be a bank is rapidly changing," February 2026 · https://fintechbusinessweekly.substack.com/p/what-it-means-to-be-a-bank-is-rapidly[[/src]] a nod to its pitch: a branchless bank with always-on stablecoin settlement, while ACH and wire transfers still keep banker’s hours.[[src:31]]Insights4VC, "Erebor: a stablecoin-native US bank," 2025 · https://insights4vc.substack.com/p/erebor-a-stablecoin-native-us-bank[[/src]]',
+    },
+    {
+      type: 'quote',
+      text: 'A farmer’s bank for tech.',
+      source:
+        'Palmer Luckey on Erebor’s positioning, as summarized by TBPN, February 6th, 2026',
     },
     {
       type: 'paragraph',
-      text: 'The "you wake up to a $0 balance" scenario also has a real precedent, and it was not a cyberattack. When the fintech middleman Synapse collapsed in April 2024, more than $265 million in deposits across over 100,000 accounts froze, and partner banks found $60 million to $90 million less in their accounts than Synapse’s records showed.[[src:30]]CFPB statement via PYMNTS, "CFPB sues Synapse," 2025 · https://www.pymnts.com/?p=2953302[[/src]] The cause was bad recordkeeping between ledgers, the opposite of the theory’s mechanism. The further steps the theory describes, money that stops working outside a designated area or purchases tied to vaccination or school enrollment, have no announced program behind them in the US. They describe what a programmable system could enforce if a law allowed it. Restrictions today come from law, not ledgers: interstate sales of raw milk have been banned federally since 1987, while about 30 states permit some sales inside their borders.[[src:31]]LegallyExplained, "Is it legal to sell raw milk?" 2026 · https://legallyexplained.com/is-it-legal-to-sell-raw-milk/[[/src]]',
+      text: 'The phrase says a lot. Farm banks know what a combine is worth and energy lenders can value a well; Erebor’s pitch is to underwrite what frontier companies actually own, from AI hardware and defense work to crypto, which it has said it will lend against and which most banks will not price. Luckey describes it as a bank for founders that traditional banks do not understand,[[src:32]]TBPN digest, "Erebor becomes first new nationally chartered bank under Trump," February 6th, 2026 · https://tbpn-digest.vercel.app/story/2026-02-06/erebor-becomes-first-new-nationally-chartered-bank-under-trump-backed-by-andreessen-horowitz-lux-capital-and-founders-fund[[/src]] and the first big loans fit the brief: in August Erebor led a $200 million credit facility for nuclear startup Valar Atomics as administrative agent, alongside JPMorgan.[[src:33]]Valar Atomics, "Announcing our $1B Series B led by Sequoia," August 4th, 2026 · https://valaratomics.com/docs/Announcing-our-1B-Series-B-Led-By-Sequoia[[/src]] Growth has been fast. Erebor reported $4.06 billion in deposits and $4.17 billion in cash at the end of June against just $77.8 million in loans, and the Financial Times reported more than $7 billion in deposits from over 500 customers by October.[[src:34]]Cryptopolitan, citing the Financial Times and Q2 2026 call report data, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] Investors priced that at $4.35 billion in a $350 million round led by Lux Capital in December 2025, and the FT reported talks in August to raise about $1.5 billion at an $8 billion pre-money valuation.[[src:35]]AI Weekly, citing the Financial Times, "Palmer Luckey’s Erebor nears $1.5B raise at $8B valuation," August 2026 · https://aiweekly.co/alerts/palmer-luckeys-erebor-nears-15b-raise-at-8b-valuation[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'The political questions are on the record too. Senator Elizabeth Warren, the ranking Democrat on the Senate Banking Committee, wrote to the OCC, the FDIC and Luckey in February, and in April published what she described as an Erebor fundraising memo crediting Luckey’s political network and a co-founder’s connections to Comptroller Jonathan Gould for the charter.[[src:36]]US Senate Banking Committee minority, "Warren deepens probe of seemingly corrupt approval of bank charter," April 2026 · https://www.banking.senate.gov/newsroom/minority/warren-deepens-probe-of-seemingly-corrupt-approval-of-bank-charter-for-trumps-billionaire-friends-in-silicon-valley[[/src]] Regulators also attached a hard cushion: Erebor must hold a Tier 1 leverage ratio of at least 12% for its first three years, and reported 38.81% in the second quarter.[[src:37]]Cryptopolitan, on the OCC approval conditions and Q2 2026 filings, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] For this article’s question, Erebor cuts both ways. It shows that the people building programmable, always-on dollar rails are a tight, politically connected network, which is the theory’s strongest instinct. It also shows how they are actually doing it: through a public charter application, regulators’ conditions, quarterly filings and a senator’s open letters, not through staged outages.',
+    },
+
+    { type: 'heading', text: 'The real risk: money that obeys rules', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'The theory’s strongest point is not about outages at all. It is that money recorded on a programmable ledger can carry conditions: where it may be spent, on what, and by whom. That risk does not require tokens. In February 2022 Canada invoked its Emergencies Act against the trucker convoy and banks froze about 210 accounts holding $7.8 million.[[src:38]]CBC News, "Most bank accounts frozen under the Emergencies Act are being released, committee hears," March 2022 · https://www.cbc.ca/amp/1.6360769[[/src]] The finance minister said banks could freeze accounts without a court order.[[src:39]]Banking Bureau, "Canada’s plow through financial freedom stopped convoy," 2022 · https://bankingbureau.substack.com/p/canadas-plow-through-financial-freedom[[/src]] Programmable money would make that kind of switch faster, more granular and harder to see, which is why the design and the law around it matter more than the technology.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The "you wake up to a $0 balance" scenario also has a real precedent, and it was not a cyberattack. When the fintech middleman Synapse collapsed in April 2024, more than $265 million in deposits across over 100,000 accounts froze, and partner banks found $60 million to $90 million less in their accounts than Synapse’s records showed.[[src:40]]CFPB statement via PYMNTS, "CFPB sues Synapse," 2025 · https://www.pymnts.com/?p=2953302[[/src]] The cause was bad recordkeeping between ledgers, the opposite of the theory’s mechanism. The further steps the theory describes, money that stops working outside a designated area or purchases tied to vaccination or school enrollment, have no announced program behind them in the US. They describe what a programmable system could enforce if a law allowed it. Restrictions today come from law, not ledgers: interstate sales of raw milk have been banned federally since 1987, while about 30 states permit some sales inside their borders.[[src:41]]LegallyExplained, "Is it legal to sell raw milk?" 2026 · https://legallyexplained.com/is-it-legal-to-sell-raw-milk/[[/src]]',
     },
 
     { type: 'heading', text: 'Where US law stands on a digital dollar', level: 2 },
     {
       type: 'paragraph',
-      text: 'On the government side the record points the other way from the theory. Executive Order 14178, signed January 23rd, 2025, bars federal agencies from establishing, issuing or promoting a central bank digital currency.[[src:32]]Orrick, "President Trump issues executive order on digital financial technology," January 31st, 2025 · https://infobytes.orrick.com/2025-01-31/president-trump-issues-executive-order-on-digital-financial-technology/[[/src]] The House passed the Anti-CBDC Surveillance State Act 219 to 210 on July 17th, 2025 and sent it to the Senate attached to another bill on April 29th, 2026.[[src:33]]Crypto Briefing, "Tom Emmer calls CBDC the ‘ultimate surveillance tool’," 2026 · https://cryptobriefing.com/tom-emmer-cbdc-surveillance-tool/[[/src]] The Senate then voted 85 to 5 on June 22nd, 2026 for a housing package that bars the Federal Reserve from issuing a digital currency through December 31st, 2030.[[src:34]]TFTC, "Senate passes 85-5 CBDC ban inside housing bill," June 23rd, 2026 · https://www.tftc.io/cbdc-ban-senate-85-5-housing-bill-four-year-sunset/[[/src]] The two chambers have not yet sent one bill to the president, so the executive order is what holds the line today, and a future president could reverse it.',
+      text: 'On the government side the record points the other way from the theory. Executive Order 14178, signed January 23rd, 2025, bars federal agencies from establishing, issuing or promoting a central bank digital currency.[[src:42]]Orrick, "President Trump issues executive order on digital financial technology," January 31st, 2025 · https://infobytes.orrick.com/2025-01-31/president-trump-issues-executive-order-on-digital-financial-technology/[[/src]] The House passed the Anti-CBDC Surveillance State Act 219 to 210 on July 17th, 2025 and sent it to the Senate attached to another bill on April 29th, 2026.[[src:43]]Crypto Briefing, "Tom Emmer calls CBDC the ‘ultimate surveillance tool’," 2026 · https://cryptobriefing.com/tom-emmer-cbdc-surveillance-tool/[[/src]] The Senate then voted 85 to 5 on June 22nd, 2026 for a housing package that bars the Federal Reserve from issuing a digital currency through December 31st, 2030.[[src:44]]TFTC, "Senate passes 85-5 CBDC ban inside housing bill," June 23rd, 2026 · https://www.tftc.io/cbdc-ban-senate-85-5-housing-bill-four-year-sunset/[[/src]] The two chambers have not yet sent one bill to the president, so the executive order is what holds the line today, and a future president could reverse it.',
     },
     {
       type: 'paragraph',
-      text: 'That leaves the American version of tokenized money in private hands: dollar stablecoins regulated under the GENIUS Act, and banks experimenting with tokenized deposits.[[src:35]]crypto.news, "Crypto executive orders: what the White House has actually ordered," July 2026 · https://crypto.news/us/crypto-executive-order/[[/src]] Private issuers can already freeze tokens at specific addresses to comply with sanctions and court orders, so the place to watch for programmable controls is the rulebook those issuers and banks operate under, not a hidden plot. Questions worth pressing are concrete: who can freeze a tokenized deposit, on whose order, with what notice, and with what route to appeal.',
+      text: 'That leaves the American version of tokenized money in private hands: dollar stablecoins regulated under the GENIUS Act, and banks experimenting with tokenized deposits.[[src:45]]crypto.news, "Crypto executive orders: what the White House has actually ordered," July 2026 · https://crypto.news/us/crypto-executive-order/[[/src]] Private issuers can already freeze tokens at specific addresses to comply with sanctions and court orders, so the place to watch for programmable controls is the rulebook those issuers and banks operate under, not a hidden plot. Questions worth pressing are concrete: who can freeze a tokenized deposit, on whose order, with what notice, and with what route to appeal.',
     },
     {
       type: 'callout',
@@ -594,7 +661,7 @@ export const tokenizedMoneyOutageTheory2026 = {
     { type: 'heading', text: 'How to prepare without panicking', level: 2 },
     {
       type: 'paragraph',
-      text: 'The practical response is the same whether outages come from bugs, attackers or anything else. Consumer group Which? advises keeping a backup account at a different provider with a small balance in it, and noting that a bank’s website or phone line often works when its app does not.[[src:36]]Which?, "What to do if your banking app goes down," 2026 · https://www.which.co.uk/news/article/what-to-do-online-banking-app-down-aIZBo7n8voob[[/src]] ABC’s checklist adds two-factor logins and a credit freeze, and keeping a few days of cash and a downloaded copy of recent statements covers the "my balance shows $0" scenario at little cost.[[src:37]]ABC News, protective steps in "A ‘code red’ for cybersecurity?" October 30th, 2026 · https://abc7ny.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] Stay inside deposit insurance limits at each bank, and read the terms of any tokenized product before moving money into it.',
+      text: 'The practical response is the same whether outages come from bugs, attackers or anything else. Consumer group Which? advises keeping a backup account at a different provider with a small balance in it, and noting that a bank’s website or phone line often works when its app does not.[[src:46]]Which?, "What to do if your banking app goes down," 2026 · https://www.which.co.uk/news/article/what-to-do-online-banking-app-down-aIZBo7n8voob[[/src]] ABC’s checklist adds two-factor logins and a credit freeze, and keeping a few days of cash and a downloaded copy of recent statements covers the "my balance shows $0" scenario at little cost.[[src:47]]ABC News, protective steps in "A ‘code red’ for cybersecurity?" October 30th, 2026 · https://abc7ny.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] Stay inside deposit insurance limits at each bank, and read the terms of any tokenized product before moving money into it.',
     },
     {
       type: 'paragraph',
