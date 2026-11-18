@@ -690,6 +690,15 @@ body.light-mode .ech-page {
   color: var(--ech-positive);
 }
 
+/* standard with an image: the text column shares the image's edges, so the
+   tag, title and meta start at the image's left edge and wrap at its right
+   edge. The image is capped at 320px, so the body takes the same cap. */
+.ech-card--standard.has-img .ech-card__body {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 0 0;
+}
+
 /* standard, no image: an intentional text card on a tinted ground */
 .ech-card--standard.is-noimg {
   background: var(--ech-neutral);
@@ -1339,6 +1348,7 @@ body.light-mode .ech-page {
     border-radius: var(--radius-md);
   }
   .ech-card--standard.has-img .ech-card__body {
+    max-width: none;
     padding: 0;
     gap: 6px;
   }
