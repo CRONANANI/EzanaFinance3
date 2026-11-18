@@ -8,6 +8,131 @@ const H = 460;
 const PAD = { l: 66, r: 40, t: 96, b: 58 };
 const MAX_R = 46;
 const MIN_R = 6;
+/* Label geometry for collision checks: 15-unit mono text, ~0.6em a glyph. */
+const LABEL_FS = 15;
+const CHAR_W = LABEL_FS * 0.6;
+const LABEL_H = 17;
+
+const rectsOverlap = (a, b, gap = 3) =>
+  a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
+
+/* Does a label box overlap a circle (with a little air)? */
+function hitsCircle(r, c, gap = 2) {
+  const nx = Math.max(r.x, Math.min(c.cx, r.x + r.w));
+  const ny = Math.max(r.y, Math.min(c.cy, r.y + r.h));
+  const dx = c.cx - nx;
+  const dy = c.cy - ny;
+  return dx * dx + dy * dy < (c.r + gap) * (c.r + gap);
+}
+
+/* Shortest distance from a point to a segment. */
+function segDist(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy || 1)));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+/* Does a segment pass through a box (sampled; boxes are a few glyphs)? */
+function segHitsRect(l, q, gap = 2) {
+  for (let k = 0; k <= 24; k += 1) {
+    const t = k / 24;
+    const x = l.x1 + (l.x2 - l.x1) * t;
+    const y = l.y1 + (l.y2 - l.y1) * t;
+    if (x > q.x - gap && x < q.x + q.w + gap && y > q.y - gap && y < q.y + q.h + gap) return true;
+  }
+  return false;
+}
+
+/* The leader from a bubble to its label box: from the bubble's edge to the
+   nearest point of the box. */
+function leaderFor(b, r) {
+  const tx = Math.max(r.x, Math.min(b.cx, r.x + r.w));
+  const ty = Math.max(r.y, Math.min(b.cy, r.y + r.h));
+  const ang = Math.atan2(ty - b.cy, tx - b.cx);
+  return { x1: b.cx + Math.cos(ang) * b.r, y1: b.cy + Math.sin(ang) * b.r, x2: tx, y2: ty };
+}
+
+/**
+ * Places every label where it overlaps no other label and no other bubble,
+ * inside the plot (Nov 18 2026: a tight cluster of bubbles used to stack
+ * its names on top of one another). Largest bubbles are placed first. Each
+ * label tries the spots touching its bubble (above, below, right, left),
+ * then spots further out in widening rings; a label set away from its
+ * bubble gets a leader line. Deterministic for a given set of points.
+ */
+function layoutLabels(bubbles, bounds) {
+  const placed = [];
+  const order = [...bubbles].sort((a, b) => b.r - a.r || (a.label < b.label ? -1 : 1));
+  const out = new Map();
+  for (const b of order) {
+    const w = b.label.length * CHAR_W + 4;
+    const h = LABEL_H;
+    const near = [
+      { x: b.cx - w / 2, y: b.cy - b.r - 6 - h },
+      { x: b.cx - w / 2, y: b.cy + b.r + 4 },
+      { x: b.cx + b.r + 6, y: b.cy - h / 2 },
+      { x: b.cx - b.r - 6 - w, y: b.cy - h / 2 },
+    ].map((r) => ({ ...r, w, h, leader: false }));
+    const far = [];
+    for (let ring = 1; ring <= 16; ring += 1) {
+      const d = b.r + 10 + ring * 16;
+      for (const [ux, uy] of [
+        [1, 0],
+        [1, -0.5],
+        [1, 0.5],
+        [1, -1],
+        [1, 1],
+        [0, -1],
+        [0, 1],
+        [-1, 0],
+        [-1, -0.5],
+        [-1, 0.5],
+        [-1, -1],
+        [-1, 1],
+      ]) {
+        const ax = b.cx + ux * d;
+        const ay = b.cy + uy * d;
+        far.push({
+          x: ux > 0 ? ax : ux < 0 ? ax - w : ax - w / 2,
+          y: ay - h / 2,
+          w,
+          h,
+          leader: true,
+        });
+      }
+    }
+    const inside = (r) =>
+      r.x >= bounds.l && r.x + r.w <= bounds.r && r.y >= bounds.t && r.y + r.h <= bounds.b;
+    const free = (r) =>
+      inside(r) &&
+      !placed.some((q) => rectsOverlap(r, q)) &&
+      !bubbles.some((o) => o !== b && hitsCircle(r, o)) &&
+      !(r.leader && hitsCircle(r, b)) &&
+      /* A leader may not run through another bubble or another label. */
+      !(
+        r.leader &&
+        (() => {
+          const l = leaderFor(b, r);
+          return (
+            bubbles.some((o) => o !== b && segDist(o.cx, o.cy, l.x1, l.y1, l.x2, l.y2) < o.r + 1) ||
+            placed.some((q) => segHitsRect(l, q))
+          );
+        })()
+      );
+    /* Boxed in on every side: let the leader cross a bubble rather than
+       let two names overlap. */
+    const roomy = (r) =>
+      inside(r) &&
+      !placed.some((q) => rectsOverlap(r, q)) &&
+      !bubbles.some((o) => o !== b && hitsCircle(r, o)) &&
+      !hitsCircle(r, b);
+    const pick = near.find(free) || far.find(free) || far.find(roomy) || near[0];
+    placed.push(pick);
+    out.set(b.key, pick);
+  }
+  return out;
+}
 
 /**
  * Three-variable scatter ("bubble-field" block). X and Y position each point;
@@ -67,7 +192,22 @@ export function EchoBubbleField({
       return [round(lo), round(mid), round(hi)];
     };
 
+    const bubbles = points.map((p, i) => ({
+      key: i,
+      label: p.label,
+      cx: sx(p.x),
+      cy: sy(p.y),
+      r: sr(p.z),
+    }));
+    const labels = layoutLabels(bubbles, {
+      l: PAD.l + 2,
+      r: W - PAD.r + 30,
+      t: PAD.t - 10,
+      b: H - PAD.b - 2,
+    });
+
     return {
+      labels,
       x0,
       x1,
       y0,
@@ -82,7 +222,7 @@ export function EchoBubbleField({
     };
   }, [points]);
 
-  const { sx, sy, sr, rankByIndex, count, xTicks, yTicks, x0, x1, y0, y1 } = model;
+  const { sx, sy, sr, rankByIndex, count, xTicks, yTicks, x0, x1, y0, y1, labels } = model;
 
   const plotLeft = PAD.l;
   const plotRight = W - PAD.r;
@@ -247,8 +387,11 @@ export function EchoBubbleField({
           const cx = sx(p.x);
           const cy = sy(p.y);
           const delay = `${rank * 60}ms`;
-          const labelBelow = cy - r - 6 < plotTop + 4;
-          const ly = labelBelow ? cy + r + 16 : cy - r - 7;
+          const box = labels.get(i);
+          const lx = box.x + box.w / 2;
+          const ly = box.y + box.h - 4;
+          /* Leader from the bubble's edge to the nearest side of its label. */
+          const leader = box.leader ? leaderFor({ cx, cy, r }, box) : null;
           return (
             <g key={`${p.label}-${i}`}>
               <circle
@@ -262,13 +405,25 @@ export function EchoBubbleField({
                 strokeWidth="1.4"
                 style={{ transitionDelay: delay }}
               />
+              {leader ? (
+                <line
+                  className="efig-bubble-label"
+                  x1={leader.x1}
+                  y1={leader.y1}
+                  x2={leader.x2}
+                  y2={leader.y2}
+                  stroke="var(--echo-chart-annotation)"
+                  strokeWidth="1"
+                  style={{ transitionDelay: delay }}
+                />
+              ) : null}
               <text
-                x={cx}
+                x={lx}
                 y={ly}
                 textAnchor="middle"
                 className="echo-fig-mono efig-bubble-label"
-                fontSize="15"
-                fill="var(--text-muted)"
+                fontSize={LABEL_FS}
+                fill="var(--text-secondary)"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontVariantNumeric: 'tabular-nums',
