@@ -4722,3 +4722,60 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ── Nov 18: the phone deck, wider slides and one scroll per slide ─────────
+   Each slide takes more of the screen: the band's side padding and the deck's
+   peek shrink, so a slide is the phone width less 12px on the left and a 16px
+   peek on the right. After a ping the headline and subhead are hidden on a
+   phone (Part 3.4 above), and the deck takes back the height they held instead
+   of leaving it empty below the cards. Inside the Sourced matches slide the
+   slide itself is the one scroller: the rows no longer scroll inside it and
+   the agency legend is no longer capped, so nothing is cut off where a finger
+   cannot reach it. */
+@media (max-width: 768px) {
+  .snr-band.snr-composed {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+@media (max-width: 1023px) {
+  .snr-band.snr-composed .snr-cols {
+    gap: 10px;
+    padding-right: 16px;
+    scroll-padding-right: 16px;
+  }
+  .snr-band.snr-composed .snr-col-left,
+  .snr-band.snr-composed .snr-col-dossier,
+  .snr-band.snr-composed .snr-stack {
+    flex-basis: calc(100% - 16px);
+  }
+  .snr-band.snr-composed.snr-stage2 .snr-cols {
+    flex-basis: calc(
+      var(--snr-work) + var(--snr-head-h) + var(--snr-g2) + var(--snr-sub-h) + var(--snr-g3)
+    );
+    height: calc(
+      var(--snr-work) + var(--snr-head-h) + var(--snr-g2) + var(--snr-sub-h) + var(--snr-g3)
+    );
+  }
+  .snr-band.snr-composed.snr-stage2 .snr-col-dossier,
+  .snr-band.snr-composed .snr-col-dossier {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snr-band.snr-composed.snr-stage2 .snr-col-dossier .snr-dossier-body,
+  .snr-band.snr-composed.snr-stage2 .snr-col-dossier .snr-rows,
+  .snr-band.snr-composed .snr-col-dossier .snr-dossier-body,
+  .snr-band.snr-composed .snr-col-dossier .snr-rows {
+    flex: 0 0 auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .snr-band .snr-agency-legend {
+    max-height: none;
+    overflow: visible;
+  }
+}

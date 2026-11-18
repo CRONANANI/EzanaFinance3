@@ -18,6 +18,16 @@
   box-shadow: none !important;
 }
 
+/* Nov 18: the Why Ezana Finance cards sit on the section's own background, in
+   dark and light mode alike, at rest and on hover. !important for the same
+   reason as above: globals.css sets the card fill with !important. */
+.landing-page .feature-card.feature-card--viz,
+.landing-page .feature-card.feature-card--viz:hover,
+body.light-mode .landing-page .feature-card.feature-card--viz,
+body.light-mode .landing-page .feature-card.feature-card--viz:hover {
+  background: transparent !important;
+}
+
 /* Fixed-size visual zone — identical width AND height on every card, centered,
    with bottom padding. margin-top:auto pins it to the card's bottom edge so all
    six visuals sit on the same baseline regardless of body-copy length. */

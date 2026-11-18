@@ -213,6 +213,22 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
   const [step, setStep] = useState(0);
   const [auto, setAuto] = useState(false);
   const started = useRef(false);
+  /* Nov 18, phones only: the six bars start empty and no rule shows until the
+     run reaches it; each rule appears as its bar starts to fill. When the last
+     bar has filled, the page scrolls down to the result chart. `begun` is the
+     reactive twin of `started`, so the first render can hold everything back. */
+  const [isPhone, setIsPhone] = useState(false);
+  const [begun, setBegun] = useState(false);
+  const scrolledToResult = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 767px)');
+    const sync = () => setIsPhone(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
 
   /* First run starts when the stage scrolls into view, unless motion is
      reduced. The stage is watched, not the whole section: once the panes
@@ -226,6 +242,7 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
       ([entry]) => {
         if (entry.isIntersecting && !started.current) {
           started.current = true;
+          setBegun(true);
           setAuto(true);
           io.disconnect();
         }
@@ -236,27 +253,44 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
     return () => io.disconnect();
   }, []);
 
-  /* Advance one step at a time, stop on Result. */
+  /* Advance one step at a time, stop on Result. On a phone the Result bar gets
+     its own fill like the other five, then the page scrolls to the chart once
+     per automatic run. */
   useEffect(() => {
     if (!auto) return undefined;
     if (step >= STEPS.length - 1) {
-      setAuto(false);
-      return undefined;
+      if (!isPhone) {
+        setAuto(false);
+        return undefined;
+      }
+      const t = setTimeout(() => {
+        setAuto(false);
+        if (!scrolledToResult.current && stageRef.current) {
+          scrolledToResult.current = true;
+          stageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, STEP_MS);
+      return () => clearTimeout(t);
     }
     const t = setTimeout(() => setStep((s) => s + 1), STEP_MS);
     return () => clearTimeout(t);
-  }, [auto, step]);
+  }, [auto, step, isPhone]);
 
   const pick = (k) => {
     started.current = true;
+    setBegun(true);
     setAuto(false);
     setStep(k);
   };
   const run = () => {
     started.current = true;
+    scrolledToResult.current = false;
+    setBegun(true);
     setStep(0);
     setAuto(true);
   };
+  /* Phones hold the bars and rules back until the run starts. */
+  const holding = isPhone && !begun;
 
   const tiles = [
     ['Universe', 0, `${STOCKS.length} stocks`],
@@ -286,18 +320,20 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
             <div className="qls-steps">
               {STEPS.map((s, k) => {
                 const on = k === step;
-                const done = k < step || (on && !auto);
+                const done = !holding && (k < step || (on && !auto));
                 return (
                   <button
                     key={s.name}
                     type="button"
-                    className={`qls-step${on ? ' is-active' : ''}${k <= step ? ' is-reached' : ''}`}
+                    className={`qls-step${on && !holding ? ' is-active' : ''}${!holding && k <= step ? ' is-reached' : ''}`}
                     aria-pressed={on}
                     onClick={() => pick(k)}
                   >
                     <span className="qls-step-track" aria-hidden="true">
                       {done ? <span className="qls-step-fill" /> : null}
-                      {on && auto ? <span key={step} className="qls-step-fill is-running" /> : null}
+                      {on && auto && !holding ? (
+                        <span key={step} className="qls-step-fill is-running" />
+                      ) : null}
                     </span>
                     <span className="qls-step-label">
                       <span className="qls-step-num">{two(k + 1)}</span>
@@ -321,10 +357,12 @@ export function QuantLabSection({ ctaHref = '/auth/signup' }) {
                 </span>
               </div>
 
-              <div className="qls-rules">
+              <div className={`qls-rules${isPhone ? ' is-revealing' : ''}`}>
                 {RULES.map(([key, val, at]) => {
                   const state =
                     at < 0 ? 'comment' : at === step ? 'active' : at > step ? 'pending' : 'done';
+                  /* On a phone a rule appears only once its bar has started. */
+                  if (isPhone && (holding || at > step)) return null;
                   return (
                     <div key={val} className={`qls-rule is-${state}`}>
                       {key ? <span className="qls-rule-key">{key}</span> : null}

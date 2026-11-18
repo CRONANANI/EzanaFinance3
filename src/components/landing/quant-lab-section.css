@@ -902,3 +902,26 @@ body.light-mode .qls-section {
     transition: none !important;
   }
 }
+
+/* Nov 18, phones: each rule appears as its bar starts to fill, so a rule that
+   just mounted eases in rather than popping. */
+@media (max-width: 767px) {
+  .qls-rules.is-revealing .qls-rule {
+    animation: qls-rule-in 0.45s ease-out both;
+  }
+}
+@keyframes qls-rule-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qls-rules.is-revealing .qls-rule {
+    animation: none;
+  }
+}
