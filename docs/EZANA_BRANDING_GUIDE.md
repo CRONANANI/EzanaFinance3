@@ -2,7 +2,7 @@
 
 One guide for how Ezana looks and how its interface is built. Part A is the brand and design rules, for anyone drawing a screen (Claude Design, ChatGPT, a designer). Part B is the UI guide, for anyone building or rebuilding one (Claude Code, an engineer). Read both before a page is redesigned or a new page is built.
 
-This guide replaces every earlier Ezana branding guide and design-system guide. If an older guide, a reference image, or a mock from another tool disagrees with it, this guide wins. Values were read from the live codebase (`src/app/theme-variables.css`, `src/styles/home-canvas.css`, `src/components/ds/`, the Dashboard and the top navigation). Last updated November 14, 2026.
+This guide replaces every earlier Ezana branding guide and design-system guide. If an older guide, a reference image, or a mock from another tool disagrees with it, this guide wins. Values were read from the live codebase (`src/app/theme-variables.css`, `src/styles/home-canvas.css`, `src/components/ds/`, the Dashboard and the top navigation). Last updated November 18, 2026.
 
 The template for how the whole app looks is the `/home` page. The Dashboard (`/home-dashboard`) is the reference for component cards.
 
@@ -545,6 +545,7 @@ Charts read their presentation props from `CHART` in `src/lib/chart-theme.js`.
 | Card reference                    | `src/app/(dashboard)/home-dashboard/`                                              |
 | Buttons and side-column reference | `src/app/(dashboard)/watchlist/watchlist.css`                                      |
 | Search pill reference             | The US Equities page                                                               |
+| Standard dropdown                 | `src/components/ui/ez-dropdown.jsx`, `src/styles/ez-dropdown.css` (section 6.7)    |
 | Chart presentation props          | `src/lib/chart-theme.js`                                                           |
 | Guards                            | `npm run lint:branding`, `lint:ds`, `lint:css`, `test:page-canvas`, `test:em-dash` |
 
@@ -562,3 +563,4 @@ Charts read their presentation props from `CHART` in `src/lib/chart-theme.js`.
 10. Loading, empty and error states exist for every card.
 11. Works in dark and light, in the partner scope, with the keyboard, and at phone width with no sideways scroll.
 12. Every figure on the page is real data. Nothing is a placeholder.
+13. Every dropdown is `EzDropdown` (or a native select carrying the standard look), checked in light, dark and on Sonar (section 6.7).
