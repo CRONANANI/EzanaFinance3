@@ -165,25 +165,74 @@ const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || '')
 const desc = (k) => (a, b) => (b[k] || 0) - (a[k] || 0);
 const descStr = (k) => (a, b) => String(b[k] || '').localeCompare(String(a[k] || ''));
 
-export const SORT_KEYS = ['volume', 'trades', 'latest'];
+export const SORT_KEYS = ['volume', 'ratio', 'trades', 'latest'];
+export const SORT_DIRS = ['desc', 'asc'];
 
 /**
- * Rank members for the active sort. Rank follows the sort; pctOfFirst is the
- * ratio of this member's volume to the first-ranked member's volume as a
- * whole percent, null when the first has no volume. It is a ratio of two
- * midpoint sums, nothing more.
+ * Buy-to-sell ratio on trade COUNTS: disclosed purchases / disclosed full or
+ * partial sales in the period. Exchanges and other types are in neither.
+ * Infinity when there are buys and no sells; null when there are neither
+ * (no ratio to rank). Not the sentiment section's dollar or member measures.
  */
-export function rankMembers(members, sortKey = 'volume') {
+export function buySellRatio(m) {
+  const b = Number(m?.buys) || 0;
+  const s = Number(m?.sells) || 0;
+  if (!b && !s) return null;
+  if (!s) return Infinity;
+  return b / s;
+}
+
+/**
+ * Rank members for the active sort and direction ('desc' | 'asc').
+ *
+ *   volume  disclosed volume (sum of range midpoints)
+ *   ratio   buy-to-sell ratio. Descending: no-sell buyers first, then the
+ *           highest finite ratio; ascending: lowest first, no-sell buyers
+ *           after the finite ratios. Members with neither buys nor sells
+ *           (exchanges only) follow, unranked by this key.
+ *   trades  trade count
+ *   latest  last trade date (trade date, not filing date); descending is
+ *           newest first
+ *
+ * Members with a disclosed trade in the window always come first and carry
+ * the rank; sitting members with none follow alphabetically, unranked. Ties
+ * break on volume (high first), then name, so the order is stable. Rank is
+ * the position in this order over the WHOLE filtered set. pctOfFirst is a
+ * member's volume as a whole percent of the largest volume in the set (the
+ * volume bar), null when nobody has volume.
+ */
+export function rankMembers(members, sortKey = 'volume', dir = 'desc') {
   const key = SORT_KEYS.includes(sortKey) ? sortKey : 'volume';
-  /* Members with a disclosed trade in the window always come first; the
-     sitting members with none follow alphabetically and carry no rank. */
+  const asc = dir === 'asc';
   const traded = (a, b) => Number((b.count || 0) > 0) - Number((a.count || 0) > 0);
+  const num = (k) => (a, b) => {
+    const d = (a[k] || 0) - (b[k] || 0);
+    return asc ? d : -d;
+  };
+  const date = (a, b) => {
+    const x = a.lastTraded || '';
+    const y = b.lastTraded || '';
+    if (!x !== !y) return x ? -1 : 1; // missing dates last either way
+    const d = String(x).localeCompare(String(y));
+    return asc ? d : -d;
+  };
+  const ratio = (a, b) => {
+    const x = buySellRatio(a);
+    const y = buySellRatio(b);
+    if ((x == null) !== (y == null)) return x == null ? 1 : -1;
+    if (x == null) return 0;
+    if (x === y) return 0;
+    return asc ? (x < y ? -1 : 1) : x > y ? -1 : 1;
+  };
+  const volDesc = (a, b) => (b.volume || 0) - (a.volume || 0);
   const order =
     key === 'trades'
-      ? [traded, desc('count'), desc('volume'), byName]
+      ? [traded, num('count'), volDesc, byName]
       : key === 'latest'
-        ? [traded, descStr('lastTraded'), desc('volume'), byName]
-        : [traded, desc('volume'), desc('count'), byName];
+        ? [traded, date, volDesc, byName]
+        : key === 'ratio'
+          ? [traded, ratio, volDesc, byName]
+          : [traded, num('volume'), desc('count'), byName];
   const sorted = [...members].sort((a, b) => {
     for (const cmp of order) {
       const r = cmp(a, b);
@@ -191,11 +240,11 @@ export function rankMembers(members, sortKey = 'volume') {
     }
     return 0;
   });
-  const first = sorted[0]?.volume || 0;
+  const top = sorted.reduce((mx, m) => Math.max(mx, m.volume || 0), 0);
   return sorted.map((m, i) => ({
     ...m,
     rank: (m.count || 0) > 0 ? i + 1 : null,
-    pctOfFirst: first > 0 ? Math.round(((m.volume || 0) / first) * 100) : null,
+    pctOfFirst: top > 0 ? Math.round(((m.volume || 0) / top) * 100) : null,
   }));
 }
 

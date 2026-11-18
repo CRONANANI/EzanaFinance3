@@ -49,6 +49,15 @@ export function daysParam(v) {
   return Number.isFinite(n) && n >= 7 && n <= 36500 ? n : WINDOW_DAYS;
 }
 
+/** A ticker symbol from ?ticker=: upper case, letters, digits, dot, dash or
+    slash, at most 12 characters; anything else is null (no filter). */
+export function tickerParam(v) {
+  const s = String(v || '')
+    .trim()
+    .toUpperCase();
+  return /^[A-Z0-9][A-Z0-9./-]{0,11}$/.test(s) ? s : null;
+}
+
 export function queryParam(v) {
   const s = String(v || '')
     .replace(/[%_,()*\\]/g, ' ')
@@ -166,12 +175,23 @@ export async function readSummary({
   sort = 'volume',
   windowDays = WINDOW_DAYS,
   tickerLimit = 10,
+  ticker = null,
 } = {}) {
   const client = db();
   if (!client) return { error: 'not configured' };
   const f = { p_chamber: chamber, p_party: party, p_q: q };
+  /* With a ticker, the ranking is recomputed on that ticker's trades only
+     (politician_rankings_ticker); the other panels stay whole-market. */
+  const rankings = ticker
+    ? client.rpc('politician_rankings_ticker', {
+        window_days: windowDays,
+        ...f,
+        p_ticker: ticker,
+        lim: 1000,
+      })
+    : client.rpc('politician_rankings', { window_days: windowDays, ...f, p_sort: sort, lim: 1000 });
   const [r, m, t, h] = await Promise.all([
-    client.rpc('politician_rankings', { window_days: windowDays, ...f, p_sort: sort, lim: 1000 }),
+    rankings,
     client.rpc('congress_monthly_counts', { window_days: windowDays, ...f }),
     client.rpc('congress_top_tickers', { window_days: windowDays, lim: tickerLimit, ...f }),
     /* Every disclosure on file (window_days null), so older open positions
@@ -184,6 +204,7 @@ export async function readSummary({
   if (h.error) console.warn(`[politicians/summary] most held: ${h.error.message}`);
   return {
     error: null,
+    ticker: ticker || null,
     rankings: (r.data || []).map((x) => ({
       bioguideId: x.bioguide_id,
       name: x.full_name,
@@ -220,6 +241,31 @@ export async function readSummary({
           buys: Number(x.buys) || 0,
           lastBuy: x.last_buy || null,
         })),
+  };
+}
+
+/**
+ * Ticker typeahead (congress_ticker_search): tickers on file in the window
+ * that start with `prefix`, exact match first, then by trade count.
+ * @returns {Promise<{ tickers: object[], error: string|null }>}
+ */
+export async function searchTickers({ prefix = null, windowDays = WINDOW_DAYS, limit = 12 } = {}) {
+  const client = db();
+  if (!client) return { tickers: [], error: 'not configured' };
+  const { data, error } = await client.rpc('congress_ticker_search', {
+    p_prefix: prefix,
+    window_days: windowDays,
+    lim: limit,
+  });
+  if (error) return { tickers: [], error: error.message };
+  return {
+    error: null,
+    tickers: (data || []).map((x) => ({
+      ticker: x.ticker,
+      trades: Number(x.trades) || 0,
+      members: Number(x.members) || 0,
+      company: x.company || null,
+    })),
   };
 }
 

@@ -14,7 +14,7 @@ import { resolveHeadshot } from '@/lib/politicians/headshots';
  * override from headshots.js wins over both when one exists.
  *
  * Sizes per the brief: 40 in table rows, 64 on the Top-eight cards, 120 in
- * the member profile. `priority` on the Top eight only; lazy elsewhere.
+ * the member profile. `priority` on the first ten ranking rows only; lazy elsewhere.
  *
  * Avatars go through the image optimiser: each portrait is served as AVIF
  * or WebP at the rendered size (40, 64 or 120px, 2x for dense screens) and

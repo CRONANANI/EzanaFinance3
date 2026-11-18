@@ -7,6 +7,9 @@
  *   year     the year the sector rows are for (the asked year when on file,
  *            else the latest)
  *   sectors  that year by GICS sector, most traded first
+ *   prevSectors  the year before, same shape (null when not on file), for
+ *            the change in each sector's net buying
+ *   latestTrade  the newest trade date on file (how far the year reaches)
  *   rotation and outlook (per year): money into bonds and defensive sectors
  *            against cyclicals, and the economic outlook that combines it
  *            with breadth (Expansion / Mixed / Slowdown risk)
@@ -68,14 +71,34 @@ export async function GET(request) {
   const asked = Number.parseInt(new URL(request.url).searchParams.get('year') || '', 10);
   const year = years.some((y) => y.year === asked) ? asked : years[years.length - 1].year;
 
-  const bySector = await client.rpc('congress_sector_sentiment', { p_year: year });
+  /* The prior year's sectors too, by the same function and rules, so the
+     page can show what changed; null when that year is not on file. The
+     newest trade date on file says how far the current year reaches. */
+  const hasPrev = years.some((y) => y.year === year - 1);
+  const [bySector, byPrev, latest] = await Promise.all([
+    client.rpc('congress_sector_sentiment', { p_year: year }),
+    hasPrev ? client.rpc('congress_sector_sentiment', { p_year: year - 1 }) : null,
+    client
+      .from('congress_trades')
+      .select('transaction_date')
+      .order('transaction_date', { ascending: false })
+      .limit(1),
+  ]);
   if (bySector.error) {
     console.warn(`[politicians/sentiment] sectors: ${bySector.error.message}`);
   }
+  if (byPrev?.error) {
+    console.warn(`[politicians/sentiment] prior sectors: ${byPrev.error.message}`);
+  }
   const sectors = (bySector.data || []).map((r) => ({ sector: r.sector, ...shapeRow(r) }));
+  const prevSectors =
+    byPrev && !byPrev.error
+      ? (byPrev.data || []).map((r) => ({ sector: r.sector, ...shapeRow(r) }))
+      : null;
+  const latestTrade = latest?.error ? null : latest?.data?.[0]?.transaction_date || null;
 
   return NextResponse.json(
-    { ok: true, years, year, sectors },
+    { ok: true, years, year, sectors, prevSectors, latestTrade },
     { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } },
   );
 }

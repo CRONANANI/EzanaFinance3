@@ -132,3 +132,82 @@ export function outlookFor(breadth, tilt) {
     return { score, lean, rotation, key: 'slowdown', label: 'Slowdown risk' };
   return { score, lean, rotation, key: 'mixed', label: 'Mixed' };
 }
+
+/* ── Reading the signal (Nov 18 2026 redesign) ───────────────────────────
+   Plain-language lines built ONLY from the figures above, so the page can
+   say whether its three measures agree:
+     breadth   members net buying by dollars (one vote per member; sets the
+               Bullish / Neutral / Bearish reading)
+     buyShare  buys as a share of buy and sell TRADES (one vote per trade)
+     netFlow   (bought - sold) / (bought + sold) by midpoint DOLLARS (larger
+               filers weigh more)
+   They measure different things, so they can legitimately disagree; when
+   they do, the page says so instead of picking one. */
+
+const side = (v, mid) => (Number.isFinite(v) ? (v >= mid ? 'buying' : 'selling') : null);
+const pctText = (v) => `${Math.round(v)}%`;
+
+/**
+ * { summary, divergence[] } for one year row, or null without a breadth.
+ * divergence lists each measure that points the other way from breadth.
+ */
+export function signalStory(y) {
+  if (!y || !Number.isFinite(y.breadth)) return null;
+  const leaning = (y.netBuyers || 0) + (y.netSellers || 0);
+  const b = side(y.breadth, 50);
+  const c = side(y.buyShare, 50);
+  const f = side(y.netFlow, 0);
+  const lean = b === 'buying' ? 'net buyers' : 'net sellers';
+  const share = b === 'buying' ? y.breadth : 100 - y.breadth;
+  const summary = `${pctText(share)} of the ${leaning.toLocaleString()} members who leaned one way were ${lean} by disclosed dollars, which reads ${y.reading?.label || 'Neutral'}.`;
+  const divergence = [];
+  if (c && c !== b) {
+    divergence.push(
+      c === 'buying'
+        ? `Buy trades outnumber sell trades (${pctText(y.buyShare)} of buys and sells), yet most members sold more dollars than they bought. Counts give each trade one vote; the reading gives each member one.`
+        : `Sell trades outnumber buy trades (${pctText(100 - y.buyShare)} of buys and sells), yet most members bought more dollars than they sold. Counts give each trade one vote; the reading gives each member one.`,
+    );
+  }
+  if (f && f !== b) {
+    divergence.push(
+      `Dollar flow points the other way (net ${y.netFlow >= 0 ? '+' : '-'}${Math.abs(Math.round(y.netFlow))}%): total dollars are set by the largest filers, while the reading counts each member once.`,
+    );
+  }
+  const aligned =
+    !divergence.length && c && f
+      ? `Member breadth, trade counts and dollar flow all point to net ${b}.`
+      : null;
+  return { summary, aligned, divergence };
+}
+
+/**
+ * Sector moves between two years, same definitions both years. Only
+ * sectors with at least `minMembers` leaning members in BOTH years count,
+ * so a sector with three traders cannot headline. Returns the largest
+ * falls in breadth (pts) and the defensive sectors by buy share.
+ */
+export function sectorShifts(sectors, prevSectors, minMembers = 5) {
+  const leaningOf = (s) => (s.netBuyers || 0) + (s.netSellers || 0);
+  const prev = new Map((prevSectors || []).map((s) => [s.sector, s]));
+  const moves = [];
+  for (const s of sectors || []) {
+    const p = prev.get(s.sector);
+    if (!p || s.sector === 'Unclassified') continue;
+    if (leaningOf(s) < minMembers || leaningOf(p) < minMembers) continue;
+    if (!Number.isFinite(s.breadth) || !Number.isFinite(p.breadth)) continue;
+    moves.push({ sector: s.sector, change: s.breadth - p.breadth, now: s.breadth, was: p.breadth });
+  }
+  const falls = moves
+    .filter((m) => m.change < 0)
+    .sort((a, b) => a.change - b.change)
+    .slice(0, 3);
+  const rises = moves
+    .filter((m) => m.change > 0)
+    .sort((a, b) => b.change - a.change)
+    .slice(0, 3);
+  const defensive = (sectors || [])
+    .filter((s) => SAFE_SECTORS.includes(s.sector) && Number.isFinite(s.buyShare))
+    .filter((s) => (s.buys || 0) + (s.sells || 0) >= 10)
+    .sort((a, b) => b.buyShare - a.buyShare);
+  return { falls, rises, defensive, byChange: new Map(moves.map((m) => [m.sector, m.change])) };
+}

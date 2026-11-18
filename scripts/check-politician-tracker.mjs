@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import {
   buildMembers,
   rankMembers,
+  buySellRatio,
   loadedWindow,
   filterMembers,
   topTickers,
@@ -73,6 +74,26 @@ test('rankMembers: volume is the default and rank follows the sort', () => {
   assert.equal(rankMembers(MEMBERS, 'trades')[0].name, 'C');
   assert.equal(rankMembers(MEMBERS, 'latest')[0].name, 'B');
   assert.equal(rankMembers(MEMBERS, 'nonsense')[0].name, 'B', 'unknown key falls back to volume');
+});
+
+test('rankMembers: direction, buy-to-sell ratio and last trade', () => {
+  const ms = [
+    { key: 'a', name: 'A', count: 4, buys: 3, sells: 1, volume: 10, lastTraded: '2026-01-02' },
+    { key: 'b', name: 'B', count: 2, buys: 2, sells: 0, volume: 5, lastTraded: '2026-03-01' },
+    { key: 'c', name: 'C', count: 3, buys: 1, sells: 2, volume: 20, lastTraded: null },
+    { key: 'd', name: 'D', count: 1, buys: 0, sells: 0, volume: 1, lastTraded: '2025-12-01' },
+    { key: 'q', name: 'Q', count: 0, buys: 0, sells: 0, volume: 0, lastTraded: null },
+  ];
+  assert.equal(buySellRatio(ms[0]), 3);
+  assert.equal(buySellRatio(ms[1]), Infinity);
+  assert.equal(buySellRatio(ms[3]), null);
+  const names = (r) => r.map((m) => m.name).join('');
+  assert.equal(names(rankMembers(ms, 'volume', 'asc')), 'DBACQ');
+  assert.equal(names(rankMembers(ms, 'ratio', 'desc')), 'BACDQ');
+  assert.equal(names(rankMembers(ms, 'ratio', 'asc')), 'CABDQ');
+  assert.equal(names(rankMembers(ms, 'latest', 'desc')), 'BADCQ');
+  assert.equal(names(rankMembers(ms, 'latest', 'asc')), 'DABCQ');
+  assert.equal(rankMembers(ms, 'ratio', 'asc').at(-1).rank, null);
 });
 
 test('rankMembers: pctOfFirst is null when the first has no volume', () => {

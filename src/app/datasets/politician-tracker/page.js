@@ -8,6 +8,7 @@ import {
   partyParam,
   queryParam,
   daysParam,
+  tickerParam,
   readSummary,
 } from '@/lib/politicians/congress-store';
 import { periodMeta } from '@/lib/politicians/tracker-model';
@@ -15,7 +16,7 @@ import { periodMeta } from '@/lib/politicians/tracker-model';
 export const metadata = {
   title: 'Politician tracker | Ezana',
   description:
-    'Every member of the U.S. House and Senate with disclosed trades under the STOCK Act, ranked by disclosed volume, with each politician’s trade activity, the members they trade most like, and the federal contractors among the companies they trade. Amounts are the ranges members disclose.',
+    'Every member of the U.S. House and Senate with disclosed trades under the STOCK Act, ranked by disclosed volume, buy-to-sell ratio or latest trade and filterable by ticker, with each politician’s trade activity, the members they trade most like, and the federal contractors among the companies they trade. Amounts are the ranges members disclose.',
 };
 
 /* Portrait origins. The avatars load unoptimized, straight from these
@@ -41,17 +42,17 @@ const PERIOD_KEYS = ['30d', '90d', '6m', '1y', '2y', 'all'];
 /* The ranking, monthly counts, top and most held tickers for the first
    paint, computed in SQL on the server and cached for 15 minutes per
    filter set (the same window the /api/politicians/summary route uses).
-   The client renders the Top eight and the list from it immediately instead
+   The client renders the ranking table from it immediately instead
    of waiting for its own round trip. Null when the database is not
    configured or the RPCs are unavailable: the client then fetches as before
    and falls back to its local model. */
 const cachedSummary = unstable_cache(
-  async (chamber, party, q, sort, windowDays) => {
+  async (chamber, party, q, sort, windowDays, ticker) => {
     const summary = await timed(
       '/datasets/politician-tracker',
       readSummary,
       'readSummary',
-    )({ chamber, party, q, sort, windowDays });
+    )({ chamber, party, q, sort, windowDays, ticker });
     if (summary.error) return null;
     return { ok: true, windowDays, sort, ...summary, error: undefined };
   },
@@ -59,14 +60,18 @@ const cachedSummary = unstable_cache(
   { revalidate: 900 },
 );
 
-async function initialSummaryFor({ chamber, party, q, sort, period }) {
+/* The page sorts the whole ranking itself (any key, either direction), so
+   the server summary is always asked for in volume order and one cached
+   summary serves every sort. */
+async function initialSummaryFor({ chamber, party, q, period, ticker }) {
   try {
     return await timed('/datasets/politician-tracker', cachedSummary, 'cachedSummary')(
       chamberParam(chamber ? chamber.toLowerCase() : null),
       partyParam(party),
       queryParam(q || null),
-      sort,
+      'volume',
       daysParam(String(periodMeta(period).days)),
+      tickerParam(ticker),
     );
   } catch {
     return null;
@@ -77,7 +82,7 @@ const str = (v) => (typeof v === 'string' ? v : null);
 
 /* Query params the page honours on first paint: ?member= opens the panel,
    ?chamber= (from the old per-chamber redirects) preselects the chamber
-   filter, ?party=, ?sort=, ?period= and ?q= restore the toolbar. Defaults are omitted
+   filter, ?party=, ?sort=, ?dir=, ?period=, ?ticker= and ?q= restore the toolbar. Defaults are omitted
    from the URL the page writes back. */
 export default async function Page({ searchParams }) {
   preconnectPortraits();
@@ -89,7 +94,9 @@ export default async function Page({ searchParams }) {
     initialMember: str(searchParams?.member),
     initialChamber: ch === 'house' ? 'House' : ch === 'senate' ? 'Senate' : null,
     initialParty: ['D', 'R', 'I'].includes(party) ? party : null,
-    initialSort: ['volume', 'trades', 'latest'].includes(sort) ? sort : 'volume',
+    initialSort: ['volume', 'ratio', 'trades', 'latest'].includes(sort) ? sort : 'volume',
+    initialDir: str(searchParams?.dir) === 'asc' ? 'asc' : 'desc',
+    initialTicker: tickerParam(str(searchParams?.ticker)),
     initialPeriod: PERIOD_KEYS.includes(period) ? period : '1y',
     initialQuery: str(searchParams?.q) || '',
   };
@@ -102,8 +109,8 @@ export default async function Page({ searchParams }) {
       chamber: initial.initialChamber,
       party: initial.initialParty,
       q: initial.initialQuery,
-      sort: initial.initialSort,
       period: initial.initialPeriod,
+      ticker: initial.initialTicker,
     }),
     timed('/datasets/politician-tracker', getStateTrades, 'getStateTrades')(),
   ]);

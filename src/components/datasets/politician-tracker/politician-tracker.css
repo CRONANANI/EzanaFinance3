@@ -1,4 +1,5 @@
-/* Politician Tracker, P3 Portrait gallery. Scoped `ptk-`.
+/* Politician Tracker (redesign Nov 18 2026: one ranking table, compact rail,
+   Bull or bear under it). Scoped `ptk-`.
 
    The sheet underneath is the shared .dsc system (disclosures.css): the same
    light canvas the Contracts and House pages sit on, its --dsc-* properties
@@ -106,32 +107,182 @@
   width: auto;
   min-width: 140px;
 }
-/* Below about 1280 the four controls no longer fit beside the search on one
-   line. The search takes the first line at full width; the controls take the
-   second, spread edge to edge, so both lines still end on the cards' right
-   edge. */
+/* The period control sits on the toolbar's right edge; below about 1280
+   the search takes its own line and the controls share the next. */
+.ptk-toolbar .ptk-seg-period {
+  margin-left: auto;
+}
 @media (min-width: 641px) and (max-width: 1279px) {
   .ptk-toolbar .ptk-search {
     flex-basis: 100%;
   }
-  /* The period control is pushed to the right edge, on the second line or,
-     about 1000 to 1100, on a third. Chamber and party stay together left. */
-  .ptk-toolbar .ptk-period {
-    margin-left: auto;
-  }
 }
-/* The period label and its control wrap together, never apart. */
-.ptk-period {
+
+/* ── sort and ticker row ─────────────────────────────────────────────── */
+.ptk-sortbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 2px 0;
+}
+.ptk-sortbar-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ptk-faint);
+}
+.ptk-sortbar-rule {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--ptk-hair-strong);
+}
+/* Direction toggle: a text button, ink with an icon; emerald on hover. */
+.ptk-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ptk-buy-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ptk-dir .bi {
+  font-size: 15px;
+}
+.ptk-dir:hover {
+  background: var(--ptk-row-hover);
+}
+.ptk-dir:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 2px;
+}
+.ptk-active-filter {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-size: 12px;
+  color: var(--ptk-mute);
 }
-@media (max-width: 1280px) {
-  /* 30D … ALL names itself; the control keeps its aria-label. */
-  .ptk-period .ptk-rankby-label {
-    display: none;
-  }
+.ptk-active-filter b {
+  color: var(--ptk-buy-text);
 }
+.ptk-showing {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ptk-faint);
+  white-space: nowrap;
+}
+.ptk-ticker-note {
+  margin-top: -4px;
+}
+
+/* ── ticker filter (TickerFilter.jsx) ────────────────────────────────── */
+.ptk-tkf {
+  position: relative;
+}
+.ptk-tkf-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+.ptk-tkf-field:focus-within {
+  border-color: var(--ptk-focus);
+}
+.ptk-tkf-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ptk-faint);
+}
+.ptk-tkf-input {
+  width: 104px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ptk-ink);
+  font-size: 12.5px;
+  text-transform: uppercase;
+}
+.ptk-tkf-input::placeholder {
+  color: var(--ptk-mute);
+  text-transform: none;
+}
+.ptk-tkf-chev {
+  font-size: 11px;
+  color: var(--ptk-mute);
+  pointer-events: none;
+}
+.ptk-tkf-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 320px;
+  max-height: 300px;
+  overflow: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-md);
+  background: var(--dsc-bg);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--dsc-ink) 12%, transparent);
+}
+.ptk-tkf-opt {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--ptk-ink);
+  cursor: pointer;
+}
+.ptk-tkf-opt.is-active {
+  background: var(--ptk-row-hover);
+}
+.ptk-tkf-opt.is-on .ptk-tkf-sym {
+  color: var(--ptk-buy-text);
+}
+.ptk-tkf-opt--all {
+  display: flex;
+  color: var(--ptk-mute);
+}
+.ptk-tkf-sym {
+  font-weight: 700;
+}
+.ptk-tkf-co {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ptk-mute);
+}
+.ptk-tkf-n {
+  font-size: 10.5px;
+  color: var(--ptk-faint);
+  white-space: nowrap;
+}
+.ptk-tkf-note {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--ptk-mute);
+}
+
 .ptk-toolbar-spacer {
   flex: 1 1 auto;
 }
@@ -175,15 +326,9 @@
 .ptk-search-x:focus-visible {
   outline: 2px solid var(--ptk-focus);
 }
-.ptk-rankby-label {
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  color: var(--ptk-faint);
-  margin-right: 2px;
-}
 .ptk-seg {
   display: inline-flex;
-  height: 36px;
+  height: 34px;
   border: 1px solid var(--ptk-hair-strong);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -207,9 +352,13 @@
 .ptk-seg-btn:first-child {
   border-left: 0;
 }
+/* Selected reads as emerald text (branding guide), not a filled tab. */
 .ptk-seg-btn.is-on {
-  background: var(--ptk-ink);
-  color: var(--dsc-bg);
+  color: var(--ptk-buy-text);
+  font-weight: 700;
+}
+.ptk-seg-btn:not(.is-on):hover {
+  color: var(--ptk-ink);
 }
 .ptk-seg-btn:focus-visible {
   outline: 2px solid var(--ptk-focus);
@@ -365,89 +514,38 @@
 .ptk-buy-n {
   color: var(--ptk-buy-text);
 }
-.ptk-card-line b,
-.ptk-col-bs b {
+.ptk-ratio-n b {
   font-weight: 600;
 }
 
-/* ── gallery + rail grid ─────────────────────────────────────────────── */
-/* Row 1 holds the gallery heading alone; row 2 holds the cards and the rail,
-   so the rail (Rank by first) is top-aligned with the first row of cards. */
+/* ── ranking + rail grid ─────────────────────────────────────────────── */
+/* Left (about 70%): the controls and the ranking table. Right (about 30%):
+   Trades by state, Most held companies and House vs Senate, compact so the
+   rail is never taller than it needs to be and Bull or bear starts close
+   under the table. */
 .ptk-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  /* The right column is one cell spanning both rows: Trades by state on
-     top, Most held companies, then the rail (Rank by, House vs Senate). */
-  /* Left column: controls, the Top eight, then the full list directly under
-     them. Right column: Trades by state, Most held companies, Rank by and
-     House vs Senate, spanning every row. The list row takes the spare
-     height, so the cards never float away from the list. */
-  grid-template-areas:
-    'controls right'
-    'cards right'
-    'list right';
-  grid-template-rows: auto auto 1fr;
-  column-gap: 28px;
-  row-gap: 12px;
+  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+  grid-template-areas: 'main right';
+  column-gap: 32px;
+  row-gap: 24px;
   align-items: start;
+}
+.ptk-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
 }
 .ptk-right {
   grid-area: right;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  min-width: 0;
-}
-/* EzanaQL, the toolbar, any status note and the gallery heading, stacked in
-   the card column so each is exactly the cards' width. */
-.ptk-controls {
-  grid-area: controls;
-  display: flex;
-  flex-direction: column;
   gap: 18px;
   min-width: 0;
-}
-.ptk-gallery-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-/* Phone and tablet Rank by (see the responsive block); hidden on desktop,
-   where the rail's control sits beside the cards. */
-.ptk-sort-inline {
-  display: none;
-  position: relative;
-  align-items: center;
-}
-.ptk-sort-inline select {
-  height: 36px;
-  padding: 0 30px 0 10px;
-  border: 1px solid var(--ptk-hair-strong);
-  border-radius: var(--radius-md);
-  background: var(--dsc-bg);
-  color: var(--ptk-ink);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-}
-.ptk-sort-inline select:focus-visible {
-  outline: 2px solid var(--ptk-focus);
-  outline-offset: 2px;
-}
-.ptk-sort-inline .bi {
-  position: absolute;
-  right: 10px;
-  font-size: 12px;
-  color: var(--ptk-mute);
-  pointer-events: none;
-}
-/* Chip + seat wrapper: no box of its own on desktop (the chip stays pinned
-   to the card's top-right corner); one line under the name on phones. */
-.ptk-card-meta {
-  display: contents;
+  padding-left: 24px;
+  border-left: 1px solid var(--ptk-hair);
 }
 
 /* ── most held companies (beside the controls, above Rank by) ─────────── */
@@ -572,133 +670,18 @@
   border-radius: 4px 4px 0 0;
   background: var(--ptk-skel-base);
 }
-.ptk-gallery {
-  grid-area: cards;
-  min-width: 0;
-}
-.ptk-gallery-head .ptk-cap {
-  font-size: 12.5px;
-}
-.ptk-cards {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-/* ── card ────────────────────────────────────────────────────────────── */
-.ptk-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  padding: 20px 18px 16px;
-  border: 1px solid var(--ptk-hair);
-  border-radius: var(--radius-lg);
-  background: var(--dsc-bg);
-  color: inherit;
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.ptk-card:hover {
-  border-color: var(--ptk-hair-strong);
-}
-.ptk-card:focus-visible {
-  outline: 2px solid var(--ptk-focus);
-  outline-offset: 2px;
-}
-.ptk-card--first {
-  border-color: var(--ptk-first-border);
-  box-shadow: 0 0 0 3px var(--ptk-first-halo);
-}
-.ptk-card--selected-house {
-  border-color: var(--ptk-house);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ptk-house) 12%, transparent);
-}
-.ptk-card--selected-senate {
-  border-color: var(--ptk-senate);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ptk-senate) 12%, transparent);
-}
-.ptk-rank {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 3px 8px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-  background: color-mix(in srgb, var(--dsc-ink) 6%, transparent);
-  color: var(--ptk-ink);
-}
-.ptk-rank--first {
-  background: var(--ptk-ink);
-  color: var(--dsc-bg);
-}
-.ptk-card-chip {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-}
-.ptk-card .ptk-shot {
-  margin-top: 14px;
-}
-.ptk-card-name {
-  max-width: 100%;
-  font-size: 14.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ptk-card-vol {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-.ptk-card-cap {
-  margin-top: -6px;
-  font-size: 10.5px;
-  color: var(--ptk-faint);
-}
-/* "65% of #1" wraps as one piece, never between "of" and "#1". */
-.ptk-card-pct {
-  white-space: nowrap;
-}
-.ptk-card-line {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 10.5px;
-  color: var(--ptk-mute);
-}
-
 /* ── rail ────────────────────────────────────────────────────────────── */
 .ptk-rail {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 0 0;
-  border-top: 1px solid var(--ptk-hair);
+  gap: 12px;
+  padding: 0;
   min-width: 0;
 }
 .ptk-rail-head {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-.ptk-rankby {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--ptk-hair);
 }
 .ptk-rail-head .ptk-eyebrow {
   display: flex;
@@ -727,16 +710,15 @@
 .ptk-chamber-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
+  gap: 4px;
+  padding: 2px 0 2px 12px;
   min-width: 0;
 }
 .ptk-chamber-card--house {
-  background: var(--ptk-house-tint);
+  box-shadow: inset 2px 0 0 var(--ptk-house);
 }
 .ptk-chamber-card--senate {
-  background: var(--ptk-senate-tint);
+  box-shadow: inset 2px 0 0 var(--ptk-senate);
 }
 .ptk-chamber-card-label {
   display: inline-flex;
@@ -752,7 +734,7 @@
   color: var(--ptk-senate-text);
 }
 .ptk-chamber-card-fig {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -768,7 +750,7 @@
 }
 .ptk-vs-row {
   display: grid;
-  grid-template-columns: 110px 54px minmax(0, 1fr) 54px;
+  grid-template-columns: 108px 48px minmax(0, 1fr) 48px;
   align-items: center;
   gap: 10px;
 }
@@ -829,15 +811,87 @@
 
 /* ── dense list ──────────────────────────────────────────────────────── */
 .ptk-list {
-  grid-area: list;
   min-width: 0;
   border-top: 2px solid var(--ptk-ink);
+  /* One header and ten rows: the table never shows more than ten members
+     at once; the rest scroll inside it under the sticky header. */
+  --ptk-head-h: 34px;
+  --ptk-row-h: 47px;
 }
-/* Every member is listed (500+ rows), so the list scrolls inside itself
-   with the column headings pinned; compressed beside the right column. */
 .ptk-list-scroll {
   overflow: auto;
-  max-height: min(64vh, 720px);
+  overscroll-behavior: contain;
+  max-height: calc(var(--ptk-head-h) + 10 * var(--ptk-row-h));
+  scrollbar-gutter: stable;
+}
+.ptk-list-scroll:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 2px;
+}
+.ptk-list .ptk-table thead th {
+  height: calc(var(--ptk-head-h) - 1px);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.ptk-list .ptk-table td {
+  height: calc(var(--ptk-row-h) - 1px);
+}
+.ptk-th-rank {
+  width: 36px;
+}
+/* Sortable column headings: the whole label is the button; the active
+   column reads in emerald with its direction arrow. */
+.ptk-th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ptk-th-sort .bi {
+  font-size: 10px;
+  opacity: 0.55;
+}
+.ptk-th-sort:hover {
+  color: var(--ptk-ink);
+}
+.ptk-th-sort.is-on {
+  color: var(--ptk-buy-text);
+  font-weight: 600;
+}
+.ptk-th-sort.is-on .bi {
+  opacity: 1;
+}
+.ptk-th-sort:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+/* Buy : sell cell: the ratio over its two counts. */
+.ptk-ratio {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.15;
+}
+.ptk-ratio-fig {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.ptk-ratio-fig.is-inf {
+  font-size: 11px;
+  color: var(--ptk-buy-text);
+}
+.ptk-ratio-n {
+  font-size: 10.5px;
+  color: var(--ptk-faint);
 }
 .ptk-list .ptk-table {
   font-size: 12.5px;
@@ -957,10 +1011,6 @@
   flex: 1 1 auto;
   min-width: 40px;
 }
-.ptk-col-bs {
-  font-size: 11.5px;
-  white-space: nowrap;
-}
 .ptk-slash {
   color: var(--ptk-faint);
 }
@@ -974,7 +1024,8 @@
 }
 .ptk-list-foot p {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--ptk-faint);
 }
 .ptk-list-count {
@@ -1050,10 +1101,6 @@
   height: 88px;
   margin-top: 14px;
   border-radius: 99px;
-}
-.ptk-card--skel {
-  cursor: default;
-  min-height: 278px;
 }
 .ptk-row--skel td {
   padding: 0 6px;
@@ -1145,68 +1192,47 @@
 /* ── responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .ptk-grid {
-    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+  .ptk-right {
+    padding-left: 20px;
   }
   .ptk-col-tks .ptk-tk:nth-child(n + 3) {
     display: none;
   }
 }
 @media (max-width: 1000px) {
+  /* The rail moves under the ranking, as two columns where there is room. */
   .ptk-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'controls'
-      'cards'
-      'list'
+      'main'
       'right';
-    row-gap: 24px;
+    row-gap: 28px;
   }
-  .ptk-held {
-    min-height: 220px;
-    padding: 24px 0 0;
-    border-left: 0;
-    border-bottom: 0;
-    border-top: 1px solid var(--ptk-hair);
-  }
-  .ptk-rankby {
-    display: none;
-  }
-  .ptk-gallery-head {
-    flex-wrap: wrap;
-    align-items: center;
-    row-gap: 4px;
-  }
-  .ptk-sort-inline {
-    display: inline-flex;
-  }
-  /* Read by screen readers as part of the heading; the select shows it. */
-  .ptk-h2-sort {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-  .ptk-gallery-head .ptk-cap {
-    flex-basis: 100%;
-  }
-  .ptk-rail {
+  .ptk-right {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: 28px;
+    gap: 24px 28px;
     padding: 24px 0 0;
     border-left: 0;
     border-top: 1px solid var(--ptk-hair);
   }
-  .ptk-rail-head {
+  .ptk-right > :first-child {
     grid-column: 1 / -1;
   }
-  .ptk-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .ptk-held {
+    min-height: 200px;
+    border-bottom: 0;
   }
   .ptk-col-tks {
     display: none;
+  }
+  /* The table keeps its ten-row cap but never takes more than most of the
+     screen, so the page can always be scrolled past it. */
+  .ptk-list-scroll {
+    max-height: min(calc(var(--ptk-head-h) + 10 * var(--ptk-row-h)), 70vh);
   }
 }
 @media (max-width: 640px) {
@@ -1215,8 +1241,8 @@
     padding-right: 16px;
     gap: 14px;
   }
-  .ptk-controls {
-    gap: 12px;
+  .ptk-main {
+    gap: 10px;
   }
   .ptk-grid {
     row-gap: 18px;
@@ -1242,9 +1268,6 @@
     width: 36px;
     height: 36px;
   }
-  /* Border-box, so a control's set width and height include its border:
-     the party control is exactly as wide as the dropdown below it, and every
-     control on a line is the same height. */
   .ptk-toolbar .ptk-seg {
     box-sizing: border-box;
     height: 40px;
@@ -1252,146 +1275,78 @@
   .ptk-toolbar > .ptk-seg:first-of-type {
     flex: 1 1 auto;
   }
-  .ptk-toolbar > .ptk-seg .ptk-seg-btn,
-  .ptk-period .ptk-seg-btn {
+  .ptk-toolbar > .ptk-seg .ptk-seg-btn {
     flex: 1 1 0;
     justify-content: center;
     padding: 0 10px;
   }
-  .ptk-toolbar .ptk-period {
-    flex: 1 1 100%;
-    margin-left: 0;
-  }
-  .ptk-period .ptk-seg {
-    flex: 1 1 auto;
-  }
-
-  .ptk-gallery-head .ptk-h2 {
-    font-size: 15px;
-  }
-  /* The party control and the Rank by dropdown share one width and both
-     sit on the right edge, so the dropdown's left edge lines up with ALL and
-     its right edge with I (and with the cards' right edge). */
-  .ptk {
-    --ptk-party-w: 132px;
-  }
   .ptk-toolbar > .ptk-seg-party {
-    flex: 0 0 var(--ptk-party-w);
-    width: var(--ptk-party-w);
-    /* If it wraps under chamber (narrowest phones) it stays on the right. */
+    flex: 0 0 132px;
+    width: 132px;
     margin-left: auto;
   }
   /* mobile-responsive.css gives every button a 44px min-width below 768px;
-     four of those (176px) cannot fit the 132px control, which clipped I.
-     The buttons keep their 44px height and share the width (~33px each). */
-  .ptk-toolbar > .ptk-seg-party .ptk-seg-btn {
+     the party and period buttons share their control's width instead. */
+  .ptk-toolbar > .ptk-seg-party .ptk-seg-btn,
+  .ptk-toolbar > .ptk-seg-period .ptk-seg-btn {
     min-width: 0;
   }
-  .ptk-sort-inline {
-    margin-left: auto;
-    width: var(--ptk-party-w);
-  }
-  .ptk-sort-inline select {
-    width: 100%;
-    height: 40px;
+  .ptk-toolbar > .ptk-seg-period {
+    flex: 1 1 100%;
+    margin-left: 0;
   }
 
-  .ptk-rail {
+  /* Sort row: sort and direction on one line, ticker on the next. */
+  .ptk-sortbar-label,
+  .ptk-sortbar-rule {
+    display: none;
+  }
+  .ptk-sort-dd {
+    flex: 1 1 auto;
+  }
+  .ptk-dir,
+  .ptk-tkf-field {
+    height: 40px;
+  }
+  .ptk-tkf {
+    flex: 1 1 100%;
+  }
+  .ptk-tkf-field {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ptk-tkf-input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    font-size: 16px;
+  }
+  .ptk-tkf-menu {
+    width: 100%;
+  }
+  .ptk-showing {
+    margin-left: 0;
+  }
+
+  .ptk-right {
     grid-template-columns: 1fr;
   }
   .ptk-held {
     min-height: 180px;
-    padding-top: 18px;
-  }
-  .ptk-cards {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
   }
 
-  /* Compact card, about half the old height: portrait left; name and
-     volume on the first line, chamber/party/seat and share of #1 on the
-     second; the buy/sell bar and counts full width under them. */
-  .ptk-card {
-    display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    grid-template-areas:
-      'shot name vol'
-      'shot meta pct'
-      'bar  bar  bar'
-      'line line line'
-      'tks  tks  tks';
-    column-gap: 12px;
-    row-gap: 4px;
-    align-items: center;
-    text-align: left;
-    padding: 12px 14px;
+  /* Phone table: rank, politician, volume, buy : sell, trades. Chamber is
+     the portrait ring; last trade and tickers are in the member panel. */
+  .ptk-list {
+    --ptk-row-h: 53px;
   }
-  .ptk-card .ptk-shot {
-    grid-area: shot;
-    width: 48px !important;
-    height: 48px !important;
-    margin-top: 0;
-  }
-  .ptk-rank {
-    top: 6px;
-    left: 6px;
-    z-index: 1;
-    padding: 1px 6px;
-    font-size: 10px;
-  }
-  .ptk-card-name {
-    grid-area: name;
-    font-size: 14px;
-  }
-  .ptk-card-meta {
-    grid-area: meta;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-  .ptk-card-chip {
-    position: static;
-  }
-  .ptk-card-vol {
-    grid-area: vol;
-    justify-self: end;
-    font-size: 18px;
-  }
-  .ptk-card-cap {
-    grid-area: pct;
-    justify-self: end;
-    margin-top: 0;
-    white-space: nowrap;
-  }
-  /* The caption is said once, in the gallery heading's cap line, not on
-     every card; "36% of #1" stays. */
-  .ptk-card-cap-txt {
-    display: none;
-  }
-  .ptk-card .ptk-split {
-    grid-area: bar;
-    margin-top: 6px;
-  }
-  .ptk-card-line {
-    grid-area: line;
-  }
-  .ptk-card .ptk-tks {
-    grid-area: tks;
-    justify-content: flex-start;
-    margin-top: 2px;
-  }
-  .ptk-card--skel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .ptk-col-bs,
+  .ptk-col-chamber,
   .ptk-col-last,
   .ptk-col-volbar {
     display: none;
+  }
+  .ptk-vol-fig {
+    flex-basis: auto;
   }
   .ptk-list-foot {
     flex-direction: column;
@@ -1672,8 +1627,8 @@
 .pts {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-top: 48px;
+  gap: 22px;
+  margin-top: 20px;
   padding-top: 24px;
   border-top: 1px solid var(--border-primary);
 }
@@ -1687,7 +1642,8 @@
 }
 .pts-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 26px;
+  line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -1737,9 +1693,17 @@
 }
 .pts-now-figs {
   display: grid;
-  grid-template-columns: repeat(4, auto);
-  gap: 8px 32px;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 12px 24px;
   margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.pts-now-figs--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0 0 12px;
+  border-top: 0;
 }
 .pts-now-figs div {
   display: flex;
@@ -1857,9 +1821,6 @@ button.pts-row:focus-visible {
     grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
-  .pts-now-figs {
-    grid-template-columns: repeat(2, auto);
-  }
 }
 @media (max-width: 480px) {
   .pts-row {
@@ -1871,13 +1832,306 @@ button.pts-row:focus-visible {
   }
 }
 
-/* Economic outlook (Nov 18 2026): breadth plus rotation to safety. */
+/* Economic outlook (Nov 18 2026): breadth plus rotation to safety. Its
+   label and score on the left, the parts that make it on the right. */
 .pts-outlook {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 16px 40px;
   padding-top: 20px;
   border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.pts-outlook-note {
+  grid-column: 1 / -1;
+  max-width: 110ch;
+}
+.pts-outlook-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.pts-heuristic {
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* ── Nov 18 redesign: the signal, spectrum, moves and context ─────────── */
+.pts-signal {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  gap: 16px 40px;
+  align-items: start;
+}
+.pts-signal .pts-now-reading {
+  font-size: 44px;
+}
+.pts-story {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+  border-left: 2px solid var(--border-primary);
+  max-width: 78ch;
+}
+.pts-story-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+.pts-story-main {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pts-story-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.pts-story-tag {
+  margin-right: 4px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--warning);
+}
+
+.pts-spec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pts-spec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.pts-spec-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pts-spec-cap {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.pts-spec-track {
+  position: relative;
+  height: 10px;
+  margin-top: 22px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.pts-spec-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.pts-spec-zone.is-bear {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: color-mix(in srgb, var(--negative) 32%, transparent);
+}
+.pts-spec-zone.is-neutral {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+.pts-spec-zone.is-bull {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: color-mix(in srgb, var(--emerald) 32%, transparent);
+}
+.pts-spec-tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: color-mix(in srgb, var(--text-primary) 35%, transparent);
+}
+.pts-spec-mark {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: var(--radius-sm);
+  background: var(--text-primary);
+}
+.pts-spec-mark-val {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+.pts-spec-scale {
+  position: relative;
+  height: 14px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.pts-spec-scale span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.pts-spec-scale span:first-child {
+  transform: none;
+}
+.pts-spec-scale span:last-child {
+  transform: translateX(-100%);
+}
+.pts-spec-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 11.5px;
+}
+
+.pts-rot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 520px;
+}
+.pts-rot-track {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.pts-rot-mid {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: color-mix(in srgb, var(--text-primary) 40%, transparent);
+}
+.pts-rot-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-sm);
+}
+.pts-rot-bar.is-safe {
+  background: color-mix(in srgb, var(--negative) 55%, transparent);
+}
+.pts-rot-bar.is-growth {
+  background: color-mix(in srgb, var(--emerald) 60%, transparent);
+}
+.pts-rot-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.pts-moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 40px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.pts-move {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.pts-move-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.pts-move-cap {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pts-move-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pts-move-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-primary) 50%, transparent);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.pts-move-list li .dsc-mn {
+  font-weight: 600;
+}
+
+.pts-sort {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.pts-sort-btn {
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.pts-sort-btn:hover {
+  color: var(--text-primary);
+}
+.pts-sort-btn.is-on {
+  color: var(--emerald-text);
+  font-weight: 700;
+}
+.pts-sort-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.pts-sector-cols {
+  display: grid;
+  grid-template-columns: minmax(84px, 1.1fr) minmax(80px, 2fr) 48px minmax(64px, auto);
+  gap: 12px;
+  padding: 6px 0 2px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.pts-sector-cols span:nth-child(3),
+.pts-sector-cols span:nth-child(4) {
+  text-align: right;
+}
+.pts-row-ch {
+  font-weight: 600;
+}
+
+.pts-context {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.pts-context ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 4px 32px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 .pts-outlook-main {
   display: flex;
@@ -1918,4 +2172,85 @@ button.pts-row:focus-visible {
 .pts-row-outlook {
   font-size: 10px;
   font-weight: 500;
+}
+
+/* ── Nov 18 redesign: the rail's Trades by state, flat and compact ──────
+   The shared StateMap card sits in this rail without its box: a hairline
+   under it like the other rail blocks, the window switch reading selected
+   as emerald text, and (with room) the map beside its five-state list. */
+.ptk-right .cwh-sm--compact.cwh-card {
+  padding: 0 0 16px;
+  border: 0;
+  border-bottom: 1px solid var(--ptk-hair);
+  border-radius: 0;
+  background: transparent;
+  gap: 10px;
+}
+.ptk-right .cwh-sm--compact {
+  --cwh-pill-active-bg: transparent;
+  --cwh-pill-active-fg: var(--ptk-buy-text);
+}
+.ptk-right .cwh-sm--compact .cwh-pill.is-active {
+  border-color: var(--ptk-hair-strong);
+  font-weight: 700;
+}
+.ptk-right .cwh-sm--compact .cwh-caption {
+  font-size: 11.5px;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-totals dd {
+  font-size: 13.5px;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-list {
+  max-height: 220px;
+}
+@media (min-width: 1201px) {
+  .ptk-right .cwh-sm--compact .cwh-sm-body {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+  }
+  .ptk-right .cwh-sm--compact .cwh-sm-row {
+    padding: 5px 0;
+  }
+}
+/* Most held: a shorter plot in the rail. */
+.ptk-right .ptk-held-plot {
+  flex: 0 0 auto;
+  height: 116px;
+  min-height: 0;
+}
+
+/* Sentiment, narrow screens (after the rules above so these win). */
+@media (max-width: 900px) {
+  .pts-now-figs,
+  .pts-now-figs--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pts-signal,
+  .pts-outlook {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pts-story {
+    padding-left: 14px;
+  }
+}
+@media (max-width: 480px) {
+  .pts-title {
+    font-size: 21px;
+  }
+  .pts-signal .pts-now-reading {
+    font-size: 34px;
+  }
+  .pts-sector-cols {
+    grid-template-columns: 72px minmax(60px, 1fr) 40px 60px;
+    gap: 8px;
+  }
+  .pts-context ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

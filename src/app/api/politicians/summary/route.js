@@ -10,7 +10,8 @@
  *             until that migration is applied)
  *
  * Query: ?chamber=house|senate&party=D|R|I&q=<name or state>&sort=volume|trades|latest
- * &days=<7..36500> (the period filter; 365 when absent).
+ * &days=<7..36500> (the period filter; 365 when absent)&ticker=<symbol> (rank on that
+ * ticker's trades only; see politician_rankings_ticker).
  *
  * Rankings include every sitting member, traders first; members with no
  * disclosed trade in the window come back with trades = 0 (see the
@@ -25,6 +26,7 @@ import {
   partyParam,
   queryParam,
   daysParam,
+  tickerParam,
   readSummary,
 } from '@/lib/politicians/congress-store';
 
@@ -48,6 +50,7 @@ export async function GET(request) {
     q: queryParam(searchParams.get('q')),
     sort,
     windowDays: days,
+    ticker: tickerParam(searchParams.get('ticker')),
   });
   if (summary.error) {
     console.warn(`[politicians/summary] ${summary.error}`);
