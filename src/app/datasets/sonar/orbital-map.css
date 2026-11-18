@@ -851,31 +851,6 @@
   color: var(--dsi-ink-muted) !important;
 }
 
-/* Research controls: black fields, light text, a green chevron on the
-   right, never the native white control. */
-.ds-shell.ds-shell--search .src .src-select {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  min-height: 40px;
-  padding: 0 36px 0 12px !important;
-  border: 1px solid var(--dsi-line-faint) !important;
-  border-radius: var(--radius-sm) !important;
-  background-color: var(--dsi-base) !important;
-  background-image: none !important;
-  color: var(--dsi-ink) !important;
-  -webkit-text-fill-color: var(--dsi-ink);
-  font-size: 16px;
-}
-.ds-shell.ds-shell--search .src .src-select option {
-  background: var(--dsi-base);
-  color: var(--dsi-ink);
-}
-.ds-shell.ds-shell--search .src .src-select:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 2px;
-}
-
 /* The Ping field stays transparent on its dark pill however the page loads
    (light theme, autofill, the phone's native field). */
 .ds-shell.ds-shell--search .dsi-ping__input,
@@ -900,14 +875,4 @@
   color: var(--dsi-ink-muted) !important;
   -webkit-text-fill-color: var(--dsi-ink-muted);
   opacity: 1;
-}
-.ds-shell.ds-shell--search .src .src-select-chev {
-  display: block;
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  color: var(--emerald);
-  font-size: 14px;
-  pointer-events: none;
 }

@@ -1,0 +1,272 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Ezana standard dropdown (Nov 18 2026)
+   One look for every dropdown in the app: a frosted, fully rounded trigger
+   with a chevron, and a frosted menu (12px corners, soft shadow) whose
+   selected item reads in bold emerald with a check.
+
+   Two parts:
+   1. .ezdd   the EzDropdown component (src/components/ui/ez-dropdown.jsx),
+              used for every new dropdown and wherever a menu is styled.
+   2. select  every native <select> takes the same trigger look, so the
+              whole app matches while pages move to EzDropdown. (A native
+              select's open list is drawn by the browser and cannot match.)
+
+   Colour comes from the page's tokens, resolved on the element itself, so
+   it follows light mode, dark mode and areas that stay dark in light mode
+   (.force-dark-theme redefines the tokens; Sonar's search shell maps its
+   own ground below). Tokens only; no raw colour.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ezdd,
+select:not([multiple]):not([size]):not(.ez-native-plain) {
+  --ezdd-bg: color-mix(in srgb, var(--bg-primary) 60%, transparent);
+  --ezdd-bg-hover: color-mix(in srgb, var(--text-primary) 6%, var(--bg-primary));
+  --ezdd-menu-bg: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+  --ezdd-border: color-mix(in srgb, var(--text-primary) 14%, transparent);
+  --ezdd-text: var(--text-primary);
+  --ezdd-muted: var(--text-muted);
+  --ezdd-option-hover: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  --ezdd-accent: var(--emerald-text);
+  --ezdd-ring: var(--emerald);
+  --ezdd-shadow: var(--shadow-sm);
+  --ezdd-menu-shadow: var(--shadow-lg);
+}
+
+/* Sonar's search shell paints its own dark ground in every theme. */
+.ds-shell--search .ezdd,
+.ds-shell--search select:not([multiple]):not([size]):not(.ez-native-plain) {
+  --ezdd-bg: color-mix(in srgb, var(--dsi-base, var(--bg-primary)) 90%, transparent);
+  --ezdd-bg-hover: color-mix(in srgb, var(--dsi-ink, var(--text-primary)) 8%, var(--dsi-base, var(--bg-primary)));
+  --ezdd-menu-bg: color-mix(in srgb, var(--dsi-base, var(--bg-primary)) 95%, transparent);
+  --ezdd-border: var(--dsi-line-faint, var(--border-primary));
+  --ezdd-text: var(--dsi-ink, var(--text-primary));
+  --ezdd-muted: var(--dsi-ink-muted, var(--text-muted));
+  --ezdd-option-hover: color-mix(in srgb, var(--dsi-ink, var(--text-primary)) 8%, transparent);
+  --ezdd-accent: var(--emerald);
+  color-scheme: dark;
+}
+
+/* ── 1. EzDropdown ──────────────────────────────────────────────────── */
+.ezdd {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-sans);
+}
+.ezdd--block {
+  display: block;
+  width: 100%;
+}
+.ezdd-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ezdd-border);
+  border-radius: var(--radius-xl);
+  background: var(--ezdd-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--ezdd-shadow);
+  font: inherit;
+  font-size: 14px;
+  color: var(--ezdd-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.ezdd--block .ezdd-trigger {
+  width: 100%;
+}
+.ezdd--sm .ezdd-trigger {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.ezdd--lg .ezdd-trigger {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+.ezdd-trigger:hover:not(:disabled) {
+  background: var(--ezdd-bg-hover);
+}
+.ezdd-trigger:focus-visible {
+  outline: 2px solid var(--ezdd-ring);
+  outline-offset: 2px;
+}
+.ezdd-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.ezdd-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ezdd-value.is-placeholder {
+  color: var(--ezdd-muted);
+}
+.ezdd-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+.ezdd-icon svg,
+.ezdd-icon .bi {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+.ezdd-chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ezdd-muted);
+  transition: transform 0.15s ease;
+}
+.ezdd.is-open .ezdd-chevron {
+  transform: rotate(180deg);
+}
+
+.ezdd-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  min-width: max(100%, 192px);
+  max-height: min(320px, 60vh);
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--ezdd-border);
+  border-radius: var(--radius-lg);
+  background: var(--ezdd-menu-bg);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--ezdd-menu-shadow);
+  animation: ezdd-fade-in 0.14s ease-out both;
+}
+.ezdd-menu--end {
+  left: auto;
+  right: 0;
+}
+.ezdd-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--ezdd-text);
+  cursor: pointer;
+  user-select: none;
+}
+.ezdd-option.is-active {
+  background: var(--ezdd-option-hover);
+}
+.ezdd-option.is-selected {
+  font-weight: 600;
+  color: var(--ezdd-accent);
+}
+.ezdd-option.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ezdd-option-label {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.ezdd-option-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ezdd-muted);
+}
+.ezdd-check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ezdd-accent);
+}
+@keyframes ezdd-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ezdd-menu {
+    animation: none;
+  }
+  .ezdd-chevron {
+    transition: none;
+  }
+}
+@media (max-width: 767px) {
+  .ezdd-trigger,
+  .ezdd-option {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* ── 2. Native selects, same trigger look ────────────────────────────────
+   Appearance only: width, height and layout stay with each page. The
+   chevron is drawn from currentColor, so it follows the text. Add
+   class="ez-native-plain" to keep a select out of this (rare). */
+select:not([multiple]):not([size]):not(.ez-native-plain) {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 32px;
+  border: 1px solid var(--ezdd-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--ezdd-bg);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--ezdd-shadow);
+  color: var(--ezdd-text);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+select:not([multiple]):not([size]):not(.ez-native-plain):hover:not(:disabled) {
+  background-color: var(--ezdd-bg-hover);
+}
+select:not([multiple]):not([size]):not(.ez-native-plain):focus-visible {
+  outline: 2px solid var(--ezdd-ring);
+  outline-offset: 2px;
+}
+select:not([multiple]):not([size]):not(.ez-native-plain):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+select:not([multiple]):not([size]):not(.ez-native-plain) option {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+.ds-shell--search select:not([multiple]):not([size]):not(.ez-native-plain) option {
+  background-color: var(--dsi-base, var(--bg-primary));
+  color: var(--dsi-ink, var(--text-primary));
+}

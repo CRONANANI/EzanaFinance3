@@ -25,6 +25,7 @@ Wireframes drawn from generic dashboard habits get these wrong. Check every artb
 9. **No em dashes anywhere.** Use a comma, a period, a colon or parentheses.
 10. **No invented data.** Every number, ticker and name in a wireframe is labelled sample content, and nothing is drawn that the product has no data for.
 11. **Nothing drawn ever sits on text.** A selection bar, a rule, a wash, a border or an icon never touches or overlaps a label. See section 6.6.
+12. **Every dropdown is the Ezana standard dropdown.** A frosted, fully rounded trigger with a chevron, a frosted menu, and the selected item in bold emerald with a check. It is the one control allowed a border and a rounded trigger on the canvas. See section 6.7.
 
 ---
 
@@ -208,6 +209,31 @@ Rule 11 in full. Because text is flush with the canvas lines and with column edg
 - **Long labels truncate, they do not collide.** A label that would run into the control beside it ends in an ellipsis and shows the full text in a tooltip.
 
 If a mock shows any mark touching a label, it is wrong, whatever tool drew it.
+
+### 6.7 Dropdowns (the standard, Nov 2026)
+
+Every dropdown in the app (a field that picks one value from a list) uses one design, built as `EzDropdown` (`src/components/ui/ez-dropdown.jsx`, styles in `src/styles/ez-dropdown.css`, loaded app-wide).
+
+**Trigger**
+- Fully rounded (`var(--radius-xl)` on a 36px control), a 1px border at 14% of the text colour, a translucent ground (60% of the page ground) with a 12px backdrop blur, and `var(--shadow-sm)`.
+- Label in the body sans at 14px in the text colour; a placeholder in muted grey.
+- A chevron on the right in muted grey that turns over when the menu is open. An optional leading icon (Bootstrap Icons, or a flag in the language selector only).
+- Hover deepens the ground slightly. Keyboard focus shows a 2px emerald ring with a 2px offset. Disabled is 55% opacity.
+- Sizes: `sm` 32px, `md` 36px (default), `lg` 44px. On phones every trigger and option is at least 44px tall with 16px text, so iOS does not zoom.
+
+**Menu**
+- Opens 8px below the trigger, at least as wide as the trigger (192px minimum), aligned to its start (or end with `align="end"`).
+- `var(--radius-lg)` corners, the same border, a 92% opaque ground with a 20px backdrop blur, `var(--shadow-lg)`, 4px inner padding. Scrolls past 320px (or 60% of the screen).
+- Options are 36px rows with `var(--radius-sm)` hover wash. The selected option is **bold emerald text with a check on the right**; nothing else marks it. An option may carry a grey hint line under its label.
+- Fades in over 0.14s with a 2px drop; no motion under reduced motion.
+
+**Colour adapts to the page, with no props.** The component resolves the page's own tokens on itself, so it is right on light pages, dark pages, and areas that stay dark in light mode (`.force-dark-theme`, and Sonar's search shell, which maps its own ground). Never pass colours in, and never hard-code a light or dark variant.
+
+**Behaviour.** Enter, Space or Down opens it; arrows, Home and End move; Enter or Space picks; typing a letter jumps to the next match; Escape or a tap outside closes it and focus returns to the trigger. It is announced as a combobox with a listbox.
+
+**Native selects.** Every existing `<select>` takes the same trigger look from `ez-dropdown.css` (appearance only; its width and layout stay with the page). The open list of a native select is drawn by the browser and cannot match, so new work uses `EzDropdown`, and pages move to it as they are touched. `class="ez-native-plain"` opts a select out, for rare cases such as a select inside a third-party widget.
+
+**Not this control.** Time period selectors stay as text buttons (6.1), toggles and tabs stay text only (6.2), and action menus ("More", row menus) use the library's `Dropdown` and `MenuItem` (section 20).
 
 ---
 
@@ -393,7 +419,8 @@ Every card needs these drawn or described, and built:
 - Do not draw outlined, rounded, filled or shadowed cards.
 - Do not draw an emerald-outlined or glowing "hero" card.
 - Do not inset card text from the logo and logout lines.
-- Do not draw pill or segmented controls with a track or a filled selected state.
+- Do not draw pill or segmented controls with a track or a filled selected state. (The standard dropdown trigger in 6.7 is the one rounded, bordered control, and only for dropdowns.)
+- Do not hand-roll a dropdown, or draw one any other way than section 6.7.
 - Do not draw outlined buttons or bordered search fields.
 - Do not add a page title block or explainer paragraphs under titles.
 - Do not put an accent bar, a rule, a wash or a border on or against text.
@@ -419,7 +446,7 @@ Interface elements come from `src/components/ds` (`import { Button, Modal } from
 | Button                  | `Button`                                                                          | `variant`: primary, secondary, ghost, danger. `size`: sm, md, lg. `icon`, `loading`, `block`. |
 | Icon-only button        | `IconButton`                                                                      | `icon` and a required `label` (read by screen readers).                                       |
 | Text field              | `Input`, `Textarea`                                                               | `label`, `hint`, `error`. The label is always present, visible or hidden.                     |
-| Dropdown field          | `Select`                                                                          | `label`, `options`.                                                                           |
+| Dropdown field          | `EzDropdown` (`@/components/ui/ez-dropdown`)                                      | `options`, `value`, `onChange`, `label`, `size`, `align`, `block`. The standard (6.7). `Select` remains for existing forms and takes the same look. |
 | Checkbox, on/off switch | `Checkbox`, `Toggle`                                                              | `label`, `checked`, `onChange`.                                                               |
 | Menu                    | `Dropdown`, `MenuItem`, `MenuDivider`                                             | `MenuItem` takes `icon` and `danger`. Use for row menus and "More".                           |
 | Dialog                  | `Modal`                                                                           | `title`, `footer`, `size`. Focus trap, Escape and focus return are built in.                  |
@@ -472,6 +499,7 @@ A card is a `<section>` with a heading and no surface.
 - **Fields** always have a label. Hints sit under the field in grey. An error replaces the hint, in the negative colour, with the field marked invalid.
 - **Validation** runs on submit and then live on the field that failed. The message says what to change.
 - **Menus** open from an icon button or a labelled trigger, close on Escape and on outside click, and return focus to the trigger. Destructive items are last, after a divider.
+- **Dropdown fields** are `EzDropdown` (section 6.7): a label above it (or `label` for screen readers when the row already names it), the selected value in bold emerald with a check inside the menu.
 - **Dialogs** have one title, one primary action and a text Cancel. Destructive dialogs name what will be lost ("Delete clean energy and its 8 items?").
 - **Toasts** confirm an action in one line, last about 3.5 seconds, and offer Undo for a removal (6 seconds).
 

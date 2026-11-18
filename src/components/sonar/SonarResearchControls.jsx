@@ -15,32 +15,28 @@ import {
   CONTROL_DEFAULTS,
   isDefaultControls,
 } from '@/lib/sonar/research-controls';
+import { EzDropdown } from '@/components/ui/ez-dropdown';
 import { useResearchControls } from './research-controls-store';
 import { useSonarPlan } from './useSonarPlan';
 import './sonar-research-controls.css';
 
+/* Nov 18 2026: the Ezana standard dropdown (EzDropdown) replaces the native
+   select, so the field matches the app's dropdown standard on every theme. */
 function Field({ id, label, value, options, onChange, disabled }) {
   return (
     <div className="src-field">
-      <label htmlFor={id} className="src-label">
+      <span id={`${id}-label`} className="src-label">
         {label}
-      </label>
-      <span className="src-select-wrap">
-        <select
-          id={id}
-          className="src-select"
-          value={value}
-          disabled={disabled}
-          onChange={(e) => onChange(e.target.value)}
-        >
-          {options.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <i className="bi bi-chevron-expand src-select-chev" aria-hidden="true" />
       </span>
+      <EzDropdown
+        id={id}
+        block
+        label={label}
+        value={value}
+        disabled={disabled}
+        onChange={(v) => onChange(v)}
+        options={options.map((o) => ({ value: o.key, label: o.label }))}
+      />
     </div>
   );
 }

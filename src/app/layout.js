@@ -3,6 +3,7 @@ import './fonts.css';
 import './globals.css';
 // After globals.css on purpose: it has to land after Tailwind Preflight.
 import './app-typography.css';
+import '@/styles/ez-dropdown.css';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { validateEnv } from '@/lib/env';
