@@ -2201,3 +2201,76 @@ body.light-mode .bs-band + .bs-band {
     color: var(--emerald-text);
   }
 }
+
+/* ── Nov 18: the comparison chart's series on phones ───────────────────
+   One column under the chart: a row per line (My Portfolio, then each
+   index), the name on the left and its change on the right, split by
+   hairlines. Flat rows, no pills: a line that is on reads in ink with its
+   coloured dot, a line that is off reads muted with a grey dot. */
+@media (max-width: 767px) {
+  .bs-chart-block .bs-index-strip {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .bs-chart-block .bs-index-chip,
+  .bs-chart-block .bs-series-chip {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--bs-border-subtle);
+    border-radius: 0;
+    background: transparent;
+    font-size: 13px;
+    color: var(--bs-text-label);
+  }
+  .bs-chart-block .bs-index-chip {
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+  }
+  .bs-chart-block .bs-series {
+    display: flex;
+    width: 100%;
+  }
+  .bs-chart-block .bs-index-chip--active,
+  .bs-chart-block .bs-index-chip--active:hover,
+  .bs-chart-block .bs-series-chip--active {
+    background: transparent;
+    border-color: var(--bs-border-subtle);
+    color: var(--bs-text-dark);
+  }
+  .bs-chart-block .bs-index-chip--active .bs-index-chip-pct {
+    color: var(--bs-text-dark);
+  }
+  .bs-chart-block .bs-index-chip:not(.bs-index-chip--active):hover,
+  .bs-chart-block .bs-series-chip:not(.bs-series-chip--active):hover {
+    border-color: var(--bs-border-subtle);
+    color: var(--bs-text-dark);
+  }
+  .bs-chart-block .bs-index-chip-pct {
+    margin-left: auto;
+    opacity: 1;
+  }
+  .bs-chart-block .bs-series-main {
+    flex: 1 1 auto;
+    gap: 10px;
+    padding: 0;
+    border-radius: 0;
+    text-align: left;
+  }
+  .bs-chart-block .bs-series-caret {
+    padding: 0 0 0 14px;
+    margin-left: 12px;
+    border-radius: 0;
+  }
+  .bs-chart-block .bs-series-menu {
+    width: 100%;
+  }
+}
