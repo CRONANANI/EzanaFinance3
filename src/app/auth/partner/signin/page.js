@@ -1,3 +1,4 @@
+import AuthShell from '@/components/auth/AuthShell';
 import SignInCard from '@/components/auth/SignInCard';
 import { safeInternalPath } from '@/lib/sanitize';
 
@@ -15,13 +16,8 @@ export default function PartnerSignInPage({ searchParams }) {
     typeof searchParams?.error === 'string' ? searchParams.error : undefined;
 
   return (
-    <div className="signin-dark-lock flex min-h-screen w-full items-center justify-center bg-[#f8fafb]">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl" />
-      </div>
-
+    <AuthShell>
       <SignInCard variant="partner" redirectTo={redirectTo} oauthErrorMessage={oauthErrorMessage} />
-    </div>
+    </AuthShell>
   );
 }

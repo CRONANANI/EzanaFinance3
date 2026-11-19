@@ -6,6 +6,7 @@ import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeEmail } from '@/lib/sanitize';
 import { emailFooterHtml } from '@/lib/email/footer';
+import { classifyOAuthAccount } from '@/lib/auth/oauth-gate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -79,6 +80,22 @@ export async function POST(request) {
         { error: 'Email already verified', alreadyVerified: true },
         { status: 200 },
       );
+    }
+
+    /* Sign-up is invite-only. A Google or GitHub account that has not come
+       through an invite is finished (or refused) by /api/auth/oauth-complete,
+       never by an email code, so it cannot verify its way in from here. */
+    try {
+      const { state } = await classifyOAuthAccount(supabaseAdmin, user.id);
+      if (state === 'uninvited' || state === 'invited') {
+        return NextResponse.json(
+          { error: 'Ezana is invite only. Join the waitlist to get an invite.' },
+          { status: 403 },
+        );
+      }
+    } catch (err) {
+      console.error('send-verification: invite gate', err?.message || err);
+      return NextResponse.json({ error: 'Could not prepare your account' }, { status: 500 });
     }
 
     const { data: recentCode, error: recentErr } = await supabaseAdmin

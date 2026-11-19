@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AuthShell from '@/components/auth/AuthShell';
 import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
@@ -10,83 +11,63 @@ export default function LoginChoicePage({ searchParams }) {
   /* Carry a destination (e.g. from /auth/continue) through to each sign-in. */
   const target = safeInternalPath(searchParams?.redirect ?? searchParams?.next, '');
   const withRedirect = (href) => (target ? `${href}?redirect=${encodeURIComponent(target)}` : href);
+  const choices = [
+    {
+      href: '/auth/signin',
+      tone: '',
+      icon: 'bi-person',
+      title: 'Login as User',
+      text: 'Access your portfolio and market intelligence',
+    },
+    {
+      href: '/auth/partner/signin',
+      tone: ' as-choice--gold',
+      icon: 'bi-patch-check-fill',
+      title: 'Login as Partner',
+      text: 'Partner, creator, or professional money manager',
+    },
+    {
+      href: '/auth/org-login',
+      tone: ' as-choice--org',
+      icon: 'bi-mortarboard-fill',
+      title: 'Organizational Login',
+      text: 'University investment council member',
+    },
+  ];
   return (
-    <div className="signin-dark-lock relative min-h-screen w-full flex flex-col items-center justify-center bg-[#f8fafb] px-4 py-10 text-[#0f172a]">
-      {/* Ambient glows */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-emerald-500/12 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-teal-500/8 blur-3xl" />
-      </div>
+    <AuthShell>
+      <div className="as-panel as-panel--wide">
+        <h1 className="as-title">Login</h1>
+        <p className="as-sub">Choose how you would like to sign in to your account.</p>
 
-      <Link
-        href="/"
-        className="relative z-10 mb-6 inline-flex min-h-11 items-center text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
-      >
-        ← Back to home
-      </Link>
-
-      <div className="relative z-10 w-full max-w-md rounded-none border border-emerald-500/20 bg-white p-8 shadow-xl shadow-slate-200/60">
-        <h1 className="mb-2 text-2xl font-bold text-slate-900">Login</h1>
-        <p className="mb-8 text-slate-600">Choose how you would like to sign in to your account.</p>
-
-        <div className="flex flex-col gap-4">
-          <Link
-            href={withRedirect('/auth/signin')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-emerald-500/25 bg-emerald-500/5 p-4 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10"
-          >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-emerald-500/15 transition-colors group-hover:bg-emerald-500/25">
-              <i className="bi bi-person text-xl text-emerald-600" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-semibold text-slate-900">Login as User</h2>
-              <p className="text-sm text-slate-600">
-                Access your portfolio and market intelligence
-              </p>
-            </div>
-            <i className="bi bi-chevron-right text-emerald-600 opacity-70 transition-opacity group-hover:opacity-100" />
-          </Link>
-
-          <Link
-            href={withRedirect('/auth/partner/signin')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-amber-400/25 bg-amber-500/5 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
-          >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-amber-500/15 transition-colors group-hover:bg-amber-500/25">
-              <i className="bi bi-patch-check-fill text-xl text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-semibold text-slate-900">Login as Partner</h2>
-              <p className="text-sm text-slate-600">
-                Partner, creator, or professional money manager
-              </p>
-            </div>
-            <i className="bi bi-chevron-right text-amber-600 opacity-70 transition-opacity group-hover:opacity-100" />
-          </Link>
-
-          <Link
-            href={withRedirect('/auth/org-login')}
-            className="portal-login-choice group flex min-h-[6.5rem] items-center gap-4 rounded-none border border-indigo-400/25 bg-indigo-500/5 p-4 transition-all hover:border-indigo-400/50 hover:bg-indigo-500/10"
-          >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-indigo-500/15 transition-colors group-hover:bg-indigo-500/25">
-              <i className="bi bi-mortarboard-fill text-xl text-indigo-600" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-semibold text-slate-900">Organizational Login</h2>
-              <p className="text-sm text-slate-600">University investment council member</p>
-            </div>
-            <i className="bi bi-chevron-right text-indigo-600 opacity-70 transition-opacity group-hover:opacity-100" />
-          </Link>
+        <div className="as-choices">
+          {choices.map((c) => (
+            <Link
+              key={c.href}
+              href={withRedirect(c.href)}
+              className={`portal-login-choice as-choice${c.tone}`}
+            >
+              <span className="as-choice-ic" aria-hidden="true">
+                <i className={`bi ${c.icon}`} />
+              </span>
+              <span className="as-choice-body">
+                <h2 className="as-choice-title">{c.title}</h2>
+                <span className="as-choice-text">{c.text}</span>
+              </span>
+              <i className="bi bi-chevron-right" aria-hidden="true" />
+            </Link>
+          ))}
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Don&apos;t have an account?{' '}
-          <Link
-            href={withRedirect('/auth/signup')}
-            className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
-          >
-            Join the waitlist
-          </Link>
-        </p>
+        <div className="as-foot">
+          <p>
+            Don&apos;t have an account?{' '}
+            <Link href={withRedirect('/auth/signup')} className="as-link">
+              Join the waitlist
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

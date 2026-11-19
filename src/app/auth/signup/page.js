@@ -17,6 +17,8 @@ import { supabase } from '@/lib/supabase-browser';
 import { PasswordStrengthField } from '@/components/ui/password-strength-field';
 import { SpiralPasswordField } from '@/components/ui/spiral-password-field';
 import ReferralCodeField from '@/components/auth/ReferralCodeField';
+import OAuthButtons from '@/components/auth/OAuthButtons';
+import '@/components/auth/auth-shell.css';
 import { isValidCodeFormat, normalizeCode } from '@/lib/referrals';
 import { safeInternalPath } from '@/lib/sanitize';
 import { EMAIL_RE, validatePassword } from '@/lib/auth/password-rules';
@@ -521,6 +523,11 @@ function InviteForm({ token }) {
           {busy ? 'Creating account' : 'Create account'}
         </button>
       </form>
+      {/* An invited email can also finish with Google or GitHub: the provider
+          proves the same address the invite link does (/auth/callback). */}
+      <div className="as-scope wl-oauth">
+        <OAuthButtons flow="signup" onError={setError} />
+      </div>
       <p className="wl-foot">
         Already have an account?{' '}
         <Link href="/auth/signin" className="wl-link">
