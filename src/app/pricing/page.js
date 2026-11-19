@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
+import ApiPricingCalculator from '@/components/pricing/ApiPricingCalculator';
 import { PLANS as CATALOG } from '@/config/pricing';
 import { RENEWAL_POLICY_TEXT, TRIAL_DAYS } from '@/lib/billing/renewal-terms';
 import './pricing-standalone.css';
@@ -749,24 +750,34 @@ export default function PricingPage() {
           </span>
         </p>
 
-        <div className="billing-toggle-wrap" role="tablist" aria-label="Billing interval">
+        {/* Nov 19: the switch pill (Monthly, switch, Yearly) in the landing Sonar
+            band's glossy emerald metal finish. */}
+        <div className="billing-switch-pill" role="group" aria-label="Billing interval">
           <button
             type="button"
-            role="tab"
-            aria-selected={billing === 'monthly'}
-            className={`billing-btn ${billing === 'monthly' ? 'active' : ''}`}
+            className={`billing-switch-label${billing === 'monthly' ? ' is-on' : ''}`}
+            aria-pressed={billing === 'monthly'}
             onClick={() => setBilling('monthly')}
           >
             Monthly
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={billing === 'yearly'}
-            className={`billing-btn ${billing === 'yearly' ? 'active' : ''}`}
+            role="switch"
+            aria-checked={billing === 'yearly'}
+            aria-label="Bill yearly"
+            className="billing-switch"
+            onClick={() => setBilling(billing === 'yearly' ? 'monthly' : 'yearly')}
+          >
+            <span className="billing-switch-thumb" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={`billing-switch-label${billing === 'yearly' ? ' is-on' : ''}`}
+            aria-pressed={billing === 'yearly'}
             onClick={() => setBilling('yearly')}
           >
-            Annual <span className="save-pill">Save 20%</span>
+            Yearly <span className="save-pill">Save 20%</span>
           </button>
         </div>
       </header>
@@ -793,13 +804,7 @@ export default function PricingPage() {
         />
         <div className="pricing-cards-grid pricing-cards-grid--five">
           {PLANS.map((plan) => {
-            // annual shows the true yearly total (per-month-equivalent × 12)
-            const price =
-              billing === 'yearly'
-                ? plan.yearlyPrice != null
-                  ? plan.yearlyPrice * 12
-                  : null
-                : plan.monthlyPrice;
+            const p = planPricing(plan, billing);
             const isContact = plan.contactSales;
             const isPending = pendingPlan === plan.id;
             const ctaLabel = ctaLabelFor(plan, isPending);
@@ -833,24 +838,30 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                {/* Every card shows a figure, so no card carries an empty price row. */}
+                {/* Price: muted $ and unit around a large figure that rolls in on
+                    every toggle; the billing note (and the struck monthly
+                    price on yearly) sits underneath. */}
                 <div className="plan-price">
-                  {price === null ? (
-                    <span className="plan-price-amount">Custom</span>
-                  ) : plan.isFree ? (
-                    <>
-                      <span className="plan-price-currency">$</span>
-                      <span className="plan-price-amount">0</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="plan-price-currency">$</span>
-                      <span className="plan-price-amount">{price}</span>
-                      <span className="plan-price-interval">
-                        /{billing === 'yearly' ? 'annual' : 'month'}
-                      </span>
-                    </>
-                  )}
+                  <div key={`${plan.id}-${billing}`} className="plan-price-row">
+                    {p.kind === 'custom' ? (
+                      <span className="plan-price-amount">Custom</span>
+                    ) : (
+                      <>
+                        <span className="plan-price-currency">$</span>
+                        <span className="plan-price-amount">{p.main.replace('$', '')}</span>
+                        {p.unit ? <span className="plan-price-interval">{p.unit}</span> : null}
+                      </>
+                    )}
+                  </div>
+                  <div className="plan-price-note">
+                    {p.was ? (
+                      <s className="plan-price-was">
+                        <span className="plan-row-sr">was </span>
+                        {p.was}
+                      </s>
+                    ) : null}
+                    <span>{p.note}</span>
+                  </div>
                 </div>
 
                 <button
@@ -945,6 +956,9 @@ export default function PricingPage() {
           Secure checkout powered by Stripe · Cancel anytime from your account
         </div>
       </section>
+
+      {/* ── API pricing: Individual and Enterprise calculator ─────────── */}
+      <ApiPricingCalculator />
 
       {/* ── Comparison Table ───────────────────────────────────────── */}
       <section className="pricing-comparison-section" aria-labelledby="compare-heading">

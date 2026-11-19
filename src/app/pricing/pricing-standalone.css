@@ -1410,3 +1410,292 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
     white-space: nowrap;
   }
 }
+
+/* ── Nov 19, 2026: plan cards in the "growth plans" layout ───────────────
+   Left-aligned cards on a quiet muted surface: name and tagline, a large
+   figure between a muted $ and unit (rolls in on every toggle), a tall full
+   width CTA, then a ruled feature list. The recommended plan is inverted
+   onto the landing Sonar band's glossy emerald metal and sits slightly
+   forward. The subgrid rows (Oct 12) still line every card up. */
+.pricing-cards-grid--five {
+  gap: 1rem;
+}
+.pricing-cards-grid--five > .plan-card {
+  padding: 1.75rem 1.4rem 1.4rem;
+  text-align: left;
+  background: color-mix(in srgb, var(--text-primary) 3%, var(--surface-card));
+  border-color: var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+.pricing-cards-grid--five > .plan-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+.pricing-cards-grid--five .plan-name,
+.pricing-cards-grid--five .plan-tagline,
+.pricing-cards-grid--five .plan-trial-row,
+.pricing-cards-grid--five .plan-features-label {
+  text-align: left;
+}
+.pricing-cards-grid--five .plan-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.pricing-cards-grid--five .plan-tagline {
+  margin-bottom: 1rem;
+}
+
+.plan-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.4rem 0 1.4rem;
+}
+.plan-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  animation: plan-price-roll 0.32s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes plan-price-roll {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+}
+.pricing-cards-grid--five .plan-price-currency {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.pricing-cards-grid--five .plan-price-amount {
+  font-size: clamp(2.25rem, 3.1vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.pricing-cards-grid--five .plan-price .plan-price-interval {
+  margin-left: 0.15rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.plan-price-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.plan-price-was {
+  color: var(--text-faint);
+}
+
+.pricing-cards-grid--five .plan-cta {
+  min-height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  font-size: 0.875rem;
+}
+.pricing-cards-grid--five .plan-cta:hover:not(:disabled) {
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-md);
+}
+.pricing-cards-grid--five .plan-features-head .plan-features-divider {
+  margin: 1.6rem 0 1rem;
+}
+.pricing-cards-grid--five .plan-features li {
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+  color: var(--text-muted);
+}
+
+/* Recommended plan: inverted onto the glossy emerald metal. */
+.pricing-cards-grid--five > .plan-card--highlight,
+.pricing-cards-grid--five > .plan-card--highlight:hover {
+  position: relative;
+  z-index: 1;
+  background: var(--brand-band-metal);
+  border-color: color-mix(in srgb, var(--brand-band-mint) 30%, transparent);
+  color: white;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 24px 48px -12px rgba(0, 0, 0, 0.55),
+    0 0 40px -8px color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+@media (min-width: 1201px) {
+  .pricing-cards-grid--five > .plan-card--highlight,
+  .pricing-cards-grid--five > .plan-card--highlight:hover {
+    transform: scale(1.05);
+  }
+}
+.plan-card--highlight .plan-name,
+.plan-card--highlight .plan-price-amount {
+  color: white;
+}
+.plan-card--highlight .plan-tagline,
+.plan-card--highlight .plan-price-currency,
+.plan-card--highlight .plan-price .plan-price-interval,
+.plan-card--highlight .plan-price-note,
+.plan-card--highlight .plan-features li,
+.plan-card--highlight .plan-features-label {
+  color: rgba(255, 255, 255, 0.72);
+}
+.plan-card--highlight .plan-price-was {
+  color: rgba(255, 255, 255, 0.5);
+}
+.plan-card--highlight .plan-feature-check {
+  color: var(--brand-band-mint);
+}
+.plan-card--highlight .plan-features-divider {
+  background: rgba(255, 255, 255, 0.18);
+}
+.plan-card--highlight .plan-trial-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--brand-band-mint);
+}
+.pricing-cards-grid--five .plan-card--highlight .plan-cta,
+.pricing-cards-grid--five .plan-card--highlight .plan-cta:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: white;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.pricing-cards-grid--five .plan-card--highlight .plan-cta:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+.plan-card--highlight .plan-badge {
+  background: white;
+  color: var(--emerald-dark, var(--emerald));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.pricing-cards-section .plan-card--highlight .plan-terms-slot .renewal-terms.plan-renewal {
+  border-top-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.55);
+}
+.pricing-cards-section .plan-card--highlight .renewal-terms a {
+  color: var(--brand-band-mint);
+}
+
+/* ── Nov 19: the billing switch pill ────────────────────────────────────
+   Monthly, a switch, Yearly + Save 20%, on the Sonar band's emerald metal
+   (--brand-band-metal) with a glass highlight across the top half, so it
+   reads glossy like the landing Sonar section. */
+.billing-switch-pill {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.7rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--brand-band-metal);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--brand-band-mint) 28%, transparent),
+    0 10px 28px -6px color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+.billing-switch-pill::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px 50% 1px;
+  z-index: -1;
+  border-radius: 9999px 9999px 40% 40% / 9999px 9999px 100% 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+  pointer-events: none;
+}
+.billing-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0 0.6rem;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.62);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.billing-switch-label:hover,
+.billing-switch-label.is-on {
+  color: white;
+}
+.billing-switch-label .save-pill {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--brand-band-mint);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 183, 0.3);
+}
+.billing-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.38);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.billing-switch[aria-checked='true'] {
+  background: color-mix(in srgb, var(--brand-band-mint) 45%, rgba(0, 0, 0, 0.3));
+}
+.billing-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, white 0%, rgba(255, 255, 255, 0.82) 100%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.billing-switch[aria-checked='true'] .billing-switch-thumb {
+  transform: translateX(20px);
+}
+.billing-switch:focus-visible,
+.billing-switch-label:focus-visible {
+  outline: 2px solid var(--brand-band-mint);
+  outline-offset: 2px;
+}
+@media (max-width: 768px) {
+  .billing-switch-pill {
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .billing-switch-label {
+    padding: 0 0.35rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-price-row {
+    animation: none;
+  }
+  .billing-switch-thumb {
+    transition: none;
+  }
+}
+.pricing-cards-section .plan-card--highlight .renewal-terms strong,
+.pricing-cards-section .plan-card--highlight .renewal-terms b {
+  color: white;
+}
+/* Mobile button floors (min-height 44px) must not stretch the switch track. */
+.billing-switch-pill .billing-switch {
+  flex: 0 0 46px;
+  min-width: 46px;
+  min-height: 0;
+  height: 26px;
+}

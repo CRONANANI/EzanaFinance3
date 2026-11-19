@@ -1,0 +1,85 @@
+/* API pricing section on /pricing (ApiPricingCalculator). Scoped `api-pricing-`. */
+
+.api-pricing {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+}
+.api-pricing-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+.api-pricing-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
+  text-transform: uppercase;
+  color: var(--emerald-text, var(--emerald));
+}
+.api-pricing-h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.api-pricing-sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+.api-pricing-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+}
+.api-pricing-tab {
+  min-height: 40px;
+  padding: 0 1.1rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+.api-pricing-tab:hover {
+  color: var(--text-primary);
+}
+.api-pricing-tab.is-active {
+  background: color-mix(in srgb, var(--emerald) 16%, transparent);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--emerald) 40%, transparent);
+}
+.api-pricing-tab:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .api-pricing {
+    padding: 2rem 1rem 3rem;
+  }
+  .api-pricing-tabs {
+    width: 100%;
+    max-width: 22rem;
+  }
+  .api-pricing-tab {
+    flex: 1;
+  }
+}
