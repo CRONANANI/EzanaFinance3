@@ -52,7 +52,24 @@ export function EchoRidgeline({
 }) {
   const [active, setActive] = useState(null);
   const W = 720;
-  const GUTTER = 92;
+  /* The label gutter fits the longest row label (up to two lines), so no
+     label is clipped at the figure's left edge. */
+  const CH = 6.9;
+  const wrap = (t) => {
+    const words = String(t || '').split(/\s+/);
+    const half = Math.ceil(String(t || '').length / 2);
+    if (String(t || '').length <= 16 || words.length < 2) return [String(t || '')];
+    let a = '';
+    const rest = [];
+    words.forEach((w) => {
+      if (!rest.length && (a + ' ' + w).trim().length <= half + 4) a = (a + ' ' + w).trim();
+      else rest.push(w);
+    });
+    return rest.length ? [a, rest.join(' ')] : [a];
+  };
+  const lines = series.map((s) => wrap(s.label));
+  const longest = Math.max(0, ...lines.flat().map((l) => l.length));
+  const GUTTER = Math.round(Math.min(230, Math.max(92, longest * CH + 20)));
   const AXIS = 28;
   const top = Math.ceil((overlap - 1) * rowHeight) + 12;
   const H = top + series.length * rowHeight + AXIS;
@@ -170,11 +187,16 @@ export function EchoRidgeline({
                 ) : null}
                 <text
                   x={GUTTER - 10}
-                  y={base(row) - 6}
+                  y={base(row) - 6 - (lines[row].length - 1) * 12}
                   className="echo-ridge-label"
                   textAnchor="end"
                 >
-                  {s.label}
+                  <title>{s.label}</title>
+                  {lines[row].map((l, k) => (
+                    <tspan key={k} x={GUTTER - 10} dy={k ? 12 : 0}>
+                      {l}
+                    </tspan>
+                  ))}
                 </text>
               </g>
             );

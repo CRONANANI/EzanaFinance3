@@ -102,7 +102,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     if (!hadInitialHub) loadHub();
   }, [hadInitialHub, loadHub]);
 
-
   const onFiltersChange = useCallback((patch) => {
     setFilters((prev) => {
       const next = { ...prev, ...patch };
@@ -116,7 +115,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     });
     setPages(1);
   }, []);
-
 
   const cards = hub.articles;
   /* The server already nulled images that are not in public/. */
@@ -163,17 +161,15 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   // Two teasers, then the rest of Editors' Picks. Both key off `hero`
   // (the current pick), so browsing past months never reshuffles them.
   const teasers = useMemo(() => pickHeroTeasers(stories, hero?.id), [stories, hero]);
-  /* The teasers lead the Editors' Picks rail instead of sitting on the hero. */
-  const editorsPicks = useMemo(
-    () => [
-      ...teasers,
-      ...pickEditorsPicks(stories, {
-        exclude: new Set([hero?.id, ...teasers.map((t) => t.id)].filter(Boolean)),
-        history: AOTM_HISTORY,
-      }),
-    ],
-    [stories, hero, teasers],
-  );
+  /* The first editors' pick leads the rail (Nov 19: the Bitcoin holders
+     piece), then the two former hero teasers, then the remaining picks. */
+  const editorsPicks = useMemo(() => {
+    const picks = pickEditorsPicks(stories, {
+      exclude: new Set([hero?.id, ...teasers.map((t) => t.id)].filter(Boolean)),
+      history: AOTM_HISTORY,
+    });
+    return [...picks.slice(0, 1), ...teasers, ...picks.slice(1)];
+  }, [stories, hero, teasers]);
 
   const shownFilters = councilReady ? filters : { ...filters, ours: false };
   const unfiltered = isDefaultFilters(shownFilters);

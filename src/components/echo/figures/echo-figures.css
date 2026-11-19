@@ -1197,7 +1197,9 @@
 .echo-ridge-tick,
 .echo-ridge-label {
   fill: var(--text-muted);
+  font-family: var(--font-mono);
   font-size: 11px;
+  letter-spacing: 0.02em;
 }
 .echo-ridge-row {
   cursor: pointer;
@@ -1251,6 +1253,15 @@
     transition: none;
   }
 }
+.echo-glow-anno-label,
+.echo-glow-anno-sub {
+  font-family: var(--font-mono);
+  /* A halo in the page colour keeps labels readable over grid and lines. */
+  paint-order: stroke;
+  stroke: var(--echo-canvas, var(--bg-primary));
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
 .echo-glow-anno-label {
   fill: var(--text-primary);
   font-size: 11px;
@@ -1258,7 +1269,7 @@
 }
 .echo-glow-anno-sub {
   fill: var(--text-muted);
-  font-size: 10.5px;
+  font-size: 10px;
 }
 .echo-dbars {
   display: grid;
@@ -1325,4 +1336,93 @@
 }
 .echo-dbars-row .echo-fig-dossier-btn {
   justify-self: start;
+}
+
+/* Treemap popups (Nov 19, 2026): hover or click a block for its value,
+   change and two sentences of context from the figure's own numbers. */
+.echo-tm-wrap {
+  position: relative;
+  outline: none;
+}
+.echo-tm-wrap:focus-visible {
+  box-shadow: 0 0 0 2px var(--emerald);
+  border-radius: var(--radius-sm);
+}
+.efig-tm-leaf {
+  transition: opacity 0.15s ease;
+}
+.efig-tm-leaf.is-dim {
+  opacity: 0.55;
+}
+.efig-tm-leaf.is-hot rect {
+  stroke: var(--emerald);
+  stroke-width: 2;
+}
+.echo-tm-pop {
+  position: absolute;
+  z-index: 5;
+  width: min(280px, 80%);
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-left: 2px solid var(--emerald);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary, var(--surface-card));
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+.echo-tm-pop__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.echo-tm-pop__name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.echo-tm-pop__chg {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.echo-tm-pop__chg.is-up {
+  color: var(--echo-chart-green);
+}
+.echo-tm-pop__chg.is-down {
+  color: var(--echo-chart-red);
+}
+.echo-tm-pop__group {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.echo-tm-pop__val {
+  margin: 8px 0 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.echo-tm-pop__val span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.echo-tm-pop__text {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.echo-tm-pop__hint {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-faint);
 }

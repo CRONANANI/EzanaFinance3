@@ -74,6 +74,8 @@ export function CobeGlobe({
   focusRef.current = focusTarget;
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
   const clickRef = useRef(onMarkerClick);
   clickRef.current = onMarkerClick;
   const drag = useRef(null);
@@ -164,14 +166,50 @@ export function CobeGlobe({
         return; // offscreen and idle: nothing to draw
       }
       globe.update({ phi: s.phi, theta: s.theta });
+      /* Labels never overlap (Nov 19, 2026): visible labels are placed in
+         priority order (the active city, then the nearest), each nudged up
+         or down until its box clears every label already placed; one that
+         cannot clear hides until the globe turns. */
+      const boxW = canvasRef.current?.clientWidth || size;
+      const placed = [];
+      const items = [];
       for (const p of pointsRef.current) {
         const el = labelRefs.current[p.i];
         if (!el) continue;
         const at = locationToScreen(p.lat, p.lng, s.phi, s.theta);
-        el.style.left = `${(at.x * 100).toFixed(3)}%`;
-        el.style.top = `${(at.y * 100).toFixed(3)}%`;
         const shown = at.visible ? Math.min(1, at.depth * 4) : 0;
-        el.style.setProperty('--cbg-visible', shown.toFixed(3));
+        items.push({ p, el, at, shown });
+      }
+      items.sort(
+        (a, b) =>
+          (b.p.i === activeIndexRef.current) - (a.p.i === activeIndexRef.current) ||
+          b.at.depth - a.at.depth,
+      );
+      for (const it of items) {
+        const { el, at } = it;
+        let dy = 0;
+        let fade = 1;
+        if (it.shown > 0.05) {
+          const tag = el.lastElementChild;
+          const w = (tag?.offsetWidth || 60) + 6;
+          const h = (tag?.offsetHeight || 18) + 4;
+          const x = at.x * boxW;
+          const y = at.y * boxW;
+          const clash = (oy) =>
+            placed.some(
+              (b) => Math.abs(b.x - x) < (b.w + w) / 2 && Math.abs(b.y - (y + oy)) < (b.h + h) / 2,
+            );
+          const tries = [0, -h, h, -2 * h, 2 * h];
+          const ok = tries.find((oy) => !clash(oy));
+          if (ok === undefined) fade = 0;
+          else {
+            dy = ok;
+            placed.push({ x, y: y + dy, w, h });
+          }
+        }
+        el.style.left = `${(at.x * 100).toFixed(3)}%`;
+        el.style.top = `calc(${(at.y * 100).toFixed(3)}% + ${dy}px)`;
+        el.style.setProperty('--cbg-visible', (it.shown * fade).toFixed(3));
       }
     };
     frame();

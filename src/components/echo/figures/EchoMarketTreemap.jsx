@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
 import { textWidth } from './fit';
 
@@ -156,111 +156,254 @@ function buildLayout(groups) {
   return laidGroups;
 }
 
+/* What AREA and FILL mean, read from the kicker ("AREA = … · FILL = …"). */
+function legendOf(kicker) {
+  const k = String(kicker || '');
+  const area = /AREA\s*=\s*([^·]+)/i.exec(k)?.[1]?.trim();
+  const fill = /FILL\s*=\s*([^·]+)/i.exec(k)?.[1]?.trim();
+  const tidy = (t) =>
+    t
+      .toLowerCase()
+      .replace(/\bq([1-4])\b/g, 'Q$1')
+      .replace(/\b(usd|btc|etf|us)\b/g, (m) => m.toUpperCase());
+  return {
+    area: area ? tidy(area) : 'size',
+    fill: fill ? tidy(fill) : 'change',
+  };
+}
+const titleCase = (t) =>
+  String(t || '')
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (m) => m.toUpperCase())
+    .replace(/\b(Btc|Etf|Us|Usd|Swib)\b/g, (m) => m.toUpperCase());
+const pctOf = (a, b) => (b > 0 ? (a / b) * 100 : 0);
+const fmtShare = (v) => `${v >= 10 ? Math.round(v) : v.toFixed(1)}%`;
+
+/**
+ * The popup for one rectangle: name, group, value and change, then two
+ * sentences composed only from the figure's own numbers (shares of its group
+ * and of the whole map, and its change against the group's size-weighted
+ * average), plus the leaf's own `note` when the article supplies one.
+ */
+function leafStory(leaf, group, total, legend) {
+  const gShare = pctOf(Number(leaf.size) || 0, group.value);
+  const tShare = pctOf(Number(leaf.size) || 0, total);
+  const perf = Number(leaf.perf) || 0;
+  const avg =
+    group.value > 0
+      ? group.leaves.reduce((a, l) => a + (Number(l.perf) || 0) * (Number(l.size) || 0), 0) /
+        group.value
+      : 0;
+  const gName = titleCase(group.label);
+  const diff = perf - avg;
+  const s1 = `${leaf.label} is ${fmtShare(gShare)} of ${gName} and ${fmtShare(tShare)} of everything on this map.`;
+  const s2 =
+    Math.abs(diff) < 0.5
+      ? `Its ${legend.fill} (${fmtPerf(perf)}) is in line with the ${gName} average of ${fmtPerf(+avg.toFixed(1))}.`
+      : `Its ${legend.fill} (${fmtPerf(perf)}) is ${diff > 0 ? 'stronger' : 'weaker'} than the ${gName} average of ${fmtPerf(+avg.toFixed(1))}.`;
+  return [s1, s2, leaf.note].filter(Boolean);
+}
+
 export function EchoMarketTreemap({ figureLabel, kicker, hint, source, groups = [] }) {
   const layout = useMemo(() => buildLayout(groups), [groups]);
+  const legend = useMemo(() => legendOf(kicker), [kicker]);
+  const total = layout.reduce((a, g) => a + g.value, 0);
+  const flat = useMemo(
+    () =>
+      layout
+        .flatMap((g) => g.leaves.map((l, li) => ({ g, l, key: `${g.key}-${l.label}-${li}` })))
+        .sort((a, b) => (Number(b.l.size) || 0) - (Number(a.l.size) || 0)),
+    [layout],
+  );
+  const [hover, setHover] = useState(null);
+  const [pin, setPin] = useState(null);
+  const hot = pin ?? hover;
+  const hit = flat.find((f) => f.key === hot) || null;
+  const pop = (() => {
+    if (!hit) return null;
+    const { l } = hit;
+    /* A very large block holds its own popup, near its top. */
+    if (l.h > VB_H * 0.42 && l.w > VB_W * 0.3) {
+      const right = (l.x + l.w / 2) / VB_W > 0.6;
+      return {
+        left: `${((right ? l.x + l.w : l.x) / VB_W) * 100}%`,
+        top: `${((l.y + Math.min(l.h * 0.22, 110)) / VB_H) * 100}%`,
+        transform: right ? 'translate(calc(-100% - 12px), 0)' : 'translate(12px, 0)',
+      };
+    }
+    const cx = ((l.x + l.w / 2) / VB_W) * 100;
+    const above = l.y > VB_H * 0.42;
+    const tx = cx < 22 ? '0%' : cx > 78 ? '-100%' : '-50%';
+    const left = cx < 22 ? (l.x / VB_W) * 100 : cx > 78 ? ((l.x + l.w) / VB_W) * 100 : cx;
+    return {
+      left: `${left}%`,
+      top: `${((above ? l.y : l.y + l.h) / VB_H) * 100}%`,
+      transform: `translate(${tx}, ${above ? 'calc(-100% - 8px)' : '8px'})`,
+    };
+  })();
 
   return (
     <EchoFigureShell figureLabel={figureLabel} kicker={kicker} hint={hint} source={source}>
-      <svg
-        className="echo-treemap-svg"
-        viewBox={`0 0 ${VB_W} ${VB_H}`}
-        width="100%"
-        role="img"
-        aria-label={figureLabel}
+      <div
+        className="echo-tm-wrap"
+        tabIndex={0}
+        role="group"
+        aria-label={`${figureLabel || 'Treemap'}. Arrow keys read each block, Enter pins it, Escape closes.`}
+        onKeyDown={(e) => {
+          if (!flat.length) return;
+          const at = flat.findIndex((f) => f.key === hot);
+          const step =
+            e.key === 'ArrowRight' || e.key === 'ArrowDown'
+              ? 1
+              : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+                ? -1
+                : 0;
+          if (step) {
+            e.preventDefault();
+            setPin(null);
+            setHover(flat[(at + step + flat.length) % flat.length].key);
+          } else if (e.key === 'Enter' && hot) {
+            e.preventDefault();
+            setPin((p) => (p === hot ? null : hot));
+          } else if (e.key === 'Escape') {
+            setPin(null);
+            setHover(null);
+          }
+        }}
+        onMouseLeave={() => setHover(null)}
       >
-        {layout.map((g) => (
-          <g key={g.key}>
-            {/* group frame */}
-            <rect
-              x={g.x + 1}
-              y={g.y + 1}
-              width={Math.max(0, g.w - 2)}
-              height={Math.max(0, g.h - 2)}
-              fill="none"
-              stroke="var(--border-primary)"
-              strokeWidth="1"
-            />
+        <svg
+          className="echo-treemap-svg"
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
+          width="100%"
+          role="img"
+          aria-label={figureLabel}
+        >
+          {layout.map((g) => (
+            <g key={g.key}>
+              {/* group frame */}
+              <rect
+                x={g.x + 1}
+                y={g.y + 1}
+                width={Math.max(0, g.w - 2)}
+                height={Math.max(0, g.h - 2)}
+                fill="none"
+                stroke="var(--border-primary)"
+                strokeWidth="1"
+              />
 
-            {g.showHeader && (
-              <text
-                x={g.inner.x + 2}
-                y={g.inner.y + 17}
-                fontSize="16"
-                fontWeight="700"
-                fill="var(--text-muted)"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {String(g.label).toUpperCase()}
-              </text>
-            )}
-
-            {g.leaves.map((leaf, li) => {
-              const { fill, fillOpacity } = perfFill(leaf.perf);
-              const short = Math.min(leaf.w, leaf.h);
-              const fs = Math.min(30, Math.max(TEXT_FLOOR, Math.floor(short * 0.24)));
-              const labelIsNum = isNumericLabel(leaf.label);
-              // Only label tiles that can seat two ≥15-unit lines AND the
-              // label's own width; a long name in a narrow tile used to run
-              // across its neighbours.
-              const nameW = textWidth(leaf.label, fs, { mono: labelIsNum });
-              const fits =
-                fs >= TEXT_FLOOR && leaf.w >= Math.max(fs * 3, nameW + 16) && leaf.h >= fs * 2.4;
-              return (
-                <g
-                  key={`${g.key}-${leaf.label}-${li}`}
-                  className="efig-tm-leaf"
-                  style={{ transitionDelay: `${leaf.revealIndex * 45}ms` }}
+              {g.showHeader && (
+                <text
+                  x={g.inner.x + 2}
+                  y={g.inner.y + 17}
+                  fontSize="16"
+                  fontWeight="700"
+                  fill="var(--text-muted)"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                  }}
                 >
-                  <rect
-                    x={leaf.x + 1}
-                    y={leaf.y + 1}
-                    width={Math.max(0, leaf.w - 2)}
-                    height={Math.max(0, leaf.h - 2)}
-                    fill={fill}
-                    fillOpacity={fillOpacity}
-                    stroke="var(--border-secondary)"
-                    strokeWidth="1"
-                  >
-                    <title>
-                      {`${leaf.label} · size ${leaf.size} · ${fmtPerf(
-                        Math.max(-10, Math.min(10, Number(leaf.perf) || 0)),
-                      )}`}
-                    </title>
-                  </rect>
+                  {String(g.label).toUpperCase()}
+                </text>
+              )}
 
-                  {fits && (
-                    <text
-                      x={leaf.x + 8}
-                      y={leaf.y + fs + 6}
-                      fontSize={fs}
-                      fill="var(--text-primary)"
-                      className={labelIsNum ? 'echo-fig-mono' : undefined}
-                      style={labelIsNum ? undefined : { fontFamily: 'var(--font-serif)' }}
+              {g.leaves.map((leaf, li) => {
+                const { fill, fillOpacity } = perfFill(leaf.perf);
+                const short = Math.min(leaf.w, leaf.h);
+                const fs = Math.min(30, Math.max(TEXT_FLOOR, Math.floor(short * 0.24)));
+                const labelIsNum = isNumericLabel(leaf.label);
+                // Only label tiles that can seat two ≥15-unit lines AND the
+                // label's own width; a long name in a narrow tile used to run
+                // across its neighbours.
+                const nameW = textWidth(leaf.label, fs, { mono: labelIsNum });
+                const fits =
+                  fs >= TEXT_FLOOR && leaf.w >= Math.max(fs * 3, nameW + 16) && leaf.h >= fs * 2.4;
+                return (
+                  <g
+                    key={`${g.key}-${leaf.label}-${li}`}
+                    className={`efig-tm-leaf${hot === `${g.key}-${leaf.label}-${li}` ? ' is-hot' : ''}${hot && hot !== `${g.key}-${leaf.label}-${li}` ? ' is-dim' : ''}`}
+                    style={{ transitionDelay: `${leaf.revealIndex * 45}ms`, cursor: 'pointer' }}
+                    onMouseEnter={() => {
+                      if (!pin) setHover(`${g.key}-${leaf.label}-${li}`);
+                    }}
+                    onClick={() => {
+                      const k = `${g.key}-${leaf.label}-${li}`;
+                      setPin((p) => (p === k ? null : k));
+                    }}
+                  >
+                    <rect
+                      x={leaf.x + 1}
+                      y={leaf.y + 1}
+                      width={Math.max(0, leaf.w - 2)}
+                      height={Math.max(0, leaf.h - 2)}
+                      fill={fill}
+                      fillOpacity={fillOpacity}
+                      stroke="var(--border-secondary)"
+                      strokeWidth="1"
                     >
-                      {leaf.label}
-                    </text>
-                  )}
-                  {fits && (
-                    <text
-                      x={leaf.x + 8}
-                      y={leaf.y + fs * 2 + 8}
-                      fontSize={Math.max(TEXT_FLOOR, Math.round(fs * 0.82))}
-                      fill="var(--text-muted)"
-                      className="echo-fig-mono"
-                    >
-                      {leaf.size}
-                    </text>
-                  )}
-                </g>
-              );
-            })}
-          </g>
-        ))}
-      </svg>
+                      <title>
+                        {`${leaf.label} · size ${leaf.size} · ${fmtPerf(
+                          Math.max(-10, Math.min(10, Number(leaf.perf) || 0)),
+                        )}`}
+                      </title>
+                    </rect>
+
+                    {fits && (
+                      <text
+                        x={leaf.x + 8}
+                        y={leaf.y + fs + 6}
+                        fontSize={fs}
+                        fill="var(--text-primary)"
+                        className={labelIsNum ? 'echo-fig-mono' : undefined}
+                        style={labelIsNum ? undefined : { fontFamily: 'var(--font-serif)' }}
+                      >
+                        {leaf.label}
+                      </text>
+                    )}
+                    {fits && (
+                      <text
+                        x={leaf.x + 8}
+                        y={leaf.y + fs * 2 + 8}
+                        fontSize={Math.max(TEXT_FLOOR, Math.round(fs * 0.82))}
+                        fill="var(--text-muted)"
+                        className="echo-fig-mono"
+                      >
+                        {leaf.size}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          ))}
+        </svg>
+        {hit && pop ? (
+          <div className="echo-tm-pop" style={pop} role="status">
+            <div className="echo-tm-pop__head">
+              <span className="echo-tm-pop__name">{hit.l.label}</span>
+              <span
+                className={`echo-tm-pop__chg ${(Number(hit.l.perf) || 0) >= 0 ? 'is-up' : 'is-down'}`}
+              >
+                {fmtPerf(Number(hit.l.perf) || 0)}
+              </span>
+            </div>
+            <div className="echo-tm-pop__group">{titleCase(hit.g.label)}</div>
+            <div className="echo-tm-pop__val">
+              <span>{hit.l.size}</span> {legend.area}
+            </div>
+            {leafStory(hit.l, hit.g, total, legend).map((t) => (
+              <p key={t} className="echo-tm-pop__text">
+                {t}
+              </p>
+            ))}
+            <div className="echo-tm-pop__hint">
+              {pin ? 'Pinned · click again or Esc to close' : 'Click to pin'}
+            </div>
+          </div>
+        ) : null}
+      </div>
     </EchoFigureShell>
   );
 }

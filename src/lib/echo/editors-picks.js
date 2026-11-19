@@ -19,6 +19,7 @@
  */
 
 export const EDITORS_PICKS = [
+  'bitcoin-institutional-holders-13f-2026',
   'the-ai-stack-is-upside-down-what-market-caps-say',
   'stablecoin-settlement-layer-2026',
   'empire-rankings-1500-2026',

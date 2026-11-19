@@ -2232,7 +2232,9 @@ html:has(.ech-hero) > body {
   border-radius: var(--radius-xl);
   overflow: hidden;
   isolation: isolate;
-  box-shadow: var(--ech-hero-card-shadow);
+  /* No drop shadow: the page around the card stays the plain background. */
+  box-shadow: none;
+  border-bottom: 0;
 }
 .ech-hero--photo .ech-hero__media {
   border-radius: inherit;
@@ -2341,4 +2343,15 @@ html:has(.ech-hero) > body {
   .ech-hero--photo:hover .ech-hero__media img {
     transform: none;
   }
+}
+
+/* Hero type stays white after visiting an article: the article route loads
+   legacy light-mode-fixes.css, whose `body.light-mode h1` and `p` rules use
+   !important and persist after client-side navigation back to Echo. */
+.ech-hero--photo .ech-hero__title,
+.ech-hero--photo .ech-hero__title a {
+  color: var(--ech-deep-fg, white) !important;
+}
+.ech-hero--photo .ech-hero__dek {
+  color: var(--ech-deep-mute, rgba(255, 255, 255, 0.72)) !important;
 }

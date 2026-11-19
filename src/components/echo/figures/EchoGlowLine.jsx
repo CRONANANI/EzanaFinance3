@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Line,
@@ -70,6 +70,35 @@ export function EchoGlowLine({
       return r;
     });
   }
+  /* Plot width (for anchoring edge labels) and dips (labelled below). */
+  const plotRef = useRef(null);
+  const [plotW, setPlotW] = useState(0);
+  useEffect(() => {
+    const el = plotRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([e]) => setPlotW(e.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const textW = (t, per) => String(t || '').length * per;
+  const isDip = (a) => {
+    const i = rows.findIndex((r) => r.x === a.x);
+    if (i <= 0 || i >= rows.length - 1) return false;
+    const vals = (r) => keyed.map((k) => r[k.key]).filter((v) => typeof v === 'number');
+    const here = a.y;
+    const prev = Math.min(...vals(rows[i - 1]));
+    const next = Math.min(...vals(rows[i + 1]));
+    return here <= prev && here <= next;
+  };
+  /* An edge point whose line climbs away from it (first point rising, last
+     point falling to it) is labelled below, clear of the line. */
+  const climbsAway = (a) => {
+    const i = rows.findIndex((r) => r.x === a.x);
+    const v = (r) => Math.max(...keyed.map((k) => r[k.key]).filter((x) => typeof x === 'number'));
+    if (i === 0 && rows.length > 1) return v(rows[1]) > a.y;
+    if (i === rows.length - 1 && rows.length > 1) return v(rows[i - 1]) > a.y;
+    return false;
+  };
   const fmt = (v, s) =>
     v == null ? 'N/A' : `${Number(v).toLocaleString('en-US')}${s?.unit ?? unit ?? ''}`;
 
@@ -88,7 +117,7 @@ export function EchoGlowLine({
             </span>
           ))}
         </div>
-        <div className="echo-glow-plot">
+        <div className="echo-glow-plot" ref={plotRef}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <LineChart
               data={rows}
@@ -151,40 +180,6 @@ export function EchoGlowLine({
                   ) : null
                 }
               />
-              {/* Annotations (carried over from trajectory figures): a marked
-                  point with its label and sub line above it. */}
-              {annotations.map((a, i) => (
-                <ReferenceDot
-                  key={`a${i}`}
-                  x={a.x}
-                  y={a.y}
-                  r={3.5}
-                  fill="var(--text-primary)"
-                  stroke="none"
-                  label={({ viewBox }) => (
-                    <g className="echo-glow-anno">
-                      <text
-                        x={viewBox.x}
-                        y={viewBox.y - 22}
-                        textAnchor="middle"
-                        className="echo-glow-anno-label"
-                      >
-                        {a.label}
-                      </text>
-                      {a.sub ? (
-                        <text
-                          x={viewBox.x}
-                          y={viewBox.y - 9}
-                          textAnchor="middle"
-                          className="echo-glow-anno-sub"
-                        >
-                          {a.sub}
-                        </text>
-                      ) : null}
-                    </g>
-                  )}
-                />
-              ))}
               {keyed.map((s) => (
                 <Line
                   key={s.key}
@@ -204,6 +199,59 @@ export function EchoGlowLine({
                   isAnimationActive={false}
                 />
               ))}
+              {/* Annotations (carried over from trajectory figures): a marked
+                  point with its label and sub line. Drawn after the lines so
+                  no line crosses the text; anchored inward near the plot
+                  edges so nothing clips; a dip is labelled below its point. */}
+              {annotations.map((a, i) => {
+                const below = isDip(a) || climbsAway(a);
+                return (
+                  <ReferenceDot
+                    key={`a${i}`}
+                    x={a.x}
+                    y={a.y}
+                    r={3.5}
+                    fill="var(--text-primary)"
+                    stroke="var(--echo-canvas, var(--bg-primary))"
+                    strokeWidth={1.5}
+                    label={({ viewBox }) => {
+                      const w = Math.max(textW(a.label, 7.2), a.sub ? textW(a.sub, 6.2) : 0);
+                      const room = plotW || 9999;
+                      const anchor =
+                        viewBox.x - w / 2 < 52
+                          ? 'start'
+                          : viewBox.x + w / 2 > room - 8
+                            ? 'end'
+                            : 'middle';
+                      const dx = anchor === 'start' ? 2 : anchor === 'end' ? 6 : 0;
+                      const y1 = below ? viewBox.y + 18 : viewBox.y - (a.sub ? 22 : 10);
+                      const y2 = below ? viewBox.y + 31 : viewBox.y - 9;
+                      return (
+                        <g className="echo-glow-anno">
+                          <text
+                            x={viewBox.x + dx}
+                            y={y1}
+                            textAnchor={anchor}
+                            className="echo-glow-anno-label"
+                          >
+                            {a.label}
+                          </text>
+                          {a.sub ? (
+                            <text
+                              x={viewBox.x + dx}
+                              y={y2}
+                              textAnchor={anchor}
+                              className="echo-glow-anno-sub"
+                            >
+                              {a.sub}
+                            </text>
+                          ) : null}
+                        </g>
+                      );
+                    }}
+                  />
+                );
+              })}
             </LineChart>
           </ResponsiveContainer>
         </div>
