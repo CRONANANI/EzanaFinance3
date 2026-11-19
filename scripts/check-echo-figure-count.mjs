@@ -33,6 +33,13 @@ const FIGURE_TYPES = new Set([
   'multi-axis',
   'tile-grid',
   'market-treemap',
+  // Nov 2026 catalog types (Ezana Echo skill, F29 to F35)
+  'glow-line',
+  'donut',
+  'radar',
+  'sentiment-bar',
+  'ridgeline',
+  'dossier-bars',
 ]);
 
 const files = readdirSync(LIB).filter(

@@ -60,6 +60,7 @@ import { mcmasterDficPortfolioScorecard2026 } from './ezana-echo-article-mcmaste
 import { industryNetMargins2026 } from './ezana-echo-article-industry-net-margins-2026.js';
 import { ossoff2028Money2026 } from './ezana-echo-article-ossoff-2028-money-2026.js';
 import { tokenizedMoneyOutageTheory2026 } from './ezana-echo-article-tokenized-money-outage-theory-2026.js';
+import { biggestMaDeals2026 } from './ezana-echo-article-biggest-ma-deals-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -99,6 +100,7 @@ const ARTICLES = [
   industryNetMargins2026,
   ossoff2028Money2026,
   tokenizedMoneyOutageTheory2026,
+  biggestMaDeals2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';
@@ -201,6 +203,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'biggest-ma-deals-2026': [
+    {
+      id: 'c-ma2026-1',
+      author: { name: 'Priya Raman', initials: 'PR' },
+      content:
+        'The equity vs enterprise value point is the whole story. Dominion is $67B or $119B depending on who you read, and nobody labels which.',
+      createdAt: '2026-11-19T14:05:00Z',
+    },
+    {
+      id: 'c-ma2026-2',
+      author: { name: 'Tomás Ferreira', initials: 'TF' },
+      content:
+        'Watching the Lumentum spread now. A $3.2B break fee on a 2028 close is a long time to carry deal risk.',
+      createdAt: '2026-11-19T15:40:00Z',
+    },
+  ],
   'ossoff-2028-money-2026': [
     {
       id: 'c-ossoff-1',

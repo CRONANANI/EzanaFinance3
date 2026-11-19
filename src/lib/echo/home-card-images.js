@@ -55,6 +55,11 @@ export const HOME_CARD_IMAGES = {
   },
   // Ossoff's $115.9 Million Machine
   'ossoff-2028-money-2026': { src: card('ossoff-2028-money-2026'), alt: '' },
+  // The Biggest M&A Deals of 2026, Checked (original Ezana illustration, Nov 19th)
+  'biggest-ma-deals-2026': {
+    src: card('biggest-ma-deals-2026'),
+    alt: 'Abstract illustration of nine glowing columns of different heights on a dark grid.',
+  },
   // Five Outages, One Story? (generated editorial image of the NYSE, supplied Nov 18th)
   'tokenized-money-outage-theory-2026': {
     src: card('tokenized-money-outage-theory-2026'),

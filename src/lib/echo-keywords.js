@@ -3630,6 +3630,55 @@ export const KEYWORDS = {
     },
   },
 
+  /* Biggest M&A deals of 2026 article keywords */
+  'enterprise-vs-equity-value': {
+    id: 'enterprise-vs-equity-value',
+    term: 'Enterprise Value vs Equity Value',
+    definition:
+      'Two ways to price the same acquisition. Equity value is what the buyer pays for the shares; enterprise value adds the debt the buyer takes on and subtracts cash. Deal tallies use either, so the same deal can be reported at very different sizes.',
+    template: 'formula',
+    templateData: {
+      formula: 'Enterprise value = Equity value + Net debt',
+      example: {
+        title: 'NextEra and Dominion (May 2026)',
+        substitution:
+          'About $66.8B of equity value, and about $119B once Dominion’s debt is included',
+      },
+    },
+    realWorld:
+      'Paramount’s purchase of Warner Bros. Discovery was about $81 billion of equity and about $110 billion including debt. Both figures are correct; a leaderboard should say which one it uses.',
+  },
+
+  'regulatory-termination-fee': {
+    id: 'regulatory-termination-fee',
+    term: 'Regulatory Termination Fee',
+    definition:
+      'A payment the buyer owes the target if a signed deal is blocked or abandoned because regulators will not approve it. Its size signals how much antitrust risk the buyer agreed to carry.',
+    template: 'timeline',
+    templateData: {
+      title: 'When a regulatory termination fee is paid',
+      events: [
+        {
+          year: 'Step 1',
+          label: 'Signing',
+          detail: 'Buyer and target agree the fee in the merger agreement',
+        },
+        {
+          year: 'Step 2',
+          label: 'Review',
+          detail: 'Antitrust and sector regulators examine the deal',
+        },
+        {
+          year: 'Step 3',
+          label: 'Block or walk',
+          detail: 'If approval fails, the buyer pays the fee to the target',
+        },
+      ],
+    },
+    realWorld:
+      'Marvell agreed to pay Lumentum $3.2 billion if regulators block their $115 billion deal; Paramount agreed to $7 billion in its Warner Bros. Discovery deal before winning approval.',
+  },
+
   'take-private': {
     id: 'take-private',
     term: 'Take-Private',
