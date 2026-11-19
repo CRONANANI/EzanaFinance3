@@ -35,21 +35,45 @@ export default function GuidedTour({ steps, open, onFinish, onSkip, hideNext = f
 
   const step = live[i] || null;
 
-  const measure = useCallback(() => {
+  /* Scroll the step's target into view once per step, then keep the
+     spotlight glued to it every frame. Measuring once after a smooth scroll
+     read the box before the scroll (or a late layout shift above the
+     target, such as a card loading) had finished, so the spotlight sat off
+     the element it describes. */
+  const scrollToStep = useCallback(() => {
     if (!step) return;
     const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) {
-      setRect(null);
-      return;
-    }
+    if (!el) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
-    requestAnimationFrame(() => setRect(el.getBoundingClientRect()));
   }, [step]);
 
   useLayoutEffect(() => {
-    if (open) measure();
-  }, [open, i, measure]);
+    if (open) scrollToStep();
+  }, [open, i, scrollToStep]);
+
+  useEffect(() => {
+    if (!open || !step) return undefined;
+    let raf = 0;
+    let last = '';
+    const tick = () => {
+      const el = document.querySelector(`[data-tour="${step.target}"]`);
+      if (!el) {
+        if (last !== 'none') setRect(null);
+        last = 'none';
+      } else {
+        const r = el.getBoundingClientRect();
+        const key = `${Math.round(r.top)}|${Math.round(r.left)}|${Math.round(r.width)}|${Math.round(r.height)}`;
+        if (key !== last) {
+          last = key;
+          setRect({ top: r.top, left: r.left, width: r.width, height: r.height, bottom: r.bottom });
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
+  }, [open, step]);
 
   const next = useCallback(() => {
     setI((v) => {
@@ -73,7 +97,6 @@ export default function GuidedTour({ steps, open, onFinish, onSkip, hideNext = f
 
   useEffect(() => {
     if (!open) return undefined;
-    const onResize = () => measure();
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -82,17 +105,11 @@ export default function GuidedTour({ steps, open, onFinish, onSkip, hideNext = f
       if (e.key === 'ArrowRight' && !hideNext) next();
       if (e.key === 'ArrowLeft' && !hideNext) back();
     };
-    window.addEventListener('resize', onResize);
-    window.addEventListener('scroll', onResize, true);
     /* Capture phase, so the member panel's own Escape handler (which closes
        the panel) does not fire while the tour is up. */
     window.addEventListener('keydown', onKey, true);
-    return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('scroll', onResize, true);
-      window.removeEventListener('keydown', onKey, true);
-    };
-  }, [open, measure, onSkip, next, back, hideNext]);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open, onSkip, next, back, hideNext]);
 
   if (!open || !step || typeof document === 'undefined') return null;
 

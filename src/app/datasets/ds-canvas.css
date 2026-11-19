@@ -11,7 +11,9 @@
    max-width: var(--ds-canvas-max, 1400px); margin-inline: auto, and add it
    to the gutter list in ds-align.css so its side padding is --ds-gutter. */
 .ds-shell {
-  --ds-canvas-max: var(--marketing-shell-max, 1400px);
+  /* Nov 19, 2026: widened from the 1400px marketing column to the app shell
+     (--app-shell-max, 1600px), the same width as /home, so cards have room. */
+  --ds-canvas-max: var(--app-shell-max, 1600px);
 }
 
 /* Shared shells that also render outside /datasets keep their 1100px column

@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -86,6 +87,36 @@ function currentIndex(list, pathname) {
   return best;
 }
 
+/* Three small wedges either side of the bar's logo: the shapes the dial
+   opens into. Drawn from the same slice maths as the dial itself. */
+function TriggerShapes({ side }) {
+  const angles = side === 'left' ? [210, 180, 150] : [-30, 0, 30];
+  return (
+    <svg
+      className={`nd-shapes nd-shapes--${side}`}
+      viewBox="-30 -30 60 60"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {angles.map((deg) => {
+        const step = 26;
+        const a = deg - step / 2;
+        const b = deg + step / 2;
+        const o1 = polar(28, a);
+        const o2 = polar(28, b);
+        const i1 = polar(14, a);
+        const i2 = polar(14, b);
+        return (
+          <path
+            key={deg}
+            d={`M ${o1.x} ${o1.y} A 28 28 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 14 14 0 0 0 ${i1.x} ${i1.y} Z`}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
 export function NavDial({
   items,
   pathname,
@@ -94,6 +125,11 @@ export function NavDial({
   sonar = false,
 }) {
   const reduceMotion = useReducedMotion();
+  const router = useRouter();
+  /* The wedge whose page is loading: the dial stays up, that wedge marked,
+     until the route changes, so a click always visibly lands. */
+  const [pending, setPending] = useState(null);
+  const pendingTimer = useRef(null);
   const [open, setOpen] = useState(false);
   const [parentId, setParentId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
@@ -145,7 +181,49 @@ export function NavDial({
     setOpen(false);
     setParentId(null);
     setActiveIndex(null);
+    setPending(null);
+    clearTimeout(pendingTimer.current);
   }, [pathname]);
+
+  useEffect(() => () => clearTimeout(pendingTimer.current), []);
+
+  /* Warm every page the open ring can reach, so one click is enough. */
+  useEffect(() => {
+    if (!open) return;
+    const urls = new Set();
+    const walk = (list) =>
+      list.forEach((it) => {
+        if (it.items) walk(it.items);
+        else if (it.url && it.url !== '#') urls.add(it.url);
+      });
+    walk(items);
+    urls.forEach((u) => {
+      try {
+        router.prefetch(u);
+      } catch {
+        /* prefetch is a hint only */
+      }
+    });
+  }, [open, items, router]);
+
+  /* One click navigates: the link's own default is replaced by a router
+     push, and repeat clicks while it loads are ignored. */
+  const go = useCallback(
+    (e, url, index) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+      e.preventDefault();
+      if (pending != null) return;
+      if (!url || url === pathname) {
+        close(false);
+        return;
+      }
+      setPending(index);
+      clearTimeout(pendingTimer.current);
+      pendingTimer.current = setTimeout(() => setPending(null), 10000);
+      startTransition(() => router.push(url));
+    },
+    [pending, pathname, close, router],
+  );
 
   useEffect(() => {
     if (!open) return undefined;
@@ -210,11 +288,13 @@ export function NavDial({
   };
 
   const active = activeIndex != null ? ring[activeIndex] : null;
+  /* The wedge already shows its name, so the caption carries only what it
+     does. */
   const caption = active
-    ? { title: active.title, text: active.description || (active.items ? 'Open section' : '') }
+    ? active.description || (active.items ? 'Open section' : '')
     : parent
-      ? { title: parent.title, text: 'Select the logo to go back' }
-      : { title: 'Menu', text: 'Choose a section, or the logo for Home' };
+      ? 'Select the logo to go back'
+      : 'Choose a section, or the logo for Home';
   const captionLocked = active && isBetaLockedRoute(active.url) && !hasFullBetaAccess;
 
   const scale = place?.scale ?? 1;
@@ -232,7 +312,7 @@ export function NavDial({
         <div className="nd-backdrop" aria-hidden="true" onClick={() => close(false)} />
         <motion.div
           ref={popRef}
-          className="nd-pop"
+          className={`nd-pop${pending != null ? ' is-busy' : ''}`}
           role="menu"
           aria-label={parent ? parent.title : 'Main menu'}
           style={{ left: place.cx, top: place.top, x: '-50%' }}
@@ -258,6 +338,7 @@ export function NavDial({
                     'nd-slice',
                     activeIndex === index ? 'is-active' : '',
                     current === index ? 'is-current' : '',
+                    pending === index ? 'is-pending' : '',
                     item.variant === 'sonar' ? 'nd-slice--sonar' : '',
                   ]
                     .filter(Boolean)
@@ -290,6 +371,7 @@ export function NavDial({
                   'nd-item',
                   activeIndex === index ? 'is-active' : '',
                   current === index ? 'is-current' : '',
+                  pending === index ? 'is-pending' : '',
                   item.variant ? `nd-item--${item.variant}` : '',
                 ]
                   .filter(Boolean)
@@ -336,8 +418,9 @@ export function NavDial({
                     key={`${parentId ?? 'root'}-${item.id}`}
                     href={item.url}
                     aria-current={current === index ? 'page' : undefined}
+                    aria-busy={pending === index || undefined}
                     {...shared}
-                    onClick={() => close(false)}
+                    onClick={(e) => go(e, item.url, index)}
                   >
                     {body}
                   </Link>
@@ -364,7 +447,7 @@ export function NavDial({
                   style={{ width: HUB_R * 2, height: HUB_R * 2 }}
                   data-nd-stop=""
                   aria-label="Home"
-                  onClick={() => close(false)}
+                  onClick={(e) => go(e, homeHref, -1)}
                   onMouseEnter={() => setActiveIndex(null)}
                 >
                   <EzanaNavLogo className="nav-logo-img nd-hub-logo" />
@@ -373,13 +456,13 @@ export function NavDial({
             </div>
           </div>
 
-          <p className="nd-caption" aria-hidden="true">
-            <span className="nd-caption-title">
-              {caption.title}
+          {caption ? (
+            <p className="nd-caption" aria-hidden="true">
+              <span className="nd-caption-pattern" />
+              <span className="nd-caption-text">{caption}</span>
               {captionLocked ? <span className="nd-caption-tag">v1.0</span> : null}
-            </span>
-            {caption.text ? <span className="nd-caption-text">{caption.text}</span> : null}
-          </p>
+            </p>
+          ) : null}
         </motion.div>
       </div>
     ) : null;
@@ -406,8 +489,9 @@ export function NavDial({
           }
         }}
       >
+        <TriggerShapes side="left" />
         <EzanaNavLogo />
-        <i className="bi bi-chevron-down nd-trigger-caret" aria-hidden="true" />
+        <TriggerShapes side="right" />
       </button>
       {typeof document !== 'undefined'
         ? createPortal(<AnimatePresence>{dial}</AnimatePresence>, document.body)

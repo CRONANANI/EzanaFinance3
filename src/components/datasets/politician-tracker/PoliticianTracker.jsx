@@ -639,9 +639,7 @@ export default function PoliticianTracker({
     if (!needTrades) return undefined;
     let alive = true;
     const [bioguide, days] = needTrades.split('|');
-    fetch(
-      `/api/politicians/trades?bioguide=${encodeURIComponent(bioguide)}&limit=500&days=${days}`,
-    )
+    fetch(`/api/politicians/trades?bioguide=${encodeURIComponent(bioguide)}&limit=500&days=${days}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (alive && d) setMemberTrades((prev) => ({ ...prev, [needTrades]: d.trades || [] }));
@@ -933,21 +931,6 @@ export default function PoliticianTracker({
                   setLastFilter('ticker');
                 }}
               />
-              {ticker ? (
-                <span className="ptk-active-filter">
-                  <span className="dsc-mn">
-                    Ticker: <b>{ticker}</b>
-                  </span>
-                  <button
-                    type="button"
-                    className="ptk-link"
-                    onClick={() => setTicker(null)}
-                    aria-label={`Clear ticker filter ${ticker}`}
-                  >
-                    Clear
-                  </button>
-                </span>
-              ) : null}
               <span className="ptk-showing dsc-mn" aria-hidden="true">
                 {rankingReady && total
                   ? `SHOWING ${firstShown}–${lastShown} OF ${total}${
@@ -1102,9 +1085,7 @@ export default function PoliticianTracker({
                                     }
                                   }}
                                 >
-                                  <td className="dsc-mn ptk-td-rank">
-                                    {m.rank ? m.rank : NONE}
-                                  </td>
+                                  <td className="dsc-mn ptk-td-rank">{m.rank ? m.rank : NONE}</td>
                                   <td>
                                     <span className="ptk-who">
                                       <Headshot
@@ -1144,7 +1125,11 @@ export default function PoliticianTracker({
                                     </span>
                                   </td>
                                   <td className="ptk-td--c">
-                                    {quiet ? <span className="dsc-mn">{NONE}</span> : <RatioCell m={m} />}
+                                    {quiet ? (
+                                      <span className="dsc-mn">{NONE}</span>
+                                    ) : (
+                                      <RatioCell m={m} />
+                                    )}
                                   </td>
                                   <td className="dsc-mn ptk-td--c ptk-col-trades">
                                     {quiet ? NONE : m.count.toLocaleString()}

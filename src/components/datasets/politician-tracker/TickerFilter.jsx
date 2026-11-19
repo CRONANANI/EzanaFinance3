@@ -12,6 +12,11 @@
  *
  * Accessible as an ARIA 1.2 combobox: Down / Up move through the options,
  * Enter picks, Escape closes (and, with nothing open, clears the text).
+ *
+ * Nov 19, 2026: drawn as a tag search pill. The chosen ticker sits in the
+ * pill as a tag with its own remove button; Backspace in the empty field
+ * removes it too. One ticker at a time: the ranking is recomputed server
+ * side on a single ticker's trades.
  */
 import { useEffect, useId, useRef, useState } from 'react';
 
@@ -98,6 +103,9 @@ export default function TickerFilter({ value, days, onChange }) {
         e.preventDefault();
         choose(typed);
       }
+    } else if (e.key === 'Backspace' && !text && value) {
+      e.preventDefault();
+      onChange(null);
     } else if (e.key === 'Escape') {
       if (open) {
         e.preventDefault();
@@ -114,8 +122,33 @@ export default function TickerFilter({ value, days, onChange }) {
 
   return (
     <div className="ptk-tkf" ref={rootRef}>
-      <label className="ptk-tkf-field">
-        <span className="ptk-tkf-label dsc-mn">TICKER</span>
+      <div
+        className={`ptk-tkf-field${value ? ' has-tag' : ''}`}
+        onPointerDown={(e) => {
+          if (e.target === e.currentTarget) {
+            e.preventDefault();
+            inputRef.current?.focus();
+          }
+        }}
+      >
+        <i className="bi bi-search ptk-tkf-ic" aria-hidden="true" />
+        {value ? (
+          <span className="ptk-tkf-tag dsc-mn">
+            {value}
+            <button
+              type="button"
+              className="ptk-tkf-x"
+              aria-label={`Remove ticker ${value}`}
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => {
+                onChange(null);
+                inputRef.current?.focus();
+              }}
+            >
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </span>
+        ) : null}
         <input
           ref={inputRef}
           className="ptk-tkf-input dsc-mn"
@@ -125,10 +158,10 @@ export default function TickerFilter({ value, days, onChange }) {
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={activeId}
-          aria-label="Filter by ticker"
+          aria-label={value ? `Ticker filter: ${value}. Type to replace it` : 'Filter by ticker'}
           autoComplete="off"
           spellCheck={false}
-          placeholder={value ? value : 'All tickers'}
+          placeholder={value ? '' : 'Search a ticker'}
           value={text}
           maxLength={12}
           onChange={(e) => {
@@ -138,41 +171,31 @@ export default function TickerFilter({ value, days, onChange }) {
           onFocus={() => setOpen(true)}
           onKeyDown={onKey}
         />
-        <i className="bi bi-chevron-down ptk-tkf-chev" aria-hidden="true" />
-      </label>
+      </div>
       {open ? (
         <ul className="ptk-tkf-menu" id={listId} role="listbox" aria-label="Tickers">
-          {value ? (
-            <li
-              role="option"
-              aria-selected={false}
-              className="ptk-tkf-opt ptk-tkf-opt--all"
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => choose(null)}
-            >
-              All tickers
-            </li>
-          ) : null}
-          {items.map((t, i) => (
-            <li
-              key={t.ticker}
-              id={`${listId}-${i}`}
-              role="option"
-              aria-selected={t.ticker === value}
-              className={`ptk-tkf-opt${i === active ? ' is-active' : ''}${
-                t.ticker === value ? ' is-on' : ''
-              }`}
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => choose(t.ticker)}
-              onMouseEnter={() => setActive(i)}
-            >
-              <span className="ptk-tkf-sym dsc-mn">{t.ticker}</span>
-              <span className="ptk-tkf-co">{t.company || ''}</span>
-              <span className="ptk-tkf-n dsc-mn">
-                {t.members} {t.members === 1 ? 'member' : 'members'} · {t.trades}
-              </span>
-            </li>
-          ))}
+          {items.map((t, i) =>
+            t.ticker === value ? null : (
+              <li
+                key={t.ticker}
+                id={`${listId}-${i}`}
+                role="option"
+                aria-selected={t.ticker === value}
+                className={`ptk-tkf-opt${i === active ? ' is-active' : ''}${
+                  t.ticker === value ? ' is-on' : ''
+                }`}
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={() => choose(t.ticker)}
+                onMouseEnter={() => setActive(i)}
+              >
+                <span className="ptk-tkf-sym dsc-mn">{t.ticker}</span>
+                <span className="ptk-tkf-co">{t.company || ''}</span>
+                <span className="ptk-tkf-n dsc-mn">
+                  {t.members} {t.members === 1 ? 'member' : 'members'} · {t.trades}
+                </span>
+              </li>
+            ),
+          )}
           {state === 'loading' && !items.length ? (
             <li className="ptk-tkf-note" role="presentation">
               Searching tickers…

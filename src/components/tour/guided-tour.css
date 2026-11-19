@@ -16,7 +16,8 @@
     0 0 0 9999px rgba(0, 0, 0, 0.55),
     0 0 0 2px var(--emerald);
   animation: gtour-pulse 1.8s ease-in-out infinite;
-  transition: all 0.3s ease;
+  /* Position follows the target every frame (GuidedTour.jsx), so it is not
+     eased: an eased box trails behind a scrolling row. */
 }
 .gtour-tooltip {
   position: fixed;

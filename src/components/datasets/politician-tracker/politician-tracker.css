@@ -164,16 +164,6 @@
   outline: 2px solid var(--ptk-focus);
   outline-offset: 2px;
 }
-.ptk-active-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--ptk-mute);
-}
-.ptk-active-filter b {
-  color: var(--ptk-buy-text);
-}
 .ptk-showing {
   margin-left: auto;
   font-size: 10px;
@@ -192,23 +182,69 @@
 .ptk-tkf-field {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
+  gap: 6px;
+  min-height: 36px;
+  padding: 3px 10px;
   border: 1px solid var(--ptk-hair-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: transparent;
+  cursor: text;
+  transition: box-shadow 0.15s ease;
 }
 .ptk-tkf-field:focus-within {
   border-color: var(--ptk-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ptk-focus) 20%, transparent);
 }
-.ptk-tkf-label {
+.ptk-tkf-ic {
+  font-size: 13px;
+  color: var(--ptk-mute);
+  pointer-events: none;
+}
+/* The chosen ticker: a tag with its own remove button. */
+.ptk-tkf-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 2px 0 8px;
+  border: 1px solid var(--ptk-hair-strong);
+  border-radius: var(--radius-md);
+  background: var(--dsc-bg);
+  color: var(--ptk-ink);
+  font-size: 12px;
+  font-weight: 700;
+  animation: ptk-tkf-in 0.12s ease-out;
+}
+.ptk-tkf-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ptk-mute);
   font-size: 10px;
-  letter-spacing: 0.12em;
-  color: var(--ptk-faint);
+  cursor: pointer;
+}
+.ptk-tkf-x:hover {
+  color: var(--ptk-ink);
+}
+.ptk-tkf-x:focus-visible {
+  outline: 2px solid var(--ptk-focus);
+  outline-offset: 1px;
+}
+@keyframes ptk-tkf-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
 }
 .ptk-tkf-input {
-  width: 104px;
+  width: 128px;
+  min-width: 60px;
   border: 0;
   outline: 0;
   background: transparent;
@@ -216,14 +252,12 @@
   font-size: 12.5px;
   text-transform: uppercase;
 }
+.ptk-tkf-field.has-tag .ptk-tkf-input {
+  width: 72px;
+}
 .ptk-tkf-input::placeholder {
   color: var(--ptk-mute);
   text-transform: none;
-}
-.ptk-tkf-chev {
-  font-size: 11px;
-  color: var(--ptk-mute);
-  pointer-events: none;
 }
 .ptk-tkf-menu {
   position: absolute;
@@ -237,7 +271,7 @@
   padding: 4px;
   list-style: none;
   border: 1px solid var(--ptk-hair-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--dsc-bg);
   box-shadow: 0 10px 28px color-mix(in srgb, var(--dsc-ink) 12%, transparent);
 }
@@ -1344,9 +1378,11 @@
   .ptk-sort-dd {
     flex: 1 1 auto;
   }
-  .ptk-dir,
-  .ptk-tkf-field {
+  .ptk-dir {
     height: 40px;
+  }
+  .ptk-tkf-field {
+    min-height: 40px;
   }
   .ptk-tkf {
     flex: 1 1 100%;
@@ -1355,7 +1391,8 @@
     width: 100%;
     box-sizing: border-box;
   }
-  .ptk-tkf-input {
+  .ptk-tkf-input,
+  .ptk-tkf-field.has-tag .ptk-tkf-input {
     flex: 1 1 auto;
     width: auto;
     min-width: 0;
@@ -1724,7 +1761,8 @@
 .pts .is-bear {
   color: var(--negative);
 }
-.pts .is-neutral, .pts .is-none {
+.pts .is-neutral,
+.pts .is-none {
   color: var(--text-secondary);
 }
 .pts-now-line {
@@ -2248,11 +2286,38 @@ button.pts-row:focus-visible {
 .ptk-right .cwh-sm--compact .cwh-sm-list {
   max-height: 220px;
 }
+/* Busiest states (Nov 19): the whole top five, never a scroll box, set in
+   the right column with its figures flush on the card's right edge. The
+   state outline glyph is dropped in the rail so the full state name fits. */
+.ptk-right .cwh-sm--compact .cwh-sm-list--states {
+  max-height: none;
+  overflow: visible;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-list--states .cwh-sm-glyph {
+  display: none;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-list--states .cwh-sm-row {
+  grid-template-columns: 16px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  padding-inline: 0;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-list--states .cwh-sm-name {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
+}
+.ptk-right .cwh-sm--compact .cwh-sm-list--states .cwh-sm-vol {
+  min-width: 0;
+}
 @media (min-width: 1201px) {
   .ptk-right .cwh-sm--compact .cwh-sm-body {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 1fr);
     align-items: start;
-    gap: 14px;
+    gap: 24px;
+  }
+  .ptk-right .cwh-sm--compact .cwh-sm-panel {
+    justify-self: end;
+    width: 100%;
   }
   .ptk-right .cwh-sm--compact .cwh-sm-row {
     padding: 5px 0;
@@ -2293,5 +2358,14 @@ button.pts-row:focus-visible {
   }
   .pts-context ul {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptk-tkf-tag {
+    animation: none;
+  }
+  .ptk-tkf-field {
+    transition: none;
   }
 }
