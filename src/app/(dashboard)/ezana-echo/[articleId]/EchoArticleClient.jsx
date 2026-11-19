@@ -22,6 +22,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
 import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
+import { EchoArticleHero } from '@/components/echo/EchoArticleHero';
+import { articleEyebrow, articleHeaderImage, articleSnapshot } from '@/lib/echo/article-header';
 import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
@@ -2850,6 +2852,28 @@ export default function EchoArticleClient({
   );
   const paragraphs = article.contentParagraphs ?? [];
 
+  /* Nov 19th, 2026 header: every article gets the two-column hero and the
+     Story Snapshot, except the frozen SEO-canonical Thiel page, which keeps
+     its original title band byte-for-byte. The snapshot IS the article's own
+     stat grid, so the body skips that one block: one authoritative grid. */
+  const legacyHeader = (article.slug || article.id) === 'peter-thiel-worldview-2026';
+  const headerImage = useMemo(
+    () => (legacyHeader ? null : articleHeaderImage(article)),
+    [legacyHeader, article],
+  );
+  const eyebrow = useMemo(() => articleEyebrow(article), [article]);
+  const snapshot = useMemo(
+    () => (legacyHeader ? { index: -1, stats: [] } : articleSnapshot(blocks)),
+    [legacyHeader, blocks],
+  );
+  const bodyBlocks = useMemo(
+    () =>
+      Array.isArray(blocks) && snapshot.index >= 0
+        ? blocks.filter((_, i) => i !== snapshot.index)
+        : blocks,
+    [blocks, snapshot.index],
+  );
+
   // Scroll-sync sections for the globe rail: one entry per h2/h3 heading (the
   // ids match the anchors ArticleBlock renders), carrying the JSON of every
   // block in that section (heading included) so EchoGlobeRail can word-boundary
@@ -2909,59 +2933,73 @@ export default function EchoArticleClient({
           </div>
         )}
 
-        {/* Zone A — title band, tight measure, directly under the nav.
-            Title, subheading, and byline stack full-width from the band's
-            left content edge (same x as the contents rail below), running to
-            the band's right edge — the globe rail's right edge on grail
-            articles. The metadata card lives in the body grid's left column
-            (above the contents rail), not in the header. */}
-        <header className={`echo-title-band${hasGrail ? ' echo-title-band--grail' : ''}`}>
-          <div className="echo-article-head-main">
-            <h1 className="echo-title">{article.title}</h1>
-            {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
-            <div className="echo-byline">
-              By <strong>{article.author}</strong>
-              {article.coAuthors?.length > 0 && (
-                <>
-                  {' & '}
-                  {article.coAuthors.map((c, i) => (
-                    <span key={c.id}>
-                      {i > 0 && ', '}
-                      {c.username ? (
-                        <Link href={`/profile/${c.username}`}>
-                          <strong>{c.name}</strong>
-                        </Link>
-                      ) : (
-                        <strong>{c.name}</strong>
-                      )}
-                    </span>
-                  ))}
-                </>
-              )}
-              {' · '}
-              {article.listMeta || formatPublishedDate(article.publishedAt)}
-              {' · '}
-              <span className="echo-readtime">{article.readTime} min read</span>
-            </div>
-          </div>
-          {/* Bottom of the title band, directly above the divider: back link
-              far-left, save button far-right (space-between). */}
-          <div className="echo-title-actions">
-            <Link href="/ezana-echo" className="echo-back">
-              <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
-            </Link>
-            <div className="echo-title-save">
-              <EchoSaveButton
-                articleId={article.id}
-                articleTags={articleTags}
-                placement="top"
-                articleTracker={articleTracker}
-              />
-            </div>
-          </div>
-        </header>
+        {legacyHeader ? (
+          <>
+            {/* Zone A — title band, tight measure, directly under the nav.
+                Title, subheading, and byline stack full-width from the band's
+                left content edge (same x as the contents rail below), running to
+                the band's right edge — the globe rail's right edge on grail
+                articles. The metadata card lives in the body grid's left column
+                (above the contents rail), not in the header. */}
+            <header className={`echo-title-band${hasGrail ? ' echo-title-band--grail' : ''}`}>
+              <div className="echo-article-head-main">
+                <h1 className="echo-title">{article.title}</h1>
+                {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+                <div className="echo-byline">
+                  By <strong>{article.author}</strong>
+                  {article.coAuthors?.length > 0 && (
+                    <>
+                      {' & '}
+                      {article.coAuthors.map((c, i) => (
+                        <span key={c.id}>
+                          {i > 0 && ', '}
+                          {c.username ? (
+                            <Link href={`/profile/${c.username}`}>
+                              <strong>{c.name}</strong>
+                            </Link>
+                          ) : (
+                            <strong>{c.name}</strong>
+                          )}
+                        </span>
+                      ))}
+                    </>
+                  )}
+                  {' · '}
+                  {article.listMeta || formatPublishedDate(article.publishedAt)}
+                  {' · '}
+                  <span className="echo-readtime">{article.readTime} min read</span>
+                </div>
+              </div>
+              {/* Bottom of the title band, directly above the divider: back link
+                  far-left, save button far-right (space-between). */}
+              <div className="echo-title-actions">
+                <Link href="/ezana-echo" className="echo-back">
+                  <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
+                </Link>
+                <div className="echo-title-save">
+                  <EchoSaveButton
+                    articleId={article.id}
+                    articleTags={articleTags}
+                    placement="top"
+                    articleTracker={articleTracker}
+                  />
+                </div>
+              </div>
+            </header>
 
-        <div className={`echo-title-divider${hasGrail ? ' echo-title-divider--grail' : ''}`} />
+            <div className={`echo-title-divider${hasGrail ? ' echo-title-divider--grail' : ''}`} />
+          </>
+        ) : (
+          <EchoArticleHero
+            article={article}
+            image={headerImage}
+            eyebrow={eyebrow}
+            snapshot={snapshot.stats}
+            articleTags={articleTags}
+            articleTracker={articleTracker}
+            wide={hasGrail}
+          />
+        )}
 
         {/* Zones B + C — metadata sidebar | article body */}
         <div className={`echo-article-grid${hasGrail && grailWide ? ' echo-has-grail' : ''}`}>
@@ -3074,8 +3112,8 @@ export default function EchoArticleClient({
             )}
 
             <article className="echo-article-body" ref={articleBodyRef}>
-              {Array.isArray(blocks) && blocks.length > 0
-                ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
+              {Array.isArray(bodyBlocks) && bodyBlocks.length > 0
+                ? bodyBlocks.map((block, i) => <ArticleBlock key={i} block={block} />)
                 : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
             </article>
 

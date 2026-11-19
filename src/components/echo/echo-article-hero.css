@@ -1,0 +1,403 @@
+/* Ezana Echo article header (Nov 19th, 2026): masthead, two-column hero and
+   Story Snapshot. Scoped .eah-*. Tokens only. Widths ride the article page's
+   own variables (.echo-article-page in echo-article-layout.css), so the header
+   lines up with the contents rail on the left and the body (or the globe rail
+   on grail articles) on the right. */
+
+.eah {
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + 2rem);
+  margin: 0 auto;
+  padding: 0 1rem;
+  font-family: var(--font-sans);
+}
+@media (min-width: 1280px) {
+  .eah--grail {
+    max-width: calc(
+      var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + var(--echo-gutter) +
+        var(--echo-grail-w, 340px) + 2rem
+    );
+  }
+}
+
+/* ── Masthead ───────────────────────────────────────────────────────────── */
+.eah-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.eah-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.eah-wordmark-a {
+  color: var(--text-primary);
+}
+.eah-wordmark-b {
+  color: var(--emerald-text);
+}
+.eah-masthead-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Buttons per the Branding and UI Guide: text buttons have no outline; one
+   primary button with a solid fill. */
+.eah-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.eah-text-btn:hover {
+  color: var(--emerald-text);
+}
+.eah-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.eah-primary-btn:hover {
+  background: var(--emerald-hover);
+}
+.eah-text-btn:focus-visible,
+.eah-primary-btn:focus-visible,
+.eah-wordmark:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Two-column hero ────────────────────────────────────────────────────── */
+.eah-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'copy media'
+    'meta media';
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(1.5rem, 3vw, 3rem);
+  row-gap: 1.25rem;
+  padding: clamp(1.5rem, 2.5vw, 2.25rem) 0 1.5rem;
+}
+.eah--text-only .eah-hero {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'copy'
+    'meta';
+  grid-template-rows: auto auto;
+}
+.eah--text-only .eah-copy,
+.eah--text-only .eah-meta {
+  max-width: 62rem;
+}
+.eah-copy {
+  grid-area: copy;
+  min-width: 0;
+  align-self: end;
+}
+.eah-media {
+  grid-area: media;
+  position: relative;
+  margin: 0;
+  min-height: 320px;
+  aspect-ratio: 16 / 11;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-tertiary);
+}
+.eah-meta {
+  grid-area: meta;
+  align-self: start;
+}
+
+.eah-eyebrow {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.eah-eyebrow-primary {
+  color: var(--emerald-text);
+}
+.eah-eyebrow-dot {
+  margin: 0 0.5em;
+  color: var(--text-faint);
+}
+.eah-eyebrow-secondary {
+  color: var(--text-muted);
+}
+
+.eah-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.3vw, 3.05rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.eah-dek {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.25vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* Byline + actions */
+.eah-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+.eah-byline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.eah-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--emerald);
+  color: var(--btn-primary-fg);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.eah-byline-text {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.eah-byline-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.eah-byline-text a {
+  color: inherit;
+}
+.eah-sep {
+  margin: 0 0.45em;
+  color: var(--text-faint);
+}
+.eah-readtime {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.eah-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+/* The existing Save button, restyled here as a text button (no outline). */
+.eah-actions .echo-save-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+.eah-actions .echo-save-btn:hover,
+.eah-actions .echo-save-btn.is-saved {
+  background: transparent;
+  color: var(--emerald-text);
+}
+.eah-share-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.eah-share-note:empty {
+  display: none;
+}
+
+/* ── Story Snapshot ─────────────────────────────────────────────────────── */
+.eah-snapshot {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.75fr) minmax(0, 4fr);
+  align-items: stretch;
+  margin: 0 0 0.5rem;
+  padding: 18px 22px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+}
+.eah-snap-intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding-right: 20px;
+}
+.eah-snap-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.eah-snap-lede {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.eah-snap-list {
+  display: grid;
+  grid-template-columns: repeat(var(--eah-snap-n, 4), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.eah-snap-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 2px 20px;
+  border-left: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
+}
+.eah-snap-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.eah-snap-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.eah-snap-desc {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+/* Below 1280px the grail column folds into the body, so the header follows
+   the base width. Tablet: stack the hero (headline and summary, then the
+   image, then the byline row) and let the snapshot wrap to two columns. */
+@media (max-width: 1024px) {
+  .eah {
+    max-width: calc(var(--echo-body-max) + 2rem);
+  }
+  .eah-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'copy'
+      'media'
+      'meta';
+    grid-template-rows: auto auto auto;
+  }
+  .eah-copy {
+    align-self: start;
+  }
+  .eah-media {
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+  .eah-snapshot {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 14px;
+  }
+  .eah-snap-intro {
+    padding-right: 0;
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .eah-snap-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 14px;
+  }
+  .eah-snap-item:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* Phones: compact byline row, snapshot stays a two-column grid (no
+   horizontal overflow), then one column on the narrowest screens. */
+@media (max-width: 600px) {
+  .eah-masthead {
+    min-height: 44px;
+  }
+  .eah-title {
+    font-size: clamp(1.7rem, 7.4vw, 2.1rem);
+  }
+  .eah-meta {
+    align-items: flex-start;
+  }
+  .eah-media {
+    aspect-ratio: 4 / 3;
+  }
+  .eah-snapshot {
+    padding: 16px;
+  }
+  .eah-snap-item {
+    padding: 0 12px;
+  }
+}
+@media (max-width: 380px) {
+  .eah-snap-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .eah-snap-item,
+  .eah-snap-item:nth-child(odd) {
+    border-left: 0;
+    padding: 0;
+  }
+}
