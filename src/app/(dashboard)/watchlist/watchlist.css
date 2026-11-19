@@ -1377,3 +1377,225 @@
     transition: none;
   }
 }
+
+/* ── Nov 19, 2026: market-watchlist list for priced assets ─────────────
+   SecuritiesTable → AssetList. Head: Asset / Trend / Change; rows: emerald
+   rule on the selected row, symbol over name, sparkline, price over day
+   change, star and menu on the right. The whole row selects (.wlr-hit sits
+   under the content; the controls sit above it). */
+.wlr {
+  border-top: 1px solid var(--border-primary);
+}
+.wlr-head,
+.wlr-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px 112px 136px;
+  align-items: center;
+  column-gap: 12px;
+  padding: 0 16px;
+}
+.wlr-head {
+  min-height: 36px;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 0.6875rem;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+.wlr-head__asset,
+.wlr-head__chg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wlr-head__chg {
+  justify-content: flex-end;
+}
+.wlr-head__trend {
+  text-align: center;
+}
+.wlr-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.wlr-sort:hover,
+.wlr-sort.is-on {
+  color: var(--text-primary);
+}
+.wlr-sort .bi {
+  font-size: 0.625rem;
+}
+.wlr-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wlr-row {
+  position: relative;
+  min-height: 60px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  transition: background 0.15s ease;
+}
+.wlr-row:last-child {
+  border-bottom: 0;
+}
+.wlr-row:hover {
+  background: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
+}
+.wlr-row.is-selected {
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+}
+.wlr-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.wlr-hit:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.wlr-asset,
+.wlr-trend,
+.wlr-price {
+  position: relative;
+  pointer-events: none;
+}
+.wlr-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+}
+.wlr-asset {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+.wlr-rule {
+  flex-shrink: 0;
+  width: 2px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  transition: background 0.15s ease;
+}
+.wlr-row.is-selected .wlr-rule {
+  background: var(--emerald);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--emerald) 55%, transparent);
+}
+.wlr-id {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.wlr-sym {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.wlr-star-mark {
+  font-size: 0.625rem;
+  color: var(--amber);
+}
+.wlr-name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.wlr-smart {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  color: var(--emerald-text, var(--emerald));
+  text-overflow: ellipsis;
+}
+.wlr-trend {
+  display: flex;
+  justify-content: center;
+}
+.wlr-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.wlr-px {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.wlr-chg {
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+/* The menu and move buttons show on hover or focus on wide screens. */
+@media (hover: hover) and (min-width: 721px) {
+  .wlr-actions .wlm-row-actions {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .wlr-row:hover .wlm-row-actions,
+  .wlr-row:focus-within .wlm-row-actions,
+  .wlr-row.is-selected .wlm-row-actions {
+    opacity: 1;
+  }
+}
+.wlr-actions .wlm-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+@media (max-width: 720px) {
+  .wlr-head,
+  .wlr-row {
+    grid-template-columns: minmax(0, 1fr) 64px 92px 36px;
+    column-gap: 8px;
+    padding: 0 12px;
+  }
+  .wlr-head__asset .wlr-sort + .wlr-sort,
+  .wlr-head__chg .wlr-sort:first-child {
+    display: none;
+  }
+  .wlr-trend .wlm-spark {
+    width: 60px !important;
+  }
+  .wlr-actions > .wlm-icon-btn {
+    display: none;
+  }
+  /* Phones keep only the row menu (star, move and research live in it or
+     in the detail panel). */
+  .wlr-actions .wlm-row-actions > a,
+  .wlr-actions .wlm-row-actions > .ds-dropdown:not(:last-child) {
+    display: none !important;
+  }
+  .wlr-actions {
+    justify-content: flex-end;
+  }
+}

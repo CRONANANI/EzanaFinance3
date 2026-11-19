@@ -1,7 +1,19 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+/**
+ * Stock market heatmap (US Equities), Nov 19, 2026 redesign after the
+ * 21st.dev "market heatmap": one SVG squarified treemap. Sectors are laid out
+ * first, each with a label strip, then each sector's tickers inside it. Tile
+ * area follows the size basis (absolute YTD return, as the card header says);
+ * colour is a diverging scale on Ezana emerald (up) and red (down), deeper
+ * for bigger moves. Hover dims the rest of the map and opens a readout parked
+ * beside the tile, never on top of it. Click opens the stock; Space pins the
+ * readout; arrow keys walk the tiles from largest to smallest.
+ */
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { filterHeatmap } from '@/lib/research/research-filters';
+import './stock-heatmap.css';
 
 /* ── Static sector data — tickers with YTD change % ─────────────────── */
 const SECTOR_DATA = {
@@ -66,37 +78,96 @@ const SECTOR_DATA = {
   ],
 };
 
-/* ── Color scale — green for gains, red for losses ──────────────────── */
-function heatmapColor(pct) {
-  if (pct > 50) return 'linear-gradient(135deg, #059669, #047857)';
-  if (pct > 20) return 'linear-gradient(135deg, #10b981, #059669)';
-  if (pct > 10) return 'linear-gradient(135deg, #34d399, #10b981)';
-  if (pct > 5) return 'linear-gradient(135deg, #4ade80, #22c55e)';
-  if (pct > 2) return 'linear-gradient(135deg, #6ee7b7, #34d399)';
-  if (pct > 0) return 'linear-gradient(135deg, #86efac, #4ade80)';
-  if (pct > -2) return 'linear-gradient(135deg, #fca5a5, #f87171)';
-  if (pct > -5) return 'linear-gradient(135deg, #f87171, #ef4444)';
-  if (pct > -10) return 'linear-gradient(135deg, #ef4444, #dc2626)';
-  if (pct > -20) return 'linear-gradient(135deg, #dc2626, #b91c1c)';
-  return 'linear-gradient(135deg, #b91c1c, #991b1b)';
+/* ── Layout ──────────────────────────────────────────────────────────── */
+
+const GREEN = 'var(--brand-ezana-green)';
+const RED = 'var(--negative)';
+const LABEL_H = 20;
+const GAP = 3;
+const TIP_W = 168;
+const TIP_GAP = 8;
+/* A tile never shrinks below this weight, so a flat stock still shows. */
+const MIN_WEIGHT = 2;
+
+function worst(row, side, area) {
+  const max = Math.max(...row);
+  const min = Math.min(...row);
+  const s2 = area * area;
+  const l2 = side * side;
+  return Math.max((l2 * max) / s2, s2 / (l2 * min));
 }
 
-/* ── Sector accent colors (match sector distribution pie) ──────────── */
-const SECTOR_ACCENT = {
-  Technology: '#3b82f6',
-  Finance: '#a78bfa',
-  Healthcare: '#10b981',
-  Consumer: '#ec4899',
-  Energy: '#f97316',
-  Industrials: '#f59e0b',
-};
+/** Squarified treemap of `items` ({ weight }) into the rect x, y, w, h. */
+function squarify(items, x, y, w, h) {
+  const total = items.reduce((a, it) => a + it.weight, 0);
+  if (!total || w <= 0 || h <= 0) return [];
+  const scale = (w * h) / total;
+  const list = items.map((it) => ({ area: it.weight * scale, it }));
+  const out = [];
+  let rx = x;
+  let ry = y;
+  let rw = w;
+  let rh = h;
+  let idx = 0;
+  while (idx < list.length) {
+    const side = Math.min(rw, rh);
+    const row = [list[idx].area];
+    const rowIt = [list[idx].it];
+    let rowArea = list[idx].area;
+    let k = idx + 1;
+    while (k < list.length) {
+      const next = rowArea + list[k].area;
+      if (worst([...row, list[k].area], side, next) > worst(row, side, rowArea)) break;
+      row.push(list[k].area);
+      rowIt.push(list[k].it);
+      rowArea = next;
+      k += 1;
+    }
+    if (rw >= rh) {
+      const colW = rowArea / rh;
+      let cy = ry;
+      row.forEach((a, j) => {
+        const th = a / colW;
+        out.push({ x: rx, y: cy, w: colW, h: th, it: rowIt[j] });
+        cy += th;
+      });
+      rx += colW;
+      rw -= colW;
+    } else {
+      const rowH = rowArea / rw;
+      let cx = rx;
+      row.forEach((a, j) => {
+        const tw = a / rowH;
+        out.push({ x: cx, y: ry, w: tw, h: rowH, it: rowIt[j] });
+        cx += tw;
+      });
+      ry += rowH;
+      rh -= rowH;
+    }
+    idx = k;
+  }
+  return out;
+}
 
-/* ── Tile size class based on absolute return magnitude ─────────────── */
-function sizeClass(absPct) {
-  if (absPct > 80) return 'large';
-  if (absPct > 30) return 'medium';
-  if (absPct > 10) return 'small';
-  return 'tiny';
+/** Diverging fill: the hue says direction, its strength says size (YTD). */
+const tileFill = (ch) =>
+  `color-mix(in srgb, ${ch >= 0 ? GREEN : RED} ${Math.round(Math.min(Math.abs(ch) / 40, 1) * 62 + 14)}%, var(--surface-card, var(--bg-primary)))`;
+const ink = (ch) => `color-mix(in oklab, ${ch >= 0 ? GREEN : RED} 70%, var(--text-primary))`;
+const fmtSigned = (v, d = 2) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}%`;
+
+/** Park the readout beside the tile: above, below, right, left, else a corner. */
+function place(t, h, W, H) {
+  const cx = Math.max(0, Math.min(W - TIP_W, t.x + t.w / 2 - TIP_W / 2));
+  const cy = Math.max(0, Math.min(H - h, t.y + t.h / 2 - h / 2));
+  const above = t.y - TIP_GAP - h;
+  if (above >= 0) return { left: cx, top: above };
+  const below = t.y + t.h + TIP_GAP;
+  if (below + h <= H) return { left: cx, top: below };
+  const right = t.x + t.w + TIP_GAP;
+  if (right + TIP_W <= W) return { left: right, top: cy };
+  const left = t.x - TIP_GAP - TIP_W;
+  if (left >= 0) return { left, top: cy };
+  return { left: t.x < W / 2 ? W - TIP_W : 0, top: t.y < H / 2 ? H - h : 0 };
 }
 
 /**
@@ -104,29 +175,66 @@ function sizeClass(absPct) {
  * 'decliners') come from the research page's filter menu.
  */
 export function StockHeatmap({ onSelectStock, sectors = [], movers = 'all' }) {
-  const [hoveredTicker, setHoveredTicker] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const reduced = useReducedMotion();
+  const boxRef = useRef(null);
+  const [W, setW] = useState(900);
+  useLayoutEffect(() => {
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const H = Math.round(Math.max(360, Math.min(560, W * (W < 640 ? 1.1 : 0.5))));
 
-  /* Build sector groups — sort stocks within each sector by |return| descending */
-  const sectorGroups = useMemo(() => {
-    return Object.entries(filterHeatmap(SECTOR_DATA, { sectors, movers })).map(
-      ([sectorName, stocks]) => {
-        const sorted = [...stocks]
-          .map((s) => ({ ...s, absReturn: Math.abs(s.ch), sector: sectorName }))
-          .sort((a, b) => b.absReturn - a.absReturn);
+  const groups = useMemo(
+    () =>
+      Object.entries(filterHeatmap(SECTOR_DATA, { sectors, movers })).map(([sector, stocks]) => {
+        const items = stocks
+          .map((st) => ({ ...st, sector, weight: Math.max(Math.abs(st.ch), MIN_WEIGHT) }))
+          .sort((a, b) => b.weight - a.weight);
+        return { sector, items, weight: items.reduce((a, it) => a + it.weight, 0) };
+      }),
+    [sectors, movers],
+  );
 
-        /* Total absolute return for this sector — used to proportion tile widths */
-        const totalAbsReturn = sorted.reduce((sum, s) => sum + s.absReturn, 0);
-
-        return { sectorName, stocks: sorted, totalAbsReturn };
-      },
+  const { tiles, labels } = useMemo(() => {
+    const sectorRects = squarify(
+      [...groups].sort((a, b) => b.weight - a.weight),
+      0,
+      0,
+      W,
+      H,
     );
-  }, [sectors, movers]);
+    const outTiles = [];
+    const outLabels = [];
+    sectorRects.forEach((r) => {
+      const g = r.it;
+      const inner = { x: r.x + GAP / 2, y: r.y + GAP / 2, w: r.w - GAP, h: r.h - GAP };
+      const showLabel = inner.h > LABEL_H + 24 && inner.w > 48;
+      if (showLabel) outLabels.push({ sector: g.sector, x: inner.x, y: inner.y, w: inner.w });
+      const top = showLabel ? LABEL_H : 0;
+      squarify(g.items, inner.x, inner.y + top, inner.w, inner.h - top).forEach((t) =>
+        outTiles.push({ x: t.x, y: t.y, w: t.w, h: t.h, s: t.it }),
+      );
+    });
+    return { tiles: outTiles, labels: outLabels };
+  }, [groups, W, H]);
 
-  /* Grand total for sector width proportions */
-  const grandTotal = sectorGroups.reduce((sum, g) => sum + g.stocks.length, 0);
+  /* Keyboard order: largest move first. */
+  const order = useMemo(() => [...tiles].sort((a, b) => b.s.weight - a.s.weight), [tiles]);
+  const [hover, setHover] = useState(null);
+  const [pin, setPin] = useState(null);
+  const hot = pin ?? hover;
+  const hotTile = tiles.find((t) => t.s.t === hot) || null;
+  const tipRef = useRef(null);
+  const [tipH, setTipH] = useState(70);
+  useLayoutEffect(() => {
+    if (tipRef.current) setTipH(tipRef.current.offsetHeight);
+  }, [hot]);
+  const tip = hotTile ? place(hotTile, tipH, W, H) : null;
 
-  if (!sectorGroups.length) {
+  if (!groups.length) {
     return (
       <div className="heatmap-container">
         <p className="crx-filter-empty" role="status">
@@ -137,133 +245,152 @@ export function StockHeatmap({ onSelectStock, sectors = [], movers = 'all' }) {
     );
   }
 
+  const gainers = tiles.filter((t) => t.s.ch >= 0).length;
+
   return (
-    <div className="heatmap-container">
+    <div className="heatmap-container shm">
+      <div className="shm-legend" aria-hidden="true">
+        <span className="shm-legend__item">
+          <span className="shm-swatch shm-swatch--down" /> Down
+        </span>
+        <span className="shm-ramp" />
+        <span className="shm-legend__item">
+          Up <span className="shm-swatch shm-swatch--up" />
+        </span>
+        <span className="shm-legend__note">
+          {gainers} of {tiles.length} up YTD · sized by return magnitude
+        </span>
+      </div>
       <div
-        className="heatmap-grid"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          width: '100%',
-          minHeight: 480,
-          gap: 2,
+        ref={boxRef}
+        className="shm-box"
+        tabIndex={0}
+        role="group"
+        aria-label="Stock market heatmap. Arrow keys read each stock, Enter opens it, Space pins the readout."
+        onFocus={() => setHover((h) => h ?? pin ?? order[0]?.s.t ?? null)}
+        onBlur={() => setHover(null)}
+        onKeyDown={(e) => {
+          const at = order.findIndex((t) => t.s.t === hot);
+          const step =
+            e.key === 'ArrowRight' || e.key === 'ArrowDown'
+              ? 1
+              : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+                ? -1
+                : 0;
+          if (step) {
+            e.preventDefault();
+            setPin(null);
+            setHover(order[(at + step + order.length) % order.length].s.t);
+          } else if (e.key === 'Enter' && hot) {
+            e.preventDefault();
+            onSelectStock?.(hot);
+          } else if (e.key === ' ' && hot) {
+            e.preventDefault();
+            setPin((p) => (p === hot ? null : hot));
+          } else if (e.key === 'Escape') {
+            setPin(null);
+            setHover(null);
+          }
         }}
       >
-        {sectorGroups.map(({ sectorName, stocks, totalAbsReturn }) => {
-          /* Sector takes width proportional to its stock count */
-          const sectorWidthPct = (stocks.length / grandTotal) * 100;
-
-          return (
-            <div
-              key={sectorName}
-              className="heatmap-sector"
-              style={{
-                width: `calc(${sectorWidthPct}% - 2px)`,
-                minWidth: 100,
-                flexGrow: stocks.length,
-                flexShrink: 1,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              {/* Sector label */}
-              <div
-                className="heatmap-sector-label"
-                style={{
-                  borderLeft: `3px solid ${SECTOR_ACCENT[sectorName] || '#6b7280'}`,
+        <svg
+          className="shm-svg"
+          width={W}
+          height={H}
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label={`Stock market heatmap, ${tiles.length} stocks, ${gainers} up year to date`}
+          onPointerLeave={(e) => {
+            if (e.pointerType === 'mouse') setHover(null);
+          }}
+        >
+          {labels.map((l) => (
+            <text key={l.sector} x={l.x + 4} y={l.y + 13} className="shm-sector">
+              {l.sector.toUpperCase()}
+            </text>
+          ))}
+          {tiles.map((t, i) => {
+            const on = hot === t.s.t;
+            const pinned = pin === t.s.t;
+            const dim = hot !== null && !on;
+            const big = t.w > 58 && t.h > 36;
+            const mid = !big && t.w > 30 && t.h > 18;
+            return (
+              <motion.g
+                key={`${t.s.sector}-${t.s.t}`}
+                className="shm-tile"
+                onPointerEnter={() => {
+                  if (!pin) setHover(t.s.t);
                 }}
+                onClick={() => onSelectStock?.(t.s.t)}
+                initial={{ opacity: reduced ? 1 : 0 }}
+                animate={{ opacity: dim ? 0.45 : 1 }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: Math.min(i * 0.012, 0.5) }
+                }
               >
-                {sectorName}
-              </div>
+                <rect
+                  x={t.x + 0.5}
+                  y={t.y + 0.5}
+                  width={Math.max(0, t.w - 1)}
+                  height={Math.max(0, t.h - 1)}
+                  rx={4}
+                  fill={tileFill(t.s.ch)}
+                  stroke={
+                    on
+                      ? t.s.ch >= 0
+                        ? GREEN
+                        : RED
+                      : 'color-mix(in srgb, var(--text-primary) 10%, transparent)'
+                  }
+                  strokeWidth={pinned ? 2 : on ? 1.5 : 1}
+                  strokeDasharray={pinned ? '3 2' : undefined}
+                />
+                {big ? (
+                  <>
+                    <text x={t.x + 8} y={t.y + 19} className="shm-sym">
+                      {t.s.t}
+                    </text>
+                    <text x={t.x + 8} y={t.y + 33} className="shm-chg">
+                      {fmtSigned(t.s.ch, 1)}
+                    </text>
+                  </>
+                ) : mid ? (
+                  <text
+                    x={t.x + t.w / 2}
+                    y={t.y + t.h / 2 + 3.5}
+                    textAnchor="middle"
+                    className="shm-sym shm-sym--sm"
+                  >
+                    {t.s.t}
+                  </text>
+                ) : null}
+              </motion.g>
+            );
+          })}
+        </svg>
 
-              {/* Stocks grid within sector */}
-              <div className="heatmap-sector-stocks">
-                {stocks.map((stock) => {
-                  /* Tile size proportional to absolute YTD return within its sector */
-                  const returnPct =
-                    totalAbsReturn > 0
-                      ? (stock.absReturn / totalAbsReturn) * 100
-                      : 100 / stocks.length;
-
-                  const cls = sizeClass(stock.absReturn);
-                  const bg = heatmapColor(stock.ch);
-                  const sign = stock.ch >= 0 ? '+' : '';
-
-                  return (
-                    <div
-                      key={`${stock.t}-${sectorName}`}
-                      className={`heatmap-cell ${cls}`}
-                      data-ticker={stock.t}
-                      style={{
-                        width: `${Math.max(returnPct, 8)}%`,
-                        flexGrow: Math.max(Math.round(stock.absReturn), 1),
-                        background: bg,
-                      }}
-                      title={`${stock.t} | ${sectorName} | ${sign}${stock.ch.toFixed(2)}% YTD`}
-                      onClick={() => onSelectStock?.(stock.t)}
-                      onMouseEnter={(e) => {
-                        setHoveredTicker(stock.t);
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top - 8 });
-                      }}
-                      onMouseLeave={() => setHoveredTicker(null)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && onSelectStock?.(stock.t)}
-                    >
-                      <span className="heatmap-cell-ticker">{stock.t}</span>
-                      <span className="heatmap-cell-change">
-                        {sign}
-                        {stock.ch.toFixed(1)}%
-                      </span>
-
-                      {hoveredTicker === stock.t && (
-                        <div
-                          style={{
-                            position: 'fixed',
-                            left: tooltipPos.x,
-                            top: tooltipPos.y,
-                            transform: 'translate(-50%, -100%)',
-                            zIndex: 9999,
-                            background: '#0d1117',
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            pointerEvents: 'none',
-                            whiteSpace: 'nowrap',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f0f6fc' }}>
-                              {stock.t}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                color: stock.ch >= 0 ? '#10b981' : '#ef4444',
-                              }}
-                            >
-                              {sign}
-                              {stock.ch.toFixed(2)}%
-                            </span>
-                          </div>
-                          <span style={{ fontSize: 'var(--type-micro-size)', color: '#8b949e' }}>
-                            {sectorName} · YTD Return
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+        {hotTile && tip ? (
+          <div
+            ref={tipRef}
+            role="status"
+            className="shm-tip"
+            style={{ width: TIP_W, left: tip.left, top: tip.top }}
+          >
+            <div className="shm-tip__row">
+              <span className="shm-tip__sym">{hotTile.s.t}</span>
+              <span className="shm-tip__chg" style={{ color: ink(hotTile.s.ch) }}>
+                {fmtSigned(hotTile.s.ch)}
+              </span>
             </div>
-          );
-        })}
+            <div className="shm-tip__sub">{hotTile.s.sector} · YTD return</div>
+            <div className="shm-tip__hint">
+              {pin ? 'Pinned · Space to release' : 'Click to open'}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -8,7 +8,8 @@
  * Rows come from the pure helpers in watchlist-view.js:
  *   paginate(sortItems(filterItems(items, { q, starredOnly, smartOnly }), key, dir), page)
  * The Added column is addedLabel(item): "Manual", or the stored smart reason,
- * never one composed here. Sparklines come from useSparklines.
+ * never one composed here. Sparklines come from useSparklines. Priced classes render as the
+ * market-watchlist list (AssetList); politicians keep the table.
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -131,6 +132,139 @@ function RowActions({ item, lists, activeListId, onMove, onStar, onRemove }) {
   );
 }
 
+/* Priced assets as a market-watchlist list (Nov 19, 2026): a sortable head
+   (Asset, Trend, Change), then one row per asset with an accent rule that
+   lights emerald on the selected row, symbol and name, a one-month
+   sparkline, then price over day change. The whole row selects the asset;
+   the star and the row menu sit above it. */
+function SortBtn({ col, label, sort, onSort, align }) {
+  const on = sort.key === col;
+  return (
+    <button
+      type="button"
+      className={`wlr-sort${align ? ` is-${align}` : ''}${on ? ' is-on' : ''}`}
+      onClick={() => onSort(col)}
+      aria-label={`Sort by ${label}${on ? (sort.dir === 'asc' ? ', ascending' : ', descending') : ''}`}
+    >
+      {label}
+      {on ? (
+        <i
+          className={`bi ${sort.dir === 'desc' ? 'bi-chevron-down' : 'bi-chevron-up'}`}
+          aria-hidden="true"
+        />
+      ) : null}
+    </button>
+  );
+}
+
+function AssetList({
+  rows,
+  sort,
+  onSort,
+  sparks,
+  selectedKey,
+  lists,
+  activeListId,
+  onSelect,
+  onStar,
+  onMove,
+  onRemove,
+}) {
+  return (
+    <div className="wlr">
+      <div className="wlr-head">
+        <span className="wlr-head__asset">
+          <SortBtn col="ticker" label="Asset" sort={sort} onSort={onSort} />
+          <SortBtn col="name" label="Name" sort={sort} onSort={onSort} />
+        </span>
+        <span className="wlr-head__trend">Trend</span>
+        <span className="wlr-head__chg">
+          <SortBtn col="price" label="Price" sort={sort} onSort={onSort} align="end" />
+          <SortBtn col="changePct" label="Change" sort={sort} onSort={onSort} align="end" />
+        </span>
+        <span className="wlm-sr">Actions</span>
+      </div>
+      <ul className="wlr-list">
+        {rows.map((it) => {
+          const key = `${it.type}:${it.ticker}`;
+          const on = key === selectedKey;
+          const added = addedLabel(it);
+          const label = displayTicker(it.ticker);
+          const dir = it.changePct == null ? 'flat' : it.changePct >= 0 ? 'up' : 'down';
+          return (
+            <li
+              key={key}
+              className={`wlr-row${on ? ' is-selected' : ''}`}
+              aria-current={on || undefined}
+            >
+              <button
+                type="button"
+                className="wlr-hit"
+                onClick={() => onSelect(it)}
+                aria-label={`Show ${label}${it.name ? `, ${it.name}` : ''}`}
+              />
+              <span className="wlr-asset">
+                <span className="wlr-rule" aria-hidden="true" />
+                <span className="wlr-id">
+                  <span className="wlr-sym wlm-num">
+                    {label}
+                    {it.starredAt ? (
+                      <i
+                        className="bi bi-star-fill wlr-star-mark"
+                        role="img"
+                        aria-label="Starred"
+                      />
+                    ) : null}
+                  </span>
+                  <span className="wlr-name">
+                    {it.name || 'N/A'}
+                    {added.smart ? (
+                      <span className="wlr-smart" title={added.text}>
+                        <i className="bi bi-lightning-charge" aria-hidden="true" /> {added.text}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              </span>
+              <span className="wlr-trend">
+                <Sparkline points={sparks?.[it.ticker]} width={80} height={28} />
+              </span>
+              <span className="wlr-price">
+                <span className="wlr-px wlm-num">{fmtUSD(it.price)}</span>
+                <span className={`wlr-chg wlm-num is-${dir}`}>
+                  <Change value={it.changePct} />
+                </span>
+              </span>
+              <span className="wlr-actions">
+                <button
+                  type="button"
+                  className="wlm-icon-btn wlm-icon-btn--sm"
+                  aria-pressed={!!it.starredAt}
+                  aria-label={it.starredAt ? `Unstar ${label}` : `Star ${label}`}
+                  onClick={() => onStar(it, !it.starredAt)}
+                >
+                  <i
+                    className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                <RowActions
+                  item={it}
+                  lists={lists}
+                  activeListId={activeListId}
+                  onMove={onMove}
+                  onStar={onStar}
+                  onRemove={onRemove}
+                />
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 /**
  * items          itemsForClass(activeList, classId, quotes)
  * listEmpty      the active list has no items in any class
@@ -223,147 +357,163 @@ export function SecuritiesTable({
   } else {
     body = (
       <>
-        <div className="wlm-table-scroll">
-          <table className="wlm-table wlm-table--sec">
-            <caption className="wlm-sr">
-              {cls.label} in this watchlist, sortable by ticker, name, price and day change
-            </caption>
-            <thead>
-              <tr>
-                {isPol ? (
-                  <>
-                    <SortHead col={PRICED_COLS[1]} sort={sort} onSort={onSort} />
-                    <th scope="col" className="is-left">
-                      Party
-                    </th>
-                    <th scope="col" className="is-left">
-                      Chamber
-                    </th>
-                    <th scope="col" className="is-left">
-                      Latest disclosure
-                    </th>
-                  </>
-                ) : (
-                  <>
-                    {PRICED_COLS.map((c) => (
-                      <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />
-                    ))}
-                    <th scope="col">
-                      <span aria-hidden="true">1M trend</span>
-                      <span className="wlm-sr">One month trend</span>
-                    </th>
-                  </>
-                )}
-                <th scope="col">
-                  <span className="wlm-sr">Starred</span>
-                  <i className="bi bi-star" aria-hidden="true" />
-                </th>
-                <th scope="col" className="is-left">
-                  Added
-                </th>
-                <th scope="col">
-                  <span className="wlm-sr">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {view.rows.map((it) => {
-                const key = `${it.type}:${it.ticker}`;
-                const on = key === selectedKey;
-                const added = addedLabel(it);
-                const pol = politicians?.[it.ticker];
-                const last = pol?.trades?.[0];
-                const label = it.type === 'politician' ? it.name : displayTicker(it.ticker);
-                return (
-                  <tr key={key} aria-selected={on} className={on ? 'is-selected' : undefined}>
-                    {isPol ? (
-                      <>
-                        <th scope="row" className="is-left">
-                          <button
-                            type="button"
-                            className="wlm-rowbtn"
-                            onClick={() => onSelect(it)}
-                            aria-label={`Show ${label}`}
-                          >
-                            <AssetAvatar item={it} />
-                            <span className="wlm-strong wlm-ellipsis">{it.name}</span>
-                          </button>
-                        </th>
-                        <td className="is-left wlm-soft">{partyName(pol?.party)}</td>
-                        <td className="is-left wlm-soft">{chamberName(pol?.chamber)}</td>
-                        <td className="is-left wlm-num wlm-soft">
-                          {last ? `${last.disclosed || last.date}` : 'None on record'}
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <th scope="row" className="is-left">
-                          <button
-                            type="button"
-                            className="wlm-rowbtn"
-                            onClick={() => onSelect(it)}
-                            aria-label={`Show ${label}`}
-                          >
-                            <AssetAvatar item={it} />
-                            <span className="wlm-num wlm-strong">{label}</span>
-                          </button>
-                        </th>
-                        <td className="is-left wlm-soft">
-                          <span className="wlm-ellipsis wlm-sec__name">{it.name || 'N/A'}</span>
-                        </td>
-                        <td className="wlm-num wlm-strong">{fmtUSD(it.price)}</td>
-                        <td>
-                          <Change value={it.changePct} />
-                        </td>
-                        <td>
-                          <Sparkline points={sparks?.[it.ticker]} width={72} height={22} />
-                        </td>
-                      </>
-                    )}
-                    <td>
-                      <button
-                        type="button"
-                        className="wlm-icon-btn wlm-icon-btn--sm"
-                        aria-pressed={!!it.starredAt}
-                        aria-label={it.starredAt ? `Unstar ${label}` : `Star ${label}`}
-                        onClick={() => onStar(it, !it.starredAt)}
-                      >
-                        <i
-                          className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </td>
-                    <td className="is-left">
-                      {added.smart ? (
-                        <span className="wlm-added is-smart" title={added.text}>
-                          <i
-                            className="bi bi-lightning-charge"
-                            role="img"
-                            aria-label="Added by a smart rule"
-                          />
-                          <span className="wlm-ellipsis">{added.text}</span>
-                        </span>
+        {!isPol ? (
+          <AssetList
+            rows={view.rows}
+            sort={sort}
+            onSort={onSort}
+            sparks={sparks}
+            selectedKey={selectedKey}
+            lists={lists}
+            activeListId={activeListId}
+            onSelect={onSelect}
+            onStar={onStar}
+            onMove={onMove}
+            onRemove={onRemove}
+          />
+        ) : (
+          <div className="wlm-table-scroll">
+            <table className="wlm-table wlm-table--sec">
+              <caption className="wlm-sr">
+                {cls.label} in this watchlist, sortable by ticker, name, price and day change
+              </caption>
+              <thead>
+                <tr>
+                  {isPol ? (
+                    <>
+                      <SortHead col={PRICED_COLS[1]} sort={sort} onSort={onSort} />
+                      <th scope="col" className="is-left">
+                        Party
+                      </th>
+                      <th scope="col" className="is-left">
+                        Chamber
+                      </th>
+                      <th scope="col" className="is-left">
+                        Latest disclosure
+                      </th>
+                    </>
+                  ) : (
+                    <>
+                      {PRICED_COLS.map((c) => (
+                        <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />
+                      ))}
+                      <th scope="col">
+                        <span aria-hidden="true">1M trend</span>
+                        <span className="wlm-sr">One month trend</span>
+                      </th>
+                    </>
+                  )}
+                  <th scope="col">
+                    <span className="wlm-sr">Starred</span>
+                    <i className="bi bi-star" aria-hidden="true" />
+                  </th>
+                  <th scope="col" className="is-left">
+                    Added
+                  </th>
+                  <th scope="col">
+                    <span className="wlm-sr">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.rows.map((it) => {
+                  const key = `${it.type}:${it.ticker}`;
+                  const on = key === selectedKey;
+                  const added = addedLabel(it);
+                  const pol = politicians?.[it.ticker];
+                  const last = pol?.trades?.[0];
+                  const label = it.type === 'politician' ? it.name : displayTicker(it.ticker);
+                  return (
+                    <tr key={key} aria-selected={on} className={on ? 'is-selected' : undefined}>
+                      {isPol ? (
+                        <>
+                          <th scope="row" className="is-left">
+                            <button
+                              type="button"
+                              className="wlm-rowbtn"
+                              onClick={() => onSelect(it)}
+                              aria-label={`Show ${label}`}
+                            >
+                              <AssetAvatar item={it} />
+                              <span className="wlm-strong wlm-ellipsis">{it.name}</span>
+                            </button>
+                          </th>
+                          <td className="is-left wlm-soft">{partyName(pol?.party)}</td>
+                          <td className="is-left wlm-soft">{chamberName(pol?.chamber)}</td>
+                          <td className="is-left wlm-num wlm-soft">
+                            {last ? `${last.disclosed || last.date}` : 'None on record'}
+                          </td>
+                        </>
                       ) : (
-                        <span className="wlm-added wlm-muted">{added.text}</span>
+                        <>
+                          <th scope="row" className="is-left">
+                            <button
+                              type="button"
+                              className="wlm-rowbtn"
+                              onClick={() => onSelect(it)}
+                              aria-label={`Show ${label}`}
+                            >
+                              <AssetAvatar item={it} />
+                              <span className="wlm-num wlm-strong">{label}</span>
+                            </button>
+                          </th>
+                          <td className="is-left wlm-soft">
+                            <span className="wlm-ellipsis wlm-sec__name">{it.name || 'N/A'}</span>
+                          </td>
+                          <td className="wlm-num wlm-strong">{fmtUSD(it.price)}</td>
+                          <td>
+                            <Change value={it.changePct} />
+                          </td>
+                          <td>
+                            <Sparkline points={sparks?.[it.ticker]} width={72} height={22} />
+                          </td>
+                        </>
                       )}
-                    </td>
-                    <td>
-                      <RowActions
-                        item={it}
-                        lists={lists}
-                        activeListId={activeListId}
-                        onMove={onMove}
-                        onStar={onStar}
-                        onRemove={onRemove}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      <td>
+                        <button
+                          type="button"
+                          className="wlm-icon-btn wlm-icon-btn--sm"
+                          aria-pressed={!!it.starredAt}
+                          aria-label={it.starredAt ? `Unstar ${label}` : `Star ${label}`}
+                          onClick={() => onStar(it, !it.starredAt)}
+                        >
+                          <i
+                            className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </td>
+                      <td className="is-left">
+                        {added.smart ? (
+                          <span className="wlm-added is-smart" title={added.text}>
+                            <i
+                              className="bi bi-lightning-charge"
+                              role="img"
+                              aria-label="Added by a smart rule"
+                            />
+                            <span className="wlm-ellipsis">{added.text}</span>
+                          </span>
+                        ) : (
+                          <span className="wlm-added wlm-muted">{added.text}</span>
+                        )}
+                      </td>
+                      <td>
+                        <RowActions
+                          item={it}
+                          lists={lists}
+                          activeListId={activeListId}
+                          onMove={onMove}
+                          onStar={onStar}
+                          onRemove={onRemove}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
         {view.pages > 1 ? (
           <nav className="wlm-pager" aria-label="Table pages">
             <span className="wlm-xs wlm-muted wlm-num">

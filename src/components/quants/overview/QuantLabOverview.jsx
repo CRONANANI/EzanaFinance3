@@ -11,6 +11,7 @@ import { Skeleton, SkeletonRegion } from '@/components/ds';
 import { useCouncilQuant } from '../council/useCouncilQuant';
 import { QuantCouncil, CouncilSampleSwitch } from '../council/QuantCouncil';
 import './quant-overview.css';
+import { RunDiagnostics } from './RunDiagnostics';
 import {
   PERIODS,
   activityFeed,
@@ -56,13 +57,11 @@ async function getJson(path) {
 
 /* ── Strategy performance ─────────────────────────────────── */
 
-function PerformancePanel({ strategy, summary }) {
+/** The selected strategy's latest stored run, shared by the performance
+    panel and the run diagnostics band so both read the same run. */
+function useStoredRun(runId) {
   const [run, setRun] = useState(null);
   const [state, setState] = useState('idle'); // idle | loading | ready | error
-  const [period, setPeriod] = useState('run');
-  const [showDd, setShowDd] = useState(false);
-
-  const runId = summary?.id || null;
   useEffect(() => {
     setRun(null);
     if (!runId) {
@@ -82,6 +81,13 @@ function PerformancePanel({ strategy, summary }) {
       live = false;
     };
   }, [runId]);
+  return { run, state };
+}
+
+function PerformancePanel({ strategy, summary, run, state }) {
+  const [period, setPeriod] = useState('run');
+  const [showDd, setShowDd] = useState(false);
+  const runId = summary?.id || null;
 
   const view = useMemo(() => {
     const curve = run?.results?.curve || [];
@@ -535,6 +541,7 @@ export function QuantLabOverview() {
   const strategy = strategies.find((s) => s.id === selected) || null;
   const summary = strategy ? latest[strategy.id] || null : null;
   const metrics = summary?.metrics || null;
+  const storedRun = useStoredRun(summary?.id || null);
   const best = useMemo(() => bestSharpe(strategies, latest), [strategies, latest]);
   const feed = useMemo(() => activityFeed(runs, validations, names), [runs, validations, names]);
 
@@ -599,9 +606,16 @@ export function QuantLabOverview() {
     ) : (
       <>
         <div className="qlx-band">
-          <PerformancePanel strategy={strategy} summary={summary} />
+          <PerformancePanel
+            strategy={strategy}
+            summary={summary}
+            run={storedRun.run}
+            state={storedRun.state}
+          />
           <StrategiesPanel rows={rows} />
         </div>
+
+        <RunDiagnostics strategy={strategy} run={storedRun.run} state={storedRun.state} />
 
         <div className="qlx-band">
           <section className="qlx-col" style={{ flex: '1 1 300px' }}>

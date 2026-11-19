@@ -7,14 +7,43 @@
  * terms gate like every post.
  */
 import { useState } from 'react';
-import Link from 'next/link';
 import s from '@/app/(dashboard)/community/community.module.css';
 import { useCommunityTerms } from '@/components/moderation/useCommunityTerms';
-import { Avatar } from './primitives';
+import { EzTimeline } from '@/components/ui/timeline/EzTimeline';
 import { useCommunityResource, sendJson } from './useCommunityResource';
-import { relativeTime } from '@/lib/community/redesign';
 
 const MAX = 500;
+const PREVIEW = 180;
+
+const initialsOf = (name) =>
+  (name || 'M')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('');
+
+/* Replies as a timeline (Nov 19, 2026): grouped by day, oldest first so the
+   discussion reads top to bottom, a reply longer than the preview expands in
+   place. A reply added here slides in at the bottom. */
+function ThreadTimeline({ replies }) {
+  const [now] = useState(() => Date.now());
+  const events = replies.map((r) => {
+    const text = String(r.content || '');
+    const long = text.length > PREVIEW;
+    return {
+      id: r.id,
+      at: r.created_at,
+      actor: r.author?.name || 'Member',
+      title: long ? `${text.slice(0, PREVIEW).trimEnd()}…` : text,
+      meta: r.author?.username ? `@${r.author.username}` : undefined,
+      detail: long ? text : undefined,
+      avatar: r.author?.avatar_url || undefined,
+      initials: r.author?.avatar_url ? undefined : initialsOf(r.author?.name),
+    };
+  });
+  return <EzTimeline events={events} now={now} label="Replies" order="oldest" headingLevel={4} />;
+}
 
 export function DiscussionThread({ postId, onReplied }) {
   const { data, error, loading, reload, setData } = useCommunityResource(
@@ -102,27 +131,9 @@ export function DiscussionThread({ postId, onReplied }) {
           {data.replies.length === 1 ? 'reply' : 'replies'}
         </p>
       ) : null}
-      {(data?.replies || []).map((r) => (
-        <div key={r.id} className={s.reply}>
-          <Avatar src={r.author?.avatar_url} name={r.author?.name} size={28} />
-          <div className={s.replyBody}>
-            <div className={s.replyMeta}>
-              {r.author?.username ? (
-                <Link
-                  href={`/profile/${encodeURIComponent(r.author.username)}`}
-                  style={{ color: 'inherit' }}
-                >
-                  <strong>{r.author.name}</strong>
-                </Link>
-              ) : (
-                <strong>{r.author?.name || 'Member'}</strong>
-              )}{' '}
-              · {relativeTime(r.created_at)}
-            </div>
-            <p className={s.replyText}>{r.content}</p>
-          </div>
-        </div>
-      ))}
+      {data?.replies?.length ? (
+        <ThreadTimeline replies={data.replies} />
+      ) : null}
       <form className={s.replyForm} onSubmit={submit}>
         <label className={s.srOnly} htmlFor={`reply-${postId}`}>
           Write a reply

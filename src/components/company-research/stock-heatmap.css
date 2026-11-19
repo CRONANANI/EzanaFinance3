@@ -1,0 +1,129 @@
+/* StockHeatmap (US Equities). Scoped `shm-`. */
+
+.shm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.shm-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.shm-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-sm);
+}
+.shm-swatch--up {
+  background: var(--brand-ezana-green);
+}
+.shm-swatch--down {
+  background: var(--negative);
+}
+.shm-ramp {
+  width: 96px;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--negative),
+    color-mix(in srgb, var(--negative) 20%, var(--surface-card, var(--bg-primary))),
+    color-mix(in srgb, var(--brand-ezana-green) 20%, var(--surface-card, var(--bg-primary))),
+    var(--brand-ezana-green)
+  );
+}
+.shm-legend__note {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.shm-box {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  outline: none;
+}
+.shm-box:focus-visible {
+  box-shadow: 0 0 0 2px var(--emerald);
+}
+.shm-svg {
+  display: block;
+  overflow: visible;
+}
+.shm-tile {
+  cursor: pointer;
+}
+.shm-sector {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: var(--text-muted);
+}
+.shm-sym {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--text-primary);
+  pointer-events: none;
+}
+.shm-sym--sm {
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: color-mix(in srgb, var(--text-primary) 80%, transparent);
+}
+.shm-chg {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: color-mix(in srgb, var(--text-primary) 88%, transparent);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.shm-tip {
+  position: absolute;
+  z-index: 10;
+  padding: 8px 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card, var(--bg-primary));
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+.shm-tip__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.shm-tip__sym {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.shm-tip__chg {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.shm-tip__sub {
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.shm-tip__hint {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-faint);
+}
