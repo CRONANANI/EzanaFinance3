@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DCF_ASSUMPTIONS } from '@/components/research/dcf/dcf-assumptions';
 import DCFInfoModal from '@/components/research/dcf/DCFInfoModal';
 import { useDcfWorkbench } from '@/hooks/useDcfWorkbench';
+import { recordModelRun } from '@/lib/research/model-runs';
 import {
   RATING_LABELS,
   buildModelNarrative,
@@ -197,6 +198,13 @@ export function DcfWorkbench({ symbol, price, peers }) {
   );
   const gapDir = signOf(narrative.gapPct);
   const busy = dcf.status === 'loading';
+
+  /* Overview's Valuation Snapshot reads the last completed run. */
+  useEffect(() => {
+    if (dcf.status === 'ready' && isNum(dcf.fairValue)) {
+      recordModelRun(symbol, 'dcf', { value: dcf.fairValue, label: 'Fair value per share' });
+    }
+  }, [symbol, dcf.status, dcf.fairValue]);
 
   /* Bound hits from the solver: the market prices growth outside the search range. */
   const impliedLabel =

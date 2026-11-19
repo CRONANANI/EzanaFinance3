@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { buildSynthesisPrompt } from './persona-engine';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = RESEARCH_MODEL;
 
 export async function synthesizeResponses(personaResults, marketData, query) {
   const anthropic = new Anthropic({

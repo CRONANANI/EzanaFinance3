@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { recordModelRun } from '@/lib/research/model-runs';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import './comps-analysis-card.css';
 
@@ -95,6 +96,11 @@ export function CompsAnalysisCard({ symbol, onClose }) {
         return;
       }
       setData(json);
+      const avg = Number(json?.valuation?.avgImpliedPrice);
+      recordModelRun(symbol, 'comps', {
+        value: Number.isFinite(avg) && avg > 0 ? avg : null,
+        label: 'Average implied price (peer-median multiples)',
+      });
     } catch (e) {
       setError(e?.message || 'Failed to load');
     } finally {

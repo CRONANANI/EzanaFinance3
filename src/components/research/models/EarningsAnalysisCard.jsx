@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { recordModelRun } from '@/lib/research/model-runs';
 import {
   XAxis,
   YAxis,
@@ -56,6 +57,11 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         return;
       }
       setData(json);
+      const score = Number(json?.current?.analysis?.sentimentScore);
+      recordModelRun(symbol, 'earnings', {
+        value: Number.isFinite(score) ? score : null,
+        label: `Call sentiment, 0 to 100${json?.current?.period ? ` (${json.current.period})` : ''}`,
+      });
     } catch (e) {
       setErrorInfo({ status: 0, message: e?.message || 'Failed to load' });
     } finally {

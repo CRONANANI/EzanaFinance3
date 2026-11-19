@@ -7,12 +7,13 @@ import { OBSIDIAN_SYSTEM_PROMPT, buildObsidianUserPrompt } from '@/lib/ai/obsidi
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
 /** Reuses ANTHROPIC_API_KEY (same as /api/ai-stock-analysis). */
 export const dynamic = 'force-dynamic';
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 /* Model is configurable so a retired snapshot never takes Obsidian down. */
-const MODEL = process.env.OBSIDIAN_MODEL || 'claude-sonnet-4-20250514';
+const MODEL = process.env.OBSIDIAN_MODEL || RESEARCH_MODEL;
 
 /** Tickers named in the report's "## Hot Companies" section: "(NVDA)",
     "(NASDAQ: NVDA)" or "$NVDA". Deduped, at most 10. */

@@ -7,9 +7,10 @@ import { buildAnalysisPrompt } from '@/lib/ai/persona-engine';
 import { synthesizeResponses } from '@/lib/ai/synthesis';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
 export const dynamic = 'force-dynamic';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = RESEARCH_MODEL;
 
 function parsePersonaResponse(text, personaId, personaName, personaType) {
   try {

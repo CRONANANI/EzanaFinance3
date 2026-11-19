@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { fetchWithTimeout } from '../http/fetch-json.js';
 
 import { removeEmDashes } from '@/lib/text/em-dash';
-const MODEL = 'claude-sonnet-4-20250514';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
+const MODEL = RESEARCH_MODEL;
 const GITHUB_API = 'https://api.github.com';
 
 /**

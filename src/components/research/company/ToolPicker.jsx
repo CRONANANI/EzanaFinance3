@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * [D] Tool picker: a row of pills under the section tabs, shown only on the
- * Models and Valuation tabs. The grouping lives in TAB_TOOLS
+ * [D] Model picker: the sub-navigation of the Valuation Models tab (Nov 19th,
+ * 2026: DCF, 3-Statement, Comparable Company Analysis, GRPV, Earnings). The grouping lives in TAB_TOOLS
  * (src/lib/research/company-research.js); the page mirrors the selection to
  * ?tool= so pins, deep links and the back button work.
  */
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
-import { PREMIUM_TOOL_IDS, TAB_TOOLS } from '@/lib/research/company-research';
+import { PREMIUM_TOOL_IDS, TAB_TOOLS, TOOL_LABELS } from '@/lib/research/company-research';
 
 export function ToolPicker({ section, tool, onSelect }) {
   const cfg = TAB_TOOLS[section];
@@ -19,7 +19,7 @@ export function ToolPicker({ section, tool, onSelect }) {
       </span>
       {cfg.tools.map((id) => {
         const model = getModelConfig(id);
-        const name = model?.name || id;
+        const name = TOOL_LABELS[id] || model?.name || id;
         const on = id === tool;
         const premium = PREMIUM_TOOL_IDS.has(id);
         return (
@@ -29,6 +29,7 @@ export function ToolPicker({ section, tool, onSelect }) {
             data-model={id}
             className={`rc-pill${on ? ' is-on' : ''}`}
             aria-pressed={on}
+            aria-current={on ? 'true' : undefined}
             onClick={() => onSelect(id)}
           >
             {model?.icon ? <i className={`bi ${model.icon}`} aria-hidden="true" /> : null}

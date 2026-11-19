@@ -31,17 +31,23 @@ import {
   waccToDecimal,
 } from '../src/lib/research/company-research.js';
 
-test('tool picker: Models has 4 tools, Valuation 3, defaults and fallbacks', () => {
-  assert.deepEqual(TAB_TOOLS.models.tools, ['dcf', 'threestatement', 'grpv', 'earnings']);
-  assert.deepEqual(TAB_TOOLS.valuation.tools, ['valuation', 'comps', 'dcf']);
+test('Valuation Models holds all five models; legacy ids still resolve', () => {
+  assert.deepEqual(TAB_TOOLS.models.tools, ['dcf', 'threestatement', 'comps', 'grpv', 'earnings']);
+  assert.equal(
+    TAB_TOOLS.valuation,
+    undefined,
+    'the Valuation tab was folded into Valuation Models',
+  );
   assert.equal(resolveTool('models', null), 'dcf');
   assert.equal(resolveTool('models', 'grpv'), 'grpv');
-  assert.equal(resolveTool('models', 'comps'), 'dcf', 'a tool the tab does not offer falls back');
-  assert.equal(resolveTool('valuation', 'comps'), 'comps');
+  assert.equal(resolveTool('models', 'comps'), 'comps');
+  assert.equal(resolveTool('models', 'valuation'), 'dcf', 'the old method guide opens on DCF');
+  assert.equal(resolveTool('models', 'lbo'), 'dcf', 'a tool the tab does not offer falls back');
   assert.equal(resolveTool('news', 'dcf'), null);
   assert.equal(sectionHasTools('models'), true);
   assert.equal(sectionHasTools('overview'), false);
-  assert.equal(sectionForTool('comps'), 'valuation');
+  assert.equal(sectionForTool('comps'), 'models');
+  assert.equal(sectionForTool('valuation'), 'models');
   assert.equal(sectionForTool('grpv'), 'models');
   assert.equal(sectionForTool('nope'), null);
 });

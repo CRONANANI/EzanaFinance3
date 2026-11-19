@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
-import { CompanyNews, CompanyOverview, EarningsCard, CompetitorsCard } from '@/components/research';
+import { CompanyNews } from '@/components/research';
 import { ViewToggle } from '@/components/research/dossier/ViewToggle';
 import { ResearchFilterMenu } from '@/components/research/ResearchFilterMenu';
 import {
@@ -18,20 +18,22 @@ import {
 import { SectionTabs } from '@/components/research/dossier/SectionTabs';
 import { SectionStack } from '@/components/research/dossier/SectionStack';
 import { useSectionStack } from '@/components/research/dossier/useSectionStack';
-import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { resolveTool, sectionForTool, sectionHasTools } from '@/lib/research/company-research';
+import { LEGACY_SECTION_TOOL } from '@/lib/research/sectionStack';
 import { useCompanyResearch } from '@/hooks/useCompanyResearch';
 import { CompanyHero } from '@/components/research/company/CompanyHero';
-import { ToolPicker } from '@/components/research/company/ToolPicker';
-import { DcfWorkbench } from '@/components/research/company/DcfWorkbench';
+import { CompanyProfileBand } from '@/components/research/company/CompanyProfileBand';
+import { OverviewBriefing } from '@/components/research/company/OverviewBriefing';
+import { ValuationModelsWorkspace } from '@/components/research/company/ValuationModelsWorkspace';
 import {
-  AnalystCard,
-  KeyMetricsCard,
-  NewsCard,
-  PinsCard,
-} from '@/components/research/company/ResearchRail';
+  FilingsTab,
+  FinancialsTab,
+  OwnershipTab,
+  SonarResearchTab,
+} from '@/components/research/company/ResearchTabs';
+import { AnalystCard, NewsCard, PinsCard } from '@/components/research/company/ResearchRail';
 import {
   IndustryResearchCard,
   PortfolioToolsCard,
@@ -86,6 +88,7 @@ import './dossier.css';
 import './research-density.css';
 import '../org-trading/org-trading.css';
 import '@/components/research/company/research-company.css';
+import '@/components/research/company/us-equities.css';
 import '@/styles/home-canvas.css';
 import { markChecklistView } from '@/lib/onboarding/markView';
 
@@ -132,15 +135,15 @@ function CompanyResearchPageInner() {
     !selectedStock &&
     view === 'company';
   const [viewMode, setViewMode] = useState('heatmap');
-  /* Tool per tab (Models, Valuation). The active tab's tool is mirrored to
-     ?tool= so pins, deep links and the back button land on it. */
+  /* The model open inside Valuation Models, mirrored to ?tool= so pins, deep
+     links and the back button land on it. Old links still work: ?tool=valuation
+     opens the model guide, ?section=earnings / ?section=peers open the
+     Earnings Analyzer / Comparable Company Analysis. */
   const [tools, setTools] = useState(() => {
-    const t = searchParams.get('tool');
-    return {
-      models: resolveTool('models', t),
-      valuation: resolveTool('valuation', t),
-    };
+    const t = searchParams.get('tool') || LEGACY_SECTION_TOOL[searchParams.get('section')] || null;
+    return { models: resolveTool('models', t) };
   });
+  const [modelGuide] = useState(() => searchParams.get('tool') === 'valuation');
   /* One snapshot for every card: the same price, peers and metrics everywhere. */
   const research = useCompanyResearch(selectedStock);
   const council = useCouncilResearch(viewMode === 'stock' ? selectedStock : null, councilReady);
@@ -158,8 +161,9 @@ function CompanyResearchPageInner() {
     createList,
   } = useWatchlists();
   const searchRef = useRef(null);
-  /* Section tabs (Overview, Models, Valuation, Earnings, News, Peers):
-     in-place panels with pinning. The tool choice and each card's data live
+  /* Section tabs (Overview, Valuation Models, Financials, Ownership & Flows,
+     News & Sentiment, Filings & Events, Sonar Research): in-place panels with
+     pinning. The tool choice and each card's data live
      above the stack, so a pinned section moves instead of remounting. */
   const {
     state: sectionState,
@@ -409,66 +413,42 @@ function CompanyResearchPageInner() {
     selectTool('models', 'grpv');
   }, [handleSelectStock, selectTool]);
 
-  /* Models and Valuation: the tool picker, then the selected tool. DCF uses
-     the redesigned workbench (K, L, M, N); every other tool keeps its
-     existing panel. */
-  const renderToolSection = (section) => {
-    const tool = resolveTool(section, tools[section]);
-    return (
-      <div className="rc-tool-section">
-        <ToolPicker section={section} tool={tool} onSelect={(id) => selectTool(section, id)} />
-        {tool === 'dcf' && research ? (
-          <DcfWorkbench
-            symbol={selectedStock}
-            price={research.quote.price}
-            peers={research.peers}
-          />
-        ) : (
-          <AIAnalysisPanel
-            key={`${section}-${tool}`}
-            modelId={tool}
-            symbol={selectedStock}
-            onClose={() => selectTool(section, null)}
-            onOpenModel={handleOpenModel}
-            showTips={beginner?.showTips}
-          />
-        )}
-      </div>
-    );
-  };
+  const openTool = useCallback((toolId) => selectTool('models', toolId), [selectTool]);
 
-  /* One body per section tab. */
+  /* One body per section tab (Nov 19th, 2026 redesign). */
   const renderSection = (id) => {
     switch (id) {
       case 'overview':
         return (
-          <div className="crx-section-grid">
-            <CompanyOverview symbol={selectedStock} />
-            <div className="crx-section-actions">
-              <button
-                type="button"
-                className="crx-link-btn"
-                onClick={() => openSection('news', 'News')}
-              >
-                See all news <i className="bi bi-arrow-right" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        );
-      case 'models':
-      case 'valuation':
-        return renderToolSection(id);
-      case 'earnings':
-        return <EarningsCard symbol={selectedStock} />;
-      case 'news':
-        return <CompanyNews symbol={selectedStock} />;
-      case 'peers':
-        return (
-          <CompetitorsCard
+          <OverviewBriefing
             symbol={selectedStock}
-            onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })}
+            research={research}
+            onOpenTool={openTool}
+            onOpenSection={openSection}
           />
         );
+      case 'models':
+        return (
+          <ValuationModelsWorkspace
+            symbol={selectedStock}
+            research={research}
+            tool={resolveTool('models', tools.models)}
+            onSelectTool={openTool}
+            onOpenModel={handleOpenModel}
+            showTips={beginner?.showTips}
+            guide={modelGuide}
+          />
+        );
+      case 'financials':
+        return <FinancialsTab symbol={selectedStock} />;
+      case 'ownership':
+        return <OwnershipTab symbol={selectedStock} research={research} />;
+      case 'news':
+        return <CompanyNews symbol={selectedStock} />;
+      case 'filings':
+        return <FilingsTab symbol={selectedStock} />;
+      case 'sonar':
+        return <SonarResearchTab symbol={selectedStock} research={research} />;
       default:
         return null;
     }
@@ -598,6 +578,8 @@ function CompanyResearchPageInner() {
                       : null
                   }
                 />
+                {/* Company Profile: under the chart, above the tabs, on every tab. */}
+                <CompanyProfileBand key={selectedStock} profile={research.profile} />
                 {view === 'company' && <EducationTip topic="diversification" />}
                 <SectionTabs state={sectionState} onOpen={openSection} />
                 <SectionStack
@@ -606,8 +588,7 @@ function CompanyResearchPageInner() {
                   onPin={pinSection}
                   renderSection={renderSection}
                   titles={{
-                    models: `Run a model on ${selectedStock}`,
-                    valuation: 'Valuation',
+                    models: `Valuation Models · ${selectedStock}`,
                   }}
                 />
                 <p className="crx-visually-hidden" aria-live="polite">
@@ -628,8 +609,15 @@ function CompanyResearchPageInner() {
                   <CouncilOnThisName council={council} ticker={selectedStock} research={research} />
                 )}
                 <AnalystCard analyst={research.analyst} price={research.quote.price} />
-                <KeyMetricsCard metrics={research.metrics} />
-                <NewsCard news={research.news} onViewAll={() => openSection('news', 'News')} />
+                {/* Overview and News carry their own news lists; the rail
+                    shows headlines on the other tabs. Key metrics moved into
+                    the Overview briefing. */}
+                {sectionState.active !== 'overview' && sectionState.active !== 'news' ? (
+                  <NewsCard
+                    news={research.news}
+                    onViewAll={() => openSection('news', 'News & Sentiment')}
+                  />
+                ) : null}
                 <PinsCard pinned={sectionState.pinned} onOpen={openSection} />
               </aside>
             </div>

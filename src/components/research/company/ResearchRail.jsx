@@ -186,7 +186,7 @@ export function NewsCard({ news, onViewAll }) {
         <p className="rc-state">No recent news</p>
       ) : (
         <ul className="rc-news">
-          {news.items.map((n) => (
+          {news.items.slice(0, 3).map((n) => (
             <li key={n.url} className="rc-news__item">
               <span className="rc-news__src" aria-hidden="true">
                 {(n.source || '?')

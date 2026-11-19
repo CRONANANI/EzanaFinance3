@@ -53,6 +53,9 @@ export function SectionTabs({ state, onOpen, compactQuote = null }) {
               onClick={() => onOpen(s.id, s.label)}
             >
               {pinned && <i className="bi bi-pin-angle-fill crx-tab-pin" aria-hidden="true" />}
+              {s.icon && !pinned ? (
+                <i className={`bi ${s.icon} crx-tab-icon`} aria-hidden="true" />
+              ) : null}
               {s.label}
               {pinned && <span className="crx-visually-hidden"> (pinned)</span>}
             </button>

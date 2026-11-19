@@ -22,6 +22,7 @@ import { ValuationMethodSelector } from '@/components/research/models/ValuationM
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 import { incrementAnalysesRun } from '@/lib/beginner-profile';
 import { useChecklist } from '@/hooks/useChecklist';
+import { recordModelRun } from '@/lib/research/model-runs';
 
 const SIMPLE_EXPLAIN_KEY = 'ezana_simple_explain';
 
@@ -127,6 +128,8 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
 
       const data = await res.json();
       setAnalysis(data);
+      /* An AI report, not a priced valuation: recorded with no value. */
+      recordModelRun(symbol, modelId, { value: null, note: 'Report generated' });
       void incrementAnalysesRun();
       completeTask('action_1');
     } catch (err) {

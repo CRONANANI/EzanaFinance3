@@ -13,13 +13,27 @@ const {
   isPinned,
   DEFAULT_SECTION,
   SECTIONS,
+  migrateSection,
+  LEGACY_SECTION_TOOL,
 } = await import('@/lib/research/sectionStack');
 
-test('six sections in tab order', () => {
+test('seven sections in tab order', () => {
   assert.deepEqual(
     SECTIONS.map((s) => s.id),
-    ['overview', 'models', 'valuation', 'earnings', 'news', 'peers'],
+    ['overview', 'models', 'financials', 'ownership', 'news', 'filings', 'sonar'],
   );
+});
+
+test('old section ids and pins land on Valuation Models', () => {
+  assert.equal(migrateSection('valuation'), 'models');
+  assert.equal(migrateSection('earnings'), 'models');
+  assert.equal(migrateSection('peers'), 'models');
+  assert.equal(migrateSection('nope'), null);
+  assert.equal(LEGACY_SECTION_TOOL.peers, 'comps');
+  assert.equal(LEGACY_SECTION_TOOL.earnings, 'earnings');
+  const s = initStack({ active: 'peers', pinned: ['earnings', 'valuation', 'news'] });
+  assert.equal(s.active, 'models');
+  assert.deepEqual(s.pinned, ['models', 'news'], 'pins are migrated and de-duplicated');
 });
 
 test('defaults to Overview with nothing pinned', () => {
@@ -29,15 +43,15 @@ test('defaults to Overview with nothing pinned', () => {
 });
 
 test('clicking a tab replaces the unpinned section', () => {
-  const s = selectSection(initStack(), 'valuation');
-  assert.deepEqual(visibleSections(s), ['valuation']);
+  const s = selectSection(initStack(), 'financials');
+  assert.deepEqual(visibleSections(s), ['financials']);
 });
 
 test('a pinned section is bumped down when another tab opens', () => {
   let s = initStack({ active: 'models' });
   s = togglePin(s, 'models');
-  s = selectSection(s, 'valuation');
-  assert.deepEqual(visibleSections(s), ['valuation', 'models']);
+  s = selectSection(s, 'financials');
+  assert.deepEqual(visibleSections(s), ['financials', 'models']);
   s = selectSection(s, 'news');
   assert.deepEqual(visibleSections(s), ['news', 'models']);
 });
@@ -45,29 +59,29 @@ test('a pinned section is bumped down when another tab opens', () => {
 test('most recently pinned sits directly under the active section', () => {
   let s = initStack({ active: 'models' });
   s = togglePin(s, 'models');
-  s = selectSection(s, 'earnings');
-  s = togglePin(s, 'earnings');
-  s = selectSection(s, 'peers');
-  assert.deepEqual(visibleSections(s), ['peers', 'earnings', 'models']);
+  s = selectSection(s, 'ownership');
+  s = togglePin(s, 'ownership');
+  s = selectSection(s, 'filings');
+  assert.deepEqual(visibleSections(s), ['filings', 'ownership', 'models']);
 });
 
 test('opening a pinned tab moves it to the top without duplicating it', () => {
-  let s = initStack({ active: 'models', pinned: ['models', 'earnings'] });
-  s = selectSection(s, 'earnings');
-  assert.deepEqual(visibleSections(s), ['earnings', 'models']);
+  let s = initStack({ active: 'models', pinned: ['models', 'ownership'] });
+  s = selectSection(s, 'ownership');
+  assert.deepEqual(visibleSections(s), ['ownership', 'models']);
 });
 
 test('switching tabs never unpins anything', () => {
-  let s = initStack({ active: 'overview', pinned: ['news', 'peers'] });
-  for (const id of ['models', 'valuation', 'news', 'overview']) s = selectSection(s, id);
-  assert.deepEqual(s.pinned, ['news', 'peers']);
+  let s = initStack({ active: 'overview', pinned: ['news', 'sonar'] });
+  for (const id of ['models', 'financials', 'news', 'overview']) s = selectSection(s, id);
+  assert.deepEqual(s.pinned, ['news', 'sonar']);
 });
 
 test('unpinning the active section keeps it on screen', () => {
-  let s = initStack({ active: 'valuation', pinned: ['valuation'] });
-  s = togglePin(s, 'valuation');
-  assert.equal(isPinned(s, 'valuation'), false);
-  assert.deepEqual(visibleSections(s), ['valuation']);
+  let s = initStack({ active: 'financials', pinned: ['financials'] });
+  s = togglePin(s, 'financials');
+  assert.equal(isPinned(s, 'financials'), false);
+  assert.deepEqual(visibleSections(s), ['financials']);
 });
 
 test('unpinning a background section removes it', () => {

@@ -4,6 +4,7 @@ import { getUserClient } from '@/lib/supabase';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -142,7 +143,7 @@ async function generateAiAnalysis(event, riskProfile, tickerStats) {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: RESEARCH_MODEL,
           max_tokens: 600,
           messages: [
             {

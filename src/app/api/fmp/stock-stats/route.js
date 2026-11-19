@@ -184,6 +184,30 @@ export const GET = withApiGuard(
         })(),
         asOf:
           q?.timestamp != null && Number.isFinite(Number(q.timestamp)) ? Number(q.timestamp) : null,
+        /* Company Profile band (Nov 19th, 2026, additive): FMP profile fields
+           only, null when FMP has none. No founding year exists in this
+           source, so the band shows the IPO date and labels it as such. */
+        profile: {
+          description:
+            typeof prof?.description === 'string' && prof.description.trim()
+              ? prof.description.trim()
+              : null,
+          website:
+            typeof prof?.website === 'string' && /^https?:\/\//.test(prof.website)
+              ? prof.website
+              : null,
+          ceo: prof?.ceo || null,
+          employees: (() => {
+            const n = Number(prof?.fullTimeEmployees);
+            return Number.isFinite(n) && n > 0 ? n : null;
+          })(),
+          city: prof?.city || null,
+          state: prof?.state || null,
+          country: prof?.country || null,
+          ipoDate: prof?.ipoDate || null,
+          beta: prof?.beta != null && Number.isFinite(Number(prof.beta)) ? Number(prof.beta) : null,
+          marketCap: mcapNum != null && Number.isFinite(Number(mcapNum)) ? Number(mcapNum) : null,
+        },
       });
     } catch (err) {
       console.error('[fmp/stock-stats]', err);

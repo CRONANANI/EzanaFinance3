@@ -19,8 +19,22 @@
  * grouping here; nothing else hardcodes it.
  */
 export const TAB_TOOLS = {
-  models: { label: 'Model', tools: ['dcf', 'threestatement', 'grpv', 'earnings'] },
-  valuation: { label: 'Method', tools: ['valuation', 'comps', 'dcf'] },
+  models: { label: 'Model', tools: ['dcf', 'threestatement', 'comps', 'grpv', 'earnings'] },
+};
+
+/**
+ * Nov 19th, 2026: the old Valuation tab's "valuation" tool (the method guide)
+ * opens Valuation Models on DCF with the guide shown. Old ids keep working.
+ */
+export const LEGACY_TOOLS = { valuation: 'dcf' };
+
+/** Display names for the Valuation Models sub-navigation. */
+export const TOOL_LABELS = {
+  dcf: 'DCF Valuation',
+  threestatement: '3-Statement Model',
+  comps: 'Comparable Company Analysis',
+  grpv: 'GRPV Analysis',
+  earnings: 'Earnings Analyzer',
 };
 
 /** Premium tools show a star. Mirrors the set the page used before the redesign. */
@@ -44,13 +58,15 @@ export const sectionHasTools = (section) =>
 export function resolveTool(section, requested) {
   const cfg = TAB_TOOLS[section];
   if (!cfg) return null;
-  return cfg.tools.includes(requested) ? requested : cfg.tools[0];
+  const id = LEGACY_TOOLS[requested] || requested;
+  return cfg.tools.includes(id) ? id : cfg.tools[0];
 }
 
 /** The section a tool lives in (first match), for legacy ?model= links. */
 export function sectionForTool(toolId) {
+  const id = LEGACY_TOOLS[toolId] || toolId;
   for (const [section, cfg] of Object.entries(TAB_TOOLS)) {
-    if (cfg.tools.includes(toolId)) return section;
+    if (cfg.tools.includes(id)) return section;
   }
   return null;
 }

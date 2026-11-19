@@ -8,9 +8,10 @@ import { getUserClient } from '@/lib/supabase';
 import { sanitizeAIOutput } from '@/lib/sanitize';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
+import { RESEARCH_MODEL } from '@/lib/ai/models';
 export const dynamic = 'force-dynamic';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = RESEARCH_MODEL;
 
 const POST_HANDLER = withApiGuard(
   async (request, user) => {

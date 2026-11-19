@@ -156,6 +156,10 @@ export function useCompanyResearch(symbol) {
       industry: d.industry || null,
       capType: d.capType || null,
       logoUrl: d.logo || null,
+      /* Company Profile band: description, website, HQ, employees, IPO date
+         (FMP profile, null where FMP has none). */
+      details: d.profile || null,
+      status: stats.status,
     };
     const quote = {
       status: stats.status,
@@ -164,6 +168,7 @@ export function useCompanyResearch(symbol) {
       changeAbs: toNum(d.change),
       changePct: toNum(d.changePct),
       asOf: toNum(d.asOf),
+      marketCap: toNum(d.profile?.marketCap),
       display: {
         marketCap: shown(d.mcap),
         pe: shown(d.pe),
@@ -245,7 +250,7 @@ export function useCompanyResearch(symbol) {
     news = news
       .filter((n) => n.title && n.url)
       .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))
-      .slice(0, 3);
+      .slice(0, 5);
     const newsStatus =
       avNews.status === 'loading' || (avNews.items.length === 0 && finnhubNewsLoading)
         ? 'loading'
