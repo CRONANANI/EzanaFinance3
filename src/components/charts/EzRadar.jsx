@@ -24,6 +24,8 @@ import './ez-radar.css';
  * axisKey: the row key that names the axis ('dimension')
  * series: [{ key: 'a', label: 'Canada', color: 'var(--emerald)' }, ...]
  * labelOf(row): optional full axis name for the tooltip
+ * glow: the glowing variant, outlines with a soft glow in light mode too
+ *   (dark mode glows every radar already, charts-glow.css)
  */
 export function EzRadar({
   data,
@@ -38,6 +40,7 @@ export function EzRadar({
   isLoading = false,
   height = 300,
   outerRadius = '72%',
+  glow = false,
   ariaLabel,
   className = '',
 }) {
@@ -48,7 +51,7 @@ export function EzRadar({
 
   return (
     <figure
-      className={`ezr ${className}`.trim()}
+      className={`ezr${glow ? ' ezr--glow' : ''} ${className}`.trim()}
       aria-label={ariaLabel}
       onMouseLeave={() => setActiveKey(null)}
     >
@@ -85,7 +88,7 @@ export function EzRadar({
               <PolarGrid gridType={gridType} stroke="currentColor" strokeOpacity={0.18} />
               <PolarAngleAxis
                 dataKey={axisKey}
-                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                tick={<WrapTick />}
               />
               <PolarRadiusAxis tick={false} axisLine={false} domain={domain} />
               <Tooltip
@@ -129,6 +132,39 @@ export function EzRadar({
         </div>
       )}
     </figure>
+  );
+}
+
+/* Axis label that wraps to the room left beside it, so long names never run
+   past the chart edge on a phone. Up to three lines, ellipsis after that. */
+function WrapTick({ x, y, cx, cy, payload, textAnchor }) {
+  const label = String(payload?.value ?? '');
+  const room = textAnchor === 'start' ? cx * 2 - x : textAnchor === 'end' ? x : cx * 2;
+  const per = Math.max(6, Math.floor((room - 6) / 6.2));
+  const words = label.split(/\s+/);
+  const lines = [];
+  let cur = '';
+  words.forEach((w) => {
+    const next = cur ? `${cur} ${w}` : w;
+    if (next.length <= per) cur = next;
+    else {
+      if (cur) lines.push(cur);
+      cur = w.length > per ? `${w.slice(0, per - 1)}…` : w;
+    }
+  });
+  if (cur) lines.push(cur);
+  const shown = lines.slice(0, 3);
+  if (lines.length > 3) shown[2] = `${shown[2].slice(0, per - 1)}…`;
+  const lift = y < (cy ?? 0) - 4 ? -(shown.length - 1) * 12 : 0;
+  return (
+    <text x={x} y={y + lift} textAnchor={textAnchor} fill="var(--text-muted)" fontSize={11}>
+      <title>{label}</title>
+      {shown.map((l, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? '0.35em' : 12}>
+          {l}
+        </tspan>
+      ))}
+    </text>
   );
 }
 

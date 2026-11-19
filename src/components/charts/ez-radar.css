@@ -113,3 +113,12 @@
     transition: none;
   }
 }
+
+/* Glowing variant: the series glow in light mode too. */
+.ezr--glow .recharts-radar-polygon path {
+  filter: url(#ez-line-glow);
+}
+.ezr--glow .recharts-polar-grid-concentric path,
+.ezr--glow .recharts-polar-grid-concentric polygon {
+  stroke-dasharray: 3 3;
+}

@@ -15,6 +15,7 @@ const PALETTE = [
  *   axes: ['China', 'Poland', ...]
  *   series: [{ label, values: [..one per axis..], color? }]
  *   variant: 'filled' | 'lines'; max: top of the scale (default: data max)
+ *   glow: the glowing multi-stroke variant (dashed grid, outlines glow)
  */
 export function EchoRadar({
   figureLabel,
@@ -26,6 +27,7 @@ export function EchoRadar({
   unit = '',
   variant = 'filled',
   max,
+  glow = false,
 }) {
   const keyed = series.map((s, i) => ({
     key: `s${i}`,
@@ -50,6 +52,7 @@ export function EchoRadar({
         series={keyed}
         domain={[0, top]}
         variant={variant}
+        glow={glow}
         height={340}
         formatValue={(v) =>
           v == null

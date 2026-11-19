@@ -55,7 +55,7 @@ import { EchoRadar } from '@/components/echo/figures/EchoRadar';
 import { EchoSentiment } from '@/components/echo/figures/EchoSentiment';
 import { EchoRidgeline } from '@/components/echo/figures/EchoRidgeline';
 import { EchoDossierBars } from '@/components/echo/figures/EchoDossierBars';
-import { varyFigures } from '@/lib/echo/figure-variety';
+import { enrichFigures, varyFigures } from '@/lib/echo/figure-variety';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
@@ -2844,8 +2844,9 @@ export default function EchoArticleClient({
      don't all show the same visuals in the same order (lossless swaps only;
      see lib/echo/figure-variety.js). */
   const blocks = useMemo(
-    () => varyFigures(article.contentBlocks, article.slug || article.id),
-    [article.contentBlocks, article.slug, article.id],
+    () => enrichFigures(varyFigures(article.contentBlocks, article.slug || article.id), article),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [article.contentBlocks, article.slug, article.id, article.globeRail],
   );
   const paragraphs = article.contentParagraphs ?? [];
 
