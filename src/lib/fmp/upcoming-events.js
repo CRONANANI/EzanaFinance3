@@ -310,7 +310,11 @@ export async function getCommodityEvents() {
 
 /** Which endpoints this client wraps — used by the aggregator route. */
 export const FEED_KEYS = [
+  'central-banks',
   'earnings',
+  'inflation',
+  'jobs',
+  'growth',
   'dividends',
   'ipos',
   'economic',

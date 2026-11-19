@@ -99,6 +99,10 @@ const EVENT_CATEGORY_META = {
   'inside-the-capitol': { label: 'Capitol', color: '#f97316' },
   crypto: { label: 'Crypto', color: '#fbbf24' },
   commodity: { label: 'Commodities', color: '#84cc16' },
+  'central-banks': { label: 'Central banks', color: '#3b82f6' },
+  inflation: { label: 'Inflation', color: '#ef4444' },
+  jobs: { label: 'Jobs', color: '#14b8a6' },
+  growth: { label: 'Growth', color: '#0ea5e9' },
 };
 
 const EVENT_CATEGORY_FALLBACK_COLOR = '#94a3b8';
@@ -112,9 +116,13 @@ function eventCategoryColor(category) {
 const SCHEDULE_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'earnings', label: 'Earnings' },
+  { key: 'central-banks', label: 'Central banks' },
+  { key: 'inflation', label: 'Inflation' },
+  { key: 'jobs', label: 'Jobs' },
+  { key: 'growth', label: 'Growth' },
   { key: 'dividends', label: 'Dividends' },
   { key: 'ipos', label: 'IPOs' },
-  { key: 'economic', label: 'Economic' },
+  { key: 'economic', label: 'Other economic' },
   { key: 'inside-the-capitol', label: 'Capitol' },
   { key: 'crypto', label: 'Crypto' },
   { key: 'commodity', label: 'Commodities' },
@@ -125,6 +133,10 @@ const DEFAULT_CAL_LEGEND = [
   { key: 'earnings', label: 'Earnings', color: 'var(--emerald)' },
   { key: 'dividends', label: 'Dividends', color: '#22c55e' },
   { key: 'ipos', label: 'IPOs', color: '#a855f7' },
+  { key: 'central-banks', label: 'Central banks', color: '#3b82f6' },
+  { key: 'inflation', label: 'Inflation', color: '#ef4444' },
+  { key: 'jobs', label: 'Jobs', color: '#14b8a6' },
+  { key: 'growth', label: 'Growth', color: '#0ea5e9' },
   { key: 'economic', label: 'Economic', color: '#6366f1' },
   { key: 'inside-the-capitol', label: 'Capitol', color: '#f97316' },
 ];
@@ -554,14 +566,10 @@ export default function HomePage() {
   } = usePortfolioValueSeries(seriesRange);
 
   const [indices, setIndices] = useState([]);
-  const [sectorData, setSectorData] = useState({ top: [], bottom: [] });
-  const [sectorLoaded, setSectorLoaded] = useState(false);
-  const [sectorEmpty, setSectorEmpty] = useState(false);
   const [activeIndices, setActiveIndices] = useState(new Set(['S&P 500']));
   const [showPortfolio, setShowPortfolio] = useState(true);
   const [indexSeries, setIndexSeries] = useState({});
   const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
-  const [pulseRange, setPulseRange] = useState('1D');
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
   const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
@@ -863,50 +871,6 @@ export default function HomePage() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setSectorLoaded(false);
-    (async () => {
-      try {
-        const res = await fetch(`/api/fmp/sector-performance?range=${pulseRange}`);
-        if (!res.ok) return;
-        const json = await res.json();
-        const rows = Array.isArray(json?.sectors)
-          ? json.sectors
-          : Array.isArray(json?.data)
-            ? json.data
-            : [];
-        const degraded = Boolean(json?.degraded);
-        const sectors = rows
-          .map((s) => ({ name: s.name || s.sector, chg: Number(s.changePct ?? 0) }))
-          .sort((a, b) => b.chg - a.chg);
-        if (!cancelled) {
-          const empty = degraded || sectors.length === 0;
-          setSectorEmpty(empty);
-          setSectorData(
-            empty
-              ? { top: [], bottom: [] }
-              : {
-                  top: sectors.filter((s) => s.chg > 0).slice(0, 5),
-                  bottom: sectors
-                    .filter((s) => s.chg <= 0)
-                    .slice(-5)
-                    .reverse(),
-                },
-          );
-          setSectorLoaded(true);
-        }
-      } catch {
-        if (!cancelled) {
-          setSectorEmpty(true);
-          setSectorLoaded(true);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [pulseRange]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1196,92 +1160,6 @@ export default function HomePage() {
               </>
             }
           />
-        </div>
-      </section>
-
-      {/* ═══ BAND III — MARKETS PULSE (dark) ═══ */}
-      <section className="bs-band bs-band--dark">
-        <div className="bs-page-inner">
-          <BandHeader
-            number="III"
-            label="Markets pulse"
-            meta={`S&P 500 GICS · ${
-              {
-                '1D': 'today',
-                '1W': 'past week',
-                '1M': 'past month',
-                '3M': 'past 3 months',
-                '6M': 'past 6 months',
-                '1Y': 'past year',
-                '3Y': 'past 3 years',
-                '5Y': 'past 5 years',
-                '10Y': 'past 10 years',
-                ALL: 'all time',
-                CUSTOM: 'custom range',
-              }[pulseRange] || 'recent'
-            }`}
-            dark
-          />
-          <div className="bs-chart-range-row">
-            <DateSelector
-              ranges={RANGE_BUTTONS}
-              value={pulseRange}
-              onChange={setPulseRange}
-              size="lg"
-            />
-          </div>
-          <div className="bs-pulse-row">
-            {sectorLoaded && sectorEmpty ? (
-              <p className="bs-pulse-empty">No sector data yet</p>
-            ) : null}
-            <div className="bs-pulse-col">
-              <div className="bs-pulse-head-dark">Leaders</div>
-              {(sectorData.top.length
-                ? sectorData.top
-                : sectorLoaded
-                  ? []
-                  : [{ name: 'Loading…', chg: 0 }]
-              ).map((s) => (
-                <div key={s.name} className="bs-pulse-line">
-                  <span className="bs-pulse-name">{s.name}</span>
-                  <div className="bs-pulse-bar">
-                    <div
-                      className="bs-pulse-bar-fill bs-pulse-bar-fill--up"
-                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <span className="bs-pulse-pct bs-pulse-pct--up">
-                    {s.chg >= 0 ? '+' : ''}
-                    {s.chg.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="bs-pulse-divider" />
-            <div className="bs-pulse-col">
-              <div className="bs-pulse-head-dark">Laggards</div>
-              {(sectorData.bottom.length
-                ? sectorData.bottom
-                : sectorLoaded
-                  ? []
-                  : [{ name: 'Loading…', chg: 0 }]
-              ).map((s) => (
-                <div key={s.name} className="bs-pulse-line">
-                  <span className="bs-pulse-name">{s.name}</span>
-                  <div className="bs-pulse-bar">
-                    <div
-                      className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
-                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <span className="bs-pulse-pct bs-pulse-pct--down">
-                    {s.chg >= 0 ? '+' : ''}
-                    {s.chg.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 

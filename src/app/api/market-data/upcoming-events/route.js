@@ -26,6 +26,90 @@ const CACHE_HEADERS = {
   'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
 };
 
+/* Market-wide earnings (Nov 19, 2026): large caps whose reports move the
+   index, shown to everyone alongside the names the reader follows. */
+const MARKET_MOVERS = new Set([
+  'AAPL',
+  'MSFT',
+  'NVDA',
+  'GOOGL',
+  'GOOG',
+  'AMZN',
+  'META',
+  'AVGO',
+  'TSLA',
+  'BRK.B',
+  'JPM',
+  'LLY',
+  'V',
+  'MA',
+  'UNH',
+  'XOM',
+  'WMT',
+  'JNJ',
+  'PG',
+  'HD',
+  'COST',
+  'ORCL',
+  'NFLX',
+  'CRM',
+  'AMD',
+  'BAC',
+  'KO',
+  'PEP',
+  'ABBV',
+  'MRK',
+  'CVX',
+  'ADBE',
+  'WFC',
+  'CSCO',
+  'MCD',
+  'IBM',
+  'GS',
+  'MS',
+  'DIS',
+  'INTC',
+  'QCOM',
+  'TXN',
+  'CAT',
+  'BA',
+  'NKE',
+  'PLTR',
+  'MU',
+  'TSM',
+  'ASML',
+  'SNOW',
+  'UBER',
+  'SHOP',
+  'PYPL',
+  'SBUX',
+  'TGT',
+  'LOW',
+]);
+
+/* Economic releases split into families by name, so the calendar can filter
+   central-bank decisions, inflation, jobs and growth prints separately. */
+const ECON_FAMILIES = [
+  [
+    'central-banks',
+    /\b(fomc|fed\b|federal reserve|interest rate|rate decision|powell|monetary policy|ecb|boe|boj|bank of (canada|england|japan)|central bank|beige book)/i,
+  ],
+  ['inflation', /\b(cpi|ppi|pce|inflation|price index|import prices|export prices)\b/i],
+  [
+    'jobs',
+    /\b(nonfarm|non-farm|payroll|unemployment|jobless|employment|adp|jolts|job openings|labor|average hourly earnings)\b/i,
+  ],
+  [
+    'growth',
+    /\b(gdp|retail sales|ism|pmi|industrial production|durable goods|housing starts|building permits|home sales|consumer confidence|consumer sentiment|factory orders|trade balance|business inventories)\b/i,
+  ],
+];
+const ECON_CATEGORIES = new Set(['economic', ...ECON_FAMILIES.map(([k]) => k)]);
+function econFamily(name) {
+  const hit = ECON_FAMILIES.find(([, re]) => re.test(String(name || '')));
+  return hit ? hit[0] : 'economic';
+}
+
 const ICONS = {
   earnings: '📊',
   dividends: '💵',
@@ -35,6 +119,10 @@ const ICONS = {
   'inside-the-capitol': '🏛',
   crypto: '🪙',
   commodity: '🛢️',
+  'central-banks': '🏦',
+  inflation: '🏷️',
+  jobs: '👷',
+  growth: '🏭',
 };
 
 const COLORS = {
@@ -46,6 +134,10 @@ const COLORS = {
   'inside-the-capitol': '#f97316',
   crypto: '#fbbf24',
   commodity: '#84cc16',
+  'central-banks': '#3b82f6',
+  inflation: '#ef4444',
+  jobs: '#14b8a6',
+  growth: '#0ea5e9',
 };
 
 /** "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" → local Date (null if invalid). */
@@ -183,11 +275,12 @@ function normalizers() {
       const subParts = [e.country, e.estimate != null ? `Est. ${e.estimate}` : null].filter(
         Boolean,
       );
+      const family = econFamily(e.event);
       return {
         id: `econ-${e.country || 'US'}-${String(e.event).slice(0, 24)}-${fmtDateLabel(e.date)}-${i}`,
-        category: 'economic',
+        category: family,
         type: isHigh ? 'fed' : 'economic',
-        icon: isHigh ? ICONS.fed : ICONS.economic,
+        icon: ICONS[family] || (isHigh ? ICONS.fed : ICONS.economic),
         title: e.event,
         subtitle: subParts.join(' · ') || null,
         fullDate: fmtDateLabel(e.date),
@@ -195,7 +288,7 @@ function normalizers() {
         month: d.getMonth(),
         year: d.getFullYear(),
         time: toTimeLabel(e.date, '8:30 AM'),
-        color: isHigh ? COLORS.fed : COLORS.economic,
+        color: family !== 'economic' ? COLORS[family] : isHigh ? COLORS.fed : COLORS.economic,
         impact,
         country: e.country || null,
         actual: e.actual ?? null,
@@ -319,13 +412,12 @@ export const GET = withApiGuard(
       // Skip relevance-gated feeds entirely if the user follows nothing of
       // that kind — saves an FMP roundtrip and keeps the response tiny.
       const loaders = [
-        {
-          key: 'earnings',
-          run: () => getEarningsEvents(Array.from(tickers)),
-          gated: tickers.size > 0,
-        },
+        /* One whole-market calendar call: the reader's tickers plus the
+           market movers, so everyone sees the reports that move the index. */
+        { key: 'earnings', run: () => getEarningsEvents([]), gated: true },
         { key: 'dividends', run: getDividendEvents, gated: tickers.size > 0 },
-        { key: 'ipos', run: getIpoEvents, gated: tickers.size > 0 },
+        /* IPOs are new names nobody follows yet: shown market-wide. */
+        { key: 'ipos', run: getIpoEvents, gated: true },
         // Economic is always shown for the user's country — not gated.
         { key: 'economic', run: () => getEconomicEvents(country), gated: true },
         {
@@ -355,7 +447,11 @@ export const GET = withApiGuard(
             // Relevance gating per event. Economic always passes (country was
             // already applied upstream). All other categories require the
             // event's subject to be in the user's followed set.
-            if (key === 'earnings' || key === 'dividends' || key === 'ipos') {
+            if (key === 'earnings') {
+              const sym = String(mapped.symbol || '').toUpperCase();
+              if (!relevance.tickers.has(sym) && !MARKET_MOVERS.has(sym)) continue;
+              if (!relevance.tickers.has(sym)) mapped.subtitle = mapped.subtitle || 'Market mover';
+            } else if (key === 'dividends') {
               if (!relevance.tickers.has(String(mapped.symbol || '').toUpperCase())) {
                 continue;
               }
@@ -391,7 +487,7 @@ export const GET = withApiGuard(
       // items only. Everything else (earnings, dividends, congress, …) is
       // already gated by the user's relevance set, so it all passes through.
       const priority = inWindow.filter((ev) => {
-        if (ev.category !== 'economic') return true;
+        if (!ECON_CATEGORIES.has(ev.category)) return true;
         return ev.impact !== 'Low';
       });
 

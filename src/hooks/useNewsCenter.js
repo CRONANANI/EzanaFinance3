@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { buildInterestIndex, composeFeed } from '@/lib/home/news-center';
+import { withHomeImage } from '@/lib/echo/home-card-images';
 
 /* How many of the reader's top tickers get their own news request. The news
    provider filters a multi-ticker request to stories that mention every
@@ -107,8 +108,23 @@ export function useNewsCenter({ tickers } = {}) {
 
   const feed = useMemo(() => {
     if (!raw) return null;
+    /* The Echo lead wears the article's current editorial card photo (the
+       same one the Echo home shows), falling back to its own hero image. */
+    const echoCards = (raw.echoCards || []).map((c) => {
+      const s = withHomeImage({ id: c.id, image: null });
+      return s?.image
+        ? {
+            ...c,
+            heroImage: {
+              ...(c.heroImage || {}),
+              src: s.image,
+              alt: s.imageAlt || c.heroImage?.alt || '',
+            },
+          }
+        : c;
+    });
     return composeFeed({
-      echoCards: raw.echoCards,
+      echoCards,
       newsRows: [...tickerNews, ...raw.generalNews],
       following: raw.following,
       trending: raw.trending,

@@ -920,10 +920,13 @@ body.light-mode .bs-band--activity + .bs-band {
 /* The expanded card is the full-sized version: it takes the whole row. */
 
 /* Calendar */
+/* Nov 19, 2026: the calendar sits straight on the band, no fill or outline. */
 .bs-cal-box {
-  background: var(--bs-cream-card-bg);
-  border: 1px solid var(--bs-cream-border);
-  padding: 18px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  padding: 0;
 }
 .bs-cal-head {
   font-size: 14px;
@@ -2157,7 +2160,7 @@ body.light-mode .bs-band + .bs-band {
      and left-aligned text, so a selected day spilled into the next column
      and numbers sat off their weekday. Each day is centred in its column. */
   .bs-cal-box {
-    padding: 14px 12px;
+    padding: 0;
   }
   .bs-cal-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));

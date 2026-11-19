@@ -306,7 +306,7 @@ function postItem(post, kind, creatorLikes) {
 /**
  * Everything the News Center renders.
  *   { lead, forYou, echo, news, community, personalized }
- * `lead` is the top Echo story (preferring one with an image); `forYou` mixes
+ * `lead` is the top-ranked (most recommended) Echo story; `forYou` mixes
  * the rest by FOR_YOU_PATTERN; the other three are the per-tab lists.
  */
 export function composeFeed({
@@ -345,7 +345,9 @@ export function composeFeed({
   const trend = trendingPost ? postItem(trendingPost, 'trending', 0) : null;
   const community = [creator, trend].filter((p) => p && p.title);
 
-  const lead = echo.find((e) => e.image) || echo[0] || null;
+  /* The lead is the reader's single most recommended Echo article: the top
+     of the ranking, whether or not it has a photo. */
+  const lead = echo[0] || null;
   const pools = {
     echo: echo.filter((e) => e !== lead),
     news: [...news],
