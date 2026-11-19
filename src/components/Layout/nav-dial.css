@@ -45,9 +45,10 @@
    button: grey at rest, emerald on hover, focus or while the dial is open. */
 .nd-wedges {
   display: block;
-  width: 34px;
-  height: 15px;
-  margin-top: -3px;
+  width: 36px;
+  height: 14px;
+  /* A little clear of the logo (Nov 19, 2026). */
+  margin-top: 2px;
   fill: color-mix(in srgb, var(--text-muted) 70%, transparent);
   transition: fill 0.12s ease;
   pointer-events: none;

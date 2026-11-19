@@ -73,11 +73,11 @@ export function Badge({ badge }) {
 }
 
 /** A card. `title` renders as an h2; `tools` sit on the right of the header. */
-export function Card({ title, titleExtra, tools, className, children, ...rest }) {
+export function Card({ title, titleExtra, tools, className, centerTitle, children, ...rest }) {
   return (
     <section className={cx(s.card, className)} {...rest}>
       {title ? (
-        <div className={s.cardHead}>
+        <div className={cx(s.cardHead, centerTitle && s.cardHeadCenter)}>
           <h2 className={s.cardTitle}>
             {title}
             {titleExtra}

@@ -2369,3 +2369,9 @@ button.pts-row:focus-visible {
     transition: none;
   }
 }
+
+/* Members split by lean (EzSentimentBar), under the year's reading. */
+.pts-split {
+  margin-top: 12px;
+  max-width: 520px;
+}

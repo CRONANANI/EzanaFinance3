@@ -2053,3 +2053,25 @@
     animation: none !important;
   }
 }
+
+/* House radar style (EzRadar, Nov 19, 2026). This radar stays custom SVG for
+   its clickable axes and scoring explainer, but matches the house look: a
+   quiet grid in the text colour at 18%, 2px series, the first filled at 22%
+   and the rest at 16%, others dimmed to 22% while one is hovered. */
+.oecd-radar-ring,
+.oecd-radar-ring.is-outer,
+.oecd-radar-spoke {
+  stroke: color-mix(in srgb, var(--text-primary) 18%, transparent);
+}
+.oecd-radar-poly {
+  stroke-width: 2;
+}
+.oecd-radar-poly--a {
+  fill: color-mix(in srgb, var(--emerald) 22%, transparent);
+}
+.oecd-radar-poly--b {
+  fill: color-mix(in srgb, var(--amber) 16%, transparent);
+}
+.oecd-radar-poly.is-dim {
+  opacity: 0.22;
+}

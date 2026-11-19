@@ -49,6 +49,13 @@ import { EchoBubbleField } from '@/components/echo/figures/EchoBubbleField';
 import { EchoMultiAxis } from '@/components/echo/figures/EchoMultiAxis';
 import { EchoTileGrid } from '@/components/echo/figures/EchoTileGrid';
 import { EchoMarketTreemap } from '@/components/echo/figures/EchoMarketTreemap';
+import { EchoGlowLine } from '@/components/echo/figures/EchoGlowLine';
+import { EchoDonut } from '@/components/echo/figures/EchoDonut';
+import { EchoRadar } from '@/components/echo/figures/EchoRadar';
+import { EchoSentiment } from '@/components/echo/figures/EchoSentiment';
+import { EchoRidgeline } from '@/components/echo/figures/EchoRidgeline';
+import { EchoDossierBars } from '@/components/echo/figures/EchoDossierBars';
+import { varyFigures } from '@/lib/echo/figure-variety';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
@@ -470,6 +477,18 @@ function ArticleBlock({ block }) {
       return <EchoTileGrid {...block} />;
     case 'market-treemap':
       return <EchoMarketTreemap {...block} />;
+    case 'glow-line':
+      return <EchoGlowLine {...block} />;
+    case 'donut':
+      return <EchoDonut {...block} />;
+    case 'radar':
+      return <EchoRadar {...block} />;
+    case 'sentiment-bar':
+      return <EchoSentiment {...block} />;
+    case 'ridgeline':
+      return <EchoRidgeline {...block} />;
+    case 'dossier-bars':
+      return <EchoDossierBars {...block} />;
 
     default:
       return null;
@@ -2821,7 +2840,13 @@ export default function EchoArticleClient({
       : [];
   const relatedCards = [...related, ...fallback].slice(0, 3);
   const tickers = article.tickers ?? [];
-  const blocks = article.contentBlocks;
+  /* Some figures render in a different chart form per article, so articles
+     don't all show the same visuals in the same order (lossless swaps only;
+     see lib/echo/figure-variety.js). */
+  const blocks = useMemo(
+    () => varyFigures(article.contentBlocks, article.slug || article.id),
+    [article.contentBlocks, article.slug, article.id],
+  );
   const paragraphs = article.contentParagraphs ?? [];
 
   // Scroll-sync sections for the globe rail: one entry per h2/h3 heading (the

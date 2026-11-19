@@ -4,6 +4,7 @@ import './globals.css';
 // After globals.css on purpose: it has to land after Tailwind Preflight.
 import './app-typography.css';
 import '@/styles/ez-dropdown.css';
+import '@/styles/charts-glow.css';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { validateEnv } from '@/lib/env';
@@ -274,6 +275,18 @@ export default async function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">
           Skip to content
         </a>
+        {/* Glow filter for chart lines in dark mode (Nov 19, 2026), defined
+            once for the whole app. charts-glow.css applies it to Recharts
+            lines and areas, and to any custom line marked .ez-glow-line. The
+            blurred copy sits under the crisp line, in the line's own colour. */}
+        <svg width="0" height="0" aria-hidden="true" focusable="false" className="ez-glow-defs">
+          <defs>
+            <filter id="ez-line-glow" x="-20%" y="-40%" width="140%" height="180%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+        </svg>
         {/* Six providers that used to live here now wrap the (dashboard)
             segment instead: Settings, ActiveTask, Congress, PinnedCards,
             BeginnerLevel and OrgTheme. Every one of them had zero consumers

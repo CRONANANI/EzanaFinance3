@@ -1,5 +1,6 @@
 'use client';
 
+import { EzSentimentBar } from '@/components/charts/EzSentimentBar';
 import { useEffect, useMemo, useState } from 'react';
 
 /**
@@ -437,6 +438,33 @@ function deriveScore(awards, trades) {
   return { score, parts, wsum };
 }
 
+/* Congress trades split by type, from disclosure Transaction text. */
+function congressParts(trades) {
+  let buys = 0;
+  let sells = 0;
+  let other = 0;
+  for (const t of trades) {
+    const k = String(t.Transaction || '');
+    if (/purchase|buy/i.test(k)) buys += 1;
+    else if (/sale|sell/i.test(k)) sells += 1;
+    else other += 1;
+  }
+  return [
+    { key: 'buy', label: 'Purchases', value: buys, tone: 'pos' },
+    { key: 'other', label: 'Exchanges and other', value: other, tone: 'neu' },
+    { key: 'sell', label: 'Sales', value: sells, tone: 'neg' },
+  ];
+}
+function congressLean(trades) {
+  const [b, , s] = congressParts(trades);
+  const n = b.value + s.value;
+  if (!n) return null;
+  const share = b.value / n;
+  if (share >= 0.55) return { label: 'Leaning buy', tone: 'pos' };
+  if (share <= 0.45) return { label: 'Leaning sell', tone: 'neg' };
+  return { label: 'Balanced', tone: 'neu' };
+}
+
 export function SnrGovSignal({ entity, ticker, awards, trades, lobbying }) {
   const [showHow, setShowHow] = useState(false);
   const loading = awards === null || trades === null;
@@ -518,6 +546,19 @@ export function SnrGovSignal({ entity, ticker, awards, trades, lobbying }) {
                   </ul>
                 </div>
               )}
+            </div>
+          )}
+          {trades && trades.length > 0 && (
+            <div className="snr-gov-congress">
+              {/* Congress trades in this name (Nov 19, 2026): disclosed
+                  purchases against sales, from the same trades the index
+                  uses. Exchanges and other types are shown apart. */}
+              <EzSentimentBar
+                title={`Congress trades${ticker ? ` in ${ticker}` : ''}`}
+                overall={congressLean(trades)}
+                parts={congressParts(trades)}
+                count={(v) => `${v} ${v === 1 ? 'trade' : 'trades'}`}
+              />
             </div>
           )}
           {awards && awards.length > 0 && (

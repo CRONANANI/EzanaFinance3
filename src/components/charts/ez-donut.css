@@ -1,0 +1,62 @@
+/* EzDonut (Nov 2026). Prefix ezd-. Tokens only. */
+.ezd {
+  position: relative;
+  flex: none;
+  margin: 0;
+}
+.ezd-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+.ezd-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+.ezd-slice {
+  fill: none;
+  stroke: currentColor;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  transition:
+    transform 0.2s ease-out,
+    filter 0.2s ease-out,
+    opacity 0.2s ease-out;
+  outline: none;
+}
+.ezd-slice.is-active {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 6px currentColor) brightness(1.08);
+}
+.ezd-slice.is-dim {
+  opacity: 0.45;
+}
+.ezd-slice:focus-visible {
+  filter: drop-shadow(0 0 0 2px var(--border-focus));
+}
+.ezd-center {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+.ezd-center-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ezd-slice {
+    transition: none;
+  }
+  .ezd-slice.is-active {
+    transform: none;
+  }
+}

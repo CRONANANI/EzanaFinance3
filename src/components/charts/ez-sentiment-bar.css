@@ -1,0 +1,103 @@
+/* EzSentimentBar (Nov 2026). Prefix ezsb-. Tokens only. */
+.ezsb {
+  --ezsb-pos: var(--positive, var(--emerald));
+  --ezsb-neg: var(--negative);
+  --ezsb-neu: color-mix(in srgb, var(--text-primary) 22%, transparent);
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.ezsb-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ezsb-title {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ezsb-overall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ezsb-overall.is-pos {
+  color: var(--emerald-text);
+}
+.ezsb-overall.is-neg {
+  color: var(--negative);
+}
+.ezsb-overall.is-neu {
+  color: var(--text-muted);
+}
+.ezsb-bar {
+  display: flex;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.ezsb-seg {
+  display: block;
+  height: 100%;
+}
+.ezsb-seg + .ezsb-seg {
+  box-shadow: inset 2px 0 0 var(--bg-primary);
+}
+.ezsb-seg.is-pos {
+  background: var(--ezsb-pos);
+}
+.ezsb-seg.is-neg {
+  background: var(--ezsb-neg);
+}
+.ezsb-seg.is-neu {
+  background: var(--ezsb-neu);
+}
+.ezsb-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.ezsb-legend li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text-muted);
+}
+.ezsb-legend li > .bi {
+  font-size: 12px;
+}
+.ezsb-legend li.is-pos > .bi {
+  color: var(--emerald-text);
+}
+.ezsb-legend li.is-neg > .bi {
+  color: var(--negative);
+}
+.ezsb-legend-label {
+  color: var(--text-secondary);
+}
+.ezsb-legend-fig {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.ezsb-legend-n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.ezsb-note {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}

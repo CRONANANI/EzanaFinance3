@@ -15,6 +15,7 @@
  * reading, no cards or pills.
  */
 import { useEffect, useMemo, useState } from 'react';
+import { EzSentimentBar } from '@/components/charts/EzSentimentBar';
 import {
   BEAR_AT,
   BULL_AT,
@@ -223,96 +224,111 @@ export default function PoliticianSentiment() {
       {/* The headline (reading, what it says, the signal bar) sits beside
           the tracker's rail under the table; the rest runs full width. */}
       <div className="pts-top">
-      <div className="pts-head">
-        <p className="ptk-eyebrow dsc-mn">POLITICIAN SENTIMENT</p>
-        <h2 className="pts-title" id="pts-title">
-          Bull or bear, by what Congress buys and sells
-        </h2>
-        <p className="pts-lead">
-          Each year, the share of trading members who bought more than they sold, by disclosed
-          dollars. {BULL_AT}% or more reads Bullish, {BEAR_AT}% or less reads Bearish.
-        </p>
-      </div>
+        <div className="pts-head">
+          <p className="ptk-eyebrow dsc-mn">POLITICIAN SENTIMENT</p>
+          <h2 className="pts-title" id="pts-title">
+            Bull or bear, by what Congress buys and sells
+          </h2>
+          <p className="pts-lead">
+            Each year, the share of trading members who bought more than they sold, by disclosed
+            dollars. {BULL_AT}% or more reads Bullish, {BEAR_AT}% or less reads Bearish.
+          </p>
+        </div>
 
-      {status === 'error' && !years.length ? (
-        <p className="dsc-note" role="status">
-          Sentiment could not be loaded. Try again shortly.
-        </p>
-      ) : status === 'loading' && !years.length ? (
-        <p className="pts-loading" role="status">
-          Loading every year on file…
-        </p>
-      ) : cur ? (
-        <>
-          {/* ── the chosen year's reading and what it is telling us ── */}
-          <div className="pts-signal" aria-live="polite">
-            <div className="pts-now-main">
-              <span className="pts-now-year dsc-mn">
-                {cur.year}
-                {ytd ? ' · YEAR TO DATE' : ''}
-              </span>
-              <span className={`pts-now-reading is-${cur.reading.key}`}>{cur.reading.label}</span>
-              <span className="pts-now-line">
-                {cur.netBuyers.toLocaleString()} of {leaning.toLocaleString()} members net buying
-              </span>
-            </div>
-            {story ? (
-              <div className="pts-story">
-                <span className="pts-story-label dsc-mn">WHAT THE SIGNAL IS TELLING US</span>
-                <p className="pts-story-main">{story.summary}</p>
-                {story.aligned ? <p className="pts-story-sub">{story.aligned}</p> : null}
-                {story.divergence.map((d) => (
-                  <p key={d} className="pts-story-sub pts-story-div">
-                    <span className="pts-story-tag dsc-mn">SIGNAL DIVERGENCE</span> {d}
-                  </p>
-                ))}
+        {status === 'error' && !years.length ? (
+          <p className="dsc-note" role="status">
+            Sentiment could not be loaded. Try again shortly.
+          </p>
+        ) : status === 'loading' && !years.length ? (
+          <p className="pts-loading" role="status">
+            Loading every year on file…
+          </p>
+        ) : cur ? (
+          <>
+            {/* ── the chosen year's reading and what it is telling us ── */}
+            <div className="pts-signal" aria-live="polite">
+              <div className="pts-now-main">
+                <span className="pts-now-year dsc-mn">
+                  {cur.year}
+                  {ytd ? ' · YEAR TO DATE' : ''}
+                </span>
+                <span className={`pts-now-reading is-${cur.reading.key}`}>{cur.reading.label}</span>
+                <span className="pts-now-line">
+                  {cur.netBuyers.toLocaleString()} of {leaning.toLocaleString()} members net buying
+                </span>
+                {/* Every trading member that year, split by which way they
+                  leaned (Nov 19, 2026). Even = bought and sold the same. */}
+                <EzSentimentBar
+                  className="pts-split"
+                  parts={[
+                    { key: 'buy', label: 'Net buyers', value: cur.netBuyers, tone: 'pos' },
+                    {
+                      key: 'even',
+                      label: 'Even',
+                      value: Math.max(0, cur.members - leaning),
+                      tone: 'neu',
+                    },
+                    { key: 'sell', label: 'Net sellers', value: cur.netSellers, tone: 'neg' },
+                  ]}
+                  count={(v) => `${Number(v).toLocaleString('en-US')} members`}
+                />
               </div>
-            ) : null}
-          </div>
+              {story ? (
+                <div className="pts-story">
+                  <span className="pts-story-label dsc-mn">WHAT THE SIGNAL IS TELLING US</span>
+                  <p className="pts-story-main">{story.summary}</p>
+                  {story.aligned ? <p className="pts-story-sub">{story.aligned}</p> : null}
+                  {story.divergence.map((d) => (
+                    <p key={d} className="pts-story-sub pts-story-div">
+                      <span className="pts-story-tag dsc-mn">SIGNAL DIVERGENCE</span> {d}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
 
-          <dl className="pts-now-figs">
-            <div>
-              <dt>Members net buying</dt>
-              <dd className={`dsc-mn is-${cur.reading.key}`}>{pct(cur.breadth)}</dd>
-            </div>
-            <div>
-              <dt>Buys, share of trades</dt>
-              <dd className="dsc-mn">{pct(cur.buyShare)}</dd>
-            </div>
-            <div>
-              <dt>Net flow, by dollars</dt>
-              <dd className={`dsc-mn ${cur.netFlow >= 0 ? 'is-bull' : 'is-bear'}`}>
-                {signed(cur.netFlow, 0, '%')}
-              </dd>
-            </div>
-            <div>
-              <dt>Bought / sold, midpoints</dt>
-              <dd className="dsc-mn">
-                {usdShort(cur.buyUsd)} / {usdShort(cur.sellUsd)}
-              </dd>
-            </div>
-            <div>
-              <dt>Buy / sell trades</dt>
-              <dd className="dsc-mn">
-                {cur.buys.toLocaleString()} / {cur.sells.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt>Disclosed trades</dt>
-              <dd className="dsc-mn">{cur.trades.toLocaleString()}</dd>
-            </div>
-          </dl>
+            <dl className="pts-now-figs">
+              <div>
+                <dt>Members net buying</dt>
+                <dd className={`dsc-mn is-${cur.reading.key}`}>{pct(cur.breadth)}</dd>
+              </div>
+              <div>
+                <dt>Buys, share of trades</dt>
+                <dd className="dsc-mn">{pct(cur.buyShare)}</dd>
+              </div>
+              <div>
+                <dt>Net flow, by dollars</dt>
+                <dd className={`dsc-mn ${cur.netFlow >= 0 ? 'is-bull' : 'is-bear'}`}>
+                  {signed(cur.netFlow, 0, '%')}
+                </dd>
+              </div>
+              <div>
+                <dt>Bought / sold, midpoints</dt>
+                <dd className="dsc-mn">
+                  {usdShort(cur.buyUsd)} / {usdShort(cur.sellUsd)}
+                </dd>
+              </div>
+              <div>
+                <dt>Buy / sell trades</dt>
+                <dd className="dsc-mn">
+                  {cur.buys.toLocaleString()} / {cur.sells.toLocaleString()}
+                </dd>
+              </div>
+              <div>
+                <dt>Disclosed trades</dt>
+                <dd className="dsc-mn">{cur.trades.toLocaleString()}</dd>
+              </div>
+            </dl>
 
-          <Spectrum breadth={cur.breadth} reading={cur.reading.label} />
-        </>
-      ) : (
-        <p className="dsc-note">No disclosures on file yet.</p>
-      )}
+            <Spectrum breadth={cur.breadth} reading={cur.reading.label} />
+          </>
+        ) : (
+          <p className="dsc-note">No disclosures on file yet.</p>
+        )}
       </div>
 
       {cur ? (
         <div className="pts-rest">
-
           {/* ── economic outlook: a separate heuristic on its own scale ── */}
           {cur.outlook ? (
             <div className="pts-outlook" aria-live="polite">
@@ -384,9 +400,9 @@ export default function PoliticianSentiment() {
                 Money moving into bonds, Treasuries and the defensive sectors (
                 {SAFE_SECTORS.join(', ')}) reads as bracing for a slowdown; money moving into
                 cyclical sectors, Consumer Discretionary among them, reads as expecting growth.
-                Rotation to safety is the safe share of buys minus the safe share of sells, by
-                trade count. The score weighs market lean {Math.round(OUTLOOK_WEIGHTS.lean * 100)}%
-                and rotation {Math.round(OUTLOOK_WEIGHTS.rotation * 100)}%; +{OUTLOOK_BAND} or more
+                Rotation to safety is the safe share of buys minus the safe share of sells, by trade
+                count. The score weighs market lean {Math.round(OUTLOOK_WEIGHTS.lean * 100)}% and
+                rotation {Math.round(OUTLOOK_WEIGHTS.rotation * 100)}%; +{OUTLOOK_BAND} or more
                 reads Expansion, -{OUTLOOK_BAND} or less Slowdown risk. Bucket bars show buys as a
                 share of each group&apos;s trades (buys / sells on the right).
               </p>
@@ -541,8 +557,8 @@ export default function PoliticianSentiment() {
               )}
               {unclassified ? (
                 <p className="ptk-note">
-                  {unclassified.trades.toLocaleString()} trades in {shownYear} are in funds,
-                  bonds or tickers without a sector on file and are left out of this list.
+                  {unclassified.trades.toLocaleString()} trades in {shownYear} are in funds, bonds
+                  or tickers without a sector on file and are left out of this list.
                 </p>
               ) : null}
             </div>
@@ -564,18 +580,16 @@ export default function PoliticianSentiment() {
                 </li>
               ) : null}
               <li>
-                Members may file up to 45 days after a trade, so the latest weeks fill in over
-                time.
+                Members may file up to 45 days after a trade, so the latest weeks fill in over time.
               </li>
               <li>
                 Dollars are the midpoints of disclosed ranges, not exact amounts. Buys are
-                purchases; sells are full and partial sales; exchanges and other types are left
-                out.
+                purchases; sells are full and partial sales; exchanges and other types are left out.
               </li>
               {hasChange ? (
                 <li>
-                  Sector change compares members net buying in {shownYear} and {shownYear - 1},
-                  only for sectors with at least 5 leaning members in both years.
+                  Sector change compares members net buying in {shownYear} and {shownYear - 1}, only
+                  for sectors with at least 5 leaning members in both years.
                 </li>
               ) : null}
               <li>A reading of what members disclosed, not investment advice or a forecast.</li>

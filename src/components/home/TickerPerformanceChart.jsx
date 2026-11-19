@@ -28,6 +28,7 @@ function Spark({
     <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-hidden>
       {fill && <path d={area} fill={color} fillOpacity={0.12} />}
       <path
+        className="ez-glow-line"
         d={line}
         fill="none"
         stroke={color}

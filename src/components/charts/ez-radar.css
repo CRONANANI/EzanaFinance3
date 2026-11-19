@@ -1,0 +1,115 @@
+/* EzRadar (Nov 2026). Prefix ezr-. Tokens only. */
+.ezr {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-primary);
+}
+.ezr-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+}
+.ezr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.ezr-legend-item.is-dim {
+  opacity: 0.45;
+}
+.ezr-legend-item.is-active {
+  color: var(--text-primary);
+}
+.ezr-legend-item:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.ezr-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-sm);
+}
+.ezr-plot {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.ezr-plot .recharts-surface:focus,
+.ezr-plot .recharts-layer:focus {
+  outline: none;
+}
+.ezr-tip {
+  display: grid;
+  gap: 6px;
+  min-width: 160px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-md);
+  font-size: 12px;
+}
+.ezr-tip-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ezr-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ezr-tip-name {
+  flex: 1;
+  color: var(--text-muted);
+}
+.ezr-tip-val {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.ezr-loading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+}
+.ezr-bar {
+  width: 10px;
+  height: 40%;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  animation: ezr-pulse 1.2s ease-in-out infinite alternate;
+}
+.ezr-bar:nth-child(odd) {
+  height: 65%;
+}
+@keyframes ezr-pulse {
+  to {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ezr-bar {
+    animation: none;
+  }
+  .ezr-legend-item {
+    transition: none;
+  }
+}

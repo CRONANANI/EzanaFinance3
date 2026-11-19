@@ -346,3 +346,11 @@ button.gerx-er-scorecard:focus-visible {
     height: 300px;
   }
 }
+
+/* Nov 19, 2026: both radars are the house EzRadar, which sizes its own plot
+   (its legend sits above it), so the fixed boxes give way. */
+.gerx-er-radar.gerx-er-radar--ez,
+.gerx-radar-box.gerx-radar-box--ez {
+  height: auto;
+  overflow: visible;
+}

@@ -19,10 +19,13 @@
   --adc-rule: var(--bs-border-rule, var(--border-primary));
   --adc-accent-text: var(--emerald-text);
   --adc-l0: color-mix(in srgb, var(--adc-ink) 7%, var(--adc-bg));
-  --adc-l1: color-mix(in srgb, var(--emerald) 38%, var(--adc-bg));
-  --adc-l2: color-mix(in srgb, var(--emerald) 68%, var(--adc-bg));
-  --adc-l3: var(--emerald-hover);
-  --adc-l4: var(--emerald-dark);
+  /* Nov 19 2026: one ramp of the brand emerald (#10b981) in both themes,
+     from a light tint to the full brand colour, instead of shading into the
+     darker greens. */
+  --adc-l1: color-mix(in srgb, var(--brand-ezana-green) 30%, var(--adc-bg));
+  --adc-l2: color-mix(in srgb, var(--brand-ezana-green) 52%, var(--adc-bg));
+  --adc-l3: color-mix(in srgb, var(--brand-ezana-green) 76%, var(--adc-bg));
+  --adc-l4: var(--brand-ezana-green);
   --adc-ease: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Nov 2026: first thing on /home, borderless: the title and four stats

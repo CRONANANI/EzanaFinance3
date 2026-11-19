@@ -1,0 +1,23 @@
+/* Glowing chart lines in dark mode (Nov 19, 2026). The filter itself
+   (#ez-line-glow) is defined once in src/app/layout.js: a blurred copy of the
+   line under the crisp line, so each series glows in its own colour. Light
+   mode is untouched. Prefers-reduced-motion is irrelevant (nothing moves). */
+.ez-glow-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+body:not(.light-mode) .recharts-line .recharts-line-curve,
+body:not(.light-mode) .recharts-area .recharts-area-curve,
+body:not(.light-mode) .recharts-radar .recharts-radar-polygon path,
+body:not(.light-mode) .oecd-radar-poly,
+body:not(.light-mode) .ez-glow-line {
+  filter: url(#ez-line-glow);
+}
+/* Dotted benchmark and comparison lines stay flat, so the main series reads
+   first. */
+body:not(.light-mode) .recharts-line-curve[stroke-dasharray],
+body:not(.light-mode) .recharts-area-curve[stroke-dasharray] {
+  filter: none;
+}

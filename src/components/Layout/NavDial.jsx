@@ -91,17 +91,19 @@ function currentIndex(list, pathname) {
    slices the dial opens into. Drawn from the same slice maths as the dial. */
 function TriggerWedges() {
   return (
-    <svg className="nd-wedges" viewBox="-17 7 34 15" aria-hidden="true" focusable="false">
-      {[60, 90, 120].map((deg) => {
-        const half = 13;
-        const o1 = polar(20, deg - half);
-        const o2 = polar(20, deg + half);
-        const i1 = polar(12, deg - half);
-        const i2 = polar(12, deg + half);
+    <svg className="nd-wedges" viewBox="-18 8 36 14" aria-hidden="true" focusable="false">
+      {/* Centres 34 degrees apart with 24-degree wedges: a clear gap between
+          each (Nov 19, 2026; they used to nearly touch). */}
+      {[56, 90, 124].map((deg) => {
+        const half = 12;
+        const o1 = polar(21, deg - half);
+        const o2 = polar(21, deg + half);
+        const i1 = polar(13, deg - half);
+        const i2 = polar(13, deg + half);
         return (
           <path
             key={deg}
-            d={`M ${o1.x} ${o1.y} A 20 20 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 12 12 0 0 0 ${i1.x} ${i1.y} Z`}
+            d={`M ${o1.x} ${o1.y} A 21 21 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 13 13 0 0 0 ${i1.x} ${i1.y} Z`}
           />
         );
       })}

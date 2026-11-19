@@ -284,23 +284,6 @@ const fmtMoney = (n) =>
   '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour >= 0 && hour < 5) return 'Still up';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-function formatLongDate() {
-  return new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
 function formatBriefLabel() {
   const hour = new Date().getHours();
   if (hour < 12) return 'The Morning Brief';
@@ -772,11 +755,6 @@ export default function HomePage() {
   }, [showPortfolio, extraChartSeries, activeIndices]);
   const formatChartTick = useCallback((at) => formatTickByRange(at, timeframe), [timeframe]);
 
-  const firstName =
-    user?.user_metadata?.full_name?.split(' ')[0] ||
-    user?.user_metadata?.name?.split(' ')[0] ||
-    'there';
-
   const displayValue = Number.isFinite(currentValue) ? currentValue : 0;
   /* Nov 18: the hero's 1W, 1M, YTD and Beta, from the same portfolio the
      hero figure shows (paper portfolio, else the linked brokerage). */
@@ -947,14 +925,11 @@ export default function HomePage() {
           out of /home's first load. */}
       <section className="bs-band bs-band--light bs-band--activity">
         <div className="bs-page-inner">
-          {/* Masthead (Nov 10 2026): the greeting is the page headline, on
-              the logo's left edge, with the date on the logout edge. The
-              activity summary below reads as its subline. */}
+          {/* Masthead (Nov 19 2026): no greeting or date line, so the page
+              starts higher. The heading stays for screen readers, and one
+              emerald rule opens the page above the activity card. */}
           <header className="bs-masthead">
-            <h1 className="bs-hero-greet">
-              {getGreeting()}, {firstName}.
-            </h1>
-            <span className="bs-masthead-date">{formatLongDate()}</span>
+            <h1 className="sr-only">Home</h1>
           </header>
           <ActivityDensityCard />
         </div>
@@ -1013,10 +988,7 @@ export default function HomePage() {
                   ['1W', fmtHeroPct(heroReturns.w1)],
                   ['1M', fmtHeroPct(heroReturns.m1)],
                   ['YTD', fmtHeroPct(heroReturns.ytd)],
-                  [
-                    'Beta',
-                    Number.isFinite(heroReturns.beta) ? heroReturns.beta.toFixed(2) : 'n/a',
-                  ],
+                  ['Beta', Number.isFinite(heroReturns.beta) ? heroReturns.beta.toFixed(2) : 'n/a'],
                 ].map(([l, v]) => (
                   <div key={l} className="bs-hero-stat">
                     <div className="bs-hero-stat-label">{l}</div>

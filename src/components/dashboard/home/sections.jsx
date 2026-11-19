@@ -26,6 +26,7 @@ import {
   tone,
 } from '@/lib/dashboard/derive';
 import { SnapshotChart } from './SnapshotChart';
+import { EzDonut } from '@/components/charts/EzDonut';
 import {
   Badge,
   Card,
@@ -548,16 +549,15 @@ function shadeClass(slice, i) {
 export function SectorCard({ data, loading }) {
   const sectors = data?.sectors ?? [];
   const total = data?.totals.currentValue;
-  const R = 69;
-  const C = 2 * Math.PI * R;
-  const sum = sectors.reduce((a, x) => a + x.value, 0) || 1;
-  let acc = 0;
-  const arcs = sectors.map((x, i) => {
-    const len = (x.value / sum) * C;
-    const arc = { ...x, len, off: acc, cls: shadeClass(x, i) };
-    acc += len;
-    return arc;
-  });
+  /* Hovering a slice or a legend row lights both (Nov 19, 2026). */
+  const [active, setActive] = useState(null);
+  const arcs = sectors.map((x, i) => ({
+    key: x.name,
+    label: x.name,
+    value: x.value,
+    pct: x.pct,
+    className: shadeClass(x, i),
+  }));
   const label = sectors.map((x) => `${x.name} ${x.pct}%`).join(', ');
 
   let body;
@@ -572,43 +572,39 @@ export function SectorCard({ data, loading }) {
   else
     body = (
       <div className={s.sectorBody} data-dense={arcs.length > 4 ? 'true' : undefined}>
-        <figure className={s.donut}>
-          <svg
-            viewBox="0 0 160 160"
-            width="160"
-            height="160"
-            role="img"
-            aria-label={`Sector distribution: ${label}`}
-          >
-            <circle cx="80" cy="80" r={R} fill="none" stroke="var(--db-track)" strokeWidth="22" />
-            {arcs.map((a) => (
-              <circle
-                key={a.name}
-                className={cx('slice', a.cls)}
-                cx="80"
-                cy="80"
-                r={R}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="22"
-                strokeDasharray={`${a.len} ${C}`}
-                strokeDashoffset={-a.off}
-                transform="rotate(-90 80 80)"
-              />
-            ))}
-          </svg>
-          <figcaption className={s.donutCenter}>
-            <span className={s.donutTotal}>{fmtCompactMoney(total)}</span>
-            <span className={s.muted} style={{ fontSize: 11 }}>
-              Total
-            </span>
-          </figcaption>
-        </figure>
+        <EzDonut
+          className={s.donut}
+          segments={arcs}
+          size={arcs.length > 4 ? 150 : 180}
+          stroke={arcs.length > 4 ? 18 : 22}
+          active={active}
+          onActiveChange={setActive}
+          ariaLabel={`Sector distribution: ${label}`}
+          renderCenter={(seg) =>
+            seg ? (
+              <>
+                <span className={s.donutLabel}>{seg.label}</span>
+                <span className={s.donutTotal}>{fmtCompactMoney(seg.value)}</span>
+                <span className={s.donutPct}>{seg.pct}%</span>
+              </>
+            ) : (
+              <>
+                <span className={s.donutLabel}>Total</span>
+                <span className={s.donutTotal}>{fmtCompactMoney(total)}</span>
+              </>
+            )
+          }
+        />
         <ul className={s.legend}>
           {arcs.map((a) => (
-            <li key={a.name}>
-              <span className={cx(s.swatch, a.cls)} aria-hidden="true" />
-              <span className={s.legendName}>{a.name}</span>
+            <li
+              key={a.key}
+              data-active={active === a.key ? 'true' : undefined}
+              onMouseEnter={() => setActive(a.key)}
+              onMouseLeave={() => setActive(null)}
+            >
+              <span className={cx(s.swatch, a.className)} aria-hidden="true" />
+              <span className={s.legendName}>{a.label}</span>
               <span className={s.num} style={{ fontWeight: 600 }}>
                 {a.pct}%
               </span>
@@ -622,6 +618,7 @@ export function SectorCard({ data, loading }) {
   return (
     <Card
       title="Sector distribution"
+      centerTitle
       titleExtra={
         <InfoTip
           label="sector distribution"

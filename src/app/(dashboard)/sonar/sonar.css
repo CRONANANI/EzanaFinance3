@@ -1708,3 +1708,12 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
     transform: translate(-50%, -50%);
   }
 }
+
+/* Congress trades sentiment bar (Nov 19, 2026): a full-width row under the
+   government signal's columns. */
+.snr-gov-congress {
+  grid-column: 1 / -1;
+  order: 9;
+  min-width: 0;
+  padding-top: 4px;
+}

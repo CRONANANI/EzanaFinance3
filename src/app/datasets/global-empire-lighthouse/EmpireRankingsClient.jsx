@@ -31,17 +31,12 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { EzRadar } from '@/components/charts/EzRadar';
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -440,39 +435,20 @@ function PowerDimensionRadar({ model, defaultA, defaultB, tokens }) {
           Fewer than three live dimensions in this focus. Pick another focus.
         </div>
       ) : (
-        <div className="gerx-er-radar">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
-              <PolarGrid stroke={tokens.gridStrong} />
-              <PolarAngleAxis dataKey="dimension" tick={CHART.tick} />
-              <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-              <Radar
-                name={nameA}
-                dataKey="a"
-                stroke={CHART.goldStroke}
-                fill={CHART.goldStroke}
-                fillOpacity={0.18}
-                strokeWidth={CHART.primaryStrokeWidth}
-                isAnimationActive={false}
-              />
-              <Radar
-                name={nameB}
-                dataKey="b"
-                stroke={CHART.primaryStroke}
-                fill={CHART.primaryStroke}
-                fillOpacity={0.18}
-                strokeWidth={CHART.primaryStrokeWidth}
-                isAnimationActive={false}
-              />
-              <Legend wrapperStyle={{ fontSize: '0.7rem', color: tokens.legend }} />
-              <Tooltip
-                contentStyle={tokens.tooltipStyle}
-                labelFormatter={(_l, p) => p?.[0]?.payload?.full || ''}
-                formatter={(v, n) => [v == null ? DASH : Number(v).toFixed(1), n]}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
+        <EzRadar
+          className="gerx-er-radar gerx-er-radar--ez"
+          data={data}
+          axisKey="dimension"
+          series={[
+            { key: 'a', label: nameA, color: CHART.goldStroke },
+            { key: 'b', label: nameB, color: CHART.primaryStroke },
+          ]}
+          labelOf={(row) => row.full}
+          formatValue={(v) => (v == null ? DASH : Number(v).toFixed(1))}
+          height={360}
+          outerRadius="74%"
+          ariaLabel={`${nameA} against ${nameB} across ${data.length} dimensions`}
+        />
       )}
     </Card>
   );
@@ -559,38 +535,20 @@ function CountryRadar({ rows, nameA, nameB, tokens }) {
   const data = rows.map((r) => ({ dimension: shortName(r.name), full: r.name, a: r.a, b: r.b }));
   return (
     <figure className="gerx-radar" aria-label={`${nameA} against ${nameB} on every live dimension`}>
-      <div className="gerx-radar-box">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-            <PolarGrid stroke={tokens.gridStrong} />
-            <PolarAngleAxis dataKey="dimension" tick={CHART.tick} />
-            <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-            <Radar
-              name={nameB}
-              dataKey="b"
-              stroke={CHART.goldStroke}
-              fill={CHART.goldStroke}
-              fillOpacity={0.12}
-              strokeWidth={CHART.secondaryStrokeWidth}
-              isAnimationActive={false}
-            />
-            <Radar
-              name={nameA}
-              dataKey="a"
-              stroke={CHART.primaryStroke}
-              fill={CHART.primaryStroke}
-              fillOpacity={0.2}
-              strokeWidth={CHART.primaryStrokeWidth}
-              isAnimationActive={false}
-            />
-            <Tooltip
-              contentStyle={tokens.tooltipStyle}
-              labelFormatter={(_l, p) => p?.[0]?.payload?.full || ''}
-              formatter={(v, n) => [v == null ? DASH : Number(v).toFixed(1), n]}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
+      <EzRadar
+        className="gerx-radar-box gerx-radar-box--ez"
+        data={data}
+        axisKey="dimension"
+        series={[
+          { key: 'a', label: nameA, color: CHART.primaryStroke },
+          { key: 'b', label: nameB, color: CHART.goldStroke },
+        ]}
+        labelOf={(row) => row.full}
+        formatValue={(v) => (v == null ? DASH : Number(v).toFixed(1))}
+        showLegend={false}
+        height={320}
+        outerRadius="70%"
+      />
       <figcaption className="gerx-legend">
         <span className="gerx-legend-item">
           <span className="gerx-swatch gerx-swatch--a" aria-hidden="true" />

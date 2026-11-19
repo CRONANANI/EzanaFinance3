@@ -1560,9 +1560,11 @@ body.light-mode .bs-band + .bs-band {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 4px 24px;
-  padding-bottom: 8px;
+  padding-bottom: 0;
   margin-bottom: 10px;
-  border-bottom: 1px solid var(--bs-border-rule);
+  /* Nov 19 2026: the greeting and date are gone; the rule that sat under
+     them stays as the page's opening line, in emerald. */
+  border-bottom: 1px solid var(--emerald);
 }
 .bs-masthead .bs-hero-greet {
   margin: 0;

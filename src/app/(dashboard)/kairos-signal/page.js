@@ -1085,7 +1085,10 @@ function CommoditySensitivityCard() {
           <div className="kairos-chart-wrap kairos-chart-wrap--centered">
             <ResponsiveContainer width="100%" height={activeDim ? 240 : 280}>
               <RadarChart data={profiles[selected].data} cx="50%" cy="50%" outerRadius="70%">
-                <PolarGrid stroke="rgba(212,175,55,0.12)" />
+                {/* House radar style (EzRadar, Nov 19, 2026): a quiet polygon
+                    grid in the text colour, the series filled at 22%. This
+                    radar keeps its own clickable axes and dots. */}
+                <PolarGrid gridType="polygon" stroke="currentColor" strokeOpacity={0.18} />
                 <PolarAngleAxis
                   dataKey="dim"
                   tick={({ x, y, payload }) => {
@@ -1112,7 +1115,8 @@ function CommoditySensitivityCard() {
                 <Radar
                   dataKey="v"
                   stroke={CHART.goldStroke}
-                  fill="rgba(212,175,55,0.2)"
+                  fill={CHART.goldStroke}
+                  fillOpacity={0.22}
                   strokeWidth={2}
                   name="Sensitivity"
                   dot={({ cx: dotCx, cy: dotCy, payload: dotPayload }) => {
