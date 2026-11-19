@@ -29,6 +29,16 @@ const nextConfig = {
     // requests are handled (used to initialise Sentry on the server +
     // edge runtimes). Already on by default in Next.js 15+.
     instrumentationHook: true,
+    /* Nov 19, 2026: production builds were killed for running out of memory
+       on Vercel's 8 GB build machine. Two settings keep the build under it:
+       - webpackBuildWorker runs each webpack compile in its own process, so
+         its memory is returned between the server, edge and client passes.
+         Next 14 turns it on by default only when there is no custom webpack
+         config, and the Sentry wrapper below is one, so it was off.
+       - cpus caps the workers that collect page data and pre-render pages,
+         each of which holds its own copy of the server bundle. */
+    webpackBuildWorker: true,
+    cpus: 2,
     /* unpdf carries a prebuilt pdfjs bundle for serverless Node. Left to the
        bundler it gets rewritten and loses that, which is the whole reason it
        is used here instead of pdfjs-dist — see extractPdfText in
