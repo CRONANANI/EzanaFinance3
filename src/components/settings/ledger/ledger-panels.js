@@ -11,6 +11,7 @@ import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
 import { ApiKeysLedger } from './panels/ApiKeysLedger';
+import EchoArticlesLedger from './panels/EchoArticlesLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
 import { BiometricUnlockSetting } from '@/components/native/BiometricUnlockSetting';
 import { BlockedMembersSetting } from '@/components/moderation/BlockedMembersSetting';
@@ -81,6 +82,11 @@ export const LEDGER_PAGE_META = {
     eyebrow: 'Workspace',
     title: 'Partners',
     helper: 'Manage partner accounts and roles.',
+  },
+  'echo-articles': {
+    eyebrow: 'Workspace',
+    title: 'Echo articles',
+    helper: 'Archive or restore Ezana Echo articles (admin).',
   },
   email: {
     eyebrow: 'Preferences',
@@ -188,6 +194,7 @@ export const LEDGER_PANEL_MAP = {
   'privacy-data': PrivacyWithBlocks,
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
   partners: PartnersAdmin,
+  'echo-articles': EchoArticlesLedger,
   organization: wrapLegacyPanel(OrgAdminPanel),
   'my-role': wrapLegacyPanel(MyRoleAccessPanel),
   payouts: wrapLegacyPanel(PayoutsPanel),

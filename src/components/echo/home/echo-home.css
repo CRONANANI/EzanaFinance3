@@ -1491,7 +1491,6 @@ html:has(.ech-hero) > body {
   background: var(--ech-bg);
 }
 
-
 /* ══════════════════════════════════════════════════════════════
    Option 2 redesign (Nov 18 2026): photographic Article of the Month with
    two anchored teasers, Editors' Picks rail, one category filter row, then
@@ -2215,5 +2214,131 @@ html:has(.ech-hero) > body {
   }
   .ech-filterbar {
     align-items: flex-start;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 19, 2026: Article of the Month as a rounded photo card.
+   The viewport breakout is dropped (a parent clipped it, leaving square
+   corners and the headline flush against the photo edge). The card sits in
+   the page column with rounded corners and inner padding; the kicker and
+   Past picks move to the top right; kicker, byline and "Read full story"
+   are Ezana emerald; white type gets a dark scrim plus a soft shadow.
+   ══════════════════════════════════════════════════════════════ */
+.ech-hero.ech-hero--photo {
+  margin-inline: 0;
+  padding-inline: 0;
+  min-height: 600px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: var(--ech-hero-card-shadow);
+}
+.ech-hero--photo .ech-hero__media {
+  border-radius: inherit;
+  overflow: hidden;
+}
+.ech-hero--photo .ech-hero__media img {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ech-hero--photo:hover .ech-hero__media img {
+  transform: scale(1.02);
+}
+/* Stronger scrim behind the text column and along the bottom. */
+.ech-hero--photo .ech-hero__scrim {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, black 82%, transparent) 0%,
+      color-mix(in srgb, black 66%, transparent) 42%,
+      color-mix(in srgb, black 18%, transparent) 72%,
+      transparent 100%
+    ),
+    linear-gradient(0deg, color-mix(in srgb, black 62%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, black 40%, transparent) 0%, transparent 22%);
+}
+.ech-hero--photo .ech-hero__inner {
+  padding: 96px 48px 44px;
+}
+.ech-hero--photo .ech-hero__text {
+  max-width: 680px;
+}
+/* Legibility: a soft shadow under every line of white type. */
+.ech-hero--photo .ech-hero__title,
+.ech-hero--photo .ech-hero__dek {
+  text-shadow:
+    0 1px 2px color-mix(in srgb, black 55%, transparent),
+    0 4px 24px color-mix(in srgb, black 45%, transparent);
+}
+.ech-hero--photo .ech-hero__kicker,
+.ech-hero--photo .ech-byline,
+.ech-hero--photo .ech-hero__cta {
+  text-shadow: 0 1px 3px color-mix(in srgb, black 70%, transparent);
+}
+
+/* Top right: kicker and Past picks. */
+.ech-hero--photo .ech-hero__top {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  left: auto;
+  z-index: 2;
+  width: auto;
+  max-width: calc(100% - 56px);
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+/* Ezana emerald: kicker, byline (author, date, read time) and the CTA. */
+.ech-hero--photo .ech-hero__kicker,
+.ech-hero--photo .ech-byline,
+.ech-hero--photo .ech-byline strong,
+.ech-hero--photo .ech-byline__sep,
+.ech-hero--photo .ech-hero__cta {
+  color: var(--brand-ezana-green);
+}
+.ech-hero--photo .ech-byline__sep {
+  opacity: 0.7;
+}
+
+@media (max-width: 1199px) {
+  .ech-hero.ech-hero--photo {
+    min-height: 520px;
+  }
+  .ech-hero--photo .ech-hero__inner {
+    padding: 88px 36px 36px;
+  }
+}
+@media (max-width: 767px) {
+  .ech-hero.ech-hero--photo {
+    min-height: 460px;
+    border-radius: var(--radius-lg);
+  }
+  /* The kicker and Past picks wrap to two lines here: clear both. */
+  .ech-hero--photo .ech-hero__inner {
+    padding: 124px 20px 24px;
+  }
+  .ech-hero--photo .ech-hero__top {
+    top: 16px;
+    right: 16px;
+    max-width: calc(100% - 32px);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ech-hero--photo .ech-hero__scrim {
+    background: linear-gradient(
+      0deg,
+      color-mix(in srgb, black 82%, transparent) 0%,
+      color-mix(in srgb, black 55%, transparent) 60%,
+      color-mix(in srgb, black 45%, transparent) 100%
+    );
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ech-hero--photo .ech-hero__media img {
+    transition: none;
+  }
+  .ech-hero--photo:hover .ech-hero__media img {
+    transform: none;
   }
 }

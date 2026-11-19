@@ -159,8 +159,6 @@ export default function EchoHome({
             options={aotmOptions}
             month={aotmMonth}
             onChange={onAotmChange}
-            teasers={teasers}
-            admin={admin}
           />
         ) : (
           <>
@@ -356,15 +354,13 @@ export default function EchoHome({
   );
 }
 
-/* ---------- Article of the Month, full-bleed photo ----------
-   The photo spans the viewport behind the text (the one exception to the
-   640px cap). The section breaks out of the shell gutters with a negative
-   margin and pads back in by the same amount, so the text column starts on
-   the page's own left edge, in line with the masthead and the filter row.
-   A dark scrim on the left carries white type over any photo; the two
-   teasers sit in normal flow at the bottom of the same section, so they can
-   never cover the headline or the call to action. */
-function HeroBleed({ hero, options, month, onChange, teasers, admin }) {
+/* ---------- Article of the Month: photo card ----------
+   Nov 19, 2026: a contained card with rounded corners (no longer a viewport
+   breakout). The kicker and Past picks sit in the top right corner; the
+   headline, dek and an emerald byline sit bottom left over a dark scrim,
+   with a soft text shadow so white type reads over any photo. The two hero
+   teasers now lead the Editors' Picks rail. */
+function HeroBleed({ hero, options, month, onChange }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
   return (
     <section className="ech-hero ech-hero--photo" aria-labelledby="ech-aotm-title">
@@ -381,28 +377,28 @@ function HeroBleed({ hero, options, month, onChange, teasers, admin }) {
         />
         <span className="ech-hero__scrim" />
       </div>
+      {/* Kicker and Past picks: the hero's top right corner. */}
+      <div className="ech-hero__top">
+        <span className="ech-kicker ech-hero__kicker">
+          {[hero.kicker, short].filter(Boolean).join(' · ')}
+        </span>
+        {options.length >= 1 && onChange ? (
+          <PastPicks options={options} month={month} onChange={onChange} />
+        ) : null}
+      </div>
       <div className="ech-hero__inner">
         <div className="ech-hero__text">
-          <div className="ech-hero__top">
-            <span className="ech-kicker ech-hero__kicker">
-              {[hero.kicker, short].filter(Boolean).join(' · ')}
-            </span>
-            {options.length >= 1 && onChange ? (
-              <PastPicks options={options} month={month} onChange={onChange} />
-            ) : null}
-          </div>
           <h1 id="ech-aotm-title" className="ech-hero__title">
             <Link href={hero.href}>{hero.title}</Link>
           </h1>
           {hero.dek ? <p className="ech-hero__dek">{hero.dek}</p> : null}
           <div className="ech-hero__meta">
-            <Byline story={hero} />
+            <Byline story={hero} icon={false} />
             <Link href={hero.href} className="ech-hero__cta">
               Read full story <i className="bi bi-arrow-right" aria-hidden="true" />
             </Link>
           </div>
         </div>
-        <Teasers stories={teasers} admin={admin} onPhoto />
       </div>
     </section>
   );
@@ -834,10 +830,10 @@ function PastPicks({ options, month, onChange }) {
 }
 
 /* ---------- Byline ---------- */
-function Byline({ story, size = 'md' }) {
+function Byline({ story, size = 'md', icon = true }) {
   return (
     <span className={`ech-byline ech-byline--${size}`}>
-      {size === 'md' ? (
+      {size === 'md' && icon ? (
         <i className="bi bi-person-circle ech-byline__icon" aria-hidden="true" />
       ) : null}
       <span>

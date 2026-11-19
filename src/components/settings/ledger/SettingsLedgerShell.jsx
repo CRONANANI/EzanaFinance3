@@ -26,6 +26,13 @@ const NAV_GROUPS = [
         sub: 'Admin',
         adminOnly: true,
       },
+      {
+        key: 'echo-articles',
+        icon: 'bi-newspaper',
+        label: 'Echo articles',
+        sub: 'Admin',
+        adminOnly: true,
+      },
     ],
   },
   {

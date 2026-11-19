@@ -8,12 +8,11 @@
  * so the hero, Most read and the first bento row are in the HTML. This file
  * owns the state; EchoHome renders it.
  *   - /api/echo/hub: only for Retry, or if the server could not load the hub
- *   - /api/echo/article-statuses: admins only (the View archived count)
  *   - filters live in the URL (?section=&region=&range=&q=, defaults omitted,
  *     replaceState) and apply to the story river only, never the hero, its
  *     teasers, Editors' Picks, Most read or the Chart of the Week
- *   - the hero's two teasers and Editors' Picks are picked in
- *     src/lib/echo/editors-picks.js; on the unfiltered front page the river
+ *   - Editors' Picks (led by the two hero teasers, which no longer sit on the
+ *     hero) are picked in src/lib/echo/editors-picks.js; on the unfiltered front page the river
  *     skips them so no story shows twice above the fold
  *   - paging is client-side over the hub payload: the top TOP_STORIES fill the
  *     river's lead and 2x2, then PAGE_SIZE stories a bento page
@@ -22,9 +21,11 @@
  *     finished): the "For our council" band (loaded on demand), the Our names
  *     tab (?ours=1) and a Team Hub link in the masthead. Nothing council
  *     related is fetched or drawn for anyone else.
- *   - masthead: wordmark + utilities only (search, Archived for admins, Team
+ *   - masthead: wordmark + utilities only (search, Team
  *     Hub for council members, Login for signed-out readers, Subscribe). The
  *     category links live in the one filter row under Editors' Picks.
+ *   - no archive controls here: admins archive and restore articles in
+ *     Settings → Echo articles (Nov 19, 2026).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -32,7 +33,6 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { useCouncilEcho } from '@/components/echo/council/useCouncilEcho';
-import { useIsAdmin } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import EchoHome from '@/components/echo/home/EchoHome';
 import { PAGE_SIZE, TOP_STORIES } from '@/lib/echo/bento-layout';
@@ -62,7 +62,6 @@ const EchoCouncilBand = dynamic(() => import('@/components/echo/council/EchoCoun
 
 export default function EchoHomeClient({ initialHub = null, initialFilters = null, now }) {
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin } = useIsAdmin(user);
   const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
   const councilReady = Boolean(user && isOrgUser && !orgLoading);
   const council = useCouncilEcho(councilReady);
@@ -74,8 +73,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
       ? { status: 'ready', articles: initialHub.articles || [], chart: initialHub.chart || null }
       : { status: 'loading', articles: [], chart: null },
   );
-  const [archivedSet, setArchivedSet] = useState(() => new Set());
-  const [archivingId, setArchivingId] = useState(null);
   const [filters, setFilters] = useState(() => initialFilters || DEFAULT_FILTERS);
   const [pages, setPages] = useState(1);
   const [searchOpen, setSearchOpen] = useState(() => !!initialFilters?.q);
@@ -105,25 +102,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     if (!hadInitialHub) loadHub();
   }, [hadInitialHub, loadHub]);
 
-  /* Archived ids feed the admin "View archived" count. Everyone else is
-     already filtered on the server, so only admins fetch them. */
-  useEffect(() => {
-    if (!isAdmin) return undefined;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/echo/article-statuses', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setArchivedSet(new Set(data.archivedIds || []));
-      } catch {
-        /* the feed still renders; archived ids are a filter, not a dependency */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAdmin]);
 
   const onFiltersChange = useCallback((patch) => {
     setFilters((prev) => {
@@ -139,33 +117,8 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     setPages(1);
   }, []);
 
-  async function handleArchive(articleId, e) {
-    e?.preventDefault();
-    e?.stopPropagation();
-    if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
-    setArchivingId(articleId);
-    try {
-      const res = await fetch('/api/echo/admin/archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleId }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || `HTTP ${res.status}`);
-      }
-      setArchivedSet((prev) => new Set(prev).add(articleId));
-    } catch (err) {
-      alert(`Failed to archive: ${err.message}`);
-    } finally {
-      setArchivingId(null);
-    }
-  }
 
-  const cards = useMemo(
-    () => hub.articles.filter((a) => !archivedSet.has(a.id)),
-    [hub.articles, archivedSet],
-  );
+  const cards = hub.articles;
   /* The server already nulled images that are not in public/. */
   const stories = useMemo(() => cards.map(toStory).map(withHomeImage), [cards]);
   /* One clock for server and client, so the hero pick hydrates identically. */
@@ -207,15 +160,18 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
 
   const mostRead = useMemo(() => rankMostRead(stories, 5), [stories]);
 
-  // Two teasers under the hero, then Editors' Picks. Both key off `hero`
+  // Two teasers, then the rest of Editors' Picks. Both key off `hero`
   // (the current pick), so browsing past months never reshuffles them.
   const teasers = useMemo(() => pickHeroTeasers(stories, hero?.id), [stories, hero]);
+  /* The teasers lead the Editors' Picks rail instead of sitting on the hero. */
   const editorsPicks = useMemo(
-    () =>
-      pickEditorsPicks(stories, {
+    () => [
+      ...teasers,
+      ...pickEditorsPicks(stories, {
         exclude: new Set([hero?.id, ...teasers.map((t) => t.id)].filter(Boolean)),
         history: AOTM_HISTORY,
       }),
+    ],
     [stories, hero, teasers],
   );
 
@@ -242,7 +198,7 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     [filtered, pages],
   );
   // The Chart of the Week sits in the rail, independent of the river filters.
-  const chart = hub.chart && !archivedSet.has(hub.chart.slug) ? hub.chart : null;
+  const chart = hub.chart || null;
   /* Our names waits for the council's tickers rather than flash every story. */
   const gridStatus =
     councilReady && filters.ours && !ourTickers && council.fund.status !== 'error'
@@ -334,17 +290,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
           >
             <i className="bi bi-search" aria-hidden="true" />
           </button>
-          {isAdmin && (
-            <Link
-              href="/ezana-echo/archived"
-              className="eth-archived-btn"
-              aria-label={`Archived articles (${archivedSet.size})`}
-            >
-              <i className="bi bi-archive" aria-hidden="true" />
-              <span className="eth-archived-label">Archived</span>
-              <span className="eth-archived-count">{archivedSet.size}</span>
-            </Link>
-          )}
           {councilReady ? (
             <Link href="/org-team-hub" className="eth-login">
               Team Hub
@@ -370,7 +315,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         aotmOptions={aotmOptions}
         aotmMonth={pastPick ? aotmMonth : null}
         onAotmChange={setAotmMonth}
-        teasers={status === 'loading' ? [] : teasers}
         editorsPicks={status === 'loading' ? [] : editorsPicks}
         mostRead={status === 'loading' ? [] : mostRead}
         stories={visible}
@@ -384,9 +328,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         onSubscribe={subscribe}
         searchOpen={searchOpen}
         onSearchOpenChange={setSearchOpen}
-        isAdmin={isAdmin}
-        onArchive={handleArchive}
-        archivingId={archivingId}
         ourNames={councilReady}
         gridStatus={gridStatus}
         council={

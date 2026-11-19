@@ -14,6 +14,7 @@ import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogP
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
 import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
 import { ReferralsPanel } from '@/components/settings/ReferralsPanel';
+import EchoArticlesLedger from '@/components/settings/ledger/panels/EchoArticlesLedger';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
@@ -97,6 +98,8 @@ const PANEL_MAP = {
   'privacy-data': DataRequestPanel,
   payouts: PayoutsPanel,
   referrals: ReferralsPanel,
+  partners: PartnerManagementPanel,
+  'echo-articles': EchoArticlesLedger,
 };
 
 function SettingsInner() {
@@ -209,6 +212,12 @@ function SettingsInner() {
             label: 'Partners',
             icon: 'bi-shield-check',
             desc: 'Manage partner accounts (admin)',
+          },
+          {
+            key: 'echo-articles',
+            label: 'Echo articles',
+            icon: 'bi-newspaper',
+            desc: 'Archive or restore articles (admin)',
           },
         ]
       : [];
@@ -349,7 +358,13 @@ function SettingsInner() {
 
   if (USE_LEDGER) {
     // Panels with their own save/action flows: hide the ledger's global save bar.
-    const ledgerSavePanels = new Set(['my-details', 'appearance', 'billing', 'payouts']);
+    const ledgerSavePanels = new Set([
+      'my-details',
+      'appearance',
+      'billing',
+      'payouts',
+      'echo-articles',
+    ]);
     return (
       <SettingsLedger
         panelProps={panelProps}
