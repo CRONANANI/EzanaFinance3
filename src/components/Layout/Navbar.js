@@ -10,7 +10,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { clearLocalAuth } from '@/lib/clear-auth';
 import { NavNotifications } from '@/components/NavNotifications';
 import GettingStartedChecklist from '@/components/onboarding/GettingStartedChecklist';
-import { AnimatedNav } from '@/components/ui/AnimatedNav';
+import { NavDial } from '@/components/Layout/NavDial';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
@@ -265,6 +265,7 @@ export function Navbar() {
           {
             id: 5,
             title: 'Team Hub',
+            description: 'Your council',
             url: '/org-team-hub',
             icon: 'bi-building',
             isActive: pathname?.includes('/org-team-hub') || pathname?.includes('/org-trading'),
@@ -275,6 +276,7 @@ export function Navbar() {
           {
             id: 1,
             title: 'Dashboard',
+            description: 'Your overview',
             url: '/home-dashboard',
             icon: 'bi-speedometer2',
             isActive: pathname?.includes('home-dashboard'),
@@ -291,6 +293,7 @@ export function Navbar() {
         {
           id: 22,
           title: 'US Equities',
+          short: 'Equities',
           description: 'Stock analysis + portfolio modeling',
           url: '/company-research',
           icon: 'bi-bar-chart-line',
@@ -298,6 +301,7 @@ export function Navbar() {
         {
           id: 23,
           title: 'Global Market Analysis',
+          short: 'Global',
           description: 'Worldwide sector trends',
           url: '/market-analysis',
           icon: 'bi-graph-up-arrow',
@@ -305,6 +309,7 @@ export function Navbar() {
         {
           id: 26,
           title: 'Ezana Echo',
+          short: 'Echo',
           description: 'Articles & insights',
           url: '/ezana-echo',
           icon: 'bi-newspaper',
@@ -312,6 +317,7 @@ export function Navbar() {
         {
           id: 27,
           title: 'Alternative Markets',
+          short: 'Alt Markets',
           description: 'Crypto & commodities',
           url: '/alternative-markets',
           icon: 'bi-globe2',
@@ -319,6 +325,7 @@ export function Navbar() {
         {
           id: 30,
           title: 'Real Estate Marketplace',
+          short: 'Real Estate',
           description: 'Fractional property investments',
           url: '/real-estate',
           icon: 'bi-houses',
@@ -327,6 +334,7 @@ export function Navbar() {
         {
           id: 28,
           title: 'Centaur Intelligence',
+          short: 'Centaur',
           description: 'AI research assistant',
           url: '/centaur-intelligence',
           icon: 'bi-stars',
@@ -335,6 +343,7 @@ export function Navbar() {
         {
           id: 29,
           title: 'Kairos Signal',
+          short: 'Kairos',
           description: 'Weather & alternative macro data',
           url: '/kairos-signal',
           icon: 'bi-cloud-sun-fill',
@@ -343,6 +352,7 @@ export function Navbar() {
         {
           id: 25,
           title: 'Betting Markets',
+          short: 'Betting',
           description: 'Odds, predictions & EV models',
           url: '/betting-markets',
           icon: 'bi-bullseye',
@@ -359,6 +369,7 @@ export function Navbar() {
         {
           id: 21,
           title: 'Inside The Capitol',
+          short: 'Capitol',
           description: 'Congressional trading',
           url: '/inside-the-capitol',
           icon: 'bi-building',
@@ -377,6 +388,7 @@ export function Navbar() {
         {
           id: 31,
           title: 'Brokerage Account',
+          short: 'Brokerage',
           description: 'Real-money trading account',
           url: '/trading',
           icon: 'bi-bank',
@@ -384,6 +396,7 @@ export function Navbar() {
         {
           id: 32,
           title: 'Mock Portfolio',
+          short: 'Mock',
           description: '$100K paper trading account',
           url: '/trading/mock',
           icon: 'bi-controller',
@@ -396,6 +409,7 @@ export function Navbar() {
       // 'sonar') so it stands out between Trading and Watchlist. Direct link.
       id: 7,
       title: 'Sonar',
+      description: 'Ask a research question',
       url: '/sonar',
       icon: 'bi-broadcast',
       isActive: pathname?.includes('/sonar'),
@@ -404,6 +418,7 @@ export function Navbar() {
     {
       id: 4,
       title: 'Watchlist',
+      description: 'Stocks you track',
       url: '/watchlist',
       icon: 'bi-bookmark',
       isActive: pathname?.includes('/watchlist'),
@@ -413,6 +428,7 @@ export function Navbar() {
     {
       id: 5,
       title: 'Community',
+      description: 'Discussions',
       url: '/community',
       icon: 'bi-people',
       isActive: pathname?.includes('/community'),
@@ -420,6 +436,8 @@ export function Navbar() {
     {
       id: 6,
       title: 'Learning Center',
+      short: 'Learning',
+      description: 'Courses',
       url: '/learning-center',
       icon: 'bi-mortarboard',
       isActive: pathname?.includes('/learning-center'),
@@ -997,21 +1015,24 @@ export function Navbar() {
       data-tutorial="main-nav"
     >
       <div className="nav-container">
-        {/* ── LEFT ZONE: Logo + bell + checklist ── */}
+        {/* ── LEFT ZONE: bell + checklist ── */}
         <div className="nav-left-zone">
-          <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-            <EzanaNavLogo />
-          </Link>
           <div className="nn-wrapper">
             <NavNotifications />
           </div>
           {isAuthenticated && <GettingStartedChecklist />}
         </div>
 
-        <AnimatedNav
+        {/* ── CENTRE: the Ezana mark. It opens the navigation dial, whose hub
+            is the same mark; the section buttons that used to sit here
+            (Dashboard, Research, Trading, Sonar, Watchlist, Community,
+            Learning Center) are its wedges. ── */}
+        <NavDial
           items={userNavItems}
-          accentColor="#10b981"
+          pathname={pathname}
+          homeHref="/home"
           hasFullBetaAccess={hasFullBetaAccess}
+          sonar={isSonarRoute}
         />
 
         {/* ── RIGHT ZONE: profile + gear + logout (desktop) | hamburger (mobile) ── */}

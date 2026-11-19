@@ -21,7 +21,7 @@ const REGULAR_TUTORIAL_STEPS = [
   {
     title: 'Navigation',
     description:
-      'Use the top menu to explore: Research for company analysis, Trading for your portfolio, Watchlist to track stocks, Community for discussions, and Learning Center for courses.',
+      'Select the Ezana logo at the top of the page to open the menu: Research for company analysis, Trading for your portfolio, Watchlist to track stocks, Community for discussions, and Learning Center for courses.',
     target: '[data-tutorial="main-nav"]',
     icon: '🧭',
   },

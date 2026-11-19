@@ -31,17 +31,17 @@ Wireframes drawn from generic dashboard habits get these wrong. Check every artb
 
 ## 2. Brand at a glance
 
-|                |                                                                                                                                                                           |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Company        | Ezana Finance. Product at ezana.world.                                                                                                                                    |
-| What it is     | A financial intelligence platform for retail investors and for university student-managed investment funds.                                                               |
-| Logo           | The Walia ibex mark, in emerald. It sits at the far left of the top navigation bar, 54px tall on desktop. Never the old bird or pegasus mark.                             |
-| Primary colour | Emerald `#10b981`.                                                                                                                                                        |
-| Partner colour | Gold `#d4a853`. Used on the partner version of the app in place of emerald for accents and selected states.                                                               |
-| Modes          | Dark and light. Every screen must work in both. Draw dark first unless asked otherwise.                                                                                   |
-| Versions       | Retail, partner and organizational (university funds). The same canvas, card and control rules apply to all three.                                                        |
-| Feel           | An institutional research terminal laid out like a broadsheet: one ground, hairline rules, dense and calm. Bloomberg and the Financial Times, not a consumer fintech app. |
-| Voice          | Authoritative, plain, data-first. Descriptive, never advice.                                                                                                              |
+|                |                                                                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Company        | Ezana Finance. Product at ezana.world.                                                                                                                                          |
+| What it is     | A financial intelligence platform for retail investors and for university student-managed investment funds.                                                                     |
+| Logo           | The Walia ibex mark, in emerald. It sits in the centre of the top navigation bar, where it opens the navigation dial, 54px tall on desktop. Never the old bird or pegasus mark. |
+| Primary colour | Emerald `#10b981`.                                                                                                                                                              |
+| Partner colour | Gold `#d4a853`. Used on the partner version of the app in place of emerald for accents and selected states.                                                                     |
+| Modes          | Dark and light. Every screen must work in both. Draw dark first unless asked otherwise.                                                                                         |
+| Versions       | Retail, partner and organizational (university funds). The same canvas, card and control rules apply to all three.                                                              |
+| Feel           | An institutional research terminal laid out like a broadsheet: one ground, hairline rules, dense and calm. Bloomberg and the Financial Times, not a consumer fintech app.       |
+| Voice          | Authoritative, plain, data-first. Descriptive, never advice.                                                                                                                    |
 
 ---
 
@@ -58,7 +58,7 @@ This is the rule with the least tolerance. Draw guides for it on every artboard.
 
 ### 3.2 The two alignment lines
 
-- **Left line:** the left edge of the Ezana logo.
+- **Left line:** the left edge of the navigation bar's envelope, where the Ezana logo sat until it moved to the centre of the bar (Nov 18, 2026). Page content did not move. Wherever this guide says "the left edge of the logo", read this line.
 - **Right line:** the right edge of the logout icon. This is the edge of the icon glyph itself, not of its 44px tap area. The glyph is about 22px wide and sits flush on the right line.
 
 Everything on the page lives between these two lines, in the retail, partner and organizational versions.
@@ -215,6 +215,7 @@ If a mock shows any mark touching a label, it is wrong, whatever tool drew it.
 Every dropdown in the app (a field that picks one value from a list) uses one design, built as `EzDropdown` (`src/components/ui/ez-dropdown.jsx`, styles in `src/styles/ez-dropdown.css`, loaded app-wide).
 
 **Trigger**
+
 - Fully rounded (`var(--radius-xl)` on a 36px control), a 1px border at 14% of the text colour, a translucent ground (60% of the page ground) with a 12px backdrop blur, and `var(--shadow-sm)`.
 - Label in the body sans at 14px in the text colour; a placeholder in muted grey.
 - A chevron on the right in muted grey that turns over when the menu is open. An optional leading icon (Bootstrap Icons, or a flag in the language selector only).
@@ -222,6 +223,7 @@ Every dropdown in the app (a field that picks one value from a list) uses one de
 - Sizes: `sm` 32px, `md` 36px (default), `lg` 44px. On phones every trigger and option is at least 44px tall with 16px text, so iOS does not zoom.
 
 **Menu**
+
 - Opens 8px below the trigger, at least as wide as the trigger (192px minimum), aligned to its start (or end with `align="end"`).
 - `var(--radius-lg)` corners, the same border, a 92% opaque ground with a 20px backdrop blur, `var(--shadow-lg)`, 4px inner padding. Scrolls past 320px (or 60% of the screen).
 - Options are 36px rows with `var(--radius-sm)` hover wash. The selected option is **bold emerald text with a check on the right**; nothing else marks it. An option may carry a grey hint line under its label.
@@ -343,8 +345,8 @@ Number rules:
 
 Draw it as it is. Do not redesign it inside a page wireframe.
 
-- **Left:** the Ezana logo, then the notifications bell and the checklist icon.
-- **Centre:** Dashboard, Research, Trading, Sonar (a filled emerald pill), Watchlist, Community, Learning Center.
+- **Left:** the notifications bell and the checklist icon.
+- **Centre:** the Ezana logo, on the bar's centre line. There are no section buttons in the bar. The logo opens the navigation dial (`NavDial`, `src/components/Layout/NavDial.jsx`): a radial menu with the logo at its hub and one wedge per section (Dashboard, Research, Trading, Sonar, Watchlist, Community, Learning Center). Research and Trading swap the ring for their own pages, and the hub then steps back. The dial is an overlay, so it keeps a solid ground, a hairline and a shadow.
 - **Right:** profile, settings, logout (in the negative colour). The logout glyph's right edge is the right alignment line.
 - 64px tall, on the same ground as the page, with one hairline beneath it.
 
@@ -441,24 +443,24 @@ Part A says what a screen looks like. Part B says what to build it from. It appl
 
 Interface elements come from `src/components/ds` (`import { Button, Modal } from '@/components/ds'`). Do not hand-roll an element the library already has.
 
-| Need                    | Component                                                                         | Notes                                                                                         |
-| ----------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Button                  | `Button`                                                                          | `variant`: primary, secondary, ghost, danger. `size`: sm, md, lg. `icon`, `loading`, `block`. |
-| Icon-only button        | `IconButton`                                                                      | `icon` and a required `label` (read by screen readers).                                       |
-| Text field              | `Input`, `Textarea`                                                               | `label`, `hint`, `error`. The label is always present, visible or hidden.                     |
+| Need                    | Component                                                                         | Notes                                                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Button                  | `Button`                                                                          | `variant`: primary, secondary, ghost, danger. `size`: sm, md, lg. `icon`, `loading`, `block`.                                                       |
+| Icon-only button        | `IconButton`                                                                      | `icon` and a required `label` (read by screen readers).                                                                                             |
+| Text field              | `Input`, `Textarea`                                                               | `label`, `hint`, `error`. The label is always present, visible or hidden.                                                                           |
 | Dropdown field          | `EzDropdown` (`@/components/ui/ez-dropdown`)                                      | `options`, `value`, `onChange`, `label`, `size`, `align`, `block`. The standard (6.7). `Select` remains for existing forms and takes the same look. |
-| Checkbox, on/off switch | `Checkbox`, `Toggle`                                                              | `label`, `checked`, `onChange`.                                                               |
-| Menu                    | `Dropdown`, `MenuItem`, `MenuDivider`                                             | `MenuItem` takes `icon` and `danger`. Use for row menus and "More".                           |
-| Dialog                  | `Modal`                                                                           | `title`, `footer`, `size`. Focus trap, Escape and focus return are built in.                  |
-| Tabs                    | `Tabs`                                                                            | Arrow-key navigation built in. Style as text only on canvas pages (section 6.2).              |
-| Table                   | `Table`, `THead`, `TBody`, `TR`, `TH`, `TD`                                       | `numeric` on `TH` and `TD` right-aligns and sets the mono font.                               |
-| Number, ticker          | `NumericValue`, `Ticker`                                                          | `sign`, `decimals`, `colorize`. Use for every figure so formatting stays consistent.          |
-| Tooltip                 | `Tooltip`                                                                         | Carries any explanation longer than a label.                                                  |
-| Status label            | `Badge`                                                                           | `tone` and optional `icon`. Text plus colour, never colour alone.                             |
-| Inline message          | `Alert`                                                                           | `tone`: info, success, warning, danger. Use for inline errors with a Retry action.            |
-| Empty and error states  | `EmptyState`, `ErrorState`                                                        | `title`, `description`, `action`. One line and one action.                                    |
-| Loading                 | `Skeleton`, `SkeletonText`, `SkeletonTable`, `SkeletonChart`, `SkeletonStatStrip` | Match the final layout. `Spinner` is not used on pages.                                       |
-| Screen-reader-only text | `VisuallyHidden`                                                                  | For the hidden page heading and icon-only controls.                                           |
+| Checkbox, on/off switch | `Checkbox`, `Toggle`                                                              | `label`, `checked`, `onChange`.                                                                                                                     |
+| Menu                    | `Dropdown`, `MenuItem`, `MenuDivider`                                             | `MenuItem` takes `icon` and `danger`. Use for row menus and "More".                                                                                 |
+| Dialog                  | `Modal`                                                                           | `title`, `footer`, `size`. Focus trap, Escape and focus return are built in.                                                                        |
+| Tabs                    | `Tabs`                                                                            | Arrow-key navigation built in. Style as text only on canvas pages (section 6.2).                                                                    |
+| Table                   | `Table`, `THead`, `TBody`, `TR`, `TH`, `TD`                                       | `numeric` on `TH` and `TD` right-aligns and sets the mono font.                                                                                     |
+| Number, ticker          | `NumericValue`, `Ticker`                                                          | `sign`, `decimals`, `colorize`. Use for every figure so formatting stays consistent.                                                                |
+| Tooltip                 | `Tooltip`                                                                         | Carries any explanation longer than a label.                                                                                                        |
+| Status label            | `Badge`                                                                           | `tone` and optional `icon`. Text plus colour, never colour alone.                                                                                   |
+| Inline message          | `Alert`                                                                           | `tone`: info, success, warning, danger. Use for inline errors with a Retry action.                                                                  |
+| Empty and error states  | `EmptyState`, `ErrorState`                                                        | `title`, `description`, `action`. One line and one action.                                                                                          |
+| Loading                 | `Skeleton`, `SkeletonText`, `SkeletonTable`, `SkeletonChart`, `SkeletonStatStrip` | Match the final layout. `Spinner` is not used on pages.                                                                                             |
+| Screen-reader-only text | `VisuallyHidden`                                                                  | For the hidden page heading and icon-only controls.                                                                                                 |
 
 `Card`, `CardHeader`, `PageHeader` and `Eyebrow` exist in the library for overlays and legacy pages. **Do not use them on a canvas page**: cards there are flat sections (section 22) and there is no page header block (section 13).
 
