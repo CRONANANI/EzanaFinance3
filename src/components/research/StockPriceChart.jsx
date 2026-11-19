@@ -90,14 +90,20 @@ function CustomTooltip({ active, payload, label }) {
  * End-of-series price tag (Nov 2026, research redesign): a pill on the right
  * edge at the latest price. Rendered as a ReferenceLine label.
  */
+const tagText = (value) =>
+  `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const tagWidth = (value) => tagText(value).length * 6.6 + 12;
+
 function EndPriceTag({ viewBox, value }) {
   if (!viewBox || !Number.isFinite(value)) return null;
   const text = `$${Number(value).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-  const w = text.length * 6.6 + 12;
-  const x = viewBox.x + viewBox.width - w;
+  const w = tagWidth(value);
+  /* In the gutter right of the plot (the chart reserves it), so the line
+     can never run over the price. */
+  const x = viewBox.x + viewBox.width + 6;
   const y = viewBox.y - 9;
   return (
     <g aria-hidden="true">
@@ -534,7 +540,15 @@ export default function StockPriceChart({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={candles}
-                margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+                margin={{
+                  top: 4,
+                  right:
+                    endTag && Number.isFinite(displayPrice)
+                      ? Math.ceil(tagWidth(displayPrice)) + 10
+                      : 4,
+                  left: 0,
+                  bottom: 0,
+                }}
                 onMouseDown={handleChartMouseDown}
                 onMouseMove={handleChartMouseMove}
                 onMouseUp={handleChartMouseUp}

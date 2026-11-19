@@ -1117,3 +1117,26 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Nov 19, 2026: the rule under each rail heading (Analyst recommendations,
+   Key metrics, News & sentiment) runs flat to the rail's right edge, in line
+   with the header's logout icon: no rounded end, past the card's padding. */
+.rc-right .rc-card__head {
+  margin-right: -20px;
+  padding-right: 20px;
+  border-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Nov 19, 2026: no emerald tint behind the company logo or the ticker tag
+   (it read as a green shadow). A text-only logo keeps a neutral ground. */
+.rc-logo {
+  background: transparent;
+}
+.rc-logo--text {
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.rc-ticker {
+  padding: 0;
+  background: transparent;
+}

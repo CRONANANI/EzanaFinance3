@@ -229,14 +229,20 @@ function CompanyResearchPageInner() {
     () => filterSuggestions(allSuggestions, filters.company.results),
     [allSuggestions, filters.company.results],
   );
-  const showSuggestions = suggestions.length > 0;
+  /* A ticker that arrives from another page (?ticker=) shows in the pill as
+     already chosen: no suggestion dropdown until the reader edits it. */
+  const [settledQuery, setSettledQuery] = useState('');
+  const showSuggestions =
+    suggestions.length > 0 && !(settledQuery && query.trim().toUpperCase() === settledQuery);
 
   useEffect(() => {
     const q = searchParams.get('q') || searchParams.get('ticker') || searchParams.get('symbol');
     if (q && q.trim()) {
       const sym = q.trim().toUpperCase();
       setSelectedStock(sym);
+      setSettledQuery(sym);
       setQuery(sym);
+      clearSuggestions();
       setViewMode('stock');
     }
     /* Legacy ?model= links open the tab that holds that tool. */

@@ -1271,3 +1271,45 @@
 .crx-canvas #heatmapContainer .heatmap-grid {
   flex: 1 1 auto;
 }
+
+/* Nov 19, 2026: the section tab bar is Ezana emerald with white labels; the
+   selected tab turns white with emerald text. */
+.crx-tabs-bar,
+.ez-canvas .crx-tabs-bar {
+  padding: 4px;
+  border-radius: var(--radius-md);
+  background: var(--brand-ezana-green) !important;
+  box-shadow: none !important;
+}
+.crx-tabs-bar .crx-tab {
+  min-height: 36px;
+  padding: 0 0.875rem;
+  border-radius: var(--radius-sm);
+  color: white;
+  box-shadow: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.crx-tabs-bar .crx-tab:first-child {
+  padding-left: 0.875rem;
+}
+.crx-tabs-bar .crx-tab:hover {
+  color: white;
+  background: color-mix(in srgb, white 14%, transparent);
+}
+.crx-tabs-bar .crx-tab[aria-selected='true'] {
+  background: white;
+  color: var(--brand-ezana-green);
+  box-shadow: none;
+}
+.crx-tabs-bar .crx-tab:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 1px;
+}
+.crx-tabs-bar .crx-tab-pin {
+  color: currentColor;
+}
+.crx-tabs-bar .crx-tab[aria-selected='true'] .crx-tab-pin {
+  color: var(--brand-ezana-green);
+}
