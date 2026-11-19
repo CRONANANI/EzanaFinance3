@@ -1,24 +1,30 @@
 'use client';
 
 /**
- * Ezana Echo home: a newspaper-style front page (echo-home-redesign handoff,
- * Oct 2026). Presentational: the route (src/app/(dashboard)/ezana-echo/page.js
- * and EchoHomeClient) owns data, URL filters, paging, the Article of the Month
- * pick and admin actions, and passes them in. Grid tiles come only from
+ * Ezana Echo home: editorial front page. Presentational: the route
+ * (src/app/(dashboard)/ezana-echo/page.js and EchoHomeClient) owns data, URL
+ * filters, paging, the Article of the Month pick, the hero teasers, Editors'
+ * Picks and admin actions, and passes them in. Grid tiles come only from
  * packTiles().
  *
- * Order (Nov 2026 redesign): Article of the Month (full-bleed), Latest
- * Stories header and filters, feature block (stories 1-4), row of three
- * (stories 5-7), Most read, More stories (packTiles bento from story 8, with
- * Chart of the Week), Load more, The Evening Brief, footer. The masthead
- * stays in the route.
+ * Order (Option 2 redesign, Nov 18 2026):
+ *   1. Article of the Month: full-bleed photo, dark left scrim, white type,
+ *      with two real teaser stories anchored along its bottom edge
+ *   2. Editors' Picks: horizontal rail (src/lib/echo/editors-picks.js)
+ *   3. Council band (council members only)
+ *   4. The ONE category filter row (sections, region, range, search). The
+ *      masthead carries no category links.
+ *   5. Two columns: the story river (lead, 2x2, packTiles bento, Load more)
+ *      and the discovery rail (Most read, Chart of the Week, The Evening Brief)
+ *   6. Footer
+ * The masthead stays in the route.
  *
  * Image rule: no photo renders wider than 640px. Every image box has a fixed
  * aspect ratio, a max-width cap in echo-home.css and a `sizes` string that
- * matches the cap, so next/image never fetches or upscales past it.
- * The ONE exception is the full-bleed Article of the Month (HeroBleed):
- * `fill`, `sizes="100vw"`, `priority`. An inset hero (`imageInset`) or a hero
- * without a photo keeps the capped split/text-only Hero.
+ * matches the cap, so next/image never fetches or upscales past it. The ONE
+ * exception is the full-bleed Article of the Month (HeroBleed): `fill`,
+ * `sizes="100vw"`, `priority`. An inset hero (`imageInset`) or a hero without
+ * a photo keeps the capped split/text-only Hero.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -40,10 +46,10 @@ const SIZES = {
   aotm: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 640px, 560px',
   lead: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 320px, 384px',
   standard: '(max-width: 640px) 96px, (max-width: 1023px) 240px, 300px',
-  /* redesign boxes (640px cap still applies) */
-  feature: '(max-width: 640px) calc(100vw - 32px), 640px',
-  thumb: '(max-width: 767px) 96px, 150px',
-  row: '(max-width: 640px) calc(100vw - 32px), (max-width: 1023px) 50vw, 480px',
+  river: '(max-width: 640px) calc(100vw - 32px), 360px',
+  teaser: '(max-width: 640px) 96px, 168px',
+  pick: '(max-width: 640px) 88px, 112px',
+  quad: '(max-width: 640px) 96px, 132px',
   /* the single full-bleed exception */
   bleed: '100vw',
 };
@@ -54,9 +60,11 @@ const SIZES = {
  * @param {Array}    [props.aotmOptions]   earlier Articles of the Month: [{ month, story }]
  * @param {string}   [props.aotmMonth]     the past month on show, null = current
  * @param {Function} [props.onAotmChange]  (month | null) => void
+ * @param {Array}    [props.teasers]       two stories anchored under the hero
+ * @param {Array}    [props.editorsPicks]  Editors' Picks stories, in order
  * @param {Array}    props.mostRead        stories, up to 5, with `views`
  * @param {Array}    props.stories         the visible (filtered, paged) stories, in order
- * @param {object}   [props.chart]         Chart of the Week (page 1, default filters only)
+ * @param {object}   [props.chart]         Chart of the Week (rail)
  * @param {object}   props.filters         { section, region, range, q }
  * @param {Function} props.onFiltersChange (patch) => void
  * @param {boolean}  props.hasMore
@@ -69,8 +77,7 @@ const SIZES = {
  * @param {boolean}  [props.isAdmin]
  * @param {Function} [props.onArchive]     (articleId) => void
  * @param {string}   [props.archivingId]
- * @param {React.ReactNode} [props.council] the council band (council members only),
- *                         drawn between the Article of the Month and Latest Stories
+ * @param {React.ReactNode} [props.council] the council band (council members only)
  * @param {boolean}  [props.ourNames]      council members: offer the Our names tab
  * @param {'loading'|'ready'|'error'} [props.gridStatus] grid-only status (the Our
  *                         names tab waits for the council's tickers); defaults to status
@@ -80,6 +87,8 @@ export default function EchoHome({
   aotmOptions = [],
   aotmMonth = null,
   onAotmChange,
+  teasers = [],
+  editorsPicks = [],
   mostRead = [],
   stories = [],
   chart = null,
@@ -100,10 +109,13 @@ export default function EchoHome({
   gridStatus: gridStatusProp,
 }) {
   const gridStatus = status === 'ready' && gridStatusProp ? gridStatusProp : status;
-  // Stories 1-7: feature block + row of three. The bento only gets the rest.
-  const top = stories.slice(0, TOP_STORIES);
+  const admin = isAdmin && onArchive ? { onArchive, archivingId } : null;
+  // Stories 1-5: lead + 2x2. The bento only gets the rest (no chart: the
+  // Chart of the Week lives in the rail).
+  const lead = stories[0] || null;
+  const quad = stories.slice(1, TOP_STORIES);
   const rest = useMemo(() => stories.slice(TOP_STORIES), [stories]);
-  const tiles = useMemo(() => packTiles(rest, { chart }), [rest, chart]);
+  const tiles = useMemo(() => packTiles(rest, { chart: null }), [rest]);
 
   // Load more: focus moves to the first new card's primary link.
   const gridRef = useRef(null);
@@ -136,26 +148,41 @@ export default function EchoHome({
     onSearchOpenChange?.(false);
   };
 
+  const bleed = Boolean(hero && hero.image && !hero.imageInset);
+
   return (
     <main className="ech-page">
       {hero ? (
-        hero.image && !hero.imageInset ? (
-          <HeroBleed hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+        bleed ? (
+          <HeroBleed
+            hero={hero}
+            options={aotmOptions}
+            month={aotmMonth}
+            onChange={onAotmChange}
+            teasers={teasers}
+            admin={admin}
+          />
         ) : (
-          <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+          <>
+            <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
+            <Teasers stories={teasers} admin={admin} />
+          </>
         )
       ) : status === 'loading' ? (
         <HeroSkeleton />
       ) : null}
 
+      <EditorsPicks stories={editorsPicks} admin={admin} />
+
       {council}
 
+      {/* The single category filter row on the page. #latest is the scroll
+          target for the masthead search and the council band. */}
       <section className="ech-latest" id="latest" aria-labelledby="ech-latest-h">
-        {/* Row 1: title left, section pills right. Row 2: region, range, search. */}
-        <div className="ech-latest__head">
-          <h2 id="ech-latest-h" className="ech-latest__title">
-            Latest Stories
-          </h2>
+        <h2 id="ech-latest-h" className="ech-sr">
+          Latest stories
+        </h2>
+        <div className="ech-filterbar">
           <Segmented
             className="ech-tabs"
             label="Section"
@@ -171,8 +198,6 @@ export default function EchoHome({
               )
             }
           />
-        </div>
-        <div className="ech-controls">
           <div className="ech-controls__left">
             <RegionMenu
               value={filters.region}
@@ -186,7 +211,9 @@ export default function EchoHome({
               onChange={(range) => onFiltersChange?.({ range })}
             />
           </div>
-          {showSearch && (
+        </div>
+        {showSearch && (
+          <div className="ech-controls">
             <div className="ech-controls__right">
               <div className="ech-search">
                 <label htmlFor="ech-search" className="ech-sr">
@@ -216,105 +243,95 @@ export default function EchoHome({
                 <i className="bi bi-x-lg" aria-hidden="true" />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
-      {gridStatus === 'loading' && (
-        <>
-          <FeatureSkeleton />
-          <RowOfThreeSkeleton />
-          <MostReadSkeleton />
-        </>
-      )}
-      {status === 'error' && (
-        <div className="ech-state ech-state--error" role="alert">
-          <span className="ech-state__icon" aria-hidden="true">
-            <i className="bi bi-exclamation-circle" />
-          </span>
-          <p className="ech-state__title">We couldn&rsquo;t load the latest stories</p>
-          <p className="ech-state__body">Check your connection and try again.</p>
-          <button type="button" className="ech-btn ech-btn--primary" onClick={onRetry}>
-            <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Retry
-          </button>
-        </div>
-      )}
-      {gridStatus === 'ready' && stories.length === 0 && (
-        <div className="ech-state" role="status">
-          <span className="ech-state__icon" aria-hidden="true">
-            <i className="bi bi-globe2" />
-          </span>
-          <p className="ech-state__title">{emptyMessage(filters)}</p>
-          <button
-            type="button"
-            className="ech-btn ech-btn--outline"
-            onClick={() => onFiltersChange?.({ ...DEFAULT_FILTERS })}
-          >
-            Reset filters
-          </button>
-        </div>
-      )}
-      {gridStatus === 'ready' && stories.length > 0 && (
-        <>
-          <FeatureBlock
-            stories={top.slice(0, 4)}
-            isAdmin={isAdmin}
-            onArchive={onArchive}
-            archivingId={archivingId}
-          />
-          <RowOfThree
-            stories={top.slice(4, TOP_STORIES)}
-            isAdmin={isAdmin}
-            onArchive={onArchive}
-            archivingId={archivingId}
-          />
-          <MostRead items={mostRead} />
-          {tiles.length > 0 && (
-            <section className="ech-more-stories" aria-labelledby="ech-more-h">
-              <div className="ech-sechead">
-                <h2 id="ech-more-h" className="ech-sechead__title">
-                  More stories
-                </h2>
-              </div>
-              <div className="ech-grid" ref={gridRef}>
-                {tiles.map((t) => (
-                  <Card
-                    key={t.key}
-                    tile={t}
-                    isAdmin={isAdmin}
-                    onArchive={onArchive}
-                    archiving={Boolean(t.story && archivingId === t.story.id)}
-                  />
-                ))}
-              </div>
-            </section>
+      <div className="ech-columns">
+        <div className="ech-river">
+          {gridStatus === 'loading' && <RiverSkeleton />}
+          {status === 'error' && (
+            <div className="ech-state ech-state--error" role="alert">
+              <span className="ech-state__icon" aria-hidden="true">
+                <i className="bi bi-exclamation-circle" />
+              </span>
+              <p className="ech-state__title">We couldn&rsquo;t load the latest stories</p>
+              <p className="ech-state__body">Check your connection and try again.</p>
+              <button type="button" className="ech-btn ech-btn--primary" onClick={onRetry}>
+                <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Retry
+              </button>
+            </div>
           )}
-        </>
-      )}
-
-      {gridStatus === 'ready' && hasMore && (
-        <div className="ech-more">
-          <button
-            type="button"
-            className="ech-btn ech-btn--outline ech-btn--more"
-            onClick={loadMore}
-            disabled={loadingMore}
-            aria-busy={loadingMore}
-          >
-            {loadingMore ? (
-              <>
-                <span className="ech-spinner" aria-hidden="true" /> Loading more stories
-              </>
-            ) : (
-              <>
-                Load more stories <i className="bi bi-chevron-down" aria-hidden="true" />
-              </>
-            )}
-          </button>
+          {gridStatus === 'ready' && stories.length === 0 && (
+            <div className="ech-state" role="status">
+              <span className="ech-state__icon" aria-hidden="true">
+                <i className="bi bi-globe2" />
+              </span>
+              <p className="ech-state__title">{emptyMessage(filters)}</p>
+              <button
+                type="button"
+                className="ech-btn ech-btn--outline"
+                onClick={() => onFiltersChange?.({ ...DEFAULT_FILTERS })}
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
+          {gridStatus === 'ready' && lead && (
+            <>
+              <LeadStory story={lead} admin={admin} />
+              <StoryQuad stories={quad} admin={admin} />
+              {tiles.length > 0 && (
+                <section className="ech-more-stories" aria-labelledby="ech-more-h">
+                  <div className="ech-sechead">
+                    <h2 id="ech-more-h" className="ech-sechead__title">
+                      More stories
+                    </h2>
+                  </div>
+                  <div className="ech-grid" ref={gridRef}>
+                    {tiles.map((t) => (
+                      <Card
+                        key={t.key}
+                        tile={t}
+                        isAdmin={isAdmin}
+                        onArchive={onArchive}
+                        archiving={Boolean(t.story && archivingId === t.story.id)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+          {gridStatus === 'ready' && hasMore && (
+            <div className="ech-more">
+              <button
+                type="button"
+                className="ech-btn ech-btn--outline ech-btn--more"
+                onClick={loadMore}
+                disabled={loadingMore}
+                aria-busy={loadingMore}
+              >
+                {loadingMore ? (
+                  <>
+                    <span className="ech-spinner" aria-hidden="true" /> Loading more stories
+                  </>
+                ) : (
+                  <>
+                    Load more stories <i className="bi bi-chevron-down" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
-      )}
 
-      <EveningBrief onSubscribe={onSubscribe} />
+        <aside className="ech-rail" aria-label="Discover">
+          {status === 'loading' ? <RailMostReadSkeleton /> : <RailMostRead items={mostRead} />}
+          <RailChart chart={chart} />
+          <EveningBrief onSubscribe={onSubscribe} />
+        </aside>
+      </div>
 
       <footer className="ech-footer">
         <div className="ech-footer__top">
@@ -339,15 +356,18 @@ export default function EchoHome({
   );
 }
 
-/* ---------- Article of the Month, full-bleed ----------
+/* ---------- Article of the Month, full-bleed photo ----------
    The photo spans the viewport behind the text (the one exception to the
    640px cap). The section breaks out of the shell gutters with a negative
    margin and pads back in by the same amount, so the text column starts on
-   the page's own left edge, in line with the masthead and Latest Stories. */
-function HeroBleed({ hero, options, month, onChange }) {
+   the page's own left edge, in line with the masthead and the filter row.
+   A dark scrim on the left carries white type over any photo; the two
+   teasers sit in normal flow at the bottom of the same section, so they can
+   never cover the headline or the call to action. */
+function HeroBleed({ hero, options, month, onChange, teasers, admin }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
   return (
-    <section className="ech-hero" aria-labelledby="ech-aotm-title">
+    <section className="ech-hero ech-hero--photo" aria-labelledby="ech-aotm-title">
       <div className="ech-hero__media" aria-hidden="true">
         <Image
           src={hero.image}
@@ -364,26 +384,333 @@ function HeroBleed({ hero, options, month, onChange }) {
       <div className="ech-hero__inner">
         <div className="ech-hero__text">
           <div className="ech-hero__top">
-            <span className="ech-kicker ech-hero__kicker">{hero.kicker}</span>
+            <span className="ech-kicker ech-hero__kicker">
+              {[hero.kicker, short].filter(Boolean).join(' · ')}
+            </span>
             {options.length >= 1 && onChange ? (
               <PastPicks options={options} month={month} onChange={onChange} />
             ) : null}
           </div>
-          {short ? <span className="ech-chip">{short}</span> : null}
           <h1 id="ech-aotm-title" className="ech-hero__title">
             <Link href={hero.href}>{hero.title}</Link>
           </h1>
           {hero.dek ? <p className="ech-hero__dek">{hero.dek}</p> : null}
-          <Byline story={hero} />
-          <Link
-            href={hero.href}
-            className="ech-hero__go"
-            aria-label="Read the Article of the Month"
+          <div className="ech-hero__meta">
+            <Byline story={hero} />
+            <Link href={hero.href} className="ech-hero__cta">
+              Read full story <i className="bi bi-arrow-right" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+        <Teasers stories={teasers} admin={admin} onPhoto />
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Hero teasers: two real stories along the hero's bottom edge ---------- */
+function Teasers({ stories, admin, onPhoto = false }) {
+  if (!stories?.length) return null;
+  return (
+    <ul className={`ech-teasers${onPhoto ? ' is-on-photo' : ''}`} aria-label="Also in Echo">
+      {stories.slice(0, 2).map((s) => (
+        <li key={s.id} className="ech-teaser">
+          <Link href={s.href} className="ech-tile__link ech-teaser__link">
+            {s.image ? (
+              <Picture
+                src={s.image}
+                className="ech-teaser__img"
+                alt={s.imageAlt || ''}
+                position={s.imagePosition}
+                sizes={SIZES.teaser}
+              />
+            ) : null}
+            <span className="ech-teaser__body">
+              {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
+              <h2 className="ech-teaser__title">{s.title}</h2>
+              {s.dek ? <span className="ech-teaser__dek">{s.dek}</span> : null}
+            </span>
+            <span className="ech-teaser__go" aria-hidden="true">
+              <i className="bi bi-arrow-right" />
+            </span>
+          </Link>
+          {admin ? (
+            <ArchiveButton
+              story={s}
+              onArchive={admin.onArchive}
+              archiving={admin.archivingId === s.id}
+            />
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ---------- Editors' Picks: a horizontal rail ----------
+   Native horizontal scroll with snap (touch, trackpad, keyboard focus all
+   work); the arrow buttons appear only when the rail overflows and scroll it
+   by one view. Selection rules: src/lib/echo/editors-picks.js. */
+function EditorsPicks({ stories, admin }) {
+  const listRef = useRef(null);
+  const [edges, setEdges] = useState({ start: true, end: true });
+  const measure = useCallback(() => {
+    const el = listRef.current;
+    if (!el) return;
+    setEdges({
+      start: el.scrollLeft <= 2,
+      end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 2,
+    });
+  }, []);
+  useEffect(() => {
+    measure();
+    const el = listRef.current;
+    if (!el) return undefined;
+    el.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('resize', measure);
+    return () => {
+      el.removeEventListener('scroll', measure);
+      window.removeEventListener('resize', measure);
+    };
+  }, [measure, stories.length]);
+  if (!stories.length) return null;
+  const page = (dir) => {
+    const el = listRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: reduce ? 'auto' : 'smooth' });
+  };
+  const overflow = !(edges.start && edges.end);
+  return (
+    <section className="ech-picks-rail" aria-labelledby="ech-picks-h">
+      <div className="ech-picks-rail__head">
+        <h2 id="ech-picks-h" className="ech-picks-rail__title">
+          Editors&rsquo; picks
+        </h2>
+        <p className="ech-picks-rail__note">The stories our editors think matter most right now.</p>
+      </div>
+      <ul className="ech-picks-rail__list" ref={listRef}>
+        {stories.map((s) => (
+          <li key={s.id} className="ech-pick">
+            <Link href={s.href} className="ech-tile__link ech-pick__link">
+              {s.image ? (
+                <Picture
+                  src={s.image}
+                  className="ech-pick__img"
+                  alt={s.imageAlt || ''}
+                  position={s.imagePosition}
+                  sizes={SIZES.pick}
+                />
+              ) : null}
+              <span className="ech-pick__body">
+                <h3 className="ech-pick__title">{s.title}</h3>
+                <span className="ech-mono ech-pick__meta">
+                  {[tagOf(s), `${s.mins} MIN READ`].filter(Boolean).join(' · ')}
+                </span>
+              </span>
+            </Link>
+            {admin ? (
+              <ArchiveButton
+                story={s}
+                onArchive={admin.onArchive}
+                archiving={admin.archivingId === s.id}
+              />
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {overflow ? (
+        <div className="ech-picks-rail__nav">
+          <button
+            type="button"
+            className="ech-iconbtn"
+            aria-label="Previous editors' picks"
+            disabled={edges.start}
+            onClick={() => page(-1)}
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="ech-iconbtn ech-iconbtn--solid"
+            aria-label="More editors' picks"
+            disabled={edges.end}
+            onClick={() => page(1)}
           >
             <i className="bi bi-arrow-right" aria-hidden="true" />
-          </Link>
+          </button>
         </div>
+      ) : null}
+    </section>
+  );
+}
+
+/* ---------- River: lead story (image left, text right) ---------- */
+function LeadStory({ story, admin }) {
+  return (
+    <article className={`ech-lead${story.image ? '' : ' is-noimg'}`}>
+      <Link href={story.href} className="ech-tile__link ech-lead__link">
+        {story.image ? (
+          <Picture
+            src={story.image}
+            className="ech-lead__img"
+            alt={story.imageAlt || ''}
+            position={story.imagePosition}
+            sizes={SIZES.river}
+          />
+        ) : null}
+        <span className="ech-lead__body">
+          {tagOf(story) ? <span className="ech-label">{tagOf(story)}</span> : null}
+          <h3 className="ech-lead__title">{story.title}</h3>
+          {story.dek ? <span className="ech-lead__dek">{story.dek}</span> : null}
+          <Byline story={story} size="sm" />
+        </span>
+      </Link>
+      {admin ? (
+        <ArchiveButton
+          story={story}
+          onArchive={admin.onArchive}
+          archiving={admin.archivingId === story.id}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+/* ---------- River: 2x2 of compact thumbnail cards (stories 2-5) ---------- */
+function StoryQuad({ stories, admin }) {
+  if (!stories.length) return null;
+  return (
+    <ul className="ech-quad">
+      {stories.map((s) => (
+        <li key={s.id} className={`ech-quad__item${s.image ? '' : ' is-noimg'}`}>
+          <Link href={s.href} className="ech-tile__link ech-quad__link">
+            {s.image ? (
+              <Picture
+                src={s.image}
+                className="ech-quad__img"
+                alt={s.imageAlt || ''}
+                position={s.imagePosition}
+                sizes={SIZES.quad}
+              />
+            ) : null}
+            <span className="ech-quad__body">
+              {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
+              <h3 className="ech-quad__title">{s.title}</h3>
+              {s.dek ? <span className="ech-quad__dek">{s.dek}</span> : null}
+              <span className="ech-mono ech-quad__meta">
+                {[s.date, `${s.mins} MIN READ`].filter(Boolean).join(' · ')}
+              </span>
+            </span>
+          </Link>
+          {admin ? (
+            <ArchiveButton
+              story={s}
+              onArchive={admin.onArchive}
+              archiving={admin.archivingId === s.id}
+            />
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function RiverSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <div className="ech-lead">
+        <span className="ech-lead__link">
+          {HOME_IMAGES_ENABLED ? <span className="ech-lead__img ech-skel" /> : null}
+          <span className="ech-lead__body">
+            <span className="ech-skel ech-skel--line" style={{ width: 90 }} />
+            <span className="ech-skel ech-skel--head" />
+            <span className="ech-skel ech-skel--line" style={{ width: '85%' }} />
+            <span className="ech-skel ech-skel--line" style={{ width: 200 }} />
+          </span>
+        </span>
       </div>
+      <div className="ech-quad">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="ech-quad__item">
+            <span className="ech-quad__link">
+              {HOME_IMAGES_ENABLED ? <span className="ech-quad__img ech-skel" /> : null}
+              <span className="ech-quad__body">
+                <span className="ech-skel ech-skel--line" style={{ width: 80 }} />
+                <span className="ech-skel ech-skel--line" />
+                <span className="ech-skel ech-skel--line" style={{ width: '60%' }} />
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Rail: Most read (cumulative views, from the hub) ---------- */
+function RailMostRead({ items }) {
+  if (!items.length) return null;
+  return (
+    <section className="ech-rail__mod" aria-labelledby="ech-most-h">
+      <h2 id="ech-most-h" className="ech-rail__title">
+        Most read
+      </h2>
+      <ol className="ech-mostlist">
+        {items.slice(0, 5).map((m, i) => (
+          <li key={m.id} className="ech-mostlist__row">
+            <Link
+              href={m.href}
+              className="ech-mostlist__link"
+              aria-label={`${i + 1}. ${m.title}, ${Number(m.views || 0).toLocaleString('en-US')} reads`}
+            >
+              <span className="ech-mostlist__rank" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span className="ech-mostlist__text" aria-hidden="true">
+                <span className="ech-mostlist__title">{m.title}</span>
+                <span className="ech-mono ech-mostlist__reads">
+                  {fmtReads(m.views)} · {m.mins} MIN READ
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function RailMostReadSkeleton() {
+  return (
+    <div className="ech-rail__mod" aria-hidden="true">
+      <span className="ech-skel ech-skel--line" style={{ width: 120 }} />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span key={i} className="ech-skel ech-skel--line" style={{ marginTop: 14 }} />
+      ))}
+    </div>
+  );
+}
+
+/* ---------- Rail: Chart of the Week ----------
+   The editorial chart from getChartOfTheWeek(): a figure lifted from a
+   published article, its takeaway and its source article. Nothing renders
+   when there is no valid chart. */
+function RailChart({ chart }) {
+  if (!chart || !Array.isArray(chart.series) || !chart.series.length) return null;
+  return (
+    <section className="ech-rail__mod ech-chart" aria-labelledby="ech-cotw-h">
+      <span className="ech-kicker">CHART OF THE WEEK</span>
+      <h2 id="ech-cotw-h" className="ech-rail__title ech-rail__title--sm">
+        <Link className="ech-tile__link ech-chart__takeaway" href={chart.href}>
+          {chart.takeaway}
+        </Link>
+      </h2>
+      <ChartSvg series={chart.series} independent={chart.independent} label={chart.takeaway} />
+      <ChartLegend series={chart.series} />
+      <Link className="ech-mono ech-chart__src" href={chart.href}>
+        FROM: {String(chart.sourceTitle || '').toUpperCase()}
+      </Link>
     </section>
   );
 }
@@ -529,201 +856,6 @@ function Byline({ story, size = 'md' }) {
       </span>
       <span className="ech-mono">{story.mins} min read</span>
     </span>
-  );
-}
-
-/* ---------- Feature block: story 1 + side list of stories 2-4 ---------- */
-function FeatureBlock({ stories, isAdmin, onArchive, archivingId }) {
-  const [lead, ...side] = stories;
-  if (!lead) return null;
-  const admin = isAdmin && onArchive;
-  return (
-    <div className="ech-feature">
-      <article className={`ech-feature__card${lead.image ? '' : ' is-noimg'}`}>
-        <Link href={lead.href} className="ech-tile__link ech-feature__link">
-          {lead.image ? (
-            <Picture
-              src={lead.image}
-              className="ech-feature__img"
-              alt={lead.imageAlt || ''}
-              position={lead.imagePosition}
-              sizes={SIZES.feature}
-            />
-          ) : null}
-          <span className="ech-feature__body">
-            {tagOf(lead) ? <span className="ech-chip ech-chip--sm">{tagOf(lead)}</span> : null}
-            <h3 className="ech-feature__title">{lead.title}</h3>
-            {lead.dek ? <span className="ech-feature__dek">{lead.dek}</span> : null}
-            <Byline story={lead} size="sm" />
-          </span>
-        </Link>
-        {admin ? (
-          <ArchiveButton story={lead} onArchive={onArchive} archiving={archivingId === lead.id} />
-        ) : null}
-      </article>
-
-      {side.length ? (
-        <ul className="ech-side">
-          {side.slice(0, 3).map((s) => (
-            <li key={s.id} className={`ech-side__row${s.image ? '' : ' is-noimg'}`}>
-              <Link href={s.href} className="ech-tile__link ech-side__link">
-                {s.image ? (
-                  <Picture
-                    src={s.image}
-                    className="ech-side__img"
-                    alt={s.imageAlt || ''}
-                    position={s.imagePosition}
-                    sizes={SIZES.thumb}
-                  />
-                ) : null}
-                <span className="ech-side__body">
-                  {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
-                  <h3 className="ech-side__title">{s.title}</h3>
-                  <Byline story={s} size="xs" />
-                </span>
-              </Link>
-              {admin ? (
-                <ArchiveButton story={s} onArchive={onArchive} archiving={archivingId === s.id} />
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
-
-/* ---------- Row of three: stories 5-7 ---------- */
-function RowOfThree({ stories, isAdmin, onArchive, archivingId }) {
-  if (!stories.length) return null;
-  const admin = isAdmin && onArchive;
-  return (
-    <div className="ech-row3">
-      {stories.map((s) => (
-        <article key={s.id} className={`ech-row3__card${s.image ? '' : ' is-noimg'}`}>
-          <Link href={s.href} className="ech-tile__link ech-row3__link">
-            {s.image ? (
-              <Picture
-                src={s.image}
-                className="ech-row3__img"
-                alt={s.imageAlt || ''}
-                position={s.imagePosition}
-                sizes={SIZES.row}
-              />
-            ) : null}
-            <span className="ech-row3__body">
-              {tagOf(s) ? <span className="ech-label">{tagOf(s)}</span> : null}
-              <h3 className="ech-row3__title">{s.title}</h3>
-              {!s.image && s.dek ? <span className="ech-row3__dek">{s.dek}</span> : null}
-              <Byline story={s} size="xs" />
-            </span>
-          </Link>
-          {admin ? (
-            <ArchiveButton story={s} onArchive={onArchive} archiving={archivingId === s.id} />
-          ) : null}
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function FeatureSkeleton() {
-  return (
-    <div className="ech-feature" aria-hidden="true">
-      <div className="ech-feature__card">
-        {HOME_IMAGES_ENABLED ? <span className="ech-feature__img ech-skel" /> : null}
-        <span className="ech-feature__body">
-          <span className="ech-skel ech-skel--line" style={{ width: 110 }} />
-          <span className="ech-skel ech-skel--head" />
-          <span className="ech-skel ech-skel--line" style={{ width: '85%' }} />
-          <span className="ech-skel ech-skel--line" style={{ width: 220 }} />
-        </span>
-      </div>
-      <div className="ech-side">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="ech-side__row">
-            <span className="ech-side__link">
-              {HOME_IMAGES_ENABLED ? <span className="ech-side__img ech-skel" /> : null}
-              <span className="ech-side__body">
-                <span className="ech-skel ech-skel--line" style={{ width: 90 }} />
-                <span className="ech-skel ech-skel--line" />
-                <span className="ech-skel ech-skel--line" style={{ width: '60%' }} />
-              </span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RowOfThreeSkeleton() {
-  return (
-    <div className="ech-row3" aria-hidden="true">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="ech-row3__card">
-          {HOME_IMAGES_ENABLED ? <span className="ech-row3__img ech-skel" /> : null}
-          <span className="ech-row3__body">
-            <span className="ech-skel ech-skel--line" style={{ width: 90 }} />
-            <span className="ech-skel ech-skel--line" />
-            <span className="ech-skel ech-skel--line" style={{ width: '70%' }} />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ---------- Most read ---------- */
-function MostRead({ items }) {
-  if (!items.length) return null;
-  return (
-    <section className="ech-most" aria-labelledby="ech-most-h">
-      <div className="ech-sechead">
-        <h2 id="ech-most-h" className="ech-sechead__title">
-          <i className="bi bi-graph-up-arrow" aria-hidden="true" /> Most read
-        </h2>
-      </div>
-      <ol className="ech-most__strip">
-        {items.slice(0, 5).map((m, i) => (
-          <li key={m.id} className="ech-most__cell">
-            <Link
-              href={m.href}
-              aria-label={`${i + 1}. ${m.title}, ${Number(m.views || 0).toLocaleString('en-US')} reads`}
-            >
-              <span className={`ech-most__rank${i === 0 ? ' is-first' : ''}`} aria-hidden="true">
-                {i + 1}
-              </span>
-              <span className="ech-most__text" aria-hidden="true">
-                {m.title}
-              </span>
-              <span className="ech-mono ech-most__reads" aria-hidden="true">
-                {fmtReads(m.views)}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-function MostReadSkeleton() {
-  return (
-    <div className="ech-most" aria-hidden="true">
-      <div className="ech-sechead">
-        <span className="ech-skel ech-skel--line" style={{ width: 140 }} />
-      </div>
-      <div className="ech-most__strip">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className="ech-most__cell ech-most__cell--skel">
-            <span className="ech-skel ech-skel--rank" />
-            <span className="ech-skel ech-skel--line" />
-            <span className="ech-skel ech-skel--line" style={{ width: '70%' }} />
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 

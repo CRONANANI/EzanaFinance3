@@ -19,11 +19,14 @@ export const tokenizedMoneyOutageTheory2026 = {
   excerpt:
     'In five November days Microsoft, the FAA, Workday and America’s largest banks all went down, and a viral theory says it was staged to sell tokenized money. Every outage has a published, unrelated cause. The tokenization push is real, public and commercial, and programmable money carries risks worth taking seriously.',
   heroImage: {
-    // Original generated illustration (Ezana), no third-party rights.
-    src: '/echo/tokenized-money-outage-theory-2026-hero.png',
-    alt: 'Abstract illustration: a grid of green and dark token tiles, with a dark diagonal band of unlit tiles and a jagged red line crossing the grid.',
+    // Generated editorial image supplied for this story (Nov 18th, 2026);
+    // source file kept at docs/assets/echo/five-outages-nyse-hero-source.png.
+    // Not a news photograph and not evidence of any event in the article.
+    src: '/echo/tokenized-money-outage-theory-2026-hero.webp',
+    alt: 'The New York Stock Exchange facade on Wall Street, American flags hanging between its columns and a Wall St sign in the foreground.',
     caption:
-      'Editorial illustration. Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026.',
+      'Editorial image of the New York Stock Exchange (generated). Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026.',
+    position: '62% 50%',
   },
   category: 'analysis',
   author: 'Ezana Finance Editorial',

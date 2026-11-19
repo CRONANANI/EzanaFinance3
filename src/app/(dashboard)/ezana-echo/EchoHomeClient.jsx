@@ -10,15 +10,21 @@
  *   - /api/echo/hub: only for Retry, or if the server could not load the hub
  *   - /api/echo/article-statuses: admins only (the View archived count)
  *   - filters live in the URL (?section=&region=&range=&q=, defaults omitted,
- *     replaceState) and apply to the bento only, never the hero or Most read
+ *     replaceState) and apply to the story river only, never the hero, its
+ *     teasers, Editors' Picks, Most read or the Chart of the Week
+ *   - the hero's two teasers and Editors' Picks are picked in
+ *     src/lib/echo/editors-picks.js; on the unfiltered front page the river
+ *     skips them so no story shows twice above the fold
  *   - paging is client-side over the hub payload: the top TOP_STORIES fill the
- *     feature block and the row of three, then PAGE_SIZE stories a bento page
+ *     river's lead and 2x2, then PAGE_SIZE stories a bento page
  *   - The Evening Brief posts to /api/newsletter/marketing/subscribe (double opt-in)
  *   - council members only (useOrg().isOrgUser, once org loading has
  *     finished): the "For our council" band (loaded on demand), the Our names
  *     tab (?ours=1) and a Team Hub link in the masthead. Nothing council
  *     related is fetched or drawn for anyone else.
- *   - masthead: Login only for signed-out readers.
+ *   - masthead: wordmark + utilities only (search, Archived for admins, Team
+ *     Hub for council members, Login for signed-out readers, Subscribe). The
+ *     category links live in the one filter row under Editors' Picks.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -32,7 +38,6 @@ import EchoHome from '@/components/echo/home/EchoHome';
 import { PAGE_SIZE, TOP_STORIES } from '@/lib/echo/bento-layout';
 import {
   DEFAULT_FILTERS,
-  SECTIONS,
   filterStories,
   filtersToSearch,
   isDefaultFilters,
@@ -41,6 +46,7 @@ import {
   toStory,
 } from '@/lib/echo/home-feed';
 import { AOTM_HISTORY } from '@/lib/echo/aotm';
+import { pickEditorsPicks, pickHeroTeasers } from '@/lib/echo/editors-picks';
 import { withHomeImage } from '@/lib/echo/home-card-images';
 
 import './ezana-echo.css';
@@ -201,30 +207,42 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
 
   const mostRead = useMemo(() => rankMostRead(stories, 5), [stories]);
 
-  // The bento: everything except the hero, newest first (the hub's order).
-  const filtered = useMemo(
+  // Two teasers under the hero, then Editors' Picks. Both key off `hero`
+  // (the current pick), so browsing past months never reshuffles them.
+  const teasers = useMemo(() => pickHeroTeasers(stories, hero?.id), [stories, hero]);
+  const editorsPicks = useMemo(
     () =>
-      filterStories(
-        stories.filter((s) => s.id !== hero?.id),
-        councilReady ? filters : { ...filters, ours: false },
-        nowMs,
-        ourTickers || undefined,
-      ),
-    [stories, hero, filters, nowMs, councilReady, ourTickers],
+      pickEditorsPicks(stories, {
+        exclude: new Set([hero?.id, ...teasers.map((t) => t.id)].filter(Boolean)),
+        history: AOTM_HISTORY,
+      }),
+    [stories, hero, teasers],
   );
-  // Stories 1-7 fill the feature block and the row of three; the bento then
-  // gets full PAGE_SIZE pages from story 8 on.
+
+  const shownFilters = councilReady ? filters : { ...filters, ours: false };
+  const unfiltered = isDefaultFilters(shownFilters);
+  // The river: everything except the hero, newest first (the hub's order). On
+  // the unfiltered front page it also skips the teasers and picks shown above
+  // it; once a reader filters, every matching story is listed.
+  const filtered = useMemo(() => {
+    const above = new Set(
+      unfiltered ? [...teasers.map((t) => t.id), ...editorsPicks.map((p) => p.id)] : [],
+    );
+    return filterStories(
+      stories.filter((s) => s.id !== hero?.id && !above.has(s.id)),
+      councilReady ? filters : { ...filters, ours: false },
+      nowMs,
+      ourTickers || undefined,
+    );
+  }, [stories, hero, teasers, editorsPicks, unfiltered, filters, councilReady, nowMs, ourTickers]);
+  // Stories 1-5 fill the river's lead and 2x2; the bento then gets full
+  // PAGE_SIZE pages from story 6 on.
   const visible = useMemo(
     () => filtered.slice(0, TOP_STORIES + pages * PAGE_SIZE),
     [filtered, pages],
   );
-  // The chart is an editorial pick for the unfiltered front page; a filtered
-  // grid shows only stories that match.
-  const shownFilters = councilReady ? filters : { ...filters, ours: false };
-  const chart =
-    hub.chart && !archivedSet.has(hub.chart.slug) && isDefaultFilters(shownFilters)
-      ? hub.chart
-      : null;
+  // The Chart of the Week sits in the rail, independent of the river filters.
+  const chart = hub.chart && !archivedSet.has(hub.chart.slug) ? hub.chart : null;
   /* Our names waits for the council's tickers rather than flash every story. */
   const gridStatus =
     councilReady && filters.ours && !ourTickers && council.fund.status !== 'error'
@@ -254,12 +272,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       ? 'smooth'
       : 'auto';
-
-  // Masthead section links filter the feed and bring the reader to it.
-  const goToSection = (section) => {
-    onFiltersChange({ section, ours: false });
-    document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
-  };
 
   // Subscribe: scroll to The Evening Brief and put the cursor in its email field.
   const goToBrief = () => {
@@ -298,9 +310,10 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   return (
     <>
       {/* The Echo masthead is this route's top bar (the marketing nav is
-          suppressed here): logo + wordmark left, the six section links in the
-          middle, then search, Archived (admins), Login and Subscribe right.
-          Below 768px the section links drop to their own scrolling row. */}
+          suppressed here): logo + wordmark left; search, Archived (admins),
+          Team Hub (council), Login and Subscribe right. No category links:
+          the filter row under Editors' Picks is the page's one category
+          navigation. */}
       <header className="eth-masthead">
         <div className="eth-masthead-brand">
           <Link href="/" className="eth-masthead-logo" aria-label="Ezana home">
@@ -310,22 +323,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
             Ezana <span>Echo</span>
           </Link>
         </div>
-        <nav className="eth-sections" aria-label="Echo sections">
-          {SECTIONS.map((s) => {
-            const on = !shownFilters.ours && filters.section === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                className={`eth-section${on ? ' is-on' : ''}`}
-                aria-current={on ? 'true' : undefined}
-                onClick={() => goToSection(s.id)}
-              >
-                {s.label}
-              </button>
-            );
-          })}
-        </nav>
         <div className="eth-masthead-auth">
           <button
             type="button"
@@ -373,6 +370,8 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
         aotmOptions={aotmOptions}
         aotmMonth={pastPick ? aotmMonth : null}
         onAotmChange={setAotmMonth}
+        teasers={status === 'loading' ? [] : teasers}
+        editorsPicks={status === 'loading' ? [] : editorsPicks}
         mostRead={status === 'loading' ? [] : mostRead}
         stories={visible}
         chart={chart}

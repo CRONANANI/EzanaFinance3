@@ -1,6 +1,7 @@
 /* ══════════════════════════════════════════════════════════════
    EZANA ECHO homepage shell: the canvas paint, the Echo masthead
-   (this route's top bar), the dateline strip and the admin "Archived" pill. The
+   (this route's top bar: wordmark and utilities only, no category links),
+   the dateline strip and the admin "Archived" pill. The
    page body (hero, Most read, bento, Evening Brief) is styled in
    src/components/echo/home/echo-home.css under the ech- prefix.
    ══════════════════════════════════════════════════════════════ */
@@ -68,10 +69,11 @@ html body:has(.ech-page) .dashboard-main.dashboard-main-content {
   padding: 1px 8px;
 }
 
-/* Masthead = this route's top bar (Nov 2026 redesign): one row, bottom
-   hairline. Logo + "Ezana Echo" wordmark left, the six section links in the
-   middle, then search, Archived (admins), Login and the Subscribe pill. It
-   spans the page canvas (logo edge to logout edge) like every other page. */
+/* Masthead = this route's top bar (Option 2 redesign, Nov 18 2026): one row,
+   bottom hairline. Logo + "Ezana Echo" wordmark left; search, Archived
+   (admins), Team Hub (council), Login and the Subscribe button right. The
+   section links were removed: the filter row under Editors' Picks is the
+   page's one category navigation. */
 .eth-masthead {
   display: flex;
   align-items: center;
@@ -109,49 +111,6 @@ body.light-mode .eth-wordmark span {
   color: var(--emerald-text);
 }
 
-/* Section links: real <button>s that filter the feed (?section=) and scroll
-   to Latest Stories. One line, never wrapping: if a font or an extra admin
-   pill makes the row tight, it scrolls sideways instead (and below 1366px it
-   moves to its own row under the brand). */
-.eth-sections {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: center;
-  justify-content: safe center;
-  gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.eth-sections::-webkit-scrollbar {
-  display: none;
-}
-.eth-section {
-  flex-shrink: 0;
-  min-height: 40px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 0.14s ease;
-}
-.eth-section:hover,
-.eth-section.is-on {
-  color: var(--emerald);
-}
-body.light-mode .eth-section:hover,
-body.light-mode .eth-section.is-on {
-  color: var(--emerald-text);
-}
-.eth-section:focus-visible,
 .eth-subscribe:focus-visible,
 .eth-login:focus-visible,
 .eth-archived-btn:focus-visible,
@@ -252,9 +211,8 @@ body.light-mode .eth-subscribe {
   outline-offset: 3px;
 }
 
-/* The admin Archived pill drops its label (icon + count stay) until there is
-   room for it beside all six section links. */
-@media (max-width: 1599px) {
+/* Mid widths: the admin Archived pill drops its label (icon + count stay). */
+@media (max-width: 900px) {
   .eth-archived-label {
     display: none;
   }
@@ -264,26 +222,6 @@ body.light-mode .eth-subscribe {
   }
 }
 
-/* Below 1366px the six section links no longer fit beside the brand and the
-   actions: logo, wordmark and actions stay on the first row and the links
-   drop to their own horizontally scrolling row (no page scroll). */
-@media (max-width: 1365px) {
-  .eth-masthead {
-    flex-wrap: wrap;
-    gap: 4px 12px;
-    padding: 10px 0 0;
-  }
-  .eth-sections {
-    order: 3;
-    flex: 1 1 100%;
-    justify-content: flex-start;
-    margin: 0 -2px;
-    padding: 2px 2px 6px;
-  }
-  .eth-section:first-child {
-    padding-left: 0;
-  }
-}
 /* Phones: tighter actions so brand + search + Login + Subscribe hold one row
    at 390px. */
 @media (max-width: 480px) {
