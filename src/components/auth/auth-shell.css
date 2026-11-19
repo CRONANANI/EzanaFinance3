@@ -29,130 +29,59 @@
   font-family: var(--font-sans);
 }
 
-/* ── Ground: vignette, drawn lines, particles ─────────────────────────── */
+/* ── Ground: vignette and the dotted world map ──────────────────────── */
 .as-vignette,
-.as-lines,
-.as-particles {
+.as-map {
   position: fixed;
   inset: 0;
   pointer-events: none;
 }
 .as-vignette {
   background: radial-gradient(
-    80% 60% at 50% 30%,
-    color-mix(in srgb, var(--emerald) 11%, transparent),
+    80% 60% at 50% 40%,
+    color-mix(in srgb, var(--emerald) 9%, transparent),
     transparent 62%
   );
 }
-.as-particles {
-  width: 100%;
-  height: 100%;
-  opacity: 0.55;
+/* Faded well back, so the card in front is what the eye lands on. */
+.as-map {
+  display: grid;
+  place-items: center;
+  padding: 72px 24px 24px;
+  opacity: 0.5;
 }
-.as-hline,
-.as-vline {
-  position: absolute;
-  background: var(--as-line);
-}
-.as-hline {
-  left: 0;
-  right: 0;
-  height: 1px;
-  transform: scaleX(0);
-  transform-origin: 50% 50%;
-  animation: as-draw-x 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-.as-vline {
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  transform: scaleY(0);
-  transform-origin: 50% 0%;
-  animation: as-draw-y 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-.as-hline:nth-child(1) {
-  top: 18%;
-  animation-delay: 0.12s;
-}
-.as-hline:nth-child(2) {
-  top: 50%;
-  animation-delay: 0.22s;
-}
-.as-hline:nth-child(3) {
-  top: 82%;
-  animation-delay: 0.32s;
-}
-.as-vline:nth-child(4) {
-  left: 22%;
-  animation-delay: 0.42s;
-}
-.as-vline:nth-child(5) {
-  left: 50%;
-  animation-delay: 0.54s;
-}
-.as-vline:nth-child(6) {
-  left: 78%;
-  animation-delay: 0.66s;
-}
-@keyframes as-draw-x {
-  to {
-    transform: scaleX(1);
-  }
-}
-@keyframes as-draw-y {
-  to {
-    transform: scaleY(1);
-  }
+.as-map img {
+  display: block;
+  width: min(1400px, 100%);
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
 }
 
-/* ── Header ───────────────────────────────────────────────────────────── */
+/* ── Header: the Ezana mark, centred ───────────────────────────────── */
 .as-header {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--as-rule);
+  justify-content: center;
+  padding: 16px 24px 0;
 }
 .as-brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  min-width: 44px;
   min-height: 44px;
-  color: var(--as-body);
+  border-radius: var(--radius-md);
   text-decoration: none;
 }
-.as-scope .as-brand-mark {
+.as-shell .as-brand-mark {
   width: auto !important;
-  height: 32px !important;
-  max-height: 32px !important;
+  height: 46px !important;
+  max-height: 46px !important;
   mix-blend-mode: darken;
-}
-.as-brand-name {
-  font-size: var(--type-caption-size);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-}
-.as-header-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--as-rule);
-  border-radius: 999px;
-  background: var(--as-surface);
-  color: var(--as-ink);
-  font-size: 0.8125rem;
-  font-weight: var(--weight-medium);
-  text-decoration: none;
-  transition: border-color 0.15s ease;
-}
-.as-header-link:hover {
-  border-color: var(--as-accent);
 }
 
 /* ── Card ─────────────────────────────────────────────────────────────── */
@@ -327,7 +256,7 @@
 .as-eye:focus-visible,
 .as-link:focus-visible,
 .as-choice:focus-visible,
-.as-header-link:focus-visible {
+.as-brand:focus-visible {
   outline: 2px solid var(--as-accent);
   outline-offset: 2px;
 }
@@ -482,15 +411,16 @@
 
 @media (max-width: 480px) {
   .as-header {
-    padding: 10px 16px;
+    padding: 12px 16px 0;
+  }
+  .as-map {
+    opacity: 0.4;
   }
   .as-panel {
     padding: 22px 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .as-hline,
-  .as-vline,
   .as-panel {
     animation: none;
     opacity: 1;
@@ -501,8 +431,7 @@
   }
   .as-btn,
   .as-input,
-  .as-choice,
-  .as-header-link {
+  .as-choice {
     transition: none;
   }
 }

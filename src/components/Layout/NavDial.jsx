@@ -87,29 +87,21 @@ function currentIndex(list, pathname) {
   return best;
 }
 
-/* Three small wedges either side of the bar's logo: the shapes the dial
-   opens into. Drawn from the same slice maths as the dial itself. */
-function TriggerShapes({ side }) {
-  const angles = side === 'left' ? [210, 180, 150] : [-30, 0, 30];
+/* Three small wedges hanging under the bar's logo, pointing down: the
+   slices the dial opens into. Drawn from the same slice maths as the dial. */
+function TriggerWedges() {
   return (
-    <svg
-      className={`nd-shapes nd-shapes--${side}`}
-      viewBox="-30 -30 60 60"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {angles.map((deg) => {
-        const step = 26;
-        const a = deg - step / 2;
-        const b = deg + step / 2;
-        const o1 = polar(28, a);
-        const o2 = polar(28, b);
-        const i1 = polar(14, a);
-        const i2 = polar(14, b);
+    <svg className="nd-wedges" viewBox="-17 7 34 15" aria-hidden="true" focusable="false">
+      {[60, 90, 120].map((deg) => {
+        const half = 13;
+        const o1 = polar(20, deg - half);
+        const o2 = polar(20, deg + half);
+        const i1 = polar(12, deg - half);
+        const i2 = polar(12, deg + half);
         return (
           <path
             key={deg}
-            d={`M ${o1.x} ${o1.y} A 28 28 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 14 14 0 0 0 ${i1.x} ${i1.y} Z`}
+            d={`M ${o1.x} ${o1.y} A 20 20 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 12 12 0 0 0 ${i1.x} ${i1.y} Z`}
           />
         );
       })}
@@ -489,9 +481,8 @@ export function NavDial({
           }
         }}
       >
-        <TriggerShapes side="left" />
         <EzanaNavLogo />
-        <TriggerShapes side="right" />
+        <TriggerWedges />
       </button>
       {typeof document !== 'undefined'
         ? createPortal(<AnimatePresence>{dial}</AnimatePresence>, document.body)

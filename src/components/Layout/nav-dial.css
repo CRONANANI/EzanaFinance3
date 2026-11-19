@@ -16,8 +16,9 @@
   align-items: center;
   justify-content: center;
   margin: 0;
-  /* Room either side for the shapes, so the whole group is the button. */
-  padding: 2px 32px;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 6px;
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
@@ -40,41 +41,49 @@
   outline: none;
   box-shadow: 0 0 0 3px var(--emerald-glow);
 }
-/* Three small wedges either side of the logo, the shapes the dial opens
-   into. They sit in the button's side padding, symmetric, so the mark
-   itself stays on the bar's centre line. */
-.nd-shapes {
-  position: absolute;
-  top: 50%;
-  width: 26px;
-  height: 26px;
-  fill: currentColor;
-  opacity: 0.7;
-  transform: translateY(-50%);
-  transition: opacity 0.15s ease;
+/* Three small wedges under the logo, pointing down, part of the same
+   button: grey at rest, emerald on hover, focus or while the dial is open. */
+.nd-wedges {
+  display: block;
+  width: 34px;
+  height: 15px;
+  margin-top: -3px;
+  fill: color-mix(in srgb, var(--text-muted) 70%, transparent);
+  transition: fill 0.12s ease;
   pointer-events: none;
 }
-.nd-shapes--left {
-  left: 4px;
+.nd-trigger:hover .nd-wedges,
+.nd-trigger:focus-visible .nd-wedges,
+.nd-trigger.is-open .nd-wedges {
+  fill: var(--emerald);
 }
-.nd-shapes--right {
-  right: 4px;
+html :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav) .nd-wedges {
+  fill: color-mix(in srgb, var(--nav-sonar-ink) 70%, transparent);
 }
-.nd-trigger:hover .nd-shapes,
-.nd-trigger.is-open .nd-shapes {
-  opacity: 1;
+html
+  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
+  .nd-trigger:hover
+  .nd-wedges,
+html
+  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
+  .nd-trigger.is-open
+  .nd-wedges {
+  fill: var(--brand-band-mint);
 }
-/* The centre links are gone, so the logo keeps its full 54px at every desktop
+/* The centre links are gone, so the logo keeps 46px (with the wedges under it) at every desktop
    width (globals.css shrank it to 30px between 769px and 1279px to make room
    for them). */
 @media (min-width: 769px) {
   #mainNav.main-nav .nd-trigger .nav-logo-img--wing {
-    max-height: 54px !important;
+    max-height: 46px !important;
   }
 }
 /* Phones: bell and checklist on the left, menu button on the right, and the
    logo centred on the bar itself rather than between two unequal groups. */
 @media (max-width: 768px) {
+  #mainNav.main-nav .nd-trigger .nav-logo-img--wing {
+    max-height: 38px !important;
+  }
   #mainNav.main-nav .nd-anchor {
     position: absolute;
     left: 50%;
@@ -337,7 +346,7 @@ body.light-mode .nd-layer:not(.nd-layer--sonar) .nd-caption {
 @media (prefers-reduced-motion: reduce) {
   .nd-trigger,
   .nd-trigger .nav-logo-img,
-  .nd-shapes {
+  .nd-wedges {
     transition: none;
   }
   .nd-slice.is-pending .nd-wedge {
