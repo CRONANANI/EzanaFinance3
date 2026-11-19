@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Source_Serif_4 } from 'next/font/google';
+import localFont from 'next/font/local';
 import {
   getArticleBySlug,
   getRelatedAndMore,
@@ -11,10 +11,43 @@ import { isAdminUser } from '@/lib/admin-helpers';
 import { isArticleArchived } from '@/lib/echo-article-status';
 import EchoArticleClient from './EchoArticleClient';
 
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+/* Source Serif 4 ships with the repo (src/fonts/source-serif-4, OFL), not
+   from next/font/google: fetching it from Google at build time broke
+   production builds on Nov 19, 2026 (a Next 14 font-loader bug on Google's
+   response). Same weights, styles and CSS variable as before. */
+const sourceSerif = localFont({
+  src: [
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-400-italic.woff2',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-500-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-500-italic.woff2',
+      weight: '500',
+      style: 'italic',
+    },
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-600-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../../../fonts/source-serif-4/source-serif-4-latin-600-italic.woff2',
+      weight: '600',
+      style: 'italic',
+    },
+  ],
   variable: '--font-serif-editorial',
   display: 'swap',
 });
