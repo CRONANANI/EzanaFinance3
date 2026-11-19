@@ -89,21 +89,27 @@ function currentIndex(list, pathname) {
 
 /* Three small wedges hanging under the bar's logo, pointing down: the
    slices the dial opens into. Drawn from the same slice maths as the dial. */
+/* Nov 19, 2026 (evening): the wedges wreathe the logo. Nine 24-degree
+   wedges, 34 degrees apart, run from straight down (90) round both sides;
+   nothing sits directly above the mark (a 64-degree gap centred on 270).
+   The ring is drawn centred on the logo (see .nd-wedges). */
+const WREATH_ANGLES = [90, 56, 124, 22, 158, -12, 192, -46, 226];
+const WREATH_R_OUT = 29;
+const WREATH_R_IN = 24;
+
 function TriggerWedges() {
   return (
-    <svg className="nd-wedges" viewBox="-18 8 36 14" aria-hidden="true" focusable="false">
-      {/* Centres 34 degrees apart with 24-degree wedges: a clear gap between
-          each (Nov 19, 2026; they used to nearly touch). */}
-      {[56, 90, 124].map((deg) => {
+    <svg className="nd-wedges" viewBox="-32 -32 64 64" aria-hidden="true" focusable="false">
+      {WREATH_ANGLES.map((deg) => {
         const half = 12;
-        const o1 = polar(21, deg - half);
-        const o2 = polar(21, deg + half);
-        const i1 = polar(13, deg - half);
-        const i2 = polar(13, deg + half);
+        const o1 = polar(WREATH_R_OUT, deg - half);
+        const o2 = polar(WREATH_R_OUT, deg + half);
+        const i1 = polar(WREATH_R_IN, deg - half);
+        const i2 = polar(WREATH_R_IN, deg + half);
         return (
           <path
             key={deg}
-            d={`M ${o1.x} ${o1.y} A 21 21 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A 13 13 0 0 0 ${i1.x} ${i1.y} Z`}
+            d={`M ${o1.x} ${o1.y} A ${WREATH_R_OUT} ${WREATH_R_OUT} 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A ${WREATH_R_IN} ${WREATH_R_IN} 0 0 0 ${i1.x} ${i1.y} Z`}
           />
         );
       })}
