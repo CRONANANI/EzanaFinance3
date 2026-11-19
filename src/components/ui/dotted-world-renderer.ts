@@ -11,7 +11,9 @@
  *   - One <canvas> sized to cssSize * devicePixelRatio, drawn with
  *     ctx.setTransform(dpr...). Pan and zoom redraw with the transform
  *     applied to the coordinates; nothing is CSS-scaled.
- *   - Dots come from `sampleDots` (fixed-seed jitter over the land mask) at a
+ *   - Dots are the regular diagonal lattice (one per land cell, as on the
+ *     landing hero) whenever cells sit at least LATTICE_MIN_PX apart; far
+ *     zoomed out they come from `sampleDots` (fixed-seed jitter) at a
  *     spacing chosen in SCREEN pixels: ~4.2 CSS px apart, diameter 40% of
  *     the spacing (never under 1.6 CSS px). The sample set changes only when
  *     the effective scale crosses a quarter-octave bucket.
@@ -23,7 +25,7 @@
  *     and --map-power-bg.
  *   - The top and bottom 10% of the map fade out, as the old CSS mask did.
  */
-import { sampleDots, type buildWorld } from '@/lib/geo/dotted-world';
+import { LATTICE_RADIUS, sampleDots, type buildWorld } from '@/lib/geo/dotted-world';
 
 export type DottedWorld = ReturnType<typeof buildWorld>;
 
@@ -46,6 +48,23 @@ export type MapLayout = {
 export type HeatStyle = { color: string; opacity: number; score: number };
 
 const TARGET_SPACING_PX = 4.2;
+/** Below this many CSS px per grid unit the lattice would fill solid. */
+const LATTICE_MIN_PX = 2.6;
+/** Lattice dots stop growing past this radius when zoomed in. */
+const LATTICE_MAX_R_PX = 2.6;
+
+type DotSet = { count: number; x: ArrayLike<number>; y: ArrayLike<number>; cell: ArrayLike<number> };
+const LATTICE_CACHE = new WeakMap<object, DotSet>();
+/** Every land cell of the world's lattice, at its exact lattice point. */
+function latticeDots(world: DottedWorld): DotSet {
+  const hit = LATTICE_CACHE.get(world);
+  if (hit) return hit;
+  const cell = new Int32Array(world.count);
+  for (let i = 0; i < world.count; i++) cell[i] = i;
+  const out = { count: world.count, x: world.cellX, y: world.cellY, cell };
+  LATTICE_CACHE.set(world, out);
+  return out;
+}
 const DOT_RATIO = 0.4; // diameter / spacing
 const MIN_RADIUS_PX = 0.8;
 const FADE = 0.1; // top and bottom fade band, fraction of the wrapper height
@@ -258,9 +277,18 @@ export class DottedWorldRenderer {
       ctx.fillRect(g.originX, g.originY, g.boxW, g.boxH);
     }
 
-    const spacing = spacingBucket(A);
-    const dots = sampleDots(world, spacing);
-    const baseR = Math.max(MIN_RADIUS_PX, (DOT_RATIO / 2) * spacing * A);
+    /* Nov 19, 2026: the regular diagonal lattice, one dot per land cell, the
+       same structure as the landing hero and sign-in maps (radius 0.18 grid
+       units, as in their SVGs). The jittered resample read as scattered
+       noise at this size. When zoomed far out (cells closer than
+       LATTICE_MIN_PX on screen) it falls back to the sparser sample so
+       the land does not fill solid. */
+    const lattice = A >= LATTICE_MIN_PX;
+    const spacing = lattice ? 1 : spacingBucket(A);
+    const dots = lattice ? latticeDots(world) : sampleDots(world, spacing);
+    const baseR = lattice
+      ? Math.min(LATTICE_MAX_R_PX, Math.max(MIN_RADIUS_PX, LATTICE_RADIUS * A))
+      : Math.max(MIN_RADIUS_PX, (DOT_RATIO / 2) * spacing * A);
     const margin = baseR * 3;
 
     // Visible range in grid units (cull what falls outside the target).
