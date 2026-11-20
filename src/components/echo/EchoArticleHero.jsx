@@ -11,7 +11,7 @@
  * is the one the Echo home shows for the story, and the snapshot is the
  * article's own stat grid, which the body then skips.
  */
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -154,7 +154,101 @@ export function EchoArticleMetadata({ article, articleTags, articleTracker }) {
   );
 }
 
-/** Story Snapshot: the article's own key stats in one horizontal strip. */
+/* Count every number inside a stat up from zero once it scrolls into view,
+   keeping the words, symbols, separators and decimals around them ("$39.5B",
+   "4 in 5 days", "294-134"). Dates stay static, as does everything under
+   reduced motion. */
+const NUM_RE = /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g;
+const DATE_RE = /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d/i;
+
+function useCountUp(value, ref, duration = 1400) {
+  const text = String(value ?? '');
+  const [shown, setShown] = useState(text);
+  useEffect(() => {
+    setShown(text);
+    const parts = [...text.matchAll(NUM_RE)];
+    const el = ref.current;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!parts.length || DATE_RE.test(text) || !el || reduce) return undefined;
+    if (typeof IntersectionObserver === 'undefined') return undefined;
+    const nums = parts.map((m) => {
+      const raw = m[0];
+      return {
+        start: m.index,
+        end: m.index + raw.length,
+        target: Number(raw.replace(/,/g, '')),
+        decimals: (raw.split('.')[1] || '').length,
+        commas: raw.includes(','),
+      };
+    });
+    const render = (k) => {
+      let out = '';
+      let at = 0;
+      for (const n of nums) {
+        const fixed = (n.target * k).toFixed(n.decimals);
+        let str = fixed;
+        if (n.commas) {
+          const [i, d] = fixed.split('.');
+          str = `${Number(i).toLocaleString('en-US')}${d ? `.${d}` : ''}`;
+        }
+        out += text.slice(at, n.start) + str;
+        at = n.end;
+      }
+      return out + text.slice(at);
+    };
+    let raf = 0;
+    setShown(render(0));
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        const t0 = performance.now();
+        const tick = (t) => {
+          const k = Math.min(1, (t - t0) / duration);
+          setShown(k >= 1 ? text : render(1 - (1 - k) ** 3));
+          if (k < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+  return shown;
+}
+
+/* One stat as a moving-dot card (Nov 19, 2026; after the 21st.dev "moving
+   dot card"): the glossy emerald surface, a light ray from the top left,
+   hairlines lit on the top and left edges, and a small glowing dot that
+   travels the card's border. The value counts up on first view. */
+function SnapCard({ stat, index }) {
+  const ref = useRef(null);
+  const shown = useCountUp(stat.value, ref);
+  return (
+    <li className="eah-dot" ref={ref} style={{ '--eah-dot-delay': `${index * -1.6}s` }}>
+      <span className="eah-dot__dot" aria-hidden="true" />
+      <div className="eah-dot__card">
+        <span className="eah-dot__ray" aria-hidden="true" />
+        <span className="eah-dot__label">{stat.label}</span>
+        <span className="eah-dot__value" aria-label={String(stat.value)}>
+          <span aria-hidden="true">{shown}</span>
+        </span>
+        {stat.change ? <span className="eah-dot__desc">{stat.change}</span> : null}
+        <span className="eah-dot__line eah-dot__line--top" aria-hidden="true" />
+        <span className="eah-dot__line eah-dot__line--left" aria-hidden="true" />
+        <span className="eah-dot__line eah-dot__line--bottom" aria-hidden="true" />
+        <span className="eah-dot__line eah-dot__line--right" aria-hidden="true" />
+      </div>
+    </li>
+  );
+}
+
+/** Story Snapshot: the article's own key stats as moving-dot cards. */
 export function EchoArticleSnapshot({ stats }) {
   if (!stats?.length) return null;
   return (
@@ -165,11 +259,7 @@ export function EchoArticleSnapshot({ stats }) {
       </div>
       <ul className="eah-snap-list" style={{ '--eah-snap-n': stats.length }}>
         {stats.map((s, i) => (
-          <li key={i} className="eah-snap-item">
-            <span className="eah-snap-label">{s.label}</span>
-            <span className="eah-snap-value">{s.value}</span>
-            {s.change && <span className="eah-snap-desc">{s.change}</span>}
-          </li>
+          <SnapCard key={i} stat={s} index={i} />
         ))}
       </ul>
     </section>

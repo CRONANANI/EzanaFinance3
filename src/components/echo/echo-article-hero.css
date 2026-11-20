@@ -256,22 +256,22 @@
   display: none;
 }
 
-/* ── Story Snapshot ─────────────────────────────────────────────────────── */
+/* ── Story Snapshot: moving-dot cards ───────────────────────────────────
+   Nov 19, 2026. Each stat is a glossy emerald card (the Sonar band metal
+   with a white top-half gloss), a light ray from the top left, hairlines lit
+   on the top and left edges, and a small mint dot that travels the border.
+   The intro sits above the cards at every width so the cards get the room. */
 .eah-snapshot {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.75fr) minmax(0, 4fr);
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin: 0 0 0.5rem;
-  padding: 18px 22px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .eah-snap-intro {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  padding-right: 20px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
 }
 .eah-snap-kicker {
   font-family: var(--font-mono);
@@ -287,41 +287,174 @@
 }
 .eah-snap-list {
   display: grid;
-  grid-template-columns: repeat(var(--eah-snap-n, 4), minmax(0, 1fr));
+  grid-template-columns: repeat(min(var(--eah-snap-n, 4), 4), minmax(0, 1fr));
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.eah-snap-item {
+
+.eah-dot {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  padding: 1px;
+  border-radius: var(--radius-lg);
+  background: radial-gradient(
+    circle at 0% 0%,
+    color-mix(in srgb, var(--brand-band-mint) 70%, transparent),
+    color-mix(in srgb, var(--brand-ezana-green) 30%, transparent) 55%,
+    color-mix(in srgb, var(--brand-ezana-green) 18%, transparent)
+  );
+}
+.eah-dot__dot {
+  position: absolute;
+  z-index: 3;
+  top: 10%;
+  right: 10%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255);
+  box-shadow:
+    0 0 6px 1px var(--brand-band-mint),
+    0 0 14px 3px color-mix(in srgb, var(--brand-band-mint) 55%, transparent);
+  animation: eah-move-dot 6s linear infinite;
+  animation-delay: var(--eah-dot-delay, 0s);
+}
+@keyframes eah-move-dot {
+  0%,
+  100% {
+    top: 10%;
+    right: 10%;
+  }
+  25% {
+    top: 10%;
+    right: calc(100% - 22px);
+  }
+  50% {
+    top: calc(100% - 18px);
+    right: calc(100% - 22px);
+  }
+  75% {
+    top: calc(100% - 18px);
+    right: 10%;
+  }
+}
+.eah-dot__card {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  width: 100%;
   min-width: 0;
-  padding: 2px 20px;
-  border-left: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
+  padding: 16px 16px 15px;
+  overflow: hidden;
+  border-radius: calc(var(--radius-lg) - 1px);
+  background: var(--brand-band-metal);
+  color: rgb(255 255 255);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 -1px 0 rgb(0 0 0 / 0.18);
 }
-.eah-snap-label {
+/* gloss: a soft white sheen over the top half */
+.eah-dot__card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 50% 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.24),
+    rgb(255 255 255 / 0.05) 70%,
+    rgb(255 255 255 / 0)
+  );
+  pointer-events: none;
+}
+.eah-dot__ray {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 70%;
+  height: 46px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.32);
+  filter: blur(14px);
+  opacity: 0.55;
+  transform: rotate(32deg) translate(-18%, -60%);
+  transform-origin: 10% 50%;
+  pointer-events: none;
+}
+.eah-dot__label {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.35;
-  color: var(--text-muted);
+  color: var(--brand-band-mint);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.2);
 }
-.eah-snap-value {
+.eah-dot__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
   font-weight: 700;
-  line-height: 1.15;
-  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: rgb(255 255 255);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.22);
   overflow-wrap: anywhere;
 }
-.eah-snap-desc {
+.eah-dot__desc {
   font-size: 0.78rem;
-  line-height: 1.4;
-  color: var(--text-secondary);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 0.86);
+}
+.eah-dot__line {
+  position: absolute;
+  pointer-events: none;
+  background: rgb(255 255 255 / 0.12);
+}
+.eah-dot__line--top,
+.eah-dot__line--bottom {
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+.eah-dot__line--left,
+.eah-dot__line--right {
+  top: 0;
+  width: 1px;
+  height: 100%;
+}
+.eah-dot__line--top {
+  top: 12px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.5) 30%, rgb(255 255 255 / 0.08) 70%);
+}
+.eah-dot__line--bottom {
+  bottom: 12px;
+}
+.eah-dot__line--left {
+  left: 12px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.45) 30%, rgb(255 255 255 / 0.08) 70%);
+}
+.eah-dot__line--right {
+  right: 12px;
+}
+.eah-dot__label,
+.eah-dot__value,
+.eah-dot__desc {
+  position: relative;
+  padding-left: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eah-dot__dot {
+    animation: none;
+  }
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
@@ -348,29 +481,12 @@
     min-height: 0;
     aspect-ratio: 16 / 10;
   }
-  .eah-snapshot {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 14px;
-  }
-  .eah-snap-intro {
-    padding-right: 0;
-    flex-direction: row;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 4px 12px;
-  }
   .eah-snap-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 14px;
-  }
-  .eah-snap-item:nth-child(odd) {
-    border-left: 0;
-    padding-left: 0;
   }
 }
 
-/* Phones: compact byline row, snapshot stays a two-column grid (no
-   horizontal overflow), then one column on the narrowest screens. */
+/* Phones: compact byline row. */
 @media (max-width: 600px) {
   .eah-masthead {
     min-height: 44px;
@@ -384,20 +500,15 @@
   .eah-media {
     aspect-ratio: 4 / 3;
   }
-  .eah-snapshot {
-    padding: 16px;
-  }
-  .eah-snap-item {
-    padding: 0 12px;
-  }
 }
-@media (max-width: 380px) {
+
+/* Phones: the snapshot cards stack one per row with even rhythm. */
+@media (max-width: 560px) {
   .eah-snap-list {
     grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
-  .eah-snap-item,
-  .eah-snap-item:nth-child(odd) {
-    border-left: 0;
-    padding: 0;
+  .eah-dot__card {
+    padding: 14px 16px 13px;
   }
 }

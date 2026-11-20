@@ -549,6 +549,14 @@
   .echo-contents {
     display: none; /* single-column mobile reading — no room for a persistent rail */
   }
+  /* The side stack only holds the contents rail, hidden here: drop it so the
+     empty row and its grid gap stop opening a hole above the body (Nov 19). */
+  .echo-side-stack {
+    display: none;
+  }
+  .echo-article-grid {
+    padding-top: 1rem;
+  }
 }
 
 /* Phones: let the back-link / save-button row wrap instead of squeezing the

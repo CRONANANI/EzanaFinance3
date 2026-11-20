@@ -142,11 +142,12 @@ body.ekp-rail-dim .echo-grail::after {
     border-left: 0;
     border-top: 1px solid var(--border-secondary);
     border-bottom: 1px solid var(--border-secondary);
-    padding: 20px 0;
-    margin: 24px 0;
+    padding: 16px 0;
+    margin: 0 0 24px;
   }
   .echo-grail-sticky {
     position: static;
+    padding-top: 0;
   }
   .echo-grail-cards {
     flex-direction: row;
