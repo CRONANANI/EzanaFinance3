@@ -380,3 +380,65 @@ body:has(.eth-root) .dashboard-container {
     display: inline-flex;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20, 2026 (fix): the hero really is edge to edge, and the whole
+   picture shows at every width.
+   1. The clip that held the art to 1600px was .dashboard-main (the app
+      envelope: max-width 1600 plus overflow-x: clip), not only
+      .dashboard-container. Lift every wrapper's clip on this route; html and
+      body keep theirs, so there is still no sideways scroll.
+   2. The hero is exactly the window's width (100vw less any scrollbar,
+      published as --echo-sbw by EchoHomeClient), centred on the column.
+   3. Stacked art keeps its own shape (3344 x 1882) at every breakpoint, so
+      cover never crops: no face is cut at either side, top or bottom.
+   ══════════════════════════════════════════════════════════════ */
+body:has(.eth-root) .dashboard-main,
+body:has(.eth-root) .dashboard-main-content,
+body:has(.eth-root) .dashboard-container,
+body:has(.eth-root) .page-content,
+body:has(.eth-root) .page-wrapper,
+body:has(.eth-root) .ezana-echo-page,
+body:has(.eth-root) .ezana-echo-container {
+  overflow-x: visible !important;
+  max-width: var(--app-shell-max) !important;
+}
+body:has(.eth-root) .dashboard-container,
+body:has(.eth-root) .page-content,
+body:has(.eth-root) .page-wrapper,
+body:has(.eth-root) .ezana-echo-page,
+body:has(.eth-root) .ezana-echo-container {
+  max-width: 100% !important;
+}
+.eth-root .ech-hero.ech-hero--photo {
+  --eth-bleed: calc(100vw - var(--echo-sbw, 0px));
+  width: var(--eth-bleed);
+  max-width: none;
+  margin-inline: calc((100% - var(--eth-bleed)) / 2);
+  border-radius: 0;
+}
+.eth-root .ech-hero--stack .ech-hero__media,
+.eth-root .ech-hero.ech-hero--photo.ech-hero--stack .ech-hero__media {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 3344 / 1882;
+  border-radius: 0;
+}
+.eth-root .ech-hero--stack .ech-hero__media img {
+  object-position: center !important;
+}
+/* Chips track the window edge on the full-width art. */
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
+  right: max(16px, calc((var(--eth-bleed, 100vw) - var(--app-shell-max, 1600px)) / 2 + 24px));
+}
+@media (max-width: 767px) {
+  .eth-root .ech-hero--stack .ech-hero__media,
+  .eth-root .ech-hero.ech-hero--photo.ech-hero--stack .ech-hero__media {
+    aspect-ratio: 3344 / 1882;
+  }
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
+    right: auto;
+  }
+}

@@ -62,6 +62,22 @@ const EchoCouncilBand = dynamic(() => import('@/components/echo/council/EchoCoun
 
 export default function EchoHomeClient({ initialHub = null, initialFilters = null, now }) {
   const { user } = useAuth();
+
+  // Full-bleed hero: 100vw counts a classic (Windows) scrollbar, so the art
+  // would slide under it. Publish the scrollbar width so the CSS can subtract
+  // it and land the image exactly on both window edges.
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => {
+      root.style.setProperty('--echo-sbw', `${Math.max(0, window.innerWidth - root.clientWidth)}px`);
+    };
+    sync();
+    window.addEventListener('resize', sync);
+    return () => {
+      window.removeEventListener('resize', sync);
+      root.style.removeProperty('--echo-sbw');
+    };
+  }, []);
   const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
   const councilReady = Boolean(user && isOrgUser && !orgLoading);
   const council = useCouncilEcho(councilReady);
