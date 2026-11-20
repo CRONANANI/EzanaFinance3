@@ -21,6 +21,7 @@ import { NavErrorBoundary } from '@/components/Layout/NavErrorBoundary';
 import { PublicMobileCta } from '@/components/public/PublicMobileCta';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import NativeBridge from '@/components/native/NativeBridge';
+import LegalModalHost from '@/components/legal/LegalModalHost';
 import { getServerTheme } from '@/lib/user-preferences/server';
 import { resolveRouteShellClasses } from '@/lib/route-shell';
 import { BRAND, brandJsonLd } from '@/lib/brand';
@@ -315,6 +316,10 @@ export default async function RootLayout({ children }) {
                     {/* Public-only, phones only, self-gating: see
                         PublicMobileCta for the visibility rules. */}
                     <PublicMobileCta />
+                    {/* Terms and Privacy links open as popups (LegalModal). */}
+                    <Suspense fallback={null}>
+                      <LegalModalHost />
+                    </Suspense>
                   </ToastProvider>
                 </OrgProvider>
               </PartnerProvider>

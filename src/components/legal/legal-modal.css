@@ -1,0 +1,294 @@
+/* ══════════════════════════════════════════════════════════════
+   Legal popup (LegalModal): Terms of Service and Privacy Policy.
+   Nov 20, 2026. Overlay card per the UI guide 4.4: solid surface,
+   hairline border, shadow, radius-lg. Buttons per 6.3: one solid
+   emerald primary (8px radius, white label, no border), a plain text
+   secondary, no outlined buttons, 30 to 36px tall, 13px semibold.
+   Prefix lgm-.
+   ══════════════════════════════════════════════════════════════ */
+.lgm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, black 62%, transparent);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: lgm-fade 0.16s ease;
+}
+.lgm-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  max-height: min(720px, 86vh);
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+  animation: lgm-rise 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.lgm-card:focus-visible {
+  outline: none;
+}
+
+/* Header */
+.lgm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px 24px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.lgm-head__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.lgm-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.lgm-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.lgm-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.lgm-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: -2px;
+}
+/* Icon buttons: one Bootstrap Icon, no border, no fill. */
+.lgm-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.lgm-icon:hover {
+  color: var(--text-primary);
+}
+.lgm-icon:focus-visible,
+.lgm-btn:focus-visible,
+.lgm-body:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Reading progress */
+.lgm-progress {
+  flex: none;
+  height: 2px;
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+}
+.lgm-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--emerald);
+  transform-origin: left center;
+  transition: transform 0.12s linear;
+}
+
+/* Body: the legal text keeps the full page's typography, sized for a card. */
+.lgm-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.lgm-body .legal-container.lgm-legal {
+  max-width: none;
+  margin: 0;
+  padding: 20px 24px 28px;
+}
+.lgm-legal .legal-lede {
+  font-size: 0.95rem;
+}
+.lgm-legal .legal-section > h2 {
+  font-size: 1rem;
+}
+.lgm-legal .legal-section p,
+.lgm-legal .legal-section li {
+  font-size: 0.9rem;
+}
+.lgm-body .privacy-policy-termly.lgm-termly {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px 24px 28px !important;
+}
+/* Brand type over Termly's injected Arial (its rules load later, so these
+   carry one more class of specificity). */
+.lgm-body .lgm-termly,
+.lgm-body .lgm-termly * {
+  font-family: var(--font-sans) !important;
+}
+/* The card header already names the document. */
+.lgm-body .lgm-termly h1 {
+  display: none !important;
+}
+.lgm-termly [data-custom-class='body_text'],
+.lgm-termly [data-custom-class='body_text'] * {
+  font-size: 0.9rem !important;
+}
+.lgm-termly [data-custom-class='title'],
+.lgm-termly [data-custom-class='title'] * {
+  font-size: 1.35rem !important;
+}
+.lgm-termly [data-custom-class='heading_1'],
+.lgm-termly [data-custom-class='heading_1'] * {
+  font-size: 1.05rem !important;
+}
+.lgm-termly [data-custom-class='heading_2'],
+.lgm-termly [data-custom-class='heading_2'] * {
+  font-size: 0.95rem !important;
+}
+.lgm-state {
+  margin: 0;
+  padding: 32px 24px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.lgm-state a {
+  color: var(--emerald-text);
+}
+
+/* Footer */
+.lgm-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 12px 24px;
+  border-top: 1px solid var(--border-secondary);
+}
+.lgm-hint {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.lgm-hint.is-ok {
+  color: var(--emerald-text);
+}
+.lgm-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+.lgm-btn--text {
+  background: transparent;
+  color: var(--text-primary);
+}
+.lgm-btn--text:hover {
+  color: var(--emerald-text);
+}
+.lgm-btn--primary {
+  background: var(--emerald);
+  color: white;
+}
+.lgm-btn--primary:hover:not(:disabled) {
+  background: var(--emerald-hover);
+}
+.lgm-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@keyframes lgm-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes lgm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+/* Phones: a bottom sheet that fills most of the screen. */
+@media (max-width: 600px) {
+  .lgm-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .lgm-card {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 0;
+  }
+  .lgm-head {
+    padding: 16px 12px 12px 18px;
+  }
+  .lgm-body .legal-container.lgm-legal,
+  .lgm-body .privacy-policy-termly.lgm-termly {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  .lgm-foot {
+    flex-wrap: wrap;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 18px;
+  }
+  .lgm-hint {
+    flex-basis: 100%;
+  }
+  .lgm-btn {
+    min-height: 44px;
+    flex: 1 1 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lgm-backdrop,
+  .lgm-card {
+    animation: none;
+  }
+  .lgm-progress > span {
+    transition: none;
+  }
+}
