@@ -246,3 +246,137 @@ body.light-mode .eth-subscribe {
     font-size: 13px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20th, 2026: black Echo home, full-bleed Article of the Month.
+   1. Black end to end: the canvas is black on html, body and every shell
+      wrapper (the paint rules above read --echo-canvas), and the page sits
+      in .force-dark-theme so all tokens and text stay dark-theme in light
+      mode too.
+   2. The masthead is the ibex mark only, laid over the top of the hero, so
+      the hero art starts at the very top of the page.
+   3. The hero breaks out of the 1600px app column to both viewport edges.
+      The column wrapper clips sideways overflow, which is what kept the art
+      boxed in before; on this route it lets the hero through, and the outer
+      .dashboard-main still clips at the viewport so nothing scrolls sideways.
+   ══════════════════════════════════════════════════════════════ */
+html:has(.eth-root),
+html:has(.eth-root) > body,
+html.app-authed:has(.eth-root) > body.app-authed {
+  --echo-canvas: black !important;
+  background-color: black !important;
+}
+.eth-root {
+  --echo-canvas: black;
+  position: relative;
+  background: black;
+  color: var(--text-primary);
+}
+.eth-root .ech-page {
+  --ech-bg: black;
+  background: black;
+}
+/* The light-theme Echo tokens (body.light-mode .ech-page) must not apply on
+   the black page: restate the dark values. */
+body.light-mode .eth-root .ech-page {
+  --ech-tint: color-mix(in srgb, var(--emerald) 9%, transparent);
+  --ech-neutral: color-mix(in srgb, var(--text-primary) 6%, black);
+  --ech-deep: color-mix(in srgb, var(--emerald) 30%, black);
+  --ech-deep-border: color-mix(in srgb, var(--emerald) 45%, transparent);
+  --ech-hero-card-shadow: 0 30px 60px color-mix(in srgb, black 22%, transparent);
+  --ech-card-shadow: 0 1px 2px color-mix(in srgb, black 18%, transparent);
+  --ech-pop-shadow: 0 12px 32px color-mix(in srgb, black 30%, transparent);
+  --ech-rank-n: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  --ech-emerald-display: var(--emerald);
+  --ech-chip-fg: black;
+  --ech-brief-bg: transparent;
+  --ech-brief-border: var(--ech-deep-border);
+  --ech-brief-fg: var(--ech-deep-fg);
+  --ech-brief-mute: var(--ech-deep-mute);
+  --ech-brief-faint: var(--ech-deep-faint);
+  --ech-brief-kicker: var(--ech-deep-accent);
+  --ech-brief-field: var(--ech-deep-field);
+  --ech-brief-field-border: var(--ech-deep-field-border);
+}
+
+/* Let the hero leave the app column on this route only. */
+body:has(.eth-root) .dashboard-container {
+  overflow-x: visible !important;
+}
+
+/* 2. Masthead over the hero: logo top left, no rule, no ground. */
+.eth-masthead.eth-masthead--overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  min-height: 72px;
+  padding: 0;
+  border-bottom: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.eth-masthead--overlay .eth-masthead-brand,
+.eth-masthead--overlay .eth-masthead-auth {
+  pointer-events: auto;
+}
+.eth-masthead--overlay .eth-masthead-logo {
+  display: inline-flex;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, black 55%, transparent));
+}
+.eth-masthead--overlay .eth-login {
+  color: white;
+  text-shadow: 0 1px 3px color-mix(in srgb, black 70%, transparent);
+}
+
+/* 3. Full-bleed hero: viewport edge to edge, flush with the top. */
+.eth-root .ech-hero.ech-hero--photo {
+  margin-inline: calc(50% - 50vw);
+  padding-inline: 0;
+  border-radius: 0;
+  margin-top: 0;
+}
+.eth-root .ech-hero--photo .ech-hero__media {
+  border-radius: 0;
+}
+/* Text and the top-right chips line up with the page column, not the
+   viewport edge: the column is --app-shell-max wide on large screens. */
+.eth-root .ech-hero--photo .ech-hero__inner {
+  padding-inline: max(48px, calc((100vw - var(--app-shell-max, 1600px)) / 2 + 24px));
+}
+.eth-root .ech-hero--photo .ech-hero__top {
+  top: 24px;
+  right: max(28px, calc((100vw - var(--app-shell-max, 1600px)) / 2 + 24px));
+}
+/* The first section after the hero keeps its breathing room. */
+.eth-root .ech-hero--photo + * {
+  margin-top: 32px;
+}
+
+@media (max-width: 1199px) {
+  .eth-root .ech-hero--photo .ech-hero__inner {
+    padding-inline: 36px;
+  }
+}
+@media (max-width: 767px) {
+  .eth-root .ech-hero.ech-hero--photo {
+    border-radius: 0;
+  }
+  .eth-root .ech-hero--photo .ech-hero__inner {
+    padding-inline: 20px;
+  }
+  .eth-root .ech-hero--photo .ech-hero__top {
+    right: 16px;
+  }
+  .eth-masthead.eth-masthead--overlay {
+    min-height: 60px;
+  }
+}
+/* Phones: the older rule hid the logo to make room for the wordmark, which
+   is gone; the logo is now the whole masthead. */
+@media (max-width: 480px) {
+  .eth-masthead--overlay .eth-masthead-logo {
+    display: inline-flex;
+  }
+}

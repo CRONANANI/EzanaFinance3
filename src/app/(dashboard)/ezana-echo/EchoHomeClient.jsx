@@ -61,7 +61,7 @@ const EchoCouncilBand = dynamic(() => import('@/components/echo/council/EchoCoun
 });
 
 export default function EchoHomeClient({ initialHub = null, initialFilters = null, now }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
   const councilReady = Boolean(user && isOrgUser && !orgLoading);
   const council = useCouncilEcho(councilReady);
@@ -225,12 +225,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
       ? 'smooth'
       : 'auto';
 
-  // Subscribe: scroll to The Evening Brief and put the cursor in its email field.
-  const goToBrief = () => {
-    document.getElementById('brief')?.scrollIntoView({ behavior: smooth(), block: 'start' });
-    document.getElementById('ech-brief-email')?.focus({ preventScroll: true });
-  };
-
   const showOurNames = () => {
     onFiltersChange({ section: '', ours: true });
     document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
@@ -240,71 +234,28 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
     document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
   };
 
-  const openSearch = () => {
-    const next = !searchOpen;
-    setSearchOpen(next);
-    if (next)
-      document.getElementById('latest')?.scrollIntoView({ behavior: smooth(), block: 'start' });
-    else onFiltersChange({ q: '' });
-  };
-
-  // Dateline from the server clock so server and client render the same day.
-  const dateline = new Date(nowMs)
-    .toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      timeZone: 'America/Toronto',
-    })
-    .toUpperCase();
-
   return (
-    <>
-      {/* The Echo masthead is this route's top bar (the marketing nav is
-          suppressed here): logo + wordmark left; search, Archived (admins),
-          Team Hub (council), Login and Subscribe right. No category links:
-          the filter row under Editors' Picks is the page's one category
-          navigation. */}
-      <header className="eth-masthead">
+    <div className="eth-root force-dark-theme">
+      {/* Nov 20th, 2026: the Echo home is black end to end (force-dark-theme
+          keeps every token dark, also for light-mode readers). The masthead is
+          the ibex mark alone, floating over the full-bleed Article of the
+          Month (plus Team Hub for council members); the wordmark, search,
+          Login, Subscribe and the dateline were removed. Search still opens
+          from the Latest row; Subscribe lives in The Evening Brief. */}
+      <header className="eth-masthead eth-masthead--overlay">
         <div className="eth-masthead-brand">
           <Link href="/" className="eth-masthead-logo" aria-label="Ezana home">
             <EzanaNavLogo width={36} height={41} priority />
           </Link>
-          <Link href="/ezana-echo" className="eth-wordmark">
-            Ezana <span>Echo</span>
-          </Link>
         </div>
-        <div className="eth-masthead-auth">
-          <button
-            type="button"
-            className="eth-search-btn"
-            aria-label="Search Echo"
-            aria-expanded={searchOpen}
-            aria-controls="latest"
-            onClick={openSearch}
-          >
-            <i className="bi bi-search" aria-hidden="true" />
-          </button>
-          {councilReady ? (
+        {councilReady ? (
+          <div className="eth-masthead-auth">
             <Link href="/org-team-hub" className="eth-login">
               Team Hub
             </Link>
-          ) : null}
-          {/* Login only once auth has settled and no one is signed in. */}
-          {!authLoading && !user ? (
-            <a href="/auth/login" className="eth-login">
-              Login
-            </a>
-          ) : null}
-          <button type="button" className="eth-subscribe" onClick={goToBrief}>
-            Subscribe
-          </button>
-        </div>
+          </div>
+        ) : null}
       </header>
-      <div className="eth-dateline">
-        <span>{dateline}</span>
-      </div>
 
       <EchoHome
         hero={status === 'loading' ? null : shownHero}
@@ -339,6 +290,6 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
           ) : null
         }
       />
-    </>
+    </div>
   );
 }
