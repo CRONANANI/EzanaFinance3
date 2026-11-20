@@ -105,3 +105,19 @@
     z-index: 10050;
   }
 }
+
+/* Nov 20, 2026: the source number is raised by relative positioning, not
+   vertical-align: super, so it no longer lifts the line box and opens a gap
+   above its line. min-height resets the app's touch-target rule for buttons. */
+.echo-article-body .echo-src-n,
+.echo-src-n {
+  display: inline;
+  position: relative;
+  top: -0.6em;
+  min-height: 0;
+  min-width: 0;
+  height: auto;
+  padding: 0 0.15em;
+  line-height: 0;
+  vertical-align: baseline;
+}

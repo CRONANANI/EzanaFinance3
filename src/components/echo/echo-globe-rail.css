@@ -335,3 +335,12 @@ body.ekp-rail-dim .echo-grail::after {
     transition: none;
   }
 }
+
+/* Nov 20, 2026: phones go from the hero image straight into the first
+   paragraph, so the inline globe rail (geography, metric chart and city
+   cards) is not shown below 768px. */
+@media (max-width: 767px) {
+  .echo-grail {
+    display: none;
+  }
+}

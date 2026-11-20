@@ -521,3 +521,47 @@
   aspect-ratio: 16 / 9;
   align-self: center;
 }
+
+/* ── Nov 20, 2026: Story Snapshot cards are transparent ──────────────────
+   No metal fill, gloss or light ray: each card is a hairline outline on the
+   page ground with its text centred. Type moves to theme tokens so it reads
+   in both light and dark mode. */
+.eah-dot {
+  padding: 0;
+  background: transparent;
+}
+.eah-dot__card {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-primary);
+}
+.eah-dot__card::before,
+.eah-dot__ray,
+.eah-dot__line {
+  display: none;
+}
+.eah-dot__label {
+  color: var(--emerald-text);
+  text-shadow: none;
+}
+.eah-dot__value {
+  color: var(--text-primary);
+  text-shadow: none;
+}
+.eah-dot__desc {
+  color: var(--text-muted);
+}
+
+/* Phones: title, dek and hero image, then straight into the first
+   paragraph. The snapshot stays on tablet and desktop. */
+@media (max-width: 767px) {
+  .eah-snapshot,
+  .echo-body-col > .echo-detail-tags {
+    display: none;
+  }
+}

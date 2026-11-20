@@ -545,3 +545,20 @@ body.light-mode .ekp-timeline-label {
     transform: translate(-50%, -50%);
   }
 }
+
+/* Nov 20, 2026: a keyword never opens up its line. A <button> renders as an
+   inline-block, and the app's touch-target rules give buttons a min-height
+   and their own line-height, so a highlighted word pushed the lines around
+   it apart. Pin the box to the text's own height and baseline. */
+.echo-article-body .ekp-keyword-span,
+.ekp-keyword-span {
+  min-height: 0;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  vertical-align: baseline;
+  box-shadow: none;
+  border-radius: 0;
+}
