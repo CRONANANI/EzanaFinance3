@@ -3387,6 +3387,27 @@ export const KEYWORDS = {
       "In July 2026 farmers in Parana, Brazil tokenized ten dairy cows, registered the tokens on the B3 exchange and borrowed nearly $20,000 against them, with AI collars streaming each animal's health and location to the lender.",
   },
 
+  'circular-financing': {
+    id: 'circular-financing',
+    term: 'Circular financing',
+    definition:
+      'A loop in which a supplier invests in, lends to or guarantees debt for a customer, and the customer spends that money buying the supplier’s own products. It can speed up a buildout, but it also makes the supplier’s sales depend on its own balance sheet and ties the customer to one vendor.',
+    template: 'comparison',
+    templateData: {
+      title: 'Ordinary sale versus a financing loop',
+      headers: ['', 'Ordinary sale', 'Circular financing'],
+      rows: [
+        { label: 'Who funds the purchase', cells: ['The customer', 'Partly the supplier'] },
+        { label: 'Where the money goes', cells: ['Any vendor', 'Back to the supplier'] },
+        { label: 'Supplier risk', cells: ['Collecting the bill', 'The customer’s whole business'] },
+        { label: 'What to check', cells: ['Margins', 'Investments, guarantees and backstops'] },
+      ],
+      footnote: 'A loop is not fraud; it is a reason to read who is financing whom.',
+    },
+    realWorld:
+      'In February 2026 Nvidia agreed to take a $30 billion equity stake in OpenAI, one of its largest chip buyers, and in August it lined up six Wall Street firms to finance more than $500 billion of its customers’ AI buildouts, with an option to backstop up to $125 billion.',
+  },
+
   'periodic-transaction-report': {
     id: 'periodic-transaction-report',
     term: 'Periodic Transaction Report',

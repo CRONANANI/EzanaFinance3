@@ -390,7 +390,7 @@ body:has(.eth-root) .dashboard-container {
       body keep theirs, so there is still no sideways scroll.
    2. The hero is exactly the window's width (100vw less any scrollbar,
       published as --echo-sbw by EchoHomeClient), centred on the column.
-   3. Stacked art keeps its own shape (3344 x 1882) at every breakpoint, so
+   3. Stacked art keeps its own shape (3:2 since the Nov 20th art) at every breakpoint, so
       cover never crops: no face is cut at either side, top or bottom.
    ══════════════════════════════════════════════════════════════ */
 body:has(.eth-root) .dashboard-main,
@@ -423,7 +423,7 @@ body:has(.eth-root) .ezana-echo-container {
   height: auto;
   min-height: 0;
   max-height: none;
-  aspect-ratio: 3344 / 1882;
+  aspect-ratio: 3 / 2;
   border-radius: 0;
 }
 .eth-root .ech-hero--stack .ech-hero__media img {
@@ -436,7 +436,7 @@ body:has(.eth-root) .ezana-echo-container {
 @media (max-width: 767px) {
   .eth-root .ech-hero--stack .ech-hero__media,
   .eth-root .ech-hero.ech-hero--photo.ech-hero--stack .ech-hero__media {
-    aspect-ratio: 3344 / 1882;
+    aspect-ratio: 3 / 2;
   }
   .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
     right: auto;
@@ -444,22 +444,23 @@ body:has(.eth-root) .ezana-echo-container {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Nov 20, 2026: the hero's title panel fades into the black page, so the
-   hand-off to Editors' picks has no edge. The panel starts on the hero's
-   dark green (where the art fades into it) and reaches pure black at its
-   foot. Type stays white and light grey on that ground, well above 4.5:1;
+   Nov 20, 2026: the hero's title panel is solid black top to bottom (the
+   art fades straight into it), so the hand-off to Editors' picks has no
+   edge. Type stays white and light grey on that ground, well above 4.5:1;
    the byline and CTA keep Ezana green, which holds about 8:1 on black.
    ══════════════════════════════════════════════════════════════ */
 .eth-root .ech-hero.ech-hero--photo {
   background: black;
 }
 .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__inner {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, black 88%, var(--emerald)) 0%,
-    color-mix(in srgb, black 95%, var(--emerald)) 45%,
-    black 100%
-  );
+  background: black;
+}
+/* The art fades straight to the black title panel: no green band. */
+.eth-root .ech-hero--stack .ech-hero__scrim,
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__scrim {
+  background:
+    linear-gradient(0deg, black 0%, transparent 14%),
+    linear-gradient(180deg, color-mix(in srgb, black 22%, transparent) 0%, transparent 16%);
 }
 .eth-root .ech-hero--photo .ech-hero__title,
 .eth-root .ech-hero--photo .ech-hero__title a {

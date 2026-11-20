@@ -13,6 +13,14 @@
  * singularity of consumer AI. Film details are paraphrased from the film
  * itself; its own figures (Aladdin's $15 trillion in 2016) are attributed to it.
  *
+ * Nov 20th, 2026 (later): a new section, "The rings of power", maps who holds
+ * the compute, chips, power and policy behind AI (Nvidia and Jensen Huang's
+ * November 12th resignation, OpenAI, Oracle, Meta, CoreWeave, Anthropic,
+ * Constellation, Vistra, TerraPower, Blackstone, BlackRock, Goldman Sachs,
+ * Palantir, Anduril, Chris Wright, David Sacks) through Tolkien's rings of
+ * power. Sources [[src:50]] to [[src:91]] are current to November 20th, 2026.
+ * New supplied hero illustration; the earlier pop-art file is kept on disk.
+ *
  * Ownership figures for BlackRock, Vanguard and State Street come from
  * Ezana's own 13F dataset (public.sec_13f_holdings; filings for the quarter
  * ended September 30th, 2026: BlackRock, Inc.; State Street Corp; Vanguard
@@ -25,20 +33,21 @@ export const tokenizedMoneyOutageTheory2026 = {
   excerpt:
     'In five November days Microsoft, the FAA, Workday and America’s largest banks all went down, and a viral theory says it was staged to sell tokenized money. Every outage has a published, unrelated cause. The tokenization push is real, public and commercial, and programmable money carries risks worth taking seriously.',
   heroImage: {
-    // Editorial illustration supplied for this story (Nov 20th, 2026); source
-    // file kept at docs/assets/echo/five-outages-asset-managers-hero-source.png,
-    // served at 2x (Lanczos) so it stays sharp on high-density screens. Not a
-    // photograph and not evidence of any event in the article.
-    src: '/echo/tokenized-money-outage-theory-2026-hero.webp',
-    alt: 'Pop-art editorial illustration of four men in suits over yellow, cyan and magenta halftone backgrounds.',
+    // Editorial illustration supplied for this story (Nov 20th, 2026, second
+    // version); source file kept at
+    // docs/assets/echo/five-outages-rings-of-power-hero-source.png, served at
+    // 2x (Lanczos) so it stays sharp on high-density screens. Not a photograph
+    // and not evidence of any event in the article.
+    src: '/echo/tokenized-money-outage-theory-2026-hero-v2.webp',
+    alt: 'Retro poster-style illustration of tech, finance and energy leaders over green hills, with a data center, cooling towers, the Capitol dome, a satellite dish and a drone.',
     caption:
-      'Editorial illustration (supplied). Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026.',
-    position: '50% 30%',
+      'Editorial illustration (supplied). Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026; compute, power and financing figures from company filings and statements.',
+    position: '50% 40%',
   },
   category: 'analysis',
   author: 'Ezana Finance Editorial',
   meta: {
-    sectors: ['Financials', 'Information Technology', 'Communication Services', 'Industrials'],
+    sectors: ['Financials', 'Information Technology', 'Communication Services', 'Industrials', 'Utilities'],
     industries: [
       'Asset Management & Custody Banks',
       'Diversified Banks',
@@ -47,6 +56,10 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Movies & Entertainment',
       'Broadcasting',
       'Aerospace & Defense',
+      'Semiconductors',
+      'Internet Services & Infrastructure',
+      'Independent Power Producers & Energy Traders',
+      'Investment Banking & Brokerage',
     ],
     institutions: [
       'BlackRock',
@@ -79,6 +92,27 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Valar Atomics',
       'BBC',
       'TRW',
+      'Nvidia',
+      'Megaspeed',
+      'Oracle',
+      'Amazon Web Services',
+      'Scale AI',
+      'CoreWeave',
+      'Broadcom',
+      'Constellation Energy',
+      'Vistra',
+      'TerraPower',
+      'Blackstone',
+      'Apollo Global Management',
+      'Brookfield Asset Management',
+      'KKR',
+      'Goldman Sachs',
+      'Palantir',
+      'Huawei',
+      'Thiel Macro',
+      'Crusoe',
+      'General Matter',
+      'PJM Interconnection',
     ],
     government: [
       'Federal Aviation Administration',
@@ -95,9 +129,14 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Senate Banking Committee',
       'US Congress',
       'Government of Canada',
+      'Department of Energy',
+      'Federal Energy Regulatory Commission',
+      'Nuclear Regulatory Commission',
+      "President's Council of Advisors on Science and Technology",
+      'White House',
     ],
-    geos: ['United States', 'United Kingdom', 'Canada', 'Switzerland', 'India', 'North Korea'],
-    assetClasses: ['Equities', 'Digital Assets', 'Cash & Deposits', 'Fixed Income'],
+    geos: ['United States', 'United Kingdom', 'Canada', 'Switzerland', 'India', 'North Korea', 'China', 'Singapore'],
+    assetClasses: ['Equities', 'Digital Assets', 'Cash & Deposits', 'Fixed Income', 'Private Credit'],
     themes: [
       'Tokenization',
       'Cybersecurity',
@@ -110,6 +149,12 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Artificial Intelligence',
       'Technological Singularity',
       'Perception Management',
+      'AI Compute',
+      'Data Center Power Demand',
+      'Nuclear Power',
+      'Export Controls',
+      'Circular Financing',
+      'Market Concentration',
     ],
     datasets: ['SEC Form 13F institutional holdings', 'rwa.xyz tokenized asset tracker'],
     // markets: no exchange or trading venue is discussed as a venue.
@@ -123,23 +168,66 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Lux Capital',
       'Peter Thiel',
       'Joe Lonsdale',
+      'Thiel Macro',
+      'Blackstone',
+      'Apollo Global Management',
+      'Brookfield Asset Management',
+      'KKR',
     ],
   },
-  tickers: ['BLK', 'STT', 'JPM', 'BAC', 'WFC', 'MSFT', 'GOOGL', 'WDAY', 'FOXA', 'DIS'],
+  tickers: [
+    'BLK',
+    'STT',
+    'JPM',
+    'BAC',
+    'WFC',
+    'MSFT',
+    'GOOGL',
+    'WDAY',
+    'FOXA',
+    'DIS',
+    'NVDA',
+    'ORCL',
+    'META',
+    'CRWV',
+    'AVGO',
+    'AMZN',
+    'CEG',
+    'VST',
+    'BX',
+    'GS',
+    'PLTR',
+  ],
   entities: {
     people: [
       { id: 'larry-fink', label: 'Larry Fink', role: 'Chairman and CEO, BlackRock' },
       { id: 'bill-gates', label: 'Bill Gates', role: 'Microsoft co-founder; chair, Gates Foundation' },
       { id: 'palmer-luckey', label: 'Palmer Luckey', role: 'Founder of Oculus and Anduril; co-founder of Erebor Bank' },
       { id: 'adam-curtis', label: 'Adam Curtis', role: 'British documentary filmmaker; HyperNormalisation (BBC, 2016)' },
+      { id: 'peter-thiel', label: 'Peter Thiel', role: 'Co-founder of Palantir; Founders Fund; Thiel Macro' },
+      { id: 'jensen-huang', label: 'Jensen Huang', role: 'Nvidia co-founder; CEO until November 12th, 2026' },
+      { id: 'sam-altman', label: 'Sam Altman', role: 'Co-founder and CEO, OpenAI' },
+      { id: 'larry-ellison', label: 'Larry Ellison', role: 'Co-founder, chairman and CTO, Oracle' },
+      { id: 'mark-zuckerberg', label: 'Mark Zuckerberg', role: 'Founder and CEO, Meta' },
+      { id: 'alexandr-wang', label: 'Alexandr Wang', role: 'Chief AI officer, Meta; founder of Scale AI' },
+      { id: 'michael-intrator', label: 'Michael Intrator', role: 'Co-founder, chairman and CEO, CoreWeave' },
+      { id: 'dario-amodei', label: 'Dario Amodei', role: 'Co-founder and CEO, Anthropic' },
+      { id: 'joe-dominguez', label: 'Joe Dominguez', role: 'Chairman, president and CEO, Constellation Energy' },
+      { id: 'jim-burke', label: 'Jim Burke', role: 'President and CEO, Vistra' },
+      { id: 'stephen-schwarzman', label: 'Stephen Schwarzman', role: 'Co-founder, chairman and CEO, Blackstone' },
+      { id: 'david-solomon', label: 'David Solomon', role: 'Chairman and CEO, Goldman Sachs' },
+      { id: 'chris-wright', label: 'Chris Wright', role: 'US Secretary of Energy' },
+      { id: 'david-sacks', label: 'David Sacks', role: 'Co-chair, PCAST; White House AI and crypto czar until March 2026' },
+      { id: 'alex-karp', label: 'Alex Karp', role: 'Co-founder and CEO, Palantir' },
     ],
     terms: [
       { id: 'tokenization', label: 'Tokenization' },
       { id: 'hypernormalisation', label: 'Hypernormalisation' },
       { id: 'technological-singularity', label: 'Technological singularity' },
+      { id: 'circular-financing', label: 'Circular financing' },
     ],
   },
-  readTime: 15,
+  readTime: 24,
   publishedAt: '2026-11-18',
   listMeta: 'Nov 18th, 2026',
   featured: true,
@@ -197,6 +285,24 @@ export const tokenizedMoneyOutageTheory2026 = {
         lng: 9.84,
         impact:
           'Larry Fink used the January 2026 World Economic Forum to call for moving very rapidly to tokenize financial assets, citing lower fees. BlackRock runs tokenized funds, so the push is public and commercial.',
+      },
+      {
+        name: 'Santa Clara',
+        region: 'California',
+        country: 'US',
+        lat: 37.35,
+        lng: -121.95,
+        impact:
+          'Nvidia, the forge of the AI chip trade, sold $115.8 billion of hardware last quarter. Jensen Huang resigned as chief executive on November 12th; CFO Colette Kress is interim CEO.',
+      },
+      {
+        name: 'Abilene',
+        region: 'Texas',
+        country: 'US',
+        lat: 32.45,
+        lng: -99.73,
+        impact:
+          'Stargate’s first campus, developed with Crusoe for Oracle and OpenAI. Oracle’s roughly $300 billion OpenAI contract covers 4.5 gigawatts and helped lift its debt to $129.5 billion by August.',
       },
       {
         name: 'Columbus',
@@ -715,6 +821,65 @@ export const tokenizedMoneyOutageTheory2026 = {
     {
       type: 'paragraph',
       text: 'The political questions are on the record too. Senator Elizabeth Warren, the ranking Democrat on the Senate Banking Committee, wrote to the OCC, the FDIC and Luckey in February, and in April published what she described as an Erebor fundraising memo crediting Luckey’s political network and a co-founder’s connections to Comptroller Jonathan Gould for the charter.[[src:38]]US Senate Banking Committee minority, "Warren deepens probe of seemingly corrupt approval of bank charter," April 2026 · https://www.banking.senate.gov/newsroom/minority/warren-deepens-probe-of-seemingly-corrupt-approval-of-bank-charter-for-trumps-billionaire-friends-in-silicon-valley[[/src]] Regulators also attached a hard cushion: Erebor must hold a Tier 1 leverage ratio of at least 12% for its first three years, and reported 38.81% in the second quarter.[[src:39]]Cryptopolitan, on the OCC approval conditions and Q2 2026 filings, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] For this article’s question, Erebor cuts both ways. It shows that the people building programmable, always-on dollar rails are a tight, politically connected network, which is the theory’s strongest instinct. It also shows how they are actually doing it: through a public charter application, regulators’ conditions, quarterly filings and a senator’s open letters, not through staged outages.',
+    },
+
+    { type: 'heading', text: 'The rings of power: who actually holds the compute', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'Erebor is not the only name in this story borrowed from Tolkien. Erebor is the Lonely Mountain, the dwarves’ treasure-hall; Anduril is Aragorn’s sword; and [[person:peter-thiel]]Peter Thiel[[/person]], who co-founded Palantir, named it after the seeing-stones that let their holders watch distant events, then added Mithril Capital and Valar Ventures to the same map.[[src:50]]Business Insider, "Palmer Luckey named his latest company Erebor, a reference to The Lord of the Rings," 2025 · https://www.businessinsider.nl/palmer-luckey-named-his-latest-company-erebor-a-reference-to-the-lord-of-the-rings-here-are-the-other-tech-companies-inspired-by-the-fantasy-series/[[/src]][[src:51]]Newsweek, "Why tech billionaires love Middle-earth," February 2023 · https://www.newsweek.com/2023/02/10/why-tech-billionaires-love-middle-earth-1778694.html[[/src]] The book they keep returning to is about rings of power: gifts handed to the rulers of elves, dwarves and men that quietly bound every wearer to whoever forged the master ring. That is a better model for 2026 than a staged blackout. The theory is right that power is concentrating. It is looking at the wrong ring. The scarce, rationed, fought-over thing this year is not a token. It is compute: the chips, the data centers and the electricity that every frontier AI system needs, and the short list of people who decide who gets them.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The forge is Nvidia. In the quarter ended October 25th it sold $115.8 billion of hardware, more than double a year earlier, $107.6 billion of it data center systems, and it had committed about $390 billion to suppliers for the years ahead.[[src:52]]StockAnalysis, "Nvidia’s Q3 revenue grows 103% to $115.8B," November 2026 · https://stockanalysis.com/news/nvda-q3-fy2027-earnings-beat/[[/src]][[src:53]]Inc., "Jensen Huang left Nvidia a $390 billion bet," November 2026 · https://www.inc.com/phil-rosen/jensen-huang-nvidia-390-billion-payoff/91438830[[/src]] For 33 years the forger was [[person:jensen-huang]]Jensen Huang[[/person]]. On November 12th, the first day of the outage run this article tests, he resigned as president, chief executive and director. Nvidia’s board had opened an independent investigation four days earlier after reports that he had an affair with an executive at Megaspeed, a Singapore company that bought billions of dollars of Nvidia chips and that US intelligence agencies reportedly concluded had passed information to China. The board said it had no reason to believe national security or Nvidia’s secrets had been compromised; chief financial officer Colette Kress is interim chief executive.[[src:54]]The San Francisco Standard, "Nvidia CEO Jensen Huang resigns," November 12th, 2026 · https://sfstandard.com/2026/11/12/nvidia-ceo-jensen-huang-resigns/[[/src]] Nothing ties his exit to the outages. It does show what the theory misses: the real single point of failure in American power is not a bank app, it is how much of the AI economy runs through one company and, until last week, one man.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The rings also loop back to their maker, which is where the analogy bites. In September 2025 Nvidia signed a letter of intent to invest up to $100 billion in OpenAI as OpenAI deployed 10 gigawatts of Nvidia systems. It never became a contract. In February 2026 the two replaced it with a $30 billion equity stake in an OpenAI round priced at $730 billion before the new money, which drew open questions about [[kw:circular-financing]]circular financing[[/kw]], a supplier funding the customer that buys its product.[[src:55]]Finviz, "Nvidia pivots to $30 billion direct stake in OpenAI," February 19th, 2026 · https://finviz.com/news/316796/nvidia-pivots-to-30-billion-direct-stake-in-openai-decoupling-from-100b-milestone-plan-as-sam-altman-hopes-to-remain-gigantic-customer[[/src]] On August 10th Nvidia went further, signing memorandums with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to build platforms that would raise more than $500 billion of outside capital for its customers, with an option for Nvidia to backstop up to $125 billion of the deals.[[src:56]]Reuters via Investing.com, "Nvidia partners with Wall Street giants to raise $500 billion for AI buildout," August 10th, 2026 · https://www.investing.com/news/stock-market-news/wall-street-giants-partner-with-nvidia-on-500-billion-ai-financing-deal-ft-reports-4849929[[/src]] Critics read that as fencing buyers into one ecosystem, since the money stays tied to Nvidia hardware rather than rivals’.[[src:57]]Semafor, "Nvidia partners with lenders to finance AI infrastructure," August 10th, 2026 · https://www.semafor.com/article/08/10/2026/nvidia-partners-with-lenders-to-finance-ai-infrastructure[[/src]] Note who is on that list: the same BlackRock the theory casts as the villain, here acting in public as a lender to the chip trade.',
+    },
+    {
+      type: 'callout',
+      label: 'Outside capital Nvidia is lining up for its own customers',
+      value: '$500B+',
+      context:
+        'Memorandums signed August 10th, 2026 with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR, with an option for Nvidia to backstop up to $125 billion. The forger now helps finance the buyers of the rings.',
+    },
+
+    { type: 'heading', text: 'The ring-bearers: who rents, buys and builds', level: 3 },
+    {
+      type: 'paragraph',
+      text: '[[person:sam-altman]]Sam Altman[[/person]] has said it plainly: "Everything starts with compute."[[src:58]]Axios, "Nvidia to invest up to $100B in ChatGPT creator OpenAI," September 22nd, 2025 · https://www.axios.com/2025/09/22/nvidia-openai-chatgpt-jensen-huang[[/src]] A year ago he put OpenAI’s infrastructure commitments at about $1.4 trillion over eight years, against annualized revenue of just over $20 billion, while saying OpenAI did not want government guarantees for its data centers.[[src:59]]Malay Mail, "OpenAI faces scrutiny as Sam Altman defends $1.4 trillion AI spending plans," November 7th, 2025 · https://www.malaymail.com/news/tech-gadgets/2025/11/07/openai-faces-scrutiny-as-sam-altman-defends-14-trillion-ai-spending-plans/197450[[/src]] The biggest single piece is a roughly $300 billion, five-year contract with Oracle for 4.5 gigawatts under the Stargate banner.[[src:60]]SiliconANGLE, "OpenAI confirms $300B Oracle compute deal," September 10th, 2025 · https://siliconangle.com/?p=710837[[/src]] That turned [[person:larry-ellison]]Larry Ellison[[/person]]’s Oracle into the most indebted of the builders: Reuters put its debt at $129.5 billion in August, with about $260 billion more promised in future data center leases.[[src:61]]International Business Times, citing Reuters, "Larry Ellison’s AI bet made him richer than Musk: then came Oracle’s $129.5B debt problem," August 2026 · https://www.ibtimes.co.uk/oracle-ai-expansion-high-stakes-gamble-1814508[[/src]] Oracle has said it will raise $45 billion to $50 billion this year, half of it through new shares.[[src:62]]Constellation Research, "Oracle to raise $45 billion to $50 billion in debt, equity for data center buildout," February 2026 · https://www.constellationr.com/insights/news/oracle-raise-45-billion-50-billion-debt-equity-data-center-buildout[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: '[[person:mark-zuckerberg]]Mark Zuckerberg[[/person]] bought his way back to the table. Meta paid $14.3 billion for a stake in Scale AI in June 2025 and made its founder, [[person:alexandr-wang]]Alexandr Wang[[/person]], the company’s first chief AI officer, running Meta Superintelligence Labs.[[src:63]]Oman Observer, citing The New York Times, "Meta forecasts spending of $115 billion this year," January 2026 · https://www.omanobserver.om/ampArticle/1183509[[/src]] Meta now expects to spend $130 billion to $145 billion on capital projects in 2026,[[src:64]]Fortune, "How Alexandr Wang won Mark Zuckerberg’s trust, and a $100 billion-plus AI bet," October 17th, 2026 · https://fortune.com/2026/10/17/alexandr-wang-mark-zuckerberg-meta-superintelligence-labs-muse-wonder-ai-bet/[[/src]] much of it on clusters sized like power stations: Prometheus at about a gigawatt and Hyperion, planned to scale to five.[[src:65]]The Stack, "Meta’s AI bet," July 2025 · https://www.thestack.technology/meta-ai-bet-smallest-team-for-research/[[/src]] [[person:michael-intrator]]Michael Intrator[[/person]]’s CoreWeave is the landlord for everyone who cannot build fast enough. On November 10th it reported third-quarter revenue of $3.66 billion, up 168%, and a contracted backlog of about $132.5 billion, up from $104.2 billion three months earlier, while rising interest costs pushed it to a $709 million quarterly loss.[[src:66]]The Tech Capital, "CoreWeave revenue surges 168%; interest bill drives $709M loss," November 12th, 2026 · https://thetechcapital.com/coreweave-revenue-surges-168-interest-bill-709m-loss/[[/src]] Renting compute out by the gigawatt is a business only because the rings are rationed.',
+    },
+    {
+      type: 'paragraph',
+      text: '[[person:dario-amodei]]Dario Amodei[[/person]]’s Anthropic shows the other strategy: refuse to depend on a single forge. It trains and runs its Claude models on Amazon’s Trainium, Google’s TPUs and Nvidia GPUs, and in April it signed for about 3.5 gigawatts of Google TPU capacity through Broadcom from 2027, on top of the gigawatt it already had, as its run-rate revenue passed $30 billion.[[src:67]]Anthropic, "Anthropic expands partnership with Google and Broadcom for multiple gigawatts of next-generation compute," April 6th, 2026 · https://anthropic.com/news/google-broadcom-partnership-compute[[/src]][[src:68]]The Next Web, "Anthropic signs biggest compute deal yet with Google and Broadcom," April 7th, 2026 · https://thenextweb.com/news/anthropic-google-broadcom-compute-deal[[/src]] It is also the clearest case of what happens when a ring-bearer says no to the council. In March the Pentagon designated Anthropic a supply-chain risk, a label normally used for foreign adversaries, after Amodei refused contract terms over mass domestic surveillance and fully autonomous weapons; Anthropic said it would fight the designation in court.[[src:69]]The Washington Times, "Pentagon officially labels Anthropic, maker of Claude AI, a supply chain risk," March 5th, 2026 · https://m.washingtontimes.com/news/2026/mar/5/pentagon-officially-labels-anthropic-maker-claude-ai-supply-chain/[[/src]][[src:70]]Axios, "Pentagon blacklists Anthropic, labels AI company supply chain risk," March 2026 · https://www.axios.com/2026/03/04/anthropic-pentagon-supply-chain-risk-claude[[/src]]',
+    },
+
+    { type: 'heading', text: 'The forges: who owns the power', level: 3 },
+    {
+      type: 'paragraph',
+      text: 'Chips are useless without electricity, and that is where the blackout rumors brush against something real. Data center demand has pushed capacity prices on PJM, the 13-state grid that runs from New Jersey to Chicago, up more than elevenfold since 2024, and PJM’s management has proposed that data centers either bring their own power or accept being remotely cut off at peak demand.[[src:71]]The Daily Record, "MD-based Constellation enters massive power deal with Google," October 6th, 2026 · https://thedailyrecord.com/2026/10/06/md-based-constellation-power-deal-google/[[/src]] The scarce electrons have owners. [[person:joe-dominguez]]Joe Dominguez[[/person]]’s Constellation is restarting Three Mile Island for Microsoft, sold Meta the entire output of its Clinton reactor for 20 years from June 2027,[[src:72]]Data Center Dynamics, "Meta signs 20-year PPA with Constellation for entire output of Illinois nuclear power plant," 2025 · https://www.datacenterdynamics.com/en/news/meta-signs-20-year-ppa-with-constellation-for-entire-output-of-illinois-nuclear-power-plant/[[/src]] and in October contracted 3,590 megawatts to Google, backed by $4.3 billion of reactor upgrades.[[src:73]]The Motley Fool, "Why Constellation Energy rallied today," October 6th, 2026 · https://www.fool.com/investing/2026/10/06/why-constellation-energy-rallied-today/[[/src]] [[person:jim-burke]]Jim Burke[[/person]]’s Vistra has 20-year nuclear contracts with Amazon for 1,200 megawatts at Comanche Peak in Texas and with Meta for 2,176 megawatts plus 433 megawatts of upgrades in Ohio and Pennsylvania.[[src:74]]Vistra Q4 2025 earnings call, via AOL, February 26th, 2026 · https://www.aol.com/articles/vistra-vst-q4-2025-earnings-170542621.html[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: '[[person:bill-gates]]Bill Gates[[/person]] is building the next forge rather than renting an old one. His TerraPower won the first US construction permit for a new kind of commercial reactor in nearly a decade in March,[[src:75]]TechRepublic, "Bill Gates-backed TerraPower wins first US reactor construction permit in nearly a decade," March 6th, 2026 · https://www.techrepublic.com/article/news-bill-gates-terrapower-nuclear-reactor/[[/src]] and in January agreed with Meta to develop up to eight Natrium plants, about 2.8 gigawatts with storage that can push output to 4, the first as early as 2032.[[src:76]]GeekWire, "TerraPower signs deal with Meta for up to 8 reactors," January 9th, 2026 · https://www.geekwire.com/2026/seattle-area-nuclear-company-terrapower-signs-deal-with-meta-for-up-to-8-reactors/[[/src]] Then there is the money behind the forges. [[person:stephen-schwarzman]]Stephen Schwarzman[[/person]] told analysts in April that Blackstone had become the largest investor in AI-related infrastructure in the world, and by July its data center business carried a $185 billion value.[[src:77]]CoStar News, "Blackstone’s AI bets drive profit as investors weigh private-credit risks," April 23rd, 2026 · https://www.costar.com/article/939009075[[/src]][[src:78]]Commercial Observer, "Blackstone reports record AUM, strong earnings powered by data centers, AI," July 2026 · https://commercialobserver.com/2026/07/blackstone-reports-second-quarter-earnings-data-centers-ai/[[/src]] [[person:larry-fink]]Larry Fink[[/person]] said the Nvidia financing pact deepens BlackRock’s existing AI Infrastructure Partnership with the chipmaker.[[src:79]]HotHardware, "Nvidia rallies $500 billion Wall Street alliance to fuel AI expansion," August 11th, 2026 · https://hothardware.com/news/nvidia-rallies-500-billion-wall-street-alliance-fuel-ai-expansion[[/src]] And [[person:david-solomon]]David Solomon[[/person]]’s Goldman Sachs landed the lead role in placing Nvidia’s financing with investors after, by Solomon’s account, Huang brought the idea to the bank.[[src:80]]Benzinga via Webull, "Goldman Sachs courts investors to join Nvidia’s $500 billion AI financing initiative," August 14th, 2026 · https://www.webull.ca/news-detail/15400566844695552[[/src]] Solomon told analysts in October that studies put the US data center buildout above $10 trillion through 2032, about 3.6% of the economy every year.[[src:81]]PYMNTS, "Goldman Sachs CEO flags financing risk in AI buildout," October 13th, 2026 · https://www.pymnts.com/?p=4308296[[/src]]',
+    },
+
+    { type: 'heading', text: 'The council: who writes the rules for the rings', level: 3 },
+    {
+      type: 'paragraph',
+      text: 'Washington decides where the rings may go and who pays for the forges. Energy Secretary [[person:chris-wright]]Chris Wright[[/person]] has put it bluntly: without enough energy, "there is no AI."[[src:82]]HPCwire, "‘Massively more energy’ needed to unleash AI, Energy Secretary Wright says," April 8th, 2026 · https://www.hpcwire.com/?p=190062[[/src]] He directed federal grid regulators to write a rule to connect large new loads faster,[[src:83]]Columbia University Center on Global Energy Policy, "How DOE’s announcement on data centers could impact the grid," 2025 · https://www.energypolicy.columbia.edu/?p=26930[[/src]] and argues that data centers are not what is driving up household bills and that tech companies want to pay for the new plants themselves.[[src:84]]Finviz, "Energy Secretary Wright defends data centers," January 20th, 2026 · https://finviz.com/news/280627/energy-secretary-wright-defends-data-centers-microsoft-google-want-to-pay-to-fix-grid-not-the-cause-of-rising-prices[[/src]] [[person:david-sacks]]David Sacks[[/person]] was the White House AI and crypto czar until March 26th, when he used up the 130 days a special government employee may serve; he now co-chairs the President’s Council of Advisors on Science and Technology, a body whose members include Huang and Zuckerberg.[[src:85]]Cointelegraph, "David Sacks’ 130-day term as Trump’s crypto and AI czar has ended," March 2026 · https://cointelegraph.com/news/david-sacks-crypto-ai-czar-job-ends-takes-on-new-role[[/src]] Sacks backed letting Nvidia sell its older H200 chips to China, then said in December that China was rejecting them in favor of its own semiconductors.[[src:86]]Business Standard, citing Bloomberg, "China rejecting Nvidia’s H200 chips, pushing for self-reliance: Sacks," December 2025 · https://www.business-standard.com/world-news/china-rejecting-nvidia-s-h200-chips-pushing-for-self-reliance-sacks-125121300101_1.html[[/src]] A second forge is now lit: Nvidia’s outlook assumes no data center sales in China at all, while Huawei expects about $12 billion of AI chip revenue this year.[[src:87]]Tom’s Hardware, "Huawei expects $12 billion in AI chip revenue this year as Nvidia’s China market share hits zero," 2026 · https://www.tomshardware.com/tech-industry/huawei-expects-12-billion-in-ai-chip-revenue-this-year-as-nvidias-china-market-share-hits-zero[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'The Tolkien network sits at the edge of the council. [[person:alex-karp]]Alex Karp[[/person]]’s Palantir reported third-quarter revenue of $2.31 billion, up 96%, as its US commercial sales passed its US government sales for the first time, and Karp now sells what he calls sovereign AI to governments and companies that want models under their own control.[[src:88]]Palantir via Business Wire, third-quarter 2026 results, November 2nd, 2026 · https://finviz.com/news/413533/palantir-reports-q3-2026-us-comm-revenue-growth-of-148-yy-and-revenue-growth-of-96-yy-raises-fy-2026-revenue-guidance-to-91-yy-growth-and-us-comm-revenue-guidance-to-143-yy-crushing-consensus-expectations[[/src]] [[person:palmer-luckey]]Palmer Luckey[[/person]]’s Anduril closed a $5 billion round at a $61 billion valuation in May to fund Arsenal-1, its weapons factory in Ohio.[[src:89]]The Next Web, "Anduril raises $5bn at $61bn valuation," May 2026 · https://thenextweb.com/news/anduril-5bn-raise-61bn-valuation[[/src]] Thiel himself has played both sides of the forge: his hedge fund sold all 537,742 of its Nvidia shares in the third quarter of 2025,[[src:90]]Fortune, "Peter Thiel dumped Nvidia and invested $45 million into Microsoft and Apple," March 10th, 2026 · https://fortune.com/2026/03/10/peter-thiel-nvidia-shares-sold-apple-microsoft-ai-bubble/[[/src]] while Founders Fund concentrated its bets on OpenAI, the data center builder Crusoe and the nuclear fuel startup General Matter.[[src:91]]The Information, "Founders Fund shifts from caution to concentrated bets on AI," 2025 · https://feature.theinformation.com/articles/founders-fund-shifts-caution-concentrated-bets-ai[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'Read as a map rather than a plot, the rings of power explain more than the outage theory does. Every ring here was handed out in the open: in earnings calls, contracts filed with the SEC, power purchase agreements and press releases. What the map shows is concentration. One company forges most of the chips, a handful of labs and clouds hold most of them, a few utilities own the reactors they plug into, the same handful of financiers keep turning up in the deals, and a small council of officials and advisers, some of them chip and platform chiefs themselves, decides where the rings may travel. Tolkien’s warning was never that the rings were secret. It was that accepting one bound the wearer to the forger. The questions worth pressing in 2026 follow from that: who gets compute when there is not enough, who carries the debt if the demand forecasts are wrong, and who pays for the power plants when a data center and a household want the same electrons.',
     },
 
     { type: 'heading', text: 'The real risk: money that obeys rules', level: 2 },

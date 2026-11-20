@@ -60,14 +60,14 @@ export const HOME_CARD_IMAGES = {
     src: card('biggest-ma-deals-2026'),
     alt: 'Abstract illustration of nine glowing columns of different heights on a dark grid.',
   },
-  // Five Outages, One Story? (supplied pop-art illustration, Nov 20th; 2x for
-  // high-density screens). `layout: 'stack'`: the Article of the Month card
-  // shows the whole picture with the headline beneath it, so no face is
-  // covered by type.
+  // Five Outages, One Story? (supplied retro poster illustration, second
+  // version, Nov 20th; 3:2, served at 2x for high-density screens).
+  // `layout: 'stack'`: the Article of the Month card shows the whole picture
+  // with the headline beneath it, so no face is covered by type.
   'tokenized-money-outage-theory-2026': {
     src: card('tokenized-money-outage-theory-2026'),
-    alt: 'Pop-art editorial illustration of four men in suits over yellow, cyan and magenta halftone backgrounds.',
-    position: '50% 30%',
+    alt: 'Retro poster-style illustration of tech, finance and energy leaders over green hills, with a data center, cooling towers, the Capitol dome, a satellite dish and a drone.',
+    position: '50% 40%',
     layout: 'stack',
   },
   // Twelve Funds, $12.4 Trillion
