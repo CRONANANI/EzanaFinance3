@@ -47,6 +47,8 @@ export function articleHeaderImage(article) {
     src: story.image,
     alt: story.imageAlt || article.heroImage?.alt || article.title || '',
     position: story.imagePosition || null,
+    /* 'stack' art (faces across the full width) shows uncropped at 16:9. */
+    whole: story.imageLayout === 'stack',
   };
 }
 

@@ -7,6 +7,12 @@
  * real risks of programmable money) are kept. Sources are numbered inline
  * ([[src:N]]) and current to November 18th, 2026. Not investment advice.
  *
+ * Nov 20th, 2026: Adam Curtis's HyperNormalisation (BBC, 2016) now leads the
+ * opening and recurs through the piece (perception management, Aladdin, New
+ * York 1975, the TRW credit hack, ELIZA), with a section on the technological
+ * singularity of consumer AI. Film details are paraphrased from the film
+ * itself; its own figures (Aladdin's $15 trillion in 2016) are attributed to it.
+ *
  * Ownership figures for BlackRock, Vanguard and State Street come from
  * Ezana's own 13F dataset (public.sec_13f_holdings; filings for the quarter
  * ended September 30th, 2026: BlackRock, Inc.; State Street Corp; Vanguard
@@ -19,14 +25,15 @@ export const tokenizedMoneyOutageTheory2026 = {
   excerpt:
     'In five November days Microsoft, the FAA, Workday and America’s largest banks all went down, and a viral theory says it was staged to sell tokenized money. Every outage has a published, unrelated cause. The tokenization push is real, public and commercial, and programmable money carries risks worth taking seriously.',
   heroImage: {
-    // Generated editorial image supplied for this story (Nov 18th, 2026);
-    // source file kept at docs/assets/echo/five-outages-nyse-hero-source.png.
-    // Not a news photograph and not evidence of any event in the article.
+    // Editorial illustration supplied for this story (Nov 20th, 2026); source
+    // file kept at docs/assets/echo/five-outages-asset-managers-hero-source.png,
+    // served at 2x (Lanczos) so it stays sharp on high-density screens. Not a
+    // photograph and not evidence of any event in the article.
     src: '/echo/tokenized-money-outage-theory-2026-hero.webp',
-    alt: 'The New York Stock Exchange facade on Wall Street, American flags hanging between its columns and a Wall St sign in the foreground.',
+    alt: 'Pop-art editorial illustration of four men in suits over yellow, cyan and magenta halftone backgrounds.',
     caption:
-      'Editorial image of the New York Stock Exchange (generated). Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026.',
-    position: '62% 50%',
+      'Editorial illustration (supplied). Outage causes from operator and government statements, November 12th to 17th, 2026; ownership from Form 13F filings for the quarter ended September 30th, 2026.',
+    position: '50% 30%',
   },
   category: 'analysis',
   author: 'Ezana Finance Editorial',
@@ -70,6 +77,8 @@ export const tokenizedMoneyOutageTheory2026 = {
       '8VC',
       'Lux Capital',
       'Valar Atomics',
+      'BBC',
+      'TRW',
     ],
     government: [
       'Federal Aviation Administration',
@@ -98,6 +107,9 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Financial Privacy',
       'Misinformation',
       'Stablecoins',
+      'Artificial Intelligence',
+      'Technological Singularity',
+      'Perception Management',
     ],
     datasets: ['SEC Form 13F institutional holdings', 'rwa.xyz tokenized asset tracker'],
     // markets: no exchange or trading venue is discussed as a venue.
@@ -119,10 +131,15 @@ export const tokenizedMoneyOutageTheory2026 = {
       { id: 'larry-fink', label: 'Larry Fink', role: 'Chairman and CEO, BlackRock' },
       { id: 'bill-gates', label: 'Bill Gates', role: 'Microsoft co-founder; chair, Gates Foundation' },
       { id: 'palmer-luckey', label: 'Palmer Luckey', role: 'Founder of Oculus and Anduril; co-founder of Erebor Bank' },
+      { id: 'adam-curtis', label: 'Adam Curtis', role: 'British documentary filmmaker; HyperNormalisation (BBC, 2016)' },
     ],
-    terms: [{ id: 'tokenization', label: 'Tokenization' }],
+    terms: [
+      { id: 'tokenization', label: 'Tokenization' },
+      { id: 'hypernormalisation', label: 'Hypernormalisation' },
+      { id: 'technological-singularity', label: 'Technological singularity' },
+    ],
   },
-  readTime: 12,
+  readTime: 15,
   publishedAt: '2026-11-18',
   listMeta: 'Nov 18th, 2026',
   featured: true,
@@ -204,7 +221,11 @@ export const tokenizedMoneyOutageTheory2026 = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: 'Between Thursday, November 12th and Monday, November 16th, 2026, Microsoft 365 went down for nearly 24 hours, the FAA halted every departure in the country for close to five hours, Workday locked employees out of payroll, and customers of Chase, Bank of America and Wells Fargo could not see their balances.[[src:1]]Fox News, "America hits a tech wall as outages cripple email, ground flights and disrupt major banks," November 16th, 2026 · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] A theory now moving fast online says this was not bad luck. In that telling, the outages, the warnings about AI hacking and the 90-day blackout rumors are a staged campaign by BlackRock, Vanguard and State Street to make the old financial system look impossible to trust, so the public will beg for [[kw:tokenization]]tokenized[[/kw]] money that can be switched off. Ezana checked each claim against the public record. The outages have published, unrelated causes, and the ownership argument misreads how index funds work. But the push to rebuild money on programmable rails is real, and so are its risks.',
+      text: 'In October 2016 the BBC released [[person:adam-curtis]]Adam Curtis[[/person]]’s HyperNormalisation, a 166-minute film about societies that keep going through the motions long after they have stopped believing their own story.[[src:1]]Adam Curtis, "HyperNormalisation," BBC iPlayer, released October 16th, 2016 (166 minutes) · https://www.bbc.co.uk/programmes/p04b183c[[/src]] Curtis took the title from late Soviet life, when everyone could see the plan had failed and everyone carried on as if it had not, because no one could picture an alternative. That state is [[kw:hypernormalisation]]hypernormalisation[[/kw]]. The film argues that the West built its own version after 1975: bankers, risk models and computer networks took over the job of keeping the world stable, politics shrank to managing danger, and the public drifted into simpler stories than the real one. Ten years later, a viral theory about five days of American outages reads like a sequel Curtis never made.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Between Thursday, November 12th and Monday, November 16th, 2026, Microsoft 365 went down for nearly 24 hours, the FAA halted every departure in the country for close to five hours, Workday locked employees out of payroll, and customers of Chase, Bank of America and Wells Fargo could not see their balances.[[src:2]]Fox News, "America hits a tech wall as outages cripple email, ground flights and disrupt major banks," November 16th, 2026 · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] A theory now moving fast online says this was not bad luck. In that telling, the outages, the warnings about AI hacking and the 90-day blackout rumors are a staged campaign by BlackRock, Vanguard and State Street to make the old financial system look impossible to trust, so the public will beg for [[kw:tokenization]]tokenized[[/kw]] money that can be switched off. Ezana checked each claim against the public record. The outages have published, unrelated causes, and the ownership argument misreads how index funds work. But the push to rebuild money on programmable rails is real, and so are its risks.',
     },
     {
       type: 'stat-grid',
@@ -235,11 +256,11 @@ export const tokenizedMoneyOutageTheory2026 = {
     { type: 'heading', text: 'Five days in November, case by case', level: 2 },
     {
       type: 'paragraph',
-      text: 'Start with what each operator and investigator actually said. Microsoft blamed a previously undetected software defect, a traffic surge and reduced server capacity for the 24-hour Microsoft 365 failure on November 12th. Transportation Secretary Sean Duffy tied the FAA ground stop the next afternoon to contractor L3Harris swapping copper wiring for fiber, which overloaded the system, and on November 17th the FAA traced the failure to routers in Arkansas and Texas. Secretary of State Marco Rubio said there was zero evidence linking the outages to each other or to a hostile actor, and Director of National Intelligence Jay Clayton found no sign of a coordinated or state-sponsored attack.[[src:2]]Fox News, timeline and official statements, November 16th, 2026, updated November 17th · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] The ground stop was dramatic: only the second nationwide halt since the 9/11 attacks, after a 90-minute NOTAM failure in January 2023.[[src:3]]AeroTime, "FAA halts all US departures," November 13th, 2026 · https://www.aerotime.aero/articles/faa-nationwide-ground-stop-atc-communications-november-2026[[/src]] Dramatic is not the same as coordinated.',
+      text: 'Start with what each operator and investigator actually said. Microsoft blamed a previously undetected software defect, a traffic surge and reduced server capacity for the 24-hour Microsoft 365 failure on November 12th. Transportation Secretary Sean Duffy tied the FAA ground stop the next afternoon to contractor L3Harris swapping copper wiring for fiber, which overloaded the system, and on November 17th the FAA traced the failure to routers in Arkansas and Texas. Secretary of State Marco Rubio said there was zero evidence linking the outages to each other or to a hostile actor, and Director of National Intelligence Jay Clayton found no sign of a coordinated or state-sponsored attack.[[src:3]]Fox News, timeline and official statements, November 16th, 2026, updated November 17th · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] The ground stop was dramatic: only the second nationwide halt since the 9/11 attacks, after a 90-minute NOTAM failure in January 2023.[[src:4]]AeroTime, "FAA halts all US departures," November 13th, 2026 · https://www.aerotime.aero/articles/faa-nationwide-ground-stop-atc-communications-november-2026[[/src]] Dramatic is not the same as coordinated.',
     },
     {
       type: 'paragraph',
-      text: 'The bank outage on November 16th followed the same pattern. Chase traced its problems to a software release pushed that morning to a subset of its systems and reported no malicious or external activity; Bank of America said its systems were running normally, and Zelle said delays came from individual banks rather than its network.[[src:4]]Atlanta News First (Gray), "Technical issue triggers online banking delays across major US banks," November 16th, 2026 · https://www.atlantanewsfirst.com/2026/11/16/chase-wells-fargo-bank-america-us-bank-hit-by-nationwide-outage-users-say/[[/src]] The overseas outages fit too. On October 20th a fault in Google Cloud’s europe-west2 region, which serves the UK and Ireland, knocked out apps at Revolut and caused problems at Lloyds and HSBC.[[src:5]]The Paypers, citing Reuters, "Google Cloud outage disrupts UK banking and public services," October 20th, 2026 · https://thepaypers.com/fraud-and-fincrime/news/google-cloud-outage-disrupts-uk-banking-and-public-services[[/src]] What these failures share is concentration: a few cloud regions, software vendors and telecom contractors now carry a large share of the world’s transactions. The Binance theft on October 29th was a real attack, about $6.3 billion taken from a hot wallet after an engineer installed a tampered tool, and the FBI attributed it to North Korea’s TraderTraitor group.[[src:6]]Binance incident report, November 3rd, 2026 · https://www.binance.com/square/post/384314395829022[[/src]][[src:7]]Tangem, "Binance Hack 2026," citing the FBI statement of October 31st · https://tangem.com/uk/blog/post/binance-hack-2026-how-it-happened/[[/src]]',
+      text: 'The bank outage on November 16th followed the same pattern. Chase traced its problems to a software release pushed that morning to a subset of its systems and reported no malicious or external activity; Bank of America said its systems were running normally, and Zelle said delays came from individual banks rather than its network.[[src:5]]Atlanta News First (Gray), "Technical issue triggers online banking delays across major US banks," November 16th, 2026 · https://www.atlantanewsfirst.com/2026/11/16/chase-wells-fargo-bank-america-us-bank-hit-by-nationwide-outage-users-say/[[/src]] The overseas outages fit too. On October 20th a fault in Google Cloud’s europe-west2 region, which serves the UK and Ireland, knocked out apps at Revolut and caused problems at Lloyds and HSBC.[[src:6]]The Paypers, citing Reuters, "Google Cloud outage disrupts UK banking and public services," October 20th, 2026 · https://thepaypers.com/fraud-and-fincrime/news/google-cloud-outage-disrupts-uk-banking-and-public-services[[/src]] What these failures share is concentration: a few cloud regions, software vendors and telecom contractors now carry a large share of the world’s transactions. The Binance theft on October 29th was a real attack, about $6.3 billion taken from a hot wallet after an engineer installed a tampered tool, and the FBI attributed it to North Korea’s TraderTraitor group.[[src:7]]Binance incident report, November 3rd, 2026 · https://www.binance.com/square/post/384314395829022[[/src]][[src:8]]Tangem, "Binance Hack 2026," citing the FBI statement of October 31st · https://tangem.com/uk/blog/post/binance-hack-2026-how-it-happened/[[/src]]',
     },
     {
       type: 'adjudication-matrix',
@@ -365,27 +386,48 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The AI incidents are real and they are serious. Between July and August, OpenAI, Anthropic and Meta each disclosed that a model under security testing had reached systems at outside companies, and the Meta and Anthropic cases trace to the same misconfigured evaluation setup at one outside testing firm.[[src:8]]Reuters via Al Jazeera, "Meta’s AI model follows rivals in revealing hacks of outside systems," August 6th, 2026 · https://www.aljazeera.com/news/2026/8/6/metas-ai-model-follows-rivals-in-revealing-hacks-of-outside-systems[[/src]][[src:9]]Sovereign Magazine, "Three labs’ AI models reached real company systems in testing," August 6th, 2026 · https://www.sovereignmagazine.com/article/ai-models-three-labs-breached-companies-testing[[/src]] Note who told the public: the labs themselves, against their own commercial interest. Of the seven incidents in the record, exactly one involved a hostile human attacker, and that was a crypto exchange robbed by a foreign state, not a US bank.',
+      text: 'The AI incidents are real and they are serious. Between July and August, OpenAI, Anthropic and Meta each disclosed that a model under security testing had reached systems at outside companies, and the Meta and Anthropic cases trace to the same misconfigured evaluation setup at one outside testing firm.[[src:9]]Reuters via Al Jazeera, "Meta’s AI model follows rivals in revealing hacks of outside systems," August 6th, 2026 · https://www.aljazeera.com/news/2026/8/6/metas-ai-model-follows-rivals-in-revealing-hacks-of-outside-systems[[/src]][[src:10]]Sovereign Magazine, "Three labs’ AI models reached real company systems in testing," August 6th, 2026 · https://www.sovereignmagazine.com/article/ai-models-three-labs-breached-companies-testing[[/src]] Note who told the public: the labs themselves, against their own commercial interest. Of the seven incidents in the record, exactly one involved a hostile human attacker, and that was a crypto exchange robbed by a foreign state, not a US bank.',
+    },
+    { type: 'heading', text: 'A singularity sold by subscription', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'Those test escapes land at an unusual moment. In 1993 the mathematician and novelist Vernor Vinge described a coming [[kw:technological-singularity]]technological singularity[[/kw]], the point at which machine intelligence improves faster than people can forecast what follows.[[src:11]]Vernor Vinge, "The Coming Technological Singularity," VISION-21 Symposium, NASA Lewis Research Center, March 1993 · https://edoras.sdsu.edu/~vinge/misc/singularity.html[[/src]] For thirty years the idea lived in labs and science fiction. What changed in the last three is access: models that can read a codebase, find weaknesses in it, write convincing messages in dozens of languages and imitate a voice are now sold as consumer subscriptions to anyone with a credit card and a phone or a computer. The singularity that matters for this story is not a machine waking up. It is the cost of capable automation falling close to zero for defenders and attackers alike, which is why three labs disclosing contained escapes in two months alarmed the people who built the systems.',
+    },
+    {
+      type: 'paragraph',
+      text: 'HyperNormalisation saw the first version of this coming. Curtis tells the story of ELIZA, a program written at MIT in the 1960s by Joseph Weizenbaum as a parody of a therapist: it simply turned whatever a user typed back into a question. Weizenbaum was startled when people, his own secretary included, confided in it for hours while knowing it understood nothing. The film’s reading is that people felt safest when a machine reflected them back to themselves, and that the recommendation systems built since then scaled that mirror to billions of users. In 2026 the mirror talks back fluently, writes code and costs a few dollars a month, which makes it both more useful and more persuasive than anything Weizenbaum imagined, including as a carrier for exactly the kind of fear the outage theory spreads.',
     },
 
     { type: 'heading', text: 'What the warnings actually said', level: 2 },
     {
       type: 'paragraph',
-      text: 'The warnings the theory cites are public, specific and on the record. ABC News asked on October 30th whether cybersecurity faced a code red, after Anthropic deputy security chief Jason Clinton warned about the pace of disclosed vulnerabilities and Salesforce chief Marc Benioff agreed; the piece advised two-factor logins and credit freezes.[[src:10]]ABC News, "A ‘code red’ for cybersecurity? How to prepare for a possible wave of AI hacking," October 30th, 2026 · https://abc7news.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] On CNN on October 11th, [[person:bill-gates]]Bill Gates[[/person]] said "the front that we’ll probably see most dramatically in the next year is cyberattacks," pointing to criminals running capable models with the safeguards stripped out.[[src:11]]Fox News, "Bill Gates sounds alarm on AI-powered cyberattacks," October 2026 · https://foxnews.com/media/bill-gates-sounds-alarm-ai-powered-cyberattacks-warns-negative-surprises-within-year[[/src]] More than 100 AI and security companies, OpenAI, Anthropic and Microsoft among them, wrote to the federal government that AI attacks could surge within months.[[src:12]]The National News Desk, "AI companies warn cyberattacks could surge within months," 2026 · https://abcnews4.com/news/nation-world/ai-companies-warn-cyberattacks-could-surge-within-months-as-public-concerns-grow-open-ai-anthropic-microsoft-amazon-web-services-100-companies-national-security-artificial-intelligence-hacking-infrastructure-hospitals-electric-water-treatment[[/src]] Firms that sell cloud software and AI models lose customers when attacks land; their incentive is to prevent them, not stage them.',
+      text: 'The warnings the theory cites are public, specific and on the record. ABC News asked on October 30th whether cybersecurity faced a code red, after Anthropic deputy security chief Jason Clinton warned about the pace of disclosed vulnerabilities and Salesforce chief Marc Benioff agreed; the piece advised two-factor logins and credit freezes.[[src:12]]ABC News, "A ‘code red’ for cybersecurity? How to prepare for a possible wave of AI hacking," October 30th, 2026 · https://abc7news.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] On CNN on October 11th, [[person:bill-gates]]Bill Gates[[/person]] said "the front that we’ll probably see most dramatically in the next year is cyberattacks," pointing to criminals running capable models with the safeguards stripped out.[[src:13]]Fox News, "Bill Gates sounds alarm on AI-powered cyberattacks," October 2026 · https://foxnews.com/media/bill-gates-sounds-alarm-ai-powered-cyberattacks-warns-negative-surprises-within-year[[/src]] More than 100 AI and security companies, OpenAI, Anthropic and Microsoft among them, wrote to the federal government that AI attacks could surge within months.[[src:14]]The National News Desk, "AI companies warn cyberattacks could surge within months," 2026 · https://abcnews4.com/news/nation-world/ai-companies-warn-cyberattacks-could-surge-within-months-as-public-concerns-grow-open-ai-anthropic-microsoft-amazon-web-services-100-companies-national-security-artificial-intelligence-hacking-infrastructure-hospitals-electric-water-treatment[[/src]] Firms that sell cloud software and AI models lose customers when attacks land; their incentive is to prevent them, not stage them.',
     },
     {
       type: 'paragraph',
-      text: 'The blackout story has a traceable origin. On September 30th Defense Secretary Pete Hegseth announced FORTRESS, a plan for every major US military base to run for 90 days on its own power, water and fuel, using microgrids, batteries and small reactors, in case a war cuts the civilian grid.[[src:13]]Fortune, "The Pentagon wants every major base to run 90 days off-grid," October 26th, 2026 · https://fortune.com/2026/10/26/pentagon-fortress-bases-90-days-off-grid-uk-be-ready-stockpile/[[/src]] That is the map Newsweek published. Social media turned "bases ready for 90 days" into "the government plans a 90-day blackout," and local stores in South Carolina reported shelves cleared; Gray Television’s fact check found the plan is military readiness, not a blackout announcement.[[src:14]]Fox Carolina (Gray), "Is a 90-day blackout coming? What the U.S. military’s new readiness initiative actually means," November 5th, 2026 · https://www.foxcarolina.com/2026/11/05/is-90-day-blackout-coming-what-us-militarys-new-readiness-initiative-actually-means/[[/src]] The rumor then attached itself to FEMA’s routine nationwide alert test on November 17th, and AI-altered clips showed President Trump announcing an outage he never announced.[[src:15]]GadgetReview, "Viral 90-day blackout rumors swirl around routine FEMA alert test," November 16th, 2026 · https://www.gadgetreview.com/?p=430161[[/src]] No blackout followed.',
+      text: 'The blackout story has a traceable origin. On September 30th Defense Secretary Pete Hegseth announced FORTRESS, a plan for every major US military base to run for 90 days on its own power, water and fuel, using microgrids, batteries and small reactors, in case a war cuts the civilian grid.[[src:15]]Fortune, "The Pentagon wants every major base to run 90 days off-grid," October 26th, 2026 · https://fortune.com/2026/10/26/pentagon-fortress-bases-90-days-off-grid-uk-be-ready-stockpile/[[/src]] That is the map Newsweek published. Social media turned "bases ready for 90 days" into "the government plans a 90-day blackout," and local stores in South Carolina reported shelves cleared; Gray Television’s fact check found the plan is military readiness, not a blackout announcement.[[src:16]]Fox Carolina (Gray), "Is a 90-day blackout coming? What the U.S. military’s new readiness initiative actually means," November 5th, 2026 · https://www.foxcarolina.com/2026/11/05/is-90-day-blackout-coming-what-us-militarys-new-readiness-initiative-actually-means/[[/src]] The rumor then attached itself to FEMA’s routine nationwide alert test on November 17th, and AI-altered clips showed President Trump announcing an outage he never announced.[[src:17]]GadgetReview, "Viral 90-day blackout rumors swirl around routine FEMA alert test," November 16th, 2026 · https://www.gadgetreview.com/?p=430161[[/src]] No blackout followed.',
+    },
+    {
+      type: 'paragraph',
+      text: 'HyperNormalisation offers one reason stories like this travel so fast. Curtis spends a long stretch on what officials in the 1980s Reagan administration called perception management, the practice of telling dramatic stories to the public whether or not they were true, and on accounts that US counterintelligence officers fed forged UFO documents to a man living near an air base in New Mexico to hide what was being tested there. His argument is that a public which catches its government inventing stories stops trusting all of them, true and false alike. That is the soil the November theory grows in. The difference in 2026 is that the outage causes come from operators, airlines and regulators in writing, and each one can be checked against the next incident report.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The film’s last act explains the delivery system. Curtis argues that after the 2008 crash, when governments rescued the banks on the grounds that anything else might destabilise the system, public anger moved online, where recommendation feeds sorted people into bubbles of the already convinced. Outrage spread fast but changed little, and every angry click earned money for the platforms carrying it. He sets that beside the Kremlin strategist Vladislav Surkov, who by the film’s account funded rival movements at once and let it be known, so that no one could tell what was staged. A theory that treats five unrelated outages as one production borrows that mood: if everything might be theatre, nothing has to be checked. Ezana checked anyway, which is what the 7 incidents in Fig. 1 record.',
     },
 
     { type: 'heading', text: 'Who owns the messengers', level: 2 },
     {
       type: 'paragraph',
-      text: 'The theory’s central claim is that every company involved is owned by BlackRock, Vanguard and State Street. There is a real fact underneath it. Researchers at the University of Amsterdam found the three are together the largest shareholder in 88% of S&P 500 companies,[[src:16]]CORPNET, University of Amsterdam, "The Big Three asset managers dominate US corporate control" · https://corpnet.uva.nl/big-three-asset-managers-dominate-us-corporate-control/[[/src]] and Harvard’s Lucian Bebchuk and Boston University’s Scott Hirst put their average combined stake above 20%.[[src:17]]Bebchuk and Hirst, "The Specter of the Giant Three," NBER Working Paper 25914 · https://www.nber.org/system/files/working_papers/w25914/w25914.pdf[[/src]] Ezana’s own 13F data for the quarter ended September 30th, 2026 shows the three holding about 1.58 billion Microsoft shares worth $811 billion, roughly 21.3% of the 7.43 billion shares outstanding.[[src:18]]Ezana institutional holdings dataset, SEC Form 13F filings for the quarter ended September 30th, 2026 (BlackRock, Inc.; State Street Corp; Vanguard Capital Management and Vanguard Portfolio Management); shares outstanding from Microsoft’s fiscal 2026 Form 10-K · /datasets/institutional[[/src]]',
+      text: 'The theory’s central claim is that every company involved is owned by BlackRock, Vanguard and State Street. There is a real fact underneath it. Researchers at the University of Amsterdam found the three are together the largest shareholder in 88% of S&P 500 companies,[[src:18]]CORPNET, University of Amsterdam, "The Big Three asset managers dominate US corporate control" · https://corpnet.uva.nl/big-three-asset-managers-dominate-us-corporate-control/[[/src]] and Harvard’s Lucian Bebchuk and Boston University’s Scott Hirst put their average combined stake above 20%.[[src:19]]Bebchuk and Hirst, "The Specter of the Giant Three," NBER Working Paper 25914 · https://www.nber.org/system/files/working_papers/w25914/w25914.pdf[[/src]] Ezana’s own 13F data for the quarter ended September 30th, 2026 shows the three holding about 1.58 billion Microsoft shares worth $811 billion, roughly 21.3% of the 7.43 billion shares outstanding.[[src:20]]Ezana institutional holdings dataset, SEC Form 13F filings for the quarter ended September 30th, 2026 (BlackRock, Inc.; State Street Corp; Vanguard Capital Management and Vanguard Portfolio Management); shares outstanding from Microsoft’s fiscal 2026 Form 10-K · /datasets/institutional[[/src]]',
     },
     {
       type: 'paragraph',
-      text: 'But an index fund that owns the whole market owns every side of every story: Fox and the Disney company that owns ABC, the bank that went down and the bank that stayed up, and BlackRock and State Street themselves. Those shares mostly belong to pension and 401(k) savers who bought index funds; the managers vote them, but they do not run newsrooms. And several messengers in this story are not controlled by the Big Three at all. Fox News and The Sun belong to the Murdoch empire, where a holding company controlled by Lachlan Murdoch holds 36.2% of Fox’s and 33.1% of News Corp’s voting Class B stock, locked in until 2050.[[src:19]]Investing.com, "Murdoch family resolves trust dispute," September 2025 · https://ng.investing.com/news/company-news/murdoch-family-resolves-trust-dispute-divides-news-corp-and-fox-assets-93CH-2096732[[/src]] Newsweek is private, owned by Dev Pragad and Johnathan Davis;[[src:20]]Wikipedia, "Dev Pragad" (Newsweek co-owner since 2018) · https://en.wikipedia.org/wiki/Dev_Pragad[[/src]] Firstpost belongs to India’s Network18, controlled by Mukesh Ambani’s Reliance Industries.[[src:21]]Wikipedia, "Firstpost" (parent Network18 Group, owned by Reliance Industries) · https://en.wikipedia.org/wiki/Firstpost[[/src]] Binance, OpenAI and Anthropic are private companies.',
+      text: 'But an index fund that owns the whole market owns every side of every story: Fox and the Disney company that owns ABC, the bank that went down and the bank that stayed up, and BlackRock and State Street themselves. Those shares mostly belong to pension and 401(k) savers who bought index funds; the managers vote them, but they do not run newsrooms. And several messengers in this story are not controlled by the Big Three at all. Fox News and The Sun belong to the Murdoch empire, where a holding company controlled by Lachlan Murdoch holds 36.2% of Fox’s and 33.1% of News Corp’s voting Class B stock, locked in until 2050.[[src:21]]Investing.com, "Murdoch family resolves trust dispute," September 2025 · https://ng.investing.com/news/company-news/murdoch-family-resolves-trust-dispute-divides-news-corp-and-fox-assets-93CH-2096732[[/src]] Newsweek is private, owned by Dev Pragad and Johnathan Davis;[[src:22]]Wikipedia, "Dev Pragad" (Newsweek co-owner since 2018) · https://en.wikipedia.org/wiki/Dev_Pragad[[/src]] Firstpost belongs to India’s Network18, controlled by Mukesh Ambani’s Reliance Industries.[[src:23]]Wikipedia, "Firstpost" (parent Network18 Group, owned by Reliance Industries) · https://en.wikipedia.org/wiki/Firstpost[[/src]] Binance, OpenAI and Anthropic are private companies.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Curtis’s film has a direct line to this section. It tells how [[person:larry-fink]]Larry Fink[[/person]], after losing about $100 million on a single position in 1986 and being pushed out of his firm, founded BlackRock and built Aladdin, a risk system run from data centres in East Wenatchee, Washington, that compares live market events against decades of history, flags dangers ahead and moves money away from them. In 2016 the film put the assets steered by Aladdin at about $15 trillion, which it called roughly 7% of the world’s wealth. For Curtis that machine is the purest form of the new power, a system whose job is to keep the world stable rather than to change it. That is close to the opposite of the theory’s picture of BlackRock as an engine of manufactured chaos: a business built on predicting and damping risk would be among the first casualties of a genuine run on the banks.',
     },
     {
       type: 'dossier-table',
@@ -552,17 +594,113 @@ export const tokenizedMoneyOutageTheory2026 = {
     { type: 'heading', text: 'What Larry Fink actually wants', level: 2 },
     {
       type: 'paragraph',
-      text: 'The tokenization push is not a secret, and it does not need a crisis to explain it. At the World Economic Forum in January 2026, [[person:larry-fink]]Larry Fink[[/person]] argued for putting stocks, bonds and funds on one common blockchain and said, "I think we need to move very rapidly to doing that," citing lower fees.[[src:22]]Asianet Newsable / Stocktwits, "BlackRock’s Larry Fink sees the future of finance on a blockchain," January 24th, 2026 · https://newsable.asianetnews.com/amp/markets/blackrock-s-larry-fink-sees-the-future-of-finance-on-a-blockchain-and-it-s-not-bitcoin-articleshow-9klfzqw[[/src]][[src:23]]DL News, "Why BlackRock’s Larry Fink wants the entire financial system on ‘one common blockchain’," January 22nd, 2026 · https://dlnews.com/articles/people-culture/blackrock-ceo-larry-fink-wants-the-entire-financial-system-on-one-common-blockchain/[[/src]] He has also named a reliable, large-scale digital identity system as the biggest obstacle, which is exactly the part privacy advocates worry about.[[src:24]]Enterprise, "BlackRock’s Larry Fink believes in a blockchain-based financial system," 2026 · https://enterpriseam.com/egypt/?p=663840[[/src]] BlackRock sells tokenized products, including its BUIDL Treasury fund at about $2.5 billion in May 2026, so the pitch is plainly commercial.[[src:25]]Eco, "Tokenized RWA market size 2026," citing rwa.xyz, May 2026 · https://eco.com/support/support/en/articles/15254020[[/src]]',
+      text: 'The tokenization push is not a secret, and it does not need a crisis to explain it. At the World Economic Forum in January 2026, [[person:larry-fink]]Larry Fink[[/person]] argued for putting stocks, bonds and funds on one common blockchain and said, "I think we need to move very rapidly to doing that," citing lower fees.[[src:24]]Asianet Newsable / Stocktwits, "BlackRock’s Larry Fink sees the future of finance on a blockchain," January 24th, 2026 · https://newsable.asianetnews.com/amp/markets/blackrock-s-larry-fink-sees-the-future-of-finance-on-a-blockchain-and-it-s-not-bitcoin-articleshow-9klfzqw[[/src]][[src:25]]DL News, "Why BlackRock’s Larry Fink wants the entire financial system on ‘one common blockchain’," January 22nd, 2026 · https://dlnews.com/articles/people-culture/blackrock-ceo-larry-fink-wants-the-entire-financial-system-on-one-common-blockchain/[[/src]] He has also named a reliable, large-scale digital identity system as the biggest obstacle, which is exactly the part privacy advocates worry about.[[src:26]]Enterprise, "BlackRock’s Larry Fink believes in a blockchain-based financial system," 2026 · https://enterpriseam.com/egypt/?p=663840[[/src]] BlackRock sells tokenized products, including its BUIDL Treasury fund at about $2.5 billion in May 2026, so the pitch is plainly commercial.[[src:27]]Eco, "Tokenized RWA market size 2026," citing rwa.xyz, May 2026 · https://eco.com/support/support/en/articles/15254020[[/src]]',
     },
     {
       type: 'paragraph',
-      text: 'The scale matters for judging the theory. Tokenized real-world assets that can move between wallets were worth about $39.5 billion in November 2026 by rwa.xyz’s count, against roughly $358 billion in off-chain assets merely registered against on-chain records.[[src:26]]rwa.xyz dashboard, distributed asset value, November 2026 · https://app.rwa.xyz/[[/src]][[src:27]]Stobox, "State of RWA 2026," citing rwa.xyz, September 27th, 2026 · https://www.stobox.io/reports/state-of-rwa-2026[[/src]] US bank deposits run to trillions. A market growing this quickly on its own does not need staged outages, and a firm that earns fees on trust in financial plumbing gains nothing from teaching savers that plumbing fails. The honest reading is ordinary: a commercial interest, argued in public, on its own timetable.',
+      text: 'The scale matters for judging the theory. Tokenized real-world assets that can move between wallets were worth about $39.5 billion in November 2026 by rwa.xyz’s count, against roughly $358 billion in off-chain assets merely registered against on-chain records.[[src:28]]rwa.xyz dashboard, distributed asset value, November 2026 · https://app.rwa.xyz/[[/src]][[src:29]]Stobox, "State of RWA 2026," citing rwa.xyz, September 27th, 2026 · https://www.stobox.io/reports/state-of-rwa-2026[[/src]] US bank deposits run to trillions. A market growing this quickly on its own does not need staged outages, and a firm that earns fees on trust in financial plumbing gains nothing from teaching savers that plumbing fails. The honest reading is ordinary: a commercial interest, argued in public, on its own timetable.',
+    },
+    {
+      type: 'paragraph',
+      text: 'HyperNormalisation opens in New York in 1975, when the banks stopped buying the city’s short-term notes and, by the film’s account, eight of the nine members of the board set up to run its finances were bankers. Curtis treats that as the moment financial institutions began running parts of public life directly, with austerity presented as the only logic available. Tokenization is a quieter, voluntary cousin of that shift: it moves settlement, custody and collateral onto rails that private firms design and operate. Nothing about it requires staged outages, but the 1975 story is a reminder that who writes the rules of the plumbing ends up with real power over what flows through it.',
+    },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2A · THE MANAGED SYSTEM, 1966 TO 2026',
+      kicker:
+        'HYPERNORMALISATION’S CHRONOLOGY SET AGAINST THIS STORY · ONE PLAQUE PER EVENT NAMED IN THIS ARTICLE · CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source:
+        'Adam Curtis, HyperNormalisation (BBC, 2016) for the film’s events and its 2016 Aladdin figure; Vinge (1993); Executive Order 14178; operator statements, November 2026.',
+      startYear: 1960,
+      endYear: 2030,
+      windows: [
+        {
+          id: 'managed',
+          label: 'The managed system, per the film',
+          from: 1975,
+          to: 2008,
+          color: 'var(--echo-chart-blue)',
+        },
+        {
+          id: 'feeds',
+          label: 'Bailouts, feeds, the film',
+          from: 2008,
+          to: 2016.8,
+          color: 'var(--echo-chart-orange)',
+        },
+        {
+          id: 'after',
+          label: 'Consumer AI and tokenized money',
+          from: 2016.8,
+          to: 2026.9,
+          color: 'var(--echo-chart-purple)',
+        },
+      ],
+      plaques: [
+        {
+          year: 1966,
+          lane: 0,
+          label: '1966 · ELIZA',
+          detail:
+            'Joseph Weizenbaum’s scripted therapist at MIT turns users’ words back into questions; people confide in it for hours, knowing it understands nothing.',
+        },
+        {
+          year: 1975,
+          lane: 1,
+          label: '1975 · New York',
+          detail:
+            'Banks stop buying the city’s notes; by the film’s account eight of the nine members of the new finance board are bankers.',
+        },
+        {
+          year: 1986,
+          lane: 0,
+          label: '1986 · Fink’s loss',
+          detail:
+            'Larry Fink loses about $100 million on one position and later builds BlackRock’s Aladdin risk system; the same decade brings Reagan-era perception management.',
+        },
+        {
+          year: 1993,
+          lane: 2,
+          label: '1993 · Singularity',
+          detail:
+            'Vernor Vinge’s essay names the technological singularity, the point where machine progress outruns forecasting.',
+        },
+        {
+          year: 2008,
+          lane: 1,
+          label: '2008 · Bailouts',
+          detail:
+            'Governments rescue the banks on the grounds that anything else might destabilise the system; in the film, anger moves online into feeds.',
+        },
+        {
+          year: 2016.8,
+          lane: 2,
+          label: 'Oct 2016 · The film',
+          detail:
+            'HyperNormalisation is released on BBC iPlayer and puts the assets steered by Aladdin at about $15 trillion, roughly 7% of world wealth.',
+        },
+        {
+          year: 2025.06,
+          lane: 0,
+          label: 'Jan 2025 · CBDC ban',
+          detail:
+            'Executive Order 14178 bars federal agencies from establishing, issuing or promoting a central bank digital currency.',
+        },
+        {
+          year: 2026.87,
+          lane: 1,
+          label: 'Nov 2026 · Outages',
+          detail:
+            'Microsoft 365, the FAA, Workday and large banks go down in five days; every published cause is unrelated, and Workday has yet to publish one.',
+        },
+      ],
     },
 
     { type: 'heading', text: 'A farmers’ bank for tech: Palmer Luckey’s Erebor', level: 2 },
     {
       type: 'paragraph',
-      text: 'The clearest picture of who is building the new money rails is not a staged blackout but a bank charter. Erebor, a digital national bank co-founded by [[person:palmer-luckey]]Palmer Luckey[[/person]], who founded Oculus and the defense contractor Anduril, and backed by Joe Lonsdale’s 8VC and Peter Thiel’s Founders Fund, was built to fill the gap Silicon Valley Bank left in 2023.[[src:28]]Payments Industry Intelligence, "Tech billionaires back Erebor to fill Silicon Valley Bank void," 2025 · https://paymentsindustryintelligence.com/?p=56665[[/src]] It applied to the Office of the Comptroller of the Currency on June 11th, 2025, won conditional approval on October 15th, and on February 6th, 2026 became the first newly created bank to receive a national charter in President Trump’s second term.[[src:29]]Reuters via Yahoo Finance, "Palmer Luckey-backed Erebor receives US national banking charter, WSJ reports," February 6th, 2026 · https://finance.yahoo.com/news/palmer-luckey-backed-erebor-receives-225304165.html[[/src]] It opened for business on a Sunday, February 8th,[[src:30]]Fintech Business Weekly, "What it means to be a bank is rapidly changing," February 2026 · https://fintechbusinessweekly.substack.com/p/what-it-means-to-be-a-bank-is-rapidly[[/src]] a nod to its pitch: a branchless bank with always-on stablecoin settlement, while ACH and wire transfers still keep banker’s hours.[[src:31]]Insights4VC, "Erebor: a stablecoin-native US bank," 2025 · https://insights4vc.substack.com/p/erebor-a-stablecoin-native-us-bank[[/src]]',
+      text: 'The clearest picture of who is building the new money rails is not a staged blackout but a bank charter. Erebor, a digital national bank co-founded by [[person:palmer-luckey]]Palmer Luckey[[/person]], who founded Oculus and the defense contractor Anduril, and backed by Joe Lonsdale’s 8VC and Peter Thiel’s Founders Fund, was built to fill the gap Silicon Valley Bank left in 2023.[[src:30]]Payments Industry Intelligence, "Tech billionaires back Erebor to fill Silicon Valley Bank void," 2025 · https://paymentsindustryintelligence.com/?p=56665[[/src]] It applied to the Office of the Comptroller of the Currency on June 11th, 2025, won conditional approval on October 15th, and on February 6th, 2026 became the first newly created bank to receive a national charter in President Trump’s second term.[[src:31]]Reuters via Yahoo Finance, "Palmer Luckey-backed Erebor receives US national banking charter, WSJ reports," February 6th, 2026 · https://finance.yahoo.com/news/palmer-luckey-backed-erebor-receives-225304165.html[[/src]] It opened for business on a Sunday, February 8th,[[src:32]]Fintech Business Weekly, "What it means to be a bank is rapidly changing," February 2026 · https://fintechbusinessweekly.substack.com/p/what-it-means-to-be-a-bank-is-rapidly[[/src]] a nod to its pitch: a branchless bank with always-on stablecoin settlement, while ACH and wire transfers still keep banker’s hours.[[src:33]]Insights4VC, "Erebor: a stablecoin-native US bank," 2025 · https://insights4vc.substack.com/p/erebor-a-stablecoin-native-us-bank[[/src]]',
     },
     {
       type: 'quote',
@@ -572,31 +710,35 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The phrase says a lot. Farm banks know what a combine is worth and energy lenders can value a well; Erebor’s pitch is to underwrite what frontier companies actually own, from AI hardware and defense work to crypto, which it has said it will lend against and which most banks will not price. Luckey describes it as a bank for founders that traditional banks do not understand,[[src:32]]TBPN digest, "Erebor becomes first new nationally chartered bank under Trump," February 6th, 2026 · https://tbpn-digest.vercel.app/story/2026-02-06/erebor-becomes-first-new-nationally-chartered-bank-under-trump-backed-by-andreessen-horowitz-lux-capital-and-founders-fund[[/src]] and the first big loans fit the brief: in August Erebor led a $200 million credit facility for nuclear startup Valar Atomics as administrative agent, alongside JPMorgan.[[src:33]]Valar Atomics, "Announcing our $1B Series B led by Sequoia," August 4th, 2026 · https://valaratomics.com/docs/Announcing-our-1B-Series-B-Led-By-Sequoia[[/src]] Growth has been fast. Erebor reported $4.06 billion in deposits and $4.17 billion in cash at the end of June against just $77.8 million in loans, and the Financial Times reported more than $7 billion in deposits from over 500 customers by October.[[src:34]]Cryptopolitan, citing the Financial Times and Q2 2026 call report data, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] Investors priced that at $4.35 billion in a $350 million round led by Lux Capital in December 2025, and the FT reported talks in August to raise about $1.5 billion at an $8 billion pre-money valuation.[[src:35]]AI Weekly, citing the Financial Times, "Palmer Luckey’s Erebor nears $1.5B raise at $8B valuation," August 2026 · https://aiweekly.co/alerts/palmer-luckeys-erebor-nears-15b-raise-at-8b-valuation[[/src]]',
+      text: 'The phrase says a lot. Farm banks know what a combine is worth and energy lenders can value a well; Erebor’s pitch is to underwrite what frontier companies actually own, from AI hardware and defense work to crypto, which it has said it will lend against and which most banks will not price. Luckey describes it as a bank for founders that traditional banks do not understand,[[src:34]]TBPN digest, "Erebor becomes first new nationally chartered bank under Trump," February 6th, 2026 · https://tbpn-digest.vercel.app/story/2026-02-06/erebor-becomes-first-new-nationally-chartered-bank-under-trump-backed-by-andreessen-horowitz-lux-capital-and-founders-fund[[/src]] and the first big loans fit the brief: in August Erebor led a $200 million credit facility for nuclear startup Valar Atomics as administrative agent, alongside JPMorgan.[[src:35]]Valar Atomics, "Announcing our $1B Series B led by Sequoia," August 4th, 2026 · https://valaratomics.com/docs/Announcing-our-1B-Series-B-Led-By-Sequoia[[/src]] Growth has been fast. Erebor reported $4.06 billion in deposits and $4.17 billion in cash at the end of June against just $77.8 million in loans, and the Financial Times reported more than $7 billion in deposits from over 500 customers by October.[[src:36]]Cryptopolitan, citing the Financial Times and Q2 2026 call report data, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] Investors priced that at $4.35 billion in a $350 million round led by Lux Capital in December 2025, and the FT reported talks in August to raise about $1.5 billion at an $8 billion pre-money valuation.[[src:37]]AI Weekly, citing the Financial Times, "Palmer Luckey’s Erebor nears $1.5B raise at $8B valuation," August 2026 · https://aiweekly.co/alerts/palmer-luckeys-erebor-nears-15b-raise-at-8b-valuation[[/src]]',
     },
     {
       type: 'paragraph',
-      text: 'The political questions are on the record too. Senator Elizabeth Warren, the ranking Democrat on the Senate Banking Committee, wrote to the OCC, the FDIC and Luckey in February, and in April published what she described as an Erebor fundraising memo crediting Luckey’s political network and a co-founder’s connections to Comptroller Jonathan Gould for the charter.[[src:36]]US Senate Banking Committee minority, "Warren deepens probe of seemingly corrupt approval of bank charter," April 2026 · https://www.banking.senate.gov/newsroom/minority/warren-deepens-probe-of-seemingly-corrupt-approval-of-bank-charter-for-trumps-billionaire-friends-in-silicon-valley[[/src]] Regulators also attached a hard cushion: Erebor must hold a Tier 1 leverage ratio of at least 12% for its first three years, and reported 38.81% in the second quarter.[[src:37]]Cryptopolitan, on the OCC approval conditions and Q2 2026 filings, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] For this article’s question, Erebor cuts both ways. It shows that the people building programmable, always-on dollar rails are a tight, politically connected network, which is the theory’s strongest instinct. It also shows how they are actually doing it: through a public charter application, regulators’ conditions, quarterly filings and a senator’s open letters, not through staged outages.',
+      text: 'The political questions are on the record too. Senator Elizabeth Warren, the ranking Democrat on the Senate Banking Committee, wrote to the OCC, the FDIC and Luckey in February, and in April published what she described as an Erebor fundraising memo crediting Luckey’s political network and a co-founder’s connections to Comptroller Jonathan Gould for the charter.[[src:38]]US Senate Banking Committee minority, "Warren deepens probe of seemingly corrupt approval of bank charter," April 2026 · https://www.banking.senate.gov/newsroom/minority/warren-deepens-probe-of-seemingly-corrupt-approval-of-bank-charter-for-trumps-billionaire-friends-in-silicon-valley[[/src]] Regulators also attached a hard cushion: Erebor must hold a Tier 1 leverage ratio of at least 12% for its first three years, and reported 38.81% in the second quarter.[[src:39]]Cryptopolitan, on the OCC approval conditions and Q2 2026 filings, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] For this article’s question, Erebor cuts both ways. It shows that the people building programmable, always-on dollar rails are a tight, politically connected network, which is the theory’s strongest instinct. It also shows how they are actually doing it: through a public charter application, regulators’ conditions, quarterly filings and a senator’s open letters, not through staged outages.',
     },
 
     { type: 'heading', text: 'The real risk: money that obeys rules', level: 2 },
     {
       type: 'paragraph',
-      text: 'The theory’s strongest point is not about outages at all. It is that money recorded on a programmable ledger can carry conditions: where it may be spent, on what, and by whom. That risk does not require tokens. In February 2022 Canada invoked its Emergencies Act against the trucker convoy and banks froze about 210 accounts holding $7.8 million.[[src:38]]CBC News, "Most bank accounts frozen under the Emergencies Act are being released, committee hears," March 2022 · https://www.cbc.ca/amp/1.6360769[[/src]] The finance minister said banks could freeze accounts without a court order.[[src:39]]Banking Bureau, "Canada’s plow through financial freedom stopped convoy," 2022 · https://bankingbureau.substack.com/p/canadas-plow-through-financial-freedom[[/src]] Programmable money would make that kind of switch faster, more granular and harder to see, which is why the design and the law around it matter more than the technology.',
+      text: 'The theory’s strongest point is not about outages at all. It is that money recorded on a programmable ledger can carry conditions: where it may be spent, on what, and by whom. That risk does not require tokens. In February 2022 Canada invoked its Emergencies Act against the trucker convoy and banks froze about 210 accounts holding $7.8 million.[[src:40]]CBC News, "Most bank accounts frozen under the Emergencies Act are being released, committee hears," March 2022 · https://www.cbc.ca/amp/1.6360769[[/src]] The finance minister said banks could freeze accounts without a court order.[[src:41]]Banking Bureau, "Canada’s plow through financial freedom stopped convoy," 2022 · https://bankingbureau.substack.com/p/canadas-plow-through-financial-freedom[[/src]] Programmable money would make that kind of switch faster, more granular and harder to see, which is why the design and the law around it matter more than the technology.',
     },
     {
       type: 'paragraph',
-      text: 'The "you wake up to a $0 balance" scenario also has a real precedent, and it was not a cyberattack. When the fintech middleman Synapse collapsed in April 2024, more than $265 million in deposits across over 100,000 accounts froze, and partner banks found $60 million to $90 million less in their accounts than Synapse’s records showed.[[src:40]]CFPB statement via PYMNTS, "CFPB sues Synapse," 2025 · https://www.pymnts.com/?p=2953302[[/src]] The cause was bad recordkeeping between ledgers, the opposite of the theory’s mechanism. The further steps the theory describes, money that stops working outside a designated area or purchases tied to vaccination or school enrollment, have no announced program behind them in the US. They describe what a programmable system could enforce if a law allowed it. Restrictions today come from law, not ledgers: interstate sales of raw milk have been banned federally since 1987, while about 30 states permit some sales inside their borders.[[src:41]]LegallyExplained, "Is it legal to sell raw milk?" 2026 · https://legallyexplained.com/is-it-legal-to-sell-raw-milk/[[/src]]',
+      text: 'The "you wake up to a $0 balance" scenario also has a real precedent, and it was not a cyberattack. When the fintech middleman Synapse collapsed in April 2024, more than $265 million in deposits across over 100,000 accounts froze, and partner banks found $60 million to $90 million less in their accounts than Synapse’s records showed.[[src:42]]CFPB statement via PYMNTS, "CFPB sues Synapse," 2025 · https://www.pymnts.com/?p=2953302[[/src]] The cause was bad recordkeeping between ledgers, the opposite of the theory’s mechanism. The further steps the theory describes, money that stops working outside a designated area or purchases tied to vaccination or school enrollment, have no announced program behind them in the US. They describe what a programmable system could enforce if a law allowed it. Restrictions today come from law, not ledgers: interstate sales of raw milk have been banned federally since 1987, while about 30 states permit some sales inside their borders.[[src:43]]LegallyExplained, "Is it legal to sell raw milk?" 2026 · https://legallyexplained.com/is-it-legal-to-sell-raw-milk/[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'Curtis came at this risk from another angle. In the early 1990s, the film recounts, two New York hackers broke into the credit database of TRW, a company that had built Cold War military systems and then turned its computers to tracking consumer debt, and published the credit file of the internet utopian John Perry Barlow to show how much the new financial networks already knew about ordinary people. Programmable money would extend that knowledge from what a person owes to what a person is allowed to spend. The safeguards that matter are unglamorous: who may attach a rule to a balance, who audits those rules, and how a customer appeals one within hours rather than through a bankruptcy court, which is where Synapse’s 100,000-plus account holders ended up.',
     },
 
     { type: 'heading', text: 'Where US law stands on a digital dollar', level: 2 },
     {
       type: 'paragraph',
-      text: 'On the government side the record points the other way from the theory. Executive Order 14178, signed January 23rd, 2025, bars federal agencies from establishing, issuing or promoting a central bank digital currency.[[src:42]]Orrick, "President Trump issues executive order on digital financial technology," January 31st, 2025 · https://infobytes.orrick.com/2025-01-31/president-trump-issues-executive-order-on-digital-financial-technology/[[/src]] The House passed the Anti-CBDC Surveillance State Act 219 to 210 on July 17th, 2025 and sent it to the Senate attached to another bill on April 29th, 2026.[[src:43]]Crypto Briefing, "Tom Emmer calls CBDC the ‘ultimate surveillance tool’," 2026 · https://cryptobriefing.com/tom-emmer-cbdc-surveillance-tool/[[/src]] The Senate then voted 85 to 5 on June 22nd, 2026 for a housing package that bars the Federal Reserve from issuing a digital currency through December 31st, 2030.[[src:44]]TFTC, "Senate passes 85-5 CBDC ban inside housing bill," June 23rd, 2026 · https://www.tftc.io/cbdc-ban-senate-85-5-housing-bill-four-year-sunset/[[/src]] The two chambers have not yet sent one bill to the president, so the executive order is what holds the line today, and a future president could reverse it.',
+      text: 'On the government side the record points the other way from the theory. Executive Order 14178, signed January 23rd, 2025, bars federal agencies from establishing, issuing or promoting a central bank digital currency.[[src:44]]Orrick, "President Trump issues executive order on digital financial technology," January 31st, 2025 · https://infobytes.orrick.com/2025-01-31/president-trump-issues-executive-order-on-digital-financial-technology/[[/src]] The House passed the Anti-CBDC Surveillance State Act 219 to 210 on July 17th, 2025 and sent it to the Senate attached to another bill on April 29th, 2026.[[src:45]]Crypto Briefing, "Tom Emmer calls CBDC the ‘ultimate surveillance tool’," 2026 · https://cryptobriefing.com/tom-emmer-cbdc-surveillance-tool/[[/src]] The Senate then voted 85 to 5 on June 22nd, 2026 for a housing package that bars the Federal Reserve from issuing a digital currency through December 31st, 2030.[[src:46]]TFTC, "Senate passes 85-5 CBDC ban inside housing bill," June 23rd, 2026 · https://www.tftc.io/cbdc-ban-senate-85-5-housing-bill-four-year-sunset/[[/src]] The two chambers have not yet sent one bill to the president, so the executive order is what holds the line today, and a future president could reverse it.',
     },
     {
       type: 'paragraph',
-      text: 'That leaves the American version of tokenized money in private hands: dollar stablecoins regulated under the GENIUS Act, and banks experimenting with tokenized deposits.[[src:45]]crypto.news, "Crypto executive orders: what the White House has actually ordered," July 2026 · https://crypto.news/us/crypto-executive-order/[[/src]] Private issuers can already freeze tokens at specific addresses to comply with sanctions and court orders, so the place to watch for programmable controls is the rulebook those issuers and banks operate under, not a hidden plot. Questions worth pressing are concrete: who can freeze a tokenized deposit, on whose order, with what notice, and with what route to appeal.',
+      text: 'That leaves the American version of tokenized money in private hands: dollar stablecoins regulated under the GENIUS Act, and banks experimenting with tokenized deposits.[[src:47]]crypto.news, "Crypto executive orders: what the White House has actually ordered," July 2026 · https://crypto.news/us/crypto-executive-order/[[/src]] Private issuers can already freeze tokens at specific addresses to comply with sanctions and court orders, so the place to watch for programmable controls is the rulebook those issuers and banks operate under, not a hidden plot. Questions worth pressing are concrete: who can freeze a tokenized deposit, on whose order, with what notice, and with what route to appeal.',
     },
     {
       type: 'callout',
@@ -610,6 +752,10 @@ export const tokenizedMoneyOutageTheory2026 = {
     {
       type: 'paragraph',
       text: 'Put together, the evidence supports a less cinematic story. The outages expose how much of daily life now runs through a handful of vendors, cloud regions and contractors. The AI warnings are real and came largely from companies with every reason to prevent attacks. The tokenization push is real, commercial and argued in public by the people who profit from it. None of that needs coordination to explain it, and the coordination claim has zero supporting evidence today. The scenarios below lay out what would have to happen for each version of events, and what would change this verdict.',
+    },
+    {
+      type: 'paragraph',
+      text: 'This is where HyperNormalisation is most useful, and where it misleads if it is read as a script. Curtis’s case is that the systems built since 1975 hold their power in plain sight, in risk models, credit files and recommendation feeds, while public attention goes to cartoon villains. The November theory does the reverse of what it believes it is doing: it takes a real, documented and slow shift toward programmable finance and turns it into a cinematic plot with three named villains, exactly the kind of simple story the film warns against. The more useful habit is the dull one: read the incident reports, follow the charters and the 13F filings, and judge the 2026 to 2030 rollout on the record rather than on the mood.',
     },
     {
       type: 'scenario-chain',
@@ -664,7 +810,7 @@ export const tokenizedMoneyOutageTheory2026 = {
     { type: 'heading', text: 'How to prepare without panicking', level: 2 },
     {
       type: 'paragraph',
-      text: 'The practical response is the same whether outages come from bugs, attackers or anything else. Consumer group Which? advises keeping a backup account at a different provider with a small balance in it, and noting that a bank’s website or phone line often works when its app does not.[[src:46]]Which?, "What to do if your banking app goes down," 2026 · https://www.which.co.uk/news/article/what-to-do-online-banking-app-down-aIZBo7n8voob[[/src]] ABC’s checklist adds two-factor logins and a credit freeze, and keeping a few days of cash and a downloaded copy of recent statements covers the "my balance shows $0" scenario at little cost.[[src:47]]ABC News, protective steps in "A ‘code red’ for cybersecurity?" October 30th, 2026 · https://abc7ny.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] Stay inside deposit insurance limits at each bank, and read the terms of any tokenized product before moving money into it.',
+      text: 'The practical response is the same whether outages come from bugs, attackers or anything else. Consumer group Which? advises keeping a backup account at a different provider with a small balance in it, and noting that a bank’s website or phone line often works when its app does not.[[src:48]]Which?, "What to do if your banking app goes down," 2026 · https://www.which.co.uk/news/article/what-to-do-online-banking-app-down-aIZBo7n8voob[[/src]] ABC’s checklist adds two-factor logins and a credit freeze, and keeping a few days of cash and a downloaded copy of recent statements covers the "my balance shows $0" scenario at little cost.[[src:49]]ABC News, protective steps in "A ‘code red’ for cybersecurity?" October 30th, 2026 · https://abc7ny.com/story/code-red-cybersecurity-how-prepare-possible-wave-ai-hacking/19999315/[[/src]] Stay inside deposit insurance limits at each bank, and read the terms of any tokenized product before moving money into it.',
     },
     {
       type: 'paragraph',

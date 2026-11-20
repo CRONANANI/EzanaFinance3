@@ -359,11 +359,18 @@ export default function EchoHome({
    breakout). The kicker and Past picks sit in the top right corner; the
    headline, dek and an emerald byline sit bottom left over a dark scrim,
    with a soft text shadow so white type reads over any photo. The two hero
-   teasers now lead the Editors' Picks rail. */
+   teasers now lead the Editors' Picks rail.
+   Nov 20, 2026: `imageLayout: 'stack'` (set per article in home-card-images)
+   shows the whole picture with the headline beneath it, for art where type
+   over the photo would cover a face. The kicker and Past picks sit on dark
+   glass chips of one height so both read over any image. */
 function HeroBleed({ hero, options, month, onChange }) {
   const short = (SECTION_SHORT[hero.section] || '').toUpperCase();
   return (
-    <section className="ech-hero ech-hero--photo" aria-labelledby="ech-aotm-title">
+    <section
+      className={`ech-hero ech-hero--photo${hero.imageLayout === 'stack' ? ' ech-hero--stack' : ''}`}
+      aria-labelledby="ech-aotm-title"
+    >
       <div className="ech-hero__media" aria-hidden="true">
         <Image
           src={hero.image}
@@ -371,7 +378,7 @@ function HeroBleed({ hero, options, month, onChange }) {
           fill
           priority
           sizes={SIZES.bleed}
-          quality={80}
+          quality={90}
           style={{ objectFit: 'cover', objectPosition: hero.imagePosition || 'center' }}
           unoptimized={/^https?:/.test(hero.image)}
         />

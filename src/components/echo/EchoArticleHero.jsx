@@ -290,7 +290,7 @@ export function EchoArticleHero({
           {article.excerpt && <p className="eah-dek">{article.excerpt}</p>}
         </div>
         {image && (
-          <figure className="eah-media">
+          <figure className={`eah-media${image.whole ? ' eah-media--whole' : ''}`}>
             <Image
               src={image.src}
               alt={image.alt}

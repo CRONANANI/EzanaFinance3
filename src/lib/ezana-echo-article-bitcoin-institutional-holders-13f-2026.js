@@ -66,10 +66,14 @@ export const bitcoinInstitutionalHolders2026 = {
   excerpt:
     'Q2 2026 13F filings show roughly 1,950 institutions holding about $54 billion of spot bitcoin ETF shares [VERIFY: Q2 2026 13F aggregation], near 26% of the funds’ $210 billion AUM [VERIFY: Farside/issuer data]. Hedge funds built first, advisors now dominate, and treasury companies led by Strategy hold roughly 1.05 million BTC [VERIFY: treasury disclosures].',
   heroImage: {
-    src: '/images/ezana-echo/bitcoin-institutional-holders-13f-2026-hero.png',
-    alt: 'Stylized map of institutional bitcoin ownership: ETF tickers and filer names arranged as a treemap over a bitcoin motif.',
+    // Generated editorial image of the NYSE (first supplied Nov 18th, 2026 for
+    // the Five Outages story, moved here Nov 20th); source file kept at
+    // docs/assets/echo/nyse-wall-street-hero-source.png. Not a news photograph.
+    src: '/echo/bitcoin-institutional-holders-13f-2026-hero.webp',
+    alt: 'The New York Stock Exchange facade on Wall Street, American flags hanging between its columns and a Wall St sign in the foreground.',
     caption:
-      'Editorial illustration. The ownership figures in this article are drawn from quarterly 13F filings, which capture only managers above the $100 million reporting threshold and only their US-listed long positions.',
+      'Editorial image of the New York Stock Exchange (generated). The ownership figures in this article are drawn from quarterly 13F filings, which capture only managers above the $100 million reporting threshold and only their US-listed long positions.',
+    position: '62% 50%',
   },
   category: 'crypto',
   subcategory: 'Bitcoin',

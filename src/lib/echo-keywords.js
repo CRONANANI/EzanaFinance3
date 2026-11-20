@@ -3331,6 +3331,38 @@ export const KEYWORDS = {
     courseTitle: 'Catalysts and Event Risk',
   },
 
+  hypernormalisation: {
+    id: 'hypernormalisation',
+    term: 'Hypernormalisation',
+    definition:
+      'A state in which everyone can see that the official story no longer matches reality, yet everyone keeps acting as if it does because no alternative seems imaginable. The term comes from studies of late Soviet life and gave Adam Curtis the title of his 2016 BBC film about the West.',
+    template: 'timeline',
+    templateData: {
+      title: 'How the idea travelled',
+      events: [
+        { year: '1970s', label: 'Late Soviet stagnation', detail: 'The plan fails; daily life carries on as if it has not' },
+        { year: '2005', label: 'Named in scholarship', detail: 'Alexei Yurchak’s study of the last Soviet generation' },
+        { year: '2016', label: 'Curtis’s film', detail: 'HyperNormalisation applies it to the West since 1975' },
+      ],
+    },
+  },
+
+  'technological-singularity': {
+    id: 'technological-singularity',
+    term: 'Technological singularity',
+    definition:
+      'The hypothetical point at which machine intelligence improves faster than people can forecast its effects, so that the future beyond it becomes hard to predict. Vernor Vinge popularised the term in a 1993 essay; it is a debated idea, not a measured event.',
+    template: 'timeline',
+    templateData: {
+      title: 'From essay to everyday software',
+      events: [
+        { year: '1966', label: 'ELIZA', detail: 'A scripted chatbot at MIT that users confided in' },
+        { year: '1993', label: 'Vinge’s essay', detail: 'Names the coming technological singularity' },
+        { year: '2020s', label: 'Consumer AI', detail: 'Capable models sold by monthly subscription' },
+      ],
+    },
+  },
+
   tokenization: {
     id: 'tokenization',
     term: 'Tokenization',

@@ -60,11 +60,15 @@ export const HOME_CARD_IMAGES = {
     src: card('biggest-ma-deals-2026'),
     alt: 'Abstract illustration of nine glowing columns of different heights on a dark grid.',
   },
-  // Five Outages, One Story? (generated editorial image of the NYSE, supplied Nov 18th)
+  // Five Outages, One Story? (supplied pop-art illustration, Nov 20th; 2x for
+  // high-density screens). `layout: 'stack'`: the Article of the Month card
+  // shows the whole picture with the headline beneath it, so no face is
+  // covered by type.
   'tokenized-money-outage-theory-2026': {
     src: card('tokenized-money-outage-theory-2026'),
-    alt: 'The New York Stock Exchange facade on Wall Street with American flags between its columns.',
-    position: '62% 50%',
+    alt: 'Pop-art editorial illustration of four men in suits over yellow, cyan and magenta halftone backgrounds.',
+    position: '50% 30%',
+    layout: 'stack',
   },
   // Twelve Funds, $12.4 Trillion
   'sovereign-wealth-league-table-2026': {
@@ -108,10 +112,12 @@ export const HOME_CARD_IMAGES = {
   'midterm-trade-2026': { src: card('midterm-trade-2026'), alt: '' },
   // Central Banks Are Buying
   'central-bank-gold-cycle-2026': { src: card('central-bank-gold-cycle-2026'), alt: '' },
-  // Who Actually Holds Bitcoin
+  // Who Actually Holds Bitcoin (the NYSE editorial image, moved here from
+  // Five Outages on Nov 20th)
   'bitcoin-institutional-holders-13f-2026': {
     src: card('bitcoin-institutional-holders-13f-2026'),
-    alt: '',
+    alt: 'The New York Stock Exchange facade on Wall Street with American flags between its columns.',
+    position: '62% 50%',
   },
   // The Gulf's American Portfolio
   'gulf-sovereign-funds-us-equities-2026': {
@@ -197,5 +203,6 @@ export function withHomeImage(story) {
     image: cardSrc(story.id),
     imageAlt: img.alt || '',
     imagePosition: img.position || null,
+    imageLayout: img.layout || null,
   };
 }

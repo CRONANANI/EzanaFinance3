@@ -2355,3 +2355,130 @@ html:has(.ech-hero) > body {
 .ech-hero--photo .ech-hero__dek {
   color: var(--ech-deep-mute, rgba(255, 255, 255, 0.72)) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20, 2026: top-right legibility and the stacked photo card.
+   1. The kicker ("Article of the Month · November 2026") and Past picks sit
+      on matching dark glass chips, so they read over bright art (yellow and
+      cyan halftone) as well as dark photos. Past picks is 25% thinner
+      (36px to 27px) and the kicker chip shares that height, so the two
+      labels sit on one centre line.
+   2. .ech-hero--stack: the whole picture on top, the headline, dek and
+      byline beneath it on the card's dark ground. No type over the art.
+   ══════════════════════════════════════════════════════════════ */
+.ech-hero--photo .ech-hero__top {
+  align-items: center;
+}
+.ech-hero--photo .ech-hero__kicker,
+.ech-hero--photo .ech-picks .ech-menu__btn {
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  border-radius: var(--ech-r-pill);
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  background: color-mix(in srgb, black 58%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px color-mix(in srgb, black 25%, transparent);
+  text-shadow: none;
+}
+.ech-hero--photo .ech-hero__kicker {
+  padding: 0 12px;
+  color: var(--ech-deep-fg);
+}
+.ech-hero--photo .ech-picks .ech-menu__btn {
+  min-height: 0;
+  padding: 0 11px;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ech-deep-fg);
+}
+.ech-hero--photo .ech-picks .ech-menu__btn:hover {
+  border-color: color-mix(in srgb, var(--brand-band-mint) 60%, transparent);
+}
+.ech-hero--photo .ech-picks .ech-menu__btn .bi-chevron-down {
+  font-size: 10px;
+  color: var(--ech-deep-mute);
+}
+
+/* Stacked: the media becomes an in-flow block at the art's own shape. */
+.ech-hero.ech-hero--stack {
+  min-height: 0;
+  justify-content: flex-start;
+}
+.ech-hero--stack .ech-hero__media {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  border-radius: 0;
+}
+/* No side scrim over the art; only a short fade where it meets the text. */
+.ech-hero--stack .ech-hero__scrim,
+.ech-hero--photo.ech-hero--stack .ech-hero__scrim {
+  background:
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, black 88%, var(--emerald)) 0%,
+      transparent 14%
+    ),
+    linear-gradient(180deg, color-mix(in srgb, black 22%, transparent) 0%, transparent 16%);
+}
+.ech-hero--stack:hover .ech-hero__media img {
+  transform: none;
+}
+.ech-hero--photo.ech-hero--stack .ech-hero__inner {
+  padding: 8px 48px 40px;
+}
+.ech-hero--photo.ech-hero--stack .ech-hero__text {
+  max-width: 920px;
+}
+@media (max-width: 1199px) {
+  .ech-hero--photo.ech-hero--stack .ech-hero__inner {
+    padding: 6px 36px 32px;
+  }
+}
+@media (max-width: 767px) {
+  .ech-hero.ech-hero--photo.ech-hero--stack {
+    min-height: 0;
+  }
+  .ech-hero--stack .ech-hero__media {
+    aspect-ratio: 16 / 9;
+  }
+  .ech-hero--photo.ech-hero--stack .ech-hero__inner {
+    padding: 4px 20px 24px;
+  }
+  .ech-hero--photo.ech-hero--stack .ech-hero__scrim {
+    background: linear-gradient(
+      0deg,
+      color-mix(in srgb, black 88%, var(--emerald)) 0%,
+      transparent 18%
+    );
+  }
+  /* Phones: the art is short, so the chips move off it into the dark panel,
+     above the headline, where they cover nothing. */
+  .ech-hero--photo.ech-hero--stack .ech-hero__top {
+    position: static;
+    order: 0;
+    max-width: none;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 20px 0;
+  }
+  .ech-hero--photo.ech-hero--stack .ech-hero__kicker {
+    padding: 0 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+}
+/* Thinner Past picks holds on phones too (overrides the 44px tap rule;
+   the menu still opens from the whole chip). */
+@media (max-width: 767px) {
+  .ech-hero--photo .ech-picks .ech-menu__btn {
+    height: 27px;
+    min-height: 0;
+  }
+}

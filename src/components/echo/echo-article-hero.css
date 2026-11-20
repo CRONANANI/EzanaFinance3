@@ -512,3 +512,12 @@
     padding: 14px 16px 13px;
   }
 }
+
+/* Nov 20, 2026: art that must show whole (faces across its full width, set
+   with layout 'stack' in home-card-images) keeps its own 16:9 shape at every
+   width, so cover never crops it. */
+.eah-media.eah-media--whole {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  align-self: center;
+}
