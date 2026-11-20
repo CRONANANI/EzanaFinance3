@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AuthShell from '@/components/auth/AuthShell';
+import { GlowButton } from '@/components/ui/glow-button';
 import { redirect } from 'next/navigation';
 import { getUserClient } from '@/lib/supabase';
 import { safeInternalPath } from '@/lib/sanitize';
@@ -63,17 +64,17 @@ export default async function ContinuePage({ searchParams }) {
 
           <form action={switchAccount}>
             <input type="hidden" name="next" value={dest} />
-            <button type="submit" className="as-btn as-btn--outline">
+            <GlowButton type="submit" tone="light" className="as-btn as-btn--glow">
               Use a different account
-            </button>
+            </GlowButton>
           </form>
 
           <form action={startNewAccount}>
             <input type="hidden" name="next" value={dest} />
             <input type="hidden" name="ref" value={ref} />
-            <button type="submit" className="as-btn as-btn--outline">
+            <GlowButton type="submit" tone="light" className="as-btn as-btn--glow">
               Join the waitlist
-            </button>
+            </GlowButton>
           </form>
         </div>
 

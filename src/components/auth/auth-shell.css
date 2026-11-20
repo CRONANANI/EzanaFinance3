@@ -96,15 +96,43 @@
   width: 100%;
   max-width: 24rem;
   padding: 28px;
-  border: 1px solid var(--as-rule);
+  /* Nov 19th, 2026 (night): no hard outline. The card's edge is a hairline
+     that is strongest at the top and fades out down the sides (::before),
+     and a wide soft halo in the page ground feathers the card into the map. */
+  position: relative;
+  border: 0;
   border-radius: var(--radius-xl);
   background: color-mix(in srgb, var(--as-surface) 86%, transparent);
-  box-shadow: 0 24px 60px color-mix(in srgb, black 9%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--as-surface) 40%, transparent),
+    0 0 56px 18px color-mix(in srgb, var(--as-ground) 70%, transparent),
+    0 30px 70px -28px color-mix(in srgb, black 12%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   opacity: 0;
   transform: translateY(16px);
   animation: as-rise 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s forwards;
+}
+.as-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--as-ink) 9%, transparent) 0%,
+    color-mix(in srgb, var(--as-ink) 4%, transparent) 40%,
+    transparent 92%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
 }
 .as-panel--wide {
   max-width: 28rem;
@@ -480,4 +508,24 @@
   min-width: 0;
   padding-block: 2px;
   line-height: 1.4;
+}
+
+/* Nov 19th, 2026 (night): the secondary choices on the signed-in screen use
+   the Glow Button (src/components/ui/glow-button.jsx, light tone): white
+   pill, emerald lights sweeping the rim. Layout stays the card's .as-btn. */
+.as-scope .as-btn.as-btn--glow {
+  padding: 0 18px;
+  border: 0;
+  background: var(--as-surface);
+  color: var(--as-ink);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-medium);
+  letter-spacing: normal;
+}
+.as-scope .as-btn.as-btn--glow:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--as-accent) 4%, var(--as-surface));
+}
+.as-scope .as-btn.as-btn--glow:focus-visible {
+  outline: 2px solid var(--as-accent);
+  outline-offset: 2px;
 }
