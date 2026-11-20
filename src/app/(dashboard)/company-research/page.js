@@ -34,6 +34,7 @@ import {
   SonarResearchTab,
 } from '@/components/research/company/ResearchTabs';
 import { AnalystCard, NewsCard, PinsCard } from '@/components/research/company/ResearchRail';
+import { AnalystTrackRecordCard } from '@/components/research/company/AnalystTrackRecord';
 import {
   IndustryResearchCard,
   PortfolioToolsCard,
@@ -609,6 +610,8 @@ function CompanyResearchPageInner() {
                   <CouncilOnThisName council={council} ticker={selectedStock} research={research} />
                 )}
                 <AnalystCard analyst={research.analyst} price={research.quote.price} />
+                {/* Advanced plan: who has actually been right on this stock. */}
+                <AnalystTrackRecordCard ticker={selectedStock} />
                 {/* Overview and News carry their own news lists; the rail
                     shows headlines on the other tabs. Key metrics moved into
                     the Overview briefing. */}

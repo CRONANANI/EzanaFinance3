@@ -1,0 +1,234 @@
+/* ══════════════════════════════════════════════════════════════
+   Most accurate analysts (AnalystTrackRecordCard), Nov 20, 2026.
+   Rides the rail's .rc-card shell. Prefix atr-.
+   UI guide: text-only toggle (selected = emerald text), one solid
+   emerald primary button, hairlines divide rows, mono numerals.
+   ══════════════════════════════════════════════════════════════ */
+.atr-head {
+  align-items: baseline;
+}
+.atr-plan {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+
+/* Analysts / Firms */
+.atr-tabs {
+  display: flex;
+  gap: 16px;
+  margin-top: -4px;
+}
+.atr-tab {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.atr-tab:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+.atr-tab.is-on {
+  color: var(--emerald-text);
+}
+.atr-tab:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.atr-tab:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+/* Ranked rows */
+.atr-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.atr-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 11px 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.atr-row:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+.atr-rank {
+  padding-top: 1px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.atr-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.atr-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atr-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atr-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.atr-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.atr-rate {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.atr-calls {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Method note */
+.atr-how {
+  border-top: 1px solid var(--border-secondary);
+  padding-top: 10px;
+}
+.atr-how summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-text);
+  cursor: pointer;
+  list-style: none;
+}
+.atr-how summary::-webkit-details-marker {
+  display: none;
+}
+.atr-how summary::after {
+  content: '\F282';
+  font-family: 'bootstrap-icons';
+  margin-left: 6px;
+  font-size: 10px;
+  vertical-align: 1px;
+}
+.atr-how[open] summary::after {
+  content: '\F286';
+}
+.atr-how p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.atr-how .atr-fine {
+  color: var(--text-muted);
+}
+
+/* Locked: blank placeholder rows under the upgrade prompt (no sample data). */
+.atr-locked {
+  position: relative;
+}
+.atr-ghost {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  opacity: 0.5;
+}
+.atr-ghost li {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  grid-template-rows: auto auto;
+  gap: 6px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.atr-ghost li:first-child {
+  border-top: 0;
+}
+.atr-ghost span {
+  height: 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-muted) 22%, transparent);
+}
+.atr-ghost span:nth-child(2) {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  height: 26px;
+}
+.atr-ghost span:nth-child(3) {
+  width: 60%;
+}
+.atr-locked__panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 4px 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-bg) 70%, transparent),
+    var(--card-bg) 55%
+  );
+}
+.atr-locked__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.atr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  background: var(--emerald);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.atr-btn:hover {
+  background: var(--emerald-hover);
+  color: white;
+}
+.atr-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .atr-btn {
+    min-height: 44px;
+  }
+}
