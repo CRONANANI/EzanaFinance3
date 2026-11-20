@@ -442,3 +442,44 @@ body:has(.eth-root) .ezana-echo-container {
     right: auto;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20, 2026: the hero's title panel fades into the black page, so the
+   hand-off to Editors' picks has no edge. The panel starts on the hero's
+   dark green (where the art fades into it) and reaches pure black at its
+   foot. Type stays white and light grey on that ground, well above 4.5:1;
+   the byline and CTA keep Ezana green, which holds about 8:1 on black.
+   ══════════════════════════════════════════════════════════════ */
+.eth-root .ech-hero.ech-hero--photo {
+  background: black;
+}
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__inner {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, black 88%, var(--emerald)) 0%,
+    color-mix(in srgb, black 95%, var(--emerald)) 45%,
+    black 100%
+  );
+}
+.eth-root .ech-hero--photo .ech-hero__title,
+.eth-root .ech-hero--photo .ech-hero__title a {
+  color: white;
+}
+.eth-root .ech-hero--photo .ech-hero__dek {
+  color: color-mix(in srgb, white 82%, transparent);
+}
+
+/* Section filters: the selected one is green text only, no underline. */
+.eth-root .ech-tabs .ech-seg__opt,
+.eth-root .ech-tabs .ech-seg__opt.is-on {
+  box-shadow: none;
+  border-bottom: 0;
+  text-decoration: none;
+}
+.eth-root .ech-tabs .ech-seg__opt.is-on::after {
+  content: none;
+}
+.eth-root .ech-tabs .ech-seg__opt.is-on {
+  background: transparent;
+  color: var(--ech-positive);
+}
