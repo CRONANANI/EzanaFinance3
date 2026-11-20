@@ -15,6 +15,9 @@
   --as-rule: color-mix(in srgb, black 11%, white);
   --as-line: color-mix(in srgb, black 7%, white);
   --as-danger: color-mix(in srgb, red 72%, black);
+  /* Nov 19th, 2026 (night): field and button pills 35% thinner (46px to
+     30px) at the founder's request. One value for every auth control. */
+  --as-control-h: 30px;
 }
 .as-shell {
   position: relative;
@@ -194,9 +197,9 @@
 .as-scope .as-input {
   box-sizing: border-box;
   width: 100%;
-  height: 46px;
+  height: var(--as-control-h);
   margin: 0;
-  padding: 0 46px 0 44px;
+  padding: 0 38px 0 40px;
   border: 1px solid var(--as-rule);
   border-radius: 999px;
   background: var(--as-surface);
@@ -223,8 +226,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -246,7 +249,7 @@
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  min-height: 46px;
+  min-height: var(--as-control-h);
   padding: 0 18px;
   border: 1px solid transparent;
   border-radius: 999px;
