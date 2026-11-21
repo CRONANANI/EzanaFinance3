@@ -118,10 +118,12 @@ export function PublicMobileCta() {
 
   /* The all-datasets page is black, so the bar goes black there too. */
   const dark = pathname === '/datasets';
+  /* Ezana Echo: an emerald bar with a white button (Nov 20, 2026). */
+  const echo = Boolean(pathname?.startsWith('/ezana-echo'));
 
   return (
     <div
-      className={`pcta-bar${dark ? ' pcta-bar--dark' : ''}`}
+      className={`pcta-bar${dark ? ' pcta-bar--dark' : ''}${echo ? ' pcta-bar--echo' : ''}`}
       role="complementary"
       aria-label="Join the waitlist"
     >

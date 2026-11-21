@@ -518,3 +518,140 @@ body:has(.eth-root) .ezana-echo-container {
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20, 2026 (late): Echo home on phones, and greens everywhere.
+   ══════════════════════════════════════════════════════════════ */
+
+/* "Ezana Finance Editorial" (any author name in a byline) is always Ezana
+   emerald, on every card and at every width. */
+.eth-root .ech-byline strong {
+  color: var(--brand-ezana-green);
+}
+
+/* Editors' picks heading in Ezana emerald. */
+.eth-root .ech-picks-rail__title {
+  color: var(--brand-ezana-green);
+}
+
+/* Region and time range share one line under the section filters and use
+   the same look: plain text options, the selected one in green, no pills or
+   outlines. The line scrolls sideways if it ever runs out of room. */
+.eth-root .ech-filterbar .ech-controls__left {
+  flex-wrap: nowrap;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.eth-root .ech-filterbar .ech-controls__left::-webkit-scrollbar {
+  display: none;
+}
+.eth-root .ech-filterbar .ech-menu__btn {
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--brand-ezana-green);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.eth-root .ech-filterbar .ech-menu__btn .bi-chevron-down {
+  color: var(--brand-ezana-green);
+}
+.eth-root .ech-filterbar .ech-seg--mono {
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.eth-root .ech-filterbar .ech-seg--mono .ech-seg__opt {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ech-mute);
+}
+.eth-root .ech-filterbar .ech-seg--mono .ech-seg__opt:hover {
+  color: var(--ech-ink);
+}
+.eth-root .ech-filterbar .ech-seg--mono .ech-seg__opt.is-on {
+  background: transparent;
+  color: var(--ech-positive);
+}
+
+@media (max-width: 767px) {
+  /* Article of the Month and Past picks go back to the top right of the art
+     on phones, on one line, opposite the logo. */
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    left: auto;
+    z-index: 7;
+    width: auto;
+    max-width: calc(100% - 72px);
+    padding: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__kicker {
+    padding: 0 8px;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+  }
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-picks .ech-menu__btn {
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  /* Story list: bigger pictures, calmer titles. The lead story stacks with a
+     full-width 16:9 picture; the rows under it get a 128 x 96 thumbnail. */
+  .eth-root .ech-lead__link {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .eth-root .ech-lead__img {
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 16 / 9;
+  }
+  .eth-root .ech-lead__title {
+    font-size: 20px;
+    line-height: 1.22;
+  }
+  .eth-root .ech-lead__dek {
+    font-size: 14.5px;
+    -webkit-line-clamp: 2;
+  }
+  .eth-root .ech-quad__link {
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .eth-root .ech-quad__img {
+    flex: 0 0 128px;
+    width: 128px;
+    height: 96px;
+  }
+  .eth-root .ech-quad__title {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  .eth-root .ech-quad__dek {
+    font-size: 12.5px;
+  }
+  .eth-root .ech-card--standard.has-img .ech-card__img {
+    width: 128px;
+    max-width: 128px;
+    aspect-ratio: 4 / 3;
+  }
+  .eth-root .ech-card--standard .ech-card__title {
+    font-size: 15px;
+  }
+}

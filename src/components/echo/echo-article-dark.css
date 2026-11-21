@@ -85,3 +85,9 @@ body:has(.echo-article-page) .page-wrapper {
     mask-image: linear-gradient(90deg, transparent 0, black 30%);
   }
 }
+
+/* The author name ("Ezana Finance Editorial") is always Ezana emerald. */
+.eah-byline strong,
+.echo-article-page .echo-article-byline-author strong {
+  color: var(--brand-ezana-green);
+}

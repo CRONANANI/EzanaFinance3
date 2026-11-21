@@ -116,6 +116,42 @@
     outline-color: white;
   }
 
+  /* Echo variant (every /ezana-echo page): the bar is Ezana emerald, the same
+     green as the byline; the copy is black for contrast on the green (8:1;
+     white would be about 2.5:1); Join the waitlist is a white pill with
+     emerald type, and the dismiss X is an emerald icon on a white disc so it
+     stays visible on the green. */
+  .pcta-bar--echo {
+    background: var(--brand-ezana-green);
+    border-top: 0;
+    box-shadow: none;
+  }
+  .pcta-bar--echo .pcta-copy {
+    color: black;
+  }
+  .pcta-bar--echo .pcta-btn,
+  .pcta-bar--echo .pcta-btn:hover,
+  .pcta-bar--echo .pcta-btn:active {
+    background: white;
+    color: var(--brand-ezana-green);
+  }
+  .pcta-bar--echo .pcta-close {
+    width: 32px;
+    height: 32px;
+    margin-right: 0;
+    background: white;
+    color: var(--brand-ezana-green);
+    font-size: 12px;
+  }
+  .pcta-bar--echo .pcta-close:hover,
+  .pcta-bar--echo .pcta-close:active {
+    color: var(--emerald-hover);
+  }
+  .pcta-bar--echo .pcta-btn:focus-visible,
+  .pcta-bar--echo .pcta-close:focus-visible {
+    outline-color: black;
+  }
+
   /* Reserve the bar's height so the last row of content and the footer stay
      reachable above it. Set by PublicMobileCta.jsx while the bar is mounted. */
   body.pcta-open {
