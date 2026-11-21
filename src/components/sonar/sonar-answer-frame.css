@@ -74,20 +74,11 @@
 @container san (min-width: 1240px) {
   .san .san-topline.is-split {
     grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-    align-items: stretch;
+    align-items: start;
     gap: 14px;
-  }
-  .san .san-topline.is-split .san-tools,
-  .san .san-topline.is-split .san-tools .stl,
-  .san .san-topline.is-split .san-tools .stl-item {
-    height: 100%;
   }
   .san .san-topline.is-split .san-tools .stl {
     grid-template-columns: repeat(var(--stl-n, 3), minmax(0, 1fr));
-  }
-  .san .san-topline.is-split .san-tools .stl-head {
-    height: 100%;
-    align-items: center;
   }
 }
 

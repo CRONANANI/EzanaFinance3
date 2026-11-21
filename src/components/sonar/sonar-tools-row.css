@@ -28,10 +28,10 @@
 .stl .stl-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  min-height: 52px;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 4px 12px 4px 6px;
   border: 0;
   border-radius: var(--radius-lg);
   background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
@@ -59,21 +59,23 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--stl-emerald) 15%, transparent);
   color: var(--stl-accent);
+  font-size: 0.875rem;
 }
 .stl .stl-copy {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
+  line-height: 1.25;
 }
 .stl .stl-title {
   font-family: var(--san-mono, var(--font-mono));
-  font-size: var(--type-micro-size);
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
@@ -81,7 +83,7 @@
 }
 .stl .stl-sum {
   overflow: hidden;
-  font-size: var(--type-caption-size);
+  font-size: var(--type-micro-size);
   color: var(--stl-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
