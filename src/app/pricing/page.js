@@ -30,6 +30,7 @@ import { Check, Minus, ArrowRight, ShieldCheck, Loader2, ChevronDown } from 'luc
 import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import ApiPricingCalculator from '@/components/pricing/ApiPricingCalculator';
+import PricingContents from '@/components/pricing/PricingContents';
 import { PLANS as CATALOG } from '@/config/pricing';
 import { RENEWAL_POLICY_TEXT, TRIAL_LABEL } from '@/lib/billing/renewal-terms';
 import './pricing-standalone.css';
@@ -401,7 +402,7 @@ function planPricing(plan, billing) {
     kind: 'paid',
     main: `$${quarter}`,
     unit: '/qtr',
-    note: `$${plan.monthlyPrice}/mo · billed every 3 months`,
+    note: `$${plan.monthlyPrice}/mo · billed quarterly`,
     was: null,
     total: quarter,
   };
@@ -611,6 +612,17 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
 
 /* The sticky marketing navbar changes height on scroll; the mobile comparison
    header sticks just under it, so the page keeps its live height in a var. */
+/* Nov 21: the sections the top-left contents menu jumps to, in page order. */
+const CONTENTS_SECTIONS = [
+  { id: 'overview', label: 'Simple pricing' },
+  { id: 'waitlist', label: 'How the waitlist works' },
+  { id: 'plans', label: 'Plans and prices' },
+  { id: 'partner-program', label: 'Partner program' },
+  { id: 'api-pricing', label: 'API pricing' },
+  { id: 'compare', label: 'Compare plans' },
+  { id: 'faq', label: 'Frequently asked' },
+];
+
 function useNavHeight(rootRef) {
   useEffect(() => {
     const root = rootRef.current;
@@ -802,8 +814,10 @@ export default function PricingPage() {
 
   return (
     <div className="pricing-page--standalone" ref={rootRef}>
+      <PricingContents sections={CONTENTS_SECTIONS} />
+
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <header className="pricing-hero">
+      <header className="pricing-hero" id="overview" data-contents-section>
         <h1 className="pricing-h1">
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
@@ -830,7 +844,12 @@ export default function PricingPage() {
       )}
 
       {/* ── How the waitlist works ───────────────────────────────────── */}
-      <section className="pricing-waitlist" aria-labelledby="pricing-waitlist-h">
+      <section
+        className="pricing-waitlist"
+        id="waitlist"
+        data-contents-section
+        aria-labelledby="pricing-waitlist-h"
+      >
         <h2 id="pricing-waitlist-h" className="pricing-waitlist-h">
           How the waitlist works
         </h2>
@@ -888,7 +907,7 @@ export default function PricingPage() {
       </div>
 
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
-      <section className="pricing-cards-section" aria-label="Plans">
+      <section className="pricing-cards-section" id="plans" data-contents-section aria-label="Plans">
         <PlanList
           billing={billing}
           openPlan={openPlan}
@@ -998,7 +1017,12 @@ export default function PricingPage() {
         {/* ── Partner program (Nov 21 redesign) ─────────────────────────────
             An emerald metal band: the pitch and CTA on the left, the four
             ways partners earn as a ruled 2x2 grid on the right. */}
-        <section className="pricing-partner" aria-labelledby="pricing-partner-h">
+        <section
+          className="pricing-partner"
+          id="partner-program"
+          data-contents-section
+          aria-labelledby="pricing-partner-h"
+        >
           <div className="pricing-partner-copy">
             <span className="pricing-partner-eyebrow">Partner program</span>
             <h3 id="pricing-partner-h" className="pricing-partner-name">
@@ -1049,7 +1073,12 @@ export default function PricingPage() {
       <ApiPricingCalculator />
 
       {/* ── Comparison Table ───────────────────────────────────────── */}
-      <section className="pricing-comparison-section" aria-labelledby="compare-heading">
+      <section
+        className="pricing-comparison-section"
+        id="compare"
+        data-contents-section
+        aria-labelledby="compare-heading"
+      >
         <h2 id="compare-heading">Compare plans</h2>
         <div className="comparison-table-wrap">
           <table className="comparison-table">
@@ -1119,7 +1148,12 @@ export default function PricingPage() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────────── */}
-      <section className="pricing-faq-section" aria-labelledby="faq-heading">
+      <section
+        className="pricing-faq-section"
+        id="faq"
+        data-contents-section
+        aria-labelledby="faq-heading"
+      >
         <h2 id="faq-heading">Frequently asked</h2>
         <div className="pricing-faq-list">
           {FAQ_ITEMS.map((item) => (

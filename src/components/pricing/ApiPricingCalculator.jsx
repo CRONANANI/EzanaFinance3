@@ -92,7 +92,12 @@ export default function ApiPricingCalculator() {
   const isEnt = kind === 'enterprise';
 
   return (
-    <section className="api-pricing" aria-labelledby="api-pricing-heading">
+    <section
+      className="api-pricing"
+      id="api-pricing"
+      data-contents-section
+      aria-labelledby="api-pricing-heading"
+    >
       <div className="api-pricing-head">
         <span className="api-pricing-eyebrow">Ezana API</span>
         <h2 id="api-pricing-heading" className="api-pricing-h2">

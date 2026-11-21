@@ -1,0 +1,124 @@
+/* PricingContents: the /pricing contents menu, styled after the Ezana Echo
+   article rail (.echo-contents). Scoped `pricing-contents`. Sits above the
+   sticky marketing navbar, whose z-index is near the integer maximum. */
+
+.pricing-contents {
+  position: fixed;
+  top: 18px;
+  left: 20px;
+  z-index: 2147483001;
+  font-family: var(--font-sans);
+}
+
+.pricing-contents-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.pricing-contents-toggle:hover,
+.pricing-contents.is-open .pricing-contents-toggle {
+  border-color: color-mix(in srgb, var(--emerald) 55%, transparent);
+  color: var(--emerald-text, var(--emerald));
+}
+.pricing-contents-toggle:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* Panel: below the button, on a card surface. */
+.pricing-contents-panel {
+  margin-top: 8px;
+  width: 248px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  padding: 14px 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-md);
+}
+
+/* Rail (wide viewports): always open, under the navbar line. It keeps its
+   card surface: the Partner band runs full bleed beneath it, and bare text
+   would vanish against the emerald. */
+.pricing-contents.is-rail {
+  top: calc(var(--pricing-nav-h, 72px) + 24px);
+}
+.pricing-contents.is-rail .pricing-contents-panel {
+  margin-top: 0;
+  width: 220px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pricing-contents-head {
+  margin: 0 0 10px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.pricing-contents ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pricing-contents a {
+  display: block;
+  padding: 5px 10px;
+  border-left: 2px solid transparent;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease;
+}
+.pricing-contents a:hover {
+  color: var(--text-primary);
+}
+.pricing-contents a.is-active {
+  color: var(--emerald-text, var(--emerald));
+  border-left-color: var(--emerald);
+  font-weight: 600;
+}
+.pricing-contents a:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+
+@media (max-width: 768px) {
+  .pricing-contents {
+    top: 12px;
+    left: 12px;
+  }
+  .pricing-contents-toggle {
+    min-height: 34px;
+    padding: 0 0.65rem;
+  }
+}
+
+/* Sections land under the sticky navbar, not behind it. */
+.pricing-page--standalone [data-contents-section] {
+  scroll-margin-top: calc(var(--pricing-nav-h, 72px) + 16px);
+}

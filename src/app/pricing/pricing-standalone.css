@@ -2314,3 +2314,35 @@ body:not(.light-mode) .pricing-page--standalone .plan-card:not(.plan-card--highl
     filter: brightness(1.15);
   }
 }
+
+/* Nov 21: the outer waitlist steps line up with the outer plan cards. The
+   waitlist and the cards share one content box (1280px, 2rem gutters), so
+   step 1 starts flush with the Free card's left edge and step 3 ends flush
+   with the Enterprise card's right edge; step 2 stays centred over Advanced. */
+@media (min-width: 769px) {
+  .pricing-waitlist-step:first-child,
+  .pricing-waitlist-step:last-child {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .pricing-waitlist-step:first-child {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .pricing-waitlist-step:last-child {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+
+/* Partner band: the right-hand column of rates (Referrals, Ezana Echo) is
+   right-aligned, so its text ends on the Enterprise card's right edge. */
+@media (min-width: 481px) {
+  .pricing-partner .pricing-partner-rate:nth-child(even) {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .pricing-partner .pricing-partner-rate:nth-child(even) .pricing-partner-rate-label {
+    justify-content: flex-end;
+  }
+}

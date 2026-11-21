@@ -83,3 +83,131 @@
     flex: 1;
   }
 }
+
+/* Nov 21: the calculator on the landing Sonar band's glossy emerald metal.
+   The widget paints entirely from tokens, so redefining them on the card
+   turns every surface, rule and label light-on-emerald in one place. The
+   inputs and the results panel become recessed dark glass. */
+.api-pricing-calc.calc {
+  --text-primary: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.78);
+  --text-faint: rgba(255, 255, 255, 0.58);
+  --text-secondary: rgba(255, 255, 255, 0.88);
+  --border-primary: rgba(255, 255, 255, 0.14);
+  --border-hover: rgba(167, 243, 208, 0.45);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 0;
+  background: var(--brand-band-metal);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--brand-band-mint) 26%, transparent),
+    0 18px 44px -14px color-mix(in srgb, var(--emerald) 50%, transparent);
+}
+/* Glass highlight across the top of the card. */
+.api-pricing-calc.calc::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: -1;
+}
+.api-pricing-calc .calc-field {
+  background: rgba(2, 22, 16, 0.42);
+  border-color: rgba(167, 243, 208, 0.22);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.api-pricing-calc .calc-field:focus-within {
+  border-color: var(--brand-band-mint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-band-mint) 25%, transparent);
+}
+.api-pricing-calc .calc-results {
+  background: rgba(2, 22, 16, 0.4);
+  border-color: rgba(167, 243, 208, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.api-pricing-calc .calc-slider-track {
+  background: rgba(255, 255, 255, 0.18);
+}
+.api-pricing-calc .calc-slider-fill {
+  background: var(--brand-band-mint);
+}
+.api-pricing-calc .calc-slider-thumb {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--brand-band-mint) 40%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.api-pricing-calc .calc-sw-1 {
+  background: var(--brand-band-mint);
+}
+.api-pricing-calc .calc-submit {
+  border-color: transparent;
+  background: #ffffff;
+  color: var(--emerald-dark);
+}
+.api-pricing-calc .calc-submit:hover:not(:disabled) {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.9);
+}
+.api-pricing-calc .calc-reset {
+  color: var(--text-muted);
+}
+
+/* Individual / Enterprise switch on the same glossy metal. */
+.api-pricing-tabs {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--brand-band-metal);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--brand-band-mint) 28%, transparent),
+    0 10px 28px -8px color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+.api-pricing-tabs::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: -1;
+}
+.api-pricing-tab {
+  color: rgba(255, 255, 255, 0.72);
+}
+.api-pricing-tab:hover {
+  color: #ffffff;
+}
+.api-pricing-tab.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 1px rgba(167, 243, 208, 0.35);
+}
+.api-pricing-tab:focus-visible {
+  outline-color: var(--brand-band-mint);
+}
+
+/* Page-level type rules (pricing-standalone.css styles h3 and p) outrank the
+   widget's token reads, so the card's text colours are pinned here. */
+.api-pricing .api-pricing-calc .calc-title {
+  color: #ffffff;
+}
+.api-pricing .api-pricing-calc .calc-desc,
+.api-pricing .api-pricing-calc .calc-footnote {
+  color: rgba(255, 255, 255, 0.78);
+}
+.api-pricing .api-pricing-calc .calc-input-label {
+  color: rgba(255, 255, 255, 0.88);
+}
