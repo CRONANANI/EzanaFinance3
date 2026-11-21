@@ -2384,9 +2384,10 @@ html:has(.landing-page) .navbar .logo,
      so left:50% + translateX(-50%) centers the panel on the PAGE and it extends
      equally left/right — never past either viewport edge. */
   left: 50%;
-  /* Wide enough for all 7 dimension buckets in ONE row; 96vw cap keeps it
-     inside the viewport (no horizontal page scroll). */
-  width: min(1440px, 96vw);
+  /* Wide enough for all 7 dimension buckets in ONE row; the viewport cap keeps
+     it inside the window. Everything inside scales to fit this width, so the
+     panel never scrolls sideways (Nov 2026). */
+  width: min(1440px, calc(100vw - 24px));
   padding-top: 0.6rem;
   transform: translateX(-50%) translateY(-6px);
   opacity: 0;
@@ -2442,7 +2443,7 @@ html:has(.landing-page) .navbar .logo,
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
-  padding: 1.25rem 1.25rem 0.75rem;
+  padding: clamp(0.75rem, 1.1vw, 1.25rem) clamp(0.6rem, 1.1vw, 1.25rem) 0.75rem;
 }
 
 .nav-datasets-cols {
@@ -2453,23 +2454,32 @@ html:has(.landing-page) .navbar .logo,
   /* min-content, not 0: each column is at least as wide as its (nowrap)
      dimension heading, so "Global Empire Lighthouse" stays on one line and
      the other columns share what is left. Item labels still wrap. */
-  grid-template-columns: repeat(7, minmax(min-content, 1fr));
-  gap: 0.4rem 0.7rem;
+  /* Nov 2026: minmax(0, 1fr) so the seven columns always share the panel
+     width exactly and nothing can push past it (no sideways scrollbar).
+     Headings and labels wrap instead, and type/spacing scale with the
+     viewport so the menu stays readable from 1024px up. */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem clamp(0.3rem, 0.6vw, 0.7rem);
   align-items: start;
+}
+.nav-datasets-col {
+  min-width: 0;
 }
 
 .nav-datasets-col-head {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.25rem;
+  white-space: normal;
   margin: 0 0 0.35rem;
-  /* Match .nav-datasets-item's 0.5rem horizontal padding so the header
-     text left-aligns with the item labels in its column. */
-  padding-left: 0.5rem;
-  font-size: 0.6875rem;
+  /* Match .nav-datasets-item's horizontal padding so the header text
+     left-aligns with the item labels in its column. */
+  padding-left: var(--nav-ds-pad-x);
+  font-size: clamp(0.5625rem, 0.6vw, 0.6875rem);
+  line-height: 1.25;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: clamp(0.02em, 0.04vw, 0.06em);
   text-transform: uppercase;
   color: var(--text-faint);
   transition: color 0.15s ease;
@@ -2482,9 +2492,16 @@ html:has(.landing-page) .navbar .logo,
 /* The icon leads the label on every column and inherits the dimension colour. */
 .nav-datasets-col-icon {
   flex-shrink: 0;
-  font-size: 1rem;
+  font-size: clamp(0.8125rem, 0.85vw, 1rem);
   line-height: 1;
   color: var(--nav-dim-color, currentColor);
+}
+.nav-datasets-col-label {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.nav-datasets-panel {
+  --nav-ds-pad-x: clamp(0.3rem, 0.4vw, 0.5rem);
 }
 
 .navbar .nav-datasets-item {
@@ -2493,8 +2510,11 @@ html:has(.landing-page) .navbar .logo,
      first line rather than vertically centered against the taller block. */
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.4rem;
-  padding: 0.4rem 0.5rem;
+  /* Wrap so a Preview/Soon tag drops under its label in narrow columns
+     instead of being clipped or forcing the column wider. */
+  flex-wrap: wrap;
+  gap: 0.2rem 0.4rem;
+  padding: 0.4rem var(--nav-ds-pad-x);
   border-radius: var(--radius-md);
   text-decoration: none;
   transition: background 0.14s ease;
@@ -2541,7 +2561,8 @@ html:has(.landing-page) .navbar .logo,
 }
 
 .nav-datasets-item-label {
-  font-size: 0.8125rem;
+  min-width: 0;
+  font-size: clamp(0.6875rem, 0.7vw, 0.8125rem);
   font-weight: 500;
   /* Every dataset reads in its dimension's colour (set per column). */
   color: var(--nav-dim-color, var(--text-primary));
@@ -2586,21 +2607,15 @@ html:has(.landing-page) .navbar .logo,
   background: var(--border-strong);
 }
 
-/* The mega-menu only shows on the desktop nav (≥1024px; below that the nav is
-   the stacked hamburger drawer). On smaller laptops where 7 equal columns would
-   get cramped, keep them in ONE row but make it a horizontal-scroll strip rather
-   than wrapping to a second row. */
-@media (max-width: 1120px) {
-  .nav-datasets-cols {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .nav-datasets-col {
-    flex: 0 0 auto;
-    min-width: 148px;
-  }
+/* Tags inside the desktop mega-menu: a notch smaller and tighter than the
+   shared eyebrow so they fit beside labels in seven columns. No horizontal
+   scroll strip at any width (Nov 2026): the columns shrink and wrap instead. */
+.navbar .nav-datasets-panel .nav-datasets-sample,
+.navbar .nav-datasets-panel .nav-datasets-soon {
+  margin-left: 0;
+  font-size: clamp(0.5625rem, 0.55vw, 0.6875rem);
+  letter-spacing: 0.08em;
+  padding: 0.05rem 0.3rem;
 }
 
 .landing-page .features-section {

@@ -170,12 +170,12 @@
    columns now size to their content instead. Seven columns at the full 13px
    type need a 1,810px panel, so the menu uses compact type (--ndm-*) on
    laptop widths, sized so all seven fit a 1,440px screen, and the full type
-   from 1,900px. Below 1,440px the single row scrolls sideways inside the
-   panel; it never wraps or drops to a second row. Icons and Hub links take
+   from 1,900px. Below that, long titles and rows wrap inside their column
+   (Nov 21: no sideways scroll); the seven columns never drop to a second row. Icons and Hub links take
    the Ezana emerald (Navbar.js passes var(--emerald) as the column colour). */
 .navbar .nav-datasets-mega {
-  /* Under 1,440px: smallest compact type; all seven fit from 1,366px. Below
-     that the row scrolls sideways inside the panel rather than wrapping. */
+  /* Under 1,440px: smallest compact type; all seven fit on one line from
+     1,366px. Below that, titles and rows wrap within their column. */
   --ndm-label: 0.6875rem;
   --ndm-head: 0.5625rem;
   --ndm-track: 0.02em;
@@ -231,17 +231,19 @@
   padding-left: var(--ndm-panel-pad);
   padding-right: var(--ndm-panel-pad);
 }
+/* ── Nov 21: no sideways scrollbar at any width ──────────────────────
+   Each column sizes between its min-content and max-content width, so when
+   the panel is wide enough every title and row stays on one line (Oct 14),
+   and when it is not the columns shrink and wrap instead of overflowing.
+   The panel never scrolls horizontally. */
 .navbar .nav-datasets-mega .nav-datasets-cols {
   display: grid;
-  grid-template-columns: repeat(7, max-content);
+  grid-template-columns: repeat(7, minmax(min-content, max-content));
   justify-content: space-between;
   align-items: start;
   column-gap: var(--ndm-gap);
   row-gap: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
+  overflow: visible;
 }
 .navbar .nav-datasets-mega .nav-datasets-col {
   flex: none;
@@ -249,10 +251,10 @@
 }
 .navbar .nav-datasets-mega .nav-datasets-col-head,
 .navbar .nav-datasets-mega .nav-datasets-col:hover .nav-datasets-col-head {
-  flex-wrap: nowrap;
-  gap: 0.3rem;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.3rem;
   padding-left: 0.3rem;
-  white-space: nowrap;
+  white-space: normal;
   font-size: var(--ndm-head);
   letter-spacing: var(--ndm-track);
 }
@@ -266,16 +268,20 @@
 }
 .navbar .nav-datasets-mega .nav-datasets-item {
   align-items: center;
-  gap: var(--ndm-item-gap);
+  /* A Preview/Soon tag drops under its label when the column is narrow. */
+  flex-wrap: wrap;
+  row-gap: 0.15rem;
+  column-gap: var(--ndm-item-gap);
   padding: var(--ndm-row-pad);
 }
 .navbar .nav-datasets-mega .nav-datasets-item-label,
 .navbar .nav-datasets-mega a.nav-datasets-item .nav-datasets-item-label {
-  white-space: nowrap;
+  white-space: normal;
   font-size: var(--ndm-label);
 }
 .navbar .nav-datasets-mega .nav-datasets-soon,
 .navbar .nav-datasets-mega .nav-datasets-sample {
   font-size: var(--ndm-pill);
   padding: var(--ndm-pill-pad);
+  letter-spacing: 0.08em;
 }
