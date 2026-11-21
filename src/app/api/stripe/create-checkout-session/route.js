@@ -8,6 +8,9 @@ import { TRIAL_DAYS, renewalText, trialEndDate } from '@/lib/billing/renewal-ter
 import { getAdminClient } from '@/lib/supabase';
 import { startOrSwitchSubscription } from '@/lib/billing/plan-switch';
 import { resolvePriceId } from '@/lib/billing/resolve-price';
+import { isTrialSignupAccount } from '@/lib/billing/feature-access';
+import { OPEN_PLAN_KEYS } from '@/config/plan-features';
+import { logFunnelEvent } from '@/lib/analytics/funnel';
 
 /**
  * One Stripe customer per user: the create carries the idempotency key
@@ -125,6 +128,20 @@ export const POST = withApiGuard(
       const hasExistingSubscription =
         profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing';
 
+      /* Nov 21: Starter and Family are waitlist-only. An account made by the
+         Advanced trial signup (not admitted from the waitlist) may only buy
+         Advanced; a subscriber switching plans, and accounts admitted through
+         an invite or from before the waitlist, keep the full catalog. */
+      if (!OPEN_PLAN_KEYS.has(planKey) && !hasExistingSubscription && isTrialSignupAccount(user)) {
+        return NextResponse.json(
+          {
+            error: `${catalogPlan.name} is opening by waitlist. Advanced is available now with a 30-day free trial.`,
+            code: 'waitlist_only',
+          },
+          { status: 403 },
+        );
+      }
+
       let customerId = profile?.stripe_customer_id;
 
       if (!customerId) {
@@ -153,7 +170,10 @@ export const POST = withApiGuard(
          enabled (needs the Terms URL set in Stripe, Settings, Public details).
          The date is in UTC here: the server does not know the visitor's time
          zone (the page beside the button shows it in their own). */
-      const trial = !hasExistingSubscription;
+      /* One free trial per customer: an account whose earlier subscription
+         ended (status canceled) subscribes without a new trial. */
+      const hadSubscription = profile?.subscription_status === 'canceled';
+      const trial = !hasExistingSubscription && !hadSubscription;
       const renewal = renewalText(plan, {
         trial,
         endDate: trial ? `${trialEndDate(new Date(), 'UTC')} (UTC)` : undefined,
@@ -164,7 +184,10 @@ export const POST = withApiGuard(
         customer: customerId,
         line_items: [{ price: plan.priceId, quantity: 1 }],
         mode: 'subscription',
-        success_url: `${origin}/home?checkout=success`,
+        /* Nov 21: a new Advanced trial lands on the goal picker (AdvancedWelcome). */
+        success_url: `${origin}/home?checkout=success${
+          OPEN_PLAN_KEYS.has(planKey) && trial ? '&welcome=advanced' : ''
+        }`,
         cancel_url: `${origin}${safeCancel}?canceled=true`,
         payment_method_collection: 'always',
         custom_text: { submit: { message: renewal.slice(0, 1200) } },
@@ -178,7 +201,7 @@ export const POST = withApiGuard(
             supabase_user_id: user.id,
             plan_key: planKey,
           },
-          ...(hasExistingSubscription ? {} : { trial_period_days: TRIAL_DAYS }),
+          ...(trial ? { trial_period_days: TRIAL_DAYS } : {}),
         },
         metadata: {
           supabase_user_id: user.id,
@@ -199,6 +222,22 @@ export const POST = withApiGuard(
         checkoutParams,
         checkoutIdempotencyKey: `cs:${user.id}:${plan.priceId}:${Math.floor(Date.now() / 60_000)}`,
       });
+      if (body?.url && !body?.switched && !body?.alreadySubscribed) {
+        await logFunnelEvent(
+          getAdminClient(),
+          'checkout_started',
+          {
+            plan: OPEN_PLAN_KEYS.has(planKey) ? 'advanced' : null,
+            billing:
+              catalogPlan.interval === 'year'
+                ? 'yearly'
+                : catalogPlan.interval === 'quarter'
+                  ? 'quarterly'
+                  : null,
+          },
+          { userId: user.id },
+        );
+      }
       return NextResponse.json(body, { status });
     } catch (error) {
       console.error('Stripe checkout session error:', {

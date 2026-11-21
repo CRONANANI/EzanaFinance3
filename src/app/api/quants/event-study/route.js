@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireFeature } from '@/lib/billing/feature-access';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getDailyOhlcv } from '@/lib/prices/daily-bars';
 import { DEFAULT_HORIZONS, eventStudy } from '@/lib/quants/event-study';
@@ -37,7 +38,11 @@ async function pooled(items, limit, task) {
  * open of the next session. Nothing is stored.
  */
 export const POST = withApiGuard(
-  async (request) => {
+  async (request, user) => {
+    /* Nov 21: Quant Lab compute is an Advanced feature (plan registry).
+       Reading and deleting your own saved work stays open on every plan. */
+    const denied = await requireFeature(user, 'quant-lab');
+    if (denied) return denied;
     try {
       const body = await request.json().catch(() => ({}));
       const dataset = String(body?.dataset || '');

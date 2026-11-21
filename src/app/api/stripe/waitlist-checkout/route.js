@@ -86,7 +86,7 @@ export const POST = withApiGuard(
       const starter = starterPlanFor(meta.billing);
       const message =
         'No charge today: Stripe saves your card. When you are accepted from the waitlist, ' +
-        `your free 1-month Starter trial starts, then ${priceAndPeriod(starter)}, billed ` +
+        `your free 30-day Starter trial starts, then ${priceAndPeriod(starter)}, billed ` +
         'automatically until you cancel. You can move to Advanced at any time, and you can ' +
         'cancel in Settings, Billing before the trial ends without being charged.';
 

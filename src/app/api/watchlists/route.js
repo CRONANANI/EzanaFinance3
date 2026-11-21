@@ -10,6 +10,7 @@
  * 200 / 201  — success
  * 400        — missing / invalid payload
  * 401        — not authenticated
+ * 402        — the plan's watchlist cap is reached (Nov 21, 2026)
  * 409        — a list with that label already exists for this user
  * 500        — unexpected DB / runtime error (real cause in `detail` in dev)
  */
@@ -18,6 +19,8 @@ import { withApiGuard } from '@/lib/api-guard';
 import { getAuthContext } from '@/lib/supabase';
 import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
 import { computeNextPosition, POSITION_STEP } from '@/lib/watchlists/position';
+import { resolvePlanAccess } from '@/lib/billing/feature-access';
+import { TIER_NAME, watchlistLimitFor } from '@/config/plan-features';
 
 export const dynamic = 'force-dynamic';
 
@@ -195,6 +198,37 @@ export const POST = withApiGuard(
       }
       if (label.length > MAX_LABEL) {
         return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
+      }
+
+      /* Nov 21: the plan's watchlist cap (plan registry). Counts lists, never
+         removes one: a user already past the cap keeps every list and only
+         cannot add more. Org members and partners are not capped. Fails
+         closed if the plan cannot be read. */
+      const access = await resolvePlanAccess(user);
+      if (!access.ok) {
+        return NextResponse.json(
+          { error: 'Plan check unavailable. Please try again shortly.' },
+          { status: 503 },
+        );
+      }
+      if (access.scope === 'retail') {
+        const limit = watchlistLimitFor(access.tier);
+        const { count, error: countErr } = await supabase
+          .from('user_watchlists')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        if (countErr) return dbErrorResponse('watchlists.count', countErr);
+        if ((count ?? 0) >= limit) {
+          return NextResponse.json(
+            {
+              error: `Your ${TIER_NAME[access.tier]} plan includes ${limit} watchlists. Remove one or upgrade to add more.`,
+              code: 'plan_limit',
+              limit,
+              upgradeUrl: '/pricing#plans',
+            },
+            { status: 402 },
+          );
+        }
       }
 
       // Retry loop — if a future (user_id, sort_order) unique index is ever

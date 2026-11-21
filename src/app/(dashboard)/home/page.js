@@ -23,6 +23,7 @@ import { NewsCenter } from '@/components/home/NewsCenter';
 import { useHeroReturns } from '@/lib/home/use-hero-returns';
 import { WIRE_NAME } from '@/lib/home/news-center';
 import './broadsheet.css';
+import { AdvancedWelcome } from '@/components/onboarding/AdvancedWelcome';
 
 // Canvas card, browser-only: its own chunk, so it stays out of /home's first load.
 /* The comparison chart brings the chart library with it: keep both out of
@@ -871,7 +872,6 @@ export default function HomePage() {
     };
   }, []);
 
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('connected') === '1') {
@@ -882,6 +882,8 @@ export default function HomePage() {
 
   return (
     <div className="bs-shell">
+      {/* Nov 21: the goal picker after an Advanced trial checkout. */}
+      <AdvancedWelcome />
       {/* ═══ YOUR ACTIVITY (Nov 2026) ═══
           First thing under the top nav: a year of the user's activity on
           Ezana (a login is the base colour; more activity, deeper colour).

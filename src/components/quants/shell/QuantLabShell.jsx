@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { Badge, Heading } from '@/components/ds';
 import { QuantLabSidebar } from './QuantLabSidebar';
+import { QuantPlanNotice } from './QuantPlanNotice';
 
 /**
  * The Quant Lab frame: workspace sidebar on the left, the workspace on the
@@ -13,7 +14,10 @@ export function QuantLabShell({ children }) {
       <Suspense fallback={<nav className="qlx-side" aria-label="Quant Lab workspaces" />}>
         <QuantLabSidebar />
       </Suspense>
-      <main className="qlx-main">{children}</main>
+      <main className="qlx-main">
+        <QuantPlanNotice />
+        {children}
+      </main>
     </div>
   );
 }

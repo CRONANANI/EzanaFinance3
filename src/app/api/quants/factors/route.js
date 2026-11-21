@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireFeature } from '@/lib/billing/feature-access';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { FACTORS, buildPanel, factorStudy } from '@/lib/quants/factors';
@@ -18,7 +19,11 @@ const NOT_SET_UP = new Set(['PGRST202', '42883', '42P01']);
  * closes. Read-only; nothing is written.
  */
 export const GET = withApiGuard(
-  async (request) => {
+  async (request, user) => {
+    /* Nov 21: Quant Lab compute is an Advanced feature (plan registry).
+       Reading and deleting your own saved work stays open on every plan. */
+    const denied = await requireFeature(user, 'quant-lab');
+    if (denied) return denied;
     try {
       const params = new URL(request.url).searchParams;
       const factor = String(params.get('factor') || 'momentum_12_1');

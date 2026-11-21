@@ -19,7 +19,9 @@ import './public-mobile-cta.css';
 
 /* Auth flows own their own primary action, so the bar would either be
    redundant (sign-up) or compete with the page (Login, Become a Partner). */
-const EXCLUDED_PREFIXES = ['/auth', '/signin', '/signup', '/subscribe', '/payment'];
+/* /pricing has its own plan buttons (Advanced trial first, Nov 21): a
+   generic "Join the waitlist" bar there would contradict them. */
+const EXCLUDED_PREFIXES = ['/auth', '/signin', '/signup', '/subscribe', '/payment', '/pricing'];
 
 /* Survives client-side navigation within the session, and is cheap to lose:
    sessionStorage is wrapped because private-mode Safari throws on access. */

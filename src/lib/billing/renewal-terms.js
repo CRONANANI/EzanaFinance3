@@ -5,10 +5,12 @@
  * Quebec's consumer protection act. Plain text here; RenewalTerms renders it.
  */
 
-/* Nov 21, 2026: the free trial is one month (was 14 days). TRIAL_DAYS drives
-   Stripe's trial_period_days; TRIAL_LABEL is how the length reads in copy. */
+/* Nov 21, 2026: the free trial is 30 days (was 14). TRIAL_DAYS drives
+   Stripe's trial_period_days; TRIAL_LABEL is how the length reads in copy.
+   "30-day", not "1-month": the trial is counted in days, so the copy says
+   exactly what Stripe does. */
 export const TRIAL_DAYS = 30;
-export const TRIAL_LABEL = '1-month';
+export const TRIAL_LABEL = `${TRIAL_DAYS}-day`;
 export const BILLING_SETTINGS_PATH = '/settings?tab=billing';
 
 const PERIOD = { month: 'month', quarter: 'quarter', year: 'year' };
@@ -21,6 +23,12 @@ export function formatPrice(amount) {
 /** "$19 per month" */
 export function priceAndPeriod(plan) {
   return `${formatPrice(plan.price)} per ${PERIOD[plan.interval] || plan.interval}`;
+}
+
+/** "$57 every 3 months" / "$180 every year": the amount actually charged. */
+export function billedAmountText(plan) {
+  const every = { month: 'every month', quarter: 'every 3 months', year: 'every year' };
+  return `${formatPrice(plan.price)} ${every[plan.interval] || `per ${plan.interval}`}`;
 }
 
 /** The trial's last day, in the given (default: the visitor's) time zone. */
@@ -44,7 +52,7 @@ export function renewalText(plan, { trial = true, endDate } = {}) {
   if (!trial)
     return `${billed[0].toUpperCase()}${billed.slice(1)} You can cancel anytime in Settings, Billing.`;
   const before = endDate ? ` before ${endDate}` : ` before the ${TRIAL_LABEL} trial ends`;
-  return `Free for 1 month, then ${billed} You can cancel anytime in Settings, Billing${before} and you won't be charged.`;
+  return `Free for ${TRIAL_DAYS} days, then ${billed} You can cancel anytime in Settings, Billing${before} and you won't be charged.`;
 }
 
 /** Generic wording for the Terms and FAQ (no specific plan). */

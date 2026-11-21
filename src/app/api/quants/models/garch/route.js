@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireFeature } from '@/lib/billing/feature-access';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { cleanTicker, loadCloses } from '@/lib/quants/model-data';
 import { logReturns, fitGarch11 } from '@/lib/quants/models';
@@ -15,7 +16,11 @@ const CHART_POINTS = 250;
  * GARCH(1,1) volatility fit and 20-day forecast on three years of daily closes.
  */
 export const POST = withApiGuard(
-  async (request) => {
+  async (request, user) => {
+    /* Nov 21: Quant Lab compute is an Advanced feature (plan registry).
+       Reading and deleting your own saved work stays open on every plan. */
+    const denied = await requireFeature(user, 'quant-lab');
+    if (denied) return denied;
     try {
       const body = await request.json().catch(() => ({}));
       const ticker = cleanTicker(body?.ticker);

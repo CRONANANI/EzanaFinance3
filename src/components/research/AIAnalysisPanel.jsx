@@ -82,6 +82,8 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  /* Nov 21: AI model reports are an Advanced feature (402 from the API). */
+  const [planLocked, setPlanLocked] = useState(false);
   const [simpleExplain, setSimpleExplain] = useState(false);
   const panelRef = useRef(null);
   const { completeTask } = useChecklist();
@@ -112,6 +114,7 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
     if (!symbol || !modelId) return;
     setLoading(true);
     setError(null);
+    setPlanLocked(false);
     setAnalysis(null);
 
     try {
@@ -121,6 +124,10 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
         body: JSON.stringify({ ticker: symbol, model: modelId, simpleExplain }),
       });
 
+      if (res.status === 402) {
+        setPlanLocked(true);
+        return;
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `Analysis failed (${res.status})`);
@@ -225,6 +232,22 @@ function GenericAnalysisPanel({ modelId, symbol, onClose, showTips }) {
           {loading && (
             <div className="ai-analysis-loading">
               <SonarLoader size="md" sublabel={`Running ${modelConfig.name} on ${symbol}`} />
+            </div>
+          )}
+
+          {planLocked && !loading && (
+            <div className="ai-analysis-error" role="status">
+              <p className="ai-state-title">
+                <i className="bi bi-lock" aria-hidden="true" />
+                AI model reports are part of Advanced
+              </p>
+              <p className="ai-state-text">
+                The model itself stays open to you. The AI report, including the GRPV score, comes
+                with Advanced, which you can try free for 30 days.
+              </p>
+              <a href="/pricing#plans" className="ai-retry-btn">
+                <i className="bi bi-arrow-up-right" aria-hidden="true" /> See Advanced
+              </a>
             </div>
           )}
 

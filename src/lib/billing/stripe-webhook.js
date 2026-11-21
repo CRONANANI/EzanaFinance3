@@ -20,6 +20,7 @@
 
 import { getPlanKeyByPriceId } from '@/config/pricing';
 import { planKeyFromLookupKey } from '@/lib/billing/resolve-price';
+import { logFunnelEvent } from '@/lib/analytics/funnel';
 
 const UNIQUE_VIOLATION = '23505';
 const MISSING_TABLE = new Set(['42P01', 'PGRST205']);
@@ -183,6 +184,23 @@ export async function handleStripeEvent({ admin, stripe }, event) {
           planKey: session.metadata?.plan_key || null,
           extra: { stripe_customer_id: session.customer, onboarding_completed: true },
         });
+        /* Funnel: a trial confirmed by Stripe (not by the browser). */
+        if (sub.status === 'trialing') {
+          const key = session.metadata?.plan_key || sub.metadata?.plan_key || '';
+          await logFunnelEvent(
+            admin,
+            'trial_confirmed',
+            {
+              plan: key.startsWith('personal_advanced') ? 'advanced' : null,
+              billing: key.endsWith('_annual')
+                ? 'yearly'
+                : key.endsWith('_quarterly')
+                  ? 'quarterly'
+                  : null,
+            },
+            { userId },
+          );
+        }
         return { result };
       }
       return { note: `mode ${session.mode} not handled` };

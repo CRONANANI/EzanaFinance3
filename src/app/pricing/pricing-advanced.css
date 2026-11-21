@@ -1,0 +1,873 @@
+/* /pricing, Advanced-first redesign (Nov 21, 2026). Scoped `pr3-`.
+   Tokens only (theme-variables.css); the glossy emerald metal is the landing
+   Sonar band's --brand-band-metal. Shared pieces (billing switch, plan
+   buttons, FAQ, footer) come from pricing-standalone.css. */
+
+.pr3 {
+  --pr3-max: 1180px;
+  --pr3-ink: var(--text-primary);
+  --pr3-mute: var(--text-muted);
+  --pr3-faint: var(--text-faint);
+  --pr3-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --pr3-emerald-ink: var(--emerald-text, var(--emerald));
+  --pr3-metal-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--brand-band-mint) 26%, transparent),
+    0 22px 50px -18px color-mix(in srgb, var(--emerald) 55%, transparent);
+}
+
+.pr3-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pr3 [data-contents-section] {
+  scroll-margin-top: calc(var(--pricing-nav-h, 72px) + 16px);
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.pr3-hero {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 4.5rem 2rem 2.25rem;
+  text-align: center;
+}
+.pr3-h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  color: var(--pr3-ink);
+  text-wrap: balance;
+}
+.pr3-accent {
+  color: var(--pr3-emerald-ink);
+}
+.pr3-sub {
+  margin: 1rem auto 0;
+  max-width: 44ch;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--pr3-mute);
+  text-wrap: balance;
+}
+.pr3-availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1.25rem auto 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--pr3-ink);
+}
+.pr3-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--emerald) 18%, transparent);
+}
+.pr3-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+}
+.pr3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    color 0.15s ease;
+}
+.pr3-btn--primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0) 51%
+    ),
+    var(--brand-band-metal);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 10px 24px -10px color-mix(in srgb, var(--emerald) 60%, transparent);
+}
+.pr3-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+.pr3-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.pr3-btn--text {
+  padding: 0;
+  background: transparent;
+  color: var(--pr3-ink);
+}
+.pr3-btn--text:hover {
+  color: var(--pr3-emerald-ink);
+}
+.pr3-btn:focus-visible,
+.pr3-inline-link:focus-visible,
+.pr3-text-link:focus-visible,
+.pr3-step-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+.pr3-hero-terms {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--pr3-mute);
+}
+.pr3-outcomes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.75rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pr3-outcomes li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pr3-ink);
+}
+.pr3-outcomes .bi {
+  color: var(--pr3-emerald-ink);
+}
+
+/* ── Plans ────────────────────────────────────────────────────────────── */
+.pr3-plans {
+  max-width: var(--pr3-max);
+  margin: 0 auto;
+  padding: 0.5rem 2rem 2.5rem;
+}
+.pr3-billing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 2.25rem;
+}
+.pr3-billing-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pr3-faint);
+}
+.pr3-error {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 640px;
+  margin: -1rem auto 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--negative);
+}
+.pr3-inline-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pr3-emerald-ink);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.pr3-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.18fr);
+  align-items: stretch;
+  gap: 1.25rem;
+}
+.pr3-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.6rem 1.5rem 1.5rem;
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+
+/* Waitlist cards: transparent with a thin glossy emerald ring. */
+.pr3-card--waitlist {
+  background: transparent;
+  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--emerald) 30%, transparent);
+}
+.pr3-card--waitlist::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    var(--brand-band-mint) 0%,
+    var(--emerald) 30%,
+    color-mix(in srgb, var(--emerald) 70%, black) 65%,
+    var(--emerald) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Advanced: the glossy emerald metal, larger and slightly forward. */
+.pr3-card--advanced {
+  overflow: hidden;
+  padding: 2rem 1.75rem 1.75rem;
+  background: var(--brand-band-metal);
+  color: #ffffff;
+  box-shadow: var(--pr3-metal-shadow);
+}
+.pr3-card--advanced::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 220px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: -1;
+}
+@media (min-width: 961px) {
+  .pr3-card--advanced {
+    margin-top: -14px;
+    margin-bottom: -14px;
+  }
+}
+.pr3-card.is-requested {
+  outline: 2px solid var(--emerald);
+  outline-offset: 4px;
+}
+
+.pr3-status {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--pr3-mute);
+}
+.pr3-status--open {
+  color: var(--brand-band-mint);
+}
+.pr3-status--open::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-band-mint);
+  box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.22);
+}
+.pr3-card-name {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: inherit;
+}
+.pr3-card--waitlist .pr3-card-name {
+  color: var(--pr3-ink);
+}
+.pr3-card-promise {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--pr3-emerald-ink);
+}
+.pr3-card--advanced .pr3-card-promise {
+  color: var(--brand-band-mint);
+}
+.pr3-card-audience {
+  margin: 0.4rem 0 0;
+  min-height: 2.6em;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--pr3-mute);
+}
+.pr3-card--advanced .pr3-card-audience {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.pr3-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-top: 1.25rem;
+}
+.pr3-price-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--pr3-ink);
+}
+.pr3-card--advanced .pr3-price-amount {
+  font-size: 2.9rem;
+  color: #ffffff;
+}
+.pr3-price-unit {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--pr3-mute);
+}
+.pr3-card--advanced .pr3-price-unit {
+  color: rgba(255, 255, 255, 0.78);
+}
+.pr3-price-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--pr3-mute);
+}
+.pr3-card--advanced .pr3-price-note {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.pr3-card .pr3-card-cta {
+  margin-top: 1.25rem;
+  min-height: 42px;
+  font-size: 0.875rem;
+}
+.pr3-wait-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--pr3-faint);
+}
+.pr3-terms {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+}
+.pr3-terms-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+.pr3-card--advanced .renewal-terms {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+}
+.pr3-card--advanced .renewal-terms strong {
+  color: #ffffff;
+}
+.pr3-card--advanced .renewal-terms a {
+  color: var(--brand-band-mint);
+}
+
+.pr3-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.4rem 0 0;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--pr3-rule);
+  list-style: none;
+}
+.pr3-card--advanced .pr3-highlights {
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+.pr3-highlights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-secondary, var(--pr3-ink));
+}
+.pr3-card--advanced .pr3-highlights li {
+  color: #ffffff;
+}
+.pr3-highlights .bi {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--pr3-emerald-ink);
+}
+.pr3-card--advanced .pr3-highlights .bi {
+  color: var(--brand-band-mint);
+}
+
+.pr3-more-line {
+  margin: 2rem 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--pr3-mute);
+}
+.pr3-more-line a {
+  color: var(--pr3-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+.pr3-more-line a:hover {
+  color: var(--pr3-emerald-ink);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────── */
+.pr3-section {
+  max-width: var(--pr3-max);
+  margin: 0 auto;
+  padding: 3.5rem 2rem 1rem;
+}
+.pr3-h2 {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pr3-ink);
+  text-wrap: balance;
+}
+.pr3-lede {
+  max-width: 60ch;
+  margin: 0.6rem auto 0;
+  text-align: center;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--pr3-mute);
+}
+
+.pr3-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+  margin: 2.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pr3-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.pr3-step-num {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  color: var(--pr3-emerald-ink);
+}
+.pr3-step-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--brand-band-metal);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: var(--brand-band-mint);
+  font-size: 1rem;
+}
+.pr3-step-title {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pr3-ink);
+}
+.pr3-step-body {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--pr3-mute);
+}
+.pr3-step-link,
+.pr3-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--pr3-emerald-ink);
+  text-decoration: none;
+}
+.pr3-step-link:hover,
+.pr3-text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Comparison table ─────────────────────────────────────────────────── */
+.pr3-table-wrap {
+  margin-top: 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pr3-table-wrap:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.pr3-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 0.875rem;
+}
+.pr3-col-feature {
+  width: 46%;
+}
+.pr3-table thead th {
+  padding: 0.85rem 0.75rem;
+  background: var(--bg-primary, var(--surface-card));
+  border-bottom: 1px solid var(--pr3-rule);
+  text-align: center;
+  vertical-align: bottom;
+}
+.pr3-th-name {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--pr3-ink);
+}
+.pr3-th-price {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--pr3-mute);
+}
+.pr3-table thead .pr3-th-adv .pr3-th-name,
+.pr3-table thead .pr3-th-adv .pr3-th-price {
+  color: var(--pr3-emerald-ink);
+}
+.pr3-group th {
+  padding: 1.4rem 0.75rem 0.55rem 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--pr3-emerald-ink);
+  border-bottom: 1px solid var(--pr3-rule);
+}
+.pr3-table tbody td,
+.pr3-feature {
+  padding: 0.75rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.pr3-feature {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding-left: 0;
+  background: var(--bg-primary, var(--surface-card));
+  text-align: left;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--pr3-ink);
+}
+.pr3-table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+.pr3-td-adv {
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+}
+.pr3-yes {
+  color: var(--pr3-emerald-ink);
+  vertical-align: middle;
+}
+.pr3-no {
+  color: color-mix(in srgb, var(--text-primary) 28%, transparent);
+  vertical-align: middle;
+}
+.pr3-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--pr3-ink);
+}
+.pr3-td-adv .pr3-val {
+  color: var(--pr3-emerald-ink);
+}
+
+/* Tooltip: data freshness and limits. */
+.pr3-tip {
+  position: relative;
+  display: inline-flex;
+  margin-left: 0.35rem;
+  vertical-align: -1px;
+  color: var(--pr3-faint);
+  cursor: help;
+}
+.pr3-tip:hover,
+.pr3-tip:focus-visible {
+  color: var(--pr3-emerald-ink);
+  outline: none;
+}
+.pr3-tip-body {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: max-content;
+  max-width: 300px;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--brand-band-metal);
+  box-shadow: var(--shadow-md);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  pointer-events: none;
+}
+.pr3-tip:hover .pr3-tip-body,
+.pr3-tip:focus-visible .pr3-tip-body {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.pr3-excluded {
+  margin-top: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--pr3-mute);
+}
+.pr3-excluded summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--pr3-ink);
+}
+.pr3-excluded ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  line-height: 1.7;
+}
+.pr3-excluded-status {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--pr3-faint);
+}
+
+/* ── Trial, waitlist, secondary ───────────────────────────────────────── */
+.pr3-trial-steps,
+.pr3-wait-grid,
+.pr3-more-grid {
+  display: grid;
+  gap: 2rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pr3-trial-steps,
+.pr3-wait-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.pr3-more-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pr3-trial-steps h3,
+.pr3-wait-grid h3,
+.pr3-more-item h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.35rem 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pr3-ink);
+}
+.pr3-more-item h3 .pr3-status {
+  margin: 0;
+}
+.pr3-trial-steps p,
+.pr3-wait-grid p,
+.pr3-more-item p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--pr3-mute);
+}
+.pr3-trial-steps a {
+  color: var(--pr3-emerald-ink);
+  font-weight: 600;
+}
+.pr3-more-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.pr3-more-item.is-requested h3 {
+  color: var(--pr3-emerald-ink);
+}
+.pr3-api-fold {
+  margin-top: 2rem;
+}
+.pr3-api-fold > summary {
+  width: max-content;
+  margin: 0 auto;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--pr3-emerald-ink);
+}
+.pr3-api-fold .api-pricing {
+  padding-top: 1.5rem;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .pr3-cards {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  /* Advanced first on phones and tablets. */
+  .pr3-card--advanced {
+    order: -1;
+  }
+  .pr3-steps,
+  .pr3-more-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pr3-trial-steps,
+  .pr3-wait-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+}
+@media (max-width: 600px) {
+  .pr3-hero {
+    padding: 3rem 1.25rem 1.5rem;
+  }
+  .pr3-plans,
+  .pr3-section {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .pr3-steps,
+  .pr3-more-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .pr3-outcomes {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .pr3-hero-actions {
+    flex-direction: column;
+  }
+  .pr3-btn--primary {
+    width: 100%;
+  }
+  .pr3-tip-body {
+    left: 0;
+    transform: translate(0, 4px);
+    max-width: 240px;
+  }
+  .pr3-tip:hover .pr3-tip-body,
+  .pr3-tip:focus-visible .pr3-tip-body {
+    transform: translate(0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr3-tip-body,
+  .pr3-btn {
+    transition: none;
+  }
+}
+
+/* Page-level type rules (headings, paragraphs, table headers) outrank the
+   classes above; these pin the few that must read differently. */
+.pr3 .pr3-card--advanced .pr3-card-name {
+  color: #ffffff;
+}
+.pr3 .pr3-card--advanced .pr3-terms-lead {
+  color: #ffffff;
+}
+.pr3 .pr3-price-note,
+.pr3 .pr3-wait-note {
+  font-family: var(--font-sans);
+  letter-spacing: normal;
+}
+.pr3 .pr3-table th {
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.pr3 .pr3-table th.pr3-feature {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pr3-ink);
+}
+.pr3 .pr3-table .pr3-group th {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--pr3-emerald-ink);
+}

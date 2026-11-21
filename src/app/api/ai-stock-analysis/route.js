@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 import { withApiGuard } from '@/lib/api-guard';
+import { requireFeature } from '@/lib/billing/feature-access';
 import Anthropic from '@anthropic-ai/sdk';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
@@ -16,6 +17,10 @@ const MODEL = RESEARCH_MODEL;
 const POST_HANDLER = withApiGuard(
   async (request, user) => {
     try {
+      /* Nov 21: AI model reports are an Advanced feature (plan registry). */
+      const denied = await requireFeature(user, 'ai-model-reports');
+      if (denied) return denied;
+
       const blocked = await enforceAiRateLimit(user.id, 'ai-stock-analysis');
       if (blocked) return blocked;
 

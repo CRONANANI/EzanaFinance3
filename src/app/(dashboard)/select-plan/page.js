@@ -9,6 +9,7 @@ import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import { TRIAL_LABEL } from '@/lib/billing/renewal-terms';
+import { PLAN_HIGHLIGHTS, RETAIL_PLANS } from '@/config/plan-features';
 import '../pricing/pricing.css';
 
 function SelectPlanContent() {
@@ -16,24 +17,45 @@ function SelectPlanContent() {
   const searchParams = useSearchParams();
   const canceled = searchParams.get('canceled');
 
-  const [billingPeriod, setBillingPeriod] = useState('monthly');
+  const [billingPeriod, setBillingPeriod] = useState('quarterly');
   const [loading, setLoading] = useState(null);
   const [checkoutError, setCheckoutError] = useState('');
   const [checkoutNotice, setCheckoutNotice] = useState('');
   const [signedIn, setSignedIn] = useState(false);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
   const [trialStatus, setTrialStatus] = useState(null);
+  /* An account made by the Advanced trial signup can only start Advanced:
+     Free and Starter stay waitlist-only for it (the server enforces this). */
+  const [advancedOnly, setAdvancedOnly] = useState(false);
 
-  const freePlanEntry = Object.entries(PLANS).filter(([key]) => key === 'free');
-  const monthlyPlans = [
-    ...freePlanEntry,
-    ...Object.entries(PLANS).filter(([, p]) => p.interval === 'month'),
+  /* Nov 21, 2026: the same plans, prices and benefits as /pricing, from the
+     plan registry. Quarterly and yearly only; legacy monthly and
+     Professional keys stay in the catalog for existing subscribers. */
+  const period = billingPeriod === 'yearly' ? 'year' : 'quarter';
+  const registryPlans = ['starter', 'advanced', 'family'].map((id) => {
+    const key = RETAIL_PLANS[id].stripeKey[period];
+    return [
+      key,
+      {
+        ...PLANS[key],
+        name: RETAIL_PLANS[id].name,
+        description: RETAIL_PLANS[id].promise,
+        features: (PLAN_HIGHLIGHTS[id] || PLAN_HIGHLIGHTS.advanced).map((h) => h.text),
+        open: RETAIL_PLANS[id].availability === 'available',
+      },
+    ];
+  });
+  const freeEntry = [
+    'free',
+    {
+      ...PLANS.free,
+      description: RETAIL_PLANS.free.promise,
+      features: PLAN_HIGHLIGHTS.free.map((h) => h.text),
+    },
   ];
-  const annualPlans = [
-    ...freePlanEntry,
-    ...Object.entries(PLANS).filter(([, p]) => p.interval === 'year'),
-  ];
-  const displayPlans = billingPeriod === 'monthly' ? monthlyPlans : annualPlans;
+  const displayPlans = advancedOnly
+    ? registryPlans.filter(([, p]) => p.open)
+    : [freeEntry, ...registryPlans];
 
   const getSession = useCallback(async () => {
     const {
@@ -48,6 +70,13 @@ function SelectPlanContent() {
       const session = await getSession();
       if (cancelled) return;
       setSignedIn(!!session);
+      const meta = session?.user?.user_metadata || {};
+      const app = session?.user?.app_metadata || {};
+      setAdvancedOnly(
+        app.signup_source === 'advanced_trial' ||
+          meta.signup_source === 'advanced_trial' ||
+          meta.requires_checkout === true,
+      );
       if (!session?.user?.id) {
         setHasPaidSubscription(false);
         setTrialStatus(null);
@@ -103,7 +132,7 @@ function SelectPlanContent() {
       await handleActivateFree();
       return;
     }
-    if (!plan?.priceId) return;
+    if (!plan) return;
     setLoading(planKey);
     setCheckoutError('');
     setCheckoutNotice('');
@@ -246,17 +275,17 @@ function SelectPlanContent() {
         <div className="pricing-toggle">
           <button
             type="button"
-            className={billingPeriod === 'monthly' ? 'active' : ''}
-            onClick={() => setBillingPeriod('monthly')}
+            className={billingPeriod === 'quarterly' ? 'active' : ''}
+            onClick={() => setBillingPeriod('quarterly')}
           >
-            Monthly
+            Quarterly
           </button>
           <button
             type="button"
-            className={billingPeriod === 'annual' ? 'active' : ''}
-            onClick={() => setBillingPeriod('annual')}
+            className={billingPeriod === 'yearly' ? 'active' : ''}
+            onClick={() => setBillingPeriod('yearly')}
           >
-            Annual <span className="pricing-save">(Save)</span>
+            Yearly <span className="pricing-save">(Save about 20%)</span>
           </button>
         </div>
       </div>
@@ -264,18 +293,18 @@ function SelectPlanContent() {
       <div className="pricing-grid">
         {displayPlans.map(([key, plan]) => {
           const isFree = key === 'free';
-          const isPopular = plan.popular === true;
-          const isPro = key === 'professional_monthly' || key === 'professional_annual';
+          const isPopular = plan.open === true;
+          const isPro = false;
           const displayPrice = plan.price.toLocaleString('en-US');
           const periodLabel =
-            plan.interval === 'month' ? '/month' : plan.interval === 'year' ? '/year' : '';
+            plan.interval === 'quarter' ? '/quarter' : plan.interval === 'year' ? '/year' : '';
 
           return (
             <div
               key={key}
               className={`pricing-card${isPopular ? ' popular' : ''}${isPro ? ' professional' : ''}`}
             >
-              {isPopular && <span className="pricing-popular-badge">Most Popular</span>}
+              {isPopular && <span className="pricing-popular-badge">Available now</span>}
               <h3>{plan.name}</h3>
               <p className="pricing-desc">{plan.description || ''}</p>
               <div className="pricing-price">
@@ -304,7 +333,7 @@ function SelectPlanContent() {
                 type="button"
                 className="pricing-btn primary"
                 onClick={() => handleCheckout(key)}
-                disabled={loading === key || (!isFree && !plan.priceId)}
+                disabled={loading === key}
               >
                 {loading === key
                   ? isFree
@@ -312,15 +341,11 @@ function SelectPlanContent() {
                     : 'Redirecting…'
                   : isFree
                     ? 'Get Started Free'
-                    : !plan.priceId
-                      ? 'Coming soon'
-                      : hasPaidSubscription
-                        ? 'Switch to this plan'
-                        : 'Start free trial'}
+                    : hasPaidSubscription
+                      ? 'Switch to this plan'
+                      : 'Start free trial'}
               </button>
-              {!isFree && plan.priceId ? (
-                <RenewalTerms plan={plan} trial={!hasPaidSubscription} />
-              ) : null}
+              {!isFree ? <RenewalTerms plan={plan} trial={!hasPaidSubscription} /> : null}
             </div>
           );
         })}

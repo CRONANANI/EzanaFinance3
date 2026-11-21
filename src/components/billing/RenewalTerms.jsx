@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   BILLING_SETTINGS_PATH,
+  TRIAL_DAYS,
   TRIAL_LABEL,
   priceAndPeriod,
   trialEndDate,
@@ -32,7 +33,7 @@ export default function RenewalTerms({ plan, trial = true, fromInvite = false, c
     <p className={`renewal-terms ${className}`.trim()}>
       {trial ? (
         <>
-          Free for 1 month{fromInvite ? ' from your invite' : ''}, then {price}, billed
+          Free for {TRIAL_DAYS} days{fromInvite ? ' from your invite' : ''}, then {price}, billed
           automatically until you cancel. You can cancel anytime in {settings}{' '}
           {endDate ? `before ${endDate}` : `before the ${TRIAL_LABEL} trial ends`} and you
           won&apos;t be charged.

@@ -95,6 +95,10 @@ export async function POST(request) {
       signup_source: 'advanced_trial',
       requires_checkout: true,
     },
+    /* Nov 21: the same marker in app_metadata, which only the server can
+       write. user_metadata is editable by the user, so server-side plan and
+       waitlist checks read this copy (isTrialSignupAccount). */
+    app_metadata: { signup_source: 'advanced_trial' },
   });
   if (createErr || !created?.user) {
     const msg = String(createErr?.message || '');

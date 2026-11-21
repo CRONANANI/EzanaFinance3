@@ -3,7 +3,7 @@
 /**
  * /auth/start-trial?billing=quarterly|yearly  (Nov 21, 2026)
  *
- * The Advanced plan's free one-month trial, open without a waitlist invite.
+ * The Advanced plan's free 30-day trial, open without a waitlist invite.
  * 1. The visitor enters their account details (POST /api/auth/trial-signup).
  * 2. We sign in with the new password.
  * 3. We open Stripe Checkout for Advanced with the trial
@@ -18,10 +18,11 @@ import { PasswordStrengthField } from '@/components/ui/password-strength-field';
 import { EMAIL_RE, validatePassword } from '@/lib/auth/password-rules';
 import { AGE_CONFIRM_TEXT } from '@/lib/legal/consent';
 import { PLANS } from '@/config/pricing';
-import { priceAndPeriod } from '@/lib/billing/renewal-terms';
+import { TRIAL_DAYS, priceAndPeriod } from '@/lib/billing/renewal-terms';
 import '@/components/auth/auth-shell.css';
 import '../signup/signup.css';
 import './start-trial.css';
+import { trackFunnel } from '@/lib/analytics/funnel-client';
 
 const PLAN_KEY = { quarterly: 'personal_advanced_quarterly', yearly: 'personal_advanced_annual' };
 
@@ -142,6 +143,7 @@ export default function StartTrialPage() {
     }
 
     setBusy(true);
+    trackFunnel('trial_signup_started', { plan: 'advanced', billing });
     try {
       const res = await fetch('/api/auth/trial-signup', {
         method: 'POST',
@@ -187,8 +189,9 @@ export default function StartTrialPage() {
 
   const terms = plan?.price ? (
     <p className="wl-sub">
-      Free for 1 month, then {priceAndPeriod(plan)}, billed automatically until you cancel. Cancel
-      anytime in Settings, Billing before the trial ends and you won&apos;t be charged.
+      Free for {TRIAL_DAYS} days, then {priceAndPeriod(plan)}, billed automatically until you
+      cancel. Cancel anytime in Settings, Billing before the trial ends and you won&apos;t be
+      charged.
     </p>
   ) : null;
 
@@ -273,8 +276,8 @@ export default function StartTrialPage() {
           Start your free <span className="st-accent">Advanced</span> trial
         </h1>
         <p className="wl-sub">
-          Create your account, then add a card on Stripe. Advanced is free for 1 month, then billed{' '}
-          {billing === 'quarterly' ? 'quarterly' : 'yearly'}.
+          Create your account, then add a card on Stripe. Advanced is free for {TRIAL_DAYS} days,
+          then billed {billing === 'quarterly' ? 'quarterly' : 'yearly'}.
         </p>
         {periodToggle}
         <form className="wl-form" onSubmit={submit} noValidate>

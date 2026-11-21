@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireFeature } from '@/lib/billing/feature-access';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getDailyBars } from '@/lib/prices/daily-bars';
@@ -25,6 +26,10 @@ const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
  */
 export const GET = withApiGuard(
   async (request, user) => {
+    /* Nov 21: Quant Lab compute is an Advanced feature (plan registry).
+       Reading and deleting your own saved work stays open on every plan. */
+    const denied = await requireFeature(user, 'quant-lab');
+    if (denied) return denied;
     try {
       const { data, error } = await getUserClient()
         .from('mock_portfolios')

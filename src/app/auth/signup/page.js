@@ -39,7 +39,7 @@ function readParams() {
     invite: p.get('invite') || '',
     redirect: dest ? safeInternalPath(dest, '') : '',
     plan: (p.get('plan') || '').slice(0, 20),
-    billing: p.get('billing') === 'monthly' ? 'monthly' : 'yearly',
+    billing: ['monthly', 'quarterly'].includes(p.get('billing')) ? p.get('billing') : 'yearly',
     /* Back from Stripe's card step: card-saved or card-skipped. */
     waitlist: (p.get('waitlist') || '').slice(0, 20),
     ref: p.get('ref') ? normalizeCode(p.get('ref')).slice(0, 8) : '',
@@ -163,8 +163,8 @@ function CardStepResult({ outcome }) {
       <h1 className="wl-title">{saved ? "You're on the list." : 'Your card was not added.'}</h1>
       <p className="wl-sub">
         {saved
-          ? "Your card is saved and nothing was charged. When you're accepted, we'll email your invite to a free 1-month Starter trial. Use Starter for the month, move to Advanced right away, or choose when the trial ends."
-          : "You're still on the waitlist. Add a card to be ready for your free 1-month trial the moment you're accepted."}
+          ? "Your card is saved and nothing was charged. When you're accepted, we'll email your invite to a free 30-day Starter trial. Use Starter during the trial, move to Advanced right away, or choose when the trial ends."
+          : "You're still on the waitlist. Add a card to be ready for your free 30-day trial the moment you're accepted."}
       </p>
       {!saved && token ? (
         <>
@@ -320,7 +320,7 @@ function WaitlistForm({ params }) {
         <p className="wl-sub">
           You picked {PAID_PLAN_NAMES[paidPlan]} ({params.billing}). Enter your details, then add a
           card on Stripe. Nothing is charged: when you&apos;re accepted you&apos;ll be invited to a
-          free 1-month Starter trial, and you can move to Advanced at any time.
+          free 30-day Starter trial, and you can move to Advanced at any time.
         </p>
       ) : (
         <p className="wl-sub">

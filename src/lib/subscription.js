@@ -1,3 +1,5 @@
+import { canonicalTierOfPlanKey } from '@/config/plan-features';
+
 /**
  * Subscription / billing access helpers (reads `profiles` fields updated by Stripe webhooks).
  */
@@ -65,21 +67,12 @@ function getPaidPlan(profile) {
   return null;
 }
 
-/** Higher = more features (for gating). */
+/**
+ * Higher = more features (for gating). Nov 21, 2026: read from the plan
+ * registry (src/config/plan-features.js), which keeps every plan key ever
+ * sold, so the quarterly keys (and any key added later) map to their tier
+ * in one place instead of a list that can drift.
+ */
 export function getPlanTier(planKey) {
-  const tiers = {
-    free: 0,
-    personal_monthly: 1,
-    individual_annual: 1,
-    personal_quarterly: 1,
-    personal_advanced_monthly: 2,
-    personal_advanced_annual: 2,
-    personal_advanced_quarterly: 2,
-    family_monthly: 3,
-    family_annual: 3,
-    family_quarterly: 3,
-    professional_monthly: 4,
-    professional_annual: 4,
-  };
-  return tiers[planKey] || 0;
+  return canonicalTierOfPlanKey(planKey);
 }

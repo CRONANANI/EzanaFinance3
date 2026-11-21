@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireFeature } from '@/lib/billing/feature-access';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getDailyOhlcv } from '@/lib/prices/daily-bars';
 import { backtestPair, normalizePairParams } from '@/lib/quants/statarb';
@@ -17,7 +18,11 @@ const NO_STORE = { headers: { 'Cache-Control': 'private, no-store' } };
  * runs the cointegration test; only the rest is traded. Nothing is stored.
  */
 export const POST = withApiGuard(
-  async (request) => {
+  async (request, user) => {
+    /* Nov 21: Quant Lab compute is an Advanced feature (plan registry).
+       Reading and deleting your own saved work stays open on every plan. */
+    const denied = await requireFeature(user, 'quant-lab');
+    if (denied) return denied;
     try {
       const body = await request.json().catch(() => ({}));
       const tickerA = cleanTicker(body?.tickerA);
