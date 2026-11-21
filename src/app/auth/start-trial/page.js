@@ -55,7 +55,10 @@ async function openCheckout(billing) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ planKey: PLAN_KEY[billing], cancelPath: '/auth/start-trial' }),
+      body: JSON.stringify({
+        planKey: PLAN_KEY[billing],
+        cancelPath: `/auth/start-trial?billing=${billing}`,
+      }),
     });
     const d = await res.json().catch(() => ({}));
     if (res.ok && d.url) {

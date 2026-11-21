@@ -11,6 +11,7 @@ import { resolvePriceId } from '@/lib/billing/resolve-price';
 import { isTrialSignupAccount } from '@/lib/billing/feature-access';
 import { OPEN_PLAN_KEYS } from '@/config/plan-features';
 import { logFunnelEvent } from '@/lib/analytics/funnel';
+import { getAppOrigin, safeReturnPath, withParam } from '@/lib/billing/app-origin';
 
 /**
  * One Stripe customer per user: the create carries the idempotency key
@@ -161,9 +162,9 @@ export const POST = withApiGuard(
         }
       }
 
-      const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
+      const origin = getAppOrigin(request);
 
-      const safeCancel = cancelPath || '/onboarding';
+      const safeCancel = safeReturnPath(cancelPath, '/onboarding');
 
       /* The renewal terms shown beside the button, repeated above Stripe's
          subscribe button, plus a required Terms of Service checkbox when
@@ -188,7 +189,7 @@ export const POST = withApiGuard(
         success_url: `${origin}/home?checkout=success${
           OPEN_PLAN_KEYS.has(planKey) && trial ? '&welcome=advanced' : ''
         }`,
-        cancel_url: `${origin}${safeCancel}?canceled=true`,
+        cancel_url: `${origin}${withParam(safeCancel, 'canceled', 'true')}`,
         payment_method_collection: 'always',
         custom_text: { submit: { message: renewal.slice(0, 1200) } },
         /* Stripe rejects the session if no Terms URL is set in its dashboard,

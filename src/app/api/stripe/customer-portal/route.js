@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { stripe } from '@/lib/services/stripe';
+import { getAppOrigin } from '@/lib/billing/app-origin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,7 @@ export const POST = withApiGuard(
         );
       }
 
-      const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
+      const origin = getAppOrigin(request);
 
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: profile.stripe_customer_id,

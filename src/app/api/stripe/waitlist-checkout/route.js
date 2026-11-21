@@ -19,6 +19,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
 import { priceAndPeriod } from '@/lib/billing/renewal-terms';
 import { starterPlanFor } from '@/lib/billing/waitlist-trial';
+import { getAppOrigin } from '@/lib/billing/app-origin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,7 +83,7 @@ export const POST = withApiGuard(
         }
       }
 
-      const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
+      const origin = getAppOrigin(request);
       const starter = starterPlanFor(meta.billing);
       const message =
         'No charge today: Stripe saves your card. When you are accepted from the waitlist, ' +
