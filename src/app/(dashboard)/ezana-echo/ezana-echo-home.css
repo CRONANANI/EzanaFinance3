@@ -484,3 +484,37 @@ body:has(.eth-root) .ezana-echo-container {
   background: transparent;
   color: var(--ech-positive);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 20, 2026 (evening):
+   1. The black title panel rises onto the foot of the stacked art, so it
+      starts just under the necks of the front row instead of at the image's
+      bottom edge. The rise scales with the art's width (the art is 3:2, so
+      5% of the width is 7.5% of its height); the first 2.5% of the width is
+      a soft fade so no hard line crosses the illustration.
+   2. Hovering the hero headline turns it Ezana green, the same green as the
+      byline beneath it.
+   ══════════════════════════════════════════════════════════════ */
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__inner {
+  z-index: 1;
+  margin-top: calc(var(--eth-bleed, 100vw) * -0.05);
+  padding-top: calc(var(--eth-bleed, 100vw) * 0.025);
+  background: linear-gradient(
+    180deg,
+    transparent 0,
+    black calc(var(--eth-bleed, 100vw) * 0.025)
+  );
+}
+.eth-root .ech-hero--photo .ech-hero__title a {
+  transition: color 160ms ease;
+}
+.eth-root .ech-hero--photo .ech-hero__title a:hover,
+.eth-root .ech-hero--photo .ech-hero__title a:focus-visible {
+  color: var(--brand-ezana-green) !important;
+  text-decoration: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-root .ech-hero--photo .ech-hero__title a {
+    transition: none;
+  }
+}
