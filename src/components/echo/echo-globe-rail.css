@@ -344,3 +344,15 @@ body.ekp-rail-dim .echo-grail::after {
     display: none;
   }
 }
+
+/* Nov 20, 2026: the emerald rule runs all the way round the active card
+   (it used to be a band on the left edge only). Every card keeps an even
+   1px edge, so activation still never shifts layout. */
+.echo-grail-card,
+.echo-grail-card.is-active {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+.echo-grail-card.is-active {
+  border-color: var(--brand-ezana-green);
+}

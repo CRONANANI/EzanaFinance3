@@ -623,3 +623,21 @@ body.light-mode .ekp-popup .ekp-close {
     animation: none;
   }
 }
+
+/* Scroll-away: the card swipes right and fades as it closes. Wins over the
+   resting transforms of both the floating card and the rail card. */
+.ekp-popup.is-leaving,
+.ekp-popup.ekp-popup--rail.is-leaving,
+.ekp-popup.is-visible.is-leaving {
+  opacity: 0;
+  transform: translateX(110%);
+  transition:
+    opacity 240ms ease,
+    transform 240ms cubic-bezier(0.4, 0, 1, 1);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ekp-popup.is-leaving {
+    transition: none;
+  }
+}

@@ -91,3 +91,16 @@ body:has(.echo-article-page) .page-wrapper {
 .echo-article-page .echo-article-byline-author strong {
   color: var(--brand-ezana-green);
 }
+
+/* Body copy is white and section subheadings are Ezana emerald, on every
+   Echo article. Inline keyword terms and source numbers keep their own
+   emerald styling. */
+.echo-article-page .echo-article-body,
+.echo-article-page .echo-article-body p,
+.echo-article-page .echo-article-body li {
+  color: white;
+}
+.echo-article-page .echo-article-body .echo-article-h2,
+.echo-article-page .echo-article-body .echo-article-h3 {
+  color: var(--brand-ezana-green);
+}

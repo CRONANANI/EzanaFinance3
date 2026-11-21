@@ -45,6 +45,32 @@ export function EchoKeywordPopup() {
     }
   }, [activeKeywordId]);
 
+  /* Scroll-away (Nov 20, 2026): once the reader scrolls the page more than
+     about three lines of body text from where the card opened (either
+     direction), the card swipes off to the right and closes. Scrolling inside
+     the card itself does not count: only the window's position is read. */
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    setLeaving(false);
+    if (!activeKeywordId) return undefined;
+    const p = document.querySelector('.echo-article-body p');
+    const lh = p ? Number.parseFloat(getComputedStyle(p).lineHeight) : Number.NaN;
+    const limit = (Number.isFinite(lh) && lh > 0 ? lh : 28) * 3;
+    const start = window.scrollY;
+    let timer = 0;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const onScroll = () => {
+      if (timer || Math.abs(window.scrollY - start) <= limit) return;
+      setLeaving(true);
+      timer = window.setTimeout(closeKeyword, reduce ? 0 : 240);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [activeKeywordId, closeKeyword]);
+
   useEffect(() => {
     if (!activeKeywordId) return;
     const handler = (e) => {
@@ -128,7 +154,7 @@ export function EchoKeywordPopup() {
   return (
     <aside
       ref={popupRef}
-      className={`ekp-popup${railBox ? ' ekp-popup--rail' : ''} ${isVisible ? 'is-visible' : ''}`}
+      className={`ekp-popup${railBox ? ' ekp-popup--rail' : ''} ${isVisible ? 'is-visible' : ''}${leaving ? ' is-leaving' : ''}`}
       style={
         railBox
           ? { top: railBox.top, left: railBox.left, width: railBox.width, right: 'auto' }
