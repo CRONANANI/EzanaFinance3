@@ -33,7 +33,12 @@ function cardSrc(slug) {
 
 export const HOME_CARD_IMAGES = {
   // The Cow Is the Collateral
-  'tokenization-collateral-2026': { src: card('tokenization-collateral-2026'), alt: '' },
+  // Portrait photo: framed on the cow, not the sky, in wide crops.
+  'tokenization-collateral-2026': {
+    src: card('tokenization-collateral-2026'),
+    alt: 'A brown and white cow standing on a green hillside pasture, with more cattle resting behind it under a clear blue sky.',
+    position: '50% 70%',
+  },
   // Tech Reigns, But Falls Short of History's Heavyweights
   'dominating-us-stock-market-sectors-through-the-times': {
     src: card('dominating-us-stock-market-sectors-through-the-times'),
@@ -155,10 +160,13 @@ export const HOME_CARD_IMAGES = {
     src: card('fda-peptides-bpc157-compounding-vote-2026'),
     alt: '',
   },
-  // Ballroom Billions
+  // Ballroom Billions. Built Nov 21st from the article's own 5250 x 3500 hero
+  // (public/echo/trumpkushner.jpg), downscaled to 3840 x 2560 and stored as a
+  // quality-90 webp (the earlier 678 x 452 card was blurry full-bleed).
   'ballroom-donors-federal-contracts-2026': {
     src: card('ballroom-donors-federal-contracts-2026'),
-    alt: '',
+    alt: 'Jared Kushner in the foreground with President Trump speaking, slightly out of focus, at a White House meeting.',
+    position: '50% 35%',
   },
   // Who Controls the World's Critical Minerals
   'critical-minerals-reserve-concentration-2026': {

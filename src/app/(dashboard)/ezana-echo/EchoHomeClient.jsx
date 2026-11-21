@@ -73,7 +73,10 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
        dek, byline, the top-right chips and the logo line up with the column
        below (Editors' picks, the filters, the story pictures). */
     const sync = () => {
-      root.style.setProperty('--echo-sbw', `${Math.max(0, window.innerWidth - root.clientWidth)}px`);
+      root.style.setProperty(
+        '--echo-sbw',
+        `${Math.max(0, window.innerWidth - root.clientWidth)}px`,
+      );
       const col = document.querySelector('.eth-root .ech-page');
       if (col) {
         const r = col.getBoundingClientRect();
@@ -195,7 +198,18 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   }, [stories]);
   const pastPick = aotmMonth ? aotmOptions.find((o) => o.month === aotmMonth) : null;
   // Swapping the card never changes the grid or Most read: they key off `hero`.
-  const shownHero = pastPick ? { ...pastPick.story, kicker: monthKicker(pastPick.month) } : hero;
+  // Past picks always use the stacked banner (Nov 21): the whole picture on
+  // top, the headline, dek and byline in the black band beneath it, matching
+  // the current pick, so no type sits over a face. A past pick with a photo
+  // never falls back to the small inset card.
+  const shownHero = pastPick
+    ? {
+        ...pastPick.story,
+        kicker: monthKicker(pastPick.month),
+        imageLayout: 'stack',
+        imageInset: false,
+      }
+    : hero;
 
   const mostRead = useMemo(() => rankMostRead(stories, 5), [stories]);
 
