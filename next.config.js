@@ -19,6 +19,10 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  /* Nov 21, 2026: CI (.github/workflows/ci.yml) already runs the full ESLint
+     pass on every push; repeating it inside next build cost build memory and
+     time on Vercel for no extra safety. */
+  eslint: { ignoreDuringBuilds: true },
   // Next.js-built-in import optimizer. For the listed packages, Next rewrites
   // named-member imports to direct submodule imports and enables aggressive
   // tree-shaking. lucide-react in particular ships >1000 icons; without this,
@@ -46,7 +50,24 @@ const nextConfig = {
        `experimental.serverComponentsExternalPackages`; the top-level
        `serverExternalPackages` is Next 15 syntax and is silently ignored
        here, the same trap the tracing note below records. */
-    serverComponentsExternalPackages: ['unpdf'],
+    serverComponentsExternalPackages: [
+      'unpdf',
+      /* Nov 21, 2026: build memory. Heavy server-only SDKs and data packages
+         are loaded from node_modules at runtime instead of being parsed and
+         bundled by webpack into the server build (758 API routes share
+         them). Vercel's file tracing still ships them with each function.
+         country-state-city is mostly a 16 MB data blob; plaid and the
+         snaptrade SDK are large generated clients. */
+      'country-state-city',
+      'plaid',
+      'snaptrade-typescript-sdk',
+      'stripe',
+      '@anthropic-ai/sdk',
+      'resend',
+      'fast-xml-parser',
+      'js-yaml',
+      'proj4',
+    ],
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',
@@ -221,18 +242,25 @@ const sentryWebpackPluginOptions = {
 const sentryWrapped = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);
 const sentryWebpack = sentryWrapped.webpack;
 /* Nov 21: the build was OOM-killed on Vercel again (8 GB machine) after a
-   large commit. Two more memory savers for production builds:
+   large commit. Memory savers for production builds:
+   - webpack's persistent cache is off. Measured on a cold build of this repo:
+     with it, the server compile (194 pages + 758 API routes) passed 7 GB and
+     was killed; without it the whole build peaked near 4 GB and finished in
+     about 4 minutes. Restoring and re-serialising the ~1 GB cache was the
+     single largest memory cost, and warm Vercel builds took about as long.
    - client source maps are generated only when SENTRY_AUTH_TOKEN is set,
      i.e. when they are actually uploaded; without the token they were built
      and thrown away.
    - webpack processes at most 25 modules in parallel (default 100), which
-     lowers the peak memory of each compile for a small cost in build time. */
+     lowers the peak memory of each compile for a small cost in build time.
+   Dev builds are unchanged. */
 sentryWrapped.webpack = (config, ctx) => {
   const out = typeof sentryWebpack === 'function' ? sentryWebpack(config, ctx) : config;
   if (!ctx.dev) {
     if (ctx.isServer) out.devtool = false;
     else if (!process.env.SENTRY_AUTH_TOKEN) out.devtool = false;
     out.parallelism = 25;
+    out.cache = false;
   }
   return out;
 };
