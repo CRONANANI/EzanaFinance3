@@ -655,3 +655,49 @@ body:has(.eth-root) .ezana-echo-container {
     font-size: 15px;
   }
 }
+
+/* Nov 20, 2026 (night): Most read heading in Ezana emerald, like Editors'
+   picks. */
+.eth-root #ech-most-h {
+  color: var(--brand-ezana-green);
+}
+
+@media (max-width: 767px) {
+  /* "All" and the region menu start on the same left edge as the
+     "Editors' picks" heading: the first option of each row loses its
+     left inset. */
+  .eth-root .ech-filterbar > .ech-tabs .ech-seg__opt:first-child,
+  .eth-root .ech-filterbar .ech-menu__btn {
+    padding-left: 0;
+  }
+
+  /* Editors' picks arrows sit at the top right, level with the top of the
+     heading, instead of on their own row above it. */
+  .eth-root .ech-picks-rail {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    row-gap: 14px;
+    padding-top: 12px;
+  }
+  .eth-root .ech-picks-rail__head {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .eth-root .ech-picks-rail__nav {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+  .eth-root .ech-picks-rail__list {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  /* Tighter hand-off from "Read full story" to Editors' picks. */
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__inner {
+    padding-bottom: 8px;
+  }
+  .eth-root .ech-hero--photo + * {
+    margin-top: 8px;
+  }
+}

@@ -1043,8 +1043,7 @@ function RegionMenu({ value, onChange }) {
       buttonLabel={`Region: ${current.label}`}
       button={
         <>
-          <i className="bi bi-globe2" aria-hidden="true" /> {current.label}{' '}
-          <i className="bi bi-chevron-down" aria-hidden="true" />
+          {current.label} <i className="bi bi-chevron-down" aria-hidden="true" />
         </>
       }
       items={REGIONS.map((r) => ({ key: r.slug || 'all', value: r.slug, label: r.label }))}
