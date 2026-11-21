@@ -641,14 +641,8 @@ export function Navbar() {
               {echoNavTitle}
             </span>
           </div>
-          <div className="nav-sign-in-wrap nav-sign-in-wrap--echo-article">
-            <a href="/auth/continue" className="nav-link nav-link-text">
-              Login
-            </a>
-            <a href="/auth/partner/apply" className="nav-link nav-link-text nav-partner-pill">
-              Become a Partner
-            </a>
-          </div>
+          {/* Nov 20, 2026: no Login / Become a Partner on article pages; the
+              reading nav is the logo and the centred wordmark/title only. */}
         </div>
       </nav>
     );
