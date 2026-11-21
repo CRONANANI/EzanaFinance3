@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase-browser';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
 import RenewalTerms from '@/components/billing/RenewalTerms';
-import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
+import { TRIAL_LABEL } from '@/lib/billing/renewal-terms';
 import './subscribe.css';
 
 function SubscribeCheckoutContent() {
@@ -180,7 +180,7 @@ function SubscribeCheckoutContent() {
       <div className="pricing-header">
         <h1>Choose Your Plan</h1>
         <p>
-          {TRIAL_DAYS}-day free trial on every plan. Your card won&apos;t be charged until the trial
+          {TRIAL_LABEL} free trial on every plan. Your card won&apos;t be charged until the trial
           ends. Cancel anytime before then.
         </p>
         {!signedIn && (

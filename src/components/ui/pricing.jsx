@@ -54,7 +54,7 @@ const PLANS = [
       { text: "Family portfolio dashboard" },
       { text: "Lobbying & contracts data" },
       { text: "Priority support" },
-      { text: "14-day free trial" },
+      { text: "1-month free trial" },
     ],
     btn: { text: "Start Free Trial", href: "/sign-up" },
   },

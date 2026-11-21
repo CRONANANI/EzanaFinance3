@@ -6,6 +6,9 @@
  * new-user trigger writes the profile row, then the username is set and the
  * invite is marked joined and its token cleared. Never returns the token.
  * The 18+ confirmation is required and its time is kept in user_metadata.
+ *
+ * Nov 21, 2026: a member who saved a card when joining from a paid plan
+ * starts the free one-month Starter trial here (src/lib/billing/waitlist-trial.js).
  */
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
@@ -13,6 +16,8 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 import { findInvite, inviteNames } from '@/lib/waitlist/invite';
 import { USERNAME_RE, RESERVED_USERNAME_RE, validatePassword } from '@/lib/auth/password-rules';
 import { isTrue } from '@/lib/legal/consent';
+import { stripe } from '@/lib/services/stripe';
+import { startWaitlistTrial } from '@/lib/billing/waitlist-trial';
 
 export const dynamic = 'force-dynamic';
 
@@ -135,8 +140,14 @@ export async function POST(request) {
     .eq('id', invite.id);
   if (wlErr) console.error('[accept-invite] waitlist update failed:', invite.id, wlErr.message);
 
+  const trial = await startWaitlistTrial({ stripe, admin, invite, userId });
+  if (!trial.started && trial.reason !== 'no_card_step') {
+    console.error('[accept-invite] waitlist trial not started:', invite.id, trial.reason);
+  }
+
   return NextResponse.json({
     ok: true,
+    trialStarted: trial.started,
     email: invite.email,
     referralCode: invite.metadata?.referral_code || null,
     redirect: invite.metadata?.redirect || null,

@@ -5,7 +5,10 @@
  * Quebec's consumer protection act. Plain text here; RenewalTerms renders it.
  */
 
-export const TRIAL_DAYS = 14;
+/* Nov 21, 2026: the free trial is one month (was 14 days). TRIAL_DAYS drives
+   Stripe's trial_period_days; TRIAL_LABEL is how the length reads in copy. */
+export const TRIAL_DAYS = 30;
+export const TRIAL_LABEL = '1-month';
 export const BILLING_SETTINGS_PATH = '/settings?tab=billing';
 
 const PERIOD = { month: 'month', year: 'year' };
@@ -40,9 +43,9 @@ export function renewalText(plan, { trial = true, endDate } = {}) {
   const billed = `${priceAndPeriod(plan)}, billed automatically until you cancel.`;
   if (!trial)
     return `${billed[0].toUpperCase()}${billed.slice(1)} You can cancel anytime in Settings, Billing.`;
-  const before = endDate ? ` before ${endDate}` : ` before the ${TRIAL_DAYS}-day trial ends`;
-  return `Free for ${TRIAL_DAYS} days, then ${billed} You can cancel anytime in Settings, Billing${before} and you won't be charged.`;
+  const before = endDate ? ` before ${endDate}` : ` before the ${TRIAL_LABEL} trial ends`;
+  return `Free for 1 month, then ${billed} You can cancel anytime in Settings, Billing${before} and you won't be charged.`;
 }
 
 /** Generic wording for the Terms and FAQ (no specific plan). */
-export const RENEWAL_POLICY_TEXT = `Paid plans start with a free ${TRIAL_DAYS}-day trial. A card is needed to start it. When the trial ends, the plan you chose is charged at the price shown when you subscribed, every month or every year depending on the billing period you picked, and it keeps renewing automatically until you cancel. You can cancel anytime in Settings, Billing, online and without calling or emailing us. If you cancel before the trial ends you are not charged. If you cancel later, the plan stays active until the end of the period you already paid for and is not charged again. Changing plans when you already have a subscription does not start a new trial.`;
+export const RENEWAL_POLICY_TEXT = `Paid plans start with a free ${TRIAL_LABEL} trial. A card is needed to start it. When the trial ends, the plan you chose is charged at the price shown when you subscribed, every month or every year depending on the billing period you picked, and it keeps renewing automatically until you cancel. You can cancel anytime in Settings, Billing, online and without calling or emailing us. If you cancel before the trial ends you are not charged. If you cancel later, the plan stays active until the end of the period you already paid for and is not charged again. Changing plans when you already have a subscription does not start a new trial.`;

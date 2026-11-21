@@ -981,7 +981,7 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
   }
   .pricing-cards-grid--five > .plan-card {
     display: grid;
-    grid-row: span 9;
+    grid-row: span 8;
     grid-template-rows: subgrid;
     row-gap: 0;
   }
@@ -993,7 +993,7 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
 }
 @media (min-width: 1201px) {
   .pricing-cards-grid--five {
-    grid-template-rows: repeat(9, auto);
+    grid-template-rows: repeat(8, auto);
   }
 }
 /* Three then two: a card's bottom margin joins its last track, which
@@ -1698,4 +1698,370 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
   min-width: 46px;
   min-height: 0;
   height: 26px;
+}
+
+/* ── Nov 21, 2026: centred cards, emerald buttons, waitlist, partner band,
+   emerald comparison header ───────────────────────────────────────────────
+   - Name, tagline and price are centred on every card; the trial chips are
+     gone (the button says it). The subgrid now spans eight rows.
+   - The four outside cards carry a solid emerald button (no border); the
+     recommended metal card inverts it to white with emerald text.
+   - "How the waitlist works" sits between the toggle and the cards.
+   - The Partner program is an emerald metal band with a ruled 2x2 grid.
+   - Compare plans: the plan-name row and the whole Advanced column are on
+     the glossy emerald metal. */
+.pricing-cards-grid--five .plan-name,
+.pricing-cards-grid--five .plan-tagline {
+  text-align: center;
+}
+.pricing-cards-grid--five .plan-price {
+  align-items: center;
+}
+.pricing-cards-grid--five .plan-price-row {
+  justify-content: center;
+}
+.pricing-cards-grid--five .plan-price-note {
+  justify-content: center;
+}
+
+.pricing-cards-section .plan-cta.plan-cta--primary,
+.pricing-cards-grid--five .plan-cta.plan-cta--primary {
+  background: var(--btn-primary-bg);
+  border: none;
+  color: var(--btn-primary-fg);
+  box-shadow: none;
+}
+.pricing-cards-section .plan-cta.plan-cta--primary:hover:not(:disabled),
+.pricing-cards-grid--five .plan-cta.plan-cta--primary:hover:not(:disabled) {
+  background: var(--btn-primary-bg-hover);
+  color: var(--btn-primary-fg);
+  box-shadow: none;
+}
+.pricing-cards-section .plan-cta.plan-cta--invert,
+.pricing-cards-grid--five .plan-card--highlight .plan-cta.plan-cta--invert,
+.pricing-cards-grid--five .plan-card--highlight .plan-cta.plan-cta--invert:hover:not(:disabled) {
+  background: #ffffff;
+  border: none;
+  color: var(--emerald-dark);
+  box-shadow: none;
+}
+.pricing-cards-grid--five .plan-card--highlight .plan-cta.plan-cta--invert:hover:not(:disabled) {
+  background: color-mix(in srgb, #ffffff 90%, var(--brand-band-mint));
+}
+/* The mobile list's highlighted row sits on a light ground, so its inverted
+   button keeps a hairline of emerald to stay visible. */
+.plan-row-panel .plan-cta.plan-cta--invert {
+  background: var(--emerald-bg);
+  color: var(--emerald-dark);
+}
+
+/* How the waitlist works */
+.pricing-waitlist {
+  max-width: 1280px;
+  margin: 0 auto 2.25rem;
+  padding: 0 2rem;
+}
+.pricing-waitlist-h {
+  margin: 0 0 1rem;
+  text-align: center;
+  font-size: var(--type-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.pricing-waitlist-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pricing-waitlist-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'ic num'
+    'ic title'
+    'ic body';
+  column-gap: 0.85rem;
+  row-gap: 0.15rem;
+  align-items: start;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 6%, var(--surface-card));
+}
+.pricing-waitlist-ic {
+  grid-area: ic;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--brand-band-green);
+  color: var(--brand-band-mint);
+  font-size: 1rem;
+}
+.pricing-waitlist-num {
+  grid-area: num;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+}
+.pricing-waitlist-title {
+  grid-area: title;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pricing-waitlist-body {
+  grid-area: body;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+/* Phones: three compact tiles in one row (icon, number, title) so the price
+   list stays near the fold; the full explanation is in the FAQ. */
+@media (max-width: 768px) {
+  .pricing-waitlist {
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+  }
+  .pricing-waitlist-h {
+    margin-bottom: 0.6rem;
+  }
+  .pricing-waitlist-steps {
+    gap: 0.5rem;
+  }
+  .pricing-waitlist-step {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'ic'
+      'num'
+      'title';
+    justify-items: center;
+    row-gap: 0.25rem;
+    padding: 0.7rem 0.4rem;
+    text-align: center;
+  }
+  .pricing-waitlist-ic {
+    width: 30px;
+    height: 30px;
+    font-size: 0.875rem;
+  }
+  .pricing-waitlist-title {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  .pricing-waitlist-body {
+    display: none;
+  }
+}
+
+/* Partner program band */
+.pricing-partner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 2.5rem;
+  align-items: center;
+  max-width: 1280px;
+  margin: 2.5rem auto 0;
+  padding: 2.25rem 2.5rem;
+  border-radius: var(--radius-xl);
+  background: var(--brand-band-metal);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 24px 48px -20px rgba(0, 0, 0, 0.45);
+}
+.pricing-partner .pricing-partner-eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: 0.16em;
+  color: var(--brand-band-mint);
+}
+.pricing-partner .pricing-partner-name {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+.pricing-partner .pricing-partner-tagline {
+  max-width: 46ch;
+  margin: 0 0 1.1rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+.pricing-partner-points {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0 0 1.4rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.86);
+}
+.pricing-partner-points i {
+  margin-right: 0.4rem;
+  color: var(--brand-band-mint);
+}
+.pricing-partner .pricing-partner-cta {
+  background: #ffffff;
+  color: var(--emerald-dark);
+  border: none;
+  font-size: 0.875rem;
+}
+.pricing-partner .pricing-partner-cta:hover {
+  filter: none;
+  transform: none;
+  background: color-mix(in srgb, #ffffff 90%, var(--brand-band-mint));
+}
+.pricing-partner .pricing-partner-rates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.18);
+}
+.pricing-partner .pricing-partner-rate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 1.25rem 1.35rem;
+  text-align: left;
+  background: transparent;
+  border-radius: 0;
+}
+.pricing-partner .pricing-partner-rate:nth-child(odd) {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pricing-partner .pricing-partner-rate:nth-child(-n + 2) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pricing-partner .pricing-partner-rate-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.72);
+}
+.pricing-partner .pricing-partner-rate-label i {
+  color: var(--brand-band-mint);
+  font-size: 0.9rem;
+}
+.pricing-partner .pricing-partner-rate-value {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+.pricing-partner .pricing-partner-rate-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.66);
+}
+.pricing-partner .pricing-partner-soon {
+  color: var(--brand-band-mint);
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+}
+@media (max-width: 900px) {
+  .pricing-partner {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    padding: 1.75rem 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .pricing-partner .pricing-partner-rates {
+    grid-template-columns: 1fr;
+  }
+  .pricing-partner .pricing-partner-rate:nth-child(odd) {
+    border-right: none;
+  }
+  .pricing-partner .pricing-partner-rate:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Compare plans: the plan-name row on the glossy metal (painted on the row so
+   it reads as one band, not one tile per cell), and the Advanced column on
+   a horizontal sheen that repeats seamlessly down every row. */
+.comparison-table thead tr {
+  background: var(--brand-band-metal);
+}
+.comparison-table thead th {
+  background: transparent;
+  border-bottom: none;
+  color: #ffffff;
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 1;
+}
+.comparison-table thead th.comp-feature-col {
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+.comparison-table thead .comp-plan-name {
+  color: #ffffff;
+}
+.comparison-table thead .comp-plan-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+.comp-plan-tag {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-band-mint);
+}
+.comparison-table thead th.comp-highlight-col {
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+.comparison-table td.comp-highlight-col {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.07) 46%,
+      rgba(255, 255, 255, 0) 62%
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--emerald-dark) 55%, black) 0%,
+      color-mix(in srgb, var(--emerald-dark) 80%, black) 50%,
+      var(--emerald-dark) 100%
+    ) !important;
+  border-top-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+.comparison-table td.comp-highlight-col .cell-check {
+  color: var(--brand-band-mint);
+}
+.comparison-table td.comp-highlight-col .cell-x {
+  color: rgba(255, 255, 255, 0.35);
+}
+.comparison-table td.comp-highlight-col .cell-text {
+  color: rgba(255, 255, 255, 0.88);
+}
+body:not(.light-mode) .pricing-page--standalone .comparison-table th {
+  color: #ffffff;
 }

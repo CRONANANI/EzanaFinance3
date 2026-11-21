@@ -50,7 +50,7 @@
  *                               Security, Delete Account
  *   • partner-home / partner-dashboard / partner-community / partner-learning
  *                             → Partner workflows (see partner articles below)
- *   • select-plan             → Subscription tiers + 14-day free trial
+ *   • select-plan             → Subscription tiers + 1-month free trial
  * ──────────────────────────────────────────────────────────────────────
  */
 
@@ -308,7 +308,7 @@ export const USER_ARTICLES = {
       '<h3>Related articles</h3>',
       '<ul><li><a href="/help-center/user/article/what-to-know-before-you-sign-up">What to Know Before You Sign Up</a></li><li><a href="/help-center/user/article/first-steps">Your First 5 Steps on Ezana</a></li><li><a href="/help-center/user/article/onboarding-walkthrough">The In-App Onboarding Walkthrough</a></li><li><a href="/help-center/user/article/two-factor-auth">Enabling Two-Factor Authentication</a></li></ul>',
       '<h3>FAQ</h3>',
-      '<p><strong>Q:</strong> Does creating an account cost anything?</p><p>A: No. Sign-up is free. Paid plans include a 14-day free trial the first time you subscribe. See <a href="/help-center/user/article/free-trial-explained">The Free Trial Explained</a>.</p>',
+      '<p><strong>Q:</strong> Does creating an account cost anything?</p><p>A: No. Sign-up is free. Paid plans include a 1-month free trial the first time you subscribe. See <a href="/help-center/user/article/free-trial-explained">The Free Trial Explained</a>.</p>',
       '<p><strong>Q:</strong> Can I change my email later?</p><p>A: Not from Settings today. The Email field under Settings, then My details, is shown read-only, so pick an address you plan to keep.</p>',
       '<p><strong>Q:</strong> Do I need to connect a bank or brokerage to sign up?</p><p>A: No. You can use research tools and mock trading without connecting anything.</p>',
     ]),
@@ -968,7 +968,7 @@ export const USER_ARTICLES = {
     title: 'Understanding Ezana Plans',
     category: 'Billing & Subscriptions',
     content: wrap([
-      'Ezana has a Free access level and four paid plans: Personal, Personal Advanced, Family, and Professional. Each paid plan can be billed monthly or annually, and your first paid subscription starts with a <strong>14-day free trial</strong>. You compare and choose plans on the Plans page, reached from Settings, then Plan, then <strong>View plans &amp; checkout</strong>.',
+      'Ezana has a Free access level and four paid plans: Personal, Personal Advanced, Family, and Professional. Each paid plan can be billed monthly or annually, and your first paid subscription starts with a <strong>1-month free trial</strong>. You compare and choose plans on the Plans page, reached from Settings, then Plan, then <strong>View plans &amp; checkout</strong>.',
       '<h3>The tiers</h3>',
       '<ul><li><strong>Free</strong> ($0): delayed market news, 1 watchlist (3 slots), read-only Community, Learning Center basics, and a $10K <a href="/help-center/user/article/mock-trading-deep-dive">mock portfolio</a>.</li><li><strong>Personal</strong> ($5/month or $48/year): basic market data, watchlists, and the daily newsletter.</li><li><strong>Personal Advanced</strong> ($19/month or $180/year): everything in Personal, plus advanced analytics and real-time alerts. Marked as the popular pick.</li><li><strong>Family</strong> ($49/month or $468/year): everything in Personal Advanced, up to 5 family members, and shared portfolios.</li><li><strong>Professional</strong> ($119/month or $1,140/year): everything in Family, plus API access, priority support, and custom reports.</li></ul>',
       '<h3>How it works</h3>',
@@ -981,7 +981,7 @@ export const USER_ARTICLES = {
       '<h3>Related articles</h3>',
       '<ul><li><a href="/help-center/user/article/free-trial-explained">How the 14-Day Free Trial Works</a></li><li><a href="/help-center/user/article/managing-subscription">Upgrading, Downgrading, or Canceling</a></li><li><a href="/help-center/user/article/payment-methods">Managing Payment Methods</a></li><li><a href="/help-center/user/article/what-to-know-before-you-sign-up">What to Know Before You Sign Up</a></li></ul>',
       '<h3>FAQ</h3>',
-      '<p><strong>Q:</strong> Is there a free option?</p><p>A: Yes. Free access includes a limited feature set with no card required. Paid plans unlock more, and your first one starts with a 14-day trial.</p>',
+      '<p><strong>Q:</strong> Is there a free option?</p><p>A: Yes. Free access includes a limited feature set with no card required. Paid plans unlock more, and your first one starts with a 1-month trial.</p>',
       '<p><strong>Q:</strong> Is annual cheaper?</p><p>A: Yes. For example, Personal Advanced is $180 a year versus $19 a month, about $15 a month when billed annually.</p>',
     ]),
   },
@@ -2031,9 +2031,9 @@ export const USER_ARTICLES = {
     title: 'How the 14-Day Free Trial Works',
     category: 'Billing & Subscriptions',
     content: wrap([
-      'When you start a paid Ezana plan through checkout, your subscription begins with a <strong>14-day free trial</strong>. You get that plan&rsquo;s features right away and are not charged until the trial ends. If you do not want a paid plan at all, the Free plan never expires.',
+      'When you start a paid Ezana plan through checkout, your subscription begins with a <strong>1-month free trial</strong>. You get that plan&rsquo;s features right away and are not charged until the trial ends. If you do not want a paid plan at all, the Free plan never expires.',
       '<h3>Step-by-step</h3>',
-      '<ol><li>Open the <strong>Choose your plan</strong> page.</li><li>Click <strong>Start free trial</strong> on a paid plan.</li><li>Enter a payment method on the secure Stripe checkout page. A card is required to start, but it is not charged yet.</li><li>Use the plan for 14 days.</li><li>To avoid a charge, cancel before the trial ends. Otherwise billing starts automatically when it ends.</li></ol>',
+      '<ol><li>Open the <strong>Choose your plan</strong> page.</li><li>Click <strong>Start free trial</strong> on a paid plan.</li><li>Enter a payment method on the secure Stripe checkout page. A card is required to start, but it is not charged yet.</li><li>Use the plan for 1 month.</li><li>To avoid a charge, cancel before the trial ends. Otherwise billing starts automatically when it ends.</li></ol>',
       '<h3>How it works</h3>',
       '<ul><li>The trial is added only when you do not already have an active or trialing subscription, so you cannot stack trials.</li><li>After the trial, the plan renews monthly or annually, depending on what you chose.</li><li>Manage or cancel from <strong>Settings, then Plan</strong> with <strong>Manage subscription</strong>, which opens the Stripe billing portal. Payment methods and invoices are under <strong>Settings, then Billing</strong>.</li><li>Canceling during the trial means you are not charged.</li></ul>',
       '<h3>Things to know</h3>',
@@ -2591,7 +2591,7 @@ export const USER_ARTICLES = {
     content: wrap([
       'Before you create an Ezana account, here is a plain summary of how plans and trials work, what Ezana reads from your accounts and what it can change, what other members can see about you by default, and what happens if you later decide to leave.',
       '<h3>How it works</h3>',
-      '<p><strong>Plans and trial.</strong> Ezana is a paid subscription with several tiers, compared in <a href="/help-center/user/article/plans-overview">Understanding Ezana Plans</a>. If you have never had a subscription, checkout starts a 14-day free trial; details are in <a href="/help-center/user/article/free-trial-explained">How the 14-Day Free Trial Works</a>.</p>',
+      '<p><strong>Plans and trial.</strong> Ezana is a paid subscription with several tiers, compared in <a href="/help-center/user/article/plans-overview">Understanding Ezana Plans</a>. If you have never had a subscription, checkout starts a 1-month free trial; details are in <a href="/help-center/user/article/free-trial-explained">How the 14-Day Free Trial Works</a>.</p>',
       '<p><strong>What Ezana reads.</strong> If you link a brokerage, Ezana imports holdings, balances and recent activity through Plaid or SnapTrade. Plaid links are always read-only. SnapTrade links can include trading access for brokers that support it, which you approve with your broker.</p>',
       '<p><strong>What Ezana writes.</strong> Placing orders from inside Ezana is not currently available, on either a native account or a linked broker, so Ezana does not trade or move money in your accounts today. Mock Trading uses virtual cash only.</p>',
       '<h3>Things to know</h3>',

@@ -84,7 +84,7 @@ const EZANA_PLANS = [
       { label: "Family portfolio dashboard", included: true },
       { label: "Lobbying & contracts data", included: true },
       { label: "Priority support", included: true },
-      { label: "14-day free trial", included: true },
+      { label: "1-month free trial", included: true },
     ],
   },
   {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
+import { TRIAL_LABEL } from '@/lib/billing/renewal-terms';
 
 export function TrialExpiredGate() {
   const router = useRouter();
@@ -26,8 +26,8 @@ export function TrialExpiredGate() {
           Your access period has ended
         </h1>
         <p style={{ color: '#999', marginBottom: '2rem', lineHeight: '1.6' }}>
-          Start a {TRIAL_DAYS}-day free trial with a plan to continue using Ezana Finance&apos;s
-          market data, analytics, and trading tools. You won&apos;t be charged until the trial ends.
+          Start a {TRIAL_LABEL} free trial with a plan to continue using Ezana Finance&apos;s market
+          data, analytics, and trading tools. You won&apos;t be charged until the trial ends.
         </p>
         <button
           type="button"

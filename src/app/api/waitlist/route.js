@@ -2,8 +2,15 @@
  * POST /api/waitlist: join the Ezana waitlist (the /auth/signup form).
  *
  * Body: { firstName, lastName, email, role, organization?, useCase?,
- *         heardFrom?, referralCode?, plan?, redirect?, ageConfirmed,
+ *         heardFrom?, referralCode?, plan?, billing?, redirect?, ageConfirmed,
  *         marketingConsent? }
+ *
+ * Paid plans (Nov 21, 2026): a NEW entry that came from a paid plan on
+ * /pricing also gets `checkoutToken`, a one-time value the signup page hands
+ * to /api/stripe/waitlist-checkout to save a card on Stripe. Only its SHA-256
+ * hash is stored (metadata.checkout_token_hash), it expires after two hours,
+ * and an address that was already listed never gets one (no enumeration, and
+ * nobody can attach a card to someone else's entry).
  *
  * ageConfirmed (18+) is required. marketingConsent is optional and off by
  * default; the stored wording is always the server's own copy, never what the
@@ -13,6 +20,7 @@
  * body as a new one and no second email. An admin later approves the row from
  * /admin/waitlist, which emails a one-time invite link.
  */
+import { createHash, randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { withApiGuard } from '@/lib/api-guard';
@@ -38,6 +46,10 @@ const SUCCESS = {
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
+/** Pricing-page plans that go through the waitlist card step. */
+const PAID_PLANS = ['starter', 'advanced', 'family'];
+const CHECKOUT_TOKEN_TTL_MS = 2 * 60 * 60 * 1000;
+
 export const POST = withApiGuard(
   async (request) => {
     try {
@@ -55,6 +67,7 @@ export const POST = withApiGuard(
       const heardFrom = str(body.heardFrom);
       const referralRaw = str(body.referralCode);
       const plan = str(body.plan);
+      const billing = str(body.billing) === 'monthly' ? 'monthly' : 'yearly';
       const redirectRaw = str(body.redirect);
 
       const errors = {};
@@ -85,6 +98,8 @@ export const POST = withApiGuard(
       const referralCode = referralRaw ? normalizeCode(referralRaw) : null;
       const redirect = redirectRaw ? safeInternalPath(redirectRaw, '') || null : null;
       const supabase = getAdminClient();
+      const paid = PAID_PLANS.includes(plan);
+      const checkoutToken = paid ? randomBytes(32).toString('base64url') : null;
 
       /* Already listed: same answer as a new entry, and no second email. */
       const { data: existing } = await supabase
@@ -112,6 +127,15 @@ export const POST = withApiGuard(
             heard_from: heardFrom || null,
             referral_code: referralCode,
             plan: plan || null,
+            billing: paid ? billing : null,
+            ...(checkoutToken
+              ? {
+                  checkout_token_hash: createHash('sha256').update(checkoutToken).digest('hex'),
+                  checkout_token_expires_at: new Date(
+                    Date.now() + CHECKOUT_TOKEN_TTL_MS,
+                  ).toISOString(),
+                }
+              : {}),
             redirect,
             signup_page: 'auth_signup',
             signup_timestamp: consentAt,
@@ -150,7 +174,9 @@ export const POST = withApiGuard(
         }
       }
 
-      return NextResponse.json(SUCCESS, { status: 200 });
+      return NextResponse.json(checkoutToken ? { ...SUCCESS, checkoutToken } : SUCCESS, {
+        status: 200,
+      });
     } catch (error) {
       console.error('[waitlist] error:', error);
       return NextResponse.json(

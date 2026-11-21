@@ -39,7 +39,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import ApiPricingCalculator from '@/components/pricing/ApiPricingCalculator';
 import { PLANS as CATALOG } from '@/config/pricing';
-import { RENEWAL_POLICY_TEXT, TRIAL_DAYS } from '@/lib/billing/renewal-terms';
+import { RENEWAL_POLICY_TEXT, TRIAL_LABEL } from '@/lib/billing/renewal-terms';
 import './pricing-standalone.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -144,6 +144,35 @@ const PLANS = [
       'Compliance & data export tools',
       'Custom integrations',
     ],
+  },
+];
+
+/* The four ways a partner earns (figures from the Partner program terms). */
+const PARTNER_RATES = [
+  {
+    icon: 'bi-mortarboard',
+    label: 'Courses',
+    value: '70%',
+    note: 'of revenue from every course you sell',
+  },
+  {
+    icon: 'bi-people',
+    label: 'Referrals',
+    value: '$25',
+    note: 'for each referral that activates a paid plan',
+  },
+  {
+    icon: 'bi-arrow-left-right',
+    label: 'Copy trading',
+    value: '10%',
+    note: 'profit share from members who copy you',
+    soon: true,
+  },
+  {
+    icon: 'bi-newspaper',
+    label: 'Ezana Echo',
+    value: 'Publish',
+    note: 'write for Echo and grow your subscribers',
   },
 ];
 
@@ -385,41 +414,77 @@ function planPricing(plan, billing) {
 function ctaLabelFor(plan, isPending) {
   if (plan.isFree) return isPending ? 'Activating…' : 'Get Started Free';
   if (plan.contactSales) return 'Contact Sales';
-  return isPending ? 'Starting checkout…' : `Start ${TRIAL_DAYS}-day free trial`;
+  return isPending ? 'Opening…' : 'Join waitlist';
 }
 
+/* Nov 21: the four outside cards carry a solid emerald button; the
+   recommended (emerald metal) card inverts it to white with emerald text. */
+const ctaClass = (plan) => `plan-cta ${plan.highlight ? 'plan-cta--invert' : 'plan-cta--primary'}`;
+
+/* How paid signups work while access opens in waves. Shown under the hero
+   and repeated in the FAQ so nobody reaches Stripe surprised. */
+const WAITLIST_STEPS = [
+  {
+    icon: 'bi-person-plus',
+    title: 'Join the waitlist',
+    body: 'Create your account details, then add a card on Stripe. Nothing is charged.',
+  },
+  {
+    icon: 'bi-envelope-check',
+    title: 'Get your invite',
+    body: `When your wave opens we email your invite to a free ${TRIAL_LABEL} Starter trial.`,
+  },
+  {
+    icon: 'bi-arrow-up-right-circle',
+    title: 'Choose your plan',
+    body: 'Use Starter free for the month, move to Advanced right away, or decide when the trial ends.',
+  },
+];
+
 const FAQ_ITEMS = [
+  {
+    q: 'Why is there a waitlist?',
+    a: 'Ezana opens access in waves so every new member gets a working account and real support. Join the waitlist from any paid plan and we email your invite as soon as your wave opens.',
+  },
+  {
+    q: 'What happens after I join the waitlist?',
+    a: 'You enter your account details, then Stripe asks for a card. Nothing is charged at that point, the card is only saved. When you are accepted, you are invited to a free one-month trial of the Starter plan.',
+  },
+  {
+    q: 'Can I start on Advanced instead of Starter?',
+    a: `Yes. Your invite starts the free ${TRIAL_LABEL} Starter trial, and you can move to Advanced the moment you join. Or use Starter for the whole month and choose Starter or Advanced when the trial ends.`,
+  },
+  {
+    q: 'Why do I need a card to join the waitlist?',
+    a: 'So your trial can continue without interruption once it ends. Stripe saves the card and Ezana never sees the full number. You are not charged while you wait or during the free month, and you can cancel before the trial ends at no cost.',
+  },
+  {
+    q: 'What happens when my free month ends?',
+    a: 'The plan you are on (Starter, or Advanced if you switched) is charged to the saved card at the price shown, monthly or yearly depending on what you picked. We email a reminder 3 days before the trial ends.',
+  },
   {
     q: 'How does automatic renewal work?',
     a: RENEWAL_POLICY_TEXT,
   },
   {
-    q: 'Do I need a credit card to start the free trial?',
-    a: `Yes, a card is required so your account can continue seamlessly once the trial ends, but you will not be charged for ${TRIAL_DAYS} days, and you can cancel anytime from your account settings during the trial with zero charge.`,
+    q: 'Monthly or yearly: what is the difference?',
+    a: 'Those are the two billing options. Yearly is billed once a year and costs about 20% less than paying monthly, for example Starter is $48 a year instead of $60.',
   },
   {
-    q: `What happens when my ${TRIAL_DAYS}-day trial ends?`,
-    a: 'On day 15 your card is charged for the plan and billing interval you selected. We send a reminder email 3 days before the trial ends so you can change your mind or switch plans.',
+    q: 'Can I cancel or change plans later?',
+    a: 'Yes, anytime from Settings, Billing. Upgrades take effect immediately with a prorated charge. Downgrades and cancellations take effect at the end of the period you already paid for.',
   },
   {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel from your account settings at any time, during the trial, or after. If you cancel during a paid billing period, you keep access until the end of that period.',
+    q: 'Is the Free plan on the waitlist too?',
+    a: 'No card is ever needed for Free. It includes real-time market data, watchlists, read-only community access and a $10K mock portfolio, and you can upgrade from it later.',
   },
   {
-    q: 'Can I change plans later?',
-    a: 'Any time. Upgrades take effect immediately with a prorated charge for the remainder of the billing cycle. Downgrades take effect at the end of the current period.',
+    q: 'How does the Partner program pay?',
+    a: 'Partners join free. You keep 70% of course revenue, earn $25 for each referral that activates a paid plan, and can publish on Ezana Echo to grow subscribers. Copy-trading profit share is coming soon.',
   },
   {
-    q: 'Do you offer refunds?',
-    a: 'If you forget to cancel and get charged, email support within 14 days of the charge and we will refund in full, no questions asked.',
-  },
-  {
-    q: 'What payment methods do you accept?',
-    a: 'All major credit and debit cards via Stripe. Apple Pay and Google Pay are supported on compatible devices. Enterprise customers can invoice ACH.',
-  },
-  {
-    q: 'Is my financial data secure?',
-    a: 'We never store your brokerage credentials. Live brokerage connections use read-only tokens through regulated aggregators, and everything in transit is encrypted (TLS 1.2+).',
+    q: 'What payment methods do you accept, and is my data secure?',
+    a: 'All major credit and debit cards through Stripe, plus Apple Pay and Google Pay on supported devices; Enterprise can pay by invoice. We never store brokerage credentials, and everything in transit is encrypted.',
   },
 ];
 
@@ -457,11 +522,6 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
         const isPending = pendingPlan === plan.id;
         const rowId = `plan-row-${plan.id}`;
         const panelId = `plan-panel-${plan.id}`;
-        const chip = plan.isFree
-          ? 'Free forever'
-          : plan.contactSales
-            ? 'Custom pricing'
-            : `${TRIAL_DAYS}-day free trial`;
         return (
           <li
             key={plan.id}
@@ -483,11 +543,6 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
                   <span className="plan-row-name">
                     {plan.name}
                     {plan.badge ? <span className="plan-row-badge">{plan.badge}</span> : null}
-                  </span>
-                  <span
-                    className={`plan-row-chip${plan.isFree || plan.contactSales ? ' is-neutral' : ''}`}
-                  >
-                    {chip}
                   </span>
                 </span>
                 <span className="plan-row-price">
@@ -521,7 +576,7 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
                 type="button"
                 onClick={() => onSelect(plan)}
                 disabled={isPending}
-                className={`plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`}
+                className={ctaClass(plan)}
                 aria-busy={isPending}
               >
                 {isPending ? <Loader2 size={16} className="plan-cta-spin" aria-hidden /> : null}
@@ -541,7 +596,11 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
                 ))}
               </ul>
               {!plan.isFree && !plan.contactSales ? (
-                <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
+                <RenewalTerms
+                  plan={catalogPlan(plan, billing)}
+                  fromInvite
+                  className="plan-renewal"
+                />
               ) : null}
             </div>
           </li>
@@ -735,18 +794,18 @@ export default function PricingPage() {
       <header className="pricing-hero">
         <div className="pricing-trial-pill" role="note">
           <Sparkles size={13} aria-hidden />
-          {TRIAL_DAYS}-day free trial on every paid plan
+          Free {TRIAL_LABEL} trial for waitlist members
         </div>
         <h1 className="pricing-h1">
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
         <p className="pricing-subtitle">
           <span className="pricing-subtitle-long">
-            Start with the plan that fits where you are. Every paid plan includes a full{' '}
-            {TRIAL_DAYS}-day free trial. Cancel anytime, no charge until the trial ends.
+            Start with the plan that fits where you are. Join the waitlist and your invite comes
+            with a free {TRIAL_LABEL} trial. No charge until the trial ends, cancel anytime.
           </span>
           <span className="pricing-subtitle-short">
-            No charge until your trial ends. Cancel anytime.
+            Free {TRIAL_LABEL} trial with your invite. Cancel anytime.
           </span>
         </p>
 
@@ -793,6 +852,25 @@ export default function PricingPage() {
         </div>
       )}
 
+      {/* ── How the waitlist works ───────────────────────────────────── */}
+      <section className="pricing-waitlist" aria-labelledby="pricing-waitlist-h">
+        <h2 id="pricing-waitlist-h" className="pricing-waitlist-h">
+          How the waitlist works
+        </h2>
+        <ol className="pricing-waitlist-steps">
+          {WAITLIST_STEPS.map((step, i) => (
+            <li key={step.title} className="pricing-waitlist-step">
+              <span className="pricing-waitlist-ic" aria-hidden="true">
+                <i className={`bi ${step.icon}`} />
+              </span>
+              <span className="pricing-waitlist-num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="pricing-waitlist-title">{step.title}</span>
+              <span className="pricing-waitlist-body">{step.body}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
       <section className="pricing-cards-section" aria-label="Plans">
         <PlanList
@@ -827,17 +905,6 @@ export default function PricingPage() {
                 <h3 className="plan-name">{plan.name}</h3>
                 <p className="plan-tagline">{plan.tagline}</p>
 
-                {/* Consistent trial ribbon slot on every card */}
-                <div className="plan-trial-row">
-                  {plan.isFree ? (
-                    <span className="plan-trial-chip plan-trial-chip--neutral">Free forever</span>
-                  ) : isContact ? (
-                    <span className="plan-trial-chip plan-trial-chip--neutral">Custom pricing</span>
-                  ) : (
-                    <span className="plan-trial-chip">{TRIAL_DAYS}-day free trial</span>
-                  )}
-                </div>
-
                 {/* Price: muted $ and unit around a large figure that rolls in on
                     every toggle; the billing note (and the struck monthly
                     price on yearly) sits underneath. */}
@@ -868,14 +935,14 @@ export default function PricingPage() {
                   type="button"
                   onClick={() => (plan.isFree ? activateFreePlan() : startCheckout(plan))}
                   disabled={isPending}
-                  className={`plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`}
+                  className={ctaClass(plan)}
                   aria-busy={isPending}
                 >
                   {isPending ? <Loader2 size={16} className="plan-cta-spin" aria-hidden /> : null}
                   <span>{ctaLabel}</span>
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
-                {/* Every card renders the same nine rows (an empty slot where a
+                {/* Every card renders the same eight rows (an empty slot where a
                     plan has nothing to say), so the subgrid can line the
                     "What's included" headings up across all five cards. */}
                 <div className="plan-sub-slot">
@@ -900,7 +967,11 @@ export default function PricingPage() {
                 {/* Trial and renewal terms: fine print at the foot of the card. */}
                 <div className="plan-terms-slot">
                   {!plan.isFree && !isContact ? (
-                    <RenewalTerms plan={catalogPlan(plan, billing)} className="plan-renewal" />
+                    <RenewalTerms
+                      plan={catalogPlan(plan, billing)}
+                      fromInvite
+                      className="plan-renewal"
+                    />
                   ) : null}
                 </div>
               </div>
@@ -908,52 +979,53 @@ export default function PricingPage() {
           })}
         </div>
 
-        {/* ── Partner plan — free to join, commission-based ─────────────── */}
-        <div className="pricing-partner-pill">
-          {/* 1. Header text on top */}
-          <div className="pricing-partner-info">
-            <span className="pricing-partner-eyebrow">Partner Program</span>
-            <h3 className="pricing-partner-name">Partner</h3>
+        {/* ── Partner program (Nov 21 redesign) ─────────────────────────────
+            An emerald metal band: the pitch and CTA on the left, the four
+            ways partners earn as a ruled 2x2 grid on the right. */}
+        <section className="pricing-partner" aria-labelledby="pricing-partner-h">
+          <div className="pricing-partner-copy">
+            <span className="pricing-partner-eyebrow">Partner program</span>
+            <h3 id="pricing-partner-h" className="pricing-partner-name">
+              Earn with Ezana.
+            </h3>
             <p className="pricing-partner-tagline">
-              For creators, traders, and financial professionals. Free to join, Ezana takes a
-              commission only when you earn, so your plan scales with what you make.
+              For creators, traders and financial professionals. Free to join: Ezana only takes a
+              share when you earn, so the program grows with your audience.
             </p>
-          </div>
-
-          {/* 2. Four rate cards in the middle */}
-          <div className="pricing-partner-rates">
-            <div className="pricing-partner-rate">
-              <span className="pricing-partner-rate-value">70%</span>
-              <span className="pricing-partner-rate-label">course revenue share</span>
-            </div>
-            <div className="pricing-partner-rate">
-              <span className="pricing-partner-rate-value">$25</span>
-              <span className="pricing-partner-rate-label">per activated referral</span>
-            </div>
-            <div className="pricing-partner-rate">
-              <span className="pricing-partner-rate-value">
-                10%
-                <span className="pricing-partner-soon">Soon</span>
-              </span>
-              <span className="pricing-partner-rate-label">copy-trading profit share</span>
-            </div>
-            <div className="pricing-partner-rate">
-              <span className="pricing-partner-rate-value">Echo</span>
-              <span className="pricing-partner-rate-label">publish &amp; grow subscribers</span>
-            </div>
-          </div>
-
-          {/* 3. CTA below, centered (price line removed per handoff) */}
-          <div className="pricing-partner-footer">
+            <ul className="pricing-partner-points">
+              <li>
+                <i className="bi bi-check2" aria-hidden="true" /> No fee to join, ever
+              </li>
+              <li>
+                <i className="bi bi-check2" aria-hidden="true" /> Paid monthly to your bank account
+              </li>
+              <li>
+                <i className="bi bi-check2" aria-hidden="true" /> A partner dashboard for every
+                stream
+              </li>
+            </ul>
             <Link href="/auth/partner/apply" className="pricing-partner-cta">
               Become a Partner <ArrowRight size={16} aria-hidden />
             </Link>
           </div>
-        </div>
+          <dl className="pricing-partner-rates">
+            {PARTNER_RATES.map((r) => (
+              <div key={r.label} className="pricing-partner-rate">
+                <dt className="pricing-partner-rate-label">
+                  <i className={`bi ${r.icon}`} aria-hidden="true" />
+                  {r.label}
+                  {r.soon ? <span className="pricing-partner-soon">Soon</span> : null}
+                </dt>
+                <dd className="pricing-partner-rate-value">{r.value}</dd>
+                <dd className="pricing-partner-rate-note">{r.note}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         <div className="pricing-secure-row">
           <ShieldCheck size={14} aria-hidden />
-          Secure checkout powered by Stripe · Cancel anytime from your account
+          Card details are saved securely by Stripe · No charge until your free trial ends
         </div>
       </section>
 
@@ -984,7 +1056,10 @@ export default function PricingPage() {
                   return (
                     <th key={p.id} className={isHi ? 'comp-highlight-col' : ''}>
                       <div className="comp-plan-head">
-                        <div className="comp-plan-name">{p.name}</div>
+                        <div className="comp-plan-name">
+                          {p.name}
+                          {isHi ? <span className="comp-plan-tag">(Most valuable)</span> : null}
+                        </div>
                         <div className="comp-plan-sub">
                           {subPrice === null ? 'Custom' : p.isFree ? 'Free' : `$${subPrice}/mo`}
                         </div>

@@ -39,6 +39,9 @@ function readParams() {
     invite: p.get('invite') || '',
     redirect: dest ? safeInternalPath(dest, '') : '',
     plan: (p.get('plan') || '').slice(0, 20),
+    billing: p.get('billing') === 'monthly' ? 'monthly' : 'yearly',
+    /* Back from Stripe's card step: card-saved or card-skipped. */
+    waitlist: (p.get('waitlist') || '').slice(0, 20),
     ref: p.get('ref') ? normalizeCode(p.get('ref')).slice(0, 8) : '',
     error,
   };
@@ -100,6 +103,105 @@ function Field({ id, label, required, error, hint, children }) {
   );
 }
 
+/* Paid plans on /pricing join the waitlist and then save a card on Stripe
+   (Nov 21, 2026). The one-time token from /api/waitlist is kept in this tab's
+   session storage so a visitor who backs out of Stripe can try again. */
+const PAID_PLAN_NAMES = { starter: 'Starter', advanced: 'Advanced', family: 'Family' };
+const CARD_TOKEN_KEY = 'ezana:waitlist-card-token';
+
+function readCardToken() {
+  try {
+    return window.sessionStorage.getItem(CARD_TOKEN_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+function writeCardToken(token) {
+  try {
+    if (token) window.sessionStorage.setItem(CARD_TOKEN_KEY, token);
+    else window.sessionStorage.removeItem(CARD_TOKEN_KEY);
+  } catch {
+    /* storage is a convenience */
+  }
+}
+
+/** Opens Stripe Checkout (setup mode) for a waitlist entry. Resolves to an error message, or navigates. */
+async function openCardStep(token) {
+  try {
+    const res = await fetch('/api/stripe/waitlist-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok && d.url) {
+      window.location.assign(d.url);
+      return '';
+    }
+    if (res.status === 404) writeCardToken('');
+    return d.error || 'Could not open Stripe. Please try again.';
+  } catch {
+    return 'Could not reach Stripe. Please try again.';
+  }
+}
+
+/** Shown when the visitor comes back from Stripe's card step. */
+function CardStepResult({ outcome }) {
+  const [token] = useState(() => readCardToken());
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const saved = outcome === 'card-saved';
+  useEffect(() => {
+    if (saved) writeCardToken('');
+  }, [saved]);
+
+  return (
+    <div className="wl-done" role="status">
+      <span className="wl-done-ic" aria-hidden="true">
+        <i className={`bi ${saved ? 'bi-check2' : 'bi-credit-card'}`} />
+      </span>
+      <h1 className="wl-title">{saved ? "You're on the list." : 'Your card was not added.'}</h1>
+      <p className="wl-sub">
+        {saved
+          ? "Your card is saved and nothing was charged. When you're accepted, we'll email your invite to a free 1-month Starter trial. Use Starter for the month, move to Advanced right away, or choose when the trial ends."
+          : "You're still on the waitlist. Add a card to be ready for your free 1-month trial the moment you're accepted."}
+      </p>
+      {!saved && token ? (
+        <>
+          {error ? (
+            <div className="wl-alert" role="alert">
+              {error}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="wl-submit"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              const msg = await openCardStep(token);
+              if (msg) {
+                setError(msg);
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? 'Opening Stripe' : 'Add a card on Stripe'}
+          </button>
+        </>
+      ) : null}
+      <div className="wl-links">
+        <Link href="/" className="wl-link">
+          Back to home
+        </Link>
+        <Link href="/pricing" className="wl-link">
+          View plans
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* ── Mode 1: join the waitlist ── */
 function WaitlistForm({ params }) {
   const [f, setF] = useState({
@@ -120,6 +222,7 @@ function WaitlistForm({ params }) {
   const [busy, setBusy] = useState(false);
   const [doneEmail, setDoneEmail] = useState('');
 
+  const paidPlan = PAID_PLAN_NAMES[params.plan] ? params.plan : '';
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
   const signinHref = params.redirect
     ? `/auth/signin?redirect=${encodeURIComponent(params.redirect)}`
@@ -153,11 +256,19 @@ function WaitlistForm({ params }) {
           marketingConsent: marketing,
           marketingConsentText: WAITLIST_MARKETING_CONSENT_TEXT,
           plan: params.plan || undefined,
+          billing: paidPlan ? params.billing : undefined,
           redirect: params.redirect || undefined,
         }),
       });
       const d = await res.json().catch(() => ({}));
       if (res.ok && d.success) {
+        /* Paid plan, new entry: straight on to Stripe to save a card. */
+        if (paidPlan && d.checkoutToken) {
+          writeCardToken(d.checkoutToken);
+          const msg = await openCardStep(d.checkoutToken);
+          if (!msg) return;
+          setError(`You're on the waitlist, but ${msg.charAt(0).toLowerCase()}${msg.slice(1)}`);
+        }
         setDoneEmail(f.email.trim());
         return;
       }
@@ -182,6 +293,11 @@ function WaitlistForm({ params }) {
         </span>
         <h1 className="wl-title">You&apos;re on the list.</h1>
         <p className="wl-sub">We&apos;ll email {doneEmail} when your invite is ready.</p>
+        {error ? (
+          <div className="wl-alert" role="alert">
+            {error}
+          </div>
+        ) : null}
         <div className="wl-links">
           <Link href="/" className="wl-link">
             Back to home
@@ -200,10 +316,18 @@ function WaitlistForm({ params }) {
   return (
     <>
       <h1 className="wl-title">Join the Ezana waitlist</h1>
-      <p className="wl-sub">
-        Ezana is opening access in waves. Tell us a little about you and we&apos;ll email you an
-        invite.
-      </p>
+      {paidPlan ? (
+        <p className="wl-sub">
+          You picked {PAID_PLAN_NAMES[paidPlan]} ({params.billing}). Enter your details, then add a
+          card on Stripe. Nothing is charged: when you&apos;re accepted you&apos;ll be invited to a
+          free 1-month Starter trial, and you can move to Advanced at any time.
+        </p>
+      ) : (
+        <p className="wl-sub">
+          Ezana is opening access in waves. Tell us a little about you and we&apos;ll email you an
+          invite.
+        </p>
+      )}
       {error ? (
         <div className="wl-alert" role="alert">
           {error}
@@ -318,7 +442,13 @@ function WaitlistForm({ params }) {
           {WAITLIST_MARKETING_CONSENT_TEXT}
         </Check>
         <button type="submit" className="wl-submit" disabled={busy}>
-          {busy ? 'Joining' : 'Join the waitlist'}
+          {busy
+            ? paidPlan
+              ? 'Opening Stripe'
+              : 'Joining'
+            : paidPlan
+              ? 'Continue to add a card'
+              : 'Join the waitlist'}
         </button>
       </form>
       <p className="wl-foot">
@@ -548,6 +678,8 @@ export default function SignUpPage() {
         <Brand />
         {!params ? null : params.invite ? (
           <InviteForm token={params.invite} />
+        ) : params.waitlist === 'card-saved' || params.waitlist === 'card-skipped' ? (
+          <CardStepResult outcome={params.waitlist} />
         ) : (
           <WaitlistForm params={params} />
         )}
