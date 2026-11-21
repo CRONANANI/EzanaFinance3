@@ -1246,7 +1246,7 @@ function Picture({ src, className, alt, eager = false, sizes, position = null })
         fill
         sizes={sizes}
         priority={eager}
-        quality={75}
+        quality={85}
         style={position ? { objectPosition: position } : undefined}
         unoptimized={/^https?:/.test(src)}
         onError={() => setFailed(true)}

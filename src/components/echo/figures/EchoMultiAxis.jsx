@@ -23,8 +23,11 @@ import { figNum, textWidth, thinStep, truncate, useFigPhone } from './fit';
  */
 
 const W = 770;
-const H = 440;
-const PLOT = { l: 66, r: 596, t: 112, b: 388 };
+/* Nov 20, 2026: taller, with room under the plot for two-line category
+   names and above it for full axis titles (no truncation). */
+const H = 470;
+const PLOT = { l: 66, r: 596, t: 128, b: 396 };
+const CAT_FS = 13;
 
 // Fixed color slots — bar, line 1, line 2 (per house spec).
 const SLOT_COLORS = [
@@ -90,13 +93,34 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
 
   /* Category labels: only every k-th is drawn when they would touch; the
      active one is always drawn so the hover readout has its anchor. */
-  const catStep = thinStep(categories, bandW, 15);
+  /* Category names wrap onto two lines when they would not fit their band,
+     so every name is shown instead of every other one. */
+  const catLines = (c) => {
+    const s = String(c ?? '');
+    if (textWidth(s, CAT_FS) <= bandW - 8 || !s.includes(' ')) return [s];
+    const mid = s.length / 2;
+    let cut = -1;
+    for (let k = 0; k < s.length; k += 1) {
+      if (s[k] === ' ' && (cut < 0 || Math.abs(k - mid) < Math.abs(cut - mid))) cut = k;
+    }
+    return [s.slice(0, cut), s.slice(cut + 1)];
+  };
+  const catStep = Math.max(
+    1,
+    thinStep(
+      categories.map((c) => catLines(c).reduce((a, b) => (a.length >= b.length ? a : b), '')),
+      bandW,
+      CAT_FS,
+    ),
+  );
   /* Right-hand axis titles stack above the plot and are kept inside the
      frame; two titles on one line used to run into each other and off the
      right edge. */
-  const rightTitleW = W - (PLOT.r + 6) - 6;
+  /* Axis titles form a key row above the plot: the bar axis at the left, the
+     line axes right-aligned to the frame, each with half the width. */
+  const rightTitleW = W / 2 - 16;
   const titleFor = (m) => `${m.s.label}${m.s.unit ? ` (${m.s.unit})` : ''}`;
-  const leftTitleW = PLOT.r - (PLOT.l - 44) - 8;
+  const leftTitleW = W / 2 - 16;
 
   const barMeta = meta.filter((m) => m.s.kind === 'bar');
   const lineMeta = meta.filter((m) => m.s.kind !== 'bar');
@@ -148,7 +172,7 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
             </text>
           ))}
         {leftMeta && (
-          <text x={PLOT.l - 44} y={PLOT.t - 13} style={SERIF} fontSize="15" fill={leftMeta.color}>
+          <text x={8} y={PLOT.t - 16} style={SERIF} fontSize="15" fill={leftMeta.color}>
             {truncate(titleFor(leftMeta), leftTitleW, 15, { mono: false })}
           </text>
         )}
@@ -177,8 +201,9 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
               </text>
             ))}
             <text
-              x={PLOT.r + 6}
-              y={PLOT.t - (axis3Meta ? 31 : 13)}
+              x={W - 8}
+              y={PLOT.t - (axis3Meta ? 36 : 16)}
+              textAnchor="end"
               style={SERIF}
               fontSize="15"
               fill={axis2Meta.color}
@@ -206,7 +231,14 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
                 {num(v)}
               </text>
             ))}
-            <text x={PLOT.r + 6} y={PLOT.t - 13} style={SERIF} fontSize="15" fill={axis3Meta.color}>
+            <text
+              x={W - 8}
+              y={PLOT.t - 16}
+              textAnchor="end"
+              style={SERIF}
+              fontSize="15"
+              fill={axis3Meta.color}
+            >
               {truncate(titleFor(axis3Meta), rightTitleW, 15, { mono: false })}
             </text>
           </g>
@@ -221,10 +253,14 @@ export function EchoMultiAxis({ figureLabel, kicker, hint, source, categories = 
               y={PLOT.b + 22}
               textAnchor="middle"
               style={MONO}
-              fontSize="15"
+              fontSize={CAT_FS}
               fill={i === activeIdx ? 'var(--text-muted)' : 'var(--text-faint)'}
             >
-              {c}
+              {catLines(c).map((line, li) => (
+                <tspan key={line} x={center(i)} dy={li === 0 ? 0 : 16}>
+                  {line}
+                </tspan>
+              ))}
             </text>
           ),
         )}

@@ -327,7 +327,10 @@ export function EchoArticleHero({
               fill
               priority
               unoptimized={remote}
-              sizes="(max-width: 1024px) 100vw, 46vw"
+              /* The image now bleeds to the window's right edge (about 60% of
+                 the window), and is encoded at quality 90 so photos stay crisp. */
+              sizes="(max-width: 1024px) 100vw, 62vw"
+              quality={90}
               style={{ objectFit: 'cover', objectPosition: image.position || '50% 50%' }}
             />
           </figure>

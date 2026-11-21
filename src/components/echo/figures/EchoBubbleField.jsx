@@ -4,15 +4,20 @@ import { useMemo } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
 import { figTickLabeller, useFigPhone } from './fit';
 
+/* Nov 20, 2026: more room and smaller type. The y axis title sat on the tick
+   numbers and a dense cluster pushed labels onto bubbles; the frame is now
+   taller, the left margin clears the widest tick, labels are 13-unit mono with
+   a generous glyph estimate, and the bubbles are a little smaller. */
 const W = 680;
-const H = 460;
-const PAD = { l: 66, r: 40, t: 96, b: 58 };
-const MAX_R = 46;
+const H = 520;
+const PAD = { l: 92, r: 28, t: 100, b: 62 };
+const MAX_R = 38;
 const MIN_R = 6;
-/* Label geometry for collision checks: 15-unit mono text, ~0.6em a glyph. */
-const LABEL_FS = 15;
-const CHAR_W = LABEL_FS * 0.6;
-const LABEL_H = 17;
+/* Label geometry for collision checks: 13-unit mono text, budgeted at 0.64em
+   a glyph so the box is never narrower than the painted text. */
+const LABEL_FS = 13;
+const CHAR_W = LABEL_FS * 0.64;
+const LABEL_H = 16;
 
 const rectsOverlap = (a, b, gap = 3) =>
   a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
@@ -76,8 +81,8 @@ function layoutLabels(bubbles, bounds) {
       { x: b.cx - b.r - 6 - w, y: b.cy - h / 2 },
     ].map((r) => ({ ...r, w, h, leader: false }));
     const far = [];
-    for (let ring = 1; ring <= 16; ring += 1) {
-      const d = b.r + 10 + ring * 16;
+    for (let ring = 1; ring <= 28; ring += 1) {
+      const d = b.r + 8 + ring * 12;
       for (const [ux, uy] of [
         [1, 0],
         [1, -0.5],
@@ -128,7 +133,29 @@ function layoutLabels(bubbles, bounds) {
       !placed.some((q) => rectsOverlap(r, q)) &&
       !bubbles.some((o) => o !== b && hitsCircle(r, o)) &&
       !hitsCircle(r, b);
-    const pick = near.find(free) || far.find(free) || far.find(roomy) || near[0];
+    /* Last resort: the in-bounds spot with the least overlap, never a blind
+       default on top of something. */
+    const cost = (r) => {
+      if (!inside(r)) return Infinity;
+      let c = 0;
+      for (const q of placed) if (rectsOverlap(r, q)) c += 10;
+      for (const o of bubbles) if (o !== b && hitsCircle(r, o)) c += 3;
+      if (hitsCircle(r, b)) c += 1;
+      return c;
+    };
+    const fallback = () => {
+      let best = near[0];
+      let bestC = Infinity;
+      for (const r of [...near, ...far]) {
+        const c = cost(r);
+        if (c < bestC) {
+          best = r;
+          bestC = c;
+        }
+      }
+      return best;
+    };
+    const pick = near.find(free) || far.find(free) || far.find(roomy) || fallback();
     placed.push(pick);
     out.set(b.key, pick);
   }
@@ -200,10 +227,12 @@ export function EchoBubbleField({
       cy: sy(p.y),
       r: sr(p.z),
     }));
+    /* Labels stay inside the drawing (they may use the right margin, never
+       past the frame) and below the zone name. */
     const labels = layoutLabels(bubbles, {
       l: PAD.l + 2,
-      r: W - PAD.r + 30,
-      t: PAD.t - 10,
+      r: W - 4,
+      t: PAD.t + 2,
       b: H - PAD.b - 2,
     });
 
@@ -285,7 +314,7 @@ export function EchoBubbleField({
               y={zoneRect.y - 6}
               textAnchor="end"
               className="echo-fig-mono"
-              fontSize="15"
+              fontSize="13"
               fill="var(--text-faint)"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
@@ -403,9 +432,9 @@ export function EchoBubbleField({
                 cx={cx}
                 cy={cy}
                 r={r}
-                fill="var(--echo-chart-blue)"
-                fillOpacity="0.5"
-                stroke="var(--echo-chart-blue)"
+                fill="var(--brand-ezana-green)"
+                fillOpacity="0.28"
+                stroke="var(--brand-ezana-green)"
                 strokeWidth="1.4"
                 style={{ transitionDelay: delay }}
               />
@@ -452,12 +481,12 @@ export function EchoBubbleField({
           {xLabel}
         </text>
         <text
-          x={22}
+          x={18}
           y={(plotTop + plotBottom) / 2}
           textAnchor="middle"
           fontSize="16"
           fill="var(--text-faint)"
-          transform={`rotate(-90 22 ${(plotTop + plotBottom) / 2})`}
+          transform={`rotate(-90 18 ${(plotTop + plotBottom) / 2})`}
           style={{ fontFamily: 'var(--font-serif)' }}
         >
           {yLabel}

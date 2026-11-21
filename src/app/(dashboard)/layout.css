@@ -209,11 +209,14 @@ html.app-authed:has(.echo-article-page) > body.app-authed,
 body:has(.echo-article-page) .dashboard-main,
 body:has(.echo-article-page) .dashboard-main-content,
 body:has(.echo-article-page) .dashboard-container {
-  background-color: #ffffff !important;
+  /* Nov 20, 2026: black, not white. Echo article pages are brand-locked dark
+     (ThemeProvider / root layout); the whole shell paints pure black so no
+     gutter or band around the article column shows another colour. */
+  background-color: black !important;
 }
 /* Nav matches the white page (no dark seam above a white article on the
    default theme). */
 body.route-echo-article .main-nav:not(.partner-nav),
 body:has(.echo-article-page) .main-nav:not(.partner-nav) {
-  background: #ffffff !important;
+  background: black !important;
 }

@@ -56,7 +56,10 @@ export const HOME_CARD_IMAGES = {
   // Ossoff's $115.9 Million Machine
   'ossoff-2028-money-2026': {
     // Supplied photo (Nov 20th): Ossoff speaking at a "United for Georgia"
-    // podium. Framed on his face for the small Editors' picks thumbnail.
+    // podium. Framed on his face for the small Editors' picks thumbnail. The
+    // supplied file was 1024 x 683; it is upscaled 4x with the EDSR
+    // super-resolution model (OpenCV dnn_superres), resized to 3072 x 2048
+    // with light sharpening, and stored as a quality-90 webp.
     src: card('ossoff-2028-money-2026'),
     alt: 'Jon Ossoff speaking at a United for Georgia podium in front of an American flag.',
     position: '52% 22%',

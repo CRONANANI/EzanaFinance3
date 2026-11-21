@@ -1426,3 +1426,20 @@
   font-size: 0.62rem;
   color: var(--text-faint);
 }
+
+/* Nov 20, 2026: dossier table rows are divided by Ezana emerald hairlines, and
+   DOSSIER + is emerald text with no outline. */
+.echo-fig-dossier-row {
+  border-bottom-color: color-mix(in srgb, var(--brand-ezana-green) 55%, transparent);
+}
+.echo-fig-dossier-btn,
+.echo-fig-dossier-btn:hover,
+.echo-fig-dossier-btn[aria-expanded='true'] {
+  border: 0;
+  padding: 6px 0;
+  color: var(--brand-ezana-green);
+}
+.echo-fig-dossier-btn:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
