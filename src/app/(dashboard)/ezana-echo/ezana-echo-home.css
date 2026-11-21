@@ -769,3 +769,28 @@ body:has(.eth-root) .ezana-echo-container {
       linear-gradient(0deg, black 0%, transparent 14%);
   }
 }
+
+/* Nov 21, 2026: the hero's headline, dek and byline start on the page
+   column's left edge, the chips end on its right edge, and the logo starts on
+   the same left edge, so the full-bleed hero lines up with Editors' picks,
+   the filters and the story pictures below. EchoHomeClient publishes the
+   column's edges; until it has, the older viewport-based padding applies. */
+.eth-root .ech-hero.ech-hero--photo .ech-hero__inner {
+  padding-left: var(--eth-col-left, max(48px, calc((100vw - var(--app-shell-max, 1600px)) / 2 + 24px)));
+  padding-right: var(--eth-col-right, max(48px, calc((100vw - var(--app-shell-max, 1600px)) / 2 + 24px)));
+}
+.eth-root .ech-hero.ech-hero--photo.ech-hero--stack .ech-hero__top {
+  right: var(--eth-col-right, 28px);
+}
+.eth-masthead.eth-masthead--overlay {
+  padding-left: var(--eth-col-in, 0px);
+}
+@media (max-width: 767px) {
+  .eth-root .ech-hero.ech-hero--photo .ech-hero__inner {
+    padding-left: var(--eth-col-left, 20px);
+    padding-right: var(--eth-col-right, 20px);
+  }
+  .eth-root .ech-hero.ech-hero--photo.ech-hero--stack .ech-hero__top {
+    right: var(--eth-col-right, 16px);
+  }
+}

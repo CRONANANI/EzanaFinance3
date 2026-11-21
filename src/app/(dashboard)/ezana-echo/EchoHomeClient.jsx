@@ -68,14 +68,39 @@ export default function EchoHomeClient({ initialHub = null, initialFilters = nul
   // it and land the image exactly on both window edges.
   useEffect(() => {
     const root = document.documentElement;
+    /* Also publish the page column's content edges (--eth-col-left/right,
+       distance from each window edge), so the full-bleed hero's headline,
+       dek, byline, the top-right chips and the logo line up with the column
+       below (Editors' picks, the filters, the story pictures). */
     const sync = () => {
       root.style.setProperty('--echo-sbw', `${Math.max(0, window.innerWidth - root.clientWidth)}px`);
+      const col = document.querySelector('.eth-root .ech-page');
+      if (col) {
+        const r = col.getBoundingClientRect();
+        const cs = getComputedStyle(col);
+        const left = r.left + Number.parseFloat(cs.paddingLeft || '0');
+        const right = root.clientWidth - (r.right - Number.parseFloat(cs.paddingRight || '0'));
+        root.style.setProperty('--eth-col-left', `${Math.max(0, Math.round(left))}px`);
+        root.style.setProperty('--eth-col-right', `${Math.max(0, Math.round(right))}px`);
+        // The logo bar is positioned inside .eth-root, so it needs the column
+        // edge measured from .eth-root, not from the window.
+        const host = col.closest('.eth-root');
+        const inset = host ? left - host.getBoundingClientRect().left : left;
+        root.style.setProperty('--eth-col-in', `${Math.max(0, Math.round(inset))}px`);
+      }
     };
     sync();
+    const col = document.querySelector('.eth-root .ech-page');
+    const ro = col && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null;
+    if (col) ro?.observe(col);
     window.addEventListener('resize', sync);
     return () => {
+      ro?.disconnect();
       window.removeEventListener('resize', sync);
       root.style.removeProperty('--echo-sbw');
+      root.style.removeProperty('--eth-col-left');
+      root.style.removeProperty('--eth-col-right');
+      root.style.removeProperty('--eth-col-in');
     };
   }, []);
   const { isOrgUser, isLoading: orgLoading, orgData } = useOrg();
