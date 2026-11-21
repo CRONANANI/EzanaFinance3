@@ -2257,3 +2257,60 @@ body:not(.light-mode) .pricing-page--standalone .plan-card:not(.plan-card--highl
     margin-bottom: 1.25rem;
   }
 }
+
+/* Nov 21: the four outer plans get a thin glossy emerald border with a soft
+   glow. The ring is a ::before masked to 1.5px so it can carry a gradient
+   (a mint highlight across the top edge fading into deep emerald), which a
+   plain border cannot; the glow is an emerald box-shadow on the card. */
+.pricing-cards-grid--five > .plan-card:not(.plan-card--highlight) {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--emerald) 10%, transparent),
+    0 0 18px -4px color-mix(in srgb, var(--emerald) 35%, transparent),
+    0 8px 24px -12px color-mix(in srgb, var(--emerald) 30%, transparent);
+}
+.pricing-cards-grid--five > .plan-card:not(.plan-card--highlight)::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    var(--brand-band-mint) 0%,
+    var(--emerald) 28%,
+    color-mix(in srgb, var(--emerald) 70%, black) 62%,
+    var(--emerald) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+  z-index: 0;
+}
+.pricing-cards-grid--five > .plan-card:not(.plan-card--highlight):hover {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--emerald) 16%, transparent),
+    0 0 26px -4px color-mix(in srgb, var(--emerald) 50%, transparent),
+    0 12px 28px -12px color-mix(in srgb, var(--emerald) 40%, transparent);
+}
+/* A plan asked for by link keeps its stronger solid ring on top. */
+.pricing-cards-grid--five > .plan-card--requested:not(.plan-card--highlight),
+.pricing-cards-grid--five > .plan-card--requested:not(.plan-card--highlight):hover {
+  box-shadow:
+    0 0 0 2px var(--emerald),
+    0 0 26px -4px color-mix(in srgb, var(--emerald) 50%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pricing-cards-grid--five > .plan-card:not(.plan-card--highlight)::before {
+    transition: filter 0.22s ease;
+  }
+  .pricing-cards-grid--five > .plan-card:not(.plan-card--highlight):hover::before {
+    filter: brightness(1.15);
+  }
+}
