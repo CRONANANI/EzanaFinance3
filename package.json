@@ -65,7 +65,7 @@
     "test:empire": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-empire-dossier.mjs scripts/check-empire-health.mjs scripts/check-empire-rankings-page.mjs",
     "test:middleware": "node --no-warnings scripts/check-middleware-timeouts.mjs",
     "test:rls": "node --test scripts/check-rls.mjs",
-    "test:reliability": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-trading-idempotency.mjs scripts/check-reliability-p1.mjs scripts/check-fetch-json.mjs scripts/check-webhooks.mjs scripts/check-reliability-p2.mjs scripts/check-reliability-sql.mjs scripts/check-trading-validation.mjs",
+    "test:reliability": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-trading-idempotency.mjs scripts/check-reliability-p1.mjs scripts/check-fetch-json.mjs scripts/check-webhooks.mjs scripts/check-quarterly-billing.mjs scripts/check-reliability-p2.mjs scripts/check-reliability-sql.mjs scripts/check-trading-validation.mjs",
     "test:ezanaql": "node scripts/check-ezanaql-generate.mjs",
     "test:ezanaql-scope": "node scripts/check-ezanaql-scope.mjs",
     "test:ezanaql-like": "node --no-warnings scripts/check-ezanaql-like.mjs",

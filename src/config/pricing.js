@@ -56,14 +56,19 @@ export const PLANS = {
     mode: 'subscription',
     features: ['Everything in Family', 'API access', 'Priority support', 'Custom reports'],
   },
-  /* Nov 21, 2026: quarterly billing (Quarterly / Yearly on /pricing). Each
-     is a Stripe recurring price billed every 3 months; set the matching
-     NEXT_PUBLIC_STRIPE_PRICE_*_QUARTERLY env var to its price_ id. */
+  /* Nov 21, 2026: quarterly billing (Quarterly / Yearly on /pricing). Live
+     Stripe prices billed every 3 months, created Nov 21 on the matching
+     monthly products, each with its plan key as the lookup key
+     (personal_quarterly, personal_advanced_quarterly, family_quarterly).
+     The ids below are the defaults; a NEXT_PUBLIC_STRIPE_PRICE_*_QUARTERLY
+     env var overrides them (e.g. test-mode prices on a preview). Price ids
+     are public identifiers, not secrets. */
   personal_quarterly: {
     name: 'Personal',
     description: 'For casual investors',
     price: 15,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_QUARTERLY,
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_QUARTERLY || 'price_1UeBcR0WWTGukEalmojgU3Vu',
     interval: 'quarter',
     mode: 'subscription',
     features: ['Basic market data', 'Watchlist', 'Daily newsletter'],
@@ -72,7 +77,9 @@ export const PLANS = {
     name: 'Personal Advanced',
     description: 'For active traders',
     price: 57,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_QUARTERLY,
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_QUARTERLY ||
+      'price_1UeBcc0WWTGukEalE9sdDmOh',
     interval: 'quarter',
     mode: 'subscription',
     popular: true,
@@ -82,7 +89,8 @@ export const PLANS = {
     name: 'Family',
     description: 'Households & shared portfolios',
     price: 147,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_QUARTERLY,
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_QUARTERLY || 'price_1UeBcd0WWTGukEalbKaZhexb',
     interval: 'quarter',
     mode: 'subscription',
     features: ['Everything in Personal Advanced', 'Up to 5 family members', 'Shared portfolios'],
