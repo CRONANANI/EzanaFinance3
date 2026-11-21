@@ -15,13 +15,13 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-browser';
 import { PasswordStrengthField } from '@/components/ui/password-strength-field';
-import { SpiralPasswordField } from '@/components/ui/spiral-password-field';
 import { EMAIL_RE, validatePassword } from '@/lib/auth/password-rules';
 import { AGE_CONFIRM_TEXT } from '@/lib/legal/consent';
 import { PLANS } from '@/config/pricing';
 import { priceAndPeriod } from '@/lib/billing/renewal-terms';
 import '@/components/auth/auth-shell.css';
 import '../signup/signup.css';
+import './start-trial.css';
 
 const PLAN_KEY = { quarterly: 'personal_advanced_quarterly', yearly: 'personal_advanced_annual' };
 
@@ -43,7 +43,11 @@ function Field({ id, label, required, error, hint, children }) {
   );
 }
 
-/** Opens Stripe Checkout for Advanced. Resolves to an error message, or navigates. */
+/**
+ * Opens Stripe Checkout for Advanced. Resolves to { msg, code } on failure,
+ * or navigates. code 'price_unavailable' means that billing period has no
+ * Stripe price yet; the page then offers the other period.
+ */
 async function openCheckout(billing) {
   try {
     const res = await fetch('/api/stripe/create-checkout-session', {
@@ -55,15 +59,15 @@ async function openCheckout(billing) {
     const d = await res.json().catch(() => ({}));
     if (res.ok && d.url) {
       window.location.assign(d.url);
-      return '';
+      return null;
     }
     if (res.ok && (d.alreadySubscribed || d.switched)) {
       window.location.assign(d.url || '/home');
-      return '';
+      return null;
     }
-    return d.error || 'Could not open Stripe. Please try again.';
+    return { msg: d.error || 'Could not open Stripe. Please try again.', code: d.code || null };
   } catch {
-    return 'Could not reach Stripe. Please try again.';
+    return { msg: 'Could not reach Stripe. Please try again.', code: null };
   }
 }
 
@@ -77,6 +81,7 @@ export default function StartTrialPage() {
   const [ageOk, setAgeOk] = useState(false);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -87,6 +92,25 @@ export default function StartTrialPage() {
   }, []);
 
   const plan = PLANS[PLAN_KEY[billing]];
+
+  /* Checkout failures land here; a period without a Stripe price yet keeps
+     its code so the page can offer the other period in one click. */
+  const fail = (out) => {
+    setError(out.msg);
+    setErrorCode(out.code);
+    setBusy(false);
+  };
+  const checkout = async (period = billing) => {
+    setBusy(true);
+    setError('');
+    setErrorCode(null);
+    const out = await openCheckout(period);
+    if (out) fail(out);
+  };
+  const switchToYearly = () => {
+    setBilling('yearly');
+    checkout('yearly');
+  };
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
 
   const submit = async (e) => {
@@ -138,11 +162,8 @@ export default function StartTrialPage() {
         setBusy(false);
         return;
       }
-      const msg = await openCheckout(billing);
-      if (msg) {
-        setError(msg);
-        setBusy(false);
-      }
+      const out = await openCheckout(billing);
+      if (out) fail(out);
     } catch {
       setError('Could not reach Ezana. Please try again.');
       setBusy(false);
@@ -156,33 +177,71 @@ export default function StartTrialPage() {
     </p>
   ) : null;
 
+  const alertBlock = error ? (
+    <div className="wl-alert st-alert" role="alert">
+      <i className="bi bi-exclamation-circle" aria-hidden="true" />
+      <span>
+        {error}
+        {errorCode === 'price_unavailable' && billing === 'quarterly' ? (
+          <>
+            {' '}
+            <button
+              type="button"
+              className="st-inline-link"
+              onClick={switchToYearly}
+              disabled={busy}
+            >
+              Start with yearly billing
+            </button>
+          </>
+        ) : null}
+      </span>
+    </div>
+  ) : null;
+
+  /* Quarterly or yearly, text only: the selected period in emerald. */
+  const periodToggle = (
+    <div className="st-period" role="group" aria-label="Billing after the trial">
+      {['quarterly', 'yearly'].map((p) => (
+        <button
+          key={p}
+          type="button"
+          className={`st-period-opt${billing === p ? ' is-on' : ''}`}
+          aria-pressed={billing === p}
+          onClick={() => {
+            setBilling(p);
+            setError('');
+            setErrorCode(null);
+          }}
+        >
+          {p === 'quarterly' ? 'Quarterly' : 'Yearly'}
+          {p === 'yearly' ? <span className="st-period-save">Save 20%</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+
   /* Signed in already (e.g. back from Stripe without finishing): one button. */
   if (session) {
     return (
-      <div className="signin-dark-lock wl-page">
-        <main className="wl-card">
+      <div className="signin-dark-lock wl-page st-page">
+        <main className="wl-card st-card">
+          <span className="st-eyebrow">
+            <i className="bi bi-stars" aria-hidden="true" /> Advanced plan
+          </span>
           <h1 className="wl-title">
-            {canceled ? 'Your trial has not started yet' : 'Start your free Advanced trial'}
+            {canceled ? (
+              'Your trial has not started yet'
+            ) : (
+              <>
+                Start your free <span className="st-accent">Advanced</span> trial
+              </>
+            )}
           </h1>
+          {periodToggle}
           {terms}
-          {error ? (
-            <div className="wl-alert" role="alert">
-              {error}
-            </div>
-          ) : null}
-          <button
-            type="button"
-            className="wl-submit"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              const msg = await openCheckout(billing);
-              if (msg) {
-                setError(msg);
-                setBusy(false);
-              }
-            }}
-          >
+          {alertBlock}
+          <button type="button" className="wl-submit" disabled={busy} onClick={() => checkout()}>
             {busy ? 'Opening Stripe' : 'Continue to Stripe'}
           </button>
           <p className="wl-foot">
@@ -196,18 +255,20 @@ export default function StartTrialPage() {
   }
 
   return (
-    <div className="signin-dark-lock wl-page">
-      <main className="wl-card">
-        <h1 className="wl-title">Start your free Advanced trial</h1>
+    <div className="signin-dark-lock wl-page st-page">
+      <main className="wl-card st-card">
+        <span className="st-eyebrow">
+          <i className="bi bi-stars" aria-hidden="true" /> Advanced plan
+        </span>
+        <h1 className="wl-title">
+          Start your free <span className="st-accent">Advanced</span> trial
+        </h1>
         <p className="wl-sub">
-          Create your account, then add a card on Stripe. Advanced is free for 1 month (
-          {billing === 'quarterly' ? 'billed quarterly' : 'billed yearly'} after that).
+          Create your account, then add a card on Stripe. Advanced is free for 1 month, then billed{' '}
+          {billing === 'quarterly' ? 'quarterly' : 'yearly'}.
         </p>
-        {error ? (
-          <div className="wl-alert" role="alert">
-            {error}
-          </div>
-        ) : null}
+        {periodToggle}
+        {alertBlock}
         <form className="wl-form" onSubmit={submit} noValidate>
           <div className="wl-row">
             <Field id="st-first" label="First name" required error={errors.firstName}>
@@ -266,35 +327,31 @@ export default function StartTrialPage() {
               aria-invalid={!!errors.username || undefined}
             />
           </Field>
-          <SpiralPasswordField>
-            <div className="wl-pwd">
-              <PasswordStrengthField
-                id="password"
-                label="Password"
-                value={password}
-                onChange={setPassword}
-                placeholder="Create a password"
-                showRequirements
-              />
-            </div>
-          </SpiralPasswordField>
+          <div className="wl-pwd">
+            <PasswordStrengthField
+              id="password"
+              label="Password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Create a password"
+              showRequirements
+            />
+          </div>
           {errors.password ? (
             <p className="wl-err" role="alert">
               {errors.password}
             </p>
           ) : null}
-          <SpiralPasswordField>
-            <div className="wl-pwd">
-              <PasswordStrengthField
-                id="confirm-password"
-                label="Confirm password"
-                value={confirm}
-                onChange={setConfirm}
-                placeholder="Confirm your password"
-                showRequirements={false}
-              />
-            </div>
-          </SpiralPasswordField>
+          <div className="wl-pwd">
+            <PasswordStrengthField
+              id="confirm-password"
+              label="Confirm password"
+              value={confirm}
+              onChange={setConfirm}
+              placeholder="Confirm your password"
+              showRequirements={false}
+            />
+          </div>
           {errors.confirm ? (
             <p className="wl-err" role="alert">
               {errors.confirm}

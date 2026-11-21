@@ -19,6 +19,7 @@
  */
 
 import { getPlanKeyByPriceId } from '@/config/pricing';
+import { planKeyFromLookupKey } from '@/lib/billing/resolve-price';
 
 const UNIQUE_VIOLATION = '23505';
 const MISSING_TABLE = new Set(['42P01', 'PGRST205']);
@@ -118,12 +119,18 @@ export function subscriptionPatch(sub, { planKey = null } = {}) {
     patch.subscription_plan = null;
   } else {
     patch.subscription_id = sub.id;
-    const priceId = sub.items?.data?.[0]?.price?.id ?? null;
+    const price = sub.items?.data?.[0]?.price;
+    const priceId = price?.id ?? null;
     patch.current_plan = priceId;
     /* The price is the source of truth (QA RET-4): a plan changed in the
        Billing Portal or by an in-app switch keeps the old checkout metadata,
        so metadata is only the fallback for a price not in the catalog. */
-    const plan = getPlanKeyByPriceId(priceId) || planKey || sub.metadata?.plan_key || null;
+    const plan =
+      getPlanKeyByPriceId(priceId) ||
+      planKeyFromLookupKey(price?.lookup_key) ||
+      planKey ||
+      sub.metadata?.plan_key ||
+      null;
     if (plan) patch.subscription_plan = plan;
   }
   return patch;

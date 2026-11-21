@@ -71,10 +71,13 @@ export function getPlanTier(planKey) {
     free: 0,
     personal_monthly: 1,
     individual_annual: 1,
+    personal_quarterly: 1,
     personal_advanced_monthly: 2,
     personal_advanced_annual: 2,
+    personal_advanced_quarterly: 2,
     family_monthly: 3,
     family_annual: 3,
+    family_quarterly: 3,
     professional_monthly: 4,
     professional_annual: 4,
   };

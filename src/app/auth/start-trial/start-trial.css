@@ -1,0 +1,201 @@
+/* /auth/start-trial (Nov 21): the Advanced trial form on the Ezana Branding
+   and UI Guide. Scoped `st-`, layered over the shared wl- form styles.
+   Auth pages are always light (signin-dark-lock).
+
+   - Flat: the form has no card border, outline, shadow or glow.
+   - Emerald for what is interactive: the primary button (solid fill, no
+     border, 8px radius, no lift or glow), focused fields, links, the
+     selected billing period, the checkbox.
+   - Inputs: 8px radius, a hairline border, an emerald ring on focus.
+   - Labels: caps labels at 11px, weight 600, 0.08em tracking, grey. */
+
+.st-page {
+  --wl-accent: var(--emerald-dark);
+  --st-emerald: var(--emerald);
+  --st-emerald-ink: var(--emerald-dark);
+  background: var(--wl-card);
+}
+
+/* Flat: no panel around the form. */
+.st-page .st-card {
+  max-width: 440px;
+  padding: 24px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.st-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--st-emerald-ink);
+}
+
+.st-page .wl-title {
+  font-size: 24px;
+  letter-spacing: -0.015em;
+}
+.st-accent {
+  color: var(--st-emerald-ink);
+}
+
+.st-page .wl-sub {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+/* Billing period: text only, the selected period in emerald. */
+.st-period {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 14px 0 6px;
+}
+.st-period-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--wl-mute);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.st-period-opt:hover {
+  color: var(--wl-ink);
+}
+.st-period-opt.is-on {
+  color: var(--st-emerald-ink);
+}
+.st-period-opt:focus-visible {
+  outline: 2px solid var(--st-emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.st-period-save {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--st-emerald-ink);
+}
+
+/* Error: inline, an icon and words, no box. */
+.st-page .st-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.st-page .st-alert .bi {
+  flex: none;
+  margin-top: 1px;
+}
+.st-inline-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--st-emerald-ink);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.st-inline-link:focus-visible {
+  outline: 2px solid var(--st-emerald);
+  outline-offset: 2px;
+}
+
+/* Labels: caps label. */
+.st-page .wl-label {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--wl-mute);
+}
+.st-page .wl-req {
+  color: var(--st-emerald-ink);
+}
+
+/* Inputs: 8px radius, hairline, emerald focus ring. */
+.st-page .wl-input {
+  border-radius: var(--radius-md);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.st-page .wl-input:focus {
+  border-color: var(--st-emerald);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-emerald) 18%, transparent);
+  outline: none;
+}
+
+/* Password blocks sit on the form's lines (the spiral frame is gone). */
+.st-page .wl-pwd {
+  padding: 0;
+}
+
+/* Primary button: solid emerald, no border, 8px radius, no lift or glow. */
+.st-page .wl-submit {
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg, var(--st-emerald));
+  color: var(--btn-primary-fg, var(--color-on-primary));
+  font-size: 14px;
+}
+.st-page .wl-submit:hover:not(:disabled) {
+  background: var(--btn-primary-bg-hover, var(--emerald-hover));
+  transform: none;
+  box-shadow: none;
+}
+
+.st-page .wl-link {
+  color: var(--st-emerald-ink);
+  font-weight: 600;
+}
+.st-page .wl-check input {
+  accent-color: var(--st-emerald);
+}
+
+/* The password fields (PasswordStrengthField) match the other fields: caps
+   label, 8px radius, hairline border, emerald focus ring. A global rule
+   rounds inputs on the auth pages to a pill; this keeps them square-ish. */
+.st-page .wl-pwd > div > label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--wl-mute);
+}
+.st-page .wl-pwd input {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--wl-hair) !important;
+  background: var(--wl-field) !important;
+}
+.st-page .wl-pwd input:focus {
+  border-color: var(--st-emerald) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-emerald) 18%, transparent) !important;
+}

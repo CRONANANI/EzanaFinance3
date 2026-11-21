@@ -12,6 +12,7 @@
  */
 import { PLANS } from '@/config/pricing';
 import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
+import { resolvePriceId } from '@/lib/billing/resolve-price';
 
 /** Starter, at the billing period the member picked on /pricing (yearly by default). */
 export function starterPlanKeyFor(billing) {
@@ -38,8 +39,9 @@ export async function startWaitlistTrial({ stripe, admin, invite, userId }) {
 
   try {
     const planKey = starterPlanKeyFor(meta.billing);
-    const plan = PLANS[planKey];
-    if (!plan?.priceId) return { started: false, reason: 'starter_price_missing' };
+    const priceId = await resolvePriceId(stripe, planKey);
+    if (!priceId) return { started: false, reason: 'starter_price_missing' };
+    const plan = { ...PLANS[planKey], priceId };
 
     /* The card saved in setup mode is the customer's only payment method. */
     const methods = await stripe.paymentMethods.list({ customer: customerId, limit: 1 });

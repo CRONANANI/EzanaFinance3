@@ -729,6 +729,15 @@ body.light-mode {
 .navbar--pricing .nav-container--logo-only .nav-brand {
   margin: 0 auto;
 }
+/* Nov 21: the bar grows to hold the 54px logo. The shared .navbar height
+   (64px with 16px padding) left 32px for it, so the logo hung below the bar's
+   bottom edge and over the page. */
+.navbar.navbar--pricing {
+  height: auto !important;
+  min-height: 68px;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
 
 /* Reading progress at the very top edge of the page: 3px emerald fill on a
    subtle emerald track (the track keeps the bar legible at 0%). Width is

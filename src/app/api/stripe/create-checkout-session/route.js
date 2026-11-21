@@ -7,6 +7,7 @@ import { PLANS } from '@/config/pricing';
 import { TRIAL_DAYS, renewalText, trialEndDate } from '@/lib/billing/renewal-terms';
 import { getAdminClient } from '@/lib/supabase';
 import { startOrSwitchSubscription } from '@/lib/billing/plan-switch';
+import { resolvePriceId } from '@/lib/billing/resolve-price';
 
 /**
  * One Stripe customer per user: the create carries the idempotency key
@@ -45,21 +46,33 @@ export const POST = withApiGuard(
       }
 
       const { planKey, cancelPath } = await request.json();
-      const plan = planKey ? PLANS[planKey] : null;
+      const catalogPlan = planKey ? PLANS[planKey] : null;
 
-      if (!plan || !plan.priceId) {
+      if (!catalogPlan || !catalogPlan.price) {
         return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
       }
 
-      if (!String(plan.priceId).startsWith('price_')) {
+      /* Nov 21: the env var first, then a Stripe price whose lookup key is
+         the plan key. A plan with neither (the quarterly prices before they
+         exist in Stripe) is reported as unavailable, not as an invalid pick,
+         so the page can offer the other billing period. */
+      const priceId = await resolvePriceId(stripe, planKey);
+      if (!priceId) {
         console.error(
-          `Invalid price ID for plan ${planKey}: ${plan.priceId}. Expected price_... (Stripe Price ID), not a Product ID (prod_...). Check NEXT_PUBLIC_STRIPE_PRICE_* environment variables.`,
+          `[checkout] no Stripe price for ${planKey}: set NEXT_PUBLIC_STRIPE_PRICE_* or create a price with lookup key "${planKey}".`,
         );
         return NextResponse.json(
-          { error: 'Payment configuration error. Please contact support.' },
-          { status: 500 },
+          {
+            error:
+              catalogPlan.interval === 'quarter'
+                ? 'Quarterly billing is not available yet. You can start the same free trial with yearly billing.'
+                : 'This plan is not available right now. Please try again later.',
+            code: 'price_unavailable',
+          },
+          { status: 409 },
         );
       }
+      const plan = { ...catalogPlan, priceId };
 
       const cookieStore = cookies();
       const supabase = createServerClient(
