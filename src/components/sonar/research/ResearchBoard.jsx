@@ -1176,14 +1176,8 @@ export default function ResearchBoard({
       tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
-      top={
-        queryBar || relatedQs.length ? (
-          <>
-            {queryBar}
-            <SonarRelatedQuestions questions={relatedQs} onAsk={onRun} />
-          </>
-        ) : null
-      }
+      queryBar={queryBar}
+      followUps={<SonarRelatedQuestions questions={relatedQs} onAsk={onRun} />}
     >
       <div className="srb" role="region" aria-label="Research answer">
         <div className="srb-grid">

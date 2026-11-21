@@ -58,6 +58,39 @@
   margin-bottom: 16px;
 }
 
+/* Nov 21: the skeleton's top line. Stacked on a narrow column; side by side once there is
+   room, the composer kept short on the left and the three tools on the right, the same
+   height as the composer. */
+.san .san-topline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+.san .san-query,
+.san .san-tools {
+  min-width: 0;
+}
+@container san (min-width: 1240px) {
+  .san .san-topline.is-split {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    align-items: stretch;
+    gap: 14px;
+  }
+  .san .san-topline.is-split .san-tools,
+  .san .san-topline.is-split .san-tools .stl,
+  .san .san-topline.is-split .san-tools .stl-item {
+    height: 100%;
+  }
+  .san .san-topline.is-split .san-tools .stl {
+    grid-template-columns: repeat(var(--stl-n, 3), minmax(0, 1fr));
+  }
+  .san .san-topline.is-split .san-tools .stl-head {
+    height: 100%;
+    align-items: center;
+  }
+}
+
 .san .san-side {
   display: flex;
   flex-direction: column;

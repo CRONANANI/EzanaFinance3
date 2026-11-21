@@ -12,10 +12,12 @@
  *     an honest state: Locked, Not run, Running or Complete) and the deep research call to
  *     action. On a wide screen the menu hangs in the page margin, so the answer itself starts
  *     where the menu used to start, and the canvas is about a fifth wider.
- *   - Centre, top to bottom: the query composer, the follow-up questions, the tools row
- *     (`tools`: Research controls, Evidence and sources, Next steps, each opening over the
- *     page), then the answer (`children`), whose cards come from the exemplary layout for the
- *     kind of question.
+ *   - Centre: one top line with the query composer on the left (`queryBar`, kept short) and
+ *     the tools row on the right (`tools`: Research controls, Evidence and sources, Next
+ *     steps, each opening over the page); the follow-up questions under it (`followUps`);
+ *     then the answer (`children`), whose cards come from the exemplary layout for the kind
+ *     of question. The menu, the composer and the three tools are the skeleton of every
+ *     Sonar response.
  *
  * Narrow: the sections are a row of chips above the answer. `navTop` (a research run's Back
  * and ping bar) sits at the top of the menu. Scroll-spy reads the section anchors
@@ -51,7 +53,11 @@ export function SonarAnswerFrame({
   rail = null,
   /* The deep research cost and quota line, shown in the left rail's card. */
   deepNote = null,
-  /* Nov 13: the top of the centre column (the query bar, then related questions). */
+  /* Nov 21: the skeleton's top line: the query composer (left) and the tools row (right),
+     then the follow-up questions under them. */
+  queryBar = null,
+  followUps = null,
+  /* Anything else a host keeps above the answer. */
   top = null,
   /* Nov 21: a deep research run is in flight for this question. */
   deepRunning = false,
@@ -263,10 +269,20 @@ export function SonarAnswerFrame({
           ) : null}
         </div>
         <div className="san-body">
-          {top || tools?.length ? (
+          {queryBar || tools?.length || followUps || top ? (
             <div className="san-lead">
+              {queryBar || tools?.length ? (
+                <div className={`san-topline${queryBar && tools?.length ? ' is-split' : ''}`}>
+                  {queryBar ? <div className="san-query">{queryBar}</div> : null}
+                  {tools?.length ? (
+                    <div className="san-tools">
+                      <SonarToolsRow items={tools} />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {followUps}
               {top}
-              {tools?.length ? <SonarToolsRow items={tools} /> : null}
             </div>
           ) : null}
           {children}

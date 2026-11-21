@@ -788,14 +788,8 @@ export function SonarCountryBoard({
       tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
-      top={
-        queryBar || live?.related?.length ? (
-          <>
-            {queryBar}
-            <SonarRelatedQuestions questions={live?.related} onAsk={onRun} />
-          </>
-        ) : null
-      }
+      queryBar={queryBar}
+      followUps={<SonarRelatedQuestions questions={live?.related} onAsk={onRun} />}
     >
       <div
         className="snr-cii snr-board"

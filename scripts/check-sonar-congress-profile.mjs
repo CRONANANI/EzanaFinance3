@@ -209,6 +209,16 @@ test('wiring: the ping board, the report, the shell and the composer', () => {
   const frame = read('src/components/sonar/SonarAnswerFrame.jsx');
   assert.match(frame, /deepState/);
   assert.match(frame, /<SonarToolsRow items=\{tools\} \/>/);
+  assert.match(frame, /san-topline/, 'composer and tools share one top line');
+  for (const f of [
+    'src/components/landing/SonarPingBoard.jsx',
+    'src/components/landing/SonarCountryBoard.jsx',
+    'src/components/sonar/research/ResearchBoard.jsx',
+  ]) {
+    const src = read(f);
+    assert.match(src, /queryBar=\{queryBar\}/, f);
+    assert.match(src, /followUps=\{<SonarRelatedQuestions/, f);
+  }
   assert.ok(!/san-rail/.test(frame.split('{rail ?')[0]), 'no right rail column before the answer');
   const fcss = read('src/components/sonar/sonar-answer-frame.css');
   assert.ok(!/overflow-y: auto/.test(fcss), 'no nested scroll in the contents menu');

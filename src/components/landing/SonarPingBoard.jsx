@@ -551,14 +551,8 @@ export function SonarPingBoard({
       tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
-      top={
-        queryBar || followUps?.length ? (
-          <>
-            {queryBar}
-            <SonarRelatedQuestions questions={followUps} onAsk={onRun} />
-          </>
-        ) : null
-      }
+      queryBar={queryBar}
+      followUps={<SonarRelatedQuestions questions={followUps} onAsk={onRun} />}
     >
       {congress ? (
         <div className="snr-cii snr-pb snr-pb--congress">
