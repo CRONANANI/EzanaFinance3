@@ -562,3 +562,64 @@ body.light-mode .ekp-timeline-label {
   box-shadow: none;
   border-radius: 0;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Nov 20, 2026: the keyword card is black with an Ezana emerald border and a
+   bright emerald light that travels round it (after the 21st.dev animated
+   border button). The card scrolls internally, so the light is painted with
+   border-box backgrounds, which stay on the card's edge while its content
+   scrolls, instead of with an extra element that would scroll away:
+     1. black fill (padding-box);
+     2. a conic sweep whose angle turns once every 5s (border-box);
+     3. a steady 45% emerald rim under it (border-box).
+   Browsers without @property animation keep the steady rim; reduced motion
+   stops the sweep. Text keeps the theme's light tokens, which read on black.
+   ════════════════════════════════════════════════════════════════════════════ */
+@property --ekp-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes ekp-border-spin {
+  to {
+    --ekp-angle: 360deg;
+  }
+}
+.ekp-popup,
+body.light-mode .ekp-popup {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(black, black) padding-box,
+    conic-gradient(
+        from var(--ekp-angle),
+        transparent 0deg,
+        transparent 290deg,
+        var(--brand-ezana-green) 340deg,
+        transparent 360deg
+      )
+      border-box,
+    linear-gradient(
+        color-mix(in srgb, var(--brand-ezana-green) 45%, transparent),
+        color-mix(in srgb, var(--brand-ezana-green) 45%, transparent)
+      )
+      border-box;
+  box-shadow:
+    0 20px 60px rgb(0 0 0 / 0.6),
+    0 0 24px color-mix(in srgb, var(--brand-ezana-green) 12%, transparent);
+  color: var(--text-primary);
+  animation: ekp-border-spin 5s linear infinite;
+}
+.ekp-popup .ekp-close,
+body.light-mode .ekp-popup .ekp-close {
+  background: color-mix(in srgb, white 8%, black);
+  color: var(--text-secondary);
+}
+.ekp-popup .ekp-close:hover {
+  color: var(--brand-ezana-green);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ekp-popup,
+  body.light-mode .ekp-popup {
+    animation: none;
+  }
+}
