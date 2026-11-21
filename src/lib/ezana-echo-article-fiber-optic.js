@@ -488,6 +488,23 @@ export const fiberOpticArticle = {
       text: 'The joke writes itself: the mob figured out fiber optics before most hedge funds did. But the punchline is that Benny Fazio was not wrong. He was early. If you had taken his construction-site thesis seriously, that the physical layer of the internet was valuable enough to lift off the ground, and bought the companies that actually manufacture the cable, you would be sitting on one of the best-performing industrial trades of the last two decades. Fiber optic cable was not a fad. It was infrastructure. And infrastructure always wins.',
     },
 
+    {
+      type: 'stat-grid',
+      stats: [
+        {
+          label: 'Fiber cable market, 2034',
+          value: '$30B+',
+          change: 'From $6.7B in 2024, ~16% a year',
+        },
+        { label: 'Corning, 2025', value: '+74%', change: 'Ahead of Nvidia at +51%' },
+        { label: 'Meta fiber deal', value: '$6B', change: 'Multi-year, signed January 2026' },
+        {
+          label: 'Fiber cable price index',
+          value: '~87',
+          change: 'Dec 2003 = 100; low of 83 in 2016',
+        },
+      ],
+    },
     { type: 'heading', text: 'The Price Index: What The Factory Floor Is Telling Us', level: 2 },
     {
       type: 'paragraph',

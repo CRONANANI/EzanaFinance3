@@ -187,6 +187,15 @@ export const semiconductorArticle = {
       text: 'These are not commodity products. They are the processors that train large language models, guide precision munitions, render real-time graphics, and enable every smartphone sold on the planet. Without them, Nvidia cannot ship GPUs. Apple cannot build iPhones. The Pentagon cannot deploy its most advanced weapons systems. The concentration of this capability in a single company, on a single island, 100 miles from a hostile superpower, is the most consequential [[kw:chokepoint]]chokepoint[[/kw]] in the global economy.',
     },
     {
+      type: 'stat-grid',
+      stats: [
+        { label: 'Advanced chip output', value: '~90%', change: 'Made in Taiwan' },
+        { label: 'Leading process node', value: '2 nm', change: 'Hsinchu Science Park' },
+        { label: 'US CHIPS Act incentives', value: '$52B', change: 'Passed in 2022' },
+        { label: 'TSMC direct award', value: 'Up to $6.6B', change: 'For US fabs' },
+      ],
+    },
+    {
       type: 'chart',
       variant: 'foundry-market-share',
       title: 'Global Foundry Market Share',

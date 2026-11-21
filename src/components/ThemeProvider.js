@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { isEchoArticleRoute } from '@/lib/route-shell';
 
@@ -113,6 +113,17 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
      canvas for every reader. Visual only; the saved preference is untouched.
      Checked before the marketing list, which covers the rest of /ezana-echo. */
   const lockedDark = isEchoArticleRoute(pathname);
+  /* Nov 21, 2026: setTheme / toggleTheme apply straight away, so they must
+     respect the route lock too. Without this, the saved-preference sync in
+     SettingsContext (setTheme('light') for a light-mode account) put
+     light-mode back on Echo articles: dark text on the black canvas. */
+  const routeLockRef = useRef(null);
+  routeLockRef.current = lockedDark
+    ? 'dark'
+    : isMarketingBrandLockedLightPath(pathname)
+      ? 'light'
+      : null;
+  const applyForRoute = useCallback((t) => applyTheme(routeLockRef.current || t), []);
   useEffect(() => {
     if (lockedDark) {
       applyTheme('dark');
@@ -128,10 +139,10 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
   useEffect(() => {
     if (theme !== 'system' || typeof window === 'undefined') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => applyTheme('system');
+    const onChange = () => applyForRoute('system');
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, [theme]);
+  }, [theme, applyForRoute]);
 
   /* Sync the ezana.theme cookie to the server-resolved theme on every
      hydration. This eliminates the "stale cookie" trap that caused the
@@ -159,12 +170,12 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
     const normalized = next === 'dark' ? 'dark' : next === 'system' ? 'system' : 'light';
     const { persist = false } = options;
     setThemeState(normalized);
-    applyTheme(normalized);
+    applyForRoute(normalized);
     if (persist) {
       writeThemeCookie(normalized);
       persistToServer(normalized);
     }
-  }, []);
+  }, [applyForRoute]);
 
   /* toggleTheme is user-initiated (the sun/moon button in Settings) so it
      persists by default. Other programmatic callers can opt out with
@@ -173,12 +184,12 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
     setThemeState((prev) => {
       const applied = resolveAppliedTheme(prev);
       const next = applied === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
+      applyForRoute(next);
       writeThemeCookie(next);
       persistToServer(next);
       return next;
     });
-  }, []);
+  }, [applyForRoute]);
 
   return (
     <ThemeContext.Provider value={{ theme: lockedDark ? 'dark' : theme, setTheme, toggleTheme }}>

@@ -137,6 +137,15 @@ export const hantavirusArticle = {
   heroImage: null,
   contentBlocks: [
     {
+      type: 'stat-grid',
+      stats: [
+        { label: 'Case fatality rate', value: '~38%', change: 'No vaccine or antiviral' },
+        { label: 'MV Hondius on board', value: '147', change: 'Passengers and crew, 23 countries' },
+        { label: 'US cases, 1993 to 2023', value: '864', change: 'Confirmed through NNDSS' },
+        { label: 'West of the Mississippi', value: '94%+', change: 'Of all US cases' },
+      ],
+    },
+    {
       type: 'chart',
       variant: 'hantavirus-yearly',
       title: 'U.S. Hantavirus Cases by Year (1993–2023)',

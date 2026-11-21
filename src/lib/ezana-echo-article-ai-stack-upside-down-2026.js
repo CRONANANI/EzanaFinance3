@@ -32,6 +32,15 @@ export const aiStackUpsideDown2026 = {
       text: 'This is a findings piece, not advice. We are re-weighing a diagram, not recommending a position.',
     },
     {
+      type: 'stat-grid',
+      stats: [
+        { label: 'Silicon layer', value: '~$12.5T', change: 'The slide says ~$10T' },
+        { label: 'Hyperscale cloud', value: '~$11.5T', change: '~$13.4T counting Meta' },
+        { label: 'Frontier models', value: '~$2.2T', change: 'The slide says ~$5T' },
+        { label: 'Nvidia alone', value: '~$5.5T', change: 'Near $6T the week of October 6' },
+      ],
+    },
+    {
       type: 'revision-ledger',
       figureLabel: 'FIG. 1 · THE SLIDE VS THE QUOTE SCREEN',
       kicker:

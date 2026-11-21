@@ -118,6 +118,19 @@ export const sectorDominanceArticle = {
     },
 
     {
+      type: 'stat-grid',
+      stats: [
+        { label: 'Leading sectors', value: '4', change: 'Across 225 years of US equities' },
+        { label: 'Finance peak, early 1800s', value: '~90%', change: 'Of the US stock market' },
+        { label: 'Transport, 1880', value: '60%+', change: 'Of the US stock market' },
+        {
+          label: 'Technology today',
+          value: '~45%',
+          change: 'Six firms are over a quarter of the S&P 500',
+        },
+      ],
+    },
+    {
       type: 'chart',
       variant: 'interactive-stacked-area',
       title: 'Share of the Largest US Stock Market Sector, 1800–2025',
