@@ -148,8 +148,16 @@ async function resolveTrialVerdict() {
   }
 
   /* Accounts from the Advanced trial signup (no waitlist invite) only open
-     once Stripe reports a trialing or active subscription (checked above). */
-  if (user.user_metadata?.requires_checkout === true) {
+     once Stripe reports a trialing or active subscription (checked above).
+     app_metadata.signup_source is the trusted marker (only the server can
+     write it); user_metadata is user-editable, so it is read only as an
+     extra reason to lock, never as the only one. Mirrors
+     isTrialSignupAccount in src/lib/billing/feature-access.js. */
+  if (
+    user.app_metadata?.signup_source === 'advanced_trial' ||
+    user.user_metadata?.signup_source === 'advanced_trial' ||
+    user.user_metadata?.requires_checkout === true
+  ) {
     return { userId: user.id, blocked: true, needsOnboarding };
   }
 

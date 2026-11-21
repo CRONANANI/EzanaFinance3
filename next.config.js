@@ -220,9 +220,20 @@ const sentryWebpackPluginOptions = {
    server maps. */
 const sentryWrapped = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);
 const sentryWebpack = sentryWrapped.webpack;
+/* Nov 21: the build was OOM-killed on Vercel again (8 GB machine) after a
+   large commit. Two more memory savers for production builds:
+   - client source maps are generated only when SENTRY_AUTH_TOKEN is set,
+     i.e. when they are actually uploaded; without the token they were built
+     and thrown away.
+   - webpack processes at most 25 modules in parallel (default 100), which
+     lowers the peak memory of each compile for a small cost in build time. */
 sentryWrapped.webpack = (config, ctx) => {
   const out = typeof sentryWebpack === 'function' ? sentryWebpack(config, ctx) : config;
-  if (ctx.isServer && !ctx.dev) out.devtool = false;
+  if (!ctx.dev) {
+    if (ctx.isServer) out.devtool = false;
+    else if (!process.env.SENTRY_AUTH_TOKEN) out.devtool = false;
+    out.parallelism = 25;
+  }
   return out;
 };
 module.exports = sentryWrapped;
