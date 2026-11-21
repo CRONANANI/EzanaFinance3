@@ -66,7 +66,7 @@ import { benchmarkFor } from '@/lib/sonar/market-context';
 import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
 import { CongressProfileReport } from '@/components/sonar/congress/CongressProfileReport';
-import { congressSections, politicianFollowUps } from '@/lib/sonar/congress-profile';
+import { briefFindings, congressSections, politicianFollowUps } from '@/lib/sonar/congress-profile';
 import { exemplaryLayoutFor } from '@/lib/sonar/exemplary/layouts';
 import { Eyebrow, Coverage, Evidence } from './SonarCountryBoard';
 import './country-intel.css';
@@ -500,11 +500,20 @@ export function SonarPingBoard({
      the member's own datasets can answer. */
   const layout = lead ? null : exemplaryLayoutFor(live);
   const congress = layout?.slug === 'congress-member-profile';
-  const congressTake = congress ? deskTakeaways(live?.takeaways) : [];
+  /* The desk summary is one short paragraph; Key findings carry what the full brief says
+     beyond it, as bullets (no "Read the full brief" repeat). */
+  const fullBrief = answerParagraphs(live?.answer, 12);
+  const congressSummary = summaryParas(live?.summary);
+  const congressParas = congressSummary.length
+    ? congressSummary.slice(0, 1)
+    : fullBrief.slice(0, 1);
+  const congressFindings = congress
+    ? briefFindings(fullBrief, congressParas, deskTakeaways(live?.takeaways))
+    : [];
   const present = congress
     ? congressSections({
         dossier: live.dossier,
-        takeaways: congressTake,
+        takeaways: congressFindings,
         sourceCount: sources.length,
       })
     : [...new Set(cells.map((c) => c.section))];
@@ -534,14 +543,6 @@ export function SonarPingBoard({
     anchorSources: congress,
   });
   const followUps = congress ? politicianFollowUps(live.dossier, live?.related) : live?.related;
-  /* The desk summary of the congressional profile: one short paragraph, the rest of the brief
-     behind "Read the full brief". */
-  const fullBrief = answerParagraphs(live?.answer, 12);
-  const congressSummary = summaryParas(live?.summary);
-  const congressParas = congressSummary.length
-    ? congressSummary.slice(0, 1)
-    : fullBrief.slice(0, 1);
-  const congressMore = congressSummary.length ? fullBrief : fullBrief.slice(1);
   return (
     <SonarAnswerFrame
       present={present}
@@ -561,8 +562,7 @@ export function SonarPingBoard({
             rows={layout.rows}
             headline={live.headline || null}
             paragraphs={congressParas}
-            more={congressMore}
-            takeaways={congressTake}
+            findings={congressFindings}
             notice={notice}
             actions={saveActions}
             remaining={typeof live?.remaining === 'number' ? live.remaining : null}

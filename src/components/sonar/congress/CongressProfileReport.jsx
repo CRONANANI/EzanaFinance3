@@ -7,8 +7,8 @@
  * exemplary layout (lib/sonar/exemplary/layouts, 'congress-member-profile'):
  *
  *   row 1  Desk summary (a one-line headline, one short paragraph), full width
- *   row 2  {Member} portfolio (estimated value, time periods, key figures) | Key takeaways |
- *          Trading lean
+ *   row 2  {Member} portfolio (estimated value, 1Y/3Y/5Y/10Y/all time, key figures) | Key
+ *          findings (the full brief beyond the summary) | Trading lean, with why it reads so
  *   row 3  Similar portfolios in Congress | News around the member | Open positions
  *
  * Every figure is the dossier's own (lib/sonar/landing-politician): estimates from disclosed
@@ -26,6 +26,8 @@ import { Face } from '@/components/sonar/SonarFace';
 import { MODE_LABEL, answeredLabel } from '@/lib/sonar/desk-summary';
 import {
   tradingLean,
+  leanBullets,
+  ALL_TIME,
   seriesChange,
   seriesPeriods,
   sliceSeries,
@@ -97,7 +99,7 @@ function FitHeadline({ id, children }) {
   );
 }
 
-function DeskSummary({ headline, question, paragraphs, more }) {
+function DeskSummary({ headline, question, paragraphs }) {
   const id = useId();
   return (
     <section id="sa-answer" className="cpr-card cpr-desk" aria-labelledby={id}>
@@ -110,22 +112,12 @@ function DeskSummary({ headline, question, paragraphs, more }) {
           <Cited text={p} />
         </p>
       ))}
-      {more.length ? (
-        <details className="cpr-more">
-          <summary>Read the full brief</summary>
-          {more.map((p, i) => (
-            <p key={i}>
-              <Cited text={p} />
-            </p>
-          ))}
-        </details>
-      ) : null}
     </section>
   );
 }
 
 /* A half-circle gauge from net selling (left) to net buying (right). */
-function LeanGauge({ lean, last }) {
+function LeanGauge({ lean, last, bullets = [] }) {
   const id = useId();
   const angle = Math.PI * (1 - (lean.score + 1) / 2);
   const cx = 100;
@@ -170,24 +162,32 @@ function LeanGauge({ lean, last }) {
         <span>Balanced</span>
         <span>Net buying</span>
       </div>
+      {bullets.length ? (
+        <ul className="cpr-lean-list">
+          {bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      ) : null}
       <p className="cpr-note">
-        <i className="bi bi-info-circle" aria-hidden="true" /> {usdCompact(lean.buy)} bought,{' '}
-        {usdCompact(lean.sell)} sold, at range midpoints. Not a forecast.
+        <i className="bi bi-info-circle" aria-hidden="true" /> Disclosed ranges at their midpoints.
+        A description of the filings, not a forecast.
       </p>
     </section>
   );
 }
 
-function Takeaways({ items }) {
+/* Key findings: what the full brief adds beyond the desk summary, as bullets. */
+function Findings({ items }) {
   const id = useId();
   if (!items || items.length < 2) return null;
   return (
     <section id="sa-findings" className="cpr-card cpr-take" aria-labelledby={id}>
-      <Eyebrow icon="bi-bullseye" id={id}>
-        Key takeaways
+      <Eyebrow icon="bi-lightning-charge" id={id}>
+        Key findings
       </Eyebrow>
       <ul className="cpr-take-list">
-        {items.slice(0, 4).map((t, i) => (
+        {items.map((t, i) => (
           <li key={i}>
             <Cited text={t} />
           </li>
@@ -217,9 +217,13 @@ const tickUsd = (v) => {
 };
 
 /* The estimated open value by month: measured to its box, so text never stretches. */
-function ValueChart({ series, months, label }) {
+function ValueChart({ series, months, label, onHover = null }) {
   const [box, setBox] = useState(null);
-  const [hover, setHover] = useState(null);
+  const [hover, setHoverState] = useState(null);
+  const setHover = (i) => {
+    setHoverState(i);
+    onHover?.(i);
+  };
   const ro = useRef(null);
   const gid = useId();
   const setNode = useCallback((node) => {
@@ -338,10 +342,24 @@ function Portfolio({ dossier }) {
   const series = Array.isArray(dossier.series) ? dossier.series : [];
   const months = Array.isArray(dossier.seriesMonths) ? dossier.seriesMonths : [];
   const periods = seriesPeriods(series.length);
-  const [period, setPeriod] = useState(periods.length ? periods[periods.length - 1].key : null);
+  const initial = periods.find((p) => p.key === '3Y' && p.available) ? '3Y' : ALL_TIME;
+  const [period, setPeriod] = useState(initial);
+  const [hover, setHover] = useState(null);
   const view = sliceSeries(series, months, periods.find((p) => p.key === period) || null);
   const hasChart = view.series.length >= 2;
-  const change = hasChart ? seriesChange(view.series, view.series.length - 1) : null;
+  /* Nov 21: the header follows the chart. It shows the point under the cursor, otherwise the
+     latest month, with the change since the first month of the selected period and that
+     month's value, so changing the period changes what the header reports. */
+  const at = hover != null && hover < view.series.length ? hover : view.series.length - 1;
+  const shown = hasChart ? view.series[at] : null;
+  const first = hasChart ? view.series[0] : null;
+  /* A change from almost nothing (a first filing of a few thousand dollars) is not a useful
+     percentage; the "From" line still says where the period started. */
+  const pct =
+    hasChart && first > 0 && first >= Math.abs(shown) * 0.02
+      ? ((shown - first) / first) * 100
+      : null;
+  const periodName = period === ALL_TIME ? 'all time' : period;
   const kpis = [
     { k: 'Est. open value', v: typeof s.estValue === 'number' ? usdCompact(s.estValue) : 'N/A' },
     { k: 'Open positions', v: typeof s.openPositions === 'number' ? s.openPositions : 'N/A' },
@@ -355,7 +373,7 @@ function Portfolio({ dossier }) {
           <i className="bi bi-bar-chart-line" aria-hidden="true" />
           {dossier.name} portfolio
         </h2>
-        {periods.length > 1 ? (
+        {periods.length ? (
           <div className="cpr-periods" role="group" aria-label="Time period">
             {periods.map((p) => (
               <button
@@ -363,9 +381,14 @@ function Portfolio({ dossier }) {
                 type="button"
                 className={`cpr-period${p.key === period ? ' is-on' : ''}`}
                 aria-pressed={p.key === period}
-                onClick={() => setPeriod(p.key)}
+                disabled={!p.available}
+                title={p.available ? undefined : 'Not enough disclosed history for this period'}
+                onClick={() => {
+                  setPeriod(p.key);
+                  setHover(null);
+                }}
               >
-                {p.key}
+                {p.key === ALL_TIME ? 'All time' : p.key}
               </button>
             ))}
           </div>
@@ -385,24 +408,32 @@ function Portfolio({ dossier }) {
             {[seatOf(dossier), dossier.chamber].filter(Boolean).join(' · ')}
           </span>
         </div>
-        <div className="cpr-an-value">
-          <span className="cpr-an-value-k">Estimated open value</span>
+        <div className="cpr-an-value" aria-live="polite">
+          <span className="cpr-an-value-k">
+            {hasChart ? `Estimated value, ${monthLabel(view.months[at])}` : 'Estimated open value'}
+          </span>
           <span className="cpr-an-value-v">
-            {typeof s.estValue === 'number' ? usdCompact(s.estValue) : 'N/A'}
-            {change ? (
-              <span
-                className={`cpr-chip${change.pct < 0 ? ' is-down' : ''}`}
-                title={`Change in the estimated series over ${period}`}
-              >
+            {hasChart
+              ? usdCompact(shown)
+              : typeof s.estValue === 'number'
+                ? usdCompact(s.estValue)
+                : 'N/A'}
+            {pct != null ? (
+              <span className={`cpr-chip${pct < 0 ? ' is-down' : ''}`}>
                 <i
-                  className={`bi ${change.pct < 0 ? 'bi-caret-down-fill' : 'bi-caret-up-fill'}`}
+                  className={`bi ${pct < 0 ? 'bi-caret-down-fill' : 'bi-caret-up-fill'}`}
                   aria-hidden="true"
                 />
-                {change.pct >= 0 ? '+' : '-'}
-                {Math.abs(change.pct).toFixed(1)}% ({period})
+                {pct >= 0 ? '+' : '-'}
+                {Math.abs(pct).toFixed(1)}% ({periodName})
               </span>
             ) : null}
           </span>
+          {hasChart ? (
+            <span className="cpr-an-value-from">
+              From {usdCompact(first)} in {monthLabel(view.months[0])}
+            </span>
+          ) : null}
         </div>
       </div>
       {hasChart ? (
@@ -410,7 +441,8 @@ function Portfolio({ dossier }) {
           key={period}
           series={view.series}
           months={view.months}
-          label={`${dossier.name} estimated portfolio value, ${period}`}
+          label={`${dossier.name} estimated portfolio value, ${periodName}`}
+          onHover={setHover}
         />
       ) : (
         <p className="cpr-empty">No disclosed trades to chart yet.</p>
@@ -584,19 +616,18 @@ function News({ name, columns }) {
 
 /**
  * live        the ping response (dossier.kind === 'politician')
- * headline, paragraphs, more  the desk summary's text (the board picks it)
- * takeaways   strings from deskTakeaways()
+ * headline, paragraphs  the desk summary's text (the board picks it)
+ * findings    Key findings: what the full brief adds beyond the summary (briefFindings())
  * notice      the "showing results for" notice
  * actions     Save (SonarSaveActions)
  * remaining   free pings left, or null
  */
 export function CongressProfileReport({
   live,
-  rows = [['desk'], ['portfolio', 'takeaways', 'lean'], ['similar', 'news', 'positions']],
+  rows = [['desk'], ['portfolio', 'findings', 'lean'], ['similar', 'news', 'positions']],
   headline = null,
   paragraphs = [],
-  more = [],
-  takeaways = [],
+  findings = [],
   notice = null,
   actions = null,
   remaining = null,
@@ -609,12 +640,12 @@ export function CongressProfileReport({
   );
   /* Every card the exemplary layout may name, or null when it has nothing to show. */
   const cards = {
-    desk: (
-      <DeskSummary headline={headline} question={live.query} paragraphs={paragraphs} more={more} />
-    ),
+    desk: <DeskSummary headline={headline} question={live.query} paragraphs={paragraphs} />,
     portfolio: <Portfolio dossier={dossier} />,
-    takeaways: takeaways.length >= 2 ? <Takeaways items={takeaways} /> : null,
-    lean: lean ? <LeanGauge lean={lean} last={lastNameOf(dossier.name)} /> : null,
+    findings: findings.length >= 2 ? <Findings items={findings} /> : null,
+    lean: lean ? (
+      <LeanGauge lean={lean} last={lastNameOf(dossier.name)} bullets={leanBullets(dossier, lean)} />
+    ) : null,
     similar:
       Array.isArray(dossier.similar) && dossier.similar.length ? (
         <Similar dossier={dossier} />

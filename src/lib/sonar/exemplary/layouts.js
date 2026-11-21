@@ -14,9 +14,9 @@
 /** The cards a layout may name, and what each one shows. */
 export const LAYOUT_CARDS = {
   desk: 'Desk summary: one-line headline and one short paragraph',
-  portfolio: 'Estimated portfolio value with a time period selector and key figures',
-  takeaways: 'Key takeaways',
-  lean: 'Trading lean: disclosed purchases against sales, past 12 months',
+  portfolio: 'Estimated portfolio value with 1Y, 3Y, 5Y, 10Y and all-time periods, and key figures',
+  findings: 'Key findings: what the full brief adds beyond the desk summary, as bullets',
+  lean: 'Trading lean: disclosed purchases against sales, past 12 months, with why it reads so',
   similar: 'Similar portfolios in Congress',
   news: 'News around the subject',
   positions: 'Open positions with portfolio weights',
@@ -30,7 +30,7 @@ export const EXEMPLARY_LAYOUTS = [
     reviewed: '2026-11-21',
     /* A ping that resolves to one member of Congress (dossier kind 'politician'). */
     matches: (live) => live?.dossier?.kind === 'politician',
-    rows: [['desk'], ['portfolio', 'takeaways', 'lean'], ['similar', 'news', 'positions']],
+    rows: [['desk'], ['portfolio', 'findings', 'lean'], ['similar', 'news', 'positions']],
     tools: ['controls', 'sources', 'steps'],
   },
 ];

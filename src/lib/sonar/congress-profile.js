@@ -115,26 +115,27 @@ export function seriesChange(series, back = 12) {
   return { from, to, pct: ((to - from) / from) * 100, back };
 }
 
-/* Time periods for the portfolio chart, in months. */
+/* Time periods for the portfolio chart, in months (Nov 21: 1Y, 3Y, 5Y, 10Y, all time). */
 export const SERIES_PERIODS = [
-  { key: '6M', months: 6 },
   { key: '1Y', months: 12 },
-  { key: '2Y', months: 24 },
   { key: '3Y', months: 36 },
+  { key: '5Y', months: 60 },
+  { key: '10Y', months: 120 },
 ];
+export const ALL_TIME = 'ALL TIME';
 
 /**
- * The periods a month-end series of `count` points can show: each whose window fits, plus
- * ALL when the series is shorter than the longest period. -> [{ key, months }]
+ * The chart's five periods for a month-end series of `count` points, always in the same order
+ * so the selector never changes shape. A period is available when the series covers it (a
+ * 36-point series counts as 3Y); ALL TIME always is. -> [{ key, months, available }]
  */
 export function seriesPeriods(count) {
   const n = Number(count) || 0;
   if (n < 2) return [];
-  /* A 36-point month-end series (the dossier's three years) counts as 3Y. */
-  const fit = SERIES_PERIODS.filter((p) => p.months <= n);
-  const longest = SERIES_PERIODS[SERIES_PERIODS.length - 1].months;
-  if (n >= longest) return fit;
-  return [...fit, { key: 'ALL', months: n - 1 }];
+  return [
+    ...SERIES_PERIODS.map((p) => ({ ...p, available: p.months <= n })),
+    { key: ALL_TIME, months: n - 1, available: true },
+  ];
 }
 
 /** The last `period.months` months of the series (months + 1 month-end points). */
@@ -223,5 +224,96 @@ export function congressSections({ dossier, takeaways = [], sourceCount = 0 } = 
     (Array.isArray(dossier?.similar) && dossier.similar.length);
   if (charts) out.push('charts');
   if (sourceCount > 0) out.push('sources');
+  return out;
+}
+
+/* ── Key findings and the trading lean, explained ────────────────────── */
+
+const STOPW = new Set(
+  'the a an and or of in on to for with by at from as is are was were be been her his their its this that these those than over into about which while also more most'.split(
+    ' ',
+  ),
+);
+const words = (t) =>
+  String(t || '')
+    .toLowerCase()
+    .replace(/\[s\d+(?:,\s*s\d+)*\]/gi, ' ')
+    .replace(/[^a-z0-9$%.]+/g, ' ')
+    .split(' ')
+    .filter((w) => w.length > 2 && !STOPW.has(w));
+
+/** A paragraph's sentences; citation markers stay with the sentence they close. */
+export function sentencesOf(paragraph) {
+  return String(paragraph || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(/(?<=[.!?](?:\s*\[[^\]]+\])?)\s+(?=[A-Z])/)
+    .map((x) => x.trim())
+    .filter((x) => x.length > 12);
+}
+
+/**
+ * Key findings: what the full brief says beyond the desk summary, as bullets. A sentence
+ * whose words are mostly already in the summary is left out, so nothing repeats. The
+ * answer's own takeaways fill in when the brief adds fewer than two. At most `max`.
+ */
+export function briefFindings(brief = [], summary = [], takeaways = [], { max = 6 } = {}) {
+  const seen = new Set(words(summary.join(' ')));
+  const novel = (text) => {
+    const w = words(text);
+    if (!w.length) return false;
+    const known = w.filter((x) => seen.has(x)).length;
+    return known / w.length < 0.6;
+  };
+  const out = [];
+  const add = (t) => {
+    if (out.length >= max || !novel(t)) return;
+    out.push(t);
+    for (const w of words(t)) seen.add(w);
+  };
+  for (const p of Array.isArray(brief) ? brief : [])
+    for (const sentence of sentencesOf(p)) add(sentence);
+  if (out.length < 2)
+    for (const t of Array.isArray(takeaways) ? takeaways : []) add(String(t || '').trim());
+  return out;
+}
+
+/**
+ * Why the trading lean reads as it does, from the member's own filings: what was bought,
+ * what was sold, the net, and the latest filing. Every figure is a disclosed range or its
+ * midpoint. -> string[]
+ */
+export function leanBullets(dossier, lean = tradingLean(dossier)) {
+  if (!lean) return [];
+  const buys = Array.isArray(dossier?.buys12m) ? dossier.buys12m : [];
+  const sells = Array.isArray(dossier?.sells12m) ? dossier.sells12m : [];
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  const lead = (g) =>
+    g?.ticker
+      ? `led by ${g.ticker} (${plural(Number(g.count) || 0, 'trade')}${g.range ? `, ${g.range}` : ''})`
+      : null;
+  const out = [];
+  out.push(
+    lean.buys
+      ? `Bought: ${plural(lean.buys, 'purchase')} worth about ${usdCompact(lean.buy)}${lead(buys[0]) ? `, ${lead(buys[0])}` : ''}.`
+      : 'Bought: no disclosed purchases in the past 12 months.',
+  );
+  out.push(
+    lean.sells
+      ? `Sold: ${plural(lean.sells, 'sale')} worth about ${usdCompact(lean.sell)}${lead(sells[0]) ? `, ${lead(sells[0])}` : ''}.`
+      : 'Sold: no disclosed sales in the past 12 months.',
+  );
+  const diff = Math.abs(lean.buy - lean.sell);
+  if (lean.buy && lean.sell)
+    out.push(
+      lean.sell > lean.buy
+        ? `Sales outweighed purchases by about ${usdCompact(diff)}, so the lean reads ${lean.label.toLowerCase()}.`
+        : `Purchases outweighed sales by about ${usdCompact(diff)}, so the lean reads ${lean.label.toLowerCase()}.`,
+    );
+  const last = Array.isArray(dossier?.recentTrades) ? dossier.recentTrades[0] : null;
+  if (last?.member && last?.type)
+    out.push(
+      `Latest filing: a ${last.type} of ${last.member}${last.range ? ` (${last.range})` : ''}${last.date ? ` on ${last.date}` : ''}.`,
+    );
   return out;
 }

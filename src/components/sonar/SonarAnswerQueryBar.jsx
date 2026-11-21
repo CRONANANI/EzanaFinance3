@@ -6,7 +6,8 @@
  * research runs). Adapted from the 21st.dev prompt composer to Ezana: plain JS, scoped CSS,
  * Bootstrap Icons, Ezana emerald accents, and no model selector.
  *
- *   field   the question (Enter sends, Shift+Enter is a new line), with a rotating hint
+ *   field   the question (Enter sends), with a rotating hint; one row, 40px tall, the same
+ *           height as the tools row beside it
  *   +       add photos: each is read into text on the server (/api/sonar/attachment) and
  *           travels with the question as context
  *   Build   add charts from this answer, Quant Lab models, or saved EzanaQL queries as context
@@ -99,14 +100,6 @@ export function SonarAnswerQueryBar({
     const t = window.setInterval(() => setHint((h) => (h + 1) % HINTS.length), 5000);
     return () => window.clearInterval(t);
   }, [current]);
-
-  /* Grow the field with its text, up to five lines. */
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
-  }, [current, ref]);
 
   /* The Build menu closes on Escape or a click outside it. */
   useEffect(() => {
@@ -283,143 +276,139 @@ export function SonarAnswerQueryBar({
       <label htmlFor={id} className="sqb-label">
         {label}
       </label>
-      <div className="sqb-field">
-        <i className="bi bi-search sqb-icon" aria-hidden="true" />
-        <textarea
-          ref={ref}
-          id={id}
-          name="q"
-          rows={1}
-          className="sqb-input"
-          autoComplete="off"
-          maxLength={maxLength}
-          value={current}
-          placeholder={placeholder || HINTS[hint]}
-          onChange={(e) => set(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) submit(e);
-          }}
-        />
-      </div>
+      <i className="bi bi-search sqb-icon" aria-hidden="true" />
+      <input
+        ref={ref}
+        id={id}
+        name="q"
+        type="text"
+        className="sqb-input"
+        autoComplete="off"
+        maxLength={maxLength}
+        value={current}
+        placeholder={placeholder || HINTS[hint]}
+        onChange={(e) => set(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit(e);
+        }}
+      />
 
-      <div className="sqb-bar">
-        <div className="sqb-tools">
-          {contextEnabled ? (
-            <>
+      <div className="sqb-tools">
+        {contextEnabled ? (
+          <>
+            <button
+              type="button"
+              className="sqb-pill sqb-add"
+              aria-label="Add photos"
+              title={guest ? 'Sign in to add photos' : 'Add photos'}
+              disabled={guest}
+              onClick={() => fileRef.current?.click()}
+            >
+              <i className="bi bi-plus-lg" aria-hidden="true" />
+              <span className="sqb-add-label">Add photos</span>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              multiple
+              className="sqb-file"
+              tabIndex={-1}
+              aria-hidden="true"
+              onChange={(e) => {
+                addPhotos(e.target.files);
+                e.target.value = '';
+              }}
+            />
+            <div className="sqb-build-wrap">
               <button
+                ref={buildRef}
                 type="button"
-                className="sqb-pill sqb-add"
-                aria-label="Add photos"
-                title={guest ? 'Sign in to add photos' : 'Add photos'}
-                disabled={guest}
-                onClick={() => fileRef.current?.click()}
+                className={`sqb-pill sqb-build${menu ? ' is-open' : ''}`}
+                aria-haspopup="true"
+                aria-expanded={menu}
+                aria-controls={`${id}-build`}
+                onClick={() => setMenu((m) => !m)}
               >
-                <i className="bi bi-plus-lg" aria-hidden="true" />
-                <span className="sqb-add-label">Add photos</span>
+                <i className="bi bi-bricks" aria-hidden="true" />
+                Build
+                <i className="bi bi-chevron-down sqb-chev" aria-hidden="true" />
               </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                multiple
-                className="sqb-file"
-                tabIndex={-1}
-                aria-hidden="true"
-                onChange={(e) => {
-                  addPhotos(e.target.files);
-                  e.target.value = '';
-                }}
-              />
-              <div className="sqb-build-wrap">
-                <button
-                  ref={buildRef}
-                  type="button"
-                  className={`sqb-pill sqb-build${menu ? ' is-open' : ''}`}
-                  aria-haspopup="true"
-                  aria-expanded={menu}
-                  aria-controls={`${id}-build`}
-                  onClick={() => setMenu((m) => !m)}
+              {menu ? (
+                <div
+                  id={`${id}-build`}
+                  ref={menuRef}
+                  className="sqb-menu"
+                  role="group"
+                  aria-label="Add context"
                 >
-                  <i className="bi bi-bricks" aria-hidden="true" />
-                  Build
-                  <i className="bi bi-chevron-down sqb-chev" aria-hidden="true" />
-                </button>
-                {menu ? (
-                  <div
-                    id={`${id}-build`}
-                    ref={menuRef}
-                    className="sqb-menu"
-                    role="group"
-                    aria-label="Add context"
-                  >
-                    <p className="sqb-menu-head">Add to this question</p>
-                    {chartItems.length ? (
-                      <>
-                        <p className="sqb-menu-group">Charts on this answer</p>
-                        <ul className="sqb-menu-list">
-                          {chartItems.map((it) => (
-                            <Option key={it.key} item={it} />
-                          ))}
-                        </ul>
-                      </>
-                    ) : null}
-                    <p className="sqb-menu-group">Saved EzanaQL queries</p>
-                    {guest ? (
-                      <p className="sqb-menu-note">Sign in to add your saved queries.</p>
-                    ) : saved.status === 'loading' ? (
-                      <p className="sqb-menu-note">Loading your saved queries</p>
-                    ) : saved.status === 'error' ? (
-                      <p className="sqb-menu-note">Your saved queries could not be loaded.</p>
-                    ) : saved.items.length ? (
+                  <p className="sqb-menu-head">Add to this question</p>
+                  {chartItems.length ? (
+                    <>
+                      <p className="sqb-menu-group">Charts on this answer</p>
                       <ul className="sqb-menu-list">
-                        {saved.items.map((q) => (
-                          <Option
-                            key={q.id}
-                            item={{
-                              key: `query:${q.id}`,
-                              kind: 'query',
-                              label: q.label,
-                              text: q.text,
-                            }}
-                          />
+                        {chartItems.map((it) => (
+                          <Option key={it.key} item={it} />
                         ))}
                       </ul>
-                    ) : (
-                      <p className="sqb-menu-note">
-                        No saved queries yet. Save one from a dataset hub.
-                      </p>
-                    )}
-                    <p className="sqb-menu-group">Quant Lab models</p>
-                    <ul className="sqb-menu-list sqb-menu-list--models">
-                      {models.map((it) => (
-                        <Option key={it.key} item={it} />
+                    </>
+                  ) : null}
+                  <p className="sqb-menu-group">Saved EzanaQL queries</p>
+                  {guest ? (
+                    <p className="sqb-menu-note">Sign in to add your saved queries.</p>
+                  ) : saved.status === 'loading' ? (
+                    <p className="sqb-menu-note">Loading your saved queries</p>
+                  ) : saved.status === 'error' ? (
+                    <p className="sqb-menu-note">Your saved queries could not be loaded.</p>
+                  ) : saved.items.length ? (
+                    <ul className="sqb-menu-list">
+                      {saved.items.map((q) => (
+                        <Option
+                          key={q.id}
+                          item={{
+                            key: `query:${q.id}`,
+                            kind: 'query',
+                            label: q.label,
+                            text: q.text,
+                          }}
+                        />
                       ))}
                     </ul>
-                  </div>
-                ) : null}
-              </div>
-            </>
-          ) : null}
-        </div>
-        <div className="sqb-actions">
-          {current || context.length ? (
-            <button type="button" className="sqb-clear" onClick={clear}>
-              Clear
-            </button>
-          ) : null}
-          <button
-            type="submit"
-            className="sqb-ping"
-            disabled={pending || reading}
-            aria-busy={pending || undefined}
-          >
-            <i
-              className={`bi ${pending ? 'bi-arrow-repeat sqb-spin' : 'bi-broadcast'}`}
-              aria-hidden="true"
-            />
-            {pending ? 'Pinging' : 'Ping'}
+                  ) : (
+                    <p className="sqb-menu-note">
+                      No saved queries yet. Save one from a dataset hub.
+                    </p>
+                  )}
+                  <p className="sqb-menu-group">Quant Lab models</p>
+                  <ul className="sqb-menu-list sqb-menu-list--models">
+                    {models.map((it) => (
+                      <Option key={it.key} item={it} />
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+      </div>
+      <div className="sqb-actions">
+        {current || context.length ? (
+          <button type="button" className="sqb-clear" onClick={clear}>
+            Clear
           </button>
-        </div>
+        ) : null}
+        <button
+          type="submit"
+          className="sqb-ping"
+          disabled={pending || reading}
+          aria-busy={pending || undefined}
+        >
+          <i
+            className={`bi ${pending ? 'bi-arrow-repeat sqb-spin' : 'bi-broadcast'}`}
+            aria-hidden="true"
+          />
+          {pending ? 'Pinging' : 'Ping'}
+        </button>
       </div>
       {error ? (
         <p className="sqb-error" role="alert">

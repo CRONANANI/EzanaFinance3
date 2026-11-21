@@ -333,12 +333,13 @@ export async function buildPoliticianDossier(
   ]);
 
   const trades = Array.isArray(tradesRes?.data) ? tradesRes.data : [];
-  const { months, values } = portfolioSeries(trades);
+  /* Nov 21: the whole disclosed history (the chart offers 1Y, 3Y, 5Y, 10Y and all time). */
+  const { months, values } = portfolioSeries(trades, { months: 600, now });
   if (values.length >= 2) {
     out.series = values;
     out.seriesMonths = months;
     const firstYear = months[0].slice(0, 4);
-    out.seriesLabel = months.length >= 36 ? '3Y' : `SINCE ${firstYear}`;
+    out.seriesLabel = `SINCE ${firstYear}`;
   }
 
   const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

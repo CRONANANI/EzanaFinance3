@@ -99,7 +99,9 @@
   color: var(--stl-accent);
 }
 
-/* The open panel: an overlay over whatever is below, for as long as it is open. */
+/* The open panel: an overlay over whatever is below, for as long as it is open. No entrance
+   animation: the answer band pauses every animation once a ping is live, which froze the
+   panel at opacity 0 (Nov 21 fix). */
 .stl .stl-pop {
   position: absolute;
   z-index: 40;
@@ -115,7 +117,6 @@
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--stl-emerald) 24%, transparent),
     var(--shadow-lg);
-  animation: stl-in 0.14s ease-out;
 }
 .stl .stl-item:last-child .stl-pop {
   left: auto;
@@ -123,16 +124,6 @@
 }
 .stl .stl-pop[hidden] {
   display: none;
-}
-@keyframes stl-in {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 /* The panel's own title is the header above it: the card inside drops its heading and its
    surface. */
@@ -210,9 +201,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stl .stl-pop {
-    animation: none;
-  }
   .stl .stl-head,
   .stl .stl-chev {
     transition: none;

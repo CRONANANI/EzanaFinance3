@@ -141,7 +141,13 @@
   color: var(--cpr-faint);
 }
 
-/* Desk summary: the headline on one line (FitHeadline sizes it to fit). */
+/* Desk summary: the headline on one line (FitHeadline sizes it to fit); the paragraph runs
+   the card's full width, with the same padding on every side, so the card is only as tall as
+   its text. */
+.cpr .cpr-desk {
+  gap: 8px;
+  padding: 18px;
+}
 .cpr .cpr-headline {
   min-width: 0;
   margin: 2px 0 0;
@@ -156,23 +162,6 @@
 }
 .cpr .cpr-summary {
   margin: 0;
-  max-width: 120ch;
-  font-size: var(--type-caption-size);
-  line-height: 1.55;
-  color: var(--cpr-muted);
-}
-.cpr .cpr-more summary {
-  cursor: pointer;
-  font-size: var(--type-caption-size);
-  font-weight: 600;
-  color: var(--cpr-accent);
-}
-.cpr .cpr-more summary:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-.cpr .cpr-more p {
-  margin: 8px 0 0;
   font-size: var(--type-caption-size);
   line-height: 1.55;
   color: var(--cpr-muted);
@@ -209,6 +198,32 @@
   font-size: var(--type-body-size);
   font-weight: 700;
   color: var(--cpr-accent);
+}
+.cpr .cpr-lean-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 10px 0 0;
+  list-style: none;
+  background: linear-gradient(var(--cpr-rule), var(--cpr-rule)) top / 100% 1px no-repeat;
+}
+.cpr .cpr-lean-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+  color: var(--cpr-muted);
+}
+.cpr .cpr-lean-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--cpr-emerald);
 }
 .cpr .cpr-lean-scale {
   display: flex;
@@ -274,6 +289,10 @@
 .cpr .cpr-period.is-on {
   color: var(--cpr-accent);
 }
+.cpr .cpr-period:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
 .cpr .cpr-period:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
@@ -326,6 +345,11 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
+}
+.cpr .cpr-an-value-from {
+  font-family: var(--cpr-mono);
+  font-size: var(--type-micro-size);
+  color: var(--cpr-faint);
 }
 .cpr .cpr-chip {
   display: inline-flex;

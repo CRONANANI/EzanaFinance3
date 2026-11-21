@@ -2205,8 +2205,9 @@ export async function runLandingPipeline(
      ("Turkey") and a country question ("Is Turkey's lira under pressure?")
      never share a brief, and today's cached v2 Turkey brief is not served. */
   /* Nov 2026 (v4): a country answer's news rail is relevance-gated (insight/relevance.js).
-     v5: a company answer's structured brief, valuation snapshot and profile. */
-  const cacheKey = `landing:v5:${understood.intent}:${canon.key}`;
+     v5: a company answer's structured brief, valuation snapshot and profile.
+     v6 (Nov 21): a member's full disclosed history for the 1Y to all-time chart. */
+  const cacheKey = `landing:v6:${understood.intent}:${canon.key}`;
   const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
   if (admin && !hasCacheClient()) setCacheClient(() => admin);
   if (cacheable) {

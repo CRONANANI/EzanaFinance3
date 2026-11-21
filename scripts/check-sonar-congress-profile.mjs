@@ -138,20 +138,56 @@ test('sections: only the ones the report renders', () => {
   assert.deepEqual(C.congressSections({ dossier: { kind: 'politician' } }), ['answer']);
 });
 
-test('periods: what the series can show, 3Y for the three-year dossier', () => {
-  assert.deepEqual(
-    C.seriesPeriods(36).map((p) => p.key),
-    ['6M', '1Y', '2Y', '3Y'],
-  );
-  assert.deepEqual(
-    C.seriesPeriods(20).map((p) => p.key),
-    ['6M', '1Y', 'ALL'],
-  );
+test('periods: 1Y, 3Y, 5Y, 10Y and all time, in a fixed order', () => {
+  const keys = (n) => C.seriesPeriods(n).map((p) => `${p.key}${p.available ? '' : '-'}`);
+  assert.deepEqual(keys(36), ['1Y', '3Y', '5Y-', '10Y-', 'ALL TIME']);
+  assert.deepEqual(keys(150), ['1Y', '3Y', '5Y', '10Y', 'ALL TIME']);
   assert.deepEqual(C.seriesPeriods(1), []);
   const one = C.sliceSeries(series, months, { key: '1Y', months: 12 });
   assert.equal(one.series.length, 13);
   assert.equal(one.months[12], months[35]);
-  assert.equal(C.sliceSeries(series, months, null).series.length, 36);
+  const all = C.seriesPeriods(36).at(-1);
+  assert.equal(C.sliceSeries(series, months, all).series.length, 36);
+});
+
+test('key findings: the full brief beyond the summary, never repeating it', () => {
+  const summary = [
+    'Nancy Pelosi disclosed 27 trades in the past 12 months, with activity concentrated in technology and energy stocks [S1].',
+  ];
+  const brief = [
+    'Nancy Pelosi disclosed 27 trades in the past 12 months, with activity concentrated in technology and energy stocks [S1].',
+    'Ezana estimates her open portfolio at approximately $52.2M across 29 positions [S5]. The pattern reflects concentration in semiconductors and enterprise software.',
+    'Members whose trading overlaps most include Matt Van Epps and James Comer [S7].',
+  ];
+  const f = C.briefFindings(brief, summary);
+  assert.equal(f.length, 3);
+  assert.ok(!f.some((x) => x.startsWith('Nancy Pelosi disclosed 27 trades')), 'no repeat');
+  assert.match(f[0], /\$52\.2M across 29 positions \[S5\]\.$/);
+  /* Takeaways fill in when the brief adds fewer than two. */
+  assert.deepEqual(
+    C.briefFindings(brief.slice(0, 1), summary, [
+      'A new point about Intel buying.',
+      'Another point about sales.',
+    ]),
+    ['A new point about Intel buying.', 'Another point about sales.'],
+  );
+});
+
+test('trading lean bullets: bought, sold, net and latest filing, from the dossier', () => {
+  const d = {
+    ...dossier,
+    recentTrades: [{ member: 'WBD', type: 'sale', range: '$50K–$100K', date: '2026-10-07' }],
+  };
+  const b = C.leanBullets(d);
+  assert.equal(b.length, 4);
+  assert.match(b[0], /^Bought: 5 purchases worth about \$6\.63M, led by INTC \(3 trades\)\.$/);
+  assert.match(b[1], /^Sold: 1 sale worth about \$30\.00M, led by AAPL \(1 trade\)\.$/);
+  assert.match(
+    b[2],
+    /Sales outweighed purchases by about \$23\.37M, so the lean reads strong net selling\./,
+  );
+  assert.equal(b[3], 'Latest filing: a sale of WBD ($50K–$100K) on 2026-10-07.');
+  assert.deepEqual(C.leanBullets({}), []);
 });
 
 test('exemplary layout: a member of Congress gets the approved rows, in order', () => {
@@ -159,7 +195,7 @@ test('exemplary layout: a member of Congress gets the approved rows, in order', 
   assert.equal(lay.slug, 'congress-member-profile');
   assert.deepEqual(lay.rows, [
     ['desk'],
-    ['portfolio', 'takeaways', 'lean'],
+    ['portfolio', 'findings', 'lean'],
     ['similar', 'news', 'positions'],
   ]);
   for (const row of lay.rows) for (const k of row) assert.ok(L.LAYOUT_CARDS[k], k);
@@ -227,6 +263,17 @@ test('wiring: the ping board, the report, the shell and the composer', () => {
     /box-shadow: inset 2px 0 0 var\(--san-emerald\)/,
     'Echo-style current section',
   );
+  assert.ok(!/Read the full brief/.test(rep), 'no expander repeating the summary');
+  assert.match(rep, /Key findings/);
+  assert.match(rep, /'All time'/);
+  const tcss = read('src/components/sonar/sonar-tools-row.css');
+  assert.ok(
+    !/animation:\s*stl-in/.test(tcss),
+    'no entrance animation (the live band pauses it at opacity 0)',
+  );
+  const qcss = read('src/components/sonar/sonar-answer-query-bar.css');
+  assert.ok(!/animation:\s*sqb-in/.test(qcss), 'no paused menu animation');
+  assert.match(qcss, /min-height: 40px/, 'the composer matches the tools row height');
   const tools = read('src/components/sonar/SonarToolsRow.jsx');
   assert.match(tools, /'Research controls'/);
   assert.match(tools, /'Evidence and sources'/);

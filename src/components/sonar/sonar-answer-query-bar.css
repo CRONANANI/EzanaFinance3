@@ -12,17 +12,19 @@
   --sqb-faint: var(--san-faint, var(--text-muted));
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
   width: 100%;
+  min-height: 40px;
   margin: 0;
-  padding: 14px 14px 12px;
+  padding: 3px 4px 3px 14px;
   border: 1px solid color-mix(in srgb, var(--sqb-emerald) 55%, transparent);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background: var(--san-panel, var(--bg-secondary));
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--sqb-emerald) 8%, transparent),
-    0 12px 32px color-mix(in srgb, var(--sqb-emerald) 12%, transparent);
+    0 0 0 3px color-mix(in srgb, var(--sqb-emerald) 8%, transparent),
+    0 8px 24px color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -43,34 +45,25 @@
   white-space: nowrap;
 }
 
-/* The question */
-.sqb .sqb-field {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 0 4px;
-}
+/* The question: one line */
 .sqb .sqb-icon {
   flex: none;
-  margin-top: 3px;
   color: var(--sqb-accent);
 }
 .sqb .sqb-input {
-  flex: 1 1 auto;
+  flex: 1 1 160px;
   min-width: 0;
-  min-height: 26px;
-  max-height: 132px;
+  height: 32px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--sqb-text);
   font: inherit;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.5;
-  resize: none;
   outline: none;
+  text-overflow: ellipsis;
 }
 .sqb .sqb-input::placeholder {
   font-weight: 400;
@@ -78,12 +71,15 @@
 }
 
 /* Added context */
+/* Added context: a line of its own under the field, only while something is added. */
 .sqb .sqb-chips {
   display: flex;
   flex-wrap: wrap;
+  flex-basis: 100%;
+  order: 10;
   gap: 6px;
   margin: 0;
-  padding: 0;
+  padding: 4px 0 4px;
   list-style: none;
 }
 .sqb .sqb-chip {
@@ -91,8 +87,8 @@
   align-items: center;
   gap: 6px;
   max-width: 260px;
-  min-height: 28px;
-  padding: 0 4px 0 10px;
+  min-height: 24px;
+  padding: 0 2px 0 8px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
   color: var(--sqb-text);
@@ -129,26 +125,21 @@
   color: var(--sqb-text);
 }
 
-/* The tools row */
-.sqb .sqb-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
+/* The tools: + and Build, then Clear and Ping, on the same line */
 .sqb .sqb-tools,
 .sqb .sqb-actions {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 .sqb .sqb-pill {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 36px;
-  padding: 0 12px;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
   border: 0;
   border-radius: 999px;
   background: color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
@@ -179,8 +170,8 @@
 }
 /* + grows into "Add photos" on hover or keyboard focus. */
 .sqb .sqb-add {
-  max-width: 36px;
-  padding: 0 11px;
+  max-width: 30px;
+  padding: 0 8px;
 }
 .sqb .sqb-add-label {
   opacity: 0;
@@ -221,17 +212,6 @@
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 24%, transparent),
     var(--shadow-lg);
-  animation: sqb-in 0.14s ease-out;
-}
-@keyframes sqb-in {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 .sqb .sqb-menu-head {
   margin: 4px 8px 6px;
@@ -318,14 +298,14 @@
   flex: none;
   align-items: center;
   gap: 8px;
-  min-height: 38px;
-  padding: 0 18px;
+  min-height: 32px;
+  padding: 0 14px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   background: var(--sqb-emerald);
   color: color-mix(in srgb, black 86%, var(--sqb-emerald));
   font: inherit;
-  font-size: var(--type-body-size);
+  font-size: var(--type-caption-size);
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -346,12 +326,16 @@
   outline-offset: 2px;
 }
 .sqb .sqb-error {
-  margin: 0 4px;
+  flex-basis: 100%;
+  order: 11;
+  margin: 0 0 4px;
   font-size: var(--type-micro-size);
   color: color-mix(in srgb, var(--negative) 60%, var(--sqb-text));
 }
 .sqb .sqb-spin {
   animation: sqb-spin 0.9s linear infinite;
+  /* The live band pauses animations; the loading spinner keeps turning. */
+  animation-play-state: running !important;
 }
 @keyframes sqb-spin {
   to {
@@ -366,16 +350,15 @@
   .sqb .sqb-ping {
     transition: none;
   }
-  .sqb .sqb-spin,
-  .sqb .sqb-menu {
+  .sqb .sqb-spin {
     animation: none;
   }
 }
 @media (max-width: 480px) {
   .sqb {
-    padding: 12px 10px 10px;
+    padding-left: 10px;
   }
   .sqb .sqb-ping {
-    padding: 0 14px;
+    padding: 0 10px;
   }
 }
