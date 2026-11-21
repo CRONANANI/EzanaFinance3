@@ -257,10 +257,10 @@ export function SonarRelatedQuestions({ questions = [], onAsk = null }) {
   };
   return (
     <section className="sds-related" aria-labelledby={id}>
-      <h2 id={id} className="sds-related-label">
-        <i className="bi bi-stars" aria-hidden="true" />
+      {/* Nov 21: no visible label or icon; the row is named for screen readers. */}
+      <VisuallyHidden as="h2" id={id}>
         Suggested follow-ups
-      </h2>
+      </VisuallyHidden>
       <ul className="sds-related-row">
         {list.map((q) => (
           <li key={q}>

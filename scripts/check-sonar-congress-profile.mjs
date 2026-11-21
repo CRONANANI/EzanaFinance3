@@ -9,6 +9,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const C = await import('@/lib/sonar/congress-profile');
+const L = await import('@/lib/sonar/exemplary/layouts');
+const AC = await import('@/lib/sonar/answer-charts');
+const W = await import('@/lib/sonar/workspace');
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 const months = Array.from({ length: 36 }, (_, i) => {
@@ -135,19 +138,67 @@ test('sections: only the ones the report renders', () => {
   assert.deepEqual(C.congressSections({ dossier: { kind: 'politician' } }), ['answer']);
 });
 
-test('wiring: the ping board, the report and the shell', () => {
+test('periods: what the series can show, 3Y for the three-year dossier', () => {
+  assert.deepEqual(
+    C.seriesPeriods(36).map((p) => p.key),
+    ['6M', '1Y', '2Y', '3Y'],
+  );
+  assert.deepEqual(
+    C.seriesPeriods(20).map((p) => p.key),
+    ['6M', '1Y', 'ALL'],
+  );
+  assert.deepEqual(C.seriesPeriods(1), []);
+  const one = C.sliceSeries(series, months, { key: '1Y', months: 12 });
+  assert.equal(one.series.length, 13);
+  assert.equal(one.months[12], months[35]);
+  assert.equal(C.sliceSeries(series, months, null).series.length, 36);
+});
+
+test('exemplary layout: a member of Congress gets the approved rows, in order', () => {
+  const lay = L.exemplaryLayoutFor({ dossier: { kind: 'politician' } });
+  assert.equal(lay.slug, 'congress-member-profile');
+  assert.deepEqual(lay.rows, [
+    ['desk'],
+    ['portfolio', 'takeaways', 'lean'],
+    ['similar', 'news', 'positions'],
+  ]);
+  for (const row of lay.rows) for (const k of row) assert.ok(L.LAYOUT_CARDS[k], k);
+  assert.equal(L.exemplaryLayoutFor({ dossier: { kind: 'company' } }), null);
+  assert.equal(L.exemplaryLayoutFor(null), null);
+});
+
+test('composer context: charts carry the numbers on screen; photos are checked by bytes', () => {
+  const charts = AC.answerCharts({ dossier });
+  assert.equal(charts.length, 2);
+  assert.match(charts[0].text, /no market prices applied/);
+  assert.ok(charts[0].text.includes(months[35]));
+  assert.match(charts[1].text, /AB: 15\.8%/);
+  assert.deepEqual(AC.answerCharts({}), []);
+  assert.equal(W.checkImage({ name: 'a.png', type: 'image/png', size: 10 }).ok, true);
+  assert.equal(W.checkImage({ name: 'a.svg', type: 'image/svg+xml', size: 10 }).ok, false);
+  assert.equal(W.checkImage({ name: 'a.png', type: 'image/png', size: 5e6 }).ok, false);
+  assert.equal(W.imageKindOfBytes([0x89, 0x50, 0x4e, 0x47]), 'png');
+  assert.equal(W.imageKindOfBytes([0xff, 0xd8, 0xff, 0xe0]), 'jpeg');
+  assert.equal(W.imageKindOfBytes([0x25, 0x50, 0x44, 0x46]), null);
+});
+
+test('wiring: the ping board, the report, the shell and the composer', () => {
   const pb = read('src/components/landing/SonarPingBoard.jsx');
-  assert.match(pb, /const congress = !lead && live\?\.dossier\?\.kind === 'politician'/);
+  assert.match(pb, /const layout = lead \? null : exemplaryLayoutFor\(live\)/);
+  assert.match(pb, /rows=\{layout\.rows\}/);
   assert.match(pb, /<CongressProfileReport/);
-  assert.match(pb, /<CongressEvidence/);
+  assert.match(pb, /workspaceTools\(/);
   assert.match(pb, /politicianFollowUps\(live\.dossier, live\?\.related\)/);
   const rep = read('src/components/sonar/congress/CongressProfileReport.jsx');
-  for (const id of ['sa-answer', 'sa-findings', 'sa-charts', 'sa-sources'])
+  for (const id of ['sa-answer', 'sa-findings', 'sa-charts'])
     assert.ok(rep.includes(`id="${id}"`), id);
+  assert.match(rep, /\{dossier\.name\} portfolio\n/);
+  assert.ok(!/portfolio analytics/i.test(rep), 'no "analytics" in the card title');
   assert.ok(!rep.includes('—'), 'no em dash');
   assert.ok(!/Math\.random/.test(rep));
   const css = read('src/components/sonar/congress/congress-profile-report.css');
   assert.ok(!/#[0-9a-f]{3,8}\b/i.test(css), 'no hex');
+  assert.match(css, /\.cpr \.cpr-headline \{[^}]*white-space: nowrap/);
   const borders = [
     ...css.matchAll(/(?:^|[\s;{])border(?:-(?!radius|collapse)[a-z-]+)?\s*:\s*([^;]+);/gm),
   ].map((m) => m[1].trim());
@@ -157,7 +208,26 @@ test('wiring: the ping board, the report and the shell', () => {
   );
   const frame = read('src/components/sonar/SonarAnswerFrame.jsx');
   assert.match(frame, /deepState/);
-  assert.match(frame, /san-status--\$\{deepState\}/);
+  assert.match(frame, /<SonarToolsRow items=\{tools\} \/>/);
+  assert.ok(!/san-rail/.test(frame.split('{rail ?')[0]), 'no right rail column before the answer');
   const fcss = read('src/components/sonar/sonar-answer-frame.css');
-  assert.ok(!/overflow-y: auto/.test(fcss), 'no nested scroll in the side navigation');
+  assert.ok(!/overflow-y: auto/.test(fcss), 'no nested scroll in the contents menu');
+  assert.match(
+    fcss,
+    /box-shadow: inset 2px 0 0 var\(--san-emerald\)/,
+    'Echo-style current section',
+  );
+  const tools = read('src/components/sonar/SonarToolsRow.jsx');
+  assert.match(tools, /'Research controls'/);
+  assert.match(tools, /'Evidence and sources'/);
+  assert.match(tools, /'Next steps'/);
+  const bar = read('src/components/sonar/SonarAnswerQueryBar.jsx');
+  assert.match(bar, /Add photos/);
+  assert.match(bar, /Saved EzanaQL queries/);
+  assert.ok(!/model selector|modelId|effort/i.test(bar.replace(/no model selector/i, '')));
+  const rel = read('src/components/sonar/SonarDeskSummary.jsx');
+  assert.ok(!/bi-stars/.test(rel), 'no star icon on the follow-ups');
+  const cat = read('src/components/datasets/CategoryBar.jsx');
+  assert.ok(!/Search the datasets with Sonar/.test(cat), 'no search icon in the bar');
+  assert.match(cat, /dscat-logo--center/);
 });

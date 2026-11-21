@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
-import { ATTACH_MAX_BYTES, ATTACH_MAX_CHARS, checkAttachment } from '@/lib/sonar/workspace';
+import {
+  ATTACH_MAX_BYTES,
+  ATTACH_MAX_CHARS,
+  IMAGE_MAX_BYTES,
+  checkAttachment,
+  checkImage,
+  imageKindOfBytes,
+} from '@/lib/sonar/workspace';
+import { HAIKU_MODEL } from '@/lib/sonar/llm-providers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -39,8 +47,56 @@ function csvText(raw) {
     .join('\n');
 }
 
+const IMAGE_PROMPT =
+  'Describe this image for a financial research assistant. Transcribe every piece of text, number, axis label, legend and table cell exactly as shown. Then say plainly what any chart or table shows (series, time span, direction). Do not guess values that are not legible, do not add outside facts, and do not give advice. Plain text only.';
+
+/* A photo from the Sonar composer, read once into text by a vision call. The image itself is
+   never stored or logged; only the text comes back, like any attached file. */
+async function imageText(buf, media) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw Object.assign(new Error('no key'), { code: 'NO_VISION' });
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      ...(process.env.ANTHROPIC_WORKSPACE_ID
+        ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID }
+        : {}),
+    },
+    body: JSON.stringify({
+      model: HAIKU_MODEL,
+      max_tokens: 1500,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: media, data: buf.toString('base64') },
+            },
+            { type: 'text', text: IMAGE_PROMPT },
+          ],
+        },
+      ],
+    }),
+    signal: AbortSignal.timeout(25_000),
+  });
+  if (!res.ok) throw new Error(`vision ${res.status}`);
+  const data = await res.json();
+  return (data?.content || [])
+    .filter((c) => c?.type === 'text')
+    .map((c) => c.text)
+    .join('\n')
+    .trim();
+}
+
 /**
  * POST /api/sonar/attachment (multipart, one `file`)
+ *
+ * Nov 21: an image (PNG, JPEG, WebP or GIF, 4 MB or less, checked by its first bytes) is
+ * read into text by one vision call and returned the same way, for the composer's photos.
  *
  * A file attached to a Sonar follow-up (Sonar research workspace, Nov 13 2026). Checked again
  * on the server (checkAttachment: PDF, text, Markdown or CSV, 2 MB or less) and by its first
@@ -58,6 +114,33 @@ export const POST = withApiGuard(
       if (!file || typeof file === 'string' || typeof file.arrayBuffer !== 'function')
         return fail('Attach one file.');
       const name = String(file.name || 'file').slice(0, 120);
+      const isImage =
+        String(file.type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(name);
+      if (isImage) {
+        const img = checkImage({ name, type: file.type || '', size: file.size || 0 });
+        if (!img.ok) return fail(img.error);
+        const ibuf = Buffer.from(await file.arrayBuffer());
+        if (ibuf.length > IMAGE_MAX_BYTES) return fail('Add an image of 4 MB or less.');
+        const real = imageKindOfBytes(ibuf.subarray(0, 12));
+        if (!real) return fail('That file is not a readable image.');
+        let described = '';
+        try {
+          described = await imageText(ibuf, `image/${real}`);
+        } catch (e) {
+          if (e?.code === 'NO_VISION') return fail('Photos cannot be read right now.', 503);
+          return fail('That image could not be read. Try again.', 502);
+        }
+        if (!described) return fail('Nothing could be read from that image.');
+        return NextResponse.json(
+          {
+            name,
+            text: described.slice(0, ATTACH_MAX_CHARS),
+            clipped: described.length > ATTACH_MAX_CHARS,
+            kind: 'image',
+          },
+          { headers: HEADERS },
+        );
+      }
       const check = checkAttachment({ name, type: file.type || '', size: file.size || 0 });
       if (!check.ok) return fail(check.error);
       if (file.size > ATTACH_MAX_BYTES) return fail('Attach a file of 2 MB or less.');

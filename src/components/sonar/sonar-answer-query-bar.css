@@ -1,29 +1,40 @@
-/* SonarAnswerQueryBar (Nov 13 2026): the query bar at the top of the centre column. Scoped sqb-.
-   The one Sonar surface that keeps a border: emerald at about 70% with a soft emerald glow.
-   Reads the workspace's --san-* layer with app-token fallbacks. Tokens only. */
+/* SonarAnswerQueryBar (Nov 21 2026): the Sonar query composer. Scoped sqb-. A rounded field
+   with an emerald edge and a soft emerald glow (the one Sonar surface that keeps a border, as
+   the query bar always has), the question on top, the tools row under it: + (photos) and
+   Build (context) on the left, Clear and Ping on the right. Menus are overlays with a solid
+   ground. Reads the shell's --san-* layer with app-token fallbacks. Tokens only. */
 
 .sqb {
   --sqb-emerald: var(--san-emerald, var(--emerald));
+  --sqb-accent: var(--san-accent, var(--emerald-text));
+  --sqb-text: var(--san-text, var(--text-primary));
+  --sqb-muted: var(--san-muted, var(--text-secondary));
+  --sqb-faint: var(--san-faint, var(--text-muted));
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  max-width: 920px;
-  min-height: 56px;
-  margin: 0 auto;
-  padding: 0 6px 0 16px;
-  border: 1px solid color-mix(in srgb, var(--sqb-emerald) 70%, transparent);
-  border-radius: var(--radius-sm);
+  margin: 0;
+  padding: 14px 14px 12px;
+  border: 1px solid color-mix(in srgb, var(--sqb-emerald) 55%, transparent);
+  border-radius: var(--radius-xl);
   background: var(--san-panel, var(--bg-secondary));
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--sqb-emerald) 10%, transparent),
-    0 8px 24px color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+    0 0 0 4px color-mix(in srgb, var(--sqb-emerald) 8%, transparent),
+    0 12px 32px color-mix(in srgb, var(--sqb-emerald) 12%, transparent);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .sqb:focus-within {
   border-color: var(--sqb-emerald);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--sqb-emerald) 14%, transparent),
+    0 12px 32px color-mix(in srgb, var(--sqb-emerald) 16%, transparent);
 }
-.sqb .sqb-label {
+.sqb .sqb-label,
+.sqb .sqb-file {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -31,65 +42,313 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* The question */
+.sqb .sqb-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 4px;
+}
 .sqb .sqb-icon {
   flex: none;
-  color: var(--san-accent, var(--emerald-text));
+  margin-top: 3px;
+  color: var(--sqb-accent);
 }
 .sqb .sqb-input {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 44px;
+  min-height: 26px;
+  max-height: 132px;
+  margin: 0;
+  padding: 0;
   border: 0;
   background: transparent;
+  color: var(--sqb-text);
   font: inherit;
   font-size: 16px;
   font-weight: 600;
-  color: var(--san-text, var(--text-primary));
+  line-height: 1.5;
+  resize: none;
   outline: none;
 }
 .sqb .sqb-input::placeholder {
   font-weight: 400;
-  color: var(--san-faint, var(--text-muted));
+  color: var(--sqb-faint);
 }
-.sqb .sqb-clear {
-  flex: none;
-  min-height: 32px;
-  padding: 0 10px;
+
+/* Added context */
+.sqb .sqb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sqb .sqb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  min-height: 28px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+  color: var(--sqb-text);
+  font-size: var(--type-micro-size);
+}
+.sqb .sqb-chip .bi {
+  color: var(--sqb-accent);
+}
+.sqb .sqb-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sqb .sqb-chip-note {
+  color: var(--sqb-faint);
+}
+.sqb .sqb-chip.is-reading {
+  opacity: 0.8;
+}
+.sqb .sqb-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sqb-muted);
+  cursor: pointer;
+}
+.sqb .sqb-chip-x:hover {
+  color: var(--sqb-text);
+}
+
+/* The tools row */
+.sqb .sqb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sqb .sqb-tools,
+.sqb .sqb-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sqb .sqb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 22%, transparent);
+  color: var(--sqb-text);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    max-width 0.25s ease;
+}
+.sqb .sqb-pill .bi {
+  color: var(--sqb-accent);
+}
+.sqb .sqb-pill:hover:not(:disabled),
+.sqb .sqb-pill.is-open {
+  background: color-mix(in srgb, var(--sqb-emerald) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 45%, transparent);
+}
+.sqb .sqb-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+/* + grows into "Add photos" on hover or keyboard focus. */
+.sqb .sqb-add {
+  max-width: 36px;
+  padding: 0 11px;
+}
+.sqb .sqb-add-label {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.sqb .sqb-add:hover:not(:disabled),
+.sqb .sqb-add:focus-visible {
+  max-width: 140px;
+}
+.sqb .sqb-add:hover:not(:disabled) .sqb-add-label,
+.sqb .sqb-add:focus-visible .sqb-add-label {
+  opacity: 1;
+}
+.sqb .sqb-chev {
+  font-size: 0.6875rem;
+  transition: transform 0.15s ease;
+}
+.sqb .sqb-build.is-open .sqb-chev {
+  transform: rotate(180deg);
+}
+
+/* The Build menu: an overlay, so a solid ground and a shadow. */
+.sqb .sqb-build-wrap {
+  position: relative;
+}
+.sqb .sqb-menu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--sqb-emerald) 6%, var(--san-panel-solid, var(--bg-primary)));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 24%, transparent),
+    var(--shadow-lg);
+  animation: sqb-in 0.14s ease-out;
+}
+@keyframes sqb-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.sqb .sqb-menu-head {
+  margin: 4px 8px 6px;
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  color: var(--sqb-text);
+}
+.sqb .sqb-menu-group {
+  margin: 10px 8px 4px;
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sqb-faint);
+}
+.sqb .sqb-menu-note {
+  margin: 2px 8px 6px;
+  font-size: var(--type-micro-size);
+  color: var(--sqb-muted);
+}
+.sqb .sqb-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sqb .sqb-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 8px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--san-muted, var(--text-secondary));
+  color: var(--sqb-text);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  text-align: left;
+  cursor: pointer;
+}
+.sqb .sqb-opt:hover {
+  background: color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
+}
+.sqb .sqb-opt .bi {
+  color: var(--sqb-faint);
+}
+.sqb .sqb-opt-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sqb .sqb-opt.is-on {
+  color: var(--sqb-accent);
+  font-weight: 700;
+}
+.sqb .sqb-opt.is-on .bi {
+  color: var(--sqb-accent);
+}
+
+/* Clear and Ping */
+.sqb .sqb-clear {
+  flex: none;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--sqb-muted);
   font: inherit;
   font-size: var(--type-caption-size);
   cursor: pointer;
 }
 .sqb .sqb-clear:hover {
-  color: var(--san-text, var(--text-primary));
+  color: var(--sqb-text);
 }
 .sqb .sqb-ping {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 18px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: var(--sqb-emerald);
   color: color-mix(in srgb, black 86%, var(--sqb-emerald));
   font: inherit;
   font-size: var(--type-body-size);
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+.sqb .sqb-ping:hover:not(:disabled) {
+  background: var(--emerald-hover);
 }
 .sqb .sqb-ping:disabled {
   cursor: progress;
   opacity: 0.75;
 }
 .sqb .sqb-clear:focus-visible,
-.sqb .sqb-ping:focus-visible {
+.sqb .sqb-ping:focus-visible,
+.sqb .sqb-pill:focus-visible,
+.sqb .sqb-opt:focus-visible,
+.sqb .sqb-chip-x:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
+}
+.sqb .sqb-error {
+  margin: 0 4px;
+  font-size: var(--type-micro-size);
+  color: color-mix(in srgb, var(--negative) 60%, var(--sqb-text));
 }
 .sqb .sqb-spin {
   animation: sqb-spin 0.9s linear infinite;
@@ -100,15 +359,23 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sqb .sqb-spin {
+  .sqb,
+  .sqb .sqb-pill,
+  .sqb .sqb-add-label,
+  .sqb .sqb-chev,
+  .sqb .sqb-ping {
+    transition: none;
+  }
+  .sqb .sqb-spin,
+  .sqb .sqb-menu {
     animation: none;
   }
 }
 @media (max-width: 480px) {
   .sqb {
-    padding-left: 12px;
+    padding: 12px 10px 10px;
   }
   .sqb .sqb-ping {
-    padding: 0 12px;
+    padding: 0 14px;
   }
 }

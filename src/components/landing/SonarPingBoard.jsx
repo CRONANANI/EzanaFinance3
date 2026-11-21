@@ -29,7 +29,7 @@ import { useId } from 'react';
 import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
-import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import { workspaceTools } from '@/components/sonar/SonarToolsRow';
 import {
   relatedFromDossierEcho,
   runWorkspaceStep,
@@ -38,7 +38,6 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
-import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
 import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { useSavedRelated } from '@/components/sonar/useSavedRelated';
@@ -66,29 +65,15 @@ import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-su
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
-import {
-  CongressProfileReport,
-  CongressEvidence,
-} from '@/components/sonar/congress/CongressProfileReport';
+import { CongressProfileReport } from '@/components/sonar/congress/CongressProfileReport';
 import { congressSections, politicianFollowUps } from '@/lib/sonar/congress-profile';
+import { exemplaryLayoutFor } from '@/lib/sonar/exemplary/layouts';
 import { Eyebrow, Coverage, Evidence } from './SonarCountryBoard';
 import './country-intel.css';
 import './sonar-country-board.css';
 import './sonar-ping-board.css';
 
 const VISUAL_ID = 'snr-pb-visual';
-
-/* Nov 21: the line under "Ezana Sonar" at the top of the side navigation, by subject. */
-const SUBJECT_LINE = {
-  politician: 'Congressional trading research',
-  company: 'Company research',
-  sector: 'Sector research',
-  industry: 'Industry research',
-  flows: 'Institutional flows research',
-  congress_activity: 'Congressional trading research',
-  insider_buying: 'Insider trading research',
-  country: 'Country and macro research',
-};
 
 function toVisual() {
   const el = document.getElementById(VISUAL_ID);
@@ -509,10 +494,12 @@ export function SonarPingBoard({
   ].filter(Boolean);
   const spans = boardSpans(cells);
   const anchors = anchorCells(cells);
-  /* Nov 21: a member of Congress gets the one-page congressional profile (the approved
-     design) inside the same shell: its own sections, its evidence in the right rail and
-     follow-ups the member's own datasets can answer. */
-  const congress = !lead && live?.dossier?.kind === 'politician';
+  /* Nov 21: the content inside the shell comes from the exemplary layout for this kind of
+     question (lib/sonar/exemplary/layouts). A member of Congress gets the congressional
+     profile, its rows in the layout's order, its evidence in the tools row and follow-ups
+     the member's own datasets can answer. */
+  const layout = lead ? null : exemplaryLayoutFor(live);
+  const congress = layout?.slug === 'congress-member-profile';
   const congressTake = congress ? deskTakeaways(live?.takeaways) : [];
   const present = congress
     ? congressSections({
@@ -535,17 +522,17 @@ export function SonarPingBoard({
     { onRun },
   );
   const related = mergeRelated(relatedFromDossierEcho(live?.dossier?.echo), savedRelated);
-  /* Nov 13: Research Controls lead the rail, so it is always there. */
-  const rail = (
-    <>
-      <SonarResearchControls />
-      {congress ? (
-        <CongressEvidence rows={deskSourceRows(sources, Infinity)} count={sources.length} />
-      ) : null}
-      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-    </>
-  );
+  /* Nov 21: the tools row (Research controls, Evidence and sources, Next steps) replaces the
+     right rail: one line under the follow-ups, each opening over the page. */
+  const tools = workspaceTools({
+    steps,
+    onStep: (st) => runWorkspaceStep(st, { onDeep, onRun }),
+    related,
+    moreHref: signedIn ? '/sonar/saved' : null,
+    sources: deskSourceRows(sources, Infinity),
+    sourceCount: sources.length,
+    anchorSources: congress,
+  });
   const followUps = congress ? politicianFollowUps(live.dossier, live?.related) : live?.related;
   /* The desk summary of the congressional profile: one short paragraph, the rest of the brief
      behind "Read the full brief". */
@@ -561,10 +548,9 @@ export function SonarPingBoard({
       access={access}
       onDeep={onDeep}
       equity={equity}
-      rail={rail}
+      tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
-      subtitle={SUBJECT_LINE[live?.dossier?.kind] || 'Research answer'}
       top={
         queryBar || followUps?.length ? (
           <>
@@ -578,6 +564,7 @@ export function SonarPingBoard({
         <div className="snr-cii snr-pb snr-pb--congress">
           <CongressProfileReport
             live={live}
+            rows={layout.rows}
             headline={live.headline || null}
             paragraphs={congressParas}
             more={congressMore}

@@ -1,0 +1,218 @@
+/* SonarToolsRow (Nov 21 2026): Research controls, Evidence and sources and Next steps on one
+   line, each opening a panel over the page. Scoped stl-. Reads the shell's --san-* layer with
+   app-token fallbacks. The headers are tinted surfaces (the Sonar card rule); the open panels
+   are overlays, so they keep a solid ground and a shadow. Tokens only. */
+
+.stl {
+  --stl-emerald: var(--san-emerald, var(--emerald));
+  --stl-accent: var(--san-accent, var(--emerald-text));
+  --stl-text: var(--san-text, var(--text-primary));
+  --stl-muted: var(--san-muted, var(--text-secondary));
+  --stl-faint: var(--san-faint, var(--text-muted));
+  --stl-rule: var(--san-rule, color-mix(in srgb, var(--emerald) 14%, transparent));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+@media (min-width: 720px) {
+  .stl {
+    grid-template-columns: repeat(var(--stl-n, 3), minmax(0, 1fr));
+  }
+}
+
+.stl .stl-item {
+  position: relative;
+  min-width: 0;
+}
+.stl .stl-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
+  color: var(--stl-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.stl .stl-head:hover {
+  background: color-mix(in srgb, var(--stl-emerald) 10%, transparent);
+}
+.stl .stl-item.is-open .stl-head {
+  background: color-mix(in srgb, var(--stl-emerald) 13%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stl-emerald) 40%, transparent);
+}
+.stl .stl-head:focus-visible {
+  outline: 2px solid var(--stl-accent);
+  outline-offset: 2px;
+}
+.stl .stl-ico {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--stl-emerald) 15%, transparent);
+  color: var(--stl-accent);
+}
+.stl .stl-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.stl .stl-title {
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--stl-accent);
+}
+.stl .stl-sum {
+  overflow: hidden;
+  font-size: var(--type-caption-size);
+  color: var(--stl-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stl .stl-chev {
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--stl-faint);
+  transition: transform 0.15s ease;
+}
+.stl .stl-item.is-open .stl-chev {
+  transform: rotate(180deg);
+  color: var(--stl-accent);
+}
+
+/* The open panel: an overlay over whatever is below, for as long as it is open. */
+.stl .stl-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: max(100%, 340px);
+  max-width: min(440px, calc(100vw - 32px));
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--stl-emerald) 6%, var(--san-panel-solid, var(--bg-primary)));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--stl-emerald) 24%, transparent),
+    var(--shadow-lg);
+  animation: stl-in 0.14s ease-out;
+}
+.stl .stl-item:last-child .stl-pop {
+  left: auto;
+  right: 0;
+}
+.stl .stl-pop[hidden] {
+  display: none;
+}
+@keyframes stl-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The panel's own title is the header above it: the card inside drops its heading and its
+   surface. */
+.stl .stl-pop .san-card-head {
+  display: none;
+}
+.stl .stl-pop .san-card {
+  padding: 0;
+  background: none;
+}
+.stl .stl-pop .san-card + .san-card {
+  margin-top: 12px;
+}
+
+/* Evidence and sources, in its panel */
+.stl .stl-ev {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stl .stl-ev li + li {
+  background: linear-gradient(var(--stl-rule), var(--stl-rule)) top / 100% 1px no-repeat;
+}
+.stl .stl-ev-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: var(--stl-text);
+  text-decoration: none;
+}
+.stl a.stl-ev-row:hover .stl-ev-name {
+  color: var(--stl-accent);
+}
+.stl a.stl-ev-row:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.stl .stl-ev-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--stl-emerald) 15%, transparent);
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  color: var(--stl-accent);
+}
+.stl .stl-ev-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.stl .stl-ev-name {
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+.stl .stl-ev-desc {
+  overflow: hidden;
+  font-size: var(--type-micro-size);
+  color: var(--stl-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stl .stl-ev-out {
+  font-size: 0.8125rem;
+  color: var(--stl-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stl .stl-pop {
+    animation: none;
+  }
+  .stl .stl-head,
+  .stl .stl-chev {
+    transition: none;
+  }
+}

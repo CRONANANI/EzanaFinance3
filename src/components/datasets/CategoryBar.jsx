@@ -328,16 +328,8 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
             <span>Home</span>
           </Link>
         ) : (
-          /* Oct 21: the overview leads with the same mark as the landing
-             nav over the Ezana Sonar band (EzanaNavLogo, natural emerald),
-             no longer a white knock-out (category-bar.css). */
-          <>
-            <Link href="/" className="dscat-logo" aria-label="Ezana Finance home">
-              {/* Oct 30: the mark alone; the "Ezana Finance" wordmark beside
-                  it was removed. The link keeps its aria-label. */}
-              <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
-            </Link>
-          </>
+          /* Nov 21: the overview's news belt sits on the left; the mark is centred. */
+          <div className="dscat-belt-slot">{belt}</div>
         )}
       </div>
 
@@ -382,18 +374,13 @@ export default function CategoryBar({ active, activeItem, showDimensions = true,
         </div>
       ) : (
         <>
-          <div className="dscat-belt-slot">{belt}</div>
-          {/* Overview only (Oct 28): search jumps to the Ping field; the
-              account control goes to the dashboard or to sign-in. */}
+          {/* Nov 21: the Ezana mark, larger and centred in the bar. */}
+          <Link href="/" className="dscat-logo dscat-logo--center" aria-label="Ezana Finance home">
+            <EzanaNavLogo priority className="dscat-logo-img dscat-logo-img--brand" />
+          </Link>
+          {/* Nov 21: the search icon is gone (the Ping field is the search); the account
+              control ends on the page canvas's right edge. */}
           <div className="dscat-side dscat-side--end dsi-bar-actions">
-            <button
-              type="button"
-              className="dsi-iconbtn"
-              aria-label="Search the datasets with Sonar"
-              onClick={() => document.getElementById('dsi-ping-input')?.focus()}
-            >
-              <i className="bi bi-search" aria-hidden="true" />
-            </button>
             <Link
               href={isAuthenticated ? '/home' : signInHref}
               className="dsi-iconbtn dsi-iconbtn--account"

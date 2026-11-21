@@ -115,6 +115,37 @@ export function seriesChange(series, back = 12) {
   return { from, to, pct: ((to - from) / from) * 100, back };
 }
 
+/* Time periods for the portfolio chart, in months. */
+export const SERIES_PERIODS = [
+  { key: '6M', months: 6 },
+  { key: '1Y', months: 12 },
+  { key: '2Y', months: 24 },
+  { key: '3Y', months: 36 },
+];
+
+/**
+ * The periods a month-end series of `count` points can show: each whose window fits, plus
+ * ALL when the series is shorter than the longest period. -> [{ key, months }]
+ */
+export function seriesPeriods(count) {
+  const n = Number(count) || 0;
+  if (n < 2) return [];
+  /* A 36-point month-end series (the dossier's three years) counts as 3Y. */
+  const fit = SERIES_PERIODS.filter((p) => p.months <= n);
+  const longest = SERIES_PERIODS[SERIES_PERIODS.length - 1].months;
+  if (n >= longest) return fit;
+  return [...fit, { key: 'ALL', months: n - 1 }];
+}
+
+/** The last `period.months` months of the series (months + 1 month-end points). */
+export function sliceSeries(series, months, period) {
+  const s = Array.isArray(series) ? series : [];
+  const m = Array.isArray(months) ? months : [];
+  if (!period) return { series: s, months: m };
+  const take = Math.min(s.length, period.months + 1);
+  return { series: s.slice(-take), months: m.slice(-take) };
+}
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** "2025-01" -> "Jan '25". */

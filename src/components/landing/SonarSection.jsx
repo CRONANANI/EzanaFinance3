@@ -88,7 +88,8 @@ import {
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
 import { Face } from '@/components/sonar/SonarFace';
-import { SonarAnswerQueryBar } from '@/components/sonar/SonarAnswerQueryBar';
+import { answerCharts } from '@/lib/sonar/answer-charts';
+import { SonarAnswerQueryBar, contextText } from '@/components/sonar/SonarAnswerQueryBar';
 import { controlsNeedResearch, readControls } from '@/components/sonar/research-controls-store';
 import { addSessionEntry } from '@/components/sonar/session-thread';
 import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
@@ -2384,6 +2385,18 @@ export function SonarSection({
          to the workspace's query bar (centre column), so there is no band field to line up
          with: the nav keeps the page padding, which the answered page matches. */
       const input = inputRef.current;
+      /* Nov 21: an answer board (the universal shell) owns the canvas: the nav's account
+         control ends on the shell's right edge, and the centred logo needs no x. */
+      const shell = band.querySelector('.san .san-body');
+      if (shell && shell.isConnected && shell.getBoundingClientRect().width > 0) {
+        const right = shell.getBoundingClientRect().right;
+        body.style.removeProperty('--snrp-logo-x');
+        body.style.setProperty(
+          '--snrp-nav-right',
+          `${Math.max(0, Math.round(document.documentElement.clientWidth - right))}px`,
+        );
+        return;
+      }
       /* Hidden behind deep research: nothing to line up with, and a zero
          rect would pull the nav logo to the edge. */
       if (
@@ -3069,6 +3082,10 @@ export function SonarSection({
 
   /* Nov 13: the query bar at the top of an answer board's centre column. The band's own
      submit path (runPing: auth, quota and the loading screen) is unchanged. */
+  /* Nov 21: the composer. A question with added context (photos, charts, models, saved
+     EzanaQL queries) runs as standard research with that context attached, the path that
+     can carry it; a plain question is a quick ping as before. */
+  const canCarryContext = typeof onStandardResearch === 'function';
   const answerBar = anyBoard ? (
     <SonarAnswerQueryBar
       value={queryValue}
@@ -3076,8 +3093,19 @@ export function SonarSection({
         userTookOverRef.current = true;
         setQueryValue(v);
       }}
-      onSubmit={(q) => runPing(q)}
+      onSubmit={(q, ctx) => {
+        if (canCarryContext && Array.isArray(ctx) && ctx.length) {
+          setQueryValue(q);
+          onStandardResearch(q, {
+            extra: { attachment: { name: 'Context added in Sonar', text: contextText(ctx) } },
+          });
+          return;
+        }
+        runPing(q);
+      }}
       pending={pinging}
+      contextEnabled={canCarryContext}
+      charts={answerCharts(live)}
     />
   ) : null;
 

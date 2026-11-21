@@ -1,23 +1,24 @@
 'use client';
 
 /**
- * CongressProfileReport (Nov 21 2026): the one-page answer to a quick ping about one member
- * of Congress ("Nancy Pelosi"), rendered inside the universal Sonar answer shell
- * (SonarAnswerFrame: navigation, query bar, follow-ups, Research Controls and Next steps).
- * This file is only the report's content, laid out like the approved design:
+ * CongressProfileReport (Nov 21 2026): the exemplary answer to a quick ping that names one
+ * member of Congress ("Nancy Pelosi"), rendered inside the universal Sonar shell
+ * (SonarAnswerFrame: contents menu, composer, follow-ups, tools row). Its rows come from the
+ * exemplary layout (lib/sonar/exemplary/layouts, 'congress-member-profile'):
  *
- *   row 1  Desk summary (headline, one short paragraph) | Trading lean | Key takeaways
- *   row 2  Portfolio analytics (estimated value chart, KPI strip) | Open positions
- *   row 3  Similar portfolios in Congress | News around the member
+ *   row 1  Desk summary (a one-line headline, one short paragraph), full width
+ *   row 2  {Member} portfolio (estimated value, time periods, key figures) | Key takeaways |
+ *          Trading lean
+ *   row 3  Similar portfolios in Congress | News around the member | Open positions
  *
  * Every figure is the dossier's own (lib/sonar/landing-politician): estimates from disclosed
- * STOCK Act ranges at their midpoints, and each card says so. A card with nothing to show is
- * not rendered. Section anchors (sa-answer, sa-findings, sa-charts) feed the side navigation;
- * Evidence and sources (sa-sources) lives in the right rail (CongressEvidence below).
+ * STOCK Act ranges at their midpoints, and each card says so. A card with nothing to show
+ * drops out of its row. Section anchors (sa-answer, sa-findings, sa-charts) feed the contents
+ * menu; Evidence and sources (sa-sources) is in the tools row.
  * Sonar card rule: tinted surfaces, no outlines. Styles: congress-profile-report.css (cpr-).
  */
 
-import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { Cited } from '@/components/sonar/SonarDeskSummary';
@@ -26,6 +27,8 @@ import { MODE_LABEL, answeredLabel } from '@/lib/sonar/desk-summary';
 import {
   tradingLean,
   seriesChange,
+  seriesPeriods,
+  sliceSeries,
   chartAxis,
   monthLabel,
   usdCompact,
@@ -50,6 +53,50 @@ function Eyebrow({ icon, id, children, meta = null }) {
 
 /* ── row 1 ────────────────────────────────────────────────────────── */
 
+/* Nov 21: the headline always sits on one line. It starts at the card-title size and steps
+   down to fit the card's width; only if it still cannot fit at the smallest size does it end
+   in an ellipsis, with the full text in a tooltip. */
+const useIsoLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const FIT_MAX = 20;
+const FIT_MIN = 13;
+
+function FitHeadline({ id, children }) {
+  const ref = useRef(null);
+  const [size, setSize] = useState(FIT_MAX);
+  const [cut, setCut] = useState(false);
+  const fit = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    let px = FIT_MAX;
+    el.style.fontSize = `${px}px`;
+    while (px > FIT_MIN && el.scrollWidth > el.clientWidth + 1) {
+      px -= 0.5;
+      el.style.fontSize = `${px}px`;
+    }
+    setSize(px);
+    setCut(el.scrollWidth > el.clientWidth + 1);
+  }, []);
+  useIsoLayout(() => {
+    fit();
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => fit());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fit, children]);
+  return (
+    <h3
+      id={id}
+      ref={ref}
+      className="cpr-headline"
+      style={{ fontSize: `${size}px` }}
+      title={cut ? String(children) : undefined}
+    >
+      {children}
+    </h3>
+  );
+}
+
 function DeskSummary({ headline, question, paragraphs, more }) {
   const id = useId();
   return (
@@ -57,9 +104,7 @@ function DeskSummary({ headline, question, paragraphs, more }) {
       <Eyebrow icon="bi-file-earmark-text" id={`${id}-e`}>
         Desk summary
       </Eyebrow>
-      <h3 id={id} className="cpr-headline">
-        {headline || question}
-      </h3>
+      <FitHeadline id={id}>{headline || question}</FitHeadline>
       {paragraphs.map((p, i) => (
         <p key={i} className="cpr-summary">
           <Cited text={p} />
@@ -287,11 +332,16 @@ function ValueChart({ series, months, label }) {
   );
 }
 
-function Analytics({ dossier }) {
+function Portfolio({ dossier }) {
   const id = useId();
   const s = dossier.stats || {};
-  const hasChart = Array.isArray(dossier.series) && dossier.series.length >= 2;
-  const change = seriesChange(dossier.series, 12);
+  const series = Array.isArray(dossier.series) ? dossier.series : [];
+  const months = Array.isArray(dossier.seriesMonths) ? dossier.seriesMonths : [];
+  const periods = seriesPeriods(series.length);
+  const [period, setPeriod] = useState(periods.length ? periods[periods.length - 1].key : null);
+  const view = sliceSeries(series, months, periods.find((p) => p.key === period) || null);
+  const hasChart = view.series.length >= 2;
+  const change = hasChart ? seriesChange(view.series, view.series.length - 1) : null;
   const kpis = [
     { k: 'Est. open value', v: typeof s.estValue === 'number' ? usdCompact(s.estValue) : 'N/A' },
     { k: 'Open positions', v: typeof s.openPositions === 'number' ? s.openPositions : 'N/A' },
@@ -300,9 +350,27 @@ function Analytics({ dossier }) {
   ];
   return (
     <section id="sa-charts" className="cpr-card cpr-an" aria-labelledby={id}>
-      <Eyebrow icon="bi-bar-chart-line" id={id} meta={dossier.seriesLabel || null}>
-        {dossier.name} portfolio analytics
-      </Eyebrow>
+      <div className="cpr-head">
+        <h2 id={id} className="cpr-eyebrow">
+          <i className="bi bi-bar-chart-line" aria-hidden="true" />
+          {dossier.name} portfolio
+        </h2>
+        {periods.length > 1 ? (
+          <div className="cpr-periods" role="group" aria-label="Time period">
+            {periods.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                className={`cpr-period${p.key === period ? ' is-on' : ''}`}
+                aria-pressed={p.key === period}
+                onClick={() => setPeriod(p.key)}
+              >
+                {p.key}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <div className="cpr-an-top">
         <Face
           name={dossier.name}
@@ -324,14 +392,14 @@ function Analytics({ dossier }) {
             {change ? (
               <span
                 className={`cpr-chip${change.pct < 0 ? ' is-down' : ''}`}
-                title="Change in the estimated series over 12 months"
+                title={`Change in the estimated series over ${period}`}
               >
                 <i
                   className={`bi ${change.pct < 0 ? 'bi-caret-down-fill' : 'bi-caret-up-fill'}`}
                   aria-hidden="true"
                 />
                 {change.pct >= 0 ? '+' : '-'}
-                {Math.abs(change.pct).toFixed(1)}% (12M)
+                {Math.abs(change.pct).toFixed(1)}% ({period})
               </span>
             ) : null}
           </span>
@@ -339,9 +407,10 @@ function Analytics({ dossier }) {
       </div>
       {hasChart ? (
         <ValueChart
-          series={dossier.series}
-          months={dossier.seriesMonths || []}
-          label={`${dossier.name} estimated portfolio value`}
+          key={period}
+          series={view.series}
+          months={view.months}
+          label={`${dossier.name} estimated portfolio value, ${period}`}
         />
       ) : (
         <p className="cpr-empty">No disclosed trades to chart yet.</p>
@@ -523,6 +592,7 @@ function News({ name, columns }) {
  */
 export function CongressProfileReport({
   live,
+  rows = [['desk'], ['portfolio', 'takeaways', 'lean'], ['similar', 'news', 'positions']],
   headline = null,
   paragraphs = [],
   more = [],
@@ -537,11 +607,26 @@ export function CongressProfileReport({
   const meta = [MODE_LABEL.quick || 'Quick ping', answeredLabel(live?.answeredAt || null)].filter(
     Boolean,
   );
-  const hasTake = takeaways.length >= 2;
-  const row1 = ['desk', lean ? 'lean' : null, hasTake ? 'take' : null].filter(Boolean).length;
-  const hasSim = Array.isArray(dossier.similar) && dossier.similar.length > 0;
-  const hasNews = newsRows(live?.newsColumns, 1).length > 0;
-  const hasPos = Array.isArray(dossier.holdings) && dossier.holdings.length > 0;
+  /* Every card the exemplary layout may name, or null when it has nothing to show. */
+  const cards = {
+    desk: (
+      <DeskSummary headline={headline} question={live.query} paragraphs={paragraphs} more={more} />
+    ),
+    portfolio: <Portfolio dossier={dossier} />,
+    takeaways: takeaways.length >= 2 ? <Takeaways items={takeaways} /> : null,
+    lean: lean ? <LeanGauge lean={lean} last={lastNameOf(dossier.name)} /> : null,
+    similar:
+      Array.isArray(dossier.similar) && dossier.similar.length ? (
+        <Similar dossier={dossier} />
+      ) : null,
+    news: newsRows(live?.newsColumns, 1).length ? (
+      <News name={dossier.name} columns={live.newsColumns} />
+    ) : null,
+    positions:
+      Array.isArray(dossier.holdings) && dossier.holdings.length ? (
+        <Positions dossier={dossier} />
+      ) : null,
+  };
   return (
     <div className="cpr" role="region" aria-label={`${live.query}: answer`}>
       <div className="cpr-meta">
@@ -560,92 +645,23 @@ export function CongressProfileReport({
         </div>
         {actions ? <div className="cpr-meta-actions">{actions}</div> : null}
       </div>
-      <div className={`cpr-row cpr-row--1 is-${row1}`}>
-        <DeskSummary
-          headline={headline}
-          question={live.query}
-          paragraphs={paragraphs}
-          more={more}
-        />
-        {lean ? <LeanGauge lean={lean} last={lastNameOf(dossier.name)} /> : null}
-        {hasTake ? <Takeaways items={takeaways} /> : null}
-      </div>
-      <div className={`cpr-row cpr-row--2${hasPos ? '' : ' is-1'}`}>
-        <Analytics dossier={dossier} />
-        <Positions dossier={dossier} />
-      </div>
-      {hasSim || hasNews ? (
-        <div className={`cpr-row cpr-row--3${hasSim && hasNews ? '' : ' is-1'}`}>
-          <Similar dossier={dossier} />
-          <News name={dossier.name} columns={live.newsColumns} />
-        </div>
-      ) : null}
+      {rows.map((row, i) => {
+        const present = row.filter((k) => cards[k]);
+        if (!present.length) return null;
+        return (
+          <div
+            key={i}
+            className={`cpr-row is-${present.length}${row.length === 3 ? ' is-triple' : ''}`}
+          >
+            {present.map((k) => (
+              <div key={k} className={`cpr-cell cpr-cell--${k}`}>
+                {cards[k]}
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </div>
-  );
-}
-
-/**
- * The right rail's Evidence and sources (the report's sa-sources anchor): the first three
- * rows, then every row behind "View all sources". rows from deskSourceRows(); count the true
- * total.
- */
-export function CongressEvidence({ rows = [], count = 0 }) {
-  const id = useId();
-  const [all, setAll] = useState(false);
-  if (!count) return null;
-  const shown = all ? rows : rows.slice(0, 3);
-  return (
-    <section id="sa-sources" className="san-card cpr-ev" aria-labelledby={id}>
-      <h2 id={id} className="san-card-head">
-        <i className="bi bi-database" aria-hidden="true" />
-        Evidence and sources
-      </h2>
-      <ul className="cpr-ev-list">
-        {shown.map((r) => {
-          const inner = (
-            <>
-              <span className="cpr-ev-tile" aria-hidden="true">
-                {r.initial}
-              </span>
-              <span className="cpr-ev-text">
-                <span className="cpr-ev-name">{r.name}</span>
-                {r.descriptor ? <span className="cpr-ev-desc">{r.descriptor}</span> : null}
-              </span>
-              {r.href && r.external ? (
-                <i className="bi bi-box-arrow-up-right cpr-ev-out" aria-hidden="true" />
-              ) : null}
-            </>
-          );
-          return (
-            <li key={r.key}>
-              {r.href ? (
-                <a
-                  className="cpr-ev-row"
-                  href={r.href}
-                  {...(r.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                >
-                  {inner}
-                  {r.external ? <VisuallyHidden> (opens in a new tab)</VisuallyHidden> : null}
-                </a>
-              ) : (
-                <span className="cpr-ev-row">{inner}</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      {rows.length > 3 ? (
-        <button
-          type="button"
-          className="cpr-ev-all"
-          aria-expanded={all}
-          onClick={() => setAll((v) => !v)}
-        >
-          {all ? 'Show fewer sources' : `View all sources (${count})`}
-          <i className={`bi ${all ? 'bi-chevron-up' : 'bi-arrow-right'}`} aria-hidden="true" />
-        </button>
-      ) : null}
-    </section>
   );
 }
 

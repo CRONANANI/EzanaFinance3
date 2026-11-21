@@ -64,7 +64,7 @@ import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-su
 import { fxFindings } from '@/lib/sonar/macro/fx-findings';
 import ConflictCountryPanel from '@/components/conflict/ConflictCountryPanel';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
-import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import { workspaceTools } from '@/components/sonar/SonarToolsRow';
 import {
   relatedFromDossierEcho,
   runWorkspaceStep,
@@ -73,7 +73,6 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
-import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
 import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { useSavedRelated } from '@/components/sonar/useSavedRelated';
@@ -772,14 +771,13 @@ export function SonarCountryBoard({
     { onRun },
   );
   const related = mergeRelated(relatedFromDossierEcho(dossier?.echo), savedRelated);
-  /* Nov 13: Research Controls lead the rail, so it is always there. */
-  const rail = (
-    <>
-      <SonarResearchControls />
-      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-    </>
-  );
+  /* Nov 21: the tools row replaces the right rail (SonarToolsRow). */
+  const tools = workspaceTools({
+    steps,
+    onStep: (st) => runWorkspaceStep(st, { onDeep, onRun }),
+    related,
+    moreHref: signedIn ? '/sonar/saved' : null,
+  });
   const sources = (intel.sources || []).filter(Boolean);
 
   return (
@@ -787,7 +785,7 @@ export function SonarCountryBoard({
       present={present}
       access={access}
       onDeep={onDeep}
-      rail={rail}
+      tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
       top={

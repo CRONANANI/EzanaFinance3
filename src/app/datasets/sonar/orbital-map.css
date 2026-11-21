@@ -777,7 +777,8 @@
   gap: 0;
 }
 .ds-shell--search .dscat-bar--bare .dscat-logo-img {
-  height: 34px;
+  /* Nov 21: larger, and centred in the bar (category-bar.css). */
+  height: 46px;
   width: auto;
 }
 

@@ -49,7 +49,7 @@ import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { SonarDeskSummary, SonarRelatedQuestions } from '@/components/sonar/SonarDeskSummary';
 import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-summary';
 import { benchmarkFor } from '@/lib/sonar/market-context';
-import { SonarNextSteps, SonarRelatedResearch } from '@/components/sonar/SonarWorkspaceRail';
+import { workspaceTools } from '@/components/sonar/SonarToolsRow';
 import {
   relatedFromEvidence,
   runWorkspaceStep,
@@ -58,7 +58,6 @@ import {
   mergeRelated,
 } from '@/components/sonar/workspace-rail-helpers';
 import { SonarSaveActions } from '@/components/sonar/SonarSaveActions';
-import { SonarResearchControls } from '@/components/sonar/SonarResearchControls';
 import { SonarFollowUp } from '@/components/sonar/SonarFollowUp';
 import { nextSteps, followUpContext } from '@/lib/sonar/workspace';
 import { controlsLabel } from '@/lib/sonar/research-controls';
@@ -1159,14 +1158,13 @@ export default function ResearchBoard({
   const related = mergeRelated(relatedFromEvidence(evidence), savedRelated);
   /* Nov 13: related questions from the run itself (none on an older run). */
   const relatedQs = (run?.related?.length ? run.related : report?.related) || [];
-  const rail = (
-    /* Nov 13: Research Controls lead the rail, so it is always there. */
-    <>
-      <SonarResearchControls />
-      <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
-      <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
-    </>
-  );
+  /* Nov 21: the tools row replaces the right rail (SonarToolsRow). */
+  const tools = workspaceTools({
+    steps,
+    onStep: (st) => runWorkspaceStep(st, { onDeep, onRun }),
+    related,
+    moreHref: signedIn ? '/sonar/saved' : null,
+  });
 
   return (
     <SonarAnswerFrame
@@ -1175,7 +1173,7 @@ export default function ResearchBoard({
       onDeep={onDeep}
       navTop={navTop}
       equity={equity}
-      rail={rail}
+      tools={tools}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
       top={

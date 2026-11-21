@@ -1,10 +1,11 @@
-/* SonarAnswerFrame (Nov 13 2026): the research workspace around every Sonar answer. Scoped
-   san-. Three columns on a wide container (left rail, board, right rail), two at mid width
-   (the right rail drops under the board), one on a phone (the sections become chips).
-   Inside .snr-band it reads the band's private --snr-* palette; in a research report it
-   falls back to the app tokens, through the --san-* layer. Borderless: no outlines on the
-   rails or their cards, per the Sonar card rule. Cards are a surface tint; rows inside a
-   card are split by a hairline drawn as a background. Tokens only, no hex. */
+/* SonarAnswerFrame (Nov 21 2026): the universal Sonar answer shell. Scoped san-.
+   The contents menu is styled like the Ezana Echo article contents (echo-article-layout.css,
+   .echo-contents): caps headings, plain text links, the current section in emerald with a
+   short emerald rule beside it, 12px clear of the text. On a wide screen the menu hangs in
+   the page margin and the canvas grows by about a fifth, so the answer starts where the menu
+   used to. Inside .snr-band it reads the band's private --snr-* palette; in a research report
+   it falls back to the app tokens, through the --san-* layer. No outlines on cards. Tokens
+   only, no hex. */
 
 .san {
   --san-text: var(--snr-text, var(--text-primary));
@@ -14,14 +15,30 @@
   --san-emerald: var(--snr-emerald, var(--emerald));
   --san-row: var(--snr-row, color-mix(in srgb, black 22%, transparent));
   --san-panel: var(--snr-panel, color-mix(in srgb, black 34%, transparent));
+  --san-panel-solid: var(--sonar-ping-bg, var(--bg-primary));
   --san-card: color-mix(in srgb, var(--san-emerald) 5%, transparent);
   --san-rule: color-mix(in srgb, var(--san-emerald) 14%, transparent);
   --san-mono: var(--snr-font-mono, var(--font-mono));
   --san-sans: var(--snr-font-sans, var(--font-sans));
+  --san-nav-w: 188px;
+  --san-nav-gap: 28px;
   width: 100%;
   min-width: 0;
   container: san / inline-size;
   font-family: var(--san-sans);
+}
+
+/* Wide screens: the menu moves into the page margin (as far as the margin allows), and the
+   canvas reaches further right, about 20% wider in all. */
+@media (min-width: 1180px) {
+  .san.san--wide {
+    --san-room: max(0px, calc((100vw - 100%) / 2 - 24px));
+    --san-out-l: min(calc(var(--san-nav-w) + var(--san-nav-gap)), var(--san-room));
+    --san-out-r: min(max(0px, calc(20% - var(--san-nav-w) - var(--san-nav-gap))), var(--san-room));
+    width: auto;
+    margin-left: calc(-1 * var(--san-out-l));
+    margin-right: calc(-1 * var(--san-out-r));
+  }
 }
 
 .san .san-grid {
@@ -32,16 +49,15 @@
 .san .san-body {
   min-width: 0;
 }
-/* Nov 13: the query bar and the related questions, at the top of the centre column. */
+/* The composer, the follow-ups and the tools row, at the top of the centre column. */
 .san .san-lead {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
-/* The left rail: navTop (Back and the ping bar), the Research menu, the sections. */
 .san .san-side {
   display: flex;
   flex-direction: column;
@@ -55,95 +71,7 @@
   min-width: 0;
 }
 
-/* Nov 21: "Ezana Sonar" and the subject line, at the top of the side navigation (mid and up). */
-.san .san-brand {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  padding: 2px 4px 4px;
-}
-.san .san-brand-tile {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
-  color: var(--san-accent);
-  font-size: 1.0625rem;
-}
-.san .san-brand-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.san .san-brand-name {
-  font-size: var(--type-body-size);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--san-text);
-}
-.san .san-brand-name span {
-  color: var(--san-accent);
-}
-.san .san-brand-sub {
-  font-size: var(--type-micro-size);
-  line-height: 1.3;
-  color: var(--san-faint);
-}
-/* The panels group the rail: Research and the current report, the deep sections, the call to
-   action. A tinted surface only (the Sonar card rule). */
-.san .san-panel,
-.san .san-cta-slot {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-.san .san-cta-slot:empty {
-  display: none;
-}
-/* The deep research state beside its heading: Locked, Not run, Running or Complete. */
-.san .san-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--san-text) 8%, transparent);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--san-faint);
-}
-.san .san-status .bi {
-  font-size: 0.625rem;
-}
-.san .san-status--available {
-  background: color-mix(in srgb, var(--san-emerald) 12%, transparent);
-  color: var(--san-accent);
-}
-.san .san-status--running {
-  background: color-mix(in srgb, var(--warning) 14%, transparent);
-  color: var(--warning);
-}
-.san .san-status--running .bi {
-  animation: san-spin 1.2s linear infinite;
-}
-.san .san-status--complete {
-  background: color-mix(in srgb, var(--san-emerald) 18%, transparent);
-  color: var(--san-accent);
-}
-@keyframes san-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Narrow: rows of chips above the board, the locked ones after the open ones. */
+/* Narrow: rows of chips above the answer. */
 .san .san-nav,
 .san .san-research {
   display: flex;
@@ -153,15 +81,15 @@
   min-width: 0;
 }
 .san .san-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-family: var(--san-mono);
-  font-size: var(--type-micro-size);
-  font-weight: 600;
-  letter-spacing: var(--type-label-tracking);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--san-accent);
-}
-.san .san-head--locked {
   color: var(--san-faint);
 }
 .san .san-head-text {
@@ -186,26 +114,21 @@
 .san .san-link {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 36px;
   padding: 0 0.8rem;
   border-radius: var(--radius-md);
   background: var(--san-row);
   color: var(--san-muted);
-  font-size: var(--type-caption-size);
+  font-family: var(--san-sans);
+  font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.4;
   text-decoration: none;
   white-space: nowrap;
   transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease,
-    color 0.15s ease;
-}
-.san .san-link .bi {
-  flex: none;
-  font-size: 1rem;
-  color: var(--san-faint);
+    color 0.14s ease,
+    box-shadow 0.14s ease;
 }
 .san a.san-link:hover {
   color: var(--san-text);
@@ -216,22 +139,17 @@
 }
 .san a.san-link.is-active,
 .san .san-link.is-current {
-  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--san-emerald) 45%, transparent);
-  color: var(--san-text);
-  font-weight: 600;
-}
-.san a.san-link.is-active .bi,
-.san .san-link.is-current .bi {
   color: var(--san-accent);
+  font-weight: 600;
 }
 .san .san-link.is-locked {
   color: var(--san-faint);
   cursor: not-allowed;
-  opacity: 0.75;
+  opacity: 0.8;
 }
-.san .san-link.is-locked .bi {
-  font-size: 0.875rem;
+.san .san-lock {
+  font-size: 0.625rem;
+  opacity: 0.8;
 }
 /* Available but not run on this question: legible, not clickable, no lock. */
 .san .san-link.is-pending {
@@ -239,56 +157,87 @@
   cursor: default;
 }
 
-/* "Run deeper research": a tinted card, never an outline. */
+/* The deep research state beside its heading: Locked, Not run, Running or Complete. */
+.san .san-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--san-text) 8%, transparent);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--san-faint);
+}
+.san .san-status .bi {
+  font-size: 0.5625rem;
+}
+.san .san-status--available,
+.san .san-status--complete {
+  background: color-mix(in srgb, var(--san-emerald) 14%, transparent);
+  color: var(--san-accent);
+}
+.san .san-status--running {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  color: var(--warning);
+}
+.san .san-status--running .bi {
+  animation: san-spin 1.2s linear infinite;
+}
+@keyframes san-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* "Run deeper research": a quiet tinted block under the menu, never an outline. */
 .san .san-cta {
   display: flex;
   flex: 1 1 100%;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  padding: 14px 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px 12px;
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--san-emerald) 10%, transparent);
-}
-.san .san-cta-icon {
-  font-size: 1.5rem;
-  color: var(--san-accent);
+  background: color-mix(in srgb, var(--san-emerald) 8%, transparent);
 }
 .san .san-cta-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  font-size: var(--type-body-size);
+  font-size: var(--type-caption-size);
   font-weight: 700;
-  letter-spacing: -0.01em;
   color: var(--san-text);
+}
+.san .san-cta-title .bi {
+  color: var(--san-accent);
 }
 .san .san-cta-count {
   margin: 0;
   font-family: var(--san-mono);
-  font-size: var(--type-micro-size);
+  font-size: 10.5px;
   color: var(--san-accent);
 }
-.san .san-cta-line {
-  flex: 1 1 220px;
+.san .san-cta-line,
+.san .san-cta-note {
   margin: 0;
-  font-size: var(--type-caption-size);
-  line-height: 1.4;
+  font-size: var(--type-micro-size);
+  line-height: 1.45;
   color: var(--san-muted);
 }
 .san .san-cta-note {
-  flex: 1 1 100%;
-  margin: 0;
-  font-size: var(--type-micro-size);
-  line-height: 1.4;
   color: var(--san-faint);
 }
 .san .san-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 14px;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 12px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--san-emerald);
   color: var(--bg-primary);
   font-family: var(--san-sans);
@@ -306,12 +255,13 @@
   outline-offset: 2px;
 }
 
-/* The right rail and its cards. */
+/* Legacy right-rail cards (Next steps, Related research): shared by the tools row panels. */
 .san .san-rail {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  margin-top: 16px;
 }
 .san .san-card {
   display: flex;
@@ -345,8 +295,8 @@
   list-style: none;
 }
 /* Rows are split by a hairline drawn as a background, so no card carries a border. */
-.san .san-steps li,
-.san .san-related li {
+.san .san-steps li + li,
+.san .san-related li + li {
   background: linear-gradient(var(--san-rule), var(--san-rule)) top / 100% 1px no-repeat;
 }
 .san .san-step {
@@ -434,69 +384,31 @@
   text-decoration: none;
 }
 
-/* Nov 21: on a phone only the section chips sit above the search; the deep list and its call
-   to action stay out of the way (Next steps still offers deep research). */
-@container san (max-width: 879px) {
-  .san .san-panel--deep,
-  .san .san-cta-slot {
-    display: none;
-  }
-}
-
-/* Mid: the left rail becomes a sticky column; the right rail sits under the board. */
+/* Mid and up: the contents menu, Echo style, as a sticky column on the left. */
 @container san (min-width: 880px) {
   .san .san-grid {
-    grid-template-columns: 216px minmax(0, 1fr);
-    column-gap: 20px;
+    grid-template-columns: var(--san-nav-w) minmax(0, 1fr);
+    column-gap: var(--san-nav-gap);
     align-items: start;
   }
-  /* Nov 21: sticky without a scrollbar of its own (no nested scroll); on a short screen it
-     scrolls with the page instead (below). */
+  /* Sticky without a scrollbar of its own (no nested scroll); on a short screen it scrolls
+     with the page instead (below). */
   .san .san-side {
     position: sticky;
     top: calc(var(--navbar-height, 64px) + 16px);
-    gap: 12px;
-  }
-  .san .san-brand {
-    display: flex;
-  }
-  .san .san-panel,
-  .san .san-cta-slot {
-    gap: 0;
-    padding: 12px 10px;
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--san-emerald) 4%, var(--san-row));
-  }
-  .san .san-cta-slot {
-    padding: 0;
-    background: none;
-  }
-  .san .san-rail {
-    grid-column: 2;
+    gap: 26px;
+    padding-top: 4px;
   }
   .san .san-nav,
   .san .san-research {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
-    gap: 4px;
-  }
-  /* A hairline over the sections, under the Research menu. */
-  .san .san-research + .san-nav {
-    margin-top: 10px;
-    padding-top: 12px;
-    background: linear-gradient(var(--san-rule), var(--san-rule)) top / 100% 1px no-repeat;
+    gap: 0;
   }
   .san .san-head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 6px;
-    margin: 0 0 6px;
-  }
-  .san .san-head--deep,
-  .san .san-head--locked {
-    margin-top: 0;
+    margin: 0 0 10px;
+    padding: 0 4px;
   }
   .san .san-list {
     flex-direction: column;
@@ -505,53 +417,44 @@
   }
   .san .san-link {
     display: flex;
-    min-height: 34px;
-    padding: 0 10px;
+    min-height: 0;
+    padding: 5px 12px;
+    border-radius: 0;
     background: transparent;
     white-space: normal;
   }
-  .san a.san-link:hover {
-    background: color-mix(in srgb, var(--san-emerald) 7%, transparent);
+  /* The current section: emerald text and a 2px emerald rule, 12px clear of the label. */
+  .san a.san-link.is-active,
+  .san .san-link.is-current {
+    box-shadow: inset 2px 0 0 var(--san-emerald);
   }
-  .san .san-link--menu {
-    min-height: 38px;
+  /* The lock follows the label inline, so a two-line label keeps it beside its last word. */
+  .san .san-link.is-locked,
+  .san .san-link.is-pending {
+    display: block;
   }
-  .san .san-list--locked .san-link {
-    min-height: 31px;
-  }
-  .san .san-link.is-locked {
-    background: transparent;
+  .san .san-lock {
+    margin-left: 6px;
+    vertical-align: 1px;
   }
   .san .san-cta {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 0;
-  }
-  .san .san-cta-line {
     flex: none;
   }
 }
 
-/* A short screen: the rail scrolls with the page, so nothing in it is ever cut off. */
-@media (max-height: 960px) {
+/* A short screen: the menu scrolls with the page, so nothing in it is ever cut off. */
+@media (max-height: 900px) {
   .san .san-side {
     position: static;
   }
 }
 
-/* Nov 21: the query bar spans the centre column inside the shell. */
-.san .san-lead .sqb {
-  max-width: none;
-}
-
-/* Wide: three columns. */
-@container san (min-width: 1240px) {
-  .san.has-rail .san-grid {
-    grid-template-columns: 216px minmax(0, 1fr) 276px;
-  }
-
-  .san.has-rail .san-rail {
-    grid-column: 3;
+/* Phones: only the section chips sit above the search; the deep list and its call to
+   action stay out of the way (Next steps still offers deep research). */
+@container san (max-width: 879px) {
+  .san .san-nav--deep,
+  .san .san-cta {
+    display: none;
   }
 }
 

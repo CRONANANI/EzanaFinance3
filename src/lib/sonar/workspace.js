@@ -168,6 +168,47 @@ export const ATTACH_TYPES = {
   'text/csv': 'csv',
 };
 
+/* Nov 21: photos added from the Sonar composer. Read once into text on the server (what the
+   image shows, any text in it), then carried like any attached file. */
+export const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+export const IMAGE_TYPES = {
+  'image/png': 'png',
+  'image/jpeg': 'jpeg',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+
+/** Whether a photo may be added: { ok, kind, media } or { ok: false, error }. */
+export function checkImage({ name = '', type = '', size = 0 } = {}) {
+  const ext = String(name).toLowerCase().split('.').pop();
+  const byExt = { png: 'png', jpg: 'jpeg', jpeg: 'jpeg', webp: 'webp', gif: 'gif' }[ext] || null;
+  const kind = IMAGE_TYPES[type] || byExt;
+  if (!kind) return { ok: false, error: 'Add a PNG, JPEG, WebP or GIF image.' };
+  if (!(size > 0)) return { ok: false, error: 'That image is empty.' };
+  if (size > IMAGE_MAX_BYTES) return { ok: false, error: 'Add an image of 4 MB or less.' };
+  return { ok: true, kind, media: `image/${kind}` };
+}
+
+/** The image format its first bytes declare, or null. Neither name nor type is trusted alone. */
+export function imageKindOfBytes(bytes) {
+  const b = bytes || [];
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'png';
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpeg';
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38) return 'gif';
+  if (
+    b[0] === 0x52 &&
+    b[1] === 0x49 &&
+    b[2] === 0x46 &&
+    b[3] === 0x46 &&
+    b[8] === 0x57 &&
+    b[9] === 0x45 &&
+    b[10] === 0x42 &&
+    b[11] === 0x50
+  )
+    return 'webp';
+  return null;
+}
+
 /** Whether a file may be attached: { ok, kind } or { ok: false, error }. */
 export function checkAttachment({ name = '', type = '', size = 0 } = {}) {
   const ext = String(name).toLowerCase().split('.').pop();

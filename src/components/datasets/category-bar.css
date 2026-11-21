@@ -646,9 +646,20 @@
    transparent in the artwork) and reads at full contrast. */
 .dscat-bar.dscat-bar--bare,
 .dscat-bar.dscat-bar--bare[data-density] {
-  /* Oct 28: brand + Live pill, the belt, then search and account. */
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Nov 21: the belt on the left, the Ezana mark centred, the account control on the right.
+     Equal side tracks keep the mark on the bar's centre line. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   column-gap: 20px;
+}
+.dscat-bar.dscat-bar--bare .dscat-side--start {
+  min-width: 0;
+  overflow: hidden;
+}
+.dscat-bar.dscat-bar--bare .dscat-side--end {
+  justify-content: flex-end;
+}
+.dscat-bar.dscat-bar--bare .dscat-logo--center {
+  justify-self: center;
 }
 .dscat-logo {
   display: inline-flex;

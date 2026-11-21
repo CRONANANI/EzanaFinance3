@@ -673,7 +673,9 @@
 @media (min-width: 901px) {
   body:has(.dso-page--search .snr-band--page) .dscat-bar.dscat-bar--bare,
   body:has(.dso-page--search .snr-band--page) .dscat-bar.dscat-bar--bare[data-density] {
-    padding-left: var(--snrp-logo-x, var(--app-shell-pad));
+    /* Nov 21: equal sides, so the centred mark sits on the page's centre line and the
+       account control ends on the answer canvas's right edge (--snrp-nav-right). */
+    padding-left: var(--snrp-nav-right, var(--app-shell-pad));
     padding-right: var(--snrp-nav-right, var(--app-shell-pad));
   }
 }

@@ -1,49 +1,34 @@
 'use client';
 
 /**
- * SonarAnswerFrame: the research workspace around every Sonar answer (the country board and
+ * SonarAnswerFrame: the universal shell around every Sonar answer (the country board and
  * the ping board on /datasets and /sonar, the research board in a standard or deep report).
  *
- * Nov 13 2026 (docs/sonar/answer-templates, template 03): three columns.
- *   - Left rail: the Research menu, then this report's sections in one vocabulary
- *     (lib/sonar/answer-sections): the free sections the page has, then the deep sections,
- *     open on an unlocked deep run and otherwise listed greyed out with a lock, legible but
- *     not clickable or focusable, then the "Run deeper research" card with the call to
- *     action that fits the reader (sign up, get Starter, or run deep research).
- *   - Centre: the board (`children`).
- *   - Right rail (`rail`): research controls, next steps and related research. Optional: a
- *     board that passes none keeps a two-column page.
+ * Nov 21 2026 skeleton, the same for every query:
+ *   - Contents menu, far left: styled like the Ezana Echo article contents (text links,
+ *     caps headings, the current section in emerald with a short emerald rule). The Research
+ *     menu, this report's sections in one vocabulary (lib/sonar/answer-sections), then the
+ *     deep sections (open on an unlocked deep run, otherwise listed and not clickable, with
+ *     an honest state: Locked, Not run, Running or Complete) and the deep research call to
+ *     action. On a wide screen the menu hangs in the page margin, so the answer itself starts
+ *     where the menu used to start, and the canvas is about a fifth wider.
+ *   - Centre, top to bottom: the query composer, the follow-up questions, the tools row
+ *     (`tools`: Research controls, Evidence and sources, Next steps, each opening over the
+ *     page), then the answer (`children`), whose cards come from the exemplary layout for the
+ *     kind of question.
  *
- * Wide container: three columns, the left rail sticky. Mid: the right rail drops under the
- * board. Narrow: the sections are a row of chips above the board.
- * `navTop` (a research run's Back and ping bar) sits at the top of the left rail.
- * Scroll-spy reads the section anchors (`sa-<key>`) in the capture phase, so it works
- * whatever element scrolls. Styles: sonar-answer-frame.css (san-). Tokens only, and no
- * outlines on any card (the Sonar card rule).
+ * Narrow: the sections are a row of chips above the answer. `navTop` (a research run's Back
+ * and ping bar) sits at the top of the menu. Scroll-spy reads the section anchors
+ * (`sa-<key>`) in the capture phase, so it works whatever element scrolls.
+ * Styles: sonar-answer-frame.css (san-). Tokens only, no outlines on any card.
  */
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { answerNav, activeKey } from '@/lib/sonar/answer-sections';
+import { SonarToolsRow, OPEN_TOOL_EVENT } from './SonarToolsRow';
 import './sonar-answer-frame.css';
-
-/* One Bootstrap icon per section, so the rail reads at a glance. */
-const SECTION_ICON = {
-  answer: 'bi-layers',
-  metrics: 'bi-speedometer2',
-  findings: 'bi-lightning-charge',
-  charts: 'bi-bar-chart-line',
-  sources: 'bi-database',
-  team: 'bi-people',
-  methodology: 'bi-clipboard-data',
-  valuation: 'bi-calculator',
-  scenarios: 'bi-diagram-2',
-  monitor: 'bi-binoculars',
-  risks: 'bi-shield-check',
-  relationships: 'bi-share',
-  explorer: 'bi-database-check',
-};
 
 /* The Research menu when a host passes none: this answer. The history, saved research and
    library links are added by the host once those pages exist (see SonarResearchLinks). */
@@ -60,14 +45,14 @@ export function SonarAnswerFrame({
   equity = false,
   /* The Research menu: [{ key, label, icon, href?, current? }]. */
   research = CURRENT_ONLY,
-  /* The right rail's content, or null for none. */
+  /* Nov 21: the tools row items (SonarToolsRow workspaceTools()). */
+  tools = null,
+  /* Legacy right-rail content: now placed under the answer. */
   rail = null,
   /* The deep research cost and quota line, shown in the left rail's card. */
   deepNote = null,
   /* Nov 13: the top of the centre column (the query bar, then related questions). */
   top = null,
-  /* Nov 21: the line under "Ezana Sonar" at the top of the side navigation. */
-  subtitle = null,
   /* Nov 21: a deep research run is in flight for this question. */
   deepRunning = false,
   children,
@@ -123,6 +108,9 @@ export function SonarAnswerFrame({
     setActive(s.key);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    /* Evidence and sources lives in the tools row: open its panel too. */
+    if (s.key === 'sources' && el.classList.contains('stl-item'))
+      window.dispatchEvent(new CustomEvent(OPEN_TOOL_EVENT, { detail: { key: 'sources' } }));
   }, []);
 
   const free = nav.filter((s) => !s.locked && s.tier === 'free');
@@ -163,64 +151,48 @@ export function SonarAnswerFrame({
         aria-current={active === s.key ? 'location' : undefined}
         onClick={(e) => go(e, s)}
       >
-        <i className={`bi ${SECTION_ICON[s.key] || 'bi-dot'}`} aria-hidden="true" />
         {s.label}
       </a>
     </li>
   );
 
   return (
-    <div className={`san${rail ? ' has-rail' : ''} ${className}`.trim()}>
+    <div className={`san san--wide ${className}`.trim()}>
       <div className="san-grid">
         <div className={`san-side${navTop ? ' has-top' : ''}`}>
           {navTop ? <div className="san-top">{navTop}</div> : null}
 
-          <div className="san-brand">
-            <span className="san-brand-tile" aria-hidden="true">
-              <i className="bi bi-broadcast" />
-            </span>
-            <span className="san-brand-text">
-              <span className="san-brand-name">
-                Ezana <span>Sonar</span>
-              </span>
-              {subtitle ? <span className="san-brand-sub">{subtitle}</span> : null}
-            </span>
-          </div>
-
-          <div className="san-panel">
-            {research?.length ? (
-              <nav className="san-research" aria-label="Research">
-                <p className="san-head">Research</p>
-                <ul className="san-list san-list--research">
-                  {research.map((r) => (
-                    <li key={r.key}>
-                      {r.href && !r.current ? (
-                        <Link href={r.href} className="san-link san-link--menu">
-                          <i className={`bi ${r.icon}`} aria-hidden="true" />
-                          {r.label}
-                        </Link>
-                      ) : (
-                        <span
-                          className={`san-link san-link--menu${r.current ? ' is-current' : ''}`}
-                          aria-current={r.current ? 'page' : undefined}
-                        >
-                          <i className={`bi ${r.icon}`} aria-hidden="true" />
-                          {r.label}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            ) : null}
-
-            <nav className="san-nav" aria-label="Answer sections">
-              <p className="san-head">Current report</p>
-              <ul className="san-list">{free.map(sectionLink)}</ul>
+          {research?.length ? (
+            <nav className="san-research" aria-label="Research">
+              <p className="san-head">Research</p>
+              <ul className="san-list">
+                {research.map((r) => (
+                  <li key={r.key}>
+                    {r.href && !r.current ? (
+                      <Link href={r.href} className="san-link">
+                        {r.label}
+                      </Link>
+                    ) : (
+                      <span
+                        className={`san-link${r.current ? ' is-current' : ''}`}
+                        aria-current={r.current ? 'page' : undefined}
+                      >
+                        {r.label}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </nav>
-          </div>
+          ) : null}
+
+          <nav className="san-nav" aria-label="Answer sections">
+            <p className="san-head">Current report</p>
+            <ul className="san-list">{free.map(sectionLink)}</ul>
+          </nav>
+
           {deepOpen.length || locked.length || deepState === 'running' ? (
-            <nav className="san-nav san-panel san-panel--deep" aria-label="Deep research sections">
+            <nav className="san-nav san-nav--deep" aria-label="Deep research sections">
               {deepOpen.length ? (
                 <>
                   <p className="san-head san-head--deep">
@@ -239,11 +211,8 @@ export function SonarAnswerFrame({
                       deepState === 'locked' ? (
                         <li key={s.key}>
                           <span className="san-link is-locked" aria-disabled="true">
-                            <i
-                              className={`bi ${SECTION_ICON[s.key] || 'bi-dot'}`}
-                              aria-hidden="true"
-                            />
                             {s.label}
+                            <i className="bi bi-lock-fill san-lock" aria-hidden="true" />
                             <VisuallyHidden>
                               , locked: deep research on the Starter plan
                             </VisuallyHidden>
@@ -252,10 +221,6 @@ export function SonarAnswerFrame({
                       ) : (
                         <li key={s.key}>
                           <span className="san-link is-pending" aria-disabled="true">
-                            <i
-                              className={`bi ${SECTION_ICON[s.key] || 'bi-dot'}`}
-                              aria-hidden="true"
-                            />
                             {s.label}
                             <VisuallyHidden>
                               {deepState === 'running'
@@ -271,43 +236,46 @@ export function SonarAnswerFrame({
               ) : null}
             </nav>
           ) : null}
-          <div className="san-cta-slot">
-            {cta ? (
-              <div className="san-cta">
-                <i className="bi bi-rocket-takeoff san-cta-icon" aria-hidden="true" />
-                <p className="san-cta-title">Run deeper research</p>
-                {/* The count is the locked sections this answer lists (Valuation on a stock). */}
-                <p className="san-cta-count">
-                  {locked.length} more section{locked.length === 1 ? '' : 's'} with deep research
-                </p>
-                <p className="san-cta-line">{cta.line}</p>
-                {cta.href ? (
-                  <a className="san-cta-btn" href={cta.href}>
-                    {cta.action}
-                    <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </a>
-                ) : onDeep ? (
-                  <button type="button" className="san-cta-btn" onClick={onDeep}>
-                    {cta.action}
-                    <i className="bi bi-arrow-right" aria-hidden="true" />
-                  </button>
-                ) : null}
-                {deepNote && cta.kind === 'deep' ? (
-                  <p className="san-cta-note">{deepNote}</p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
+
+          {cta ? (
+            <div className="san-cta">
+              <p className="san-cta-title">
+                <i className="bi bi-rocket-takeoff" aria-hidden="true" /> Run deeper research
+              </p>
+              {/* The count is the locked sections this answer lists (Valuation on a stock). */}
+              <p className="san-cta-count">
+                {locked.length} more section{locked.length === 1 ? '' : 's'} with deep research
+              </p>
+              <p className="san-cta-line">{cta.line}</p>
+              {cta.href ? (
+                <a className="san-cta-btn" href={cta.href}>
+                  {cta.action}
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
+                </a>
+              ) : onDeep ? (
+                <button type="button" className="san-cta-btn" onClick={onDeep}>
+                  {cta.action}
+                  <i className="bi bi-arrow-right" aria-hidden="true" />
+                </button>
+              ) : null}
+              {deepNote && cta.kind === 'deep' ? <p className="san-cta-note">{deepNote}</p> : null}
+            </div>
+          ) : null}
         </div>
         <div className="san-body">
-          {top ? <div className="san-lead">{top}</div> : null}
+          {top || tools?.length ? (
+            <div className="san-lead">
+              {top}
+              {tools?.length ? <SonarToolsRow items={tools} /> : null}
+            </div>
+          ) : null}
           {children}
+          {rail ? (
+            <aside className="san-rail" aria-label="Research tools">
+              {rail}
+            </aside>
+          ) : null}
         </div>
-        {rail ? (
-          <aside className="san-rail" aria-label="Research tools">
-            {rail}
-          </aside>
-        ) : null}
       </div>
     </div>
   );
