@@ -475,9 +475,14 @@ function Positions({ dossier }) {
         </thead>
         <tbody>
           {rows.map((h) => (
-            <tr key={h.ticker}>
+            <tr key={h.ticker || h.tag}>
               <td>
-                <span className="cpr-ticker">{h.ticker}</span>
+                <span
+                  className={`cpr-ticker${h.untickered ? ' cpr-ticker--group' : ''}`}
+                  title={h.untickered ? 'Positions with no ticker, grouped' : undefined}
+                >
+                  {h.ticker || h.tag}
+                </span>
               </td>
               <td className="cpr-co">{h.company || h.sector || ''}</td>
               <td className="cpr-num">
@@ -496,7 +501,10 @@ function Positions({ dossier }) {
           ))}
         </tbody>
       </table>
-      <p className="cpr-note">Share of the estimated open book, by disclosed ranges.</p>
+      <p className="cpr-note">
+        Share of the estimated open book, by disclosed ranges. Bonds, notes, Treasuries and private
+        assets have no ticker, so each kind is one row.
+      </p>
     </section>
   );
 }

@@ -2207,8 +2207,9 @@ export async function runLandingPipeline(
   /* Nov 2026 (v4): a country answer's news rail is relevance-gated (insight/relevance.js).
      v5: a company answer's structured brief, valuation snapshot and profile.
      v6 (Nov 21): a member's full disclosed history for the 1Y to all-time chart.
-     v7: a member's monthly disclosed volume, for the period header. */
-  const cacheKey = `landing:v7:${understood.intent}:${canon.key}`;
+     v7: a member's monthly disclosed volume, for the period header.
+     v8: a member's untickered holdings (bonds, Treasuries) in the open book. */
+  const cacheKey = `landing:v8:${understood.intent}:${canon.key}`;
   const cacheable = cacheTtl > 0 && !force && !noCorrect && !recentEvent;
   if (admin && !hasCacheClient()) setCacheClient(() => admin);
   if (cacheable) {

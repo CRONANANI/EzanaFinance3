@@ -37,7 +37,7 @@ export function answerCharts(live) {
         `${d.name} largest estimated open positions (share of the estimated open book, by disclosed ranges).`,
         ...d.holdings.map(
           (h) =>
-            `${h.ticker}${h.company ? ` (${h.company})` : ''}: ${
+            `${h.ticker || h.tag}${h.company ? ` (${h.company})` : ''}: ${
               typeof h.share === 'number' ? `${(h.share * 100).toFixed(1)}%` : 'N/A'
             }`,
         ),

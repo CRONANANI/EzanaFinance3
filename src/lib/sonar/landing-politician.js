@@ -386,18 +386,12 @@ export async function buildPoliticianDossier(
     trades12m: recent.length,
     lastTrade,
   };
-  out.holdings = Array.isArray(portfolio?.holdings)
-    ? portfolio.holdings
-        .filter((h) => h?.ticker)
-        .slice(0, 8)
-        .map((h) => ({
-          ticker: String(h.ticker),
-          company: h.company ? String(h.company).replace(/\s+-\s+.*$/, '') : null,
-          sector: h.sector || null,
-          share: Number(h.share) || null,
-        }))
-    : [];
-  out.topHoldings = out.holdings.slice(0, 3).map((h) => h.ticker);
+  /* Nov 21: the open book includes assets with no ticker (bonds, notes, Treasuries, private
+     holdings), as the Politician Tracker's portfolio does. The portfolio RPC lists stocks
+     one by one and folds the untickered positions into its sector groups, so those groups
+     join the stock rows here, each as one row with its position count. */
+  out.holdings = openBookRows(portfolio).slice(0, 8);
+  out.topHoldings = out.holdings.slice(0, 3).map((h) => h.ticker || h.tag);
 
   out.similar = (Array.isArray(similarRes?.data) ? similarRes.data : []).map((s) => ({
     bioguideId: s.bioguideId,
@@ -495,6 +489,50 @@ export async function buildPoliticianDossier(
   return out;
 }
 
+/* The portfolio RPC's names for untickered positions (20261003120000_member_portfolio.sql). */
+const UNTICKERED = {
+  'US Treasuries': { tag: 'UST', label: 'US Treasuries' },
+  'Bonds & private (no ticker)': { tag: 'BONDS', label: 'Bonds, notes and private assets' },
+};
+
+/**
+ * The member's open book as rows, largest first: each listed holding, plus one row per
+ * untickered group (Treasuries; bonds, notes and private assets) with its position count.
+ * -> [{ ticker, tag, company, sector, share, est, positions, untickered }]
+ */
+export function openBookRows(portfolio) {
+  const stocks = (Array.isArray(portfolio?.holdings) ? portfolio.holdings : [])
+    .filter((h) => h?.ticker)
+    .map((h) => ({
+      ticker: String(h.ticker),
+      tag: null,
+      company: h.company ? String(h.company).replace(/\s+-\s+.*$/, '') : null,
+      sector: h.sector || null,
+      share: Number(h.share) || null,
+      est: Number(h.est) || null,
+      positions: 1,
+      untickered: false,
+    }));
+  const groups = (Array.isArray(portfolio?.sectors) ? portfolio.sectors : [])
+    .filter((x) => UNTICKERED[x?.sector] && Number(x.est) > 0)
+    .map((x) => {
+      const n = Number(x.positions) || 0;
+      return {
+        ticker: null,
+        tag: UNTICKERED[x.sector].tag,
+        company: `${UNTICKERED[x.sector].label}${n ? ` (${n} position${n === 1 ? '' : 's'})` : ''}`,
+        sector: x.sector,
+        share: Number(x.share) || null,
+        est: Number(x.est) || null,
+        positions: n,
+        untickered: true,
+      };
+    });
+  return [...stocks, ...groups].sort(
+    (a, b) => (b.share || 0) - (a.share || 0) || (b.est || 0) - (a.est || 0),
+  );
+}
+
 /* ── ranges, rows and evidence ─────────────────────────────────────── */
 
 const shortUsd = (v) => {
@@ -551,6 +589,8 @@ export function groupTrades(trades) {
     const g = by.get(k) || {
       ticker: labelOf(t),
       company: companyOf(t),
+      /* Nov 21: listed (a ticker) or not (bonds, notes, Treasuries, private assets). */
+      listed: Boolean(t.ticker),
       count: 0,
       min: 0,
       max: 0,
@@ -630,7 +670,10 @@ export function politicianEvidence(d) {
   if (typeof s.estValue === 'number' && s.estValue > 0) {
     const top = (d.holdings || [])
       .slice(0, 6)
-      .map((h) => `${h.ticker}${h.share ? ` ${(h.share * 100).toFixed(1)}%` : ''}`)
+      .map(
+        (h) =>
+          `${h.ticker || h.company || h.tag}${h.share ? ` ${(h.share * 100).toFixed(1)}%` : ''}`,
+      )
       .join(', ');
     push(
       `${who} estimated open portfolio`,

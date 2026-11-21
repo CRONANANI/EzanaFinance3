@@ -479,6 +479,11 @@
   font-weight: 700;
   text-align: center;
 }
+.cpr .cpr-ticker--group {
+  background: color-mix(in srgb, var(--cpr-text) 10%, transparent);
+  color: var(--cpr-muted);
+  font-size: var(--type-micro-size);
+}
 .cpr .cpr-co {
   overflow: hidden;
   max-width: 0;

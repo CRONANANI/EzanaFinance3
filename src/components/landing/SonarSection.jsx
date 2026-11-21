@@ -722,12 +722,12 @@ function PoliticianStack({ dossier, onGate, topSlot = null, newsSlot = null, ful
           <div className="snr-pos-list">
             {holdings.map((h) => (
               <button
-                key={h.ticker}
+                key={h.ticker || h.tag}
                 type="button"
                 className="snr-news-item snr-pos"
                 onClick={onGate}
               >
-                <span className="snr-pos-ticker">{h.ticker}</span>
+                <span className="snr-pos-ticker">{h.ticker || h.tag}</span>
                 <span className="snr-pos-name">{h.company || h.sector || ''}</span>
                 <span className="snr-pos-bar" aria-hidden="true">
                   <span

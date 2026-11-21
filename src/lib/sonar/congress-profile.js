@@ -303,6 +303,27 @@ export function leanBullets(dossier, lean = tradingLean(dossier)) {
       ? `Sold: ${plural(lean.sells, 'sale')} worth about ${usdCompact(lean.sell)}${lead(sells[0]) ? `, ${lead(sells[0])}` : ''}.`
       : 'Sold: no disclosed sales in the past 12 months.',
   );
+  /* Nov 21: where the money went by kind of asset, so bonds and other untickered holdings
+     are part of the explanation and not hidden behind the largest single trade. */
+  const split = (groups) => {
+    let listed = 0;
+    let other = 0;
+    let otherN = 0;
+    for (const g of groups) {
+      const m = midOf(g);
+      if (g?.listed === false) {
+        other += m;
+        otherN += Number(g.count) || 0;
+      } else listed += m;
+    }
+    return { listed, other, otherN };
+  };
+  const b = split(buys);
+  const sl = split(sells);
+  if (b.other || sl.other)
+    out.push(
+      `By asset type: bonds, notes and other untickered assets were about ${usdCompact(b.other)} of purchases (${plural(b.otherN, 'trade')}) and ${usdCompact(sl.other)} of sales; stocks and funds were about ${usdCompact(b.listed)} bought and ${usdCompact(sl.listed)} sold.`,
+    );
   const diff = Math.abs(lean.buy - lean.sell);
   if (lean.buy && lean.sell)
     out.push(

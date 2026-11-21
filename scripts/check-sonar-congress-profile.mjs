@@ -215,6 +215,44 @@ test('disclosed volume by period: the tracker measure, so the header changes wit
   assert.match(rep, /Disclosed volume, \$\{periodName\}/);
 });
 
+test('open book: bonds and Treasuries join the stocks, and the lean explains them', () => {
+  const rows = LP.openBookRows({
+    total: 50e6,
+    holdings: [
+      { ticker: 'GS', company: 'The Goldman Sachs Group Inc', est: 950000, share: 0.019 },
+      { ticker: 'BITB', company: 'Bitwise Bitcoin ETF', est: 250000, share: 0.005 },
+      { ticker: null, company: 'Some bond', est: 1, share: 0.0 },
+    ],
+    sectors: [
+      { sector: 'Bonds & private (no ticker)', est: 48.7e6, positions: 83, share: 0.974 },
+      { sector: 'Financials', est: 950000, positions: 1, share: 0.019 },
+      { sector: 'US Treasuries', est: 0, positions: 0, share: 0 },
+    ],
+  });
+  assert.deepEqual(
+    rows.map((r) => r.ticker || r.tag),
+    ['BONDS', 'GS', 'BITB'],
+  );
+  assert.equal(rows[0].company, 'Bonds, notes and private assets (83 positions)');
+  assert.equal(rows[0].untickered, true);
+  assert.deepEqual(LP.openBookRows(null), []);
+  const b = C.leanBullets({
+    buys12m: [
+      { ticker: 'GS', listed: true, count: 2, min: 250001, max: 500000 },
+      { ticker: 'Note A', listed: false, count: 3, min: 4100001, max: 9500000 },
+    ],
+    sells12m: [{ ticker: 'Muni B', listed: false, count: 1, min: 2100001, max: 4700000 }],
+  });
+  assert.ok(
+    b.some((x) =>
+      /^By asset type: bonds, notes and other untickered assets were about \$6\.80M of purchases \(3 trades\) and \$3\.40M of sales; stocks and funds were about \$375\.00K bought and \$0\.00 sold\.$/.test(
+        x,
+      ),
+    ),
+    b.join(' | '),
+  );
+});
+
 test('exemplary layout: a member of Congress gets the approved rows, in order', () => {
   const lay = L.exemplaryLayoutFor({ dossier: { kind: 'politician' } });
   assert.equal(lay.slug, 'congress-member-profile');
