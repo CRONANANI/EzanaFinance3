@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { isEchoArticleRoute } from '@/lib/route-shell';
 
 const ThemeContext = createContext(null);
 
@@ -108,13 +109,21 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
   const [theme, setThemeState] = useState(safeInitial);
 
   // Keep <html>/<body> in sync whenever the theme or route changes.
+  /* Echo article pages are brand-locked DARK (Nov 20, 2026): a black reading
+     canvas for every reader. Visual only; the saved preference is untouched.
+     Checked before the marketing list, which covers the rest of /ezana-echo. */
+  const lockedDark = isEchoArticleRoute(pathname);
   useEffect(() => {
+    if (lockedDark) {
+      applyTheme('dark');
+      return;
+    }
     if (isMarketingBrandLockedLightPath(pathname)) {
       applyTheme('light');
       return;
     }
     applyTheme(theme);
-  }, [theme, pathname]);
+  }, [theme, pathname, lockedDark]);
 
   useEffect(() => {
     if (theme !== 'system' || typeof window === 'undefined') return;
@@ -172,7 +181,7 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme: lockedDark ? 'dark' : theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

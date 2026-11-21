@@ -1,0 +1,87 @@
+/* Ezana Echo article pages on black (Nov 20th, 2026).
+
+   Article routes are brand-locked DARK (ThemeProvider, the root layout and its
+   first-paint script, via isEchoArticleRoute), so every token, chart and card
+   resolves to its dark value, and charts that read useTheme() get 'dark'.
+   This sheet adds what the dark theme alone does not:
+   1. Pure black for the page, the shell and the nav (the dark theme ground is
+      a navy-black, and the root script paints it inline, hence !important).
+   2. The article-only light surfaces (the warm card fill) restated for black.
+   3. The globe as a dark sphere with light dots, so it reads on black.
+   4. The nav row on the article's own width, so the logo's left edge lands on
+      the headline's left edge.
+   5. The hero image running to the window's right edge, fading into the black
+      on its left so it never competes with the headline.
+   Loaded last by EchoArticleClient. */
+
+/* 1. Black ground everywhere on the route. */
+html:has(.echo-article-page),
+html:has(body.route-echo-article),
+body.route-echo-article,
+body:has(.echo-article-page) {
+  --echo-canvas: black !important;
+  --nav-bg-solid: black;
+  background-color: black !important;
+}
+body.route-echo-article .navbar,
+body:has(.echo-article-page) .navbar {
+  background: black !important;
+}
+
+/* 2. Article surfaces. */
+.echo-article-page {
+  --echo-page-bg: black;
+  background: black;
+  --card-bg: color-mix(in srgb, white 5%, black);
+  --card-bg-hover: color-mix(in srgb, white 8%, black);
+  --card-border: color-mix(in srgb, white 10%, transparent);
+  --chart-fill-start: color-mix(in srgb, var(--emerald) 22%, transparent);
+  --chart-fill-end: transparent;
+  color: var(--text-primary);
+}
+
+/* 3. Globe: dark sphere, light dots and labels (read at runtime by cobe, so
+   plain rgb values, not color-mix). */
+body.route-echo-article,
+body:has(.echo-article-page) {
+  --echo-globe-paper: rgb(38 44 50);
+  --echo-globe-ink: rgb(236 240 238);
+  --echo-globe-ink-2: rgb(214 220 217);
+  --echo-globe-ink-3: rgb(186 194 190);
+  --echo-globe-ink-4: rgb(150 160 156);
+  --echo-globe-glow: rgb(20 60 46);
+  --echo-globe-label-shadow: rgb(0 0 0 / 0.6);
+}
+
+/* 4. Logo on the headline's left edge: EchoArticleHero publishes the header's
+   left content edge as --echo-head-left, and the nav row uses it as its side
+   padding (the header is centred, so the same value on the right keeps Login
+   and Become a Partner symmetric). The existing -6px pull removes the logo
+   PNG's transparent margin. Pages without the new header keep the default. */
+body:has(.eah) .navbar .nav-container-centered.nav-container--echo-article {
+  max-width: none;
+  padding-inline: var(--echo-head-left, var(--app-shell-pad));
+}
+
+/* 5. Hero image to the right edge. The app column (1600px, clipped sideways)
+   would cut the bleed, so its clip is lifted on this route; html and body
+   keep theirs, so nothing scrolls sideways. --eah-bleed (published by
+   EchoArticleHero) is the gap from the header's right edge to the window's.
+   Two-column layout only: below 1025px the image stacks under the headline
+   at column width. */
+body:has(.echo-article-page) .dashboard-main,
+body:has(.echo-article-page) .dashboard-main-content,
+body:has(.echo-article-page) .dashboard-container,
+body:has(.echo-article-page) .page-content,
+body:has(.echo-article-page) .page-wrapper {
+  overflow-x: visible !important;
+}
+@media (min-width: 1025px) {
+  .eah-media {
+    margin-right: calc(-1 * var(--eah-bleed, 0px));
+    border-radius: 0;
+    background: black;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, black 30%);
+    mask-image: linear-gradient(90deg, transparent 0, black 30%);
+  }
+}

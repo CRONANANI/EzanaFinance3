@@ -265,6 +265,36 @@ export function EchoArticleSnapshot({ stats }) {
   );
 }
 
+/* Two measurements the CSS cannot take on its own (ancestors add their own
+   padding at some widths), published on <html> and kept fresh on resize:
+   --echo-head-left  the header's left content edge, so the nav row puts the
+                     logo on the headline's left edge;
+   --eah-bleed       the gap from the header's right edge to the window's
+                     right edge (scrollbar excluded), so the hero image can
+                     run out to the edge. */
+function useHeaderEdges(ref) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = ref.current;
+    if (!el) return undefined;
+    const sync = () => {
+      const r = el.getBoundingClientRect();
+      root.style.setProperty('--echo-head-left', `${Math.max(0, Math.round(r.left))}px`);
+      root.style.setProperty('--eah-bleed', `${Math.max(0, Math.round(root.clientWidth - r.right))}px`);
+    };
+    sync();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', sync);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', sync);
+      root.style.removeProperty('--echo-head-left');
+      root.style.removeProperty('--eah-bleed');
+    };
+  }, [ref]);
+}
+
 /**
  * The whole header. `wide` stretches it to the globe rail's right edge on
  * grail articles at desktop (same widths as the old title band).
@@ -279,10 +309,11 @@ export function EchoArticleHero({
   wide = false,
 }) {
   const remote = Boolean(image?.src && /^https?:\/\//.test(image.src));
+  const heroRef = useRef(null);
+  useHeaderEdges(heroRef);
   return (
     <header className={`eah${wide ? ' eah--grail' : ''}${image ? '' : ' eah--text-only'}`}>
-      <EchoArticleMasthead />
-      <div className="eah-hero">
+      <div className="eah-hero" ref={heroRef}>
         <div className="eah-copy">
           <EchoArticleEyebrow eyebrow={eyebrow} />
           <h1 className="eah-title">{article.title}</h1>

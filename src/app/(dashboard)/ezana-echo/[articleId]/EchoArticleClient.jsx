@@ -92,6 +92,7 @@ import '../../../../../app-legacy/pages/home-dashboard.css';
 import '../ezana-echo.css';
 import '@/components/echo/echo-article-layout.css';
 import '@/components/echo/figures/echo-figures.css';
+import '@/components/echo/echo-article-dark.css';
 import { markChecklistView } from '@/lib/onboarding/markView';
 
 function getEraForYear(year) {

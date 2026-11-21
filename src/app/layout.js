@@ -23,7 +23,7 @@ import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects'
 import NativeBridge from '@/components/native/NativeBridge';
 import LegalModalHost from '@/components/legal/LegalModalHost';
 import { getServerTheme } from '@/lib/user-preferences/server';
-import { resolveRouteShellClasses } from '@/lib/route-shell';
+import { isEchoArticleRoute, resolveRouteShellClasses } from '@/lib/route-shell';
 import { BRAND, brandJsonLd } from '@/lib/brand';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -150,7 +150,10 @@ export default async function RootLayout({ children }) {
     pathname === '/terms-of-service' ||
     pathname === '/copyright' ||
     pathname === '/accessibility';
-  const effectiveIsDark = isDark && !isMarketingLightRoute;
+  /* Echo article pages are brand-locked DARK (black reading canvas), ahead of
+     the marketing-light rule that covers the rest of /ezana-echo. */
+  const isEchoArticleDarkRoute = isEchoArticleRoute(pathname);
+  const effectiveIsDark = isEchoArticleDarkRoute || (isDark && !isMarketingLightRoute);
 
   const bodyClassName = ['app-body', effectiveIsDark ? null : 'light-mode', ...routeShellClasses]
     .filter(Boolean)
@@ -202,9 +205,16 @@ export default async function RootLayout({ children }) {
                Matches isMarketingBrandLockedLightPath in ThemeProvider and
                the SSR class in this layout. */
             var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/ezana-api', '/ezana-echo', '/privacy-policy', '/terms-of-service', '/copyright', '/accessibility'];
+            var echoArticleDark = false;
             try {
               var path = window.location.pathname || '/';
-              for (var i = 0; i < marketingLightRoutes.length; i++) {
+              /* Echo article pages are brand-locked DARK; mirrors
+                 isEchoArticleRoute in src/lib/route-shell.js. */
+              if (path.indexOf('/ezana-echo/') === 0 && path !== '/ezana-echo/archived' && path.indexOf('/ezana-echo/author/') !== 0) {
+                echoArticleDark = true;
+                theme = 'dark';
+              }
+              for (var i = 0; !echoArticleDark && i < marketingLightRoutes.length; i++) {
                 var r = marketingLightRoutes[i];
                 if (path === r || (r !== '/' && path.indexOf(r) === 0)) {
                   theme = 'light';
