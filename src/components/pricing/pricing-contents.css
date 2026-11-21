@@ -122,3 +122,57 @@
 .pricing-page--standalone [data-contents-section] {
   scroll-margin-top: calc(var(--pricing-nav-h, 72px) + 16px);
 }
+
+/* Nov 21 (second pass): the toggle and the panel on the landing Sonar band's
+   glossy emerald metal, light text, the current section in mint. */
+.pricing-contents-toggle,
+.pricing-contents-panel,
+.pricing-contents.is-rail .pricing-contents-panel {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: var(--brand-band-metal);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--brand-band-mint) 26%, transparent),
+    0 12px 30px -12px color-mix(in srgb, var(--emerald) 50%, transparent);
+}
+.pricing-contents-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 120px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: -1;
+}
+.pricing-contents-toggle {
+  color: #ffffff;
+}
+.pricing-contents-toggle:hover,
+.pricing-contents.is-open .pricing-contents-toggle {
+  color: var(--brand-band-mint);
+}
+.pricing-contents-head {
+  color: var(--brand-band-mint);
+}
+.pricing-contents a {
+  color: rgba(255, 255, 255, 0.78);
+}
+.pricing-contents a:hover {
+  color: #ffffff;
+}
+.pricing-contents a.is-active {
+  color: var(--brand-band-mint);
+  border-left-color: var(--brand-band-mint);
+}
+.pricing-contents a:focus-visible,
+.pricing-contents-toggle:focus-visible {
+  outline-color: var(--brand-band-mint);
+}
+/* A page-level p colour outranks the class alone. */
+.pricing-contents .pricing-contents-panel .pricing-contents-head {
+  color: var(--brand-band-mint);
+}
