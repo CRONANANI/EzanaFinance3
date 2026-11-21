@@ -48,13 +48,14 @@ export const sovereignWealthLeagueTable2026 = {
   excerpt:
     "The twelve largest sovereign wealth funds control about $12.4 trillion, and Norway's fund alone holds $2.28 trillion. Six sit above $1 trillion, Saudi Arabia's PIF just posted its first decline this decade at $906 billion, and five of the biggest totals rest on estimates because those funds publish no size at all.",
   heroImage: {
-    // Supplied by Noah, Oct 2026. Owned/cleared image only.
+    // Supplied by Noah, Nov 20th 2026 (replaces the October West Hercules
+    // photo). EDSR 4x super-resolution, 3840 wide, quality-90 webp.
     src: '/images/ezana-echo/sovereign-wealth-league-table-2026-hero.webp',
-    // The rig sits right of centre; keep it in frame on tall crops.
-    position: '65% 50%',
-    alt: 'The West Hercules semi-submersible drilling rig moored in calm water below snow-covered mountains.',
+    // The platform sits just left of centre.
+    position: '50% 45%',
+    alt: 'An offshore oil platform standing in a choppy, dark blue sea under heavy grey clouds.',
     caption:
-      'The West Hercules drilling rig. Sovereign fund sizes in this article are Global SWF figures for 2026; five of the twelve funds publish no total of their own, so their sizes are third-party estimates.',
+      'An offshore oil platform. Sovereign fund sizes in this article are Global SWF figures for 2026; five of the twelve funds publish no total of their own, so their sizes are third-party estimates.',
   },
   contentBlocks: [
     {

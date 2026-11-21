@@ -79,10 +79,15 @@ export const HOME_CARD_IMAGES = {
     position: '50% 40%',
     layout: 'stack',
   },
-  // Twelve Funds, $12.4 Trillion
+  // Twelve Funds, $12.4 Trillion. Supplied photo (Nov 20th): an offshore oil
+  // platform in the North Sea under a grey sky. The 1536 x 809 file is
+  // upscaled 4x with the EDSR super-resolution model (OpenCV dnn_superres),
+  // resized to 3840 wide with light sharpening, quality-90 webp. Framed on
+  // the platform, which sits just left of centre.
   'sovereign-wealth-league-table-2026': {
     src: card('sovereign-wealth-league-table-2026'),
-    alt: '',
+    alt: 'An offshore oil platform standing in a choppy, dark blue sea under heavy grey clouds.',
+    position: '50% 45%',
   },
   // Which Industries Actually Keep the Money?
   'industries-that-actually-make-money-net-margins-2026': {
