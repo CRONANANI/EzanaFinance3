@@ -10,7 +10,9 @@
  *      their heaviest positions, the member in the news, policy that touches
  *      their book). Ezana's own news cache fills a column first and is
  *      marked as such; web results fill the rest.
- *   3. The web pages the brief read.
+ *
+ * Nov 21: the list of web pages the brief read is gone; the brief's own
+ * citations carry the sources.
  *
  * Oct 19: the news columns are also exported as <NewsAround rail />, which the
  * /datasets results band renders in its right column in place of the
@@ -18,7 +20,7 @@
  * repeat them below.
  *
  * Text, icons and data shapes only: no card outlines. It renders nothing
- * when a ping brought back none of the three.
+ * when a ping brought back neither.
  */
 import { newsHeaderTitle } from '@/lib/sonar/display-copy';
 import dynamic from 'next/dynamic';
@@ -142,8 +144,7 @@ export function SanctionsRail({ data }) {
 export default function SonarResearchDeck({ live, hideNews = false, hideSanctions = false }) {
   const showNews = !hideNews && hasNewsColumns(live);
   const showSanctions = !hideSanctions && Boolean(live?.sanctions);
-  const web = Array.isArray(live?.webSources) ? live.webSources : [];
-  if (!showSanctions && !showNews && !web.length) return null;
+  if (!showSanctions && !showNews) return null;
 
   return (
     <section className="snrx" aria-label="Further research for this ping">
@@ -151,23 +152,6 @@ export default function SonarResearchDeck({ live, hideNews = false, hideSanction
         {showSanctions ? <SonarSanctionsPanel data={live.sanctions} /> : null}
 
         {showNews ? <NewsAround live={live} /> : null}
-
-        {web.length ? (
-          <div className="snrx-block snrx-block--sources">
-            <p className="snrx-eyebrow">Web pages the brief read</p>
-            <ul className="snrx-sources">
-              {web.map((w) => (
-                <li key={w.url}>
-                  <a href={w.url} target="_blank" rel="noopener noreferrer">
-                    <i className="bi bi-link-45deg" aria-hidden="true" />
-                    <span>{w.title || host(w.url)}</span>
-                    <span className="snrx-host">{host(w.url)}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
       </div>
     </section>
   );

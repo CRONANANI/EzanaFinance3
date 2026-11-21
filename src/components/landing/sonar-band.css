@@ -4779,3 +4779,145 @@ html.snr-takeover body.snr-takeover .mobile-nav-menu .mobile-nav-divider {
     overflow: visible;
   }
 }
+
+/* ── Company price chart (SonarPriceChart, Nov 21) ───────────────────────
+   Axes, a marked end point carrying the live price, and a hover crosshair.
+   Ticks in mono at 11px (the chart-tick floor), ink in the band's text
+   tokens; the mint stroke carries identity, never the text. */
+.snr-pchart {
+  min-height: 120px;
+  touch-action: pan-y;
+}
+
+.snr-pchart svg {
+  overflow: visible;
+}
+
+.snr-pchart-grid {
+  stroke: var(--snr-grid);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  shape-rendering: crispEdges;
+}
+
+.snr-pchart-axis {
+  stroke: var(--snr-hair-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.snr-pchart-tick {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--snr-text-faint);
+}
+
+.snr-pchart-cross {
+  stroke: var(--snr-text-faint);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.snr-pchart-hdot {
+  fill: var(--snr-mint);
+  stroke: var(--snr-ink);
+  stroke-width: 2;
+}
+
+.snr-pchart-dot {
+  fill: var(--snr-mint);
+  stroke: var(--snr-ink);
+  stroke-width: 2;
+}
+
+.snr-pchart-halo {
+  fill: var(--snr-mint);
+  opacity: 0.22;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: snr-pchart-pulse 2.4s var(--snr-ease-out) infinite;
+}
+
+@keyframes snr-pchart-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.snr-pchart-endtag rect {
+  fill: var(--snr-mint);
+}
+
+.snr-pchart-endtag text {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  fill: var(--snr-ink);
+}
+
+.snr-pchart-readout {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.snr-pchart-readout-v {
+  fill: var(--snr-text);
+  font-weight: 700;
+}
+
+.snr-pchart-readout-d {
+  fill: var(--snr-text-faint);
+}
+
+/* Live / at-close tag in the card head. The word carries the state; the dot
+   only reinforces it. */
+.snr-live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--snr-text-muted);
+  white-space: nowrap;
+}
+
+.snr-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--snr-text-faint);
+}
+
+.snr-live-tag.is-open .snr-live-dot {
+  background: var(--snr-mint);
+  box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.18);
+}
+
+.snr-live-chg {
+  color: var(--snr-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The band pauses its own animations once a ping is live; the end-point
+   pulse is the one thing that should keep breathing. */
+.snr-band.snr-live .snr-pchart .snr-pchart-halo,
+.snr-band.snr-paused .snr-pchart .snr-pchart-halo {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snr-pchart-halo {
+    animation: none;
+    opacity: 0;
+  }
+}

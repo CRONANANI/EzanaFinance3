@@ -1464,12 +1464,16 @@ export async function buildDossier({ ticker, name }, admin) {
   const rows = Array.isArray(eod) ? eod : [];
   /* FMP returns newest first; the chart reads left to right in time. No
      slice: the whole year is the series. */
-  const spark = rows
-    .map((r) =>
-      typeof r?.price === 'number' ? r.price : typeof r?.close === 'number' ? r.close : null,
-    )
-    .filter((n) => typeof n === 'number')
+  const sparkRows = rows
+    .map((r) => ({
+      d: String(r?.date || '').slice(0, 10),
+      c: typeof r?.price === 'number' ? r.price : typeof r?.close === 'number' ? r.close : null,
+    }))
+    .filter((p) => typeof p.c === 'number')
     .reverse();
+  const spark = sparkRows.map((p) => p.c);
+  /* Nov 21: the dates too, for the chart's month axis. */
+  const sparkDates = sparkRows.every((p) => p.d) ? sparkRows.map((p) => p.d) : null;
 
   const fundamentals =
     quote && typeof quote.price === 'number'
@@ -1513,6 +1517,7 @@ export async function buildDossier({ ticker, name }, admin) {
       : null,
     asOf: today.toISOString().slice(0, 10),
     spark: spark.length >= 2 ? spark : null,
+    sparkDates: spark.length >= 2 ? sparkDates : null,
     sparkLabel: 'YTD',
     /* Surfaced in the trace so an empty card explains itself. */
     legCodes,

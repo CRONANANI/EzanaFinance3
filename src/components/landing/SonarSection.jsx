@@ -71,6 +71,7 @@ import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { geometryFor } from './sonar-geometry';
 import { animateWindowScroll, humanPointer } from './sonar-motion';
 import './sonar-band.css';
+import SonarPriceChart, { useLiveQuote } from './SonarPriceChart';
 import SonarResearchDeck, { NewsAround, SanctionsRail, hasNewsColumns } from './SonarResearchDeck';
 import { GoDeeperBar } from '@/components/sonar/GoDeeperBar';
 import SonarSectorStack from './SonarSectorStack';
@@ -552,6 +553,80 @@ function Sparkline({ points }) {
           vectorEffect="non-scaling-stroke"
         />
       </svg>
+    </div>
+  );
+}
+
+/**
+ * Nov 21: the company fundamentals card, with the live price leg. The brief
+ * behind it may be hours old (the landing demo is cached), so the chart, its
+ * end point and the price-driven stats are refreshed from
+ * /api/landing/live-quote, as a ping run now would see them. P/E and a
+ * dividend yield move with the price on unchanged trailing figures, so they
+ * are rescaled by the price ratio; EV/EBITDA is left as the brief had it.
+ */
+function CompanyFundCard({ dossier }) {
+  const quote = useLiveQuote(dossier?.kind === 'company' ? dossier.ticker : null);
+  const f = dossier.fundamentals;
+  const base = typeof f.price === 'number' && f.price > 0 ? f.price : null;
+  const ratio = quote && base ? quote.price / base : 1;
+  const useLive = Boolean(quote?.series?.length >= 2);
+  const points = useLive ? quote.series.map((p) => p.c) : dossier.spark;
+  const dates = useLive ? quote.series.map((p) => p.d) : dossier.sparkDates || null;
+  const pe = typeof f.peTtm === 'number' ? f.peTtm * ratio : null;
+  const marketCap = quote?.marketCap ?? (typeof f.marketCap === 'number' ? f.marketCap * ratio : null);
+  const fourth = f.fourth
+    ? /yield/i.test(f.fourth.label || '') && typeof f.fourth.value === 'number'
+      ? { ...f.fourth, value: f.fourth.value / ratio }
+      : f.fourth
+    : null;
+  const price = quote?.price ?? f.price;
+  const changePct = quote ? quote.changePct : f.changePct;
+  return (
+    <div className="snr-fund snr-fund--wide">
+      <div className="snr-fund-head">
+        <span className="snr-fund-ticker">{dossier.ticker}</span>
+        {dossier.sparkLabel ? <span className="snr-range-chip">{dossier.sparkLabel}</span> : null}
+        {quote ? (
+          <span className={`snr-live-tag${quote.open ? ' is-open' : ''}`}>
+            <span className="snr-live-dot" aria-hidden="true" />
+            {quote.open ? 'Live' : 'At close'}
+            {typeof changePct === 'number' ? (
+              <span className="snr-live-chg">
+                {changePct >= 0 ? '+' : '\u2212'}
+                {Math.abs(changePct).toFixed(2)}%
+              </span>
+            ) : null}
+          </span>
+        ) : null}
+        <span className="snr-rule-soft" />
+        <span className="snr-fund-name">{dossier.name}</span>
+      </div>
+      <div className="snr-fund-body">
+        <SonarPriceChart points={points} dates={dates} label={`${dossier.ticker} price`} />
+        <div className="snr-fund-grid">
+          <div className="snr-stat">
+            <span className="snr-stat-label">P/E TTM</span>
+            <span className="snr-stat-value">{pe != null ? pe.toFixed(2) : 'n/a'}</span>
+          </div>
+          <div className="snr-stat">
+            <span className="snr-stat-label">EV/EBITDA TTM</span>
+            <span className="snr-stat-value">
+              {typeof f.evToEbitdaTtm === 'number' ? f.evToEbitdaTtm.toFixed(2) : 'n/a'}
+            </span>
+          </div>
+          <div className="snr-stat">
+            <span className="snr-stat-label">Market cap</span>
+            <span className="snr-stat-value">{compactUsd(marketCap) || 'n/a'}</span>
+          </div>
+          <div className="snr-stat">
+            <span className="snr-stat-label">{fourth?.label || 'Price'}</span>
+            <span className="snr-stat-value">
+              {statValue(fourth) || (typeof price === 'number' ? `$${price.toFixed(2)}` : 'n/a')}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1831,7 +1906,7 @@ export function SonarSection({
     let answerPromise = null;
     const prefetch = () => {
       if (!answerPromise) {
-        answerPromise = fetch('/api/landing/demo-ping?v=9')
+        answerPromise = fetch('/api/landing/demo-ping?v=10')
           .then(async (res) => ({ res, data: await res.json().catch(() => null) }))
           .catch(() => null);
       }
@@ -3259,56 +3334,7 @@ export function SonarSection({
           {/* live.dossier can be null here: an open-question ping
                   ("brazilian economy") returns news columns (railNews) but no
                   dossier, and railNews alone opens this block. */}
-          {live?.dossier?.fundamentals ? (
-            <div className="snr-fund snr-fund--wide">
-              <div className="snr-fund-head">
-                <span className="snr-fund-ticker">{live.dossier.ticker}</span>
-                {live.dossier.sparkLabel ? (
-                  <span className="snr-range-chip">{live.dossier.sparkLabel}</span>
-                ) : null}
-                <span className="snr-rule-soft" />
-                <span className="snr-fund-name">{live.dossier.name}</span>
-              </div>
-              <div className="snr-fund-body">
-                <Sparkline points={live.dossier.spark} />
-                <div className="snr-fund-grid">
-                  <div className="snr-stat">
-                    <span className="snr-stat-label">P/E TTM</span>
-                    <span className="snr-stat-value">
-                      {typeof live.dossier.fundamentals.peTtm === 'number'
-                        ? live.dossier.fundamentals.peTtm.toFixed(2)
-                        : 'n/a'}
-                    </span>
-                  </div>
-                  <div className="snr-stat">
-                    <span className="snr-stat-label">EV/EBITDA TTM</span>
-                    <span className="snr-stat-value">
-                      {typeof live.dossier.fundamentals.evToEbitdaTtm === 'number'
-                        ? live.dossier.fundamentals.evToEbitdaTtm.toFixed(2)
-                        : 'n/a'}
-                    </span>
-                  </div>
-                  <div className="snr-stat">
-                    <span className="snr-stat-label">Market cap</span>
-                    <span className="snr-stat-value">
-                      {compactUsd(live.dossier.fundamentals.marketCap) || 'n/a'}
-                    </span>
-                  </div>
-                  <div className="snr-stat">
-                    <span className="snr-stat-label">
-                      {live.dossier.fundamentals.fourth?.label || 'Price'}
-                    </span>
-                    <span className="snr-stat-value">
-                      {statValue(live.dossier.fundamentals.fourth) ||
-                        (typeof live.dossier.fundamentals.price === 'number'
-                          ? `$${live.dossier.fundamentals.price.toFixed(2)}`
-                          : 'n/a')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
+          {live?.dossier?.fundamentals ? <CompanyFundCard dossier={live.dossier} /> : null}
 
           {/* Nov 4: a government-exposure ping (revenue by customer,
                     federal obligations, largest awards), above the news. */}
@@ -4529,11 +4555,11 @@ export function SonarSection({
       </section>
       {/* Below the band, once a real ping has answered: the sanctions panel when
         the ping was about sanctions, three columns of news, and the web
-        sources the brief read. Outside the band so the locked one-screen
+        sources. Outside the band so the locked one-screen
         composition above keeps its geometry. */}
       {/* Below the band, the result's own panels come first (the industry
         layout, the country ranking), then the research deck (sanctions, news
-        columns, the web pages the brief read). Nov 4: the panels used to sit
+        columns). Nov 4: the panels used to sit
         under the deck, a full screen further down. */}
       {answerReady ? <div id="sonar-more" className="snr-more-anchor" aria-hidden="true" /> : null}
       {answerReady && live?.dossier?.kind === 'industry' ? (

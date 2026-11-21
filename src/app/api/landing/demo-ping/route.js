@@ -30,8 +30,10 @@ export const maxDuration = 60;
 const DEMO_QUERY = 'Lockheed Martin';
 /* Bump alongside the ?v= the client sends when a pipeline change should
    invalidate yesterday's cached answer rather than wait a day for it. */
-const CACHE_KEY = 'landing-demo-v9';
-const TTL_MS = 24 * 60 * 60 * 1000;
+const CACHE_KEY = 'landing-demo-v10';
+/* Nov 21: three hours, down from a day, so the brief's prose stays close to
+   the live price the chart now shows (/api/landing/live-quote). */
+const TTL_MS = 3 * 60 * 60 * 1000;
 
 /* Same-instance fast path in front of the table read. The row is the real
    cache; this just saves a query on a warm instance. */

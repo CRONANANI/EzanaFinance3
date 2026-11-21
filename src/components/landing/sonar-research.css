@@ -154,44 +154,6 @@
   color: var(--snrx-mint);
 }
 
-/* ── web sources ─────────────────────────────────────────────────────── */
-.snrx-block--sources {
-  gap: 10px;
-}
-.snrx-sources {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 6px 28px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.snrx-sources a {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 0.8125rem;
-  color: var(--snrx-dim);
-  text-decoration: none;
-}
-.snrx-sources a span:nth-child(2) {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.snrx-sources a:hover {
-  color: var(--snrx-text);
-}
-.snrx-sources .bi {
-  color: var(--snrx-mint);
-}
-.snrx-host {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--snrx-faint);
-}
-
 /* ── sanctions panel ─────────────────────────────────────────────────── */
 .snrx-sanctions .snx-map {
   --snx-map-ink: var(--brand-band-mint);
