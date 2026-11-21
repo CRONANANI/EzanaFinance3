@@ -56,6 +56,37 @@ export const PLANS = {
     mode: 'subscription',
     features: ['Everything in Family', 'API access', 'Priority support', 'Custom reports'],
   },
+  /* Nov 21, 2026: quarterly billing (Quarterly / Yearly on /pricing). Each
+     is a Stripe recurring price billed every 3 months; set the matching
+     NEXT_PUBLIC_STRIPE_PRICE_*_QUARTERLY env var to its price_ id. */
+  personal_quarterly: {
+    name: 'Personal',
+    description: 'For casual investors',
+    price: 15,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_QUARTERLY,
+    interval: 'quarter',
+    mode: 'subscription',
+    features: ['Basic market data', 'Watchlist', 'Daily newsletter'],
+  },
+  personal_advanced_quarterly: {
+    name: 'Personal Advanced',
+    description: 'For active traders',
+    price: 57,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_QUARTERLY,
+    interval: 'quarter',
+    mode: 'subscription',
+    popular: true,
+    features: ['Everything in Personal', 'Advanced analytics', 'Real-time alerts'],
+  },
+  family_quarterly: {
+    name: 'Family',
+    description: 'Households & shared portfolios',
+    price: 147,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_QUARTERLY,
+    interval: 'quarter',
+    mode: 'subscription',
+    features: ['Everything in Personal Advanced', 'Up to 5 family members', 'Shared portfolios'],
+  },
   individual_annual: {
     name: 'Individual',
     description: 'For casual investors',

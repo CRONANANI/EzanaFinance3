@@ -721,6 +721,15 @@ body.light-mode {
   justify-content: space-between;
 }
 
+/* ── /pricing nav (Nov 21, 2026): the Ezana logo alone, centred ── */
+.navbar--pricing .nav-container--logo-only {
+  justify-content: center;
+  min-height: 56px;
+}
+.navbar--pricing .nav-container--logo-only .nav-brand {
+  margin: 0 auto;
+}
+
 /* Reading progress at the very top edge of the page: 3px emerald fill on a
    subtle emerald track (the track keeps the bar legible at 0%). Width is
    scroll-driven from JS — no transition, it simply tracks position. */

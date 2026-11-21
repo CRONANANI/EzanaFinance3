@@ -47,7 +47,7 @@ const SUCCESS = {
 const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
 /** Pricing-page plans that go through the waitlist card step. */
-const PAID_PLANS = ['starter', 'advanced', 'family'];
+const PAID_PLANS = ['starter', 'family'];
 const CHECKOUT_TOKEN_TTL_MS = 2 * 60 * 60 * 1000;
 
 export const POST = withApiGuard(
@@ -67,7 +67,9 @@ export const POST = withApiGuard(
       const heardFrom = str(body.heardFrom);
       const referralRaw = str(body.referralCode);
       const plan = str(body.plan);
-      const billing = str(body.billing) === 'monthly' ? 'monthly' : 'yearly';
+      const billing = ['monthly', 'quarterly'].includes(str(body.billing))
+        ? str(body.billing)
+        : 'yearly';
       const redirectRaw = str(body.redirect);
 
       const errors = {};

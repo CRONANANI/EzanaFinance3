@@ -26,15 +26,7 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  Check,
-  Minus,
-  ArrowRight,
-  Sparkles,
-  ShieldCheck,
-  Loader2,
-  ChevronDown,
-} from 'lucide-react';
+import { Check, Minus, ArrowRight, ShieldCheck, Loader2, ChevronDown } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import RenewalTerms from '@/components/billing/RenewalTerms';
 import ApiPricingCalculator from '@/components/pricing/ApiPricingCalculator';
@@ -77,7 +69,7 @@ const PLANS = [
     monthlyPrice: 5,
     yearlyPrice: 4, // effective /mo when billed yearly ($48/yr)
     highlight: false,
-    stripeKey: { month: 'personal_monthly', year: 'individual_annual' },
+    stripeKey: { quarter: 'personal_quarterly', year: 'individual_annual' },
     features: [
       'Congressional trade alerts (24hr delay)',
       'Basic portfolio dashboard',
@@ -95,8 +87,9 @@ const PLANS = [
     monthlyPrice: 19,
     yearlyPrice: 15, // effective /mo when billed yearly ($180/yr)
     highlight: true,
+    trialNow: true,
     badge: 'Most Popular',
-    stripeKey: { month: 'personal_advanced_monthly', year: 'personal_advanced_annual' },
+    stripeKey: { quarter: 'personal_advanced_quarterly', year: 'personal_advanced_annual' },
     features: [
       'Real-time congressional trade alerts',
       'Advanced portfolio analytics',
@@ -115,7 +108,7 @@ const PLANS = [
     monthlyPrice: 49,
     yearlyPrice: 39, // effective /mo when billed yearly ($468/yr)
     highlight: false,
-    stripeKey: { month: 'family_monthly', year: 'family_annual' },
+    stripeKey: { quarter: 'family_quarterly', year: 'family_annual' },
     features: [
       'Everything in Advanced',
       'Up to 5 household accounts',
@@ -374,7 +367,7 @@ const COMPARISON_FEATURES = [
 
 /** The Stripe catalog plan (price and period actually charged) for a card. */
 const catalogPlan = (plan, billing) =>
-  CATALOG[plan.stripeKey?.[billing === 'yearly' ? 'year' : 'month']] || null;
+  CATALOG[plan.stripeKey?.[billing === 'yearly' ? 'year' : 'quarter']] || null;
 
 /**
  * Pure: everything a plan shows about its price for one billing interval.
@@ -401,20 +394,24 @@ function planPricing(plan, billing) {
       total,
     };
   }
+  /* Quarterly (Nov 21): the monthly rate, billed every three months. */
   return {
     kind: 'paid',
     main: `$${plan.monthlyPrice}`,
     unit: '/mo',
-    note: 'Billed monthly',
+    note: `$${plan.monthlyPrice * 3} billed quarterly`,
     was: null,
-    total: plan.monthlyPrice,
+    total: plan.monthlyPrice * 3,
   };
 }
 
+/* Nov 21 (second pass): Advanced starts its free month straight away;
+   Free, Starter and Family join the waitlist. */
 function ctaLabelFor(plan, isPending) {
-  if (plan.isFree) return isPending ? 'Activating…' : 'Get Started Free';
   if (plan.contactSales) return 'Contact Sales';
-  return isPending ? 'Opening…' : 'Join waitlist';
+  if (isPending) return 'Opening…';
+  if (plan.trialNow) return 'Start free trial';
+  return 'Join waitlist';
 }
 
 /* Nov 21: the four outside cards carry a solid emerald button; the
@@ -427,7 +424,7 @@ const WAITLIST_STEPS = [
   {
     icon: 'bi-person-plus',
     title: 'Join the waitlist',
-    body: 'Create your account details, then add a card on Stripe. Nothing is charged.',
+    body: 'Free, Starter and Family: enter your details. Paid plans add a card on Stripe; nothing is charged.',
   },
   {
     icon: 'bi-envelope-check',
@@ -444,15 +441,15 @@ const WAITLIST_STEPS = [
 const FAQ_ITEMS = [
   {
     q: 'Why is there a waitlist?',
-    a: 'Ezana opens access in waves so every new member gets a working account and real support. Join the waitlist from any paid plan and we email your invite as soon as your wave opens.',
+    a: 'Ezana opens access in waves so every new member gets a working account and real support. Free, Starter and Family join the waitlist and we email your invite as soon as your wave opens. Advanced skips the waitlist: its free month starts the day you sign up.',
   },
   {
     q: 'What happens after I join the waitlist?',
     a: 'You enter your account details, then Stripe asks for a card. Nothing is charged at that point, the card is only saved. When you are accepted, you are invited to a free one-month trial of the Starter plan.',
   },
   {
-    q: 'Can I start on Advanced instead of Starter?',
-    a: `Yes. Your invite starts the free ${TRIAL_LABEL} Starter trial, and you can move to Advanced the moment you join. Or use Starter for the whole month and choose Starter or Advanced when the trial ends.`,
+    q: 'Can I start on Advanced right away?',
+    a: `Yes. Choose Start free trial on Advanced, create your account, add a card on Stripe and your free ${TRIAL_LABEL} trial starts immediately, no waitlist. Waitlist members can also move from their Starter trial to Advanced at any time.`,
   },
   {
     q: 'Why do I need a card to join the waitlist?',
@@ -460,15 +457,15 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What happens when my free month ends?',
-    a: 'The plan you are on (Starter, or Advanced if you switched) is charged to the saved card at the price shown, monthly or yearly depending on what you picked. We email a reminder 3 days before the trial ends.',
+    a: 'The plan you are on (Starter or Advanced) is charged to the saved card at the price shown, quarterly or yearly depending on what you picked. We email a reminder 3 days before the trial ends.',
   },
   {
     q: 'How does automatic renewal work?',
     a: RENEWAL_POLICY_TEXT,
   },
   {
-    q: 'Monthly or yearly: what is the difference?',
-    a: 'Those are the two billing options. Yearly is billed once a year and costs about 20% less than paying monthly, for example Starter is $48 a year instead of $60.',
+    q: 'Quarterly or yearly: what is the difference?',
+    a: 'Those are the two billing options. Quarterly is billed every three months at the monthly rate (Starter is $15 a quarter). Yearly is billed once a year and costs about 20% less, for example Starter is $48 a year instead of $60.',
   },
   {
     q: 'Can I cancel or change plans later?',
@@ -476,7 +473,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is the Free plan on the waitlist too?',
-    a: 'No card is ever needed for Free. It includes real-time market data, watchlists, read-only community access and a $10K mock portfolio, and you can upgrade from it later.',
+    a: 'Yes, Free joins the waitlist like Starter and Family, but no card is ever needed for it. It includes real-time market data, watchlists, read-only community access and a $10K mock portfolio, and you can upgrade from it later.',
   },
   {
     q: 'How does the Partner program pay?',
@@ -598,7 +595,7 @@ function PlanList({ billing, openPlan, setOpenPlan, pendingPlan, onSelect }) {
               {!plan.isFree && !plan.contactSales ? (
                 <RenewalTerms
                   plan={catalogPlan(plan, billing)}
-                  fromInvite
+                  fromInvite={!plan.trialNow}
                   className="plan-renewal"
                 />
               ) : null}
@@ -617,15 +614,25 @@ function useNavHeight(rootRef) {
     const root = rootRef.current;
     const nav = document.querySelector('.navbar-sticky') || document.querySelector('.navbar');
     if (!root || !nav) return undefined;
-    const write = () =>
+    const write = () => {
       root.style.setProperty(
         '--pricing-nav-h',
         `${Math.round(nav.getBoundingClientRect().height)}px`,
       );
+      /* Classic scrollbar width, for the full-bleed Partner band's 100vw maths. */
+      root.style.setProperty(
+        '--pricing-sbw',
+        `${Math.max(0, window.innerWidth - document.documentElement.clientWidth)}px`,
+      );
+    };
     write();
     const ro = new ResizeObserver(write);
     ro.observe(nav);
-    return () => ro.disconnect();
+    window.addEventListener('resize', write);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', write);
+    };
   }, [rootRef]);
 }
 
@@ -676,7 +683,7 @@ export default function PricingPage() {
       return;
     }
 
-    const planKey = plan.stripeKey?.[billing === 'yearly' ? 'year' : 'month'];
+    const planKey = plan.stripeKey?.[billing === 'yearly' ? 'year' : 'quarter'];
     if (!planKey) {
       window.location.href = `/auth/signup?plan=${plan.id}`;
       return;
@@ -694,9 +701,12 @@ export default function PricingPage() {
         body: JSON.stringify({ planKey, cancelPath: '/pricing' }),
       });
 
-      // 401 means user isn't signed in → send to signup, preserve plan choice
+      // 401: not signed in. Advanced starts its free month on its own signup
+      // page; every other plan joins the waitlist (plan choice preserved).
       if (res.status === 401) {
-        window.location.href = `/auth/signup?plan=${plan.id}&billing=${billing}`;
+        window.location.href = plan.trialNow
+          ? `/auth/start-trial?billing=${billing}`
+          : `/auth/signup?plan=${plan.id}&billing=${billing}`;
         return;
       }
 
@@ -792,33 +802,29 @@ export default function PricingPage() {
     <div className="pricing-page--standalone" ref={rootRef}>
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="pricing-hero">
-        <div className="pricing-trial-pill" role="note">
-          <Sparkles size={13} aria-hidden />
-          Free {TRIAL_LABEL} trial for waitlist members
-        </div>
         <h1 className="pricing-h1">
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
         <p className="pricing-subtitle">
           <span className="pricing-subtitle-long">
-            Start with the plan that fits where you are. Join the waitlist and your invite comes
-            with a free {TRIAL_LABEL} trial. No charge until the trial ends, cancel anytime.
+            Start Advanced free for a month today, or join the waitlist for Free, Starter or Family.
+            No charge until a trial ends, cancel anytime.
           </span>
           <span className="pricing-subtitle-short">
-            Free {TRIAL_LABEL} trial with your invite. Cancel anytime.
+            Advanced is free for a month. Cancel anytime.
           </span>
         </p>
 
-        {/* Nov 19: the switch pill (Monthly, switch, Yearly) in the landing Sonar
+        {/* Nov 19: the switch pill (Quarterly, switch, Yearly) in the landing Sonar
             band's glossy emerald metal finish. */}
         <div className="billing-switch-pill" role="group" aria-label="Billing interval">
           <button
             type="button"
-            className={`billing-switch-label${billing === 'monthly' ? ' is-on' : ''}`}
-            aria-pressed={billing === 'monthly'}
-            onClick={() => setBilling('monthly')}
+            className={`billing-switch-label${billing === 'quarterly' ? ' is-on' : ''}`}
+            aria-pressed={billing === 'quarterly'}
+            onClick={() => setBilling('quarterly')}
           >
-            Monthly
+            Quarterly
           </button>
           <button
             type="button"
@@ -826,7 +832,7 @@ export default function PricingPage() {
             aria-checked={billing === 'yearly'}
             aria-label="Bill yearly"
             className="billing-switch"
-            onClick={() => setBilling(billing === 'yearly' ? 'monthly' : 'yearly')}
+            onClick={() => setBilling(billing === 'yearly' ? 'quarterly' : 'yearly')}
           >
             <span className="billing-switch-thumb" aria-hidden="true" />
           </button>
@@ -860,15 +866,18 @@ export default function PricingPage() {
         <ol className="pricing-waitlist-steps">
           {WAITLIST_STEPS.map((step, i) => (
             <li key={step.title} className="pricing-waitlist-step">
+              <span className="pricing-waitlist-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="pricing-waitlist-ic" aria-hidden="true">
                 <i className={`bi ${step.icon}`} />
               </span>
-              <span className="pricing-waitlist-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="pricing-waitlist-title">{step.title}</span>
               <span className="pricing-waitlist-body">{step.body}</span>
             </li>
           ))}
         </ol>
+        <p className="pricing-waitlist-skip">
+          Want in now? <strong>Advanced</strong> skips the waitlist and starts a free month today.
+        </p>
       </section>
 
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
@@ -969,7 +978,7 @@ export default function PricingPage() {
                   {!plan.isFree && !isContact ? (
                     <RenewalTerms
                       plan={catalogPlan(plan, billing)}
-                      fromInvite
+                      fromInvite={!plan.trialNow}
                       className="plan-renewal"
                     />
                   ) : null}

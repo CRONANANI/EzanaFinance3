@@ -648,6 +648,20 @@ export function Navbar() {
     );
   }
 
+  /* Nov 21, 2026: /pricing shows only the Ezana logo, centred (no menu,
+     no Login or Become a Partner). */
+  if (isPricing) {
+    return (
+      <nav className="navbar navbar-sticky navbar--pricing">
+        <div className="nav-container nav-container-centered nav-container--logo-only">
+          <Link href="/" className="logo nav-brand nav-home-btn" title="Ezana Finance">
+            <EzanaNavLogo priority />
+          </Link>
+        </div>
+      </nav>
+    );
+  }
+
   if (showLandingNav) {
     return (
       <nav ref={landingNavRef} className="navbar navbar-sticky">

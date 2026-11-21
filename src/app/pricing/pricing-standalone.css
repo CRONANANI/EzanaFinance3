@@ -2065,3 +2065,177 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
 body:not(.light-mode) .pricing-page--standalone .comparison-table th {
   color: #ffffff;
 }
+
+/* ── Nov 21, 2026 (second pass) ──────────────────────────────────────────
+   - Shorter billing switch and plan buttons.
+   - Plan buttons on the glossy emerald metal (the switch pill's finish);
+     Advanced keeps its white button on its own metal card.
+   - Waitlist steps and the Free / Starter / Family / Enterprise cards are
+     transparent; steps are centred with the number above the icon.
+   - The Partner band runs edge to edge on every screen size while its
+     content stays on the cards' lines: copy starts on the Free card's left
+     edge, the earnings grid ends on the Enterprise card's right edge. */
+.pricing-page--standalone {
+  overflow-x: clip;
+}
+
+/* Billing switch: shorter. */
+.billing-switch-pill {
+  padding: 0.25rem 0.5rem;
+  gap: 0.5rem;
+}
+.billing-switch-label {
+  min-height: 32px;
+  font-size: 0.8125rem;
+}
+.billing-switch-pill .billing-switch-label {
+  min-height: 32px;
+}
+
+/* Plan buttons: shorter, glossy emerald. */
+.pricing-cards-grid--five .plan-cta,
+.plan-row-panel .plan-cta {
+  min-height: 42px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8125rem;
+}
+.pricing-cards-section .plan-cta.plan-cta--primary,
+.pricing-cards-grid--five .plan-cta.plan-cta--primary,
+.pricing-cards-section .plan-cta.plan-cta--primary:hover:not(:disabled),
+.pricing-cards-grid--five .plan-cta.plan-cta--primary:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0) 51%
+    ),
+    var(--brand-band-metal);
+  border: none;
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+.pricing-cards-section .plan-cta.plan-cta--primary:hover:not(:disabled),
+.pricing-cards-grid--five .plan-cta.plan-cta--primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+/* Transparent cards (not the recommended metal card). */
+.pricing-cards-grid--five > .plan-card:not(.plan-card--highlight),
+.pricing-cards-grid--five > .plan-card:not(.plan-card--highlight):hover {
+  background: transparent;
+  box-shadow: none;
+}
+body:not(.light-mode) .pricing-page--standalone .plan-card:not(.plan-card--highlight) {
+  background: transparent;
+}
+
+/* Waitlist steps: transparent, centred, number above the icon. */
+.pricing-waitlist-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  background: transparent;
+}
+.pricing-waitlist-ic {
+  margin-bottom: 0.15rem;
+}
+.pricing-waitlist-body {
+  max-width: 34ch;
+}
+.pricing-waitlist-skip {
+  margin: 0.85rem 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.pricing-waitlist-skip strong {
+  color: var(--emerald-text);
+}
+@media (max-width: 768px) {
+  .pricing-waitlist-step {
+    padding: 0.4rem 0.25rem;
+  }
+  .pricing-waitlist-skip {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Partner band: full bleed, content on the cards' lines. --pricing-sbw is the
+   classic scrollbar's width (page.js), so 100vw maths lands on the canvas. */
+.pricing-partner {
+  max-width: none;
+  margin: 2.5rem calc(50% - 50vw + var(--pricing-sbw, 0px) / 2) 0;
+  padding: 2.5rem calc(50vw - 50% - var(--pricing-sbw, 0px) / 2);
+  border-radius: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3rem;
+}
+.pricing-partner .pricing-partner-rates {
+  justify-self: end;
+  grid-template-columns: repeat(2, auto);
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+}
+.pricing-partner .pricing-partner-rate {
+  padding: 1.25rem 0;
+}
+.pricing-partner .pricing-partner-rate:nth-child(odd) {
+  padding-right: 2.75rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+.pricing-partner .pricing-partner-rate:nth-child(even) {
+  padding-left: 2.75rem;
+}
+.pricing-partner .pricing-partner-rate:nth-child(-n + 2) {
+  padding-top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.pricing-partner .pricing-partner-rate:nth-child(n + 3) {
+  padding-bottom: 0;
+}
+@media (max-width: 900px) {
+  .pricing-partner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  .pricing-partner .pricing-partner-rates {
+    justify-self: stretch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pricing-partner .pricing-partner-rate:nth-child(odd) {
+    padding-right: 1.25rem;
+  }
+  .pricing-partner .pricing-partner-rate:nth-child(even) {
+    padding-left: 1.25rem;
+  }
+}
+@media (max-width: 480px) {
+  .pricing-partner .pricing-partner-rates {
+    grid-template-columns: 1fr;
+  }
+  .pricing-partner .pricing-partner-rate,
+  .pricing-partner .pricing-partner-rate:nth-child(odd),
+  .pricing-partner .pricing-partner-rate:nth-child(even) {
+    padding: 1rem 0;
+    border-right: none;
+  }
+  .pricing-partner .pricing-partner-rate:first-child {
+    padding-top: 0;
+  }
+  .pricing-partner .pricing-partner-rate:last-child {
+    padding-bottom: 0;
+  }
+  .pricing-partner .pricing-partner-rate:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}

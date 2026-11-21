@@ -15,6 +15,7 @@ import { TRIAL_DAYS } from '@/lib/billing/renewal-terms';
 
 /** Starter, at the billing period the member picked on /pricing (yearly by default). */
 export function starterPlanKeyFor(billing) {
+  if (billing === 'quarterly') return 'personal_quarterly';
   return billing === 'monthly' ? 'personal_monthly' : 'individual_annual';
 }
 

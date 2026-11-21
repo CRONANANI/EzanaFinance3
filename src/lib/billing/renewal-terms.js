@@ -11,7 +11,7 @@ export const TRIAL_DAYS = 30;
 export const TRIAL_LABEL = '1-month';
 export const BILLING_SETTINGS_PATH = '/settings?tab=billing';
 
-const PERIOD = { month: 'month', year: 'year' };
+const PERIOD = { month: 'month', quarter: 'quarter', year: 'year' };
 
 export function formatPrice(amount) {
   const n = Number(amount);
@@ -48,4 +48,4 @@ export function renewalText(plan, { trial = true, endDate } = {}) {
 }
 
 /** Generic wording for the Terms and FAQ (no specific plan). */
-export const RENEWAL_POLICY_TEXT = `Paid plans start with a free ${TRIAL_LABEL} trial. A card is needed to start it. When the trial ends, the plan you chose is charged at the price shown when you subscribed, every month or every year depending on the billing period you picked, and it keeps renewing automatically until you cancel. You can cancel anytime in Settings, Billing, online and without calling or emailing us. If you cancel before the trial ends you are not charged. If you cancel later, the plan stays active until the end of the period you already paid for and is not charged again. Changing plans when you already have a subscription does not start a new trial.`;
+export const RENEWAL_POLICY_TEXT = `Paid plans start with a free ${TRIAL_LABEL} trial. A card is needed to start it. When the trial ends, the plan you chose is charged at the price shown when you subscribed, every quarter or every year depending on the billing period you picked, and it keeps renewing automatically until you cancel. You can cancel anytime in Settings, Billing, online and without calling or emailing us. If you cancel before the trial ends you are not charged. If you cancel later, the plan stays active until the end of the period you already paid for and is not charged again. Changing plans when you already have a subscription does not start a new trial.`;

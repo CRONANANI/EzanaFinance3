@@ -147,6 +147,12 @@ async function resolveTrialVerdict() {
     return { userId: user.id, blocked: false, needsOnboarding };
   }
 
+  /* Accounts from the Advanced trial signup (no waitlist invite) only open
+     once Stripe reports a trialing or active subscription (checked above). */
+  if (user.user_metadata?.requires_checkout === true) {
+    return { userId: user.id, blocked: true, needsOnboarding };
+  }
+
   const trial = getTrialStatus(profile, user.created_at);
   return {
     userId: user.id,
