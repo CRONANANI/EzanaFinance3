@@ -19,10 +19,10 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  /* Nov 21, 2026: CI (.github/workflows/ci.yml) already runs the full ESLint
-     pass on every push; repeating it inside next build cost build memory and
-     time on Vercel for no extra safety. */
-  eslint: { ignoreDuringBuilds: true },
+  /* ESLint runs inside next build (Next's default), so a lint error stops
+     the Vercel deploy as well as failing CI. Nov 21, 2026: kept on by choice
+     after briefly skipping it; the build-memory savings below do not depend
+     on it. */
   // Next.js-built-in import optimizer. For the listed packages, Next rewrites
   // named-member imports to direct submodule imports and enables aggressive
   // tree-shaking. lucide-react in particular ships >1000 icons; without this,
