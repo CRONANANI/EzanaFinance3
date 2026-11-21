@@ -565,3 +565,12 @@
     display: none;
   }
 }
+
+/* Nov 20, 2026 (evening): no outline and no travelling dot. The four facts
+   sit straight on the page, centred; the dot element is no longer rendered. */
+.eah-dot__card {
+  border: 0;
+}
+.eah-dot__dot {
+  display: none;
+}

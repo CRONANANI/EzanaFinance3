@@ -231,7 +231,6 @@ function SnapCard({ stat, index }) {
   const shown = useCountUp(stat.value, ref);
   return (
     <li className="eah-dot" ref={ref} style={{ '--eah-dot-delay': `${index * -1.6}s` }}>
-      <span className="eah-dot__dot" aria-hidden="true" />
       <div className="eah-dot__card">
         <span className="eah-dot__ray" aria-hidden="true" />
         <span className="eah-dot__label">{stat.label}</span>

@@ -2,9 +2,9 @@
 
 /**
  * CobeGlobe: the Ezana Echo article globe (Nov 2026), built on cobe and the
- * 21st.dev "cobe globe CDN" card: a white dotted globe that spins slowly,
- * thin arcs between places, and a small spinning pyramid with a mono label
- * over each place.
+ * 21st.dev "cobe globe CDN" card: a white dotted globe that spins slowly
+ * with a dot on each place. Since Nov 20, 2026 there are no arcs and only the
+ * active place carries its spinning pyramid and mono label.
  *
  * Ported to plain JSX and page-scoped CSS (no TypeScript, no Tailwind) and
  * wired to the same contract the rail gave the previous globe:
@@ -20,9 +20,9 @@
  * Labels and clicks use the same projection cobe uses internally (cobe 2.0,
  * lib/echo/globe-math.js), computed every frame, so they track the dots in
  * every browser; the 21st.dev demo used CSS anchor positioning, which not
- * every browser supports yet. Arcs join the cities in the order the article
- * names them; the demo's traffic numbers are not shown, because an article
- * has no such figures. Colours come from the --echo-globe-* tokens.
+ * every browser supports yet. Arcs joining the cities were dropped on Nov 20,
+ * 2026; the demo's traffic numbers are not shown, because an article has no
+ * such figures. Colours come from the --echo-globe-* tokens.
  * Reduced motion: no spin, the pyramids stand still, focus jumps instead of
  * easing.
  */
@@ -104,10 +104,9 @@ export function CobeGlobe({
     const paper = tokenRgb(wrap, '--echo-globe-paper', [1, 1, 1]);
     const glow = tokenRgb(wrap, '--echo-globe-glow', [0.94, 0.93, 0.91]);
     const pts = pointsRef.current;
-    const arcs = pts.slice(1).map((p, i) => ({
-      from: [pts[i].lat, pts[i].lng],
-      to: [p.lat, p.lng],
-    }));
+    /* No arcs (Nov 20, 2026): with eight or more cities the joining lines
+       crossed into a tangle. Places read as plain dots instead. */
+    const arcs = [];
 
     let globe = null;
     try {
@@ -177,7 +176,10 @@ export function CobeGlobe({
         const el = labelRefs.current[p.i];
         if (!el) continue;
         const at = locationToScreen(p.lat, p.lng, s.phi, s.theta);
-        const shown = at.visible ? Math.min(1, at.depth * 4) : 0;
+        /* One label at a time (Nov 20, 2026): only the city the reader is
+           on is named; every other place stays an unlabelled dot. */
+        const isActive = p.i === activeIndexRef.current;
+        const shown = isActive && at.visible ? Math.min(1, at.depth * 4) : 0;
         items.push({ p, el, at, shown });
       }
       items.sort(

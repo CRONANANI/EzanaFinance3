@@ -54,7 +54,13 @@ export const HOME_CARD_IMAGES = {
     alt: '',
   },
   // Ossoff's $115.9 Million Machine
-  'ossoff-2028-money-2026': { src: card('ossoff-2028-money-2026'), alt: '' },
+  'ossoff-2028-money-2026': {
+    // Supplied photo (Nov 20th): Ossoff speaking at a "United for Georgia"
+    // podium. Framed on his face for the small Editors' picks thumbnail.
+    src: card('ossoff-2028-money-2026'),
+    alt: 'Jon Ossoff speaking at a United for Georgia podium in front of an American flag.',
+    position: '52% 22%',
+  },
   // The Biggest M&A Deals of 2026, Checked (original Ezana illustration, Nov 19th)
   'biggest-ma-deals-2026': {
     src: card('biggest-ma-deals-2026'),
