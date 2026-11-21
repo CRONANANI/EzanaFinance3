@@ -438,7 +438,7 @@ test('wiring: the ping board, the brief, the dossier, the engine and the researc
   assert.match(lp, /never treat it as a request for a recommendation/);
   assert.match(lp, /fetchValuationRaw\(ticker/);
   assert.match(lp, /valuation: snapshotFromRaw|const valuation = snapshotFromRaw/);
-  assert.match(lp, /landing:v6:/);
+  assert.match(lp, /landing:v7:/);
   assert.match(lp, /valuationEvidence\(resolved\.ticker/);
   const eng = read('src/lib/sonar/engine/engine.js');
   assert.match(eng, /equityTicker && depth === 'deep' && !evidenceOverride/);

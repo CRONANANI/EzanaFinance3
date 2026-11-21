@@ -317,3 +317,22 @@ export function leanBullets(dossier, lean = tradingLean(dossier)) {
     );
   return out;
 }
+
+/**
+ * Disclosed volume over the last `months` months of the dossier's monthly volume (the
+ * Politician Tracker's measure: range midpoints of every trade in the window). Null when the
+ * dossier has no monthly volume (an answer cached before it existed).
+ * -> { total, buy, sell, count }
+ */
+export function periodVolume(volume, months) {
+  if (!volume || !Array.isArray(volume.total) || !volume.total.length) return null;
+  const take = Math.max(1, Math.min(volume.total.length, Number(months) || volume.total.length));
+  const sum = (arr) =>
+    Array.isArray(arr) ? arr.slice(-take).reduce((a, b) => a + (Number(b) || 0), 0) : 0;
+  return {
+    total: sum(volume.total),
+    buy: sum(volume.buy),
+    sell: sum(volume.sell),
+    count: sum(volume.count),
+  };
+}

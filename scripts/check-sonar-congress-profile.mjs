@@ -12,6 +12,7 @@ const C = await import('@/lib/sonar/congress-profile');
 const L = await import('@/lib/sonar/exemplary/layouts');
 const AC = await import('@/lib/sonar/answer-charts');
 const W = await import('@/lib/sonar/workspace');
+const LP = await import('@/lib/sonar/landing-politician');
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 const months = Array.from({ length: 36 }, (_, i) => {
@@ -188,6 +189,30 @@ test('trading lean bullets: bought, sold, net and latest filing, from the dossie
   );
   assert.equal(b[3], 'Latest filing: a sale of WBD ($50K–$100K) on 2026-10-07.');
   assert.deepEqual(C.leanBullets({}), []);
+});
+
+test('disclosed volume by period: the tracker measure, so the header changes with the period', () => {
+  const ms = ['2024-01', '2025-06', '2026-10', '2026-11'];
+  const v = LP.monthlyVolume(
+    [
+      { transaction_date: '2024-01-15', type: 'purchase', amount_mid: 8000 },
+      { transaction_date: '2025-06-02', type: 'sale_partial', amount_mid: 32500 },
+      { transaction_date: '2026-10-07', type: 'sale', amount_mid: 75000 },
+      { transaction_date: '2026-11-03', type: 'purchase', amount_mid: 250000 },
+      { transaction_date: '2019-01-01', type: 'purchase', amount_mid: 1 },
+    ],
+    ms,
+  );
+  assert.deepEqual(v.total, [8000, 32500, 75000, 250000]);
+  assert.deepEqual(v.buy, [8000, 0, 0, 250000]);
+  assert.deepEqual(v.sell, [0, 32500, 75000, 0]);
+  assert.deepEqual(v.count, [1, 1, 1, 1]);
+  assert.deepEqual(C.periodVolume(v, 2), { total: 325000, buy: 250000, sell: 75000, count: 2 });
+  assert.deepEqual(C.periodVolume(v, 4), { total: 365500, buy: 258000, sell: 107500, count: 4 });
+  assert.notDeepEqual(C.periodVolume(v, 1), C.periodVolume(v, 4));
+  assert.equal(C.periodVolume(null, 12), null);
+  const rep = read('src/components/sonar/congress/CongressProfileReport.jsx');
+  assert.match(rep, /Disclosed volume, \$\{periodName\}/);
 });
 
 test('exemplary layout: a member of Congress gets the approved rows, in order', () => {

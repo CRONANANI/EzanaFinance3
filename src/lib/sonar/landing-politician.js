@@ -240,6 +240,34 @@ export function portfolioSeries(trades, { months = 36, now = new Date() } = {}) 
   return { months: outMonths.slice(-months), values: outValues.slice(-months) };
 }
 
+/**
+ * Nov 21: disclosed volume by month, aligned to `months` (portfolioSeries' month keys). The
+ * Politician Tracker's own measure: the sum of the disclosed range midpoints of every trade
+ * transacted in the month, purchases and sales alike, with the split and the count.
+ * -> { total: number[], buy: number[], sell: number[], count: number[] }
+ */
+export function monthlyVolume(trades, months) {
+  const at = new Map((months || []).map((m, i) => [m, i]));
+  const n = (months || []).length;
+  const out = {
+    total: new Array(n).fill(0),
+    buy: new Array(n).fill(0),
+    sell: new Array(n).fill(0),
+    count: new Array(n).fill(0),
+  };
+  for (const t of trades || []) {
+    const i = at.get(monthKey(t?.transaction_date));
+    if (i == null) continue;
+    const mid = Number(t.amount_mid) || 0;
+    out.total[i] += mid;
+    out.count[i] += 1;
+    if (t.type === 'purchase') out.buy[i] += mid;
+    else if (/^sale/.test(String(t.type || ''))) out.sell[i] += mid;
+  }
+  for (const k of ['total', 'buy', 'sell']) out[k] = out[k].map((v) => Math.round(v));
+  return out;
+}
+
 /* The committee and Echo legs are extras: bounded so they never hold the
    member's trades, which the brief and the stack need first. */
 const EXTRA_MS = 1200;
@@ -340,6 +368,7 @@ export async function buildPoliticianDossier(
     out.seriesMonths = months;
     const firstYear = months[0].slice(0, 4);
     out.seriesLabel = `SINCE ${firstYear}`;
+    out.volume = monthlyVolume(trades, months);
   }
 
   const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

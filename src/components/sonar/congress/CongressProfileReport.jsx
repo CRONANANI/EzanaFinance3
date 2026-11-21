@@ -26,6 +26,7 @@ import { Face } from '@/components/sonar/SonarFace';
 import {
   tradingLean,
   leanBullets,
+  periodVolume,
   ALL_TIME,
   seriesChange,
   seriesPeriods,
@@ -343,21 +344,17 @@ function Portfolio({ dossier }) {
   const periods = seriesPeriods(series.length);
   const initial = periods.find((p) => p.key === '3Y' && p.available) ? '3Y' : ALL_TIME;
   const [period, setPeriod] = useState(initial);
-  const [hover, setHover] = useState(null);
   const view = sliceSeries(series, months, periods.find((p) => p.key === period) || null);
   const hasChart = view.series.length >= 2;
-  /* Nov 21: the header follows the chart. It shows the point under the cursor, otherwise the
-     latest month, with the change since the first month of the selected period and that
-     month's value, so changing the period changes what the header reports. */
-  const at = hover != null && hover < view.series.length ? hover : view.series.length - 1;
-  const shown = hasChart ? view.series[at] : null;
-  const first = hasChart ? view.series[0] : null;
-  /* A change from almost nothing (a first filing of a few thousand dollars) is not a useful
-     percentage; the "From" line still says where the period started. */
-  const pct =
-    hasChart && first > 0 && first >= Math.abs(shown) * 0.02
-      ? ((shown - first) / first) * 100
-      : null;
+  /* Nov 21: the header reports the selected period, the way the Politician Tracker's
+     "Disclosed volume" column does: the sum of the disclosed range midpoints of every trade
+     in the window, with the count and the bought and sold split. The chart below is the
+     estimated open value over the same window. */
+  const sel = periods.find((p) => p.key === period) || null;
+  const vol = periodVolume(
+    dossier.volume,
+    period === ALL_TIME ? dossier.volume?.total?.length : sel?.months,
+  );
   const periodName = period === ALL_TIME ? 'all time' : period;
   const kpis = [
     { k: 'Est. open value', v: typeof s.estValue === 'number' ? usdCompact(s.estValue) : 'N/A' },
@@ -382,10 +379,7 @@ function Portfolio({ dossier }) {
                 aria-pressed={p.key === period}
                 disabled={!p.available}
                 title={p.available ? undefined : 'Not enough disclosed history for this period'}
-                onClick={() => {
-                  setPeriod(p.key);
-                  setHover(null);
-                }}
+                onClick={() => setPeriod(p.key)}
               >
                 {p.key === ALL_TIME ? 'All time' : p.key}
               </button>
@@ -409,28 +403,19 @@ function Portfolio({ dossier }) {
         </div>
         <div className="cpr-an-value" aria-live="polite">
           <span className="cpr-an-value-k">
-            {hasChart ? `Estimated value, ${monthLabel(view.months[at])}` : 'Estimated open value'}
+            {vol ? `Disclosed volume, ${periodName}` : 'Estimated open value'}
           </span>
           <span className="cpr-an-value-v">
-            {hasChart
-              ? usdCompact(shown)
+            {vol
+              ? usdCompact(vol.total)
               : typeof s.estValue === 'number'
                 ? usdCompact(s.estValue)
                 : 'N/A'}
-            {pct != null ? (
-              <span className={`cpr-chip${pct < 0 ? ' is-down' : ''}`}>
-                <i
-                  className={`bi ${pct < 0 ? 'bi-caret-down-fill' : 'bi-caret-up-fill'}`}
-                  aria-hidden="true"
-                />
-                {pct >= 0 ? '+' : '-'}
-                {Math.abs(pct).toFixed(1)}% ({periodName})
-              </span>
-            ) : null}
           </span>
-          {hasChart ? (
+          {vol ? (
             <span className="cpr-an-value-from">
-              From {usdCompact(first)} in {monthLabel(view.months[0])}
+              {vol.count} trade{vol.count === 1 ? '' : 's'} · {usdCompact(vol.buy)} bought ·{' '}
+              {usdCompact(vol.sell)} sold
             </span>
           ) : null}
         </div>
@@ -441,7 +426,6 @@ function Portfolio({ dossier }) {
           series={view.series}
           months={view.months}
           label={`${dossier.name} estimated portfolio value, ${periodName}`}
-          onHover={setHover}
         />
       ) : (
         <p className="cpr-empty">No disclosed trades to chart yet.</p>
@@ -455,7 +439,8 @@ function Portfolio({ dossier }) {
         ))}
       </dl>
       <p className="cpr-note">
-        Estimated from disclosed STOCK Act ranges at their midpoints. No market prices applied.
+        Disclosed volume and the estimated value chart use the midpoints of disclosed STOCK Act
+        ranges. No market prices applied.
       </p>
     </section>
   );
