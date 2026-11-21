@@ -21,6 +21,19 @@
  * power. Sources [[src:50]] to [[src:91]] are current to November 20th, 2026.
  * New supplied hero illustration; the earlier pop-art file is kept on disk.
  *
+ * Nov 21st, 2026: retitled "From Outages to On-Chain: Who Is Building the
+ * Next Financial Order?" and refocused from testing the outage theory to who
+ * is building the new financial layer and who sets its rules. New sections:
+ * When Breakdown Becomes Normal; The New Financial Rails (Fig. 4, nine
+ * verticals with a status per builder); The Identity Layer; The Rulemakers
+ * (Fig. 5, the policies); a five-part verdict with Sonar questions; and the
+ * Ezana datasets to watch. Workday's cause is now the preliminary one from its
+ * status notice (no detailed root-cause report yet). Figures renumbered 1 to 6.
+ * Sources [[src:92]] to [[src:133]] are current to November 21st, 2026. Keeps
+ * the integrity rules: no claim of deliberate conditioning, no guaranteed
+ * winners, stablecoins, deposit tokens, tokenized securities and CBDCs kept
+ * distinct, lobbying is not proof of outcomes, 13F is not real-time trading.
+ *
  * Ownership figures for BlackRock, Vanguard and State Street come from
  * Ezana's own 13F dataset (public.sec_13f_holdings; filings for the quarter
  * ended September 30th, 2026: BlackRock, Inc.; State Street Corp; Vanguard
@@ -28,10 +41,9 @@
  */
 export const tokenizedMoneyOutageTheory2026 = {
   id: 'tokenized-money-outage-theory-2026',
-  title:
-    'Five Outages, One Story? Testing the Theory That Wall Street Is Scaring America Into Tokenized Money',
+  title: 'From Outages to On-Chain: Who Is Building the Next Financial Order?',
   excerpt:
-    'In five November days Microsoft, the FAA, Workday and America’s largest banks all went down, and a viral theory says it was staged to sell tokenized money. Every outage has a published, unrelated cause. The tokenization push is real, public and commercial, and programmable money carries risks worth taking seriously.',
+    'Five disruptions. A relentless cycle of cyber warnings. And a financial system quietly being rebuilt around tokenized assets, digital identity and programmable money. The outages may not be connected, but the institutions building what comes next are. Who controls the new financial order, and how much of it are we being conditioned to accept?',
   heroImage: {
     // Editorial illustration supplied for this story (Nov 20th, 2026, second
     // version); source file kept at
@@ -60,6 +72,8 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Internet Services & Infrastructure',
       'Independent Power Producers & Energy Traders',
       'Investment Banking & Brokerage',
+      'Transaction & Payment Processing Services',
+      'Financial Exchanges & Data',
     ],
     institutions: [
       'BlackRock',
@@ -113,6 +127,19 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Crusoe',
       'General Matter',
       'PJM Interconnection',
+      'Securitize',
+      'Franklin Templeton',
+      'DTCC',
+      'BNY',
+      'Circle',
+      'Paxos',
+      'Visa',
+      'Stripe',
+      'Bridge',
+      'Citi',
+      'Apple',
+      'Samsung',
+      'Hamilton Lane',
     ],
     government: [
       'Federal Aviation Administration',
@@ -134,6 +161,14 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Nuclear Regulatory Commission',
       "President's Council of Advisors on Science and Technology",
       'White House',
+      'Securities and Exchange Commission',
+      'Commodity Futures Trading Commission',
+      'Department of the Treasury',
+      'Financial Crimes Enforcement Network',
+      'Office of Foreign Assets Control',
+      'National Credit Union Administration',
+      'House Financial Services Committee',
+      'Department of Commerce',
     ],
     geos: ['United States', 'United Kingdom', 'Canada', 'Switzerland', 'India', 'North Korea', 'China', 'Singapore'],
     assetClasses: ['Equities', 'Digital Assets', 'Cash & Deposits', 'Fixed Income', 'Private Credit'],
@@ -155,8 +190,18 @@ export const tokenizedMoneyOutageTheory2026 = {
       'Export Controls',
       'Circular Financing',
       'Market Concentration',
+      'Digital Identity',
+      'Tokenized Deposits',
+      'Financial Regulation',
+      'Anti-Money Laundering',
+      'Payments',
     ],
-    datasets: ['SEC Form 13F institutional holdings', 'rwa.xyz tokenized asset tracker'],
+    datasets: [
+      'SEC Form 13F institutional holdings',
+      'rwa.xyz tokenized asset tracker',
+      'DefiLlama BUIDL tracker',
+      'Federal Register rulemaking dockets',
+    ],
     // markets: no exchange or trading venue is discussed as a venue.
     markets: [],
     investors: [
@@ -197,6 +242,11 @@ export const tokenizedMoneyOutageTheory2026 = {
     'BX',
     'GS',
     'PLTR',
+    'CRCL',
+    'V',
+    'BK',
+    'SECZ',
+    'BEN',
   ],
   entities: {
     people: [
@@ -219,6 +269,15 @@ export const tokenizedMoneyOutageTheory2026 = {
       { id: 'chris-wright', label: 'Chris Wright', role: 'US Secretary of Energy' },
       { id: 'david-sacks', label: 'David Sacks', role: 'Co-chair, PCAST; White House AI and crypto czar until March 2026' },
       { id: 'alex-karp', label: 'Alex Karp', role: 'Co-founder and CEO, Palantir' },
+      { id: 'scott-bessent', label: 'Scott Bessent', role: 'US Secretary of the Treasury' },
+      { id: 'paul-atkins', label: 'Paul Atkins', role: 'Chairman, Securities and Exchange Commission' },
+      { id: 'michael-selig', label: 'Michael Selig', role: 'Chairman, Commodity Futures Trading Commission (since December 22nd, 2025)' },
+      { id: 'jonathan-gould', label: 'Jonathan Gould', role: 'Comptroller of the Currency' },
+      { id: 'kevin-warsh', label: 'Kevin Warsh', role: 'Chair, Federal Reserve (since May 22nd, 2026)' },
+      { id: 'tim-scott', label: 'Tim Scott', role: 'US Senator (R-SC); chairman, Senate Banking Committee' },
+      { id: 'elizabeth-warren', label: 'Elizabeth Warren', role: 'US Senator (D-MA); ranking member, Senate Banking Committee' },
+      { id: 'french-hill', label: 'French Hill', role: 'US Representative (R-AR); chairman, House Financial Services Committee' },
+      { id: 'bryan-steil', label: 'Bryan Steil', role: 'US Representative (R-WI); chairman, House subcommittee on digital assets, financial technology and AI' },
     ],
     terms: [
       { id: 'tokenization', label: 'Tokenization' },
@@ -227,7 +286,7 @@ export const tokenizedMoneyOutageTheory2026 = {
       { id: 'circular-financing', label: 'Circular financing' },
     ],
   },
-  readTime: 24,
+  readTime: 32,
   publishedAt: '2026-11-18',
   listMeta: 'Nov 18th, 2026',
   featured: true,
@@ -331,7 +390,11 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'paragraph',
-      text: 'Between Thursday, November 12th and Monday, November 16th, 2026, Microsoft 365 went down for nearly 24 hours, the FAA halted every departure in the country for close to five hours, Workday locked employees out of payroll, and customers of Chase, Bank of America and Wells Fargo could not see their balances.[[src:2]]Fox News, "America hits a tech wall as outages cripple email, ground flights and disrupt major banks," November 16th, 2026 · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] A theory now moving fast online says this was not bad luck. In that telling, the outages, the warnings about AI hacking and the 90-day blackout rumors are a staged campaign by BlackRock, Vanguard and State Street to make the old financial system look impossible to trust, so the public will beg for [[kw:tokenization]]tokenized[[/kw]] money that can be switched off. Ezana checked each claim against the public record. The outages have published, unrelated causes, and the ownership argument misreads how index funds work. But the push to rebuild money on programmable rails is real, and so are its risks.',
+      text: 'Between Thursday, November 12th and Monday, November 16th, 2026, Microsoft 365 went down for nearly 24 hours, the FAA halted every departure in the country for close to five hours, Workday locked employees out of payroll, and customers of Chase, Bank of America and Wells Fargo could not see their balances.[[src:2]]Fox News, "America hits a tech wall as outages cripple email, ground flights and disrupt major banks," November 16th, 2026 · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] Each failure was a reminder of how much ordinary life now runs on a handful of clouds, contractors and software releases that almost nobody outside them can see. A theory moving fast online says the timing was not bad luck: that the outages, the warnings about AI hacking and the 90-day blackout rumors are a staged campaign by BlackRock, Vanguard and State Street to make the old financial system look impossible to trust, so the public will accept [[kw:tokenization]]tokenized[[/kw]] money that can be switched off. Ezana checked each claim against the public record. The outages have stated, unrelated causes, and the ownership argument misreads how index funds work.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The theory still points at something real while getting the mechanism wrong. Dependence on a few technology providers is growing, and a second financial system is being built alongside the first: tokenized funds and securities, bank deposit tokens, regulated stablecoins, digital identity credentials, and the AI compute that increasingly runs markets and compliance. None of that needs a staged crisis to explain it, and nothing in the record shows the outages were connected. So this piece asks a better question, and follows it through the builders, the identity layer and the rulebook: who is building the next financial order, what do they stand to gain, and who will control the rules?',
     },
     {
       type: 'stat-grid',
@@ -363,6 +426,10 @@ export const tokenizedMoneyOutageTheory2026 = {
     {
       type: 'paragraph',
       text: 'Start with what each operator and investigator actually said. Microsoft blamed a previously undetected software defect, a traffic surge and reduced server capacity for the 24-hour Microsoft 365 failure on November 12th. Transportation Secretary Sean Duffy tied the FAA ground stop the next afternoon to contractor L3Harris swapping copper wiring for fiber, which overloaded the system, and on November 17th the FAA traced the failure to routers in Arkansas and Texas. Secretary of State Marco Rubio said there was zero evidence linking the outages to each other or to a hostile actor, and Director of National Intelligence Jay Clayton found no sign of a coordinated or state-sponsored attack.[[src:3]]Fox News, timeline and official statements, November 16th, 2026, updated November 17th · https://www.foxnews.com/us/america-hits-tech-wall-outages-cripple-email-ground-flights-disrupt-major-banks[[/src]] The ground stop was dramatic: only the second nationwide halt since the 9/11 attacks, after a 90-minute NOTAM failure in January 2023.[[src:4]]AeroTime, "FAA halts all US departures," November 13th, 2026 · https://www.aerotime.aero/articles/faa-nationwide-ground-stop-atc-communications-november-2026[[/src]] Dramatic is not the same as coordinated.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Workday is the one case where the record is thinner, so it is worth being precise. The company’s customer status notice, quoted by universities’ IT teams, said that while validating a weekly maintenance window it found services in its disaster-recovery site had unexpectedly connected to production databases, leaving data in an inconsistent state.[[src:92]]UC Today, "Workday outage: backup test left production data inconsistent," November 2026 · https://uctoday.com/workday-outage-backup-test-payroll-timekeeping[[/src]] Workday attributed the problem to that test and indicated no malicious activity, but as of November 21st it had not published a detailed root-cause report.[[src:93]]IBTimes Australia, "Workday Down? Outage Drags Into Saturday as Backup Test Glitch Locks Workers Out of Payroll," November 14th, 2026 · https://www.ibtimes.com.au/workday-outage-backup-test-disrupts-service-1878570[[/src]] The honest label is a preliminary cause stated by the operator, not a final one.',
     },
     {
       type: 'paragraph',
@@ -416,12 +483,12 @@ export const tokenizedMoneyOutageTheory2026 = {
           label: 'Workday · Nov 13th',
           cells: [
             {
-              value: 'none',
-              note: 'Workday gave no cause; it said it was investigating. This is the one incident without a published explanation.',
+              value: 'part',
+              note: 'Preliminary cause only: Workday’s status notice said disaster-recovery services unexpectedly connected to production databases during a test, leaving data inconsistent. No detailed root-cause report yet.',
             },
             {
               value: 'none',
-              note: 'No attacker identified; covered only by the officials’ general statements.',
+              note: 'Workday attributed the outage to its own disaster-recovery test and indicated no malicious activity.',
             },
             { value: 'none', note: 'No link to the other outages has been reported.' },
           ],
@@ -493,6 +560,19 @@ export const tokenizedMoneyOutageTheory2026 = {
     {
       type: 'paragraph',
       text: 'The AI incidents are real and they are serious. Between July and August, OpenAI, Anthropic and Meta each disclosed that a model under security testing had reached systems at outside companies, and the Meta and Anthropic cases trace to the same misconfigured evaluation setup at one outside testing firm.[[src:9]]Reuters via Al Jazeera, "Meta’s AI model follows rivals in revealing hacks of outside systems," August 6th, 2026 · https://www.aljazeera.com/news/2026/8/6/metas-ai-model-follows-rivals-in-revealing-hacks-of-outside-systems[[/src]][[src:10]]Sovereign Magazine, "Three labs’ AI models reached real company systems in testing," August 6th, 2026 · https://www.sovereignmagazine.com/article/ai-models-three-labs-breached-companies-testing[[/src]] Note who told the public: the labs themselves, against their own commercial interest. Of the seven incidents in the record, exactly one involved a hostile human attacker, and that was a crypto exchange robbed by a foreign state, not a US bank.',
+    },
+    {
+      type: 'heading',
+      text: 'When Breakdown Becomes Normal',
+      level: 2,
+    },
+    {
+      type: 'paragraph',
+      text: 'Look at the five days as a pattern rather than a plot, and a different problem comes into view. In one week Americans learned that their email, their flights, their payroll and their bank balances could vanish for hours, while officials, AI labs and newsrooms kept up a steady drumbeat of warnings about AI-enabled attacks and grid failures. Each event had its own cause. Together they taught the same lesson: the systems people depend on are run by a small number of companies, and when one of them stumbles there is no manual fallback most people can reach.',
+    },
+    {
+      type: 'paragraph',
+      text: 'That is the condition Curtis’s film describes. When disruption becomes routine, people stop asking why the system is built the way it is and ask only when it will come back. Nothing in the record shows that anyone engineered that feeling, and Ezana does not claim it. But a public that has grown used to breakdown, and keeps hearing that newer, faster, more automated rails will be safer, is less likely to ask the questions that matter while those rails are being laid: who owns them, who can switch them off, and who wrote the rules. The rest of this piece puts those questions to the people actually building them.',
     },
     { type: 'heading', text: 'A singularity sold by subscription', level: 2 },
     {
@@ -712,7 +792,7 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'wall-timeline',
-      figureLabel: 'FIG. 2A · THE MANAGED SYSTEM, 1966 TO 2026',
+      figureLabel: 'FIG. 3 · THE MANAGED SYSTEM, 1966 TO 2026',
       kicker:
         'HYPERNORMALISATION’S CHRONOLOGY SET AGAINST THIS STORY · ONE PLAQUE PER EVENT NAMED IN THIS ARTICLE · CLICK ANY PLAQUE FOR THE RECORD.',
       hint: 'Click a plaque for its record.',
@@ -798,11 +878,585 @@ export const tokenizedMoneyOutageTheory2026 = {
           lane: 1,
           label: 'Nov 2026 · Outages',
           detail:
-            'Microsoft 365, the FAA, Workday and large banks go down in five days; every published cause is unrelated, and Workday has yet to publish one.',
+            'Microsoft 365, the FAA, Workday and large banks go down in five days; every stated cause is unrelated, and Workday’s is still preliminary.',
         },
       ],
     },
 
+    {
+      type: 'heading',
+      text: 'The New Financial Rails: Follow the Money, the Infrastructure and the Incentives',
+      level: 2,
+    },
+    {
+      type: 'paragraph',
+      text: 'Start by separating four things the theory runs together, because they have different owners, different rules and different risks. A stablecoin is a token issued by a private company and backed by reserves, now regulated under the GENIUS Act. A tokenized deposit is an ordinary bank deposit recorded on a blockchain, a direct claim on the bank. A tokenized security or fund is a share, bond or fund unit whose ownership record lives on a ledger. A central bank digital currency would be a liability of the Federal Reserve itself, and US policy currently bars one. Almost everything being built in 2026 falls into the first three categories, and most of it is being built by firms that already sit at the center of the old system.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The asset managers moved first. BlackRock, which managed $15.3 trillion at the end of June,[[src:94]]BlackRock, Form 10-Q for the quarter ended June 30th, 2026 · https://www.sec.gov/Archives/edgar/data/0002012383/000119312526337177/blk-20260630.htm[[/src]] launched its tokenized money market fund BUIDL in March 2024, and DefiLlama’s tracker put it at about $2.1 billion across nine blockchains in November.[[src:95]]DefiLlama, "BlackRock BUIDL," accessed November 2026 · https://defillama.com/protocol/blackrock-buidl[[/src]] Franklin Templeton has run BENJI, the first US-registered money market fund to use a public blockchain as its official record, for five years,[[src:96]]Franklin Templeton, "Franklin Templeton, Stellar Development Foundation mark five years of BENJI," 2026 · https://www.franklintempleton.com/press-releases/news-room/2026/franklin-templeton-stellar-development-foundation-mark-five-years-of-benji-the-first-u.s.-registered-tokenized-money-market-fund[[/src]] and in August said it plans to use the fund inside ETFs and mutual funds as a holding or as collateral.[[src:97]]WealthManagement.com, "Franklin Plans to Push Tokenized Assets Into Traditional Funds," August 20th, 2026 · https://wealthmanagement.com/crypto/franklin-plans-to-push-tokenized-assets-into-traditional-funds[[/src]] Securitize, which tokenizes funds in partnership with Apollo, BlackRock, BNY, Hamilton Lane and KKR, listed on the NYSE as SECZ on July 2nd,[[src:98]]Securitize via PR Newswire, "Tokenizing SECZ: Securitize brings its own public stock onchain at listing day," July 2nd, 2026 · https://www.barchart.com/story/news/3100504/tokenizing-secz-securitize-brings-its-own-public-stock-onchain-at-listing-day[[/src]] and said in August that it managed about $5 billion of onchain assets, out of roughly $38 billion tokenized on public blockchains excluding stablecoins.[[src:99]]Markets Media, "Securitize Manages $5bn in Onchain Assets," August 13th, 2026 · https://www.marketsmedia.com/securitize-manages-5bn-in-onchain-assets/[[/src]] The incentive is plain: a fund that settles around the clock and can be posted as collateral is a fund that earns fees in places the old plumbing could not reach.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The plumbing followed. On October 28th the Depository Trust Company, the settlement utility at the center of US securities markets, switched on the DTCC Tokenization Service, letting eligible participants convert securities it holds in custody into tokenized entitlements delivered to their digital wallets.[[src:100]]DTCC via Tradeweb, "DTCC Tokenization Service Goes Live, Marking Major Milestone in the Adoption of Digital Assets," October 28th, 2026 · https://www.tradeweb.com/newsroom/media-center/in-the-news/dtcc-tokenization-service-goes-live-marking-major-milestone-in-the-adoption-of-digital-assets/[[/src]] It launched with 34 securities worth about $30 trillion, including Russell 1000 stocks, major ETFs and Treasuries, and 20 participants signed on, among them J.P. Morgan, Citi and Bank of America, after the SEC issued a no-action letter in December 2025.[[src:101]]Crypto Briefing, "DTCC launches tokenization service with input from 150 firms," October 2026 · https://cryptobriefing.com/dtcc-launches-tokenization-service-150-firms/[[/src]] When the utility that already holds the securities builds the bridge itself, tokenization stops being a fringe experiment and becomes a question of who controls the gateway.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Banks are building their own version, partly so that deposits do not leak out to stablecoins. J.P. Morgan’s Kinexys unit launched JPM Coin (JPMD), a deposit token for institutional clients, on Base in November 2025 and extended it to Ethereum on October 19th.[[src:102]]The Block, "JPMorgan expands \'JPM Coin\' deposit token to Ethereum for institutional clients," October 19th, 2026 · https://theblock.co/news/business/2026-10-19-jpmorgan-jpm-coin-deposit-token-ethereum-418874[[/src]] BNY, the largest custody bank, activated tokenized deposits in January for payments and collateral,[[src:103]]The Block, "BNY activates tokenized deposit service for payments and collateral," January 9th, 2026 · https://www.theblock.co/news/business/2026-01-09-bny-activates-tokenized-deposit-service-payments-collateral-384930[[/src]] running on its own private, permissioned blockchain.[[src:104]]Banking Exchange, "BNY Launches Tokenized Deposits," January 2026 · https://m.bankingexchange.com/news-feed/item/10510-bny-launches-tokenized-deposits[[/src]] These are permissioned products. The bank knows every holder, because every token is a claim on an account it already supervises.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The stablecoin side is consolidating around a few licensed names. Circle averaged $73.3 billion of USDC in circulation in the third quarter, and most of its revenue still comes from interest on reserves, which fell 8% as rates dropped.[[src:105]]Blockonomi, "Circle (CRCL) Stock Rises as Q3 Revenue Hits $865M and USDC Circulation Reaches $73.3B," November 4th, 2026 · https://blockonomi.com/circle-crcl-stock-rises-as-q3-revenue-hits-865m-and-usdc-circulation-reaches-73-3b/[[/src]] It launched its own blockchain, Arc, on September 16th with more than 100 partners including BlackRock, the DTCC and Visa.[[src:106]]Crypto Briefing, "Circle beats Q3 earnings estimates as Arc mainnet goes live with 100+ partners," November 2026 · https://cryptobriefing.com/circle-q3-earnings-arc-mainnet-launch/[[/src]] Paxos, which issues dollar stablecoins for itself and for partners, converted to an OCC-supervised national trust bank on December 12th, 2025.[[src:107]]Paxos, "What an OCC charter means for stablecoins," 2026 · https://www.paxos.com/blog/occ-charter-stablecoins[[/src]] Visa said in April that its stablecoin settlement pilot had reached a $7 billion annualized run rate across nine blockchains,[[src:108]]Visa, "Visa Accelerates Stablecoin Momentum: Adding Five Blockchains for Settlement," April 29th, 2026 · https://corporate.visa.com/en/sites/visa-perspectives/newsroom/visa-expands-stablecoin-settlement-adds-five-blockchains.html[[/src]] and Stripe’s stablecoin unit Bridge won preliminary conditional approval for a national trust bank in February[[src:109]]Office of the Comptroller of the Currency, Corporate Decision #1365, Bridge National Trust Bank, February 12th, 2026 · https://www.occ.treas.gov/topics/charters-and-licensing/interpretations-and-actions/2026/cd1365.pdf[[/src]] while Stripe builds a payments blockchain, Tempo, with the crypto investor Paradigm.[[src:110]]eMarketer, "Stripe joins a crowded field of crypto firms gaining trust bank charters," February 2026 · https://www.emarketer.com/content/stripe-joins-crowded-field-of-crypto-firms-gaining-trust-bank-charters-1[[/src]] Figure 4 sets each builder against its evidence, its dependencies and the rules it answers to.',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4 · WHO IS BUILDING THE NEXT FINANCIAL ORDER?',
+      kicker: 'NINE VERTICALS × THE BUILDERS ON THE RECORD · STATUS IS OPERATING, SCALING, PILOT, ANNOUNCED OR POSSIBILITY · OPEN A DOSSIER FOR ACTIVITY, EVIDENCE, ADVANTAGE, DEPENDENCY, RISK, REGULATORY EXPOSURE AND SOURCE.',
+      hint: 'Status describes what the public record shows today, not a forecast. No builder here is a guaranteed winner.',
+      source: 'Company filings and releases; OCC charter decisions; DTCC; DefiLlama; Route Fifty; reporting by The Block, Markets Media, Crypto Briefing and Blockonomi. Current to November 21st, 2026.',
+      headers: [
+        'Builder',
+        'Vertical · status',
+        'Evidence on the record',
+        'Key risk',
+        '',
+      ],
+      rows: [
+        {
+          name: 'BlackRock',
+          tag: 'BLK',
+          role: 'Tokenized funds · Operating',
+          anchor: '$15.3T managed (June 2026); BUIDL about $2.1B on nine chains (November 2026)',
+          keyRisk: 'Tokenized funds are tiny next to the core business',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Runs BUIDL, a tokenized money market fund for qualified investors, launched in March 2024.',
+            },
+            {
+              label: 'Evidence',
+              text: 'BlackRock 10-Q for the quarter ended June 30th, 2026; DefiLlama BUIDL tracker, November 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'The largest client base and distribution of any asset manager.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Securitize for tokenization; public blockchains and stablecoins for subscriptions and redemptions.',
+            },
+            {
+              label: 'Risk',
+              text: 'Growth depends on exchanges and brokers accepting tokenized fund shares as collateral.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'SEC fund rules; how regulators treat tokenized shares as collateral.',
+            },
+            {
+              label: 'Source and date',
+              text: 'BlackRock Form 10-Q (2026); DefiLlama (accessed November 2026).',
+            },
+          ],
+        },
+        {
+          name: 'Franklin Templeton',
+          tag: 'BEN',
+          role: 'Tokenized funds · Scaling',
+          anchor: 'BENJI: first US-registered fund with a public blockchain as its record, five years running',
+          keyRisk: 'Small scale next to the largest money funds',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Scaling.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Runs the Franklin OnChain U.S. Government Money Fund (BENJI), whose shareholder record lives on a public blockchain.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Five-year anniversary release (2026); August 2026 plan to hold BENJI inside ETFs and mutual funds, per a letter posted by the SEC.',
+            },
+            {
+              label: 'Advantage',
+              text: 'The longest operating record of any registered tokenized fund.',
+            },
+            {
+              label: 'Depends on',
+              text: 'SEC staff positions; public chains such as Stellar.',
+            },
+            {
+              label: 'Risk',
+              text: 'Competition from BlackRock and from bank deposit tokens for the same cash.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'SEC Investment Company Act rules.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Franklin Templeton (2026); WealthManagement.com, August 20th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Securitize',
+          tag: 'SECZ',
+          role: 'Tokenization platform · Scaling',
+          anchor: 'About $5B of onchain assets (August 2026); NYSE-listed since July 2nd, 2026',
+          keyRisk: 'Few large clients; rival platforms',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Scaling.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Issues and administers tokenized funds with Apollo, BlackRock, BNY, Hamilton Lane and KKR, and put its own shares onchain at listing.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Listing release, July 2nd, 2026; second-quarter results call, August 13th, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'First mover with the largest asset managers as partners.',
+            },
+            {
+              label: 'Depends on',
+              text: 'A handful of large asset-manager clients.',
+            },
+            {
+              label: 'Risk',
+              text: 'A rival platform, or a client building in-house, could take share.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'SEC broker-dealer and transfer-agent rules; the September 2026 Innovation Exemption.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Securitize via PR Newswire, July 2nd, 2026; Markets Media, August 13th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'DTCC',
+          tag: 'Utility',
+          role: 'Market infrastructure · Operating (early)',
+          anchor: '34 securities worth about $30T and 20 participants at launch, October 28th, 2026',
+          keyRisk: 'One utility controls the bridge',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating, at an early scale.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Converts selected DTC-held stocks, ETFs and Treasuries into tokenized entitlements delivered to participants’ wallets.',
+            },
+            {
+              label: 'Evidence',
+              text: 'DTCC launch release, October 28th, 2026; SEC no-action letter, December 11th, 2025.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Already holds the securities, so tokens stay inside the regulated system.',
+            },
+            {
+              label: 'Depends on',
+              text: 'SEC no-action relief; the blockchains it connects to.',
+            },
+            {
+              label: 'Risk',
+              text: 'Concentrates the gateway to tokenized US securities in a single utility.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'SEC oversight of clearing agencies.',
+            },
+            {
+              label: 'Source and date',
+              text: 'DTCC via Tradeweb, October 28th, 2026; Crypto Briefing, October 2026.',
+            },
+          ],
+        },
+        {
+          name: 'JPMorgan Chase',
+          tag: 'JPM',
+          role: 'Bank deposit tokens · Scaling',
+          anchor: 'JPMD live on Base (November 2025) and Ethereum (October 19th, 2026)',
+          keyRisk: 'Institutional only; competes with stablecoins for the same flows',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Scaling.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Kinexys issues JPM Coin (JPMD), a permissioned US dollar deposit token for institutional clients.',
+            },
+            {
+              label: 'Evidence',
+              text: 'The Block, October 19th, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'A direct claim on the largest US bank, inside bank supervision.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Public blockchains and client wallets.',
+            },
+            {
+              label: 'Risk',
+              text: 'Operational: a software release caused the November 16th Chase outage.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'Bank supervisors (OCC, Fed, FDIC). A deposit token is a deposit, not a payment stablecoin under GENIUS.',
+            },
+            {
+              label: 'Source and date',
+              text: 'The Block, October 19th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'BNY',
+          tag: 'BK',
+          role: 'Bank deposit tokens · Operating (early)',
+          anchor: 'Tokenized deposits live since January 9th, 2026, on a private chain',
+          keyRisk: 'Value depends on other institutions joining',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating, at an early scale.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Onchain book entries that mirror clients’ demand deposits, starting with collateral and margin.',
+            },
+            {
+              label: 'Evidence',
+              text: 'The Block, January 9th, 2026; Banking Exchange, January 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'The world’s largest custody bank, with nearly $58 trillion under custody.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Its own permissioned blockchain and client adoption.',
+            },
+            {
+              label: 'Risk',
+              text: 'A private network reaches only the institutions that join it.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'Bank supervisors. A deposit token is a deposit, not a payment stablecoin under GENIUS.',
+            },
+            {
+              label: 'Source and date',
+              text: 'The Block, January 9th, 2026; Banking Exchange, January 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Circle',
+          tag: 'CRCL',
+          role: 'Stablecoin issuer · Operating',
+          anchor: '$73.3B average USDC in Q3 2026; Arc blockchain live September 16th',
+          keyRisk: 'Revenue tied to interest rates',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Issues USDC and runs Arc, a blockchain where USDC pays the fees.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Third-quarter results, November 4th, 2026; Arc launch, September 16th, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'The largest US-regulated dollar stablecoin, with BlackRock, the DTCC and Visa as Arc partners.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Reserve income, which fell 8% in the third quarter; distribution partners.',
+            },
+            {
+              label: 'Risk',
+              text: 'GENIUS bars issuers from paying yield, so falling rates squeeze the core business.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'GENIUS Act from January 18th, 2027; OCC trust charter (conditional); FinCEN and OFAC rules.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Blockonomi, November 4th, 2026; Crypto Briefing, November 2026; eMarketer, February 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Paxos',
+          tag: 'Private',
+          role: 'Stablecoin issuer · Operating',
+          anchor: 'OCC-supervised national trust bank since December 12th, 2025',
+          keyRisk: 'Depends on partner brands for distribution',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Issues dollar stablecoins, including for partners, from a federally chartered trust bank.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Paxos charter disclosure, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Federally chartered before the GENIUS Act takes effect.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Partners that put their names on its coins.',
+            },
+            {
+              label: 'Risk',
+              text: 'Rivals with their own charters and networks.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'OCC supervision; GENIUS implementing rules; FinCEN and OFAC rules.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Paxos, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Visa',
+          tag: 'V',
+          role: 'Payment network · Pilot, scaling',
+          anchor: '$7B annualized stablecoin settlement across nine chains (April 2026)',
+          keyRisk: 'Stablecoins could route around card networks',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Pilot, scaling.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Lets card issuers and acquirers settle with Visa in stablecoins; a partner on Circle’s Arc.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Visa release, April 29th, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Owns the merchant and bank network a stablecoin needs to reach shoppers.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Issuers and blockchains it does not control.',
+            },
+            {
+              label: 'Risk',
+              text: 'If payments settle directly in stablecoins, network fees shrink.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'GENIUS rules for the coins it settles; payment network oversight.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Visa, April 29th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Stripe and Bridge',
+          tag: 'Private',
+          role: 'Stablecoin infrastructure · Announced',
+          anchor: 'Preliminary conditional OCC trust bank approval, February 12th, 2026',
+          keyRisk: 'Final charter approval not yet granted',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Announced: the charter is conditional, and the Tempo chain is in development.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Bridge issues and moves stablecoins for businesses; Stripe is building the Tempo payments blockchain with Paradigm.',
+            },
+            {
+              label: 'Evidence',
+              text: 'OCC Corporate Decision #1365, February 12th, 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Stripe’s merchant base and checkout software.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Final OCC approval.',
+            },
+            {
+              label: 'Risk',
+              text: 'Bank trade groups opposed the application; approval could slow or come with tighter conditions.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'OCC chartering; GENIUS rules.',
+            },
+            {
+              label: 'Source and date',
+              text: 'OCC, February 12th, 2026; eMarketer, February 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Erebor',
+          tag: 'Private',
+          role: 'New bank charter · Operating',
+          anchor: 'National charter February 6th, 2026; more than $7B of deposits by October',
+          keyRisk: 'A small, politically connected network',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'A branchless national bank for technology companies with always-on stablecoin settlement.',
+            },
+            {
+              label: 'Evidence',
+              text: 'OCC charter (February 2026); quarterly filings; Senator Warren’s letters.',
+            },
+            {
+              label: 'Advantage',
+              text: 'A full national charter and backing from Founders Fund and 8VC.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Its tech-sector depositors, and a 12% leverage floor for its first three years.',
+            },
+            {
+              label: 'Risk',
+              text: 'Concentrated deposits in one industry, the risk that sank Silicon Valley Bank.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'OCC conditions; congressional scrutiny.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Reuters via Yahoo Finance, February 6th, 2026, and the sources in the Erebor section.',
+            },
+          ],
+        },
+        {
+          name: 'State mobile IDs and phone wallets',
+          tag: 'Identity',
+          role: 'Digital identity · Scaling',
+          anchor: 'Mobile licenses accepted in 21 states and Puerto Rico; federal ID guidance September 8th, 2026',
+          keyRisk: 'Low uptake; wallets become gatekeepers',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Scaling.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'States issue mobile driver’s licenses; Apple, Google and Samsung wallets store them; banks may now use them to verify customers.',
+            },
+            {
+              label: 'Evidence',
+              text: 'FinCEN and bank regulators’ FAQs, September 8th, 2026; Route Fifty, September 2026.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Faster remote onboarding and fewer fake documents.',
+            },
+            {
+              label: 'Depends on',
+              text: 'State DMVs, the wallet platforms and each bank’s choice to accept them.',
+            },
+            {
+              label: 'Risk',
+              text: 'If credentials, money and compliance converge on one phone, a few platforms decide who can participate.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'Customer identification rules; state law; wallet terms of service.',
+            },
+            {
+              label: 'Source and date',
+              text: 'OCC Bulletin 2026-44, September 8th, 2026; Route Fifty, September 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Nvidia, Constellation and Vistra',
+          tag: 'NVDA · CEG · VST',
+          role: 'AI compute and power · Operating',
+          anchor: '$115.8B Nvidia quarterly revenue; 20-year nuclear contracts with Microsoft, Meta, Google and Amazon',
+          keyRisk: 'Export controls; grid cost fights',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Operating.',
+            },
+            {
+              label: 'What it is doing',
+              text: 'Supply the chips and the electricity that AI-driven markets, compliance and customer service run on.',
+            },
+            {
+              label: 'Evidence',
+              text: 'Company results and power contracts, cited in the rings of power section.',
+            },
+            {
+              label: 'Advantage',
+              text: 'Scarce supply: leading chips and firm nuclear power.',
+            },
+            {
+              label: 'Depends on',
+              text: 'Export licenses, grid interconnection and a few very large buyers.',
+            },
+            {
+              label: 'Risk',
+              text: 'If AI demand forecasts prove wrong, the buyers’ debt and the contracts are exposed.',
+            },
+            {
+              label: 'Regulatory exposure',
+              text: 'Commerce Department export controls; FERC, the NRC and state utility commissions.',
+            },
+            {
+              label: 'Source and date',
+              text: 'Sources cited in the rings of power section, October and November 2026.',
+            },
+          ],
+        },
+      ],
+    },
     { type: 'heading', text: 'A farmers’ bank for tech: Palmer Luckey’s Erebor', level: 2 },
     {
       type: 'paragraph',
@@ -823,7 +1477,32 @@ export const tokenizedMoneyOutageTheory2026 = {
       text: 'The political questions are on the record too. Senator Elizabeth Warren, the ranking Democrat on the Senate Banking Committee, wrote to the OCC, the FDIC and Luckey in February, and in April published what she described as an Erebor fundraising memo crediting Luckey’s political network and a co-founder’s connections to Comptroller Jonathan Gould for the charter.[[src:38]]US Senate Banking Committee minority, "Warren deepens probe of seemingly corrupt approval of bank charter," April 2026 · https://www.banking.senate.gov/newsroom/minority/warren-deepens-probe-of-seemingly-corrupt-approval-of-bank-charter-for-trumps-billionaire-friends-in-silicon-valley[[/src]] Regulators also attached a hard cushion: Erebor must hold a Tier 1 leverage ratio of at least 12% for its first three years, and reported 38.81% in the second quarter.[[src:39]]Cryptopolitan, on the OCC approval conditions and Q2 2026 filings, October 7th, 2026 · https://www.cryptopolitan.com/erebor-rebuilds-crypto-banking-on-7-billion-in-deposits-lends-only-78-million/[[/src]] For this article’s question, Erebor cuts both ways. It shows that the people building programmable, always-on dollar rails are a tight, politically connected network, which is the theory’s strongest instinct. It also shows how they are actually doing it: through a public charter application, regulators’ conditions, quarterly filings and a senator’s open letters, not through staged outages.',
     },
 
-    { type: 'heading', text: 'The rings of power: who actually holds the compute', level: 2 },
+    {
+      type: 'heading',
+      text: 'The Identity Layer: Who Gets Permission to Participate?',
+      level: 2,
+    },
+    {
+      type: 'paragraph',
+      text: 'Every one of these rails has to know who is on it. That is where the next financial order is being decided most quietly, and it is the part of the theory’s fear with the most substance. In March, Treasury sent Congress the report the GENIUS Act required on new tools against illicit finance in digital assets, built around artificial intelligence, digital identity, blockchain analytics and application programming interfaces.[[src:111]]US Department of the Treasury, "Innovative Technologies to Counter Illicit Finance Involving Digital Assets," report to Congress, March 2026 · https://home.treasury.gov/system/files/246/GENIUS-Act-Illicit-Finance-Innovation-Congressional-Report-March-2026.pdf[[/src]] The report moved digital identity from the edge of Washington’s crypto policy to its center,[[src:112]]Biometric Update, "US Treasury’s crypto playbook puts digital identity at the center," March 2026 · https://www.biometricupdate.com/202603/us-treasurys-crypto-playbook-puts-digital-identity-at-the-center[[/src]] covering digital identity wallets, remote onboarding, biometric verification and defenses against deepfakes and synthetic identities.[[src:113]]Perkins Coie, "Treasury Releases 2026 Report on Technologies Countering Illicit Finance Involving Digital Assets," March 2026 · https://perkinscoie.com/insights/article/treasury-releases-2026-report-technologies-countering-illicit-finance-involving[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'The rules for stablecoin issuers follow the same logic. A joint FinCEN and OFAC proposal from April would require every permitted issuer to run a full anti-money-laundering program and, for the first time in OFAC’s regulations, a formal sanctions compliance program.[[src:114]]Federal Register, "Permitted Payment Stablecoin Issuer Anti-Money Laundering/Countering the Financing of Terrorism Program and Sanctions Compliance Program Requirements," proposed rule, April 10th, 2026 · https://www.govinfo.gov/content/pkg/FR-2026-04-10/html/2026-06963.htm[[/src]] The agencies describe an issuer’s duty to block, freeze and reject transactions as applying mainly to sanctions.[[src:115]]Sullivan & Cromwell via CLS Blue Sky Blog, "FinCEN, OFAC Proposed Rule on Anti-Money Laundering and Sanctions-Compliance Requirements," May 7th, 2026 · https://clsbluesky.law.columbia.edu/2026/05/07/sullivan-cromwell-discusses-fincen-ofac-proposed-rule-on-anti-money-laundering-and-sanctions-compliance-requirements/[[/src]] Customer identification rules for issuers are left to a separate rulemaking, and Treasury proposed that the final rule take effect 12 months after it is issued.[[src:116]]Morrison Foerster, "Treasury Proposes New AML/CFT and Sanctions Obligations for Payment Stablecoin Issuers Under the GENIUS Act," May 2026 · https://www.mofo.com/resources/insights/260507-treasury-proposes-new-aml-cft-and-sanctions-obligations[[/src]] In plain terms, a regulated dollar stablecoin will be a dollar whose issuer can be required to stop it moving.',
+    },
+    {
+      type: 'paragraph',
+      text: 'On September 8th FinCEN and the bank regulators answered the identity question from the other side. Their joint FAQs say banks and credit unions may use state-issued mobile driver’s licenses and other government-issued verifiable digital credentials to verify customers under the Customer Identification Program rule,[[src:117]]Office of the Comptroller of the Currency, Bulletin 2026-44, "Frequently Asked Questions Regarding Treatment of Verifiable Digital Credentials Under the Customer Identification Program Rule," September 8th, 2026 · https://occ.gov/news-issuances/bulletins/2026/bulletin-2026-44.html[[/src]] the first time federal regulators have expressly confirmed that properly authenticated digital credentials can meet those requirements.[[src:118]]McDermott Will & Schulte, "Regulators clear path for verifiable digital credentials in customer identification," September 15th, 2026 · https://www.mcdermottlaw.com/insights/regulators-clear-path-for-verifiable-digital-credentials-in-customer-identification/[[/src]] The guidance does not require any bank to accept a digital ID and does not change existing obligations.[[src:119]]FinTech Global, "FinCEN clarifies use of mobile driver’s licences in bank onboarding," September 2026 · https://fintech.global/?p=260233[[/src]] Mobile licenses are now accepted in 21 states and Puerto Rico, but uptake among residents is low, and state officials say a key challenge is getting the wallet companies, Apple, Google and Samsung among them, to let the credentials be stored and used for verification.[[src:120]]Route Fifty, "Mobile IDs are an \'easy sell,\' but state leaders urge more education," September 2026 · https://www.route-fifty.com/emerging-tech/2026/09/mobile-ids-are-easy-sell-state-leaders-urge-more-education/415833/[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'This is where the conditioning question has real teeth, with no need for a plot. If identity, money and compliance converge on a phone wallet, the gatekeepers to participation become the state that issues the credential, the platform that stores it, the bank or issuer that checks it and the agency that can order a freeze. None of those choices is hidden. They sit in Federal Register dockets, comment letters and wallet terms of service. The risk is that they are settled while public attention is on whether last week’s outage was staged. Who can be refused an account, on what evidence, and with what route to appeal are the questions that decide whether the new rails widen access or narrow it.',
+    },
+    { type: 'heading', text: 'The rings of power: the compute under AI-run finance', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'The identity and compliance layer will not run on paper. Treasury’s report expects banks and issuers to lean on artificial intelligence to screen customers and trace transactions, and HyperNormalisation’s account of Aladdin is a reminder that finance has long run on the biggest computers it can buy. As trading, compliance and customer service move onto AI systems, whoever controls the compute controls part of the financial system’s nervous system. That is why the people who forge and hold the chips belong in a story about money.',
+    },
     {
       type: 'paragraph',
       text: 'Erebor is not the only name in this story borrowed from Tolkien. Erebor is the Lonely Mountain, the dwarves’ treasure-hall; Anduril is Aragorn’s sword; and [[person:peter-thiel]]Peter Thiel[[/person]], who co-founded Palantir, named it after the seeing-stones that let their holders watch distant events, then added Mithril Capital and Valar Ventures to the same map.[[src:50]]Business Insider, "Palmer Luckey named his latest company Erebor, a reference to The Lord of the Rings," 2025 · https://www.businessinsider.nl/palmer-luckey-named-his-latest-company-erebor-a-reference-to-the-lord-of-the-rings-here-are-the-other-tech-companies-inspired-by-the-fantasy-series/[[/src]][[src:51]]Newsweek, "Why tech billionaires love Middle-earth," February 2023 · https://www.newsweek.com/2023/02/10/why-tech-billionaires-love-middle-earth-1778694.html[[/src]] The book they keep returning to is about rings of power: gifts handed to the rulers of elves, dwarves and men that quietly bound every wearer to whoever forged the master ring. That is a better model for 2026 than a staged blackout. The theory is right that power is concentrating. It is looking at the wrong ring. The scarce, rationed, fought-over thing this year is not a token. It is compute: the chips, the data centers and the electricity that every frontier AI system needs, and the short list of people who decide who gets them.',
@@ -910,13 +1589,598 @@ export const tokenizedMoneyOutageTheory2026 = {
       label: 'Incidents in Fig. 1 with a hostile attacker on record',
       value: '1 of 7',
       context:
-        'Only the Binance theft involved a hostile human attacker, attributed by the FBI to North Korea. The four November US outages each have an operator-stated technical cause, or none yet published in Workday’s case.',
+        'Only the Binance theft involved a hostile human attacker, attributed by the FBI to North Korea. The four November US outages each have an operator-stated technical cause, with Workday’s still preliminary.',
     },
 
-    { type: 'heading', text: 'Verdict: fragile plumbing, open sales pitch', level: 2 },
+    {
+      type: 'heading',
+      text: 'The Rulemakers: Who Decides What the New Financial System Can Become?',
+      level: 2,
+    },
     {
       type: 'paragraph',
-      text: 'Put together, the evidence supports a less cinematic story. The outages expose how much of daily life now runs through a handful of vendors, cloud regions and contractors. The AI warnings are real and came largely from companies with every reason to prevent attacks. The tokenization push is real, commercial and argued in public by the people who profit from it. None of that needs coordination to explain it, and the coordination claim has zero supporting evidence today. The scenarios below lay out what would have to happen for each version of events, and what would change this verdict.',
+      text: 'If the builders decide what is possible, a short list of officials decides what is allowed. At the SEC, Chairman [[person:paul-atkins]]Paul Atkins[[/person]] proposed Regulation Crypto Assets on August 18th, a tailored offering regime for crypto investment contracts, with comments due October 20th.[[src:121]]KPMG, "SEC proposal: Regulation Crypto Assets," August 2026 · https://kpmg.com/us/en/frv/reference-library/2026/sec-proposal-regulation-crypto-assets.html[[/src]] On September 17th the SEC issued its "Innovation Exemption," five years of conditional relief for permissioned onchain trading of tokenized stocks, which Atkins called a bridge toward durable rulemaking after market-structure legislation stalled in the Senate.[[src:122]]Cooley, "Permission to Innovate: SEC Carves Out Path for On-Chain Stock Trading," September 22nd, 2026 · https://www.cooley.com/news/insight/2026/2026-09-22-permission-to-innovate-sec-carves-out-path-for-on-chain-stock-trading[[/src]] At the CFTC, Chairman [[person:michael-selig]]Michael Selig[[/person]], sworn in on December 22nd, 2025, came from the SEC, where he was chief counsel of its crypto task force.[[src:123]]Commodity Futures Trading Commission, "Michael Selig Sworn In as 16th CFTC Chairman," December 22nd, 2025 · https://www.cftc.gov/PressRoom/PressReleases/9164-25[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'The money rules run through the banking agencies and Treasury. Comptroller [[person:jonathan-gould]]Jonathan Gould[[/person]]’s OCC became the first agency to finalize its GENIUS Act rule on October 21st, and the rule and the law take effect on January 18th, 2027.[[src:124]]Office of the Comptroller of the Currency, "OCC Advances U.S. Digital Asset Leadership with Final Rule to Implement GENIUS Act," News Release 2026-92, October 21st, 2026 · https://occ.gov/news-issuances/news-releases/2026/nr-occ-2026-92.html[[/src]] Treasury Secretary [[person:scott-bessent]]Scott Bessent[[/person]] praised it. The final version left room for third parties to offer yield-like rewards on stablecoins, judged case by case, which is the change banks fear will pull deposits away from them.[[src:125]]American Banker, "OCC leaves room for stablecoin yield maneuvers in final rule," October 2026 · https://www.americanbanker.com/news/occ-leaves-room-for-stablecoin-yield-maneuvers-in-final-rule[[/src]] The Federal Reserve, chaired since May 22nd by [[person:kevin-warsh]]Kevin Warsh[[/person]],[[src:126]]Brookings, "Who has to leave the Federal Reserve next?" 2026 · https://www.brookings.edu/opinions/who-has-to-leave-the-federal-reserve-next/[[/src]] proposed its own GENIUS framework on September 24th, and Treasury issued an interim final rule for the committee that certifies state stablecoin regimes on September 30th.[[src:127]]Willkie Farr & Gallagher, "Final Pieces to the Stablecoin Puzzle? Federal Reserve and Treasury Propose GENIUS Act Framework," October 5th, 2026 · https://www.willkie.com/publications/2026/10/final-pieces-to-the-stablecoin-puzzle-federal-reserve-and-treasury-propose-genius-act[[/src]] The FDIC proposed standards in April for stablecoin issuers owned by the banks it supervises.[[src:128]]Federal Deposit Insurance Corporation, "FDIC Approves Proposal to Implement GENIUS Act Requirements and Standards," April 7th, 2026 · https://www.fdic.gov/news/press-releases/2026/fdic-approves-proposal-implement-genius-act-requirements-and-standards[[/src]] FinCEN and OFAC, both inside Treasury, write the anti-money-laundering and sanctions rules described in the identity section.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Congress holds the bigger levers. In the Senate, Banking Committee Chairman [[person:tim-scott]]Tim Scott[[/person]] championed the GENIUS Act,[[src:129]]House Committee on Financial Services, "Crypto Week" announcement with statement from Senate Banking Chairman Tim Scott, July 2025 · https://financialservices.house.gov/news/documentsingle.aspx?DocumentID=410793[[/src]] and ranking Democrat [[person:elizabeth-warren]]Elizabeth Warren[[/person]] has pressed regulators over Erebor’s charter, as described above. In the House, Financial Services Chairman [[person:french-hill]]French Hill[[/person]] and [[person:bryan-steil]]Bryan Steil[[/person]], who chairs its subcommittee on digital assets, financial technology and artificial intelligence,[[src:130]]House Committee on Financial Services, "Subcommittee on Digital Assets, Financial Technology, and Artificial Intelligence," 119th Congress · https://financialservices.house.gov/119th-congress-subcommittees/subcommittee-on-digital-assets-financial-technology-and-artificial-intelligence.htm[[/src]] drove the market-structure bill. That bill, the CLARITY Act, passed the House in July 2025 but failed a Senate procedural vote 49 to 50 on September 15th, 2026; passage in this Congress is now widely seen as unlikely, and CFTC staff have kept issuing their own crypto guidance in the meantime.[[src:131]]Orrick, "The CLARITY Act Stalls in the Senate: What’s Next for Digital Asset Regulation," October 2nd, 2026 · https://www.orrick.com/en/Insights/2026/10/The-CLARITY-Act-Stalls-in-the-Senate-Whats-Next-for-Digital-Asset-Regulation[[/src]] The GENIUS Act, signed on July 18th, 2025, is unaffected.[[src:132]]FinTech Weekly, "What Is the CLARITY Act? Digital Asset Market Structure Explained," updated September 26th, 2026 · https://www.fintechweekly.com/news/what-is-the-clarity-act-digital-asset-market-structure-explained-2026[[/src]]',
+    },
+    {
+      type: 'paragraph',
+      text: 'The compute and power behind AI-run finance answer to a different council. Energy Secretary Chris Wright asked federal grid regulators to take up large-load interconnection, and on June 18th FERC ordered the six regional grid operators it oversees to improve and speed up how data centers and other large users connect.[[src:133]]Linklaters, "FERC orders data center integration reforms," June 2026 · https://www.linklaters.com/insights/publications/2026/june/ferc-orders-data-center-integration-reforms[[/src]] The Nuclear Regulatory Commission licenses the reactors the AI companies are contracting for, state public utility commissions decide who pays for new plants and wires on household bills, and the Commerce Department’s export controls decide where the most advanced chips may go. [[person:david-sacks]]David Sacks[[/person]] appears often in this story, but his current role is advisory: he co-chairs the President’s Council of Advisors on Science and Technology, which advises the president and has no power to write binding rules. Figure 5 maps the policies that matter, who holds the pen and what each could change for the builders in Figure 4.',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 5 · THE POLICIES THAT COULD RESHAPE THE NEXT FINANCIAL ORDER',
+      kicker: 'EACH POLICY × ITS STATUS, WHO HOLDS THE PEN AND WHAT COMES NEXT · OPEN A DOSSIER FOR THE MECHANISM, THE VERTICALS AND COMPANIES EXPOSED, THE UPSIDE, THE DOWNSIDE AND THE SOURCE.',
+      hint: 'Proposed rules can change before they are final. Upside and downside describe mechanisms, not predictions.',
+      source: 'OCC, FDIC, Federal Reserve, FinCEN, OFAC, SEC, CFTC and FERC releases; Federal Register; law-firm analyses (Orrick, Cooley, Willkie, Morrison Foerster, Linklaters); FinTech Weekly. Current to November 21st, 2026.',
+      headers: [
+        'Policy',
+        'Status',
+        'Who holds the pen',
+        'Next milestone',
+        '',
+      ],
+      rows: [
+        {
+          name: 'GENIUS Act',
+          tag: 'Law',
+          role: 'Signed July 18th, 2025',
+          anchor: 'Congress; carried out by the OCC, Fed, FDIC, NCUA and Treasury',
+          keyRisk: 'Takes effect January 18th, 2027',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Law, with implementing rules being finalized.',
+            },
+            {
+              label: 'Authority',
+              text: 'Federal statute.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Senate Banking (Tim Scott), House Financial Services (French Hill); Treasury (Scott Bessent).',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Only permitted issuers may offer payment stablecoins to Americans; reserve, redemption and capital rules apply; issuers may not pay yield.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Stablecoin issuers; payment networks; banks.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Circle, Paxos, Bridge and banks with issuing subsidiaries; Visa as a settler.',
+            },
+            {
+              label: 'Upside',
+              text: 'Legal certainty draws banks, card networks and corporates in.',
+            },
+            {
+              label: 'Downside',
+              text: 'The yield ban squeezes issuers when rates fall, and compliance costs favor large incumbents.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Effective January 18th, 2027; issuer applications follow.',
+            },
+            {
+              label: 'Source',
+              text: 'FinTech Weekly, September 26th, 2026; OCC, October 21st, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'OCC GENIUS rule',
+          tag: 'Final',
+          role: 'Final, October 21st, 2026',
+          anchor: 'OCC (Jonathan Gould)',
+          keyRisk: 'Effective January 18th, 2027; first charter decisions',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Final, the first agency rule completed.',
+            },
+            {
+              label: 'Authority',
+              text: 'OCC rulemaking under the GENIUS Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Comptroller Jonathan Gould.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Sets reserve, redemption, capital and custody standards for issuers under the OCC, and reviews third-party yield-like rewards case by case.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Stablecoin issuers; national banks and trust banks.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Paxos, Circle, Bridge, national banks.',
+            },
+            {
+              label: 'Upside',
+              text: 'A working framework before the law takes effect, likely to guide the other agencies.',
+            },
+            {
+              label: 'Downside',
+              text: 'Banks object that rewards paid through third parties could pull deposits away.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Applications processed from 2027.',
+            },
+            {
+              label: 'Source',
+              text: 'OCC News Release 2026-92, October 21st, 2026; American Banker, October 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Fed and FDIC GENIUS proposals',
+          tag: 'Proposed',
+          role: 'FDIC April 7th, 2026; Fed September 24th, 2026',
+          anchor: 'Federal Reserve (Kevin Warsh); FDIC board',
+          keyRisk: 'Final rules',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Proposed.',
+            },
+            {
+              label: 'Authority',
+              text: 'Fed and FDIC rulemaking under the GENIUS Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Fed Chair Kevin Warsh; the FDIC board.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Standards and application procedures for stablecoin issuers owned by state member banks and FDIC-supervised banks.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Banks; stablecoin issuers.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Bank holding companies weighing their own coins.',
+            },
+            {
+              label: 'Upside',
+              text: 'Opens a bank-owned stablecoin path.',
+            },
+            {
+              label: 'Downside',
+              text: 'Differences between agencies could favor one type of charter over another.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Final rules from each agency.',
+            },
+            {
+              label: 'Source',
+              text: 'FDIC, April 7th, 2026; Willkie Farr & Gallagher, October 5th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'FinCEN and OFAC stablecoin rule',
+          tag: 'Proposed',
+          role: 'Proposed April 8th, 2026; comments closed June 9th',
+          anchor: 'Treasury: FinCEN and OFAC',
+          keyRisk: 'Final rule, effective 12 months after issuance',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Proposed.',
+            },
+            {
+              label: 'Authority',
+              text: 'Bank Secrecy Act and sanctions authorities, as directed by the GENIUS Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Treasury Secretary Scott Bessent’s department: FinCEN and OFAC.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'A full anti-money-laundering program and a formal sanctions program for every permitted issuer, including the ability to block, freeze and reject transactions, mainly for sanctions.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Stablecoin issuers; identity and compliance vendors.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Circle, Paxos, Bridge; blockchain analytics and identity firms.',
+            },
+            {
+              label: 'Upside',
+              text: 'A clear compliance bar, and demand for analytics and identity tools.',
+            },
+            {
+              label: 'Downside',
+              text: 'Higher fixed costs; freeze powers raise privacy and due-process questions.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Final rule; customer identification rules in a separate rulemaking.',
+            },
+            {
+              label: 'Source',
+              text: 'Federal Register, April 10th, 2026; Morrison Foerster, May 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Digital ID guidance for banks',
+          tag: 'Guidance',
+          role: 'Issued September 8th, 2026',
+          anchor: 'FinCEN with the Fed, FDIC, OCC and NCUA',
+          keyRisk: 'Bank adoption; issuer customer ID rules',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Guidance in force.',
+            },
+            {
+              label: 'Authority',
+              text: 'Interpretation of the Customer Identification Program rule; no new obligations.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'FinCEN and the staffs of the bank regulators.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Confirms banks may verify customers with state mobile licenses and other government digital credentials.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Digital identity; banks; phone wallets.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Apple, Google and Samsung wallets; state DMVs; banks.',
+            },
+            {
+              label: 'Upside',
+              text: 'Faster, cheaper remote onboarding and fewer fake IDs.',
+            },
+            {
+              label: 'Downside',
+              text: 'Concentrates gatekeeping in wallet platforms; public uptake is still low.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'How many banks accept digital credentials, and on what terms.',
+            },
+            {
+              label: 'Source',
+              text: 'OCC Bulletin 2026-44, September 8th, 2026; FinTech Global, September 2026.',
+            },
+          ],
+        },
+        {
+          name: 'CLARITY Act',
+          tag: 'Stalled',
+          role: 'Passed House July 2025; failed Senate cloture 49 to 50, September 15th, 2026',
+          anchor: 'Congress (French Hill, Bryan Steil; Senate Banking and Agriculture)',
+          keyRisk: 'Lame-duck session or a new Congress',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Stalled in the Senate; not formally dead.',
+            },
+            {
+              label: 'Authority',
+              text: 'Federal legislation.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'French Hill and Bryan Steil in the House; Senate Banking and Agriculture committees.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Would split crypto oversight between the CFTC for digital commodities and the SEC for securities.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Tokenization platforms; exchanges; token issuers.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Securitize and crypto exchanges; stablecoin issuers indirectly.',
+            },
+            {
+              label: 'Upside',
+              text: 'Statutory certainty for tokens that are not securities.',
+            },
+            {
+              label: 'Downside',
+              text: 'Without it, agency policy can be reversed by a future commission.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Depends on the post-midterm calendar.',
+            },
+            {
+              label: 'Source',
+              text: 'Orrick, October 2nd, 2026; FinTech Weekly, September 26th, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'SEC Innovation Exemption',
+          tag: 'In force',
+          role: 'Issued September 17th, 2026; expires September 17th, 2031',
+          anchor: 'SEC (Paul Atkins)',
+          keyRisk: 'Comment review; permanent tokenized-trading rules',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'In force, temporary and conditional.',
+            },
+            {
+              label: 'Authority',
+              text: 'SEC exemptive authority under the Exchange Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Chairman Paul Atkins.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Lets qualifying tokenized securities venues run permissioned onchain trading of tokenized stocks through automated market makers, under conditions.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Tokenization platforms; market infrastructure; broker-dealers.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Securitize; DTCC participants; broker-dealers.',
+            },
+            {
+              label: 'Upside',
+              text: 'Legal room to trade tokenized shares onchain.',
+            },
+            {
+              label: 'Downside',
+              text: 'Temporary, and limited to automated market makers rather than order books.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Possible permanent rules.',
+            },
+            {
+              label: 'Source',
+              text: 'Cooley, September 22nd, 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Regulation Crypto Assets',
+          tag: 'Proposed',
+          role: 'Proposed August 18th, 2026; comments closed October 20th',
+          anchor: 'SEC (Paul Atkins)',
+          keyRisk: 'Final rule',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Proposed.',
+            },
+            {
+              label: 'Authority',
+              text: 'SEC rulemaking under the Securities Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'Chairman Paul Atkins.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Creates tailored offering exemptions and disclosure rules for crypto investment contracts.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Token issuers; tokenization platforms.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Crypto projects raising capital; platforms that list them.',
+            },
+            {
+              label: 'Upside',
+              text: 'A defined path to raise money without a full registration.',
+            },
+            {
+              label: 'Downside',
+              text: 'Agency rules can be rewritten by a future commission.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Final rule.',
+            },
+            {
+              label: 'Source',
+              text: 'KPMG, August 2026.',
+            },
+          ],
+        },
+        {
+          name: 'Limits on a Fed digital dollar',
+          tag: 'Executive order',
+          role: 'Executive Order 14178 in force; House and Senate bans passed separately',
+          anchor: 'The president; Congress',
+          keyRisk: 'One bill sent to the president',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'The executive order holds; the bills are not reconciled.',
+            },
+            {
+              label: 'Authority',
+              text: 'Executive order; pending legislation.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'The president; House and Senate leaders.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Bars federal agencies from issuing or promoting a central bank digital currency, which leaves tokenized dollars to private issuers and banks.',
+            },
+            {
+              label: 'Verticals',
+              text: 'Stablecoins; bank deposit tokens.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Circle, Paxos, JPMorgan, BNY.',
+            },
+            {
+              label: 'Upside',
+              text: 'Removes a public competitor to private tokens.',
+            },
+            {
+              label: 'Downside',
+              text: 'A future president could reverse the order.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'Whether Congress sends one bill to the president.',
+            },
+            {
+              label: 'Source',
+              text: 'Sources cited in "Where US law stands on a digital dollar."',
+            },
+          ],
+        },
+        {
+          name: 'FERC large-load orders',
+          tag: 'Orders issued',
+          role: 'Show-cause orders June 18th, 2026',
+          anchor: 'FERC; requested by the Department of Energy (Chris Wright)',
+          keyRisk: 'Tariff changes at each grid operator',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'Orders issued; grid operators responded in August.',
+            },
+            {
+              label: 'Authority',
+              text: 'Federal Power Act.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'FERC commissioners; Energy Secretary Chris Wright.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Pushes the six regional grid operators to speed up and standardize how data centers connect, while protecting other customers from the costs.',
+            },
+            {
+              label: 'Verticals',
+              text: 'AI compute and power.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Constellation, Vistra and data center developers and their tenants.',
+            },
+            {
+              label: 'Upside',
+              text: 'Faster grid hookups for AI campuses.',
+            },
+            {
+              label: 'Downside',
+              text: 'Fights over who pays, households or data centers.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'FERC rulings on each operator’s response.',
+            },
+            {
+              label: 'Source',
+              text: 'Linklaters, June 2026.',
+            },
+          ],
+        },
+        {
+          name: 'AI chip export controls',
+          tag: 'In force',
+          role: 'Licensing of advanced chips to China, shifting since 2025',
+          anchor: 'Commerce Department; the White House',
+          keyRisk: 'License decisions; China demand',
+          dossier: [
+            {
+              label: 'Status',
+              text: 'In force, and changing.',
+            },
+            {
+              label: 'Authority',
+              text: 'Export Administration Regulations.',
+            },
+            {
+              label: 'Policymakers',
+              text: 'The Commerce Department and the White House; advisers such as David Sacks have argued positions but do not write the rules.',
+            },
+            {
+              label: 'How it reaches companies',
+              text: 'Decides where the most advanced chips may be sold, shaping who can build AI capacity.',
+            },
+            {
+              label: 'Verticals',
+              text: 'AI compute.',
+            },
+            {
+              label: 'Companies exposed',
+              text: 'Nvidia; Chinese rivals such as Huawei.',
+            },
+            {
+              label: 'Upside',
+              text: 'Licenses can reopen a large market.',
+            },
+            {
+              label: 'Downside',
+              text: 'Nvidia’s outlook assumes no data center sales in China, and Huawei is filling the gap.',
+            },
+            {
+              label: 'Next milestone',
+              text: 'License decisions.',
+            },
+            {
+              label: 'Source',
+              text: 'Sources cited in the rings of power section.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      text: 'Two cautions apply to everything in this section. Lobbying spending, campaign donations and meetings show access, not outcomes: a rule can match an industry’s wishes because its arguments were good, because the politics shifted or because of influence, and the record rarely proves which. And none of these officials controls the others. The SEC, the CFTC, the Fed, the OCC, the FDIC, Treasury, Congress and the states pull in different directions, which is one reason the new rails are arriving piecemeal rather than by design.',
+    },
+    { type: 'heading', text: 'The Verdict: Who Builds the Next Financial Order, and Who Sets Its Rules?', level: 2 },
+    {
+      type: 'heading',
+      text: 'A. The conclusion',
+      level: 3,
+    },
+    {
+      type: 'paragraph',
+      text: 'Put together, the evidence supports a less cinematic story. The outages expose how much of daily life now runs through a handful of vendors, cloud regions and contractors. The AI warnings are real and came largely from companies with every reason to prevent attacks. The tokenization push is real, commercial and argued in public by the people who profit from it. None of that needs coordination to explain it, and the coordination claim has no supporting evidence today. What is not in doubt is that a new financial layer is being built quickly, mostly by incumbents rather than insurgents, under rules that are still being written. The scenarios below lay out how tokenized money could arrive, and the rest of this verdict names who is building it and who decides.',
     },
     {
       type: 'paragraph',
@@ -924,7 +2188,7 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 3 · THREE WAYS TOKENIZED MONEY ARRIVES',
+      figureLabel: 'FIG. 6 · THREE WAYS TOKENIZED MONEY ARRIVES',
       kicker:
         'BASE VS. ACCELERATED VS. THE THEORY AS STATED · EACH ROW IS A CHAIN OF CONDITIONS THAT MUST ALL HOLD · NO PROBABILITIES ASSIGNED; WATCH THE KILL SWITCH.',
       hint: 'Each step is a condition; the bottom row needs evidence that does not exist yet.',
@@ -972,6 +2236,75 @@ export const tokenizedMoneyOutageTheory2026 = {
         'This verdict flips if any official investigation attributes two or more of the November outages to a common actor, or if any US bank makes restoring a customer’s balance conditional on moving to a new tokenized account.',
     },
 
+    {
+      type: 'heading',
+      text: 'B. The leaders by vertical',
+      level: 3,
+    },
+    {
+      type: 'paragraph',
+      text: 'On the record today the leaders look like this, and none is a guaranteed winner. In tokenized funds, BlackRock and Franklin Templeton have operating products, with Securitize as the main independent platform. In market plumbing, the DTCC owns the most important bridge. In bank money, J.P. Morgan and BNY have live deposit tokens. In stablecoins, Circle has the scale and Paxos the federal charter, with Stripe’s Bridge waiting on final approval, and Visa is positioning to settle whatever wins. In identity, the states issue the credentials but Apple, Google and Samsung hold the wallets. Underneath it all, Nvidia supplies the compute and utilities such as Constellation and Vistra own the power. Every one of those positions depends on a rule that is not final, a partner it does not control or a technology not yet tested at full scale.',
+    },
+    {
+      type: 'heading',
+      text: 'C. The decision-makers',
+      level: 3,
+    },
+    {
+      type: 'paragraph',
+      text: 'The rules are being set by a small group with real authority: Atkins at the SEC, Selig at the CFTC, Gould at the OCC, Warsh at the Fed, the FDIC’s board, and Bessent at Treasury, which also houses FinCEN and OFAC. Congress, where Tim Scott and Elizabeth Warren lead on these issues in the Senate and French Hill and Bryan Steil in the House, decides whether market structure becomes law or stays agency policy that a future commission can undo. Wright, FERC, the NRC and state utility commissions decide how fast the power arrives. Advisers such as Sacks shape the agenda but do not write the rules. It is a concentrated group, but a public one, and every decision it makes leaves a docket.',
+    },
+    {
+      type: 'heading',
+      text: 'D. What Changes the Verdict?',
+      level: 3,
+    },
+    {
+      type: 'paragraph',
+      text: 'Evidence could move this verdict in either direction. A published root-cause report linking two of the November outages, or any finding of a common actor, would reopen the coordination question; so far every stated cause points elsewhere. On the building side, the concern would harden if the remaining GENIUS and anti-money-laundering rules are finalized with broad freeze powers and weak appeal rights, if a digital ID becomes a condition of opening an ordinary account rather than an option, or if a few platforms end up holding both the money and the credentials. It would ease if the new rails stay voluntary, interoperable and open to competition, if courts and Congress set clear limits on who can freeze funds and how, and if adoption is driven by price and convenience rather than by the old system being left to decay.',
+    },
+    {
+      type: 'heading',
+      text: 'E. Questions to put to Sonar',
+      level: 3,
+    },
+    {
+      type: 'link-list',
+      title: 'Research questions for Ezana Sonar',
+      intro: 'Each link opens Sonar with the question filled in, answered from filings and datasets with sources.',
+      items: [
+        {
+          label: 'Which institutions added to or cut BlackRock, BNY, Circle and Visa in the latest 13F filings?',
+          href: '/sonar/research?q=Which%20institutions%20added%20to%20or%20cut%20BlackRock%2C%20BNY%2C%20Circle%20and%20Visa%20in%20the%20latest%2013F%20filings%3F',
+          note: 'Quarterly holdings, not real-time trading.',
+        },
+        {
+          label: 'Which public companies mention tokenized deposits or stablecoin settlement in their latest filings?',
+          href: '/sonar/research?q=Which%20public%20companies%20mention%20tokenized%20deposits%20or%20stablecoin%20settlement%20in%20their%20latest%20filings%3F',
+          note: 'A mention is a disclosure, not proof of revenue.',
+        },
+        {
+          label: 'How exposed is Circle’s revenue to falling interest rates under the GENIUS Act yield ban?',
+          href: '/sonar/research?q=How%20exposed%20is%20Circle%E2%80%99s%20revenue%20to%20falling%20interest%20rates%20under%20the%20GENIUS%20Act%20yield%20ban%3F',
+          note: 'Reserve income versus other revenue, quarter by quarter.',
+        },
+        {
+          label: 'Which agencies have open rulemakings on stablecoins, digital identity or tokenized securities, and what are the next deadlines?',
+          href: '/sonar/research?q=Which%20agencies%20have%20open%20rulemakings%20on%20stablecoins%2C%20digital%20identity%20or%20tokenized%20securities%2C%20and%20what%20are%20the%20next%20deadlines%3F',
+          note: 'Proposed rules can change before they are final.',
+        },
+        {
+          label: 'Who lobbied on the GENIUS Act and the CLARITY Act, and how do the final rules compare with their positions?',
+          href: '/sonar/research?q=Who%20lobbied%20on%20the%20GENIUS%20Act%20and%20the%20CLARITY%20Act%2C%20and%20how%20do%20the%20final%20rules%20compare%20with%20their%20positions%3F',
+          note: 'Lobbying shows access, not outcomes.',
+        },
+        {
+          label: 'Which data center campuses depend on nuclear power contracts, and who are the buyers?',
+          href: '/sonar/research?q=Which%20data%20center%20campuses%20depend%20on%20nuclear%20power%20contracts%2C%20and%20who%20are%20the%20buyers%3F',
+          note: 'Contract terms are often only partly disclosed.',
+        },
+      ],
+    },
     { type: 'heading', text: 'How to prepare without panicking', level: 2 },
     {
       type: 'paragraph',
@@ -979,7 +2312,66 @@ export const tokenizedMoneyOutageTheory2026 = {
     },
     {
       type: 'paragraph',
-      text: 'For investors the story points to real exposures rather than a plot. Asset managers BLK and STT, and banks JPM, BAC and WFC, carry the operational and reputational risk when systems fail and the commercial upside if tokenized funds and deposits scale; MSFT, GOOGL and WDAY sit at the concentration points the November outages exposed; and media owners FOXA and DIS show how far holding a stake is from controlling a newsroom. The base case is slow, voluntary adoption under a US ban on a Federal Reserve digital dollar. The risk worth watching is not a staged blackout but the fine print: who can freeze tokenized money, and on whose order.',
+      text: 'For investors the story points to real exposures rather than a plot. Asset managers BLK and STT, and banks JPM, BAC and WFC, carry the operational and reputational risk when systems fail and the commercial upside if tokenized funds and deposits scale; MSFT, GOOGL and WDAY sit at the concentration points the November outages exposed; and media owners FOXA and DIS show how far holding a stake is from controlling a newsroom. The base case is slow, voluntary adoption under a US ban on a Federal Reserve digital dollar. The risk worth watching is not a staged blackout but the fine print: who can freeze tokenized money, and on whose order. The new builders bring their own exposures: CRCL to interest rates and the GENIUS yield ban, V to whether stablecoins route around card networks, and BK and SECZ to how fast institutions adopt tokenized cash and funds.',
+    },
+    {
+      type: 'heading',
+      text: 'The Ezana Datasets to Watch',
+      level: 2,
+    },
+    {
+      type: 'paragraph',
+      text: 'Most of the claims in this piece can be checked against public records Ezana already tracks. Each dataset below answers part of the question of who is building the next financial order and who sets its rules, and each comes with a limit worth keeping in mind.',
+    },
+    {
+      type: 'link-list',
+      items: [
+        {
+          label: 'Institutional holdings (13F)',
+          href: '/datasets/institutional',
+          note: 'Who owns the builders. Quarterly snapshots filed up to 45 days after quarter-end, covering long US equity positions; not real-time trading, and not control.',
+        },
+        {
+          label: 'ETF holdings (N-PORT)',
+          href: '/datasets/etf-holdings',
+          note: 'What funds actually hold. Monthly portfolio reports released with a lag; they show positions, not intentions.',
+        },
+        {
+          label: 'New laws and policy legislation',
+          href: '/datasets/legislation',
+          note: 'Bills such as the CLARITY Act. Progress through committee is not a prediction of passage.',
+        },
+        {
+          label: 'Government agency rulings',
+          href: '/datasets/agency-rulings',
+          note: 'Agency decisions as published. Proposed rules can change before they are final.',
+        },
+        {
+          label: 'Regulatory investigations and enforcement',
+          href: '/datasets/enforcement',
+          note: 'Actions as announced. An investigation is not a finding of wrongdoing.',
+        },
+        {
+          label: 'US sanctions list tracker',
+          href: '/datasets/sanctions',
+          note: 'OFAC designations. The list shows who is named, not the freezes individual stablecoin issuers carry out.',
+        },
+        {
+          label: 'Politician tracker',
+          href: '/datasets/politician-tracker',
+          note: 'Disclosed trades by members of Congress, filed with delays. A trade is not evidence of how a vote was decided.',
+        },
+        {
+          label: 'Campaign finance',
+          href: '/datasets/campaignfinancerecords',
+          note: 'Contributions as reported. Donations show access, not outcomes.',
+        },
+        {
+          label: 'Prediction markets',
+          href: '/datasets/prediction-markets',
+          note: 'Prices on questions the markets themselves list. A price is a crowd estimate, not a forecast Ezana endorses.',
+        },
+      ],
     },
     {
       type: 'cta-callout',

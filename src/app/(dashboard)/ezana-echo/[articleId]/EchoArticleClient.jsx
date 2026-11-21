@@ -26,6 +26,7 @@ import { EchoArticleHero } from '@/components/echo/EchoArticleHero';
 import { articleEyebrow, articleHeaderImage, articleSnapshot } from '@/lib/echo/article-header';
 import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
+import { EchoLinkList } from '@/components/echo/EchoLinkList';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import ThielNetworkPie from '@/components/echo/ThielNetworkPie';
 import { EchoGlobeRail } from '@/components/echo/EchoGlobeRail';
@@ -442,6 +443,9 @@ function ArticleBlock({ block }) {
 
     case 'cta-callout':
       return <EchoCtaCallout block={block} />;
+
+    case 'link-list':
+      return <EchoLinkList {...block} />;
 
     case 'network-pie':
       return <ThielNetworkPie title={block.title} caption={block.caption} />;

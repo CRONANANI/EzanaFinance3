@@ -1,0 +1,73 @@
+/* Echo article link list (Nov 21st, 2026): Sonar questions and datasets to
+   watch. Transparent on the black article ground, emerald rules between rows
+   to match the figures, emerald link text. */
+
+.echo-link-list {
+  margin: 28px 0;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--emerald);
+}
+
+.echo-link-list-title {
+  margin: 0 0 6px;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  line-height: var(--type-card-title-leading);
+  letter-spacing: var(--type-card-title-tracking);
+  color: var(--emerald);
+}
+
+.echo-link-list-intro {
+  margin: 0 0 10px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  color: var(--text-secondary);
+}
+
+.echo-link-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.echo-link-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+}
+
+.echo-link-list-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  font-weight: 600;
+  color: var(--emerald);
+  text-decoration: none;
+}
+
+.echo-link-list-link i {
+  font-size: 0.8em;
+}
+
+.echo-link-list-link:hover,
+.echo-link-list-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.echo-link-list-link:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.echo-link-list-note {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
