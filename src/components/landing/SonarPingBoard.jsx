@@ -66,12 +66,29 @@ import { deskSourceRows, deskTakeaways, summaryParas } from '@/lib/sonar/desk-su
 import { benchmarkFor } from '@/lib/sonar/market-context';
 import { anchorCells, isEquityAnswer } from '@/lib/sonar/answer-sections';
 import { ValuationSnapshot } from '@/components/sonar/valuation/ValuationSnapshot';
+import {
+  CongressProfileReport,
+  CongressEvidence,
+} from '@/components/sonar/congress/CongressProfileReport';
+import { congressSections, politicianFollowUps } from '@/lib/sonar/congress-profile';
 import { Eyebrow, Coverage, Evidence } from './SonarCountryBoard';
 import './country-intel.css';
 import './sonar-country-board.css';
 import './sonar-ping-board.css';
 
 const VISUAL_ID = 'snr-pb-visual';
+
+/* Nov 21: the line under "Ezana Sonar" at the top of the side navigation, by subject. */
+const SUBJECT_LINE = {
+  politician: 'Congressional trading research',
+  company: 'Company research',
+  sector: 'Sector research',
+  industry: 'Industry research',
+  flows: 'Institutional flows research',
+  congress_activity: 'Congressional trading research',
+  insider_buying: 'Insider trading research',
+  country: 'Country and macro research',
+};
 
 function toVisual() {
   const el = document.getElementById(VISUAL_ID);
@@ -492,7 +509,18 @@ export function SonarPingBoard({
   ].filter(Boolean);
   const spans = boardSpans(cells);
   const anchors = anchorCells(cells);
-  const present = [...new Set(cells.map((c) => c.section))];
+  /* Nov 21: a member of Congress gets the one-page congressional profile (the approved
+     design) inside the same shell: its own sections, its evidence in the right rail and
+     follow-ups the member's own datasets can answer. */
+  const congress = !lead && live?.dossier?.kind === 'politician';
+  const congressTake = congress ? deskTakeaways(live?.takeaways) : [];
+  const present = congress
+    ? congressSections({
+        dossier: live.dossier,
+        takeaways: congressTake,
+        sourceCount: sources.length,
+      })
+    : [...new Set(cells.map((c) => c.section))];
   /* Nov 13: the workspace's right rail, from this answer's own subject and Echo matches. */
   const steps = runnableSteps(
     nextSteps({
@@ -511,10 +539,22 @@ export function SonarPingBoard({
   const rail = (
     <>
       <SonarResearchControls />
+      {congress ? (
+        <CongressEvidence rows={deskSourceRows(sources, Infinity)} count={sources.length} />
+      ) : null}
       <SonarNextSteps steps={steps} onStep={(st) => runWorkspaceStep(st, { onDeep, onRun })} />
       <SonarRelatedResearch items={related} moreHref={signedIn ? '/sonar/saved' : null} />
     </>
   );
+  const followUps = congress ? politicianFollowUps(live.dossier, live?.related) : live?.related;
+  /* The desk summary of the congressional profile: one short paragraph, the rest of the brief
+     behind "Read the full brief". */
+  const fullBrief = answerParagraphs(live?.answer, 12);
+  const congressSummary = summaryParas(live?.summary);
+  const congressParas = congressSummary.length
+    ? congressSummary.slice(0, 1)
+    : fullBrief.slice(0, 1);
+  const congressMore = congressSummary.length ? fullBrief : fullBrief.slice(1);
   return (
     <SonarAnswerFrame
       present={present}
@@ -524,43 +564,80 @@ export function SonarPingBoard({
       rail={rail}
       deepNote={deepNote}
       research={researchMenu({ signedIn })}
+      subtitle={SUBJECT_LINE[live?.dossier?.kind] || 'Research answer'}
       top={
-        queryBar || live?.related?.length ? (
+        queryBar || followUps?.length ? (
           <>
             {queryBar}
-            <SonarRelatedQuestions questions={live?.related} onAsk={onRun} />
+            <SonarRelatedQuestions questions={followUps} onAsk={onRun} />
           </>
         ) : null
       }
     >
-      <div className="snr-cii snr-board snr-pb" role="region" aria-label={`${live.query}: answer`}>
-        <div className="snr-bd-grid">
-          {cells.map((c) => (
-            <div
-              key={c.id}
-              id={anchors.get(c.id)}
-              className={`snr-bd-cell snr-bd-cell--${c.id}`}
-              style={{ '--bd-span': spans.get(c.id)?.wide, '--bd-span-mid': spans.get(c.id)?.mid }}
-            >
-              {c.node}
-            </div>
-          ))}
-        </div>
-        {onFollowUp ? (
-          <SonarFollowUp
-            context={followUpContext({
-              question: live.rawQuery || live.query,
-              headline: live.headline || companyBrief(live.answer).headline || '',
-              summary: live.summary || answerParagraphs(live.answer, 3).join(' '),
-              subject: live.dossier?.name || '',
-              ticker: live.dossier?.ticker || '',
-            })}
-            onAsk={onFollowUp}
-            onRestore={onRestore}
-            currentId={sessionId}
+      {congress ? (
+        <div className="snr-cii snr-pb snr-pb--congress">
+          <CongressProfileReport
+            live={live}
+            headline={live.headline || null}
+            paragraphs={congressParas}
+            more={congressMore}
+            takeaways={congressTake}
+            notice={notice}
+            actions={saveActions}
+            remaining={typeof live?.remaining === 'number' ? live.remaining : null}
           />
-        ) : null}
-      </div>
+          {onFollowUp ? (
+            <SonarFollowUp
+              context={followUpContext({
+                question: live.rawQuery || live.query,
+                headline: live.headline || '',
+                summary: live.summary || fullBrief.slice(0, 3).join(' '),
+                subject: live.dossier?.name || '',
+                ticker: '',
+              })}
+              onAsk={onFollowUp}
+              onRestore={onRestore}
+              currentId={sessionId}
+            />
+          ) : null}
+        </div>
+      ) : (
+        <div
+          className="snr-cii snr-board snr-pb"
+          role="region"
+          aria-label={`${live.query}: answer`}
+        >
+          <div className="snr-bd-grid">
+            {cells.map((c) => (
+              <div
+                key={c.id}
+                id={anchors.get(c.id)}
+                className={`snr-bd-cell snr-bd-cell--${c.id}`}
+                style={{
+                  '--bd-span': spans.get(c.id)?.wide,
+                  '--bd-span-mid': spans.get(c.id)?.mid,
+                }}
+              >
+                {c.node}
+              </div>
+            ))}
+          </div>
+          {onFollowUp ? (
+            <SonarFollowUp
+              context={followUpContext({
+                question: live.rawQuery || live.query,
+                headline: live.headline || companyBrief(live.answer).headline || '',
+                summary: live.summary || answerParagraphs(live.answer, 3).join(' '),
+                subject: live.dossier?.name || '',
+                ticker: live.dossier?.ticker || '',
+              })}
+              onAsk={onFollowUp}
+              onRestore={onRestore}
+              currentId={sessionId}
+            />
+          ) : null}
+        </div>
+      )}
     </SonarAnswerFrame>
   );
 }

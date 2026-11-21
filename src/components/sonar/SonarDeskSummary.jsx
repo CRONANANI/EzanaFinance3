@@ -239,12 +239,14 @@ export function SonarDeskSummary({
 }
 
 /**
- * Explore related questions: up to four follow-on questions from the answer itself. Choosing
- * one runs it through the host's own ping path. Nothing to show: nothing rendered.
+ * Suggested follow-ups (Nov 21, was "Explore related questions"): up to three follow-on
+ * questions, directly under the query bar on every Sonar answer. Choosing one runs it
+ * through the host's own ping path (auth, quota and research controls unchanged). Nothing
+ * to show: nothing rendered.
  */
 export function SonarRelatedQuestions({ questions = [], onAsk = null }) {
   const id = useId();
-  const list = (Array.isArray(questions) ? questions : []).filter(Boolean).slice(0, 4);
+  const list = (Array.isArray(questions) ? questions : []).filter(Boolean).slice(0, 3);
   if (!list.length || typeof onAsk !== 'function') return null;
   const ask = (q) => {
     if (typeof window !== 'undefined') {
@@ -257,13 +259,12 @@ export function SonarRelatedQuestions({ questions = [], onAsk = null }) {
     <section className="sds-related" aria-labelledby={id}>
       <h2 id={id} className="sds-related-label">
         <i className="bi bi-stars" aria-hidden="true" />
-        Explore related questions
+        Suggested follow-ups
       </h2>
       <ul className="sds-related-row">
         {list.map((q) => (
           <li key={q}>
             <button type="button" className="sds-related-q" onClick={() => ask(q)}>
-              <i className="bi bi-search sds-related-ico" aria-hidden="true" />
               <span className="sds-related-text">{q}</span>
               <i className="bi bi-arrow-right sds-related-go" aria-hidden="true" />
             </button>

@@ -55,6 +55,94 @@
   min-width: 0;
 }
 
+/* Nov 21: "Ezana Sonar" and the subject line, at the top of the side navigation (mid and up). */
+.san .san-brand {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px 4px 4px;
+}
+.san .san-brand-tile {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
+  color: var(--san-accent);
+  font-size: 1.0625rem;
+}
+.san .san-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.san .san-brand-name {
+  font-size: var(--type-body-size);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--san-text);
+}
+.san .san-brand-name span {
+  color: var(--san-accent);
+}
+.san .san-brand-sub {
+  font-size: var(--type-micro-size);
+  line-height: 1.3;
+  color: var(--san-faint);
+}
+/* The panels group the rail: Research and the current report, the deep sections, the call to
+   action. A tinted surface only (the Sonar card rule). */
+.san .san-panel,
+.san .san-cta-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.san .san-cta-slot:empty {
+  display: none;
+}
+/* The deep research state beside its heading: Locked, Not run, Running or Complete. */
+.san .san-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--san-text) 8%, transparent);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--san-faint);
+}
+.san .san-status .bi {
+  font-size: 0.625rem;
+}
+.san .san-status--available {
+  background: color-mix(in srgb, var(--san-emerald) 12%, transparent);
+  color: var(--san-accent);
+}
+.san .san-status--running {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  color: var(--warning);
+}
+.san .san-status--running .bi {
+  animation: san-spin 1.2s linear infinite;
+}
+.san .san-status--complete {
+  background: color-mix(in srgb, var(--san-emerald) 18%, transparent);
+  color: var(--san-accent);
+}
+@keyframes san-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Narrow: rows of chips above the board, the locked ones after the open ones. */
 .san .san-nav,
 .san .san-research {
@@ -75,6 +163,9 @@
 }
 .san .san-head--locked {
   color: var(--san-faint);
+}
+.san .san-head-text {
+  white-space: nowrap;
 }
 .san .san-list {
   display: flex;
@@ -108,6 +199,7 @@
   white-space: nowrap;
   transition:
     background 0.15s ease,
+    box-shadow 0.15s ease,
     color 0.15s ease;
 }
 .san .san-link .bi {
@@ -124,7 +216,8 @@
 }
 .san a.san-link.is-active,
 .san .san-link.is-current {
-  background: color-mix(in srgb, var(--san-emerald) 22%, transparent);
+  background: color-mix(in srgb, var(--san-emerald) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--san-emerald) 45%, transparent);
   color: var(--san-text);
   font-weight: 600;
 }
@@ -138,7 +231,12 @@
   opacity: 0.75;
 }
 .san .san-link.is-locked .bi {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+}
+/* Available but not run on this question: legible, not clickable, no lock. */
+.san .san-link.is-pending {
+  color: var(--san-muted);
+  cursor: default;
 }
 
 /* "Run deeper research": a tinted card, never an outline. */
@@ -336,20 +434,42 @@
   text-decoration: none;
 }
 
+/* Nov 21: on a phone only the section chips sit above the search; the deep list and its call
+   to action stay out of the way (Next steps still offers deep research). */
+@container san (max-width: 879px) {
+  .san .san-panel--deep,
+  .san .san-cta-slot {
+    display: none;
+  }
+}
+
 /* Mid: the left rail becomes a sticky column; the right rail sits under the board. */
 @container san (min-width: 880px) {
   .san .san-grid {
-    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-columns: 216px minmax(0, 1fr);
     column-gap: 20px;
     align-items: start;
   }
+  /* Nov 21: sticky without a scrollbar of its own (no nested scroll); on a short screen it
+     scrolls with the page instead (below). */
   .san .san-side {
     position: sticky;
-    top: calc(var(--navbar-height, 64px) + 20px);
-    gap: 16px;
-    max-height: calc(100vh - var(--navbar-height, 64px) - 40px);
-    overflow-y: auto;
-    scrollbar-width: thin;
+    top: calc(var(--navbar-height, 64px) + 16px);
+    gap: 12px;
+  }
+  .san .san-brand {
+    display: flex;
+  }
+  .san .san-panel,
+  .san .san-cta-slot {
+    gap: 0;
+    padding: 12px 10px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--san-emerald) 4%, var(--san-row));
+  }
+  .san .san-cta-slot {
+    padding: 0;
+    background: none;
   }
   .san .san-rail {
     grid-column: 2;
@@ -363,7 +483,8 @@
   }
   /* A hairline over the sections, under the Research menu. */
   .san .san-research + .san-nav {
-    padding-top: 16px;
+    margin-top: 10px;
+    padding-top: 12px;
     background: linear-gradient(var(--san-rule), var(--san-rule)) top / 100% 1px no-repeat;
   }
   .san .san-head {
@@ -375,7 +496,7 @@
   }
   .san .san-head--deep,
   .san .san-head--locked {
-    margin-top: 14px;
+    margin-top: 0;
   }
   .san .san-list {
     flex-direction: column;
@@ -384,16 +505,19 @@
   }
   .san .san-link {
     display: flex;
-    min-height: 37px;
-    padding: 0 12px;
+    min-height: 34px;
+    padding: 0 10px;
     background: transparent;
     white-space: normal;
   }
+  .san a.san-link:hover {
+    background: color-mix(in srgb, var(--san-emerald) 7%, transparent);
+  }
   .san .san-link--menu {
-    min-height: 40px;
+    min-height: 38px;
   }
   .san .san-list--locked .san-link {
-    min-height: 30px;
+    min-height: 31px;
   }
   .san .san-link.is-locked {
     background: transparent;
@@ -401,18 +525,31 @@
   .san .san-cta {
     flex-direction: column;
     align-items: flex-start;
-    margin-top: 14px;
+    margin-top: 0;
   }
   .san .san-cta-line {
     flex: none;
   }
 }
 
+/* A short screen: the rail scrolls with the page, so nothing in it is ever cut off. */
+@media (max-height: 960px) {
+  .san .san-side {
+    position: static;
+  }
+}
+
+/* Nov 21: the query bar spans the centre column inside the shell. */
+.san .san-lead .sqb {
+  max-width: none;
+}
+
 /* Wide: three columns. */
 @container san (min-width: 1240px) {
   .san.has-rail .san-grid {
-    grid-template-columns: 200px minmax(0, 1fr) 264px;
+    grid-template-columns: 216px minmax(0, 1fr) 276px;
   }
+
   .san.has-rail .san-rail {
     grid-column: 3;
   }
@@ -424,6 +561,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .san .san-status--running .bi {
+    animation: none;
+  }
   .san .san-link,
   .san .san-cta-btn,
   .san .san-step-go {

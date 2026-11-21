@@ -142,6 +142,7 @@
     "test:sonar-ipo": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-ipo.mjs",
     "test:sonar-exposure": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-exposure.mjs",
     "test:sonar-politician": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-politician.mjs",
+    "test:sonar-congress-profile": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-congress-profile.mjs",
     "test:sonar-nav-frame": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-nav-frame.mjs",
     "test:sonar-gov-exposure": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-gov-exposure.mjs",
     "test:sonar-flows": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-flows.mjs",

@@ -87,6 +87,7 @@ import {
 } from './SonarCountryStack';
 import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
+import { Face } from '@/components/sonar/SonarFace';
 import { SonarAnswerQueryBar } from '@/components/sonar/SonarAnswerQueryBar';
 import { controlsNeedResearch, readControls } from '@/components/sonar/research-controls-store';
 import { addSessionEntry } from '@/components/sonar/session-thread';
@@ -628,47 +629,6 @@ function CompanyFundCard({ dossier }) {
         </div>
       </div>
     </div>
-  );
-}
-
-/* Initials for a face that fails to load: official portraits are addressed by
-   BioGuide id and a given id can 404. */
-function initialsOf(name) {
-  const words = String(name || '')
-    .replace(/,.*$/, '')
-    .split(/\s+/)
-    .filter((w) => w && !/^(jr|sr|ii|iii|iv)\.?$/i.test(w));
-  if (!words.length) return '';
-  const first = words[0][0];
-  const last = words.length > 1 ? words[words.length - 1][0] : '';
-  return `${first}${last}`.toUpperCase();
-}
-
-const PARTY_CLASS = { D: 'snr-face--d', R: 'snr-face--r', I: 'snr-face--i' };
-
-/* A portrait with fallbacks: `srcs` is tried in order (the mirrored copy,
-   then the public-domain sources), and initials show once every one fails. */
-function Face({ name, src, srcs, party, size = 'sm' }) {
-  const list = srcs?.length ? srcs : src ? [src] : [];
-  const [at, setAt] = useState(0);
-  const current = list[at];
-  return (
-    <span className={`snr-face snr-face--${size} ${PARTY_CLASS[party] || ''}`} aria-hidden="true">
-      {current ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          key={current}
-          src={current}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          onError={() => setAt((i) => i + 1)}
-        />
-      ) : (
-        <span className="snr-face-initials">{initialsOf(name)}</span>
-      )}
-    </span>
   );
 }
 

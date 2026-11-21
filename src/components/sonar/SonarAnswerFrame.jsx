@@ -66,6 +66,10 @@ export function SonarAnswerFrame({
   deepNote = null,
   /* Nov 13: the top of the centre column (the query bar, then related questions). */
   top = null,
+  /* Nov 21: the line under "Ezana Sonar" at the top of the side navigation. */
+  subtitle = null,
+  /* Nov 21: a deep research run is in flight for this question. */
+  deepRunning = false,
   children,
   className = '',
 }) {
@@ -125,6 +129,31 @@ export function SonarAnswerFrame({
   const deepOpen = nav.filter((s) => !s.locked && s.tier === 'deep');
   const locked = nav.filter((s) => s.locked);
   const cta = !unlocked ? access?.cta || null : null;
+  /* Nov 21: the deep research state, told apart honestly. Locked: the plan does not include
+     it. Available: the plan includes it and it has not been run on this question. Running:
+     a run is in flight. Complete: the deep sections are on the page. */
+  const deepState = deepRunning
+    ? 'running'
+    : unlocked
+      ? deepOpen.length
+        ? 'complete'
+        : 'available'
+      : cta?.kind === 'deep'
+        ? 'available'
+        : 'locked';
+  const DEEP_STATUS = {
+    locked: { label: 'Locked', icon: 'bi-lock-fill' },
+    available: { label: 'Not run', icon: 'bi-circle' },
+    running: { label: 'Running', icon: 'bi-arrow-repeat' },
+    complete: { label: 'Complete', icon: 'bi-check-circle-fill' },
+  };
+  const status = DEEP_STATUS[deepState];
+  const statusChip = (
+    <span className={`san-status san-status--${deepState}`}>
+      <i className={`bi ${status.icon}`} aria-hidden="true" />
+      {status.label}
+    </span>
+  );
 
   const sectionLink = (s) => (
     <li key={s.key}>
@@ -146,59 +175,103 @@ export function SonarAnswerFrame({
         <div className={`san-side${navTop ? ' has-top' : ''}`}>
           {navTop ? <div className="san-top">{navTop}</div> : null}
 
-          {research?.length ? (
-            <nav className="san-research" aria-label="Research">
-              <p className="san-head">Research</p>
-              <ul className="san-list san-list--research">
-                {research.map((r) => (
-                  <li key={r.key}>
-                    {r.href && !r.current ? (
-                      <Link href={r.href} className="san-link san-link--menu">
-                        <i className={`bi ${r.icon}`} aria-hidden="true" />
-                        {r.label}
-                      </Link>
-                    ) : (
-                      <span
-                        className={`san-link san-link--menu${r.current ? ' is-current' : ''}`}
-                        aria-current={r.current ? 'page' : undefined}
-                      >
-                        <i className={`bi ${r.icon}`} aria-hidden="true" />
-                        {r.label}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ) : null}
+          <div className="san-brand">
+            <span className="san-brand-tile" aria-hidden="true">
+              <i className="bi bi-broadcast" />
+            </span>
+            <span className="san-brand-text">
+              <span className="san-brand-name">
+                Ezana <span>Sonar</span>
+              </span>
+              {subtitle ? <span className="san-brand-sub">{subtitle}</span> : null}
+            </span>
+          </div>
 
-          <nav className="san-nav" aria-label="Answer sections">
-            <p className="san-head">Current report</p>
-            <ul className="san-list">{free.map(sectionLink)}</ul>
-            {deepOpen.length ? (
-              <>
-                <p className="san-head san-head--deep">Deep research</p>
-                <ul className="san-list">{deepOpen.map(sectionLink)}</ul>
-              </>
-            ) : null}
-            {locked.length ? (
-              <>
-                <p className="san-head san-head--locked" id={lockedHead}>
-                  <i className="bi bi-lock" aria-hidden="true" /> Deep research
-                </p>
-                <ul className="san-list san-list--locked" aria-labelledby={lockedHead}>
-                  {locked.map((s) => (
-                    <li key={s.key}>
-                      <span className="san-link is-locked" aria-disabled="true">
-                        <i className="bi bi-lock-fill" aria-hidden="true" />
-                        {s.label}
-                        <VisuallyHidden>, locked: deep research on the Starter plan</VisuallyHidden>
-                      </span>
+          <div className="san-panel">
+            {research?.length ? (
+              <nav className="san-research" aria-label="Research">
+                <p className="san-head">Research</p>
+                <ul className="san-list san-list--research">
+                  {research.map((r) => (
+                    <li key={r.key}>
+                      {r.href && !r.current ? (
+                        <Link href={r.href} className="san-link san-link--menu">
+                          <i className={`bi ${r.icon}`} aria-hidden="true" />
+                          {r.label}
+                        </Link>
+                      ) : (
+                        <span
+                          className={`san-link san-link--menu${r.current ? ' is-current' : ''}`}
+                          aria-current={r.current ? 'page' : undefined}
+                        >
+                          <i className={`bi ${r.icon}`} aria-hidden="true" />
+                          {r.label}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
-              </>
+              </nav>
             ) : null}
+
+            <nav className="san-nav" aria-label="Answer sections">
+              <p className="san-head">Current report</p>
+              <ul className="san-list">{free.map(sectionLink)}</ul>
+            </nav>
+          </div>
+          {deepOpen.length || locked.length || deepState === 'running' ? (
+            <nav className="san-nav san-panel san-panel--deep" aria-label="Deep research sections">
+              {deepOpen.length ? (
+                <>
+                  <p className="san-head san-head--deep">
+                    <span className="san-head-text">Deep research</span> {statusChip}
+                  </p>
+                  <ul className="san-list">{deepOpen.map(sectionLink)}</ul>
+                </>
+              ) : null}
+              {locked.length ? (
+                <>
+                  <p className="san-head san-head--locked" id={lockedHead}>
+                    <span className="san-head-text">Deep research</span> {statusChip}
+                  </p>
+                  <ul className="san-list san-list--locked" aria-labelledby={lockedHead}>
+                    {locked.map((s) =>
+                      deepState === 'locked' ? (
+                        <li key={s.key}>
+                          <span className="san-link is-locked" aria-disabled="true">
+                            <i
+                              className={`bi ${SECTION_ICON[s.key] || 'bi-dot'}`}
+                              aria-hidden="true"
+                            />
+                            {s.label}
+                            <VisuallyHidden>
+                              , locked: deep research on the Starter plan
+                            </VisuallyHidden>
+                          </span>
+                        </li>
+                      ) : (
+                        <li key={s.key}>
+                          <span className="san-link is-pending" aria-disabled="true">
+                            <i
+                              className={`bi ${SECTION_ICON[s.key] || 'bi-dot'}`}
+                              aria-hidden="true"
+                            />
+                            {s.label}
+                            <VisuallyHidden>
+                              {deepState === 'running'
+                                ? ', being researched now'
+                                : ', opens when deep research is run on this question'}
+                            </VisuallyHidden>
+                          </span>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </>
+              ) : null}
+            </nav>
+          ) : null}
+          <div className="san-cta-slot">
             {cta ? (
               <div className="san-cta">
                 <i className="bi bi-rocket-takeoff san-cta-icon" aria-hidden="true" />
@@ -224,7 +297,7 @@ export function SonarAnswerFrame({
                 ) : null}
               </div>
             ) : null}
-          </nav>
+          </div>
         </div>
         <div className="san-body">
           {top ? <div className="san-lead">{top}</div> : null}
