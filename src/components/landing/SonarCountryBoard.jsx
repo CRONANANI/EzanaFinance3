@@ -124,7 +124,7 @@ function Spark({ tile }) {
 /* Nov 13 (research workspace): the shared Desk Summary. A new answer carries its own
    headline, summary, takeaways and related questions; an older cached one keeps the board's
    reading (boardHeadline, boardAnswer and its drivers as the takeaways). */
-function ExecutiveAnswer({ live, intel, deepAction, notice, remaining, saveable = false }) {
+function ExecutiveAnswer({ live, intel, deepAction, notice, saveable = false }) {
   const headline = live?.headline || boardHeadline({ intel, query: live?.rawQuery || live?.query });
   const a = boardAnswer(intel);
   const summary = summaryParas(live?.summary);
@@ -193,11 +193,6 @@ function ExecutiveAnswer({ live, intel, deepAction, notice, remaining, saveable 
             <i className="bi bi-stack" aria-hidden="true" />
             See full dossier
           </button>
-          {typeof remaining === 'number' ? (
-            <span className="snr-bd-cite">
-              ({remaining} free ping{remaining === 1 ? '' : 's'} left)
-            </span>
-          ) : null}
         </div>
       }
       takeaways={takeaways}
@@ -588,7 +583,6 @@ export function SonarCountryBoard({
           intel={intel}
           deepAction={deepAction}
           notice={notice}
-          remaining={live.remaining}
           saveable
         />
       ),

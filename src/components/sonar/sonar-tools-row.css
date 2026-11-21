@@ -17,7 +17,9 @@
 }
 @media (min-width: 720px) {
   .stl {
-    grid-template-columns: repeat(var(--stl-n, 3), minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
@@ -32,6 +34,7 @@
   width: 100%;
   min-height: 40px;
   padding: 4px 12px 4px 6px;
+  white-space: nowrap;
   border: 0;
   border-radius: var(--radius-lg);
   background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
@@ -66,13 +69,6 @@
   color: var(--stl-accent);
   font-size: 0.875rem;
 }
-.stl .stl-copy {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-  line-height: 1.25;
-}
 .stl .stl-title {
   font-family: var(--san-mono, var(--font-mono));
   font-size: 10px;
@@ -80,13 +76,6 @@
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--stl-accent);
-}
-.stl .stl-sum {
-  overflow: hidden;
-  font-size: var(--type-micro-size);
-  color: var(--stl-muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .stl .stl-chev {
   flex: none;
@@ -107,7 +96,7 @@
   z-index: 40;
   top: calc(100% + 8px);
   left: 0;
-  width: max(100%, 340px);
+  width: 340px;
   max-width: min(440px, calc(100vw - 32px));
   max-height: min(70vh, 560px);
   overflow-y: auto;

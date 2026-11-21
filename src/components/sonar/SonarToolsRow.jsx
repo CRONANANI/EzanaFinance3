@@ -3,11 +3,11 @@
 /**
  * SonarToolsRow (Nov 21 2026): Research controls, Evidence and sources and Next steps on one
  * horizontal line under the follow-ups, part of the universal Sonar answer shell. Each is a
- * compact header (icon, title, a one-line summary); choosing one opens its panel over the
+ * compact header (icon and title, only as wide as it needs); choosing one opens its panel over the
  * page below, and it closes on a second click, Escape, or a click anywhere else. Only one
  * panel is open at a time. Panels are overlays, so they keep a solid surface and a shadow.
  *
- * items: [{ key, icon, title, summary, node, anchor? }]; an item with no node is left out.
+ * items: [{ key, icon, title, node, anchor? }]; an item with no node is left out.
  * The side navigation's "Evidence and sources" opens the sources panel through the
  * 'sonar:open-tool' window event. Styles: sonar-tools-row.css (stl-).
  */
@@ -21,24 +21,6 @@ import { SonarNextSteps, SonarRelatedResearch } from './SonarWorkspaceRail';
 import './sonar-tools-row.css';
 
 export const OPEN_TOOL_EVENT = 'sonar:open-tool';
-
-const labelOf = (list, key) => list.find((o) => o.key === key)?.label || '';
-
-/* The controls header's summary: the three current settings. */
-function ControlsSummary() {
-  const [c] = useResearchControls();
-  return (
-    <>
-      {[
-        labelOf(FOCUS_OPTIONS, c.focus),
-        labelOf(HORIZON_OPTIONS, c.horizon),
-        labelOf(SOURCE_OPTIONS, c.sources),
-      ]
-        .filter(Boolean)
-        .join(' · ')}
-    </>
-  );
-}
 
 /** Every row the answer used: name, what it is, a link out when there is one. */
 export function SonarEvidenceList({ rows = [] }) {
@@ -103,7 +85,6 @@ export function workspaceTools({
       key: 'controls',
       icon: 'bi-sliders',
       title: 'Research controls',
-      summary: <ControlsSummary />,
       node: <SonarResearchControls />,
     },
     sourceCount
@@ -111,7 +92,6 @@ export function workspaceTools({
           key: 'sources',
           icon: 'bi-database',
           title: 'Evidence and sources',
-          summary: `${sourceCount} source${sourceCount === 1 ? '' : 's'} used`,
           anchor: anchorSources ? 'sa-sources' : null,
           node: <SonarEvidenceList rows={sources} />,
         }
@@ -121,12 +101,6 @@ export function workspaceTools({
           key: 'steps',
           icon: 'bi-signpost-split',
           title: 'Next steps',
-          summary: steps.length
-            ? steps
-                .slice(0, 2)
-                .map((s) => s.title)
-                .join(' · ')
-            : 'Related research',
           node: (
             <>
               <SonarNextSteps steps={steps} onStep={onStep} />
@@ -201,10 +175,7 @@ export function SonarToolsRow({ items = [] }) {
               <span className="stl-ico" aria-hidden="true">
                 <i className={`bi ${it.icon}`} />
               </span>
-              <span className="stl-copy">
-                <span className="stl-title">{it.title}</span>
-                <span className="stl-sum">{it.summary}</span>
-              </span>
+              <span className="stl-title">{it.title}</span>
               <i className="bi bi-chevron-down stl-chev" aria-hidden="true" />
             </button>
             <div

@@ -24,7 +24,7 @@ import { useId } from 'react';
 import dynamic from 'next/dynamic';
 import { VisuallyHidden } from '@/components/ds';
 import { splitCitations } from '@/lib/sonar/ping-board';
-import { MODE_LABEL, answeredLabel, dayLabel } from '@/lib/sonar/desk-summary';
+import { dayLabel } from '@/lib/sonar/desk-summary';
 import './sonar-desk-summary.css';
 
 /* Below the headline: loaded on demand, its height reserved by .sds-mc-slot. */
@@ -171,9 +171,7 @@ export function SonarDeskSummary({
   market = null,
 }) {
   const id = useId();
-  const when = answeredLabel(answeredAt);
   const asOf = dayLabel(dataAsOf);
-  const metaItems = [MODE_LABEL[mode] || null, when, ...meta].filter(Boolean);
   const title = headline || question || 'Research answer';
   return (
     <article className="sds" aria-labelledby={id}>
@@ -182,14 +180,8 @@ export function SonarDeskSummary({
           <i className="bi bi-broadcast" />
         </span>
         <span className="sds-eyebrow">Desk summary</span>
+        {/* Nov 21: no "Quick ping, date, pings left" line on any answer. */}
         <div className="sds-meta">
-          {metaItems.length ? (
-            <span className="sds-meta-line">
-              {metaItems.map((m, i) => (
-                <span key={i}>{m}</span>
-              ))}
-            </span>
-          ) : null}
           {asOf ? <span className="sds-asof">Data as of {asOf}</span> : null}
         </div>
         {actions ? <div className="sds-actions">{actions}</div> : null}

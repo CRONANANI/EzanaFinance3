@@ -274,7 +274,12 @@ test('wiring: the ping board, the report, the shell and the composer', () => {
   const qcss = read('src/components/sonar/sonar-answer-query-bar.css');
   assert.ok(!/animation:\s*sqb-in/.test(qcss), 'no paused menu animation');
   assert.match(qcss, /min-height: 40px/, 'the composer matches the tools row height');
+  assert.ok(!/free ping/.test(rep), 'no pings-left line');
+  assert.match(rep, /meta=\{actions\}/, 'Save sits at the top right of the desk summary');
+  const sds = read('src/components/sonar/SonarDeskSummary.jsx');
+  assert.ok(!/MODE_LABEL/.test(sds), 'no "Quick ping" line on any desk summary');
   const tools = read('src/components/sonar/SonarToolsRow.jsx');
+  assert.ok(!/stl-sum/.test(tools), 'tool headers carry no summary line');
   assert.match(tools, /'Research controls'/);
   assert.match(tools, /'Evidence and sources'/);
   assert.match(tools, /'Next steps'/);

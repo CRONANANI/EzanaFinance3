@@ -72,13 +72,14 @@
   min-width: 0;
 }
 @container san (min-width: 1240px) {
+  /* The composer takes the room; the three tools are only as wide as their titles. */
   .san .san-topline.is-split {
-    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
     gap: 14px;
   }
   .san .san-topline.is-split .san-tools .stl {
-    grid-template-columns: repeat(var(--stl-n, 3), minmax(0, 1fr));
+    flex-wrap: nowrap;
   }
 }
 

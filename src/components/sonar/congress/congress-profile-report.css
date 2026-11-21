@@ -21,35 +21,9 @@
   color: var(--cpr-text);
 }
 
-/* ── the meta line: notice, mode and time, Save ───────────────────── */
-.cpr .cpr-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  min-width: 0;
-}
-.cpr .cpr-meta-left {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 16px;
-  min-width: 0;
-}
-.cpr .cpr-meta-left > * {
+/* The "showing results for" notice, when the ping was corrected. */
+.cpr .cpr-notice > * {
   margin: 0;
-}
-.cpr .cpr-meta-line {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  font-family: var(--cpr-mono);
-  font-size: var(--type-micro-size);
-  color: var(--cpr-faint);
-}
-.cpr .cpr-meta-actions {
-  margin-left: auto;
 }
 
 /* ── rows ─────────────────────────────────────────────────────────────
@@ -124,6 +98,8 @@
   font-size: 0.9375rem;
 }
 .cpr .cpr-head-meta {
+  display: inline-flex;
+  align-items: center;
   flex: none;
   font-family: var(--cpr-mono);
   font-size: var(--type-micro-size);

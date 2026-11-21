@@ -23,7 +23,6 @@ import Link from 'next/link';
 import { VisuallyHidden } from '@/components/ds';
 import { Cited } from '@/components/sonar/SonarDeskSummary';
 import { Face } from '@/components/sonar/SonarFace';
-import { MODE_LABEL, answeredLabel } from '@/lib/sonar/desk-summary';
 import {
   tradingLean,
   leanBullets,
@@ -99,11 +98,11 @@ function FitHeadline({ id, children }) {
   );
 }
 
-function DeskSummary({ headline, question, paragraphs }) {
+function DeskSummary({ headline, question, paragraphs, actions = null }) {
   const id = useId();
   return (
     <section id="sa-answer" className="cpr-card cpr-desk" aria-labelledby={id}>
-      <Eyebrow icon="bi-file-earmark-text" id={`${id}-e`}>
+      <Eyebrow icon="bi-file-earmark-text" id={`${id}-e`} meta={actions}>
         Desk summary
       </Eyebrow>
       <FitHeadline id={id}>{headline || question}</FitHeadline>
@@ -619,8 +618,7 @@ function News({ name, columns }) {
  * headline, paragraphs  the desk summary's text (the board picks it)
  * findings    Key findings: what the full brief adds beyond the summary (briefFindings())
  * notice      the "showing results for" notice
- * actions     Save (SonarSaveActions)
- * remaining   free pings left, or null
+ * actions     Save (SonarSaveActions), at the top right of the desk summary
  */
 export function CongressProfileReport({
   live,
@@ -630,17 +628,20 @@ export function CongressProfileReport({
   findings = [],
   notice = null,
   actions = null,
-  remaining = null,
 }) {
   const dossier = live?.dossier;
   if (!dossier) return null;
   const lean = tradingLean(dossier);
-  const meta = [MODE_LABEL.quick || 'Quick ping', answeredLabel(live?.answeredAt || null)].filter(
-    Boolean,
-  );
   /* Every card the exemplary layout may name, or null when it has nothing to show. */
   const cards = {
-    desk: <DeskSummary headline={headline} question={live.query} paragraphs={paragraphs} />,
+    desk: (
+      <DeskSummary
+        headline={headline}
+        question={live.query}
+        paragraphs={paragraphs}
+        actions={actions}
+      />
+    ),
     portfolio: <Portfolio dossier={dossier} />,
     findings: findings.length >= 2 ? <Findings items={findings} /> : null,
     lean: lean ? (
@@ -660,22 +661,7 @@ export function CongressProfileReport({
   };
   return (
     <div className="cpr" role="region" aria-label={`${live.query}: answer`}>
-      <div className="cpr-meta">
-        <div className="cpr-meta-left">
-          {notice}
-          <span className="cpr-meta-line">
-            {meta.map((m, i) => (
-              <span key={i}>{m}</span>
-            ))}
-            {typeof remaining === 'number' ? (
-              <span>
-                {remaining} free ping{remaining === 1 ? '' : 's'} left
-              </span>
-            ) : null}
-          </span>
-        </div>
-        {actions ? <div className="cpr-meta-actions">{actions}</div> : null}
-      </div>
+      {notice ? <div className="cpr-notice">{notice}</div> : null}
       {rows.map((row, i) => {
         const present = row.filter((k) => cards[k]);
         if (!present.length) return null;

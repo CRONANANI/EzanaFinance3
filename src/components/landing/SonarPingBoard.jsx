@@ -83,11 +83,6 @@ function toVisual() {
   el.focus({ preventScroll: true });
 }
 
-const remainingLine = (live) =>
-  typeof live?.remaining === 'number'
-    ? `${live.remaining} free ping${live.remaining === 1 ? '' : 's'} left`
-    : null;
-
 /* Nov 13 (research workspace): the answer is the shared Desk Summary. A new answer carries
    its own headline, summary, takeaways and related questions; an older cached one keeps the
    board's reading of the brief (the question as the title, the paragraphs, the lead first). */
@@ -95,7 +90,6 @@ function Executive({ live, answer, deepAction, notice, sources, actions = null }
   const paras = answerParagraphs(live?.answer, 12);
   const summary = summaryParas(live?.summary);
   const headline = live?.headline || null;
-  const left = remainingLine(live);
   return (
     <SonarDeskSummary
       mode="quick"
@@ -116,7 +110,6 @@ function Executive({ live, answer, deepAction, notice, sources, actions = null }
             <i className="bi bi-stack" aria-hidden="true" />
             See the charts and data
           </button>
-          {left ? <span className="snr-bd-cite">({left})</span> : null}
         </div>
       }
       takeaways={deskTakeaways(live?.takeaways)}
@@ -164,7 +157,7 @@ function CompanyExecutive({ live, identity, deepAction, notice, sources, market,
             <i className="bi bi-stack" aria-hidden="true" />
             See the charts and data
           </button>
-          {[foot.status, remainingLine(live)].filter(Boolean).map((t, i) => (
+          {[foot.status].filter(Boolean).map((t, i) => (
             <span key={i} className="snr-bd-cite">
               {t}
             </span>
@@ -311,15 +304,8 @@ function Visual({ visual, lead = false, live = null, notice = null, deepAction =
       <div className="snr-pb-visual-body">
         {visual || (lead ? <div className="snr-pb-lead-wait" aria-hidden="true" /> : null)}
       </div>
-      {lead && (deepAction || typeof live?.remaining === 'number') ? (
-        <div className="snr-bd-actions snr-pb-lead-actions">
-          {deepAction}
-          {typeof live?.remaining === 'number' ? (
-            <span className="snr-bd-cite">
-              ({live.remaining} free ping{live.remaining === 1 ? '' : 's'} left)
-            </span>
-          ) : null}
-        </div>
+      {lead && deepAction ? (
+        <div className="snr-bd-actions snr-pb-lead-actions">{deepAction}</div>
       ) : null}
     </section>
   );
@@ -565,7 +551,6 @@ export function SonarPingBoard({
             findings={congressFindings}
             notice={notice}
             actions={saveActions}
-            remaining={typeof live?.remaining === 'number' ? live.remaining : null}
           />
           {onFollowUp ? (
             <SonarFollowUp
