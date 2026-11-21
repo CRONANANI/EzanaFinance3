@@ -2239,3 +2239,21 @@ body:not(.light-mode) .pricing-page--standalone .plan-card:not(.plan-card--highl
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 }
+
+/* Nov 21: the billing switch moved out of the hero to sit between the waitlist
+   steps and the plan cards. The bottom margin clears the "Most popular" badge
+   that rides above the Advanced card. */
+.pricing-waitlist {
+  margin-bottom: 1.5rem;
+}
+.pricing-billing-row {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 2.5rem;
+  padding: 0 1rem;
+}
+@media (max-width: 768px) {
+  .pricing-billing-row {
+    margin-bottom: 1.25rem;
+  }
+}

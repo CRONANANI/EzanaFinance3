@@ -394,14 +394,16 @@ function planPricing(plan, billing) {
       total,
     };
   }
-  /* Quarterly (Nov 21): the monthly rate, billed every three months. */
+  /* Quarterly (Nov 21, second pass): the amount invoiced every three months
+     is the headline figure, with the monthly rate underneath. */
+  const quarter = plan.monthlyPrice * 3;
   return {
     kind: 'paid',
-    main: `$${plan.monthlyPrice}`,
-    unit: '/mo',
-    note: `$${plan.monthlyPrice * 3} billed quarterly`,
+    main: `$${quarter}`,
+    unit: '/qtr',
+    note: `$${plan.monthlyPrice}/mo · billed every 3 months`,
     was: null,
-    total: plan.monthlyPrice * 3,
+    total: quarter,
   };
 }
 
@@ -637,7 +639,7 @@ function useNavHeight(rootRef) {
 }
 
 export default function PricingPage() {
-  const [billing, setBilling] = useState('yearly'); // Annual default for higher conversion
+  const [billing, setBilling] = useState('quarterly'); // Nov 21: quarterly invoicing shown by default
   const [pendingPlan, setPendingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [noticeMsg, setNoticeMsg] = useState('');
@@ -814,37 +816,6 @@ export default function PricingPage() {
             Advanced is free for a month. Cancel anytime.
           </span>
         </p>
-
-        {/* Nov 19: the switch pill (Quarterly, switch, Yearly) in the landing Sonar
-            band's glossy emerald metal finish. */}
-        <div className="billing-switch-pill" role="group" aria-label="Billing interval">
-          <button
-            type="button"
-            className={`billing-switch-label${billing === 'quarterly' ? ' is-on' : ''}`}
-            aria-pressed={billing === 'quarterly'}
-            onClick={() => setBilling('quarterly')}
-          >
-            Quarterly
-          </button>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={billing === 'yearly'}
-            aria-label="Bill yearly"
-            className="billing-switch"
-            onClick={() => setBilling(billing === 'yearly' ? 'quarterly' : 'yearly')}
-          >
-            <span className="billing-switch-thumb" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={`billing-switch-label${billing === 'yearly' ? ' is-on' : ''}`}
-            aria-pressed={billing === 'yearly'}
-            onClick={() => setBilling('yearly')}
-          >
-            Yearly <span className="save-pill">Save 20%</span>
-          </button>
-        </div>
       </header>
 
       {noticeMsg && (
@@ -879,6 +850,42 @@ export default function PricingPage() {
           Want in now? <strong>Advanced</strong> skips the waitlist and starts a free month today.
         </p>
       </section>
+
+      {/* Nov 21: the billing switch sits directly above the plan cards, below
+          the three waitlist steps, so the choice is made next to the prices it
+          changes. */}
+      <div className="pricing-billing-row">
+        {/* Nov 19: the switch pill (Quarterly, switch, Yearly) in the landing Sonar
+            band's glossy emerald metal finish. */}
+        <div className="billing-switch-pill" role="group" aria-label="Billing interval">
+          <button
+            type="button"
+            className={`billing-switch-label${billing === 'quarterly' ? ' is-on' : ''}`}
+            aria-pressed={billing === 'quarterly'}
+            onClick={() => setBilling('quarterly')}
+          >
+            Quarterly
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={billing === 'yearly'}
+            aria-label="Bill yearly"
+            className="billing-switch"
+            onClick={() => setBilling(billing === 'yearly' ? 'quarterly' : 'yearly')}
+          >
+            <span className="billing-switch-thumb" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={`billing-switch-label${billing === 'yearly' ? ' is-on' : ''}`}
+            aria-pressed={billing === 'yearly'}
+            onClick={() => setBilling('yearly')}
+          >
+            Yearly <span className="save-pill">Save 20%</span>
+          </button>
+        </div>
+      </div>
 
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
       <section className="pricing-cards-section" aria-label="Plans">
