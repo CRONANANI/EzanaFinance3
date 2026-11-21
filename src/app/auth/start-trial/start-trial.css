@@ -199,3 +199,72 @@
   border-color: var(--st-emerald) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-emerald) 18%, transparent) !important;
 }
+
+/* ── Nov 21 (second pass) ──────────────────────────────────────────────
+   - Errors are centred and sit directly above the button.
+   - The button is on the glossy emerald metal used by the pricing page.
+   - Password strength bars and the met requirements read in glossy emerald. */
+.st-page .st-alert {
+  justify-content: center;
+  margin: 4px 0 12px;
+  text-align: center;
+}
+.st-page .st-alert > span {
+  max-width: 38ch;
+}
+
+.st-page .wl-submit,
+.st-page .wl-submit:hover:not(:disabled) {
+  border: none;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0) 51%
+    ),
+    var(--brand-band-metal);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  transform: none;
+}
+.st-page .wl-submit:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+.st-page .wl-submit:disabled {
+  filter: saturate(0.6) brightness(0.95);
+}
+
+/* Strength bars (filled segments) and met requirements. The field is a
+   shared component styled with utility classes, so these target them here. */
+.st-page .wl-pwd [class*='bg-emerald-500'] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 55%, #ffffff) 0%,
+    var(--emerald) 50%,
+    var(--emerald-dark) 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.st-page .wl-pwd li .text-emerald-600,
+.st-page .wl-pwd p .text-emerald-600 {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 70%, #ffffff) 0%,
+    var(--emerald) 45%,
+    var(--emerald-dark) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+.st-page .wl-pwd li svg.text-emerald-600 {
+  color: var(--emerald);
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+}

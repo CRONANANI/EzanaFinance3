@@ -128,7 +128,18 @@ export default function StartTrialPage() {
     if (password !== confirm) errs.confirm = 'Passwords do not match.';
     if (!ageOk) errs.ageConfirmed = 'You must be 18 or older to use Ezana.';
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    /* Nov 21: every failure also shows directly above the button, so a
+       problem further up the form is never silent. */
+    const errList = Object.values(errs);
+    if (errList.length) {
+      setErrorCode(null);
+      setError(
+        errList.length === 1
+          ? errList[0]
+          : `${errList[0]} Please also check the ${errList.length - 1} other highlighted field${errList.length > 2 ? 's' : ''}.`,
+      );
+      return;
+    }
 
     setBusy(true);
     try {
@@ -153,10 +164,14 @@ export default function StartTrialPage() {
         setBusy(false);
         return;
       }
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
+      const { data: signedIn, error: signInErr } = await supabase.auth.signInWithPassword({
         email: d.email,
         password,
       });
+      /* The account now exists: if Stripe fails below, the page switches to
+         the signed-in view so a retry reopens Stripe instead of trying to
+         create the account again ("already exists"). */
+      if (signedIn?.session) setSession(signedIn.session);
       if (signInErr) {
         setError('Your account was created. Sign in to finish starting your trial.');
         setBusy(false);
@@ -226,9 +241,6 @@ export default function StartTrialPage() {
     return (
       <div className="signin-dark-lock wl-page st-page">
         <main className="wl-card st-card">
-          <span className="st-eyebrow">
-            <i className="bi bi-stars" aria-hidden="true" /> Advanced plan
-          </span>
           <h1 className="wl-title">
             {canceled ? (
               'Your trial has not started yet'
@@ -257,9 +269,6 @@ export default function StartTrialPage() {
   return (
     <div className="signin-dark-lock wl-page st-page">
       <main className="wl-card st-card">
-        <span className="st-eyebrow">
-          <i className="bi bi-stars" aria-hidden="true" /> Advanced plan
-        </span>
         <h1 className="wl-title">
           Start your free <span className="st-accent">Advanced</span> trial
         </h1>
@@ -268,7 +277,6 @@ export default function StartTrialPage() {
           {billing === 'quarterly' ? 'quarterly' : 'yearly'}.
         </p>
         {periodToggle}
-        {alertBlock}
         <form className="wl-form" onSubmit={submit} noValidate>
           <div className="wl-row">
             <Field id="st-first" label="First name" required error={errors.firstName}>
@@ -379,6 +387,7 @@ export default function StartTrialPage() {
             ) : null}
           </div>
           {terms}
+          {alertBlock}
           <button type="submit" className="wl-submit" disabled={busy}>
             {busy ? 'Opening Stripe' : 'Continue to add a card'}
           </button>
