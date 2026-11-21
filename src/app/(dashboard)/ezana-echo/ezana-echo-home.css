@@ -701,3 +701,71 @@ body:has(.eth-root) .ezana-echo-container {
     margin-top: 8px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 21, 2026: a black band across the top of the Echo home, holding the
+   logo (left) and the Article of the Month / Past picks chips (right). The
+   hero art starts under it and fades up into it, mirroring the black title
+   panel at the art's foot. The chips sit on black now, so they drop the
+   glassy dark fill: the label is Ezana emerald, Past picks is white, both on
+   a faint white rim.
+   ══════════════════════════════════════════════════════════════ */
+.eth-root {
+  --eth-band: 72px;
+}
+.eth-root .ech-hero.ech-hero--photo.ech-hero--stack {
+  padding-top: var(--eth-band);
+}
+.eth-masthead.eth-masthead--overlay {
+  min-height: var(--eth-band);
+  align-items: center;
+}
+.eth-masthead--overlay .eth-masthead-logo {
+  filter: none;
+}
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
+  top: calc((var(--eth-band) - 27px) / 2);
+}
+/* Fade: black at the band's edge to clear about 96px down the art, on top of
+   the existing foot fade into the title panel. */
+.eth-root .ech-hero--stack .ech-hero__scrim,
+.eth-root .ech-hero--photo.ech-hero--stack .ech-hero__scrim {
+  background:
+    linear-gradient(180deg, black 0, transparent 96px),
+    linear-gradient(0deg, black 0%, transparent 14%);
+}
+.eth-root .ech-hero--photo .ech-hero__kicker,
+.eth-root .ech-hero--photo .ech-picks .ech-menu__btn {
+  border-color: color-mix(in srgb, white 18%, transparent);
+  background: color-mix(in srgb, white 5%, black);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.eth-root .ech-hero--photo .ech-hero__kicker {
+  color: var(--brand-ezana-green);
+}
+.eth-root .ech-hero--photo .ech-picks .ech-menu__btn {
+  color: white;
+}
+.eth-root .ech-hero--photo .ech-picks .ech-menu__btn .bi-chevron-down {
+  color: var(--brand-ezana-green);
+}
+.eth-root .ech-hero--photo .ech-picks .ech-menu__btn:hover {
+  border-color: color-mix(in srgb, var(--brand-ezana-green) 60%, transparent);
+}
+
+@media (max-width: 767px) {
+  .eth-root {
+    --eth-band: 56px;
+  }
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
+    top: calc((var(--eth-band) - 27px) / 2);
+  }
+  .eth-root .ech-hero--stack .ech-hero__scrim,
+  .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__scrim {
+    background:
+      linear-gradient(180deg, black 0, transparent 48px),
+      linear-gradient(0deg, black 0%, transparent 14%);
+  }
+}
