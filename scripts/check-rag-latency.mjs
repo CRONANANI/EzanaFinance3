@@ -161,9 +161,9 @@ test('a partner match stays partner, and a user question never falls back', asyn
 
 test('the help cache key differs by audience and normalizes the query', () => {
   const a = H.helpCacheKey('partner', '  Reset   Password ');
-  assert.equal(a, 'help:ask:v1:partner:reset password');
+  assert.equal(a, 'help:ask:v2:partner:reset password');
   assert.notEqual(a, H.helpCacheKey('user', 'reset password'));
-  assert.equal(H.helpCacheKey(null, 'x y'), 'help:ask:v1:all:x y');
+  assert.equal(H.helpCacheKey(null, 'x y'), 'help:ask:v2:all:x y');
 });
 
 test('only grounded, sourced, non-degraded answers are cached', () => {

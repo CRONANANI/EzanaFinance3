@@ -261,7 +261,12 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
         }
         /* An answer is only an answer with at least one source. */
         if (data?.answer && Array.isArray(data.sources) && data.sources.length) {
-          setResult({ answer: data.answer, sources: data.sources, fromUser });
+          setResult({
+            answer: data.answer,
+            sources: data.sources,
+            fromUser,
+            followUps: Array.isArray(data.followUps) ? data.followUps.slice(0, 3) : [],
+          });
           setPhase('answered');
           logEvent({
             kind: 'ask',
@@ -696,38 +701,64 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
             </section>
 
             {phase === 'answered' ? (
-              <form
-                className="hcs-follow"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  ask(followUp, { source: 'follow_up', history: 'replace' });
-                }}
-              >
-                <label className="hcs-follow-label" htmlFor="hcs-follow-input">
-                  Ask a follow-up
-                </label>
-                <input
-                  id="hcs-follow-input"
-                  className="hcs-follow-input"
-                  placeholder="e.g. Which brokerages support SnapTrade?"
-                  value={followUp}
-                  autoComplete="off"
-                  onChange={(e) => setFollowUp(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape' && followUp) {
-                      e.preventDefault();
-                      setFollowUp('');
-                    }
+              <div className="hcs-follow-wrap">
+                <form
+                  className="hcs-follow"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    ask(followUp, { source: 'follow_up', history: 'replace' });
                   }}
-                />
-                <button
-                  type="submit"
-                  className="hcs-btn hcs-btn--tint"
-                  disabled={followUp.trim().length < MIN_Q}
                 >
-                  Ask
-                </button>
-              </form>
+                  <label className="hcs-follow-label" htmlFor="hcs-follow-input">
+                    Ask a follow-up
+                  </label>
+                  <input
+                    id="hcs-follow-input"
+                    className="hcs-follow-input"
+                    placeholder={
+                      result?.followUps?.[0]
+                        ? `e.g. ${result.followUps[0]}`
+                        : 'Ask anything about this answer'
+                    }
+                    value={followUp}
+                    autoComplete="off"
+                    onChange={(e) => setFollowUp(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' && followUp) {
+                        e.preventDefault();
+                        setFollowUp('');
+                      }
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="hcs-btn hcs-btn--tint"
+                    disabled={followUp.trim().length < MIN_Q}
+                  >
+                    Ask
+                  </button>
+                </form>
+                {/* Nov 21: suggested follow-ups, the questions the articles that answered this
+                  search already answer, so they always relate to what was asked. */}
+                {result?.followUps?.length ? (
+                  <ul className="hcs-follow-sugg" aria-label="Suggested follow-ups">
+                    {result.followUps.map((q) => (
+                      <li key={q}>
+                        <button
+                          type="button"
+                          className="hcs-source hcs-follow-q"
+                          onClick={() =>
+                            ask(q, { source: 'follow_up_suggestion', history: 'replace' })
+                          }
+                        >
+                          <i className="bi bi-arrow-return-right" aria-hidden="true" />
+                          {q}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             ) : null}
 
             {phase === 'asking' ? (

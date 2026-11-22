@@ -199,6 +199,17 @@ body.sonar-exemplary-active .dso-ground-bg {
   gap: 40px;
   align-items: start;
 }
+/* Nov 21: inside the Sonar skeleton the tools row carries Research controls, so the lead
+   takes the whole width. */
+.sxb-top--solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* The skeleton's section anchors (sa-<key>): zero-height marks the contents menu scrolls to. */
+.sar-sa {
+  display: block;
+  height: 0;
+  scroll-margin-top: calc(var(--navbar-height, 64px) + 24px);
+}
 .sxb-top-main {
   min-width: 0;
   container-type: inline-size;

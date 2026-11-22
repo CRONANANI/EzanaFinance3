@@ -13,6 +13,8 @@ import {
   shouldCacheHelp,
 } from '@/lib/help-center-ask';
 
+import { USER_ARTICLES, PARTNER_ARTICLES } from '@/lib/help-center-content';
+import { articleText, helpFollowUps } from '@/lib/help-center/follow-ups';
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
  * POST /api/help-center/ask: grounded help-center Q&A (RAG).
@@ -94,6 +96,17 @@ async function synthesize(query, sources) {
 
 const publicSources = (sources) => sources.map(({ content, ...s }) => s);
 
+/* Nov 21: follow-up questions from the articles that answered this search (their authored
+   Q and A pairs), read from the full article in the content module when it is there. */
+function followUpsFor(query, sources, audience) {
+  const corpus = audience === 'partner' ? PARTNER_ARTICLES : USER_ARTICLES;
+  const articles = sources.map((s) => ({
+    slug: s.slug,
+    text: articleText(corpus?.[s.slug]?.content || s.content || ''),
+  }));
+  return helpFollowUps(query, articles, { max: 3 });
+}
+
 const POST_HANDLER = withApiGuard(
   async (request) => {
     const rl = await checkRateLimit(`help-center-ask:${getClientIp(request)}`, {
@@ -151,6 +164,7 @@ const POST_HANDLER = withApiGuard(
       degraded: degraded || undefined,
       answeredFrom,
       sources: publicSources(sources.slice(0, GROUNDING)),
+      followUps: followUpsFor(query, sources.slice(0, GROUNDING + 2), answeredFrom || 'user'),
     };
     /* Cached under the requested audience, so the next partner asker gets the same
        user-center answer without the fallback. */

@@ -929,6 +929,22 @@
   height: 40px;
   padding: 0 16px;
 }
+.hcs-follow-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hcs-follow-sugg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hcs-follow-q {
+  text-align: left;
+}
 
 /* ── keep reading ────────────────────────────────────────────────────── */
 .hcs-keep-sec {

@@ -913,6 +913,7 @@ export function SonarExperience({
                 brief={exemplary.brief}
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
+                onResearch={(q, extra) => startStandard(q, { extra })}
                 onDeep={() => chooseDeep(exemplary.brief.question, { signup: !signedIn })}
               />
             </div>
@@ -925,6 +926,7 @@ export function SonarExperience({
                 streaming={Boolean(adaptive.streaming)}
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
+                onResearch={(q, extra) => startStandard(q, { extra })}
                 onRestore={restoreEntry}
                 sessionId={adaptive.sessionId || null}
                 onDeep={() =>

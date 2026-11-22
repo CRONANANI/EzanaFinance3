@@ -19,7 +19,7 @@
  */
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { followUpContext } from '@/lib/sonar/workspace';
-import { SonarResearchControls } from '../SonarResearchControls';
+import { SonarSkeleton } from '../SonarSkeleton';
 import SonarExemplaryChart, { dayLabel } from '../exemplary/SonarExemplaryChart';
 import SonarTechnicalChart from './SonarTechnicalChart';
 import SonarSeriesChart from './SonarSeriesChart';
@@ -143,8 +143,6 @@ const WIDE = new Set([
   'ex_method',
   'ex_sources',
 ]);
-/* The geo-economic report calls its sources "Evidence". */
-const GEO_SET = new Set(['kpi_strip', 'market_comparison', 'hormuz_flows', 'us_impact']);
 /* Neighbours drawn side by side, whichever comes first; `wide` gives the first more room. */
 const PAIR_OF = {
   us_impact: 'gold_markets',
@@ -159,6 +157,36 @@ const PAIR_OF = {
   ex_diagram: 'ex_measures',
 };
 const PAIR_WIDE = new Set(['fx_drivers', 'fx_monitor']);
+
+/* Nov 21: which answer section (lib/sonar/answer-sections) each section type belongs to,
+   for the skeleton's contents menu. Only the five open sections are mapped. */
+const SKELETON_KEY = {
+  kpi_strip: 'metrics',
+  metric_table: 'metrics',
+  fx_overview: 'metrics',
+  fx_indicators: 'metrics',
+  fundamentals: 'metrics',
+  valuation: 'metrics',
+  key_findings: 'findings',
+  fx_findings: 'findings',
+  risk: 'findings',
+  fx_drivers: 'findings',
+  ex_definitions: 'findings',
+  series_chart: 'charts',
+  price_comparison: 'charts',
+  ohlcv_technical: 'charts',
+  fx_charts: 'charts',
+  fx_anchor: 'charts',
+  market_comparison: 'charts',
+  data_table: 'charts',
+  ranking: 'charts',
+  macro_timeseries: 'charts',
+  heatmap: 'charts',
+  ex_diagram: 'charts',
+  sources: 'sources',
+  fx_evidence: 'sources',
+  ex_sources: 'sources',
+};
 
 const CLASS_LABELS = {
   official: 'Official',
@@ -692,6 +720,8 @@ export default function SonarAdaptiveReport({
   onRestore = null,
   sessionId = null,
   actions = null,
+  /* Nov 21: a question with Build or photo context from the skeleton's composer. */
+  onResearch = null,
   /* Nov 17: drawn from a stream's validated sections while the rest arrive. Save and
      follow-ups wait for the final report. */
   streaming = false,
@@ -701,15 +731,6 @@ export default function SonarAdaptiveReport({
   const lead = sections.find((s) => s.type === 'lead');
   const follow = sections.find((s) => s.type === 'followups');
   const body = sections.filter((s) => s.type !== 'lead' && s.type !== 'followups');
-  const anchorsAll = body.filter(
-    (s) => ANCHOR_LABELS[s.type] && (s.type !== 'sources' || sources.length),
-  );
-  /* One tab per label (the economy can be the chain or the impact column). */
-  const anchors = anchorsAll.filter(
-    (sec, i) =>
-      anchorsAll.findIndex((x) => ANCHOR_LABELS[x.type] === ANCHOR_LABELS[sec.type]) === i,
-  );
-  const geo = sections.some((x) => GEO_SET.has(x.type));
   /* The first findings block, for the lead's "View key findings" link. */
   const findingsAnchor =
     body.find((s) => ['fx_findings', 'key_findings'].includes(s.type))?.type || null;
@@ -722,31 +743,23 @@ export default function SonarAdaptiveReport({
       ? [body[0]]
       : [];
   const rest = body.filter((s) => !topSections.includes(s));
-  const [question, setQuestion] = useState(report.resolvedQuestion || report.question);
+  /* Nov 21: the skeleton's contents menu: each section type maps to one answer section, and
+     the first block of each carries its anchor (sa-<key>). */
+  const firstOf = new Map();
+  for (const s of [...topSections, ...rest]) {
+    const k = SKELETON_KEY[s.type];
+    if (!k || firstOf.has(k)) continue;
+    if (s.type === 'sources' && !sources.length) continue;
+    firstOf.set(k, s.type);
+  }
+  const present = ['answer', ...firstOf.keys()];
   const [followUp, setFollowUp] = useState('');
-  const [active, setActive] = useState('overview');
-  const inputRef = useRef(null);
   const rootRef = useRef(null);
-  const qId = useId();
   const fId = useId();
 
   useEffect(() => {
     document.body.classList.add('sonar-exemplary-active');
     return () => document.body.classList.remove('sonar-exemplary-active');
-  }, []);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || typeof IntersectionObserver === 'undefined') return undefined;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const seen = entries.filter((e) => e.isIntersecting);
-        if (seen.length) setActive(seen[0].target.dataset.anchor);
-      },
-      { rootMargin: '-120px 0px -65% 0px' },
-    );
-    root.querySelectorAll('[data-anchor]').forEach((el) => io.observe(el));
-    return () => io.disconnect();
   }, []);
 
   const ask = (text) => {
@@ -916,266 +929,205 @@ export default function SonarAdaptiveReport({
         id={`sar-${s.type}`}
         data-anchor={ANCHOR_LABELS[s.type] ? s.type : undefined}
       >
+        {firstOf.get(SKELETON_KEY[s.type]) === s.type ? (
+          <span id={`sa-${SKELETON_KEY[s.type]}`} className="sar-sa" aria-hidden="true" />
+        ) : null}
         {content}
       </section>
     );
   };
 
   return (
-    <div
-      className="sxb sar"
-      ref={rootRef}
-      data-scenario={report.scenario?.key}
-      data-family={report.presentation?.presentationFamily || undefined}
+    <SonarSkeleton
+      question={report.resolvedQuestion || report.question}
+      onPing={onPing}
+      onResearch={onResearch}
+      followUps={follow && !streaming ? follow.related : []}
+      onAsk={ask}
+      sources={sources}
+      present={present}
+      kind={report.thread?.fx ? 'country' : report.thread?.ticker ? 'company' : null}
+      subject={report.thread?.subject || report.thread?.person || null}
+      onDeep={onDeep}
     >
-      <form
-        className="sxb-question"
-        role="search"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const q = question.trim().slice(0, 600);
-          if (q) onPing?.(q);
-        }}
-      >
-        <div className="sxb-query">
-          <i className="bi bi-search" aria-hidden="true" />
-          <label htmlFor={qId} className="sxb-sr">
-            Your question
-          </label>
-          <input
-            id={qId}
-            ref={inputRef}
-            type="text"
-            name="q"
-            autoComplete="off"
-            maxLength={600}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <button
-            type="button"
-            className="sxb-query-edit"
-            onClick={() => {
-              setQuestion('');
-              inputRef.current?.focus();
-            }}
-          >
-            Clear
-          </button>
-        </div>
-        <button type="submit" className="sxb-ping" disabled={!question.trim()}>
-          Ping
-          <i className="bi bi-arrow-up-right" aria-hidden="true" />
-        </button>
-      </form>
-
-      {/* Follow-ups: two to four text links under the question (Branding and UI Guide). */}
-      {follow && !streaming ? (
-        <div className="sxb-related sxb-related--top sar-explore" role="group" aria-label="Explore">
-          <span className="sar-explore-label">Explore</span>
-          {follow.related.slice(0, 4).map((q) => (
-            <button key={q} type="button" className="sxb-related-q" onClick={() => ask(q)}>
-              {q}
-              <i className="bi bi-chevron-right" aria-hidden="true" />
-            </button>
-          ))}
-        </div>
-      ) : null}
-
-      <nav className="sxb-tabs" aria-label="Sections of this answer">
-        <a
-          href="#sar-overview"
-          aria-current={active === 'overview' ? 'true' : undefined}
-          onClick={() => setActive('overview')}
-        >
-          Overview
-        </a>
-        {anchors.map((s) => (
-          <a
-            key={s.type}
-            href={`#sar-${s.type}`}
-            aria-current={active === s.type ? 'true' : undefined}
-            onClick={() => setActive(s.type)}
-          >
-            {geo && s.type === 'sources' ? 'Evidence' : ANCHOR_LABELS[s.type]}
-          </a>
-        ))}
-      </nav>
-
-      {/* The answer template's top zone: the lead on the left, Research Controls on the right. */}
-      <div className="sxb-top">
-        <div className="sxb-top-main">
-          <header className="sxb-hero" id="sar-overview" data-anchor="overview">
-            {lead.kicker || lead.asOf || report.presentation?.familyLabel ? (
-              <div className="sar-kicker-row">
-                {lead.kicker || report.presentation?.familyLabel ? (
-                  <p className="sxb-kicker">{lead.kicker || report.presentation.familyLabel}</p>
-                ) : (
-                  <span />
-                )}
-                {lead.asOf ? <p className="sar-asof">{lead.asOf}</p> : null}
-              </div>
-            ) : null}
-            <h1>{lead.headline}</h1>
-            {lead.verdict ? <p className="sar-verdict">{lead.verdict}</p> : null}
-            <p className="sxb-deck">
-              {lead.text}
-              <Cites ids={lead.cites} sources={sources} />
-            </p>
-            <FxLeadBrief lead={lead} />
-            {/* The lead's own links: to the findings and to the sources, when they exist. */}
-            {findingsAnchor || sources.length ? (
-              <p className="sar-leadlinks">
-                {findingsAnchor ? (
-                  <a href={`#sar-${findingsAnchor}`}>View key findings</a>
-                ) : null}
-                {sources.length ? <a href="#sar-sources">View sources</a> : null}
-              </p>
-            ) : null}
-            {lead.core ? (
-              <p className="sgeo-core">
-                <span>Core finding</span>
-                {lead.core}
-              </p>
-            ) : null}
-            <p className="sxb-provenance">
-              <span>
-                <i className="sxb-dot" aria-hidden="true" />
-                {report.scenario.label}
-              </span>
-              <span>Research as of {dayLabel(report.asOf)}</span>
-              {report.org ? (
-                <span>From your organization’s records, visible to you as a member</span>
-              ) : null}
-              {streaming ? (
-                <span className="sar-streaming" role="status">
-                  Adding verified sections
-                </span>
-              ) : null}
-              {lead.computed ? <span>Figures computed from the records cited</span> : null}
-              {report.degraded?.includes('live_research') ? (
-                <span>Verification did not complete</span>
-              ) : null}
-              {report.controls?.labels?.length ? (
-                <span>Controls: {report.controls.labels.join(', ')}</span>
-              ) : null}
-              {sources.length ? (
-                <a href="#sar-sources" className="sxb-provenance-sources">
-                  {sources.length} {sources.length === 1 ? 'source' : 'sources'} cited
-                </a>
-              ) : null}
-            </p>
-            <div className="sar-actions">
-              {/* Organization research is not offered for saving to personal research. */}
-              {report.org || streaming
-                ? null
-                : actions || (
-                    <SonarSaveActions
-                      getSave={getSave}
-                      question={report.resolvedQuestion || report.question}
-                    />
-                  )}
-            </div>
-          </header>
-          {topSections.map((t) => block(t))}
-        </div>
-        <aside className="sxb-rail" aria-label="Research controls">
-          <SonarResearchControls variant="flat" />
-        </aside>
-      </div>
-
-      {rest.map((sec, i) => {
-        /* The economy and gold side by side when they are neighbours. */
-        const next = rest[i + 1];
-        const prev = rest[i - 1];
-        if (next && PAIR_OF[sec.type] === next.type) {
-          const Pair = sec.type.startsWith('fx_') || sec.type.startsWith('ex_') ? FxPair : GeoPair;
-          return (
-            <Pair key={`pair-${sec.type}`} wide={PAIR_WIDE.has(sec.type)}>
-              {block(sec)}
-              {block(next)}
-            </Pair>
-          );
-        }
-        if (prev && PAIR_OF[prev.type] === sec.type) return null;
-        return block(sec);
-      })}
-
       <div
-        className={`sar-closing${onRestore && session.length >= 2 && follow && !streaming ? ' is-pair' : ''}`}
+        className="sxb sar"
+        ref={rootRef}
+        data-scenario={report.scenario?.key}
+        data-family={report.presentation?.presentationFamily || undefined}
       >
-      {onRestore && session.length >= 2 ? (
-        <section className="sxb-block sar-session" aria-labelledby="sar-session-h">
-          <h2 className="sxb-mid-title" id="sar-session-h">
-            In this session
-          </h2>
-          <ul className="sar-session-list">
-            {session.map((t) => (
-              <li key={t.id}>
-                <button
-                  type="button"
-                  className="sar-session-item"
-                  aria-current={t.id === sessionId ? 'true' : undefined}
-                  onClick={() => onRestore(t)}
-                >
-                  <span className="sar-session-q">{t.headline || t.question}</span>
-                  <span className="sar-session-meta">
-                    {SESSION_MODE[t.mode] || ''} &middot; {clock(t.at)}
+        {/* The answer template's top zone: the lead on the left, Research Controls on the right. */}
+        <div className="sxb-top sxb-top--solo">
+          <div className="sxb-top-main">
+            <span id="sa-answer" className="sar-sa" aria-hidden="true" />
+            <header className="sxb-hero" id="sar-overview" data-anchor="overview">
+              {lead.kicker || lead.asOf || report.presentation?.familyLabel ? (
+                <div className="sar-kicker-row">
+                  {lead.kicker || report.presentation?.familyLabel ? (
+                    <p className="sxb-kicker">{lead.kicker || report.presentation.familyLabel}</p>
+                  ) : (
+                    <span />
+                  )}
+                  {lead.asOf ? <p className="sar-asof">{lead.asOf}</p> : null}
+                </div>
+              ) : null}
+              <h1>{lead.headline}</h1>
+              {lead.verdict ? <p className="sar-verdict">{lead.verdict}</p> : null}
+              <p className="sxb-deck">
+                {lead.text}
+                <Cites ids={lead.cites} sources={sources} />
+              </p>
+              <FxLeadBrief lead={lead} />
+              {/* The lead's own links: to the findings and to the sources, when they exist. */}
+              {findingsAnchor || sources.length ? (
+                <p className="sar-leadlinks">
+                  {findingsAnchor ? <a href={`#sar-${findingsAnchor}`}>View key findings</a> : null}
+                  {sources.length ? <a href="#sar-sources">View sources</a> : null}
+                </p>
+              ) : null}
+              {lead.core ? (
+                <p className="sgeo-core">
+                  <span>Core finding</span>
+                  {lead.core}
+                </p>
+              ) : null}
+              <p className="sxb-provenance">
+                <span>
+                  <i className="sxb-dot" aria-hidden="true" />
+                  {report.scenario.label}
+                </span>
+                <span>Research as of {dayLabel(report.asOf)}</span>
+                {report.org ? (
+                  <span>From your organization’s records, visible to you as a member</span>
+                ) : null}
+                {streaming ? (
+                  <span className="sar-streaming" role="status">
+                    Adding verified sections
                   </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+                ) : null}
+                {lead.computed ? <span>Figures computed from the records cited</span> : null}
+                {report.degraded?.includes('live_research') ? (
+                  <span>Verification did not complete</span>
+                ) : null}
+                {report.controls?.labels?.length ? (
+                  <span>Controls: {report.controls.labels.join(', ')}</span>
+                ) : null}
+                {sources.length ? (
+                  <a href="#sar-sources" className="sxb-provenance-sources">
+                    {sources.length} {sources.length === 1 ? 'source' : 'sources'} cited
+                  </a>
+                ) : null}
+              </p>
+              <div className="sar-actions">
+                {/* Organization research is not offered for saving to personal research. */}
+                {report.org || streaming
+                  ? null
+                  : actions || (
+                      <SonarSaveActions
+                        getSave={getSave}
+                        question={report.resolvedQuestion || report.question}
+                      />
+                    )}
+              </div>
+            </header>
+            {topSections.map((t) => block(t))}
+          </div>
+        </div>
 
-      {follow && !streaming ? (
-        <section className="sxb-block" aria-labelledby="sar-continue-h">
-          <h2 className="sxb-mid-title" id="sar-continue-h">
-            Ask a follow-up
-          </h2>
-          <form
-            className="sxb-followup"
-            onSubmit={(e) => {
-              e.preventDefault();
-              ask(followUp);
-            }}
-          >
-            <label htmlFor={fId} className="sxb-sr">
-              Ask a follow-up
-            </label>
-            <input
-              id={fId}
-              type="text"
-              autoComplete="off"
-              maxLength={600}
-              value={followUp}
-              placeholder={follow.placeholder}
-              onChange={(e) => setFollowUp(e.target.value)}
-            />
-            <button type="submit" className="sxb-ask" disabled={!followUp.trim()}>
-              Ask
-              <i className="bi bi-arrow-up-right" aria-hidden="true" />
-            </button>
-          </form>
-        </section>
-      ) : null}
-      </div>
+        {rest.map((sec, i) => {
+          /* The economy and gold side by side when they are neighbours. */
+          const next = rest[i + 1];
+          const prev = rest[i - 1];
+          if (next && PAIR_OF[sec.type] === next.type) {
+            const Pair =
+              sec.type.startsWith('fx_') || sec.type.startsWith('ex_') ? FxPair : GeoPair;
+            return (
+              <Pair key={`pair-${sec.type}`} wide={PAIR_WIDE.has(sec.type)}>
+                {block(sec)}
+                {block(next)}
+              </Pair>
+            );
+          }
+          if (prev && PAIR_OF[prev.type] === sec.type) return null;
+          return block(sec);
+        })}
 
-      <footer className="sxb-foot">
-        <span>Ezana Sonar &middot; Evidence-led financial research</span>
-        <span>
-          {onDeep ? (
-            <>
-              <button type="button" className="sxb-foot-deep" onClick={onDeep}>
-                Run deep research on this question
-              </button>{' '}
-              &middot;{' '}
-            </>
+        <div
+          className={`sar-closing${onRestore && session.length >= 2 && follow && !streaming ? ' is-pair' : ''}`}
+        >
+          {onRestore && session.length >= 2 ? (
+            <section className="sxb-block sar-session" aria-labelledby="sar-session-h">
+              <h2 className="sxb-mid-title" id="sar-session-h">
+                In this session
+              </h2>
+              <ul className="sar-session-list">
+                {session.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      className="sar-session-item"
+                      aria-current={t.id === sessionId ? 'true' : undefined}
+                      onClick={() => onRestore(t)}
+                    >
+                      <span className="sar-session-q">{t.headline || t.question}</span>
+                      <span className="sar-session-meta">
+                        {SESSION_MODE[t.mode] || ''} &middot; {clock(t.at)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ) : null}
-          Findings only, not investment advice
-        </span>
-      </footer>
-    </div>
+
+          {follow && !streaming ? (
+            <section className="sxb-block" aria-labelledby="sar-continue-h">
+              <h2 className="sxb-mid-title" id="sar-continue-h">
+                Ask a follow-up
+              </h2>
+              <form
+                className="sxb-followup"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  ask(followUp);
+                }}
+              >
+                <label htmlFor={fId} className="sxb-sr">
+                  Ask a follow-up
+                </label>
+                <input
+                  id={fId}
+                  type="text"
+                  autoComplete="off"
+                  maxLength={600}
+                  value={followUp}
+                  placeholder={follow.placeholder}
+                  onChange={(e) => setFollowUp(e.target.value)}
+                />
+                <button type="submit" className="sxb-ask" disabled={!followUp.trim()}>
+                  Ask
+                  <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                </button>
+              </form>
+            </section>
+          ) : null}
+        </div>
+
+        <footer className="sxb-foot">
+          <span>Ezana Sonar &middot; Evidence-led financial research</span>
+          <span>
+            {onDeep ? (
+              <>
+                <button type="button" className="sxb-foot-deep" onClick={onDeep}>
+                  Run deep research on this question
+                </button>{' '}
+                &middot;{' '}
+              </>
+            ) : null}
+            Findings only, not investment advice
+          </span>
+        </footer>
+      </div>
+    </SonarSkeleton>
   );
 }

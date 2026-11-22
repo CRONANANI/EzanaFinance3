@@ -17,9 +17,9 @@ export const MAX_SOURCES = 6;
 export const GROUNDING = 3;
 const SEMANTIC_THRESHOLD = Number(process.env.HELP_CENTER_MATCH_THRESHOLD) || 0.3;
 
-/** Shared answer cache key: help:ask:v1:<audience|all>:<normalized query>. */
+/** Shared answer cache key: help:ask:v2:<audience|all>:<normalized query>. */
 export function helpCacheKey(audience, query) {
-  return `help:ask:v1:${audience || 'all'}:${String(query || '')
+  return `help:ask:v2:${audience || 'all'}:${String(query || '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim()}`;

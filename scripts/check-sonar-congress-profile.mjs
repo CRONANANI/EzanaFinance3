@@ -490,3 +490,22 @@ test('wiring: the ping board, the report, the shell and the composer', () => {
   assert.ok(!/Search the datasets with Sonar/.test(cat), 'no search icon in the bar');
   assert.match(cat, /dscat-logo--center/);
 });
+
+test('every Sonar answer carries the skeleton: menu, composer, three tools, follow-ups', () => {
+  for (const p of [
+    'src/components/sonar/adaptive/SonarAdaptiveReport.jsx',
+    'src/components/sonar/exemplary/SonarExemplaryBrief.jsx',
+  ]) {
+    const src = read(p);
+    assert.match(src, /<SonarSkeleton/, `${p} renders inside the skeleton`);
+    assert.ok(!/className="sxb-question"/.test(src), `${p} has no old question row`);
+    assert.ok(!/className="sxb-rail"/.test(src), `${p} has no old controls rail`);
+    assert.ok(!/className="sxb-tabs"/.test(src), `${p} has no old tab row`);
+    assert.match(src, /id="sa-answer"/, `${p} anchors the desk summary for the menu`);
+  }
+  const sk = read('src/components/sonar/SonarSkeleton.jsx');
+  assert.match(sk, /<SonarAnswerFrame/);
+  assert.match(sk, /<SonarAnswerQueryBar/);
+  assert.match(sk, /workspaceTools\(/);
+  assert.match(sk, /<SonarRelatedQuestions/);
+});
