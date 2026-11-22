@@ -31,6 +31,7 @@ import { researchMenu, runnableSteps, runWorkspaceStep } from './workspace-rail-
 import { nextSteps } from '@/lib/sonar/workspace';
 import { sectionAccess } from '@/lib/sonar/answer-sections';
 import { dayLabel } from './exemplary/SonarExemplaryChart';
+import './sonar-skeleton.css';
 
 /** The tools row's evidence rows from an answer's numbered sources. */
 export function skeletonSourceRows(sources = []) {
@@ -108,24 +109,32 @@ export function SonarSkeleton({
   };
 
   return (
-    <SonarAnswerFrame
-      present={present}
-      access={access}
-      onDeep={onDeep}
-      tools={tools}
-      research={researchMenu({ signedIn })}
-      queryBar={
-        <SonarAnswerQueryBar
-          key={question}
-          initial={question}
-          onSubmit={submit}
-          contextEnabled={typeof onResearch === 'function'}
-        />
-      }
-      followUps={<SonarRelatedQuestions questions={followUps} onAsk={onAsk} />}
-    >
-      {children}
-    </SonarAnswerFrame>
+    <>
+      {/* Nov 22: the Sonar page ground behind every answer: the dotted ranges of the
+          /datasets backdrop, fixed behind the cards (sonar-skeleton.css). */}
+      <div className="ssk-backdrop" aria-hidden="true">
+        <div className="ssk-dots" />
+      </div>
+      <SonarAnswerFrame
+        className="ssk"
+        present={present}
+        access={access}
+        onDeep={onDeep}
+        tools={tools}
+        research={researchMenu({ signedIn })}
+        queryBar={
+          <SonarAnswerQueryBar
+            key={question}
+            initial={question}
+            onSubmit={submit}
+            contextEnabled={typeof onResearch === 'function'}
+          />
+        }
+        followUps={<SonarRelatedQuestions questions={followUps} onAsk={onAsk} />}
+      >
+        {children}
+      </SonarAnswerFrame>
+    </>
   );
 }
 

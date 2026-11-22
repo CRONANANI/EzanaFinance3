@@ -703,6 +703,25 @@ function News({ name, columns }) {
  * actions     Save (SonarSaveActions), at the top right of the desk summary
  * onTicker    runs a new Sonar ping on a ticker (the Best returns list)
  */
+/**
+ * The layout's rows as render blocks: consecutive rows of three merge into one block of
+ * three columns (column i stacks each row's i-th card); any other row stays a row.
+ */
+export function groupRows(rows = []) {
+  const out = [];
+  for (const row of rows) {
+    const prev = out[out.length - 1];
+    if (row.length === 3 && prev?.stacked) {
+      row.forEach((k, i) => prev.cols[i].push(k));
+    } else if (row.length === 3 && prev && !prev.stacked && prev.row.length === 3) {
+      out[out.length - 1] = { stacked: true, cols: prev.row.map((k, i) => [k, row[i]]) };
+    } else {
+      out.push({ stacked: false, row });
+    }
+  }
+  return out;
+}
+
 export function CongressProfileReport({
   live,
   rows = [['desk'], ['portfolio', 'findings', 'lean'], ['similar', 'news', 'positions']],
@@ -746,7 +765,29 @@ export function CongressProfileReport({
   return (
     <div className="cpr" role="region" aria-label={`${live.query}: answer`}>
       {notice ? <div className="cpr-notice">{notice}</div> : null}
-      {rows.map((row, i) => {
+      {groupRows(rows).map((block, i) => {
+        if (block.stacked) {
+          /* Nov 22: two rows of three render as three stacked columns, so a short card
+             (Key findings, say) lets the card beneath it (News) rise into the gap. */
+          const cols = block.cols
+            .map((col) => col.filter((k) => cards[k]))
+            .filter((col) => col.length);
+          if (!cols.length) return null;
+          return (
+            <div key={i} className={`cpr-row is-${cols.length} is-triple is-stacked`}>
+              {cols.map((col) => (
+                <div key={col.join('-')} className="cpr-col">
+                  {col.map((k) => (
+                    <div key={k} className={`cpr-cell cpr-cell--${k}`}>
+                      {cards[k]}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        }
+        const row = block.row;
         const present = row.filter((k) => cards[k]);
         if (!present.length) return null;
         return (

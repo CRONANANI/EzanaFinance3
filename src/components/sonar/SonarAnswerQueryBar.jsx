@@ -10,7 +10,8 @@
  *           height as the tools row beside it
  *   +       add photos: each is read into text on the server (/api/sonar/attachment) and
  *           travels with the question as context
- *   Build   add charts from this answer, Quant Lab models, or saved EzanaQL queries as context
+ *   Build   "Build your research" (SonarBuildMenu): saved EzanaQL queries, Quant Lab models,
+ *           data packs and analysis lenses (the Research controls) and charts on this answer
  *   Ping    a bare right arrow that sends; while a ping is in flight it spins and is disabled
  *   x       the search glyph turns into a clear button once the field holds any text
  *
@@ -26,6 +27,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { QUANT_MODELS } from '@/lib/quants/model-library';
 import { useSonarPlan } from './useSonarPlan';
+import { SonarBuildMenu } from './SonarBuildMenu';
+import { useResearchControls } from './research-controls-store';
 import './sonar-answer-query-bar.css';
 
 const MAX_CONTEXT = 6;
@@ -79,6 +82,7 @@ export function SonarAnswerQueryBar({
   const menuRef = useRef(null);
   const buildRef = useRef(null);
   const plan = useSonarPlan();
+  const [controls] = useResearchControls();
   const guest = plan.isGuest;
   const controlled = typeof value === 'string';
   const [local, setLocal] = useState(initial || '');
@@ -135,6 +139,7 @@ export function SonarAnswerQueryBar({
           items: (d?.reports || []).slice(0, 12).map((r) => ({
             id: r.id,
             label: r.title || 'Saved query',
+            desc: r.prompt || r.query || '',
             text: [r.prompt ? `Question: ${r.prompt}` : null, `EzanaQL: ${r.query}`]
               .filter(Boolean)
               .join('\n'),
@@ -144,7 +149,6 @@ export function SonarAnswerQueryBar({
       .catch(() => setSaved({ status: 'error', items: [] }));
   }, [menu, guest, saved.status]);
 
-  const has = (key) => context.some((c) => c.key === key);
   const toggle = useCallback((item) => {
     setError(null);
     setContext((list) => {
@@ -222,6 +226,8 @@ export function SonarAnswerQueryBar({
         key: `model:${m.id}`,
         kind: 'model',
         label: m.name,
+        family: m.family,
+        summary: m.summary,
         text: [
           `${m.name} (${m.family})`,
           m.summary,
@@ -237,20 +243,12 @@ export function SonarAnswerQueryBar({
     .filter((c) => c?.id && c?.label && c?.text)
     .map((c) => ({ key: `chart:${c.id}`, kind: 'chart', label: c.label, text: c.text }));
 
-  const Option = ({ item }) => (
-    <li>
-      <button
-        type="button"
-        className={`sqb-opt${has(item.key) ? ' is-on' : ''}`}
-        aria-pressed={has(item.key)}
-        onClick={() => toggle(item)}
-      >
-        <i className={`bi ${KIND_ICON[item.kind]}`} aria-hidden="true" />
-        <span className="sqb-opt-label">{item.label}</span>
-        {has(item.key) ? <i className="bi bi-check-lg sqb-opt-check" aria-hidden="true" /> : null}
-      </button>
-    </li>
-  );
+  /* What Build has added: context items (not photos) plus a data pack or lens set in the
+     Research controls. */
+  const buildCount =
+    context.filter((c) => c.kind !== 'photo').length +
+    (controls.sources !== 'all' ? 1 : 0) +
+    (controls.focus !== 'general' ? 1 : 0);
 
   return (
     <form className="sqb" role="search" onSubmit={submit} aria-busy={pending || undefined}>
@@ -331,68 +329,29 @@ export function SonarAnswerQueryBar({
               <button
                 ref={buildRef}
                 type="button"
-                className={`sqb-pill sqb-build${menu ? ' is-open' : ''}`}
-                aria-haspopup="true"
+                className={`sqb-pill sqb-build${menu ? ' is-open' : ''}${buildCount ? ' is-active' : ''}`}
+                aria-haspopup="dialog"
                 aria-expanded={menu}
                 aria-controls={`${id}-build`}
                 onClick={() => setMenu((m) => !m)}
               >
-                <i className="bi bi-bricks" aria-hidden="true" />
+                <i className="bi bi-stack" aria-hidden="true" />
                 Build
+                {buildCount ? <span className="sqb-build-n">· {buildCount}</span> : null}
                 <i className="bi bi-chevron-down sqb-chev" aria-hidden="true" />
               </button>
               {menu ? (
-                <div
+                <SonarBuildMenu
                   id={`${id}-build`}
-                  ref={menuRef}
-                  className="sqb-menu"
-                  role="group"
-                  aria-label="Add context"
-                >
-                  <p className="sqb-menu-head">Add to this question</p>
-                  {chartItems.length ? (
-                    <>
-                      <p className="sqb-menu-group">Charts on this answer</p>
-                      <ul className="sqb-menu-list">
-                        {chartItems.map((it) => (
-                          <Option key={it.key} item={it} />
-                        ))}
-                      </ul>
-                    </>
-                  ) : null}
-                  <p className="sqb-menu-group">Saved EzanaQL queries</p>
-                  {guest ? (
-                    <p className="sqb-menu-note">Sign in to add your saved queries.</p>
-                  ) : saved.status === 'loading' ? (
-                    <p className="sqb-menu-note">Loading your saved queries</p>
-                  ) : saved.status === 'error' ? (
-                    <p className="sqb-menu-note">Your saved queries could not be loaded.</p>
-                  ) : saved.items.length ? (
-                    <ul className="sqb-menu-list">
-                      {saved.items.map((q) => (
-                        <Option
-                          key={q.id}
-                          item={{
-                            key: `query:${q.id}`,
-                            kind: 'query',
-                            label: q.label,
-                            text: q.text,
-                          }}
-                        />
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="sqb-menu-note">
-                      No saved queries yet. Save one from a dataset hub.
-                    </p>
-                  )}
-                  <p className="sqb-menu-group">Quant Lab models</p>
-                  <ul className="sqb-menu-list sqb-menu-list--models">
-                    {models.map((it) => (
-                      <Option key={it.key} item={it} />
-                    ))}
-                  </ul>
-                </div>
+                  menuRef={menuRef}
+                  items={context}
+                  onToggle={toggle}
+                  onClearContext={() => setContext((l) => l.filter((c) => c.kind === 'photo'))}
+                  saved={saved}
+                  guest={guest}
+                  charts={chartItems}
+                  models={models}
+                />
               ) : null}
             </div>
           </>

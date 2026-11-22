@@ -64,6 +64,30 @@
   }
 }
 
+/* Nov 22: stacked columns (two rows of three). Narrow, the columns dissolve and the cards
+   flow through the row grid as before; wide, each column stacks its cards, so a short card
+   lets the one beneath it rise. */
+.cpr .cpr-col {
+  display: contents;
+}
+@container cpr (min-width: 1080px) {
+  .cpr .cpr-row.is-stacked {
+    align-items: start;
+  }
+  .cpr .cpr-row.is-stacked > .cpr-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .cpr .cpr-row.is-stacked > .cpr-col:first-child {
+    grid-column: auto;
+  }
+  .cpr .cpr-row.is-stacked.is-2 {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
+}
+
 /* ── cards ────────────────────────────────────────────────────────── */
 .cpr .cpr-card {
   display: flex;

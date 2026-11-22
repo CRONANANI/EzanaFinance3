@@ -1,0 +1,94 @@
+/* SonarSkeleton (ssk-), Nov 22 2026: the board look on every Sonar answer. The adaptive
+   reports (the lira answer) and the exemplary briefs now match the board answers (the
+   Pelosi answer): the dotted ranges behind the page, and every section on a soft emerald
+   card (the frame's --san-card, no outline) with a mono emerald eyebrow for its title.
+   Card rule: tinted surfaces, no outlines. */
+
+/* The ground: the /datasets backdrop's dotted ranges (orbital-map.css .dsi-mountains, the
+   same mask), fixed behind the answer so they stay in view as it scrolls. */
+.ssk-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 45%,
+    color-mix(in srgb, var(--emerald) 7%, transparent),
+    transparent 70%
+  );
+}
+.ssk-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22vh;
+  height: 78vh;
+  opacity: 0.55;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--emerald) 70%, transparent) 1.2px,
+    transparent 1.7px
+  );
+  background-size: 7px 7px;
+  background-position: center top;
+  -webkit-mask: url('/images/datasets/mountains-bg.svg') center bottom / 100% 100% no-repeat;
+  mask: url('/images/datasets/mountains-bg.svg') center bottom / 100% 100% no-repeat;
+}
+.san.ssk {
+  position: relative;
+  z-index: 1;
+}
+
+/* Cards: the lead (the hero), the exemplary takeaways and every section. */
+.san.ssk .sxb-hero,
+.san.ssk .sxb-takeaways {
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--san-card);
+}
+.san.ssk .sxb-block {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-top: 0;
+  border-radius: var(--radius-lg);
+  background: var(--san-card);
+}
+.san.ssk .sxb-takeaways {
+  margin-top: 14px;
+}
+.san.ssk .sxb > footer {
+  margin-top: 14px;
+}
+/* Section titles read as the board cards' eyebrows. */
+.san.ssk .sxb-section-title,
+.san.ssk .sxb-mid-title {
+  font-family: var(--san-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-tracking);
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--san-accent);
+}
+.san.ssk .sxb-section-top {
+  align-items: center;
+  margin-bottom: 4px;
+}
+/* Rules inside a card take the card's emerald hairline. */
+.san.ssk .sxb {
+  --sxb-rule: var(--san-rule);
+}
+/* Pairs: two cards side by side, separated by the gap (no rule between them). */
+.san.ssk .sgeo-pair {
+  gap: 14px;
+  margin-top: 14px;
+  align-items: start;
+}
+.san.ssk .sgeo-pair > .sar-block {
+  margin-top: 0;
+}
+.san.ssk .sgeo-pair > .sar-block + .sar-block {
+  padding-left: 18px;
+  border-left: 0;
+}

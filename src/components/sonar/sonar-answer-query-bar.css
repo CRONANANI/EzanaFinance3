@@ -384,3 +384,368 @@
     padding-left: 10px;
   }
 }
+
+/* ── Build your research (sbm-), Nov 22 2026 ─────────────────────────────────
+   The owner's ChatGPT layout (header, category tabs, rows, More to add, two footer
+   actions) on the brand guide's overlay rules: a solid ground, a hairline border and a
+   shadow; emerald for selection; no hover lift or glow. Lives inside .sqb, so it reads
+   the composer's tokens (dark on Sonar, the theme elsewhere). */
+.sqb .sqb-build.is-active {
+  background: color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+  color: var(--sqb-accent);
+}
+.sqb .sqb-build-n {
+  font-family: var(--san-mono, var(--font-mono));
+  font-variant-numeric: tabular-nums;
+  color: var(--sqb-accent);
+}
+.sqb .sbm {
+  --sbm-ground: color-mix(
+    in srgb,
+    var(--sqb-emerald) 5%,
+    var(--san-panel-solid, var(--bg-primary))
+  );
+  --sbm-rule: color-mix(in srgb, var(--sqb-text) 9%, transparent);
+  --sbm-row: color-mix(in srgb, var(--sqb-text) 3%, transparent);
+  --sbm-row-hover: color-mix(in srgb, var(--sqb-text) 6%, transparent);
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 10px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  max-height: min(72vh, 620px);
+  border: 1px solid color-mix(in srgb, var(--sqb-emerald) 30%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--sbm-ground);
+  box-shadow: var(--shadow-lg);
+  color: var(--sqb-text);
+  font-family: var(--font-sans);
+  text-align: left;
+  overflow: hidden;
+}
+.sqb .sbm-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.sqb .sbm :is(button, a, input):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Header */
+.sqb .sbm-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 12px;
+}
+.sqb .sbm-head-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+  color: var(--sqb-accent);
+  font-size: 20px;
+}
+.sqb .sbm-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.sqb .sbm-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.sqb .sbm-sub {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--sqb-muted);
+}
+.sqb .sbm-head-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.sqb .sbm-added {
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sqb-accent);
+}
+.sqb .sbm-clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sqb-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sqb .sbm-clear:hover {
+  color: var(--sqb-accent);
+}
+
+/* Tabs */
+.sqb .sbm-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--sbm-rule);
+}
+.sqb .sbm-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--sbm-row);
+  color: var(--sqb-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.sqb .sbm-tab:hover {
+  color: var(--sqb-text);
+}
+.sqb .sbm-tab.is-on {
+  background: var(--sqb-emerald);
+  color: var(--btn-primary-fg);
+}
+.sqb .sbm-tab-n {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: 10px;
+  line-height: 16px;
+}
+
+/* Body */
+.sqb .sbm-body {
+  flex: 1;
+  min-height: 0;
+  padding: 4px 16px 12px;
+  overflow-y: auto;
+}
+.sqb .sbm-group {
+  margin: 14px 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sqb-text);
+}
+.sqb .sbm-note,
+.sqb .sbm-foot-note {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  color: var(--sqb-muted);
+}
+.sqb .sbm-foot-note {
+  margin-top: 12px;
+  color: var(--sqb-faint);
+}
+.sqb .sbm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sqb .sbm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--sbm-row);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.sqb .sbm-row:hover {
+  background: var(--sbm-row-hover);
+}
+.sqb .sbm-row.is-on {
+  background: color-mix(in srgb, var(--sqb-emerald) 12%, transparent);
+}
+.sqb .sbm-row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.sqb .sbm-row-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
+  color: var(--sqb-accent);
+  font-size: 16px;
+}
+.sqb .sbm-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.sqb .sbm-row-title {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sqb .sbm-row-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 1px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sqb-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.sqb .sbm-tag {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sqb-emerald) 14%, transparent);
+  color: var(--sqb-accent);
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sqb .sbm-tag--muted {
+  background: color-mix(in srgb, var(--sqb-text) 7%, transparent);
+  color: var(--sqb-muted);
+}
+.sqb .sbm-row-add,
+.sqb .sbm-row-go {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--sqb-muted);
+  font-size: 15px;
+}
+.sqb .sbm-row-add {
+  background: color-mix(in srgb, var(--sqb-text) 6%, transparent);
+}
+.sqb .sbm-row:hover .sbm-row-add,
+.sqb .sbm-row:hover .sbm-row-go {
+  color: var(--sqb-accent);
+}
+.sqb .sbm-row.is-on .sbm-row-add {
+  background: var(--sqb-emerald);
+  color: var(--btn-primary-fg);
+}
+.sqb .sbm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin-top: 12px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  background: var(--sbm-row);
+  color: var(--sqb-faint);
+}
+.sqb .sbm-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--sqb-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+/* Footer */
+.sqb .sbm-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--sbm-rule);
+}
+.sqb .sbm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--sbm-row);
+  color: var(--sqb-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.sqb .sbm-btn:hover {
+  color: var(--sqb-accent);
+}
+.sqb .sbm-btn--primary {
+  background: var(--sqb-emerald);
+  color: var(--btn-primary-fg);
+}
+.sqb .sbm-btn--primary:hover {
+  color: var(--btn-primary-fg);
+  background: color-mix(in srgb, var(--sqb-emerald) 88%, black);
+}
+@media (max-width: 639px) {
+  .sqb .sbm {
+    position: fixed;
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+  .sqb .sbm-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sqb .sbm-tab,
+  .sqb .sbm-row,
+  .sqb .sbm-btn {
+    transition: none;
+  }
+}

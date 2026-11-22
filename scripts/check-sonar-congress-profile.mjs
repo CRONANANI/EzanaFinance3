@@ -509,3 +509,29 @@ test('every Sonar answer carries the skeleton: menu, composer, three tools, foll
   assert.match(sk, /workspaceTools\(/);
   assert.match(sk, /<SonarRelatedQuestions/);
 });
+
+test('two rows of three stack into columns, so a short card lets the one beneath rise', async () => {
+  const src = read('src/components/sonar/congress/CongressProfileReport.jsx');
+  assert.match(src, /export function groupRows/);
+  assert.match(src, /is-stacked/);
+  const css = read('src/components/sonar/congress/congress-profile-report.css');
+  assert.match(css, /\.cpr-row\.is-stacked > \.cpr-col/);
+});
+
+test('Build menu: four categories, real resources only, footer actions', () => {
+  const src = read('src/components/sonar/SonarBuildMenu.jsx');
+  for (const t of [
+    'Queries',
+    'Models',
+    'Data packs',
+    'Tools',
+    'Build your research',
+    'Open saved library',
+    'Create new query',
+  ])
+    assert.ok(src.includes(t), t);
+  assert.match(src, /SOURCE_OPTIONS/);
+  assert.match(src, /FOCUS_OPTIONS/);
+  assert.match(read('src/components/sonar/SonarAnswerQueryBar.jsx'), /<SonarBuildMenu/);
+  assert.match(read('src/components/sonar/SonarSkeleton.jsx'), /ssk-backdrop/);
+});
