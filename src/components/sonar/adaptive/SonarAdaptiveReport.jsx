@@ -722,6 +722,7 @@ export default function SonarAdaptiveReport({
   actions = null,
   /* Nov 21: a question with Build or photo context from the skeleton's composer. */
   onResearch = null,
+  onComposerDeep = null,
   /* Nov 17: drawn from a stream's validated sections while the rest arrive. Save and
      follow-ups wait for the final report. */
   streaming = false,
@@ -942,6 +943,7 @@ export default function SonarAdaptiveReport({
       question={report.resolvedQuestion || report.question}
       onPing={onPing}
       onResearch={onResearch}
+      onComposerDeep={onComposerDeep}
       followUps={follow && !streaming ? follow.related : []}
       onAsk={ask}
       sources={sources}

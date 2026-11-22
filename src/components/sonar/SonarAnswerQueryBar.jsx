@@ -28,6 +28,9 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { QUANT_MODELS } from '@/lib/quants/model-library';
 import { useSonarPlan } from './useSonarPlan';
 import { SonarBuildMenu } from './SonarBuildMenu';
+import { SonarComposerRows, CONTEXT_RELATIONS } from './SonarComposerRows';
+import { useResearchComposition } from './useResearchComposition';
+import { deepQualification } from '@/lib/sonar/composer/registry';
 import { useResearchControls } from './research-controls-store';
 import './sonar-answer-query-bar.css';
 
@@ -38,18 +41,22 @@ const HINTS = [
   'Add a photo with + or a chart, model or saved query with Build',
 ];
 
-const KIND_ICON = {
-  photo: 'bi-image',
-  chart: 'bi-bar-chart-line',
-  model: 'bi-calculator',
-  query: 'bi-terminal',
-};
-
 /** One attached item's text, as the research run receives it. */
 export function contextText(items = []) {
   return items
     .filter((c) => c && c.status === 'ready' && c.text)
-    .map((c) => `[${c.kind}] ${c.label}\n${c.text}`)
+    .map((c) =>
+      [
+        `[${c.kind}] ${c.label}`,
+        c.relation ? `How to use it: ${c.relation}` : null,
+        c.kind === 'echo'
+          ? 'An Ezana Echo article: editorial interpretation, not primary evidence.'
+          : null,
+        c.text,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
     .join('\n\n');
 }
 
@@ -93,6 +100,9 @@ export function SonarAnswerQueryBar({
   const [saved, setSaved] = useState({ status: 'idle', items: [] });
   const [error, setError] = useState(null);
   const [hint, setHint] = useState(0);
+  const [running, setRunning] = useState(false);
+  /* Research Composer: analyses inferred from the question or added from the menu. */
+  const composer = useResearchComposition(current, { enabled: contextEnabled });
 
   /* The hint rotates while the field is empty, unless motion is reduced. */
   useEffect(() => {
@@ -157,7 +167,10 @@ export function SonarAnswerQueryBar({
         setError(`Up to ${MAX_CONTEXT} items can be added to one question.`);
         return list;
       }
-      return [...list, { ...item, status: 'ready' }];
+      return [
+        ...list,
+        { ...item, status: 'ready', relation: item.relation || CONTEXT_RELATIONS[item.kind]?.[0] },
+      ];
     });
   }, []);
 
@@ -195,7 +208,17 @@ export function SonarAnswerQueryBar({
   const reading = context.some((c) => c.status === 'reading');
   const ready = context.filter((c) => c.status === 'ready');
 
-  const submit = (e) => {
+  /* Pack and lens choices (the Research controls) count as resources too. */
+  const resourceList = [
+    ...composer.items,
+    ...ready.filter((c) => c.kind !== 'photo'),
+    ...(controls.sources !== 'all' ? [{ key: `pack:${controls.sources}`, kind: 'pack' }] : []),
+    ...(controls.focus !== 'general' ? [{ key: `lens:${controls.focus}`, kind: 'tool' }] : []),
+  ];
+  const deep = deepQualification(resourceList);
+  const runnable = composer.items.filter((a) => a.status === 'supported');
+
+  const submit = async (e) => {
     e?.preventDefault();
     const q = String(current || '')
       .trim()
@@ -204,11 +227,52 @@ export function SonarAnswerQueryBar({
       ref.current?.focus();
       return;
     }
-    if (pending || reading) return;
-    onSubmit?.(
-      q,
-      contextEnabled ? ready.map(({ kind, label: l, text }) => ({ kind, label: l, text })) : [],
-    );
+    if (pending || reading || running) return;
+    const ctx = contextEnabled
+      ? ready.map(({ kind, label: l, text, relation }) => ({
+          kind,
+          label: l,
+          text,
+          relation,
+          status: 'ready',
+        }))
+      : [];
+    /* Attached analyses run first, with deterministic code on the server; their results
+       travel with the question as the reader's attached material. */
+    if (contextEnabled && runnable.length) {
+      if (guest) {
+        setError('Sign in to run the attached analyses, or remove them.');
+        return;
+      }
+      setRunning(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/sonar/composer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ action: 'run', attachments: runnable }),
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(j?.error || 'The attached analyses could not run.');
+        if (j.text) {
+          ctx.unshift({
+            kind: 'analysis',
+            label: 'Research Composer results',
+            text: j.text,
+            status: 'ready',
+          });
+        }
+        const failed = (j.results || []).filter((r) => r.status === 'failed');
+        if (failed.length && !j.text) throw new Error(failed[0].failed);
+      } catch (err) {
+        setRunning(false);
+        setError(err?.message || 'The attached analyses could not run.');
+        return;
+      }
+      setRunning(false);
+    }
+    onSubmit?.(q, ctx, { deep: deep.qualifies, resources: deep.count });
     setContext([]);
     setMenu(false);
   };
@@ -216,6 +280,7 @@ export function SonarAnswerQueryBar({
   const clear = () => {
     set('');
     setContext([]);
+    composer.clear();
     setError(null);
     ref.current?.focus();
   };
@@ -246,30 +311,27 @@ export function SonarAnswerQueryBar({
   /* What Build has added: context items (not photos) plus a data pack or lens set in the
      Research controls. */
   const buildCount =
+    composer.items.length +
     context.filter((c) => c.kind !== 'photo').length +
     (controls.sources !== 'all' ? 1 : 0) +
     (controls.focus !== 'general' ? 1 : 0);
 
   return (
     <form className="sqb" role="search" onSubmit={submit} aria-busy={pending || undefined}>
-      {contextEnabled && context.length ? (
-        <ul className="sqb-chips" aria-label="Added to this question">
-          {context.map((c) => (
-            <li key={c.key} className={`sqb-chip${c.status === 'reading' ? ' is-reading' : ''}`}>
-              <i className={`bi ${KIND_ICON[c.kind]}`} aria-hidden="true" />
-              <span className="sqb-chip-label">{c.label}</span>
-              {c.status === 'reading' ? <span className="sqb-chip-note">Reading</span> : null}
-              <button
-                type="button"
-                className="sqb-chip-x"
-                aria-label={`Remove ${c.label}`}
-                onClick={() => setContext((list) => list.filter((x) => x.key !== c.key))}
-              >
-                <i className="bi bi-x" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
+      {contextEnabled ? (
+        <SonarComposerRows
+          analyses={composer.items}
+          context={context}
+          api={composer}
+          autoCount={composer.autoCount}
+          dismissedCount={composer.dismissedCount}
+          deep={deep}
+          running={running}
+          onRemoveContext={(key) => setContext((list) => list.filter((x) => x.key !== key))}
+          onContextRelation={(key, relation) =>
+            setContext((list) => list.map((x) => (x.key === key ? { ...x, relation } : x)))
+          }
+        />
       ) : null}
 
       <label htmlFor={id} className="sqb-label">
@@ -332,11 +394,13 @@ export function SonarAnswerQueryBar({
                 className={`sqb-pill sqb-build${menu ? ' is-open' : ''}${buildCount ? ' is-active' : ''}`}
                 aria-haspopup="dialog"
                 aria-expanded={menu}
+                aria-label={`Research Composer: add and configure research resources${buildCount ? `, ${buildCount} added` : ''}`}
+                title="Research Composer: add and configure research resources"
                 aria-controls={`${id}-build`}
                 onClick={() => setMenu((m) => !m)}
               >
                 <i className="bi bi-stack" aria-hidden="true" />
-                Build
+                Compose
                 {buildCount ? <span className="sqb-build-n">· {buildCount}</span> : null}
                 <i className="bi bi-chevron-down sqb-chev" aria-hidden="true" />
               </button>
@@ -351,6 +415,10 @@ export function SonarAnswerQueryBar({
                   guest={guest}
                   charts={chartItems}
                   models={models}
+                  analyses={composer.items}
+                  onAddAnalysis={composer.add}
+                  onRemoveAnalysis={composer.remove}
+                  question={current}
                 />
               ) : null}
             </div>
@@ -361,13 +429,15 @@ export function SonarAnswerQueryBar({
         <button
           type="submit"
           className="sqb-ping"
-          disabled={pending || reading}
-          aria-busy={pending || undefined}
-          aria-label={pending ? 'Pinging' : 'Ping'}
+          disabled={pending || reading || running}
+          aria-busy={pending || running || undefined}
+          aria-label={
+            pending || running ? 'Pinging' : deep.qualifies ? 'Ping as Deep research' : 'Ping'
+          }
           title="Ping"
         >
           <i
-            className={`bi ${pending ? 'bi-arrow-repeat sqb-spin' : 'bi-arrow-right'}`}
+            className={`bi ${pending || running ? 'bi-arrow-repeat sqb-spin' : 'bi-arrow-right'}`}
             aria-hidden="true"
           />
         </button>

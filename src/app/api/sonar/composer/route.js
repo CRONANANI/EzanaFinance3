@@ -1,0 +1,68 @@
+import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
+import { getAdminClient, requireUser } from '@/lib/supabase';
+import { cacheGet, cacheSet } from '@/lib/cache';
+import { resolveSubject, runComposition, compositionText } from '@/lib/sonar/composer/execute';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+/**
+ * POST /api/sonar/composer (Nov 22 2026): the Research Composer's server side.
+ *
+ *   { action: 'resolve', subject: 'BlackRock' }
+ *     200 { subject: { text, kind, id, name, eligible, period?, candidates? } }
+ *     Resolves a subject to a 13F filer, a member of Congress or a company with its
+ *     data-dependent limit. Cheap and public (guests compose too); cached an hour.
+ *
+ *   { action: 'run', attachments: [...] }
+ *     200 { results: [...], text }
+ *     Executes the valid analysis attachments with deterministic code (filed SEC figures, the
+ *     13F book, estimated member holdings, the Quant Lab backtest engine). Signed-in readers
+ *     only: a run reads price history and can take several seconds. The research run then
+ *     reads `text` as the reader's attached material.
+ *
+ * Attachments are re-validated here; the client's statuses are never trusted.
+ */
+export const POST = withApiGuard(
+  async (request) => {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
+    }
+    const admin = getAdminClient();
+    if (body?.action === 'resolve') {
+      const text = String(body.subject || '')
+        .trim()
+        .slice(0, 80);
+      if (text.length < 2) return NextResponse.json({ subject: null });
+      const key = `composer:subject:v1:${text.toLowerCase()}`;
+      const hit = await cacheGet(key).catch(() => null);
+      if (hit) return NextResponse.json({ subject: hit });
+      const subject = await resolveSubject(text, admin);
+      if (subject && subject.kind !== 'unresolved')
+        await cacheSet(key, subject, 3600).catch(() => {});
+      return NextResponse.json({ subject });
+    }
+    if (body?.action === 'run') {
+      /* Optional session on this public route: a run needs one. */
+      let user = null;
+      try {
+        ({ user } = await requireUser(request));
+      } catch {
+        user = null;
+      }
+      if (!user?.id) {
+        return NextResponse.json({ error: 'Sign in to run research analyses.' }, { status: 401 });
+      }
+      const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 6) : [];
+      const results = await runComposition(attachments, admin);
+      return NextResponse.json({ results, text: compositionText(results) });
+    }
+    return NextResponse.json({ error: 'Unknown action.' }, { status: 400 });
+  },
+  { requireAuth: false },
+);

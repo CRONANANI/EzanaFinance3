@@ -525,7 +525,7 @@ test('Build menu: four categories, real resources only, footer actions', () => {
     'Models',
     'Data packs',
     'Tools',
-    'Build your research',
+    'Research Composer',
     'Open saved library',
     'Create new query',
   ])

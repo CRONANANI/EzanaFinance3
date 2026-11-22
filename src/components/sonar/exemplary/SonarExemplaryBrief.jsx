@@ -69,6 +69,7 @@ export default function SonarExemplaryBrief({
   onFollowUp,
   onDeep = null,
   onResearch = null,
+  onComposerDeep = null,
 }) {
   const [followUp, setFollowUp] = useState('');
   const marketRef = useRef(null);
@@ -136,6 +137,7 @@ export default function SonarExemplaryBrief({
       question={brief.question}
       onPing={onPing}
       onResearch={onResearch}
+      onComposerDeep={onComposerDeep}
       followUps={brief.followUp.related}
       onAsk={ask}
       sources={sources}

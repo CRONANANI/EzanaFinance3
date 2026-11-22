@@ -63,6 +63,7 @@ export function SonarSkeleton({
   kind = null,
   subject = null,
   onDeep = null,
+  onComposerDeep = null,
   children,
 }) {
   const plan = useSonarPlan();
@@ -99,10 +100,17 @@ export function SonarSkeleton({
     anchorSources: present.includes('sources'),
   });
 
-  const submit = (q, ctx) => {
+  const submit = (q, ctx, meta) => {
     const text = String(q || '').trim();
     if (!text) return;
     const extra = ctx?.length ? contextText(ctx) : '';
+    if (meta?.deep && typeof onComposerDeep === 'function') {
+      onComposerDeep(
+        text,
+        extra ? { attachment: { name: 'Research Composer', text: extra } } : null,
+      );
+      return;
+    }
     if (extra && typeof onResearch === 'function')
       onResearch(text, { attachment: { name: 'Context added in Sonar', text: extra } });
     else onPing?.(text);

@@ -576,7 +576,8 @@ function CompanyFundCard({ dossier }) {
   const points = useLive ? quote.series.map((p) => p.c) : dossier.spark;
   const dates = useLive ? quote.series.map((p) => p.d) : dossier.sparkDates || null;
   const pe = typeof f.peTtm === 'number' ? f.peTtm * ratio : null;
-  const marketCap = quote?.marketCap ?? (typeof f.marketCap === 'number' ? f.marketCap * ratio : null);
+  const marketCap =
+    quote?.marketCap ?? (typeof f.marketCap === 'number' ? f.marketCap * ratio : null);
   const fourth = f.fourth
     ? /yield/i.test(f.fourth.label || '') && typeof f.fourth.value === 'number'
       ? { ...f.fourth, value: f.fourth.value / ratio }
@@ -869,6 +870,8 @@ export function SonarSection({
      the research engine at standard depth. A host without it never gets a
      standard result (the band does not ask for one). */
   onStandardResearch = null,
+  /* Nov 22: a Research Composer composition that qualifies for Deep research (host offer). */
+  onComposerDeep = null,
   /* Nov 16: the host can draw an exemplary brief (a hand-reviewed answer served for the
      exact question it answers). Called with (query, brief); the band shows nothing for it. */
   onExemplary = null,
@@ -3093,7 +3096,16 @@ export function SonarSection({
         userTookOverRef.current = true;
         setQueryValue(v);
       }}
-      onSubmit={(q, ctx) => {
+      onSubmit={(q, ctx, meta) => {
+        const extra =
+          Array.isArray(ctx) && ctx.length
+            ? { attachment: { name: 'Research Composer', text: contextText(ctx) } }
+            : null;
+        if (meta?.deep && typeof onComposerDeep === 'function') {
+          setQueryValue(q);
+          onComposerDeep(q, extra);
+          return;
+        }
         if (canCarryContext && Array.isArray(ctx) && ctx.length) {
           setQueryValue(q);
           onStandardResearch(q, {

@@ -815,6 +815,7 @@ export function SonarExperience({
     setDeepRun({
       query: deepOffer.query,
       estimate: deepEstimate(deepOffer.query, deepOffer.deep?.estimate || null),
+      extra: deepOffer.extra || null,
     });
     setDeepOffer(null);
     try {
@@ -864,6 +865,24 @@ export function SonarExperience({
       },
     });
   }
+  /* Nov 22: a Research Composer composition with three or more valid resources qualifies
+     for Deep research. It goes through the same offer (entitlement, quota and consent are
+     unchanged); the composition's results ride along as the run's attached material, and
+     declining runs standard research with them instead of dropping them. */
+  function composerDeep(query, extra) {
+    setDeepOffer({
+      query,
+      extra: extra || null,
+      deep: {
+        reasons: ['Three or more research resources are attached to this question.'],
+        domains: [],
+        format: 'report',
+        estimate: { label: 'about 1 to 4 minutes' },
+        guestNeedsAccount: !signedIn,
+        meta: null,
+      },
+    });
+  }
   /* Today's deep runs are used: run standard on the same question. */
   function standardInstead(query) {
     startStandard(query);
@@ -879,7 +898,11 @@ export function SonarExperience({
               onPing={pingFromRun}
               query={deepRun.query}
               estimate={deepRun.estimate}
-              extra={deepRun.supersedes ? { supersedes: { query: deepRun.query } } : null}
+              extra={
+                deepRun.supersedes
+                  ? { supersedes: { query: deepRun.query } }
+                  : deepRun.extra || null
+              }
               focusOnMount={Boolean(deepRun.fromCard)}
               onQuick={() => quickInstead(deepRun.query)}
               onStandard={() => standardInstead(deepRun.query)}
@@ -914,6 +937,7 @@ export function SonarExperience({
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
                 onResearch={(q, extra) => startStandard(q, { extra })}
+                onComposerDeep={composerDeep}
                 onDeep={() => chooseDeep(exemplary.brief.question, { signup: !signedIn })}
               />
             </div>
@@ -927,6 +951,7 @@ export function SonarExperience({
                 onPing={pingFromRun}
                 onFollowUp={askFollowUp}
                 onResearch={(q, extra) => startStandard(q, { extra })}
+                onComposerDeep={composerDeep}
                 onRestore={restoreEntry}
                 sessionId={adaptive.sessionId || null}
                 onDeep={() =>
@@ -964,7 +989,11 @@ export function SonarExperience({
             deep={deepOffer.deep}
             estimate={estimateFor(deepOffer.query)}
             onDeep={acceptDeep}
-            onQuick={() => quickInstead(deepOffer.query)}
+            onQuick={() =>
+              deepOffer.extra
+                ? (setDeepOffer(null), startStandard(deepOffer.query, { extra: deepOffer.extra }))
+                : quickInstead(deepOffer.query)
+            }
             onClose={closeDeep}
           />
         ) : null}
@@ -999,6 +1028,7 @@ export function SonarExperience({
                 setDeepRun({ query, estimate: deep?.estimate || null });
               } else setDeepOffer({ query, deep });
             }}
+            onComposerDeep={composerDeep}
             onStandardResearch={(query, { classification, goDeeper: hint, extra } = {}) =>
               startStandard(query, { classification, goDeeper: hint || null, extra: extra || null })
             }
