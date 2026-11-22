@@ -39,6 +39,7 @@ import {
   startHereMilestones,
   stillTrending,
   trendingFallback,
+  withSources,
 } from '@/lib/help-center/support-model';
 import CategoryRail from './CategoryRail';
 import StartHerePath from './StartHerePath';
@@ -334,12 +335,14 @@ export default function SupportCenter({ audience = 'user', initialQuestion = '' 
   }, [phase, question]);
 
   /* ── derived shapes for the answered state ── */
+  const sources = useMemo(() => result?.sources || [], [result]);
+  /* Nov 22: the articles about the question (above the relevance floor) and the answer's
+     own sources; the rail counts only these categories. */
   const matches = useMemo(
-    () => (question ? matchesFor(question, audience) : []),
-    [question, audience],
+    () => (question ? withSources(matchesFor(question, audience), sources, audience) : []),
+    [question, audience, sources],
   );
   const counts = useMemo(() => matchesByCategory(matches), [matches]);
-  const sources = useMemo(() => result?.sources || [], [result]);
   const related = useMemo(
     () => relatedArticles(sources, matches, audience),
     [sources, matches, audience],

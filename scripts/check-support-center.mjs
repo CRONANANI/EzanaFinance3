@@ -11,6 +11,7 @@ import {
   startHere,
   matchesFor,
   matchesByCategory,
+  withSources,
   relatedArticles,
   keepReading,
   stillTrending,
@@ -136,4 +137,23 @@ test('trendingFallback: six real articles', () => {
   const t = trendingFallback('user');
   assert.equal(t.length, 6);
   assert.ok(t.every((x) => x.title && x.url));
+});
+
+test('matchesFor: a long account question matches only the categories it is about', () => {
+  const m = matchesFor(
+    'After cancelling my plan, can i archive it too and all its data so you guys dont store it anymore?',
+    'user',
+  );
+  const cats = Object.keys(matchesByCategory(m)).sort();
+  assert.deepEqual(cats, ['Account & Security', 'Billing & Subscriptions']);
+  assert.equal(m[0].slug, 'canceling-subscription');
+  assert.deepEqual(Object.keys(matchesByCategory(matchesFor('cancel my plan', 'user'))), [
+    'Billing & Subscriptions',
+  ]);
+});
+
+test('withSources: the answer’s own sources always count in the rail', () => {
+  const m = withSources([], [{ slug: 'exporting-your-data' }], 'user');
+  assert.equal(m.length, 1);
+  assert.ok(matchesByCategory(m)['Account & Security'] >= 1);
 });

@@ -283,17 +283,45 @@ export function startHere(audience) {
  * the article's category title so the rail can count it. `n` is generous:
  * the rail needs every matching category, not just the top few.
  */
-export function matchesFor(query, audience, n = 40) {
+export function matchesFor(query, audience, n = 40, { relative = MATCH_RELATIVE } = {}) {
   const q = String(query || '').trim();
   if (q.length < 3) return [];
-  return searchHelp(q, { audience, limit: n, prefix: false }).map((m) => ({
-    slug: m.slug,
-    title: m.title,
-    category: m.category,
-    categoryId: m.categoryId,
-    url: m.url,
-    score: m.score,
-  }));
+  const hits = searchHelp(q, { audience, limit: n, prefix: false });
+  /* Nov 22: only articles that are about the question count as matches. A hit has to
+     score at least `relative` of the best hit, so a long question no longer lights up
+     every category through one common word ("data", "account"). */
+  const floor = (hits[0]?.score || 0) * relative;
+  return hits
+    .filter((m) => m.score >= floor)
+    .map((m) => ({
+      slug: m.slug,
+      title: m.title,
+      category: m.category,
+      categoryId: m.categoryId,
+      url: m.url,
+      score: m.score,
+    }));
+}
+
+/** A match must score this share of the best match (matchesFor). */
+export const MATCH_RELATIVE = 0.55;
+
+/**
+ * The matches plus the articles the answer was written from: whatever the lexical index
+ * thinks, the answer's own sources are relevant, so their categories always count.
+ */
+export function withSources(matches, sources, audience) {
+  const seen = new Set((matches || []).map((m) => m.slug));
+  const top = Math.max(0, ...(matches || []).map((m) => m.score || 0));
+  const extra = [];
+  for (const s of sources || []) {
+    if (!s?.slug || seen.has(s.slug)) continue;
+    const meta = articleMeta(audience, s.slug);
+    if (!meta?.category) continue;
+    seen.add(s.slug);
+    extra.push({ ...meta, score: top, isSource: true });
+  }
+  return [...(matches || []), ...extra];
 }
 
 /** { [categoryTitle]: distinct matched articles } for the rail and Keep reading. */
