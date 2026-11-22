@@ -43,37 +43,61 @@
   box-shadow: 0 0 0 3px var(--emerald-glow);
 }
 /* The wedges wreathe the logo (Nov 19, 2026 evening): a ring centred on the
-   mark, open at the top. Part of the same button: grey at rest, emerald on
-   hover, focus or while the dial is open. */
+   mark, open at the top.
+   Nov 22, 2026: a little further from the mark, glossy, and pulsing on and off: gold for
+   Advanced and above, emerald for Free and Starter. Hovering the logo, focusing it or
+   opening the dial holds them lit. The gloss is the gradient in the SVG; its three stops
+   take their colours here. */
 .nd-wedges {
   position: absolute;
   top: 50%;
   left: 50%;
   display: block;
-  width: 60px;
-  height: 60px;
+  width: 66px;
+  height: 66px;
   transform: translate(-50%, -50%);
-  fill: color-mix(in srgb, var(--text-muted) 70%, transparent);
-  transition: fill 0.12s ease;
   pointer-events: none;
+  overflow: visible;
 }
-.nd-trigger:hover .nd-wedges,
-.nd-trigger:focus-visible .nd-wedges,
-.nd-trigger.is-open .nd-wedges {
-  fill: var(--emerald);
+.nd-wedges--emerald {
+  --nd-gloss-hi: color-mix(in srgb, var(--emerald) 35%, white);
+  --nd-gloss-mid: var(--emerald);
+  --nd-gloss-lo: color-mix(in srgb, var(--emerald) 70%, black);
+  --nd-glow: color-mix(in srgb, var(--emerald) 55%, transparent);
 }
-html :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav) .nd-wedges {
-  fill: color-mix(in srgb, var(--nav-sonar-ink) 70%, transparent);
+.nd-wedges--gold {
+  --nd-gloss-hi: color-mix(in srgb, var(--gold) 40%, white);
+  --nd-gloss-mid: var(--gold);
+  --nd-gloss-lo: color-mix(in srgb, var(--gold) 65%, black);
+  --nd-glow: color-mix(in srgb, var(--gold) 55%, transparent);
 }
-html
-  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
-  .nd-trigger:hover
-  .nd-wedges,
-html
-  :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav)
-  .nd-trigger.is-open
-  .nd-wedges {
-  fill: var(--brand-band-mint);
+.nd-gloss-hi {
+  stop-color: var(--nd-gloss-hi);
+}
+.nd-gloss-mid {
+  stop-color: var(--nd-gloss-mid);
+}
+.nd-gloss-lo {
+  stop-color: var(--nd-gloss-lo);
+}
+.nd-wedges path {
+  filter: drop-shadow(0 0 1.5px var(--nd-glow));
+  animation: ndWedgePulse 2.4s ease-in-out infinite;
+}
+@keyframes ndWedgePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.18;
+  }
+}
+.nd-trigger:hover .nd-wedges path,
+.nd-trigger:focus-visible .nd-wedges path,
+.nd-trigger.is-open .nd-wedges path {
+  animation: none;
+  opacity: 1;
 }
 /* The centre links are gone, so the logo keeps 46px (with the wedges under it) at every desktop
    width (globals.css shrank it to 30px between 769px and 1279px to make room
@@ -90,8 +114,8 @@ html
     max-height: 32px !important;
   }
   #mainNav.main-nav .nd-trigger .nd-wedges {
-    width: 52px;
-    height: 52px;
+    width: 57px;
+    height: 57px;
   }
   #mainNav.main-nav .nd-anchor {
     position: absolute;
@@ -357,6 +381,11 @@ body.light-mode .nd-layer:not(.nd-layer--sonar) .nd-caption {
   .nd-trigger .nav-logo-img,
   .nd-wedges {
     transition: none;
+  }
+  /* No flashing: the wedges stay lit. */
+  .nd-wedges path {
+    animation: none;
+    opacity: 1;
   }
   .nd-slice.is-pending .nd-wedge {
     animation: none;

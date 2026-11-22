@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { isBetaLockedRoute } from '@/lib/beta-locked-routes';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 import './nav-dial.css';
 
 /* Signed-in navigation dial (Nov 2026).
@@ -94,12 +95,35 @@ function currentIndex(list, pathname) {
    nothing sits directly above the mark (a 64-degree gap centred on 270).
    The ring is drawn centred on the logo (see .nd-wedges). */
 const WREATH_ANGLES = [90, 56, 124, 22, 158, -12, 192, -46, 226];
-const WREATH_R_OUT = 29;
-const WREATH_R_IN = 24;
+/* Nov 22, 2026: the wreath sits a little further out from the mark (inner edge 24 to 27,
+   outer 29 to 32), so the wedges no longer crowd the logo. */
+const WREATH_R_OUT = 32;
+const WREATH_R_IN = 27;
 
-function TriggerWedges() {
+/* Nov 22, 2026: glossy wedges that pulse on and off, gold for Advanced and above and
+   emerald for Free and Starter (and while the plan is still loading). The gloss is a
+   vertical gradient: a bright highlight at the top, the brand colour, a deep shade at the
+   bottom. Hovering the logo holds them lit (nav-dial.css). */
+/* TIER.advanced in config/plan-features (Advanced, Family and Professional are 2 and up);
+   the number keeps that module out of the nav bundle. */
+const ADVANCED_TIER = 2;
+
+function TriggerWedges({ tone = 'emerald' }) {
+  const id = `nd-gloss-${tone}`;
   return (
-    <svg className="nd-wedges" viewBox="-32 -32 64 64" aria-hidden="true" focusable="false">
+    <svg
+      className={`nd-wedges nd-wedges--${tone}`}
+      viewBox="-35 -35 70 70"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" className="nd-gloss-hi" />
+          <stop offset="45%" className="nd-gloss-mid" />
+          <stop offset="100%" className="nd-gloss-lo" />
+        </linearGradient>
+      </defs>
       {WREATH_ANGLES.map((deg) => {
         const half = 12;
         const o1 = polar(WREATH_R_OUT, deg - half);
@@ -109,6 +133,7 @@ function TriggerWedges() {
         return (
           <path
             key={deg}
+            fill={`url(#${id})`}
             d={`M ${o1.x} ${o1.y} A ${WREATH_R_OUT} ${WREATH_R_OUT} 0 0 1 ${o2.x} ${o2.y} L ${i2.x} ${i2.y} A ${WREATH_R_IN} ${WREATH_R_IN} 0 0 0 ${i1.x} ${i1.y} Z`}
           />
         );
@@ -135,6 +160,7 @@ export function NavDial({
   const [activeIndex, setActiveIndex] = useState(null);
   const [place, setPlace] = useState(null);
   const triggerRef = useRef(null);
+  const plan = usePlanAccess();
   const popRef = useRef(null);
   const itemRefs = useRef([]);
   /* Which item takes focus once a ring has rendered. */
@@ -490,7 +516,7 @@ export function NavDial({
         }}
       >
         <EzanaNavLogo />
-        <TriggerWedges />
+        <TriggerWedges tone={(plan?.tier ?? 0) >= ADVANCED_TIER ? 'gold' : 'emerald'} />
       </button>
       {typeof document !== 'undefined'
         ? createPortal(<AnimatePresence>{dial}</AnimatePresence>, document.body)
