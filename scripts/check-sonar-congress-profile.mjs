@@ -13,7 +13,7 @@ const L = await import('@/lib/sonar/exemplary/layouts');
 const AC = await import('@/lib/sonar/answer-charts');
 const W = await import('@/lib/sonar/workspace');
 const LP = await import('@/lib/sonar/landing-politician');
-const PR = await import('@/lib/sonar/politician-returns');
+const REAL = await import('@/lib/politicians/realized-returns');
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 const months = Array.from({ length: 36 }, (_, i) => {
@@ -254,50 +254,134 @@ test('open book: bonds and Treasuries join the stocks, and the lean explains the
   );
 });
 
-test('best returns: price from each disclosed purchase to the latest close, best first', () => {
-  assert.equal(PR.windowStart(12, new Date(Date.UTC(2026, 10, 21))), '2025-11-21');
-  assert.equal(PR.windowStart(0), null);
-  assert.equal(PR.normTicker('goog'), 'GOOGL');
-  assert.equal(PR.normTicker('Some Bond 5%'), null);
-  const groups = PR.purchasesByTicker(
-    [
-      { type: 'purchase', ticker: 'NVDA', transaction_date: '2026-01-05', amount_mid: 8000 },
-      { type: 'purchase', ticker: 'NVDA', transaction_date: '2026-03-02', amount_mid: 24000 },
-      { type: 'purchase', ticker: 'INTC', transaction_date: '2026-02-02', amount_mid: 100000 },
-      { type: 'sale', ticker: 'AAPL', transaction_date: '2026-02-02', amount_mid: 100000 },
-      { type: 'purchase', ticker: 'OLD', transaction_date: '2024-01-01', amount_mid: 1e6 },
-    ],
-    '2025-11-21',
-  );
-  assert.deepEqual(
-    groups.map((g) => g.ticker),
-    ['INTC', 'NVDA'],
-  );
-  const rows = PR.rankReturns(groups, {
-    /* Saturday Jan 3 has no bar: the first close on or after it is Monday. */
+test('realized returns: purchase to the next sale of the same asset, close to close', () => {
+  const RR = REAL;
+  assert.equal(RR.windowStartDays(365, new Date(Date.UTC(2026, 10, 21))), '2025-11-21');
+  assert.equal(RR.windowStartDays(36500), null);
+  assert.equal(RR.normTicker('goog'), 'GOOGL');
+  const trades = [
+    {
+      id: 1,
+      bioguide_id: 'A000001',
+      type: 'purchase',
+      ticker: 'NVDA',
+      transaction_date: '2026-01-05',
+      amount_mid: 8000,
+    },
+    {
+      id: 2,
+      bioguide_id: 'A000001',
+      type: 'purchase',
+      ticker: 'NVDA',
+      transaction_date: '2026-03-02',
+      amount_mid: 24000,
+    },
+    {
+      id: 3,
+      bioguide_id: 'A000001',
+      type: 'sale_partial',
+      ticker: 'NVDA',
+      transaction_date: '2026-06-01',
+      amount_mid: 15000,
+    },
+    {
+      id: 4,
+      bioguide_id: 'A000001',
+      type: 'purchase',
+      ticker: 'INTC',
+      transaction_date: '2026-02-02',
+      amount_mid: 100000,
+    },
+    {
+      id: 5,
+      bioguide_id: 'A000001',
+      type: 'sale',
+      ticker: 'INTC',
+      transaction_date: '2026-04-01',
+      amount_mid: 100000,
+    },
+    /* Still held: no later sale. */
+    {
+      id: 6,
+      bioguide_id: 'A000001',
+      type: 'purchase',
+      ticker: 'AAPL',
+      transaction_date: '2026-02-02',
+      amount_mid: 50000,
+    },
+    /* Bought before the window. */
+    {
+      id: 7,
+      bioguide_id: 'A000001',
+      type: 'purchase',
+      ticker: 'INTC',
+      transaction_date: '2024-01-02',
+      amount_mid: 1e6,
+    },
+    {
+      id: 8,
+      bioguide_id: 'B000002',
+      type: 'purchase',
+      ticker: 'NVDA',
+      transaction_date: '2026-01-05',
+      amount_mid: 1001,
+    },
+    {
+      id: 9,
+      bioguide_id: 'B000002',
+      type: 'sale',
+      ticker: 'NVDA',
+      transaction_date: '2026-03-02',
+      amount_mid: 1001,
+    },
+  ];
+  const pairs = RR.realizedPairs(trades, { from: '2025-11-21' });
+  assert.deepEqual(pairs.map((p) => [p.id, p.ticker, p.sellDate]).sort(), [
+    [1, 'NVDA', '2026-06-01'],
+    [2, 'NVDA', '2026-06-01'],
+    [4, 'INTC', '2026-04-01'],
+    [8, 'NVDA', '2026-03-02'],
+  ]);
+  const closes = {
     NVDA: [
       { date: '2026-01-05', close: 100 },
       { date: '2026-03-02', close: 120 },
-      { date: '2026-11-20', close: 150 },
+      { date: '2026-06-01', close: 150 },
     ],
     INTC: [
       { date: '2026-02-02', close: 20 },
-      { date: '2026-11-20', close: 18 },
+      { date: '2026-04-01', close: 18 },
+      { date: '2026-11-20', close: 40 },
     ],
-  });
+  };
+  const rows = RR.pairReturns(pairs, closes);
+  const best = RR.assetRealized(rows.filter((r) => r.bioguide === 'A000001'));
   assert.deepEqual(
-    rows.map((r) => r.ticker),
+    best.map((r) => r.ticker),
     ['NVDA', 'INTC'],
   );
-  /* NVDA entry weighted by midpoints: (8000*100 + 24000*120) / 32000 = 115. */
-  assert.ok(Math.abs(rows[0].entry - 115) < 1e-9);
-  assert.ok(Math.abs(rows[0].pct - (150 / 115 - 1) * 100) < 1e-9);
-  assert.equal(rows[0].since, '2026-01-05');
-  assert.ok(Math.abs(rows[1].pct - -10) < 1e-9);
-  assert.deepEqual(PR.rankReturns(groups, {}), []);
+  /* NVDA: (8000 x +50% + 24000 x +25%) / 32000 = +31.25%; INTC realized at the sale: -10%,
+     not +100% to today. */
+  assert.ok(Math.abs(best[0].pct - 31.25) < 1e-9);
+  assert.ok(Math.abs(best[1].pct - -10) < 1e-9);
+  assert.equal(best[0].lastSale, '2026-06-01');
+  const per = RR.memberRealized(rows);
+  assert.equal(per.A000001.trades, 3);
+  assert.equal(per.A000001.wins, 2);
+  assert.ok(Math.abs(per.A000001.pct - (8000 * 50 + 24000 * 25 + 100000 * -10) / 132000) < 1e-9);
+  assert.ok(Math.abs(per.B000002.pct - 20) < 1e-9);
+  assert.deepEqual(RR.tickerStarts(pairs), { NVDA: '2026-01-05', INTC: '2026-02-02' });
   const rep = read('src/components/sonar/congress/CongressProfileReport.jsx');
-  assert.match(rep, /Best returns, \{periodName\}/);
+  assert.match(rep, /Best realized returns, \{periodName\}/);
   assert.match(rep, /onClick=\{\(\) => onTicker\(r\.ticker\)\}/);
+  const trk = read('src/components/datasets/politician-tracker/PoliticianTracker.jsx');
+  assert.match(trk, /REALIZED RETURN/);
+  assert.match(trk, /\/api\/politicians\/realized-returns\?period=/);
+  const model = read('src/lib/politicians/tracker-model.js');
+  assert.match(model, /'realized'/);
+  const sql = read('supabase/migrations/20261127090000_politician_realized_returns.sql');
+  assert.match(sql, /politician_realized_returns/);
+  assert.match(sql, /enable row level security/);
 });
 
 test('exemplary layout: a member of Congress gets the approved rows, in order', () => {

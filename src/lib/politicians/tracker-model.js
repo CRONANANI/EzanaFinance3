@@ -165,7 +165,7 @@ const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || '')
 const desc = (k) => (a, b) => (b[k] || 0) - (a[k] || 0);
 const descStr = (k) => (a, b) => String(b[k] || '').localeCompare(String(a[k] || ''));
 
-export const SORT_KEYS = ['volume', 'ratio', 'trades', 'latest'];
+export const SORT_KEYS = ['volume', 'realized', 'ratio', 'trades', 'latest'];
 export const SORT_DIRS = ['desc', 'asc'];
 
 /**
@@ -186,6 +186,7 @@ export function buySellRatio(m) {
  * Rank members for the active sort and direction ('desc' | 'asc').
  *
  *   volume  disclosed volume (sum of range midpoints)
+ *   realized  realized return (purchases in the period since sold; realizedPct on each member)
  *   ratio   buy-to-sell ratio. Descending: no-sell buyers first, then the
  *           highest finite ratio; ascending: lowest first, no-sell buyers
  *           after the finite ratios. Members with neither buys nor sells
@@ -224,15 +225,26 @@ export function rankMembers(members, sortKey = 'volume', dir = 'desc') {
     if (x === y) return 0;
     return asc ? (x < y ? -1 : 1) : x > y ? -1 : 1;
   };
+  /* Nov 21: realized return; members with no realized trade in the period sort last
+     either way. */
+  const realized = (a, b) => {
+    const x = a.realizedPct;
+    const y = b.realizedPct;
+    if ((x == null) !== (y == null)) return x == null ? 1 : -1;
+    if (x == null || x === y) return 0;
+    return asc ? x - y : y - x;
+  };
   const volDesc = (a, b) => (b.volume || 0) - (a.volume || 0);
   const order =
-    key === 'trades'
-      ? [traded, num('count'), volDesc, byName]
-      : key === 'latest'
-        ? [traded, date, volDesc, byName]
-        : key === 'ratio'
-          ? [traded, ratio, volDesc, byName]
-          : [traded, num('volume'), desc('count'), byName];
+    key === 'realized'
+      ? [realized, traded, volDesc, byName]
+      : key === 'trades'
+        ? [traded, num('count'), volDesc, byName]
+        : key === 'latest'
+          ? [traded, date, volDesc, byName]
+          : key === 'ratio'
+            ? [traded, ratio, volDesc, byName]
+            : [traded, num('volume'), desc('count'), byName];
   const sorted = [...members].sort((a, b) => {
     for (const cmp of order) {
       const r = cmp(a, b);

@@ -945,6 +945,19 @@
   border-radius: var(--radius-sm);
 }
 /* Buy : sell cell: the ratio over its two counts. */
+/* Nov 21: realized return, signed; gains in emerald, losses in the negative colour. */
+.ptk-realized {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.ptk-realized--up {
+  color: var(--emerald-text);
+}
+.ptk-realized--down {
+  color: var(--negative);
+}
+
 .ptk-ratio {
   display: inline-flex;
   flex-direction: column;
@@ -1418,6 +1431,7 @@
     --ptk-row-h: 53px;
   }
   .ptk-col-chamber,
+  .ptk-col-realized,
   .ptk-col-last,
   .ptk-col-volbar {
     display: none;

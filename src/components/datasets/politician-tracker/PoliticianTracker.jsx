@@ -156,6 +156,13 @@ const SORTS = [
     asc: 'Low to high',
   },
   {
+    value: 'realized',
+    label: 'Realized return',
+    col: 'REALIZED RETURN',
+    desc: 'Best first',
+    asc: 'Worst first',
+  },
+  {
     value: 'ratio',
     label: 'Buy-to-sell ratio',
     col: 'BUY : SELL',
@@ -265,6 +272,22 @@ function ratioText(r) {
 }
 
 /** Buy-to-sell cell: the ratio, then the two counts it is made of. */
+/* Nov 21: the realized return for the period, signed, with the trade count in a tooltip. */
+function RealizedCell({ m }) {
+  if (m.realizedPct == null)
+    return <span title="No purchase in this period has been sold yet">{NONE}</span>;
+  const pct = m.realizedPct;
+  return (
+    <span
+      className={`ptk-realized${pct < 0 ? ' ptk-realized--down' : pct > 0 ? ' ptk-realized--up' : ''}`}
+      title={`${m.realizedTrades} realized trade${m.realizedTrades === 1 ? '' : 's'}, ${m.realizedWins} gained`}
+    >
+      {pct > 0 ? '+' : pct < 0 ? '-' : ''}
+      {Math.abs(pct).toFixed(1)}%
+    </span>
+  );
+}
+
 function RatioCell({ m }) {
   const r = buySellRatio(m);
   const b = m.buys || 0;
@@ -513,9 +536,35 @@ export default function PoliticianTracker({
         : filterMembers(tickerMembers || members, { chamber, party, query }),
     [server, members, tickerMembers, ticker, chamber, party, query],
   );
+  /* Nov 21: the realized return per member for the period (purchases made in the period
+     that the member has since sold, close to close), built hourly on the server. */
+  const [realized, setRealized] = useState({ period: null, members: {} });
+  useEffect(() => {
+    let live = true;
+    fetch(`/api/politicians/realized-returns?period=${encodeURIComponent(period)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => live && setRealized({ period, members: d?.members || {} }))
+      .catch(() => live && setRealized({ period, members: {} }));
+    return () => {
+      live = false;
+    };
+  }, [period]);
+  const withRealized = useMemo(
+    () =>
+      filtered.map((m) => {
+        const r = realized.period === period ? realized.members[m.bioguideId] : null;
+        return {
+          ...m,
+          realizedPct: r && r.pct != null ? r.pct : null,
+          realizedTrades: r ? r.trades : 0,
+          realizedWins: r ? r.wins : 0,
+        };
+      }),
+    [filtered, realized, period],
+  );
   /* Rank over the WHOLE filtered set for the chosen key and direction, so
      rank numbers and order never depend on how many rows are mounted. */
-  const ranked = useMemo(() => rankMembers(filtered, sort, dir), [filtered, sort, dir]);
+  const ranked = useMemo(() => rankMembers(withRealized, sort, dir), [withRealized, sort, dir]);
   const traders = useMemo(() => ranked.filter((m) => (m.count || 0) > 0), [ranked]);
   const firstQuiet = ranked.findIndex((m) => !(m.count > 0));
 
@@ -1015,6 +1064,15 @@ export default function PoliticianTracker({
                           DISCLOSED VOLUME
                         </SortTh>
                         <SortTh
+                          k="realized"
+                          sort={sort}
+                          dir={dir}
+                          onSort={sortBy}
+                          className="ptk-th--c ptk-col-realized"
+                        >
+                          REALIZED RETURN
+                        </SortTh>
+                        <SortTh
                           k="ratio"
                           sort={sort}
                           dir={dir}
@@ -1048,7 +1106,7 @@ export default function PoliticianTracker({
                       {!rankingReady
                         ? Array.from({ length: LIST_SKELETON }, (_, i) => (
                             <tr key={i} className="ptk-row ptk-row--skel" aria-hidden="true">
-                              <td colSpan={8}>
+                              <td colSpan={9}>
                                 <Skel className="ptk-skel--line ptk-skel--row" />
                               </td>
                             </tr>
@@ -1062,7 +1120,7 @@ export default function PoliticianTracker({
                               <Fragment key={m.key}>
                                 {i === firstQuiet && i > 0 ? (
                                   <tr className="ptk-row-sep" aria-hidden="true">
-                                    <td colSpan={8} className="dsc-mn">
+                                    <td colSpan={9} className="dsc-mn">
                                       NO DISCLOSED TRADES, {pMeta.heading} · {total - firstQuiet}{' '}
                                       MEMBERS
                                     </td>
@@ -1124,6 +1182,9 @@ export default function PoliticianTracker({
                                       ) : null}
                                     </span>
                                   </td>
+                                  <td className="dsc-mn ptk-td--c ptk-col-realized">
+                                    <RealizedCell m={m} />
+                                  </td>
                                   <td className="ptk-td--c">
                                     {quiet ? (
                                       <span className="dsc-mn">{NONE}</span>
@@ -1149,7 +1210,7 @@ export default function PoliticianTracker({
                           })}
                       {rankingReady && moreRows ? (
                         <tr ref={sentinelRef} className="ptk-row-more">
-                          <td colSpan={8}>
+                          <td colSpan={9}>
                             <button
                               type="button"
                               className="ptk-more-btn dsc-mn"
@@ -1168,7 +1229,10 @@ export default function PoliticianTracker({
                     <i className="bi bi-info-circle" aria-hidden="true" /> Volume is the sum of the
                     midpoints of each trade&apos;s disclosed range, not exact amounts. Buy : sell is
                     buy trades over sell trades in the period; exchanges count in neither. Last
-                    trade is the trade date, not the filing date.
+                    trade is the trade date, not the filing date. Realized return covers purchases
+                    made in the period that the member has since sold: the close on the sale date
+                    against the close on the purchase date, weighted by disclosed range midpoints,
+                    price only. Positions still held are not included.
                   </p>
                   <span className="dsc-mn ptk-list-count">
                     {!rankingReady

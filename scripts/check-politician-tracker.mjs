@@ -329,3 +329,20 @@ test('mostHeldTickers: share classes of one company are one holding', async () =
   assert.equal(out[0].holders, 2);
   assert.equal(out[0].company, 'Alphabet Inc. - Class A Common Stock');
 });
+
+test('rankMembers: realized return sorts best first, members without one last either way', () => {
+  const ms = [
+    { key: 'a', name: 'A', count: 3, volume: 10, realizedPct: 5 },
+    { key: 'b', name: 'B', count: 3, volume: 99, realizedPct: null },
+    { key: 'c', name: 'C', count: 1, volume: 1, realizedPct: 22.5 },
+    { key: 'd', name: 'D', count: 2, volume: 5, realizedPct: -8 },
+  ];
+  assert.deepEqual(
+    rankMembers(ms, 'realized', 'desc').map((m) => m.key),
+    ['c', 'a', 'd', 'b'],
+  );
+  assert.deepEqual(
+    rankMembers(ms, 'realized', 'asc').map((m) => m.key),
+    ['d', 'a', 'c', 'b'],
+  );
+});

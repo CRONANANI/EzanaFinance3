@@ -39,6 +39,10 @@
       "schedule": "47 7 * * 1"
     },
     {
+      "path": "/api/cron/politician-realized-returns",
+      "schedule": "19 * * * *"
+    },
+    {
       "path": "/api/cron/hard-delete-accounts",
       "schedule": "8 3 * * *"
     },

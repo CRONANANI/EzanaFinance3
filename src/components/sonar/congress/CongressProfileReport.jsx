@@ -336,9 +336,10 @@ function ValueChart({ series, months, label, onHover = null }) {
   );
 }
 
-/* Nov 21: the listed assets with the best returns over the selected period: price from each
-   disclosed purchase (weighted by range midpoints) to the latest close. A ticker opens a new
-   Sonar ping on it. */
+/* Nov 21: the listed assets with the best REALIZED returns over the selected period: each
+   disclosed purchase in the period matched to the member's next disclosed sale of the same
+   asset, close to close (the Politician Tracker's "Realized return"). Positions still held
+   have no realized return. A ticker opens a new Sonar ping on it. */
 function BestReturns({ bioguide, months, periodName, onTicker }) {
   const [state, setState] = useState({ status: 'loading', rows: [] });
   useEffect(() => {
@@ -364,7 +365,7 @@ function BestReturns({ bioguide, months, periodName, onTicker }) {
   }, [bioguide, months]);
   return (
     <div className="cpr-best" aria-live="polite">
-      <p className="cpr-best-head">Best returns, {periodName}</p>
+      <p className="cpr-best-head">Best realized returns, {periodName}</p>
       {state.status === 'loading' ? (
         <ul className="cpr-best-list" aria-busy="true">
           {[0, 1, 2, 3].map((i) => (
@@ -387,8 +388,12 @@ function BestReturns({ bioguide, months, periodName, onTicker }) {
               ) : (
                 <span className="cpr-best-tk">{r.ticker}</span>
               )}
-              <span className="cpr-best-since">
-                {r.buys} buy{r.buys === 1 ? '' : 's'} since {monthLabel(r.since)}
+              <span
+                className="cpr-best-since"
+                title={`Bought from ${r.since}, last sold ${r.lastSale}`}
+              >
+                {r.trades} closed trade{r.trades === 1 ? '' : 's'}, {monthLabel(r.since)} to{' '}
+                {monthLabel(r.lastSale)}
               </span>
               <span className={`cpr-best-pct${r.pct < 0 ? ' is-down' : ''}`}>
                 {r.pct >= 0 ? '+' : '-'}
@@ -401,12 +406,12 @@ function BestReturns({ bioguide, months, periodName, onTicker }) {
         <p className="cpr-best-empty">
           {state.status === 'error'
             ? 'Returns could not be loaded right now.'
-            : 'No listed purchases with prices in this period.'}
+            : 'No purchases in this period have been sold yet.'}
         </p>
       )}
       <p className="cpr-best-note">
-        Price only, from each disclosed purchase to the latest close. Bonds and other assets without
-        a ticker have no price.
+        Realized: each purchase to the next disclosed sale of the same asset, close to close, price
+        only. Positions still held, bonds and other assets without a ticker are not included.
       </p>
     </div>
   );
