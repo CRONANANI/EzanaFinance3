@@ -13,6 +13,7 @@ const L = await import('@/lib/sonar/exemplary/layouts');
 const AC = await import('@/lib/sonar/answer-charts');
 const W = await import('@/lib/sonar/workspace');
 const LP = await import('@/lib/sonar/landing-politician');
+const PR = await import('@/lib/sonar/politician-returns');
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 const months = Array.from({ length: 36 }, (_, i) => {
@@ -253,6 +254,52 @@ test('open book: bonds and Treasuries join the stocks, and the lean explains the
   );
 });
 
+test('best returns: price from each disclosed purchase to the latest close, best first', () => {
+  assert.equal(PR.windowStart(12, new Date(Date.UTC(2026, 10, 21))), '2025-11-21');
+  assert.equal(PR.windowStart(0), null);
+  assert.equal(PR.normTicker('goog'), 'GOOGL');
+  assert.equal(PR.normTicker('Some Bond 5%'), null);
+  const groups = PR.purchasesByTicker(
+    [
+      { type: 'purchase', ticker: 'NVDA', transaction_date: '2026-01-05', amount_mid: 8000 },
+      { type: 'purchase', ticker: 'NVDA', transaction_date: '2026-03-02', amount_mid: 24000 },
+      { type: 'purchase', ticker: 'INTC', transaction_date: '2026-02-02', amount_mid: 100000 },
+      { type: 'sale', ticker: 'AAPL', transaction_date: '2026-02-02', amount_mid: 100000 },
+      { type: 'purchase', ticker: 'OLD', transaction_date: '2024-01-01', amount_mid: 1e6 },
+    ],
+    '2025-11-21',
+  );
+  assert.deepEqual(
+    groups.map((g) => g.ticker),
+    ['INTC', 'NVDA'],
+  );
+  const rows = PR.rankReturns(groups, {
+    /* Saturday Jan 3 has no bar: the first close on or after it is Monday. */
+    NVDA: [
+      { date: '2026-01-05', close: 100 },
+      { date: '2026-03-02', close: 120 },
+      { date: '2026-11-20', close: 150 },
+    ],
+    INTC: [
+      { date: '2026-02-02', close: 20 },
+      { date: '2026-11-20', close: 18 },
+    ],
+  });
+  assert.deepEqual(
+    rows.map((r) => r.ticker),
+    ['NVDA', 'INTC'],
+  );
+  /* NVDA entry weighted by midpoints: (8000*100 + 24000*120) / 32000 = 115. */
+  assert.ok(Math.abs(rows[0].entry - 115) < 1e-9);
+  assert.ok(Math.abs(rows[0].pct - (150 / 115 - 1) * 100) < 1e-9);
+  assert.equal(rows[0].since, '2026-01-05');
+  assert.ok(Math.abs(rows[1].pct - -10) < 1e-9);
+  assert.deepEqual(PR.rankReturns(groups, {}), []);
+  const rep = read('src/components/sonar/congress/CongressProfileReport.jsx');
+  assert.match(rep, /Best returns, \{periodName\}/);
+  assert.match(rep, /onClick=\{\(\) => onTicker\(r\.ticker\)\}/);
+});
+
 test('exemplary layout: a member of Congress gets the approved rows, in order', () => {
   const lay = L.exemplaryLayoutFor({ dossier: { kind: 'politician' } });
   assert.equal(lay.slug, 'congress-member-profile');
@@ -337,6 +384,9 @@ test('wiring: the ping board, the report, the shell and the composer', () => {
   const qcss = read('src/components/sonar/sonar-answer-query-bar.css');
   assert.ok(!/animation:\s*sqb-in/.test(qcss), 'no paused menu animation');
   assert.match(qcss, /min-height: 40px/, 'the composer matches the tools row height');
+  const bar2 = read('src/components/sonar/SonarAnswerQueryBar.jsx');
+  assert.match(bar2, /bi-arrow-right/, 'Ping is a bare arrow');
+  assert.match(bar2, /className="sqb-x"/, 'the search glyph turns into a clear x');
   assert.ok(!/free ping/.test(rep), 'no pings-left line');
   assert.match(rep, /meta=\{actions\}/, 'Save sits at the top right of the desk summary');
   const sds = read('src/components/sonar/SonarDeskSummary.jsx');

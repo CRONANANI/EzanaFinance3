@@ -139,11 +139,11 @@
   align-items: center;
   gap: 6px;
   height: 30px;
-  padding: 0 10px;
+  padding: 0 6px;
+  /* Nov 21: + and Build are bare: no ring, no surface. */
   border: 0;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--sqb-emerald) 10%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 22%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--sqb-text);
   font: inherit;
   font-size: var(--type-caption-size);
@@ -152,8 +152,7 @@
   overflow: hidden;
   white-space: nowrap;
   transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease,
+    color 0.15s ease,
     max-width 0.25s ease;
 }
 .sqb .sqb-pill .bi {
@@ -161,8 +160,7 @@
 }
 .sqb .sqb-pill:hover:not(:disabled),
 .sqb .sqb-pill.is-open {
-  background: color-mix(in srgb, var(--sqb-emerald) 18%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sqb-emerald) 45%, transparent);
+  color: var(--sqb-accent);
 }
 .sqb .sqb-pill:disabled {
   cursor: not-allowed;
@@ -171,7 +169,7 @@
 /* + grows into "Add photos" on hover or keyboard focus. */
 .sqb .sqb-add {
   max-width: 30px;
-  padding: 0 8px;
+  padding: 0 7px;
 }
 .sqb .sqb-add-label {
   opacity: 0;
@@ -293,29 +291,53 @@
 .sqb .sqb-clear:hover {
   color: var(--sqb-text);
 }
+/* Ping: a bare emerald arrow. */
 .sqb .sqb-ping {
   display: inline-flex;
   flex: none;
   align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  padding: 0 14px;
+  justify-content: center;
+  width: 34px;
+  height: 32px;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-md);
-  background: var(--sqb-emerald);
-  color: color-mix(in srgb, black 86%, var(--sqb-emerald));
-  font: inherit;
-  font-size: var(--type-caption-size);
-  font-weight: 700;
+  background: transparent;
+  color: var(--sqb-accent);
+  font-size: 1.25rem;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 .sqb .sqb-ping:hover:not(:disabled) {
-  background: var(--emerald-hover);
+  color: var(--sqb-text);
+  transform: translateX(2px);
 }
 .sqb .sqb-ping:disabled {
   cursor: progress;
-  opacity: 0.75;
+  opacity: 0.6;
+}
+/* The search glyph becomes a clear button once the field holds text. */
+.sqb .sqb-x {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sqb-accent);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+.sqb .sqb-x:hover {
+  color: var(--sqb-text);
+}
+.sqb .sqb-x:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 .sqb .sqb-clear:focus-visible,
 .sqb .sqb-ping:focus-visible,
@@ -350,6 +372,9 @@
   .sqb .sqb-ping {
     transition: none;
   }
+  .sqb .sqb-ping:hover:not(:disabled) {
+    transform: none;
+  }
   .sqb .sqb-spin {
     animation: none;
   }
@@ -357,8 +382,5 @@
 @media (max-width: 480px) {
   .sqb {
     padding-left: 10px;
-  }
-  .sqb .sqb-ping {
-    padding: 0 10px;
   }
 }

@@ -551,6 +551,7 @@ export function SonarPingBoard({
             findings={congressFindings}
             notice={notice}
             actions={saveActions}
+            onTicker={onRun ? (t) => onRun(t) : null}
           />
           {onFollowUp ? (
             <SonarFollowUp

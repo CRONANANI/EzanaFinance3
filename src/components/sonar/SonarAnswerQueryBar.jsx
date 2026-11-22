@@ -11,7 +11,8 @@
  *   +       add photos: each is read into text on the server (/api/sonar/attachment) and
  *           travels with the question as context
  *   Build   add charts from this answer, Quant Lab models, or saved EzanaQL queries as context
- *   Ping    send; while a ping is in flight it shows the loading state and is disabled
+ *   Ping    a bare right arrow that sends; while a ping is in flight it spins and is disabled
+ *   x       the search glyph turns into a clear button once the field holds any text
  *
  * Context only travels where the host can carry it (`contextEnabled`): the host then receives
  * onSubmit(q, context) with context = [{ kind, label, text }] and runs it as research with
@@ -276,7 +277,13 @@ export function SonarAnswerQueryBar({
       <label htmlFor={id} className="sqb-label">
         {label}
       </label>
-      <i className="bi bi-search sqb-icon" aria-hidden="true" />
+      {current ? (
+        <button type="button" className="sqb-x" aria-label="Clear the question" onClick={clear}>
+          <i className="bi bi-x-lg" aria-hidden="true" />
+        </button>
+      ) : (
+        <i className="bi bi-search sqb-icon" aria-hidden="true" />
+      )}
       <input
         ref={ref}
         id={id}
@@ -392,22 +399,18 @@ export function SonarAnswerQueryBar({
         ) : null}
       </div>
       <div className="sqb-actions">
-        {current || context.length ? (
-          <button type="button" className="sqb-clear" onClick={clear}>
-            Clear
-          </button>
-        ) : null}
         <button
           type="submit"
           className="sqb-ping"
           disabled={pending || reading}
           aria-busy={pending || undefined}
+          aria-label={pending ? 'Pinging' : 'Ping'}
+          title="Ping"
         >
           <i
-            className={`bi ${pending ? 'bi-arrow-repeat sqb-spin' : 'bi-broadcast'}`}
+            className={`bi ${pending ? 'bi-arrow-repeat sqb-spin' : 'bi-arrow-right'}`}
             aria-hidden="true"
           />
-          {pending ? 'Pinging' : 'Ping'}
         </button>
       </div>
       {error ? (

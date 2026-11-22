@@ -37,7 +37,8 @@
   white-space: nowrap;
   border: 0;
   border-radius: var(--radius-lg);
-  background: var(--san-card, color-mix(in srgb, var(--emerald) 5%, transparent));
+  /* Nov 21: no surface, no edge: the icon and the title. */
+  background: transparent;
   color: var(--stl-text);
   font: inherit;
   text-align: left;
@@ -46,12 +47,9 @@
     background 0.15s ease,
     box-shadow 0.15s ease;
 }
-.stl .stl-head:hover {
-  background: color-mix(in srgb, var(--stl-emerald) 10%, transparent);
-}
-.stl .stl-item.is-open .stl-head {
-  background: color-mix(in srgb, var(--stl-emerald) 13%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stl-emerald) 40%, transparent);
+.stl .stl-head:hover .stl-title,
+.stl .stl-item.is-open .stl-title {
+  color: var(--stl-text);
 }
 .stl .stl-head:focus-visible {
   outline: 2px solid var(--stl-accent);
@@ -62,10 +60,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 20px;
   height: 28px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--stl-emerald) 15%, transparent);
+  background: none;
   color: var(--stl-accent);
   font-size: 0.875rem;
 }

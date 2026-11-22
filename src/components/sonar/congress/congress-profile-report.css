@@ -360,10 +360,113 @@
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+/* Nov 21: the chart and the period's best returns side by side when the card is wide
+   enough, stacked otherwise. */
+.cpr .cpr-an {
+  container: cpran / inline-size;
+}
+.cpr .cpr-an-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+@container cpran (min-width: 520px) {
+  .cpr .cpr-an-body {
+    grid-template-columns: minmax(0, 1.45fr) minmax(170px, 1fr);
+    align-items: stretch;
+  }
+}
 .cpr .cpr-chart {
   position: relative;
   width: 100%;
   height: 180px;
+}
+.cpr .cpr-best {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.cpr .cpr-best-head {
+  margin: 0;
+  font-family: var(--cpr-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cpr-faint);
+}
+.cpr .cpr-best-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cpr .cpr-best-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.cpr .cpr-best-row + .cpr-best-row {
+  background: linear-gradient(var(--cpr-rule), var(--cpr-rule)) top / 100% 1px no-repeat;
+}
+.cpr .cpr-best-tk {
+  min-width: 52px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cpr-emerald) 12%, transparent);
+  color: var(--cpr-accent);
+  font-family: var(--cpr-mono);
+  font-size: var(--type-micro-size);
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.cpr .cpr-best-tk:hover {
+  background: color-mix(in srgb, var(--cpr-emerald) 24%, transparent);
+}
+.cpr .cpr-best-tk:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.cpr .cpr-best-since {
+  overflow: hidden;
+  font-size: var(--type-micro-size);
+  color: var(--cpr-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cpr .cpr-best-pct {
+  font-family: var(--cpr-mono);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cpr-accent);
+}
+.cpr .cpr-best-pct.is-down {
+  color: color-mix(in srgb, var(--negative) 65%, var(--cpr-text));
+}
+.cpr .cpr-best-skel {
+  height: 22px;
+  margin: 5px 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cpr-text) 7%, transparent);
+}
+.cpr .cpr-best-empty,
+.cpr .cpr-best-note {
+  margin: 0;
+  font-size: var(--type-micro-size);
+  line-height: 1.4;
+  color: var(--cpr-faint);
+}
+.cpr .cpr-best-note {
+  margin-top: auto;
 }
 .cpr .cpr-chart svg {
   display: block;

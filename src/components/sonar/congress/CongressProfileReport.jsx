@@ -336,7 +336,83 @@ function ValueChart({ series, months, label, onHover = null }) {
   );
 }
 
-function Portfolio({ dossier }) {
+/* Nov 21: the listed assets with the best returns over the selected period: price from each
+   disclosed purchase (weighted by range midpoints) to the latest close. A ticker opens a new
+   Sonar ping on it. */
+function BestReturns({ bioguide, months, periodName, onTicker }) {
+  const [state, setState] = useState({ status: 'loading', rows: [] });
+  useEffect(() => {
+    if (!bioguide) {
+      setState({ status: 'empty', rows: [] });
+      return undefined;
+    }
+    let live = true;
+    setState({ status: 'loading', rows: [] });
+    fetch(
+      `/api/sonar/politician-returns?bioguide=${encodeURIComponent(bioguide)}&months=${months || 0}`,
+    )
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => {
+        if (!live) return;
+        const rows = Array.isArray(d?.rows) ? d.rows : [];
+        setState({ status: rows.length ? 'ready' : 'empty', rows });
+      })
+      .catch(() => live && setState({ status: 'error', rows: [] }));
+    return () => {
+      live = false;
+    };
+  }, [bioguide, months]);
+  return (
+    <div className="cpr-best" aria-live="polite">
+      <p className="cpr-best-head">Best returns, {periodName}</p>
+      {state.status === 'loading' ? (
+        <ul className="cpr-best-list" aria-busy="true">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i} className="cpr-best-skel" aria-hidden="true" />
+          ))}
+        </ul>
+      ) : state.status === 'ready' ? (
+        <ul className="cpr-best-list">
+          {state.rows.map((r) => (
+            <li key={r.ticker} className="cpr-best-row">
+              {onTicker ? (
+                <button
+                  type="button"
+                  className="cpr-best-tk"
+                  onClick={() => onTicker(r.ticker)}
+                  aria-label={`Ping ${r.ticker} in Sonar`}
+                >
+                  {r.ticker}
+                </button>
+              ) : (
+                <span className="cpr-best-tk">{r.ticker}</span>
+              )}
+              <span className="cpr-best-since">
+                {r.buys} buy{r.buys === 1 ? '' : 's'} since {monthLabel(r.since)}
+              </span>
+              <span className={`cpr-best-pct${r.pct < 0 ? ' is-down' : ''}`}>
+                {r.pct >= 0 ? '+' : '-'}
+                {Math.abs(r.pct).toFixed(1)}%
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="cpr-best-empty">
+          {state.status === 'error'
+            ? 'Returns could not be loaded right now.'
+            : 'No listed purchases with prices in this period.'}
+        </p>
+      )}
+      <p className="cpr-best-note">
+        Price only, from each disclosed purchase to the latest close. Bonds and other assets without
+        a ticker have no price.
+      </p>
+    </div>
+  );
+}
+
+function Portfolio({ dossier, onTicker = null }) {
   const id = useId();
   const s = dossier.stats || {};
   const series = Array.isArray(dossier.series) ? dossier.series : [];
@@ -420,16 +496,24 @@ function Portfolio({ dossier }) {
           ) : null}
         </div>
       </div>
-      {hasChart ? (
-        <ValueChart
-          key={period}
-          series={view.series}
-          months={view.months}
-          label={`${dossier.name} estimated portfolio value, ${periodName}`}
+      <div className="cpr-an-body">
+        {hasChart ? (
+          <ValueChart
+            key={period}
+            series={view.series}
+            months={view.months}
+            label={`${dossier.name} estimated portfolio value, ${periodName}`}
+          />
+        ) : (
+          <p className="cpr-empty">No disclosed trades to chart yet.</p>
+        )}
+        <BestReturns
+          bioguide={dossier.bioguideId}
+          months={period === ALL_TIME ? 0 : sel?.months}
+          periodName={periodName}
+          onTicker={onTicker}
         />
-      ) : (
-        <p className="cpr-empty">No disclosed trades to chart yet.</p>
-      )}
+      </div>
       <dl className="cpr-kpis">
         {kpis.map((x) => (
           <div key={x.k} className="cpr-kpi">
@@ -612,6 +696,7 @@ function News({ name, columns }) {
  * findings    Key findings: what the full brief adds beyond the summary (briefFindings())
  * notice      the "showing results for" notice
  * actions     Save (SonarSaveActions), at the top right of the desk summary
+ * onTicker    runs a new Sonar ping on a ticker (the Best returns list)
  */
 export function CongressProfileReport({
   live,
@@ -621,6 +706,7 @@ export function CongressProfileReport({
   findings = [],
   notice = null,
   actions = null,
+  onTicker = null,
 }) {
   const dossier = live?.dossier;
   if (!dossier) return null;
@@ -635,7 +721,7 @@ export function CongressProfileReport({
         actions={actions}
       />
     ),
-    portfolio: <Portfolio dossier={dossier} />,
+    portfolio: <Portfolio dossier={dossier} onTicker={onTicker} />,
     findings: findings.length >= 2 ? <Findings items={findings} /> : null,
     lean: lean ? (
       <LeanGauge lean={lean} last={lastNameOf(dossier.name)} bullets={leanBullets(dossier, lean)} />
