@@ -1217,6 +1217,127 @@ a.ticker:hover {
 /* ── Responsive ─────────────────────────────────────────────────────── */
 /* The side column moves under the feed and its vertical rule becomes a
    horizontal one with 16px of space under it (guide 3.5). */
+/* ── Nov 22 2026: the card aesthetic (owner's request) ───────────────────
+   The page keeps its layout; every section now sits on a tinted card: a soft surface with a
+   header band, rows divided by hairlines, and hover washes inside the card. No outlines.
+   Leaderboard ranks are medal circles (gold, silver, bronze) with a trophy for first. */
+.page {
+  --c-surface: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  --c-band: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  --c-gold: var(--gold);
+  --c-silver: var(--text-muted);
+  --c-bronze: color-mix(in srgb, var(--orange) 72%, var(--text-muted));
+}
+.feed {
+  padding-right: 24px;
+}
+.rail {
+  gap: 20px;
+  padding: 20px 0 0 0;
+  border-left: 0;
+}
+.card {
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--c-surface);
+}
+.cardHead {
+  padding: 12px 16px;
+  background: var(--c-band);
+  border-bottom: 1px solid var(--c-rule);
+}
+.cardTitle {
+  font-size: 16px;
+}
+.cardTitle i {
+  color: var(--emerald-text);
+}
+.card[id='community-leaderboard'] .cardTitle i {
+  color: var(--c-gold);
+}
+.card > :not(.cardHead) {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.card > :last-child:not(.cardHead) {
+  padding-bottom: 12px;
+}
+.card .rows {
+  margin: 0 -16px;
+  padding: 0;
+}
+.card > .rows {
+  margin: 0;
+  padding: 0 0 4px;
+}
+.card .rows > li + li {
+  border-top: 1px solid var(--c-rule);
+}
+.card .row {
+  padding: 10px 16px;
+  transition: background-color 150ms ease;
+}
+.card .rowLink:hover {
+  background: var(--c-wash);
+}
+.card .meRow {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 0;
+  background: color-mix(in srgb, var(--emerald) 9%, transparent);
+}
+.card .skelRows {
+  padding-bottom: 12px;
+}
+.rankDot {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--c-wash);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rankGold {
+  background: color-mix(in srgb, var(--c-gold) 14%, transparent);
+  color: var(--c-gold);
+}
+.rankSilver {
+  background: color-mix(in srgb, var(--c-silver) 14%, transparent);
+  color: var(--c-silver);
+}
+.rankBronze {
+  background: color-mix(in srgb, var(--c-bronze) 14%, transparent);
+  color: var(--c-bronze);
+}
+.lbRow {
+  grid-template-columns: 28px 28px minmax(0, 1fr) auto;
+}
+/* The KPI strip: one soft tile per figure. */
+.stats {
+  gap: 12px;
+}
+.stat {
+  padding: 10px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+}
+/* Posts: one card each. */
+.posts {
+  gap: 12px;
+  padding-top: 16px;
+}
+.post {
+  padding: 20px;
+  border-bottom: 0;
+  border-radius: var(--radius-xl);
+  background: var(--c-surface);
+}
+
 @media (max-width: 1179px) {
   .grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1229,9 +1350,9 @@ a.ticker:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 32px 64px;
     align-items: start;
-    padding: 16px 0 0;
+    gap: 20px;
+    padding: 20px 0 0;
     border-left: 0;
-    border-top: 1px solid var(--c-rule);
   }
 }
 @media (max-width: 1023px) {
@@ -1338,6 +1459,9 @@ a.ticker:hover {
 @media (prefers-reduced-motion: reduce) {
   .skel {
     animation: none;
+  }
+  .card .row {
+    transition: none;
   }
   .btn,
   .tab,

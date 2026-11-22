@@ -17,6 +17,15 @@ export default function ContentActionsMenu({
   authorName = 'this member',
   onBlocked,
   className = '',
+  /* Nov 22: the chat's menus. extraItems: [{ key, icon, label, onSelect, tone? }] listed before
+     Report and Block; triggerIcon / triggerLabel restyle the trigger; menuAlign 'start' opens
+     the menu from the left edge. Your own content shows the extra items only. */
+  extraItems = [],
+  triggerIcon = 'bi-three-dots',
+  triggerLabel = 'More actions',
+  menuAlign = 'end',
+  blockLabel = 'Block user',
+  reportLabel = 'Report',
 }) {
   const { user } = useAuth() || {};
   const [open, setOpen] = useState(false);
@@ -41,7 +50,8 @@ export default function ContentActionsMenu({
     };
   }, [open]);
 
-  if (!user || !contentId || authorId === user.id) return null;
+  const own = Boolean(user && authorId === user.id);
+  if (!user || !contentId || (own && !extraItems.length)) return null;
 
   const close = () => {
     setMode(null);
@@ -98,24 +108,40 @@ export default function ContentActionsMenu({
         className="modm-trigger"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="More actions"
+        aria-label={triggerLabel}
         onClick={() => setOpen((v) => !v)}
       >
-        <i className="bi bi-three-dots" aria-hidden="true" />
+        <i className={`bi ${triggerIcon}`} aria-hidden="true" />
       </button>
       {open ? (
-        <div className="modm-menu" role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false);
-              setMode('report');
-            }}
-          >
-            <i className="bi bi-flag" aria-hidden="true" /> Report
-          </button>
-          {authorId ? (
+        <div className={`modm-menu${menuAlign === 'start' ? ' modm-menu--start' : ''}`} role="menu">
+          {extraItems.map((it) => (
+            <button
+              key={it.key}
+              type="button"
+              role="menuitem"
+              className={it.tone ? `modm-item--${it.tone}` : undefined}
+              onClick={() => {
+                setOpen(false);
+                it.onSelect?.();
+              }}
+            >
+              <i className={`bi ${it.icon}`} aria-hidden="true" /> {it.label}
+            </button>
+          ))}
+          {own ? null : (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                setMode('report');
+              }}
+            >
+              <i className="bi bi-flag" aria-hidden="true" /> {reportLabel}
+            </button>
+          )}
+          {authorId && !own ? (
             <button
               type="button"
               role="menuitem"
@@ -124,7 +150,7 @@ export default function ContentActionsMenu({
                 setMode('block');
               }}
             >
-              <i className="bi bi-slash-circle" aria-hidden="true" /> Block user
+              <i className="bi bi-slash-circle" aria-hidden="true" /> {blockLabel}
             </button>
           ) : null}
         </div>

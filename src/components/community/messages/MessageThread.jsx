@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 import { DateSeparator } from './DateSeparator';
 import { MessageComposer } from './MessageComposer';
+import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -79,7 +80,11 @@ export function MessageThread({
   partnerName,
   partnerHandle = '',
   partnerAvatarUrl,
+  partnerId = null,
   currentUserId,
+  selfName = 'You',
+  selfAvatarUrl = null,
+  onReply = null,
   messages,
   loading,
   hasMore,
@@ -122,7 +127,7 @@ export function MessageThread({
   const firstName = (partnerName || '').split(/\s+/)[0] || 'This member';
 
   return (
-    <div className="m-thread">
+    <div className="m-thread m-thread--card">
       <header className="m-thread__head">
         <div className="m-thread__head-left">
           <button
@@ -149,26 +154,22 @@ export function MessageThread({
           </div>
         </div>
 
+        {/* Nov 22: the conversation's actions (the owner's messaging reference): Report and
+            Block this member, through the same moderation routes as everywhere else. */}
         <div className="m-thread__actions">
-          <button
-            type="button"
-            className="m-thread__action"
-            aria-label="Voice call"
-            title="Voice call"
-          >
-            <i className="bi bi-telephone" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="m-thread__action"
-            aria-label="Video call"
-            title="Video call"
-          >
-            <i className="bi bi-camera-video" aria-hidden="true" />
-          </button>
-          <button type="button" className="m-thread__action" aria-label="More options" title="More">
-            <i className="bi bi-three-dots" aria-hidden="true" />
-          </button>
+          {partnerId ? (
+            <ContentActionsMenu
+              contentType="profile"
+              contentId={partnerId}
+              authorId={partnerId}
+              authorName={partnerName || 'this member'}
+              triggerIcon="bi-three-dots-vertical"
+              triggerLabel="Conversation actions"
+              blockLabel="Block user"
+              reportLabel="Report user"
+              className="m-thread__menu"
+            />
+          ) : null}
         </div>
       </header>
 
@@ -206,14 +207,19 @@ export function MessageThread({
                 <DateSeparator date={g.dateIso} />
                 {g.messages.map((m) => {
                   const isSelf = m.sender_id === currentUserId;
-                  const showAvatar = !isSelf && prevSender !== m.sender_id;
+                  const showAvatar = prevSender !== m.sender_id;
                   prevSender = m.sender_id;
                   return (
                     <MessageBubble
                       key={m.id}
                       message={m}
                       isSelf={isSelf}
-                      sender={{ name: partnerName, avatar_url: partnerAvatarUrl }}
+                      sender={
+                        isSelf
+                          ? { name: selfName, avatar_url: selfAvatarUrl }
+                          : { name: partnerName, avatar_url: partnerAvatarUrl }
+                      }
+                      onReply={onReply}
                       showAvatar={showAvatar}
                       highlightTerm={highlightTerm}
                       isMatched={highlightedMessageIds.includes(m.id)}

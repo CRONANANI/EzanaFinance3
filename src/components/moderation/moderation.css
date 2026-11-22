@@ -49,6 +49,10 @@
   text-align: left;
   cursor: pointer;
 }
+.modm-menu--start {
+  right: auto;
+  left: 0;
+}
 .modm-menu button:hover,
 .modm-menu button:focus-visible {
   background: var(--emerald-bg);

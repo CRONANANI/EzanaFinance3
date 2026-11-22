@@ -1293,41 +1293,55 @@ export function BillingPanel() {
             {invoices.length === 0 ? (
               <p className="settings-toggle-desc">No invoices yet.</p>
             ) : (
-              <table className="settings-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoices.map((inv) => (
-                    <tr key={inv.id}>
-                      <td>{fmtInvoiceDate(inv.date)}</td>
-                      <td>
-                        {inv.hostedUrl ? (
-                          <a
-                            href={inv.hostedUrl}
-                            target="_blank"
-                            rel="noopener"
-                            className="settings-invoice-link"
-                          >
-                            {inv.description}
-                          </a>
-                        ) : (
-                          inv.description
-                        )}
-                      </td>
-                      <td style={{ textTransform: 'capitalize' }}>{inv.status}</td>
-                      <td className="settings-amount-mono">
-                        {fmtInvoiceAmount(inv.amountCents, inv.currency)}
-                      </td>
+              /* Nov 22: the invoice table (the owner's Table04 reference): Invoice, Description,
+                 Date, Total; zebra rows, no row rules, the date muted, totals right-aligned. */
+              <div className="sinv-wrap">
+                <table className="sinv">
+                  <thead>
+                    <tr>
+                      <th className="sinv-id">Invoice</th>
+                      <th>Description</th>
+                      <th>Date</th>
+                      <th className="sinv-right">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {invoices.map((inv) => (
+                      <tr key={inv.id}>
+                        <td className="sinv-id">
+                          {inv.hostedUrl ? (
+                            <a
+                              href={inv.hostedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="sinv-link"
+                            >
+                              {inv.number ? `#${inv.number}` : 'View'}
+                              <span className="sinv-sr"> (opens the invoice in a new tab)</span>
+                            </a>
+                          ) : inv.number ? (
+                            `#${inv.number}`
+                          ) : (
+                            'N/A'
+                          )}
+                        </td>
+                        <td>
+                          {inv.description}
+                          {inv.status && inv.status !== 'paid' ? (
+                            <span className={`sinv-status sinv-status--${inv.status}`}>
+                              {inv.status}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="sinv-muted">{fmtInvoiceDate(inv.date)}</td>
+                        <td className="sinv-right sinv-num">
+                          {fmtInvoiceAmount(inv.amountCents, inv.currency)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </>
         )}

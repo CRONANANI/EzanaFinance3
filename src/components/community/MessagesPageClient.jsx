@@ -118,6 +118,23 @@ export default function MessagesPageClient() {
     }
   };
 
+  /* Reply: quote the message at the top of the composer and put the cursor after it. */
+  const handleReply = (m) => {
+    const quote = String(m?.content || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 140);
+    if (!quote) return;
+    setComposerText((cur) => `> ${quote}\n${cur}`);
+    requestAnimationFrame(() => {
+      const el = document.querySelector('.m-composer__textarea');
+      if (el) {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      }
+    });
+  };
+
   const handleRespond = async (action) => {
     if (!activeConvoId || responding) return;
     setResponding(true);
@@ -183,7 +200,13 @@ export default function MessagesPageClient() {
                 partnerName={partnerName || 'Member'}
                 partnerHandle={partnerHandle}
                 partnerAvatarUrl={partnerAvatarUrl}
+                partnerId={
+                  pendingRecipient?.id || otherUser?.id || activeConvo?.other_user?.id || null
+                }
                 currentUserId={user?.id}
+                selfName={user?.user_metadata?.full_name || user?.user_metadata?.name || 'You'}
+                selfAvatarUrl={user?.user_metadata?.avatar_url || null}
+                onReply={handleReply}
                 messages={messages}
                 loading={messagesLoading}
                 hasMore={hasMore}

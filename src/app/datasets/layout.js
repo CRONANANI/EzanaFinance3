@@ -13,6 +13,8 @@ import './dataset-type.css';
 import './ds-cards.css';
 import './ds-canvas.css';
 import './ds-align.css';
+/* Nov 22: the pricing page's fonts on every dataset page (words sans, figures mono). */
+import './ds-fonts.css';
 
 // Datasets taken offline pending completion — the taxonomy marks them
 // live:false (so nav renders them "Soon"); this gate stops direct-URL access.

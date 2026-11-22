@@ -10,6 +10,8 @@ import s from '@/app/(dashboard)/community/community.module.css';
 import { SectionCard, Avatar, DeltaValue } from './primitives';
 import { useCommunityResource } from './useCommunityResource';
 
+const MEDAL = { 1: 'rankGold', 2: 'rankSilver', 3: 'rankBronze' };
+
 function LbRow({ r, me = false }) {
   const href = r.is_demo
     ? '/leaderboard'
@@ -19,7 +21,10 @@ function LbRow({ r, me = false }) {
   return (
     <li>
       <Link href={href} className={`${s.row} ${s.rowLink} ${s.lbRow} ${me ? s.meRow : ''}`}>
-        <span className={s.rank}>{r.rank}</span>
+        <span className={`${s.rankDot} ${MEDAL[r.rank] ? s[MEDAL[r.rank]] : ''}`.trim()}>
+          {r.rank === 1 ? <i className="bi bi-trophy-fill" aria-hidden="true" /> : r.rank}
+          {r.rank === 1 ? <span className={s.srOnly}>1</span> : null}
+        </span>
         <Avatar src={r.avatar_url} name={r.name} size={28} />
         <span className={s.ellipsis}>
           <span className={s.strong}>{r.name}</span>

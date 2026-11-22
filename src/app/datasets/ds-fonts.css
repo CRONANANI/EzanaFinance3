@@ -1,0 +1,48 @@
+/* Dataset typography: the pricing page's fonts on every /datasets page (Nov 22 2026).
+   The pricing page sets its words in Plus Jakarta Sans (headings, eyebrows, labels, column
+   heads, badges, buttons, copy) and keeps JetBrains Mono for figures only (prices, counts,
+   percentages). The dataset pages had drifted to mono for much of their wording (eyebrows,
+   column heads, row leads, labels), so this layer puts every word role back on the sans and
+   leaves figures in mono, as pricing does. Families come from the tokens (--font-sans,
+   --font-mono); nothing here changes sizes or colours.
+
+   Scope: everything under the datasets layout (.ds-shell), except Sonar, which keeps its
+   own instrument type. The doubled class lifts these rules over a page's own single-class
+   rules, whatever order the stylesheets load in. */
+.ds-shell.ds-shell {
+  font-family: var(--font-sans);
+}
+
+.ds-shell.ds-shell
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    th,
+    dt,
+    label,
+    legend,
+    caption,
+    button,
+    summary,
+    [class*='eyebrow'],
+    [class*='kicker'],
+    [class*='-label'],
+    [class*='-title'],
+    [class*='-head'],
+    [class*='-lead'],
+    [class*='-sort'],
+    [class*='-status'],
+    [class*='-badge'],
+    [class*='-tab'],
+    [class*='-copy'],
+    [class*='-btn'],
+    [class*='-name'],
+    [class*='-desc'],
+    [class*='-sub']
+  ):not(:is(.sonar-root, .snr-band, .san) *):not(.sonar-root, .snr-band) {
+  font-family: var(--font-sans);
+}

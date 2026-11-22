@@ -2,7 +2,7 @@
  * GET /api/stripe/billing-summary
  * Returns the user's default payment method (masked) and recent invoices.
  * { customer: bool, paymentMethod: { brand, last4, expMonth, expYear } | null,
- *   invoices: [{ id, date, description, amountCents, currency, status, hostedUrl }] }
+ *   invoices: [{ id, number, date, description, amountCents, currency, status, hostedUrl }] }
  */
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
@@ -72,6 +72,7 @@ export const GET = withApiGuard(
 
       const invoices = (invoiceList?.data || []).map((inv) => ({
         id: inv.id,
+        number: inv.number || null,
         date: inv.created * 1000,
         description: inv.lines?.data?.[0]?.description || 'Subscription',
         amountCents: inv.amount_paid || inv.amount_due || 0,

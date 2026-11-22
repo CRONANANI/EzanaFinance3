@@ -1002,6 +1002,95 @@ body.light-mode .settings-danger-card .settings-danger-text p {
   background: var(--surface-card);
 }
 
+/* Invoice table (sinv-), Nov 22 2026: the Table04 reference. A header rule, then rows with
+   no rules and every second row washed; first column bold, the date muted, totals mono and
+   right-aligned. */
+.sinv-wrap {
+  width: 100%;
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+.sinv {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  caption-side: bottom;
+  font-size: 0.875rem;
+}
+.sinv th {
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.sinv td {
+  padding: 16px;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.sinv tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.sinv tbody tr {
+  transition: background-color 0.15s ease;
+}
+.sinv tbody tr:hover {
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.sinv-id {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sinv-right {
+  text-align: right !important;
+}
+.sinv-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.sinv-muted {
+  color: var(--text-muted) !important;
+}
+.sinv-link {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.sinv-link:hover {
+  color: var(--emerald-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sinv-status {
+  margin-left: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+.sinv-status--open,
+.sinv-status--uncollectible {
+  color: var(--warning);
+}
+.sinv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sinv tbody tr {
+    transition: none;
+  }
+}
+
 /* Usage meter */
 .settings-usage-bar {
   width: 100%;
