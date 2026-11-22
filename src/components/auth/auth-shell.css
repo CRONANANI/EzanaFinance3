@@ -16,8 +16,9 @@
   --as-line: color-mix(in srgb, black 7%, white);
   --as-danger: color-mix(in srgb, red 72%, black);
   /* Nov 19th, 2026 (night): field and button pills 35% thinner (46px to
-     30px) at the founder's request. One value for every auth control. */
-  --as-control-h: 30px;
+     30px) at the founder's request. One value for every auth control.
+     Nov 22nd, 2026: 20% taller again (30px to 36px), also at the founder's request. */
+  --as-control-h: 36px;
 }
 .as-shell {
   position: relative;
