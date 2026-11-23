@@ -1,5 +1,6 @@
 'use client';
 
+import { validatePassword } from '@/lib/auth/password-rules';
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowRight, TrendingUp, Check, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -165,7 +166,9 @@ export default function ResetPasswordPage() {
 
         // No valid method worked
         console.log('No valid session could be established');
-        setError('Invalid or expired reset link. Please request a new one.');
+        setError(
+          'This reset link is invalid or has expired. Links work once and for a limited time: request a new one from Forgot password and use the newest email.',
+        );
         setIsCheckingSession(false);
       } catch (err) {
         console.error('Session check error:', err);
@@ -205,20 +208,17 @@ export default function ResetPasswordPage() {
     setError('');
     setIsLoading(true);
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    /* Nov 23 2026 (Help Center audit): the same rule set as sign-up, and the
+       message names what is missing instead of "choose a stronger password". */
+    const missing = validatePassword(password);
+    if (missing.length) {
+      setError(`Your new password still needs ${missing.join(', ')}.`);
       setIsLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-
-    if (passwordStrength < 3) {
-      setError('Please choose a stronger password');
+      setError('Passwords do not match. Retype the same password in both fields.');
       setIsLoading(false);
       return;
     }

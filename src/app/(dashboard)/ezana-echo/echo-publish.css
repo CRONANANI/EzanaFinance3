@@ -17,7 +17,7 @@
   letter-spacing: 0.04em;
 }
 .echo-field-hint {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: #4b5563;
   margin-top: 0.125rem;
 }
@@ -561,4 +561,37 @@ body.light-mode .echo-search-bar {
 }
 body.light-mode .echo-search-input {
   color: #111827;
+}
+
+/* Writer application (Nov 23 2026): field errors, actions, help link. */
+.echo-field-error {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--negative);
+}
+.echo-input[aria-invalid='true'] {
+  border-color: var(--negative);
+}
+.echo-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+}
+.echo-help-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: underline;
+}
+.echo-app-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.echo-msg p {
+  color: inherit;
 }

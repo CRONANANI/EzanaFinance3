@@ -847,6 +847,14 @@
   max-width: 30rem;
   margin-top: 1.25rem;
 }
+/* Nov 23 2026: reasons for a "No", text buttons that wrap on phones. */
+.hc-feedback-reasons {
+  margin-top: 1rem;
+}
+.hc-feedback-reasons .hc-feedback-choices {
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
 .hc-feedback-label {
   display: block;
   margin-bottom: 0.375rem;

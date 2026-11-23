@@ -21,7 +21,6 @@ export default function ForgotPasswordPage() {
       // Use production URL
       const redirectUrl = 'https://ezana.world/auth/reset-password';
 
-      console.log('Sending reset email to:', email);
       console.log('Redirect URL:', redirectUrl);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {

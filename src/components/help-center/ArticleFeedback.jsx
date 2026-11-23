@@ -4,6 +4,16 @@ import { useId, useState } from 'react';
 
 const MAX_COMMENT = 300;
 
+/* Nov 23 2026 (Help Center audit): a "No" can say why, so the team can see
+   which articles have steps that fail, unclear wording, outdated details or
+   gaps. Stored as a short prefix on the existing comment (no schema change). */
+const DOWN_REASONS = [
+  { key: 'steps', label: "Steps didn't work" },
+  { key: 'unclear', label: 'Instructions were unclear' },
+  { key: 'outdated', label: 'Information is outdated' },
+  { key: 'missing', label: "My problem isn't covered" },
+];
+
 /**
  * "Was this article helpful?": Yes / No plus an optional 300-char comment.
  * Used on both user and partner help articles. POSTs to the feedback API;
@@ -17,6 +27,7 @@ const MAX_COMMENT = 300;
 export default function ArticleFeedback({ section, articleSlug }) {
   const [rating, setRating] = useState(null); // 'up' | 'down' | null
   const [comment, setComment] = useState('');
+  const [reason, setReason] = useState(null);
   const [status, setStatus] = useState('idle'); // idle | sending | done | error
   const textareaId = useId();
   const counterId = useId();
@@ -38,7 +49,12 @@ export default function ArticleFeedback({ section, articleSlug }) {
           section,
           articleSlug,
           rating,
-          comment: comment.trim().slice(0, MAX_COMMENT),
+          comment: (rating === 'down' && reason
+            ? `[${DOWN_REASONS.find((r) => r.key === reason)?.label}] ${comment.trim()}`
+            : comment.trim()
+          )
+            .trim()
+            .slice(0, MAX_COMMENT),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -96,6 +112,25 @@ export default function ArticleFeedback({ section, articleSlug }) {
         </div>
       </div>
 
+      {rating === 'down' && (
+        <div className="hc-feedback-reasons" role="group" aria-label="What went wrong?">
+          <p className="hc-feedback-label">What went wrong? (optional)</p>
+          <div className="hc-feedback-choices">
+            {DOWN_REASONS.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                className="hc-feedback-choice"
+                aria-pressed={reason === r.key}
+                onClick={() => setReason((v) => (v === r.key ? null : r.key))}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {rating && (
         <div className="hc-feedback-form">
           <label htmlFor={textareaId} className="hc-feedback-label">
@@ -105,15 +140,19 @@ export default function ArticleFeedback({ section, articleSlug }) {
             id={textareaId}
             className="hc-feedback-input"
             rows={3}
-            maxLength={MAX_COMMENT}
+            maxLength={MAX_COMMENT - 40}
             value={comment}
-            onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT))}
-            placeholder="Tell us what worked or what was missing…"
+            onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT - 40))}
+            placeholder={
+              rating === 'down'
+                ? 'Which step failed, or what were you trying to do? Do not include passwords or codes.'
+                : 'Tell us what worked…'
+            }
             aria-describedby={counterId}
           />
           <div className="hc-feedback-actions">
             <span id={counterId} className="hc-feedback-count" aria-live="polite">
-              {comment.length}/{MAX_COMMENT}
+              {comment.length}/{MAX_COMMENT - 40}
             </span>
             {status === 'error' && (
               <span className="hc-feedback-error" role="alert">
