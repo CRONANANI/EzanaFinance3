@@ -194,7 +194,7 @@
 .src-dock {
   display: flex;
   align-items: stretch;
-  padding: 6px;
+  padding: 3px;
   border: 1px solid color-mix(in srgb, var(--emerald) 22%, transparent);
   border-radius: var(--radius-xl);
   background: linear-gradient(
@@ -211,12 +211,12 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  width: 34px;
   margin-right: 4px;
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--emerald) 16%, transparent);
   color: var(--emerald-text);
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
 }
 .src-seg {
   position: relative;
@@ -224,9 +224,11 @@
   flex: 1 1 0;
   min-width: 0;
   flex-direction: column;
-  gap: 1px;
-  padding: 6px 6px 4px 14px;
+  align-items: center;
+  gap: 0;
+  padding: 3px 8px 2px;
   border-radius: var(--radius-lg);
+  text-align: center;
   transition: background 0.18s ease;
 }
 /* Hairline dividers between segments (not before the first). */
@@ -253,7 +255,9 @@
 .src-seg__label {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  line-height: 1.2;
   color: color-mix(in srgb, white 58%, transparent);
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
@@ -261,7 +265,12 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+.src-seg .ezdd {
+  display: flex;
+  line-height: 1;
+}
 .src-seg__label .bi {
+  line-height: 1;
   color: var(--emerald-text);
   font-size: 0.8125rem;
 }
@@ -273,9 +282,11 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--emerald) 22%, transparent);
 }
 /* The dropdown trigger becomes the segment's value line. */
-.src-seg .ezdd-trigger {
-  min-height: 30px;
-  padding: 0 4px 0 0;
+.src-seg .ezdd .ezdd-trigger {
+  justify-content: center;
+  min-height: 20px;
+  padding: 0;
+  gap: 6px;
   border: 0;
   background: transparent;
   -webkit-backdrop-filter: none;
@@ -284,6 +295,13 @@
   color: white;
   font-size: 0.9375rem;
   font-weight: var(--weight-medium);
+}
+/* Nov 23, 2026: value centered under its label. The value takes only its own width,
+   and a left pad the size of the chevron and gap keeps the text itself centered. */
+.src-seg .ezdd-value {
+  flex: 0 1 auto;
+  padding-left: 18px;
+  line-height: 1.2;
 }
 .src-seg .ezdd-trigger:hover:not(:disabled) {
   background: transparent;
