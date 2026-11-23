@@ -74,10 +74,15 @@ export const sha256 = (s) => createHash('sha256').update(String(s)).digest('hex'
 
 /** `Authorization: Bearer ezk_...` only; keys in query strings are refused. */
 export function parseBearer(request) {
-  const h = request.headers.get('authorization') || '';
-  const m = /^Bearer\s+(\S+)$/i.exec(h.trim());
-  if (!m) return null;
-  return m[1].startsWith('ezk_') ? m[1] : null;
+  /* Google API Gateway (api.ezana.world) moves the caller's Authorization
+     header to X-Forwarded-Authorization before forwarding to Vercel. The key
+     is still fully verified below, so reading it from there is no weaker. */
+  for (const name of ['authorization', 'x-forwarded-authorization']) {
+    const h = request.headers.get(name) || '';
+    const m = /^Bearer\s+(\S+)$/i.exec(h.trim());
+    if (m && m[1].startsWith('ezk_')) return m[1];
+  }
+  return null;
 }
 
 /** Hash of the caller's IP for the request log (never the IP itself). */
