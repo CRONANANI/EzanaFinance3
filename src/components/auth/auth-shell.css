@@ -533,3 +533,257 @@
   outline: 2px solid var(--as-accent);
   outline-offset: 2px;
 }
+
+/* ══ Nov 22nd, 2026: the portal layer ═════════════════════════════════
+   At the founder's request, the 21st.dev "pro sign-in animation" look is laid
+   over the dotted map: concentric rings with orbiting arcs and two pulses
+   spreading from behind the card (AuthRings.jsx), and its control shapes:
+   softly rounded fields and buttons in place of pills, a light sweeping
+   across the primary button, and full-width "Continue with" provider
+   buttons. All recoloured in the Ezana emerald, mint and gold. */
+
+/* ── The rings, between the map and the card ───────────────────────── */
+.as-rings {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.as-rings-glow,
+.as-rings-svg {
+  position: absolute;
+  left: 50%;
+  /* The card's centre: the middle of the viewport, less half the header. */
+  top: calc(50% + 31px);
+  transform: translate(calc(-50% + var(--as-rx, 0px)), calc(-50% + var(--as-ry, 0px)));
+}
+.as-rings-glow {
+  width: min(900px, 120vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--emerald) 13%, transparent) 0%,
+    color-mix(in srgb, var(--emerald) 5%, transparent) 38%,
+    transparent 64%
+  );
+  opacity: 0.75;
+  transition:
+    opacity 0.4s ease,
+    filter 0.4s ease;
+}
+.as-rings-svg {
+  width: max(1200px, 135vmax);
+  height: max(1200px, 135vmax);
+  overflow: visible;
+}
+.as-ring-base,
+.as-ring-arc,
+.as-ring-wave {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.as-ring-base {
+  stroke: color-mix(in srgb, var(--emerald) 15%, transparent);
+  stroke-width: 1;
+}
+.as-ring-arc {
+  stroke: url(#as-arc-gradient);
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  opacity: 0.8;
+  animation: as-orbit var(--as-orbit, 50s) linear infinite;
+  transition:
+    opacity 0.4s ease,
+    stroke-width 0.4s ease;
+}
+.as-ring-arc--reverse {
+  animation-direction: reverse;
+}
+.as-ring-wave {
+  stroke: color-mix(in srgb, var(--emerald) 45%, transparent);
+  stroke-width: 1.25;
+  opacity: 0;
+  animation: as-wave 7s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+}
+.as-ring-wave--b {
+  animation-delay: -3.5s;
+}
+/* Hovering the sign-in button brightens the portal. */
+.as-shell:has(.as-btn--primary:hover:not(:disabled)) .as-ring-arc {
+  opacity: 1;
+  stroke-width: 3;
+}
+.as-shell:has(.as-btn--primary:hover:not(:disabled)) .as-rings-glow {
+  opacity: 1;
+  filter: saturate(1.3);
+}
+@keyframes as-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes as-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(3.3);
+    opacity: 0;
+  }
+}
+
+/* ── Fields: softly rounded, not pills ─────────────────────────────── */
+.as-scope .as-input {
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 2%, var(--as-surface));
+  box-shadow: inset 0 1px 2px color-mix(in srgb, black 4%, transparent);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+.as-scope .as-input:hover {
+  border-color: color-mix(in srgb, var(--emerald) 30%, var(--as-rule));
+}
+.as-scope .as-input:focus {
+  border-color: var(--as-accent);
+  background: var(--as-surface);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--emerald) 14%, transparent),
+    0 6px 18px -10px color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+.as-pill:focus-within > .bi {
+  color: var(--as-accent-strong);
+}
+.as-scope .as-eye {
+  right: 6px;
+  border-radius: var(--radius-md);
+}
+
+/* ── Buttons: the same rounded rectangle ───────────────────────────── */
+.as-scope .as-btn {
+  border-radius: var(--radius-lg);
+}
+.as-scope .as-btn--primary::before {
+  border-radius: var(--radius-lg) var(--radius-lg) 40% 40% / var(--radius-lg) var(--radius-lg) 100% 100%;
+}
+/* A band of light crosses the primary button every few seconds. */
+.as-scope .as-btn--primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -50%;
+  z-index: -1;
+  width: 40%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 100%
+  );
+  transform: skewX(-18deg);
+  animation: as-sweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.as-scope .as-btn--primary:hover:not(:disabled)::after {
+  animation-duration: 1.6s;
+}
+.as-scope .as-btn--primary:disabled::after {
+  animation: none;
+  opacity: 0;
+}
+@keyframes as-sweep {
+  0%,
+  60% {
+    left: -50%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+
+/* Provider buttons: full width, stacked, the provider's own mark. */
+.as-scope .as-btn--social {
+  gap: 10px;
+  background: var(--as-surface);
+  box-shadow: 0 1px 2px color-mix(in srgb, black 5%, transparent);
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.as-scope .as-btn--social:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--emerald) 45%, var(--as-rule));
+  background: color-mix(in srgb, var(--emerald) 3%, var(--as-surface));
+  box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--emerald) 50%, transparent);
+}
+.as-oauth-mark {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.as-oauth-grid--one {
+  gap: 10px;
+}
+
+/* ── The card's contents rise in, one after another ────────────────── */
+.as-panel .as-form > *,
+.as-panel .as-oauth {
+  animation: as-item-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.as-panel .as-form > :nth-child(1) {
+  animation-delay: 0.32s;
+}
+.as-panel .as-form > :nth-child(2) {
+  animation-delay: 0.38s;
+}
+.as-panel .as-form > :nth-child(3) {
+  animation-delay: 0.44s;
+}
+.as-panel .as-form > :nth-child(4) {
+  animation-delay: 0.5s;
+}
+.as-panel .as-form > :nth-child(n + 5) {
+  animation-delay: 0.56s;
+}
+.as-panel .as-oauth {
+  animation-delay: 0.62s;
+}
+@keyframes as-item-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Smaller on phones, so the outer rings frame the card instead of
+     falling off the screen. */
+  .as-rings-svg {
+    width: 118vmax;
+    height: 118vmax;
+  }
+  .as-ring-arc {
+    stroke-width: 1.75;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .as-ring-arc,
+  .as-scope .as-btn--primary::after,
+  .as-panel .as-form > *,
+  .as-panel .as-oauth {
+    animation: none;
+  }
+  .as-ring-wave,
+  .as-scope .as-btn--primary::after {
+    display: none;
+  }
+}

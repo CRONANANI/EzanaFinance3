@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
+import AuthRings from './AuthRings';
 import './auth-shell.css';
 
 /* The landing hero's dotted continents, as the same cacheable static asset
@@ -21,6 +22,7 @@ export default function AuthShell({ children }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={MAP_SRC} alt="" width={337} height={170} draggable={false} decoding="async" />
       </div>
+      <AuthRings />
 
       <header className="as-header">
         <Link href="/" className="as-brand" aria-label="Ezana Finance home">
