@@ -61,6 +61,7 @@ import { industryNetMargins2026 } from './ezana-echo-article-industry-net-margin
 import { ossoff2028Money2026 } from './ezana-echo-article-ossoff-2028-money-2026.js';
 import { tokenizedMoneyOutageTheory2026 } from './ezana-echo-article-tokenized-money-outage-theory-2026.js';
 import { biggestMaDeals2026 } from './ezana-echo-article-biggest-ma-deals-2026.js';
+import { nvidiaHuangReinstated2026 } from './ezana-echo-article-nvidia-huang-reinstated-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -101,6 +102,7 @@ const ARTICLES = [
   ossoff2028Money2026,
   tokenizedMoneyOutageTheory2026,
   biggestMaDeals2026,
+  nvidiaHuangReinstated2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';
@@ -203,6 +205,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'nvidia-huang-reinstated-2026': [
+    {
+      id: 'c-nvhuang-1',
+      author: { name: 'Marcus Lindqvist', initials: 'ML' },
+      content:
+        'A trillion dollars back in one session and the stock is still 30% off the record. The reinstatement fixed the CEO question, not the eight inquiries.',
+      createdAt: '2026-11-23T15:10:00Z',
+    },
+    {
+      id: 'c-nvhuang-2',
+      author: { name: 'Aisha Bello', initials: 'AB' },
+      content:
+        'The neocloud move is the tell. CoreWeave and Nebius up 30% while AMD does 4% says who actually depends on Nvidia’s relationships.',
+      createdAt: '2026-11-23T16:25:00Z',
+    },
+  ],
   'biggest-ma-deals-2026': [
     {
       id: 'c-ma2026-1',

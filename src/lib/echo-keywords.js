@@ -3732,6 +3732,36 @@ export const KEYWORDS = {
       'Marvell agreed to pay Lumentum $3.2 billion if regulators block their $115 billion deal; Paramount agreed to $7 billion in its Warner Bros. Discovery deal before winning approval.',
   },
 
+  'key-person-discount': {
+    id: 'key-person-discount',
+    term: 'Key-Person Discount',
+    definition:
+      'The value a market subtracts from a company when its prospects depend heavily on one individual, usually a founder or long-serving CEO. It widens when that person’s future is in doubt and narrows when continuity is restored.',
+    template: 'timeline',
+    templateData: {
+      title: 'How a key-person discount moves',
+      events: [
+        {
+          year: 'Step 1',
+          label: 'Doubt',
+          detail: 'News puts the leader’s position or conduct in question',
+        },
+        {
+          year: 'Step 2',
+          label: 'Discount widens',
+          detail: 'Investors price the cost of losing that person with no clear successor',
+        },
+        {
+          year: 'Step 3',
+          label: 'Resolution',
+          detail: 'A return or a credible successor narrows the discount; new findings can reopen it',
+        },
+      ],
+    },
+    realWorld:
+      'Nvidia lost about $2.74 trillion of market value from its October 2026 peak to November 20th, including the days after Jensen Huang resigned, and regained roughly $1 trillion at the open when the board reinstated him on November 23rd.',
+  },
+
   'take-private': {
     id: 'take-private',
     term: 'Take-Private',

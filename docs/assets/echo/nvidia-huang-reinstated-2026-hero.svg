@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <!-- Original Ezana illustration, Nov 23rd, 2026. The line traces the article's
+       NVDA path (Oct 6 record, Nov 20 trough, Nov 23 open) on a log-free linear
+       scale; the vertical bar marks the reinstatement. Abstract, no logos. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#07110d"/>
+      <stop offset="1" stop-color="#0b1a14"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#10b981" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#10b981" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#10b981" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g stroke="#1d3a2e" stroke-width="1">
+    <path d="M0 150H1600M0 300H1600M0 450H1600M0 600H1600M0 750H1600"/>
+    <path d="M200 0V900M400 0V900M600 0V900M800 0V900M1000 0V900M1200 0V900M1400 0V900"/>
+  </g>
+  <!-- price path: 239 -> 187 -> 179 -> 170 -> 163 -> 146 -> 126 -> 167 -->
+  <path d="M120 170 L560 395 L700 430 L820 468 L960 498 L1180 571 L1290 660 L1430 482 L1430 900 L120 900 Z" fill="url(#fade)"/>
+  <path d="M120 170 L560 395 L700 430 L820 468 L960 498 L1180 571 L1290 660" fill="none" stroke="#e85d4f" stroke-width="6" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M1290 660 L1430 482" fill="none" stroke="#10b981" stroke-width="7" stroke-linecap="round" filter="url(#glow)"/>
+  <rect x="1424" y="80" width="12" height="740" fill="url(#beam)"/>
+  <circle cx="1290" cy="660" r="11" fill="#07110d" stroke="#e85d4f" stroke-width="4"/>
+  <circle cx="1430" cy="482" r="13" fill="#10b981" filter="url(#glow)"/>
+  <circle cx="120" cy="170" r="9" fill="#07110d" stroke="#5b8def" stroke-width="4"/>
+  <path d="M120 170 H1530" stroke="#5b8def" stroke-width="2" stroke-dasharray="10 10" opacity="0.6"/>
+</svg>
