@@ -429,6 +429,21 @@ body:has(.eth-root) .ezana-echo-container {
 .eth-root .ech-hero--stack .ech-hero__media img {
   object-position: center !important;
 }
+/* Nov 23, 2026: extend the black band above the art down over its top edge,
+   so a light border baked into the picture (the November poster has a cream
+   strip about 1.2% of its height) never shows between the masthead band and
+   the art. Sized in % of the 3:2 box so it tracks the art at every width. */
+.eth-root .ech-hero--stack .ech-hero__media::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: calc(1.6% + 2px);
+  background: black;
+  pointer-events: none;
+}
 /* Chips track the window edge on the full-width art. */
 .eth-root .ech-hero--photo.ech-hero--stack .ech-hero__top {
   right: max(16px, calc((var(--eth-bleed, 100vw) - var(--app-shell-max, 1600px)) / 2 + 24px));
