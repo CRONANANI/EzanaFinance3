@@ -10,6 +10,64 @@ import { communityTermsGate } from '@/lib/moderation/terms';
 import { councilMemberPostingRefusal } from '@/lib/community/council-member-gate';
 
 import { validateTitle, normalizeTopic } from '@/lib/community/redesign';
+import { V3_POST_TYPES, canUseType, isTypeRejected, isMissingSchema } from '@/lib/community/v3';
+import { isAdminUser } from '@/lib/admin-helpers';
+
+/* Community v3 (Nov 23, 2026): what a post may link to, built here from the
+   source after an ownership and sharing check. Never the private object. */
+async function buildAttachment(admin, user, type, raw) {
+  const a = raw && typeof raw === 'object' ? raw : {};
+  if (type === 'sonar_share') {
+    const id = typeof a.saved_id === 'string' ? a.saved_id : '';
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return { error: 'Choose a Sonar report to share.' };
+    const { data: r } = await admin
+      .from('sonar_saved_research')
+      .select('id, user_id, title, question, subject, ticker, depth, share_token, shared_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (!r || r.user_id !== user.id) return { error: 'That Sonar report was not found.' };
+    if (!r.share_token || !r.shared_at)
+      return {
+        error: 'Make the report public by link in Sonar first (Share), then share it here.',
+      };
+    return {
+      attachment: {
+        kind: 'sonar',
+        url: `/sonar/shared/${encodeURIComponent(r.share_token)}`,
+        title: String(r.title || r.question || 'Sonar research').slice(0, 200),
+        question: String(r.question || '').slice(0, 300),
+        subject: r.subject ? String(r.subject).slice(0, 120) : null,
+        ticker: r.ticker ? String(r.ticker).toUpperCase().slice(0, 12) : null,
+        depth: r.depth ? String(r.depth).slice(0, 20) : null,
+      },
+    };
+  }
+  if (type === 'echo_discussion') {
+    const slug = typeof a.slug === 'string' ? a.slug.trim().toLowerCase() : '';
+    if (!/^[a-z0-9][a-z0-9-]{1,160}$/.test(slug)) return { error: 'Choose an Echo article.' };
+    const { data: art } = await admin
+      .from('echo_articles')
+      .select(
+        'article_slug, article_title, article_excerpt, hero_image, cover_image_url, read_time_minutes, article_status',
+      )
+      .eq('article_slug', slug)
+      .eq('article_status', 'published')
+      .maybeSingle();
+    if (!art) return { error: 'That Echo article was not found.' };
+    const img = art.hero_image?.src || art.cover_image_url || null;
+    return {
+      attachment: {
+        kind: 'echo',
+        url: `/ezana-echo/${art.article_slug}`,
+        title: String(art.article_title || '').slice(0, 200),
+        excerpt: String(art.article_excerpt || '').slice(0, 300),
+        image: typeof img === 'string' && img.startsWith('/') ? img : null,
+        read_minutes: Number(art.read_time_minutes) || null,
+      },
+    };
+  }
+  return { attachment: null };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -511,7 +569,13 @@ export async function POST(request) {
     }
 
     const isComment = !!parent_post_id;
-    const hasAttachment = !!(image_url || poll_data || ticker_embed);
+    /* v3: a Sonar share or an Echo discussion may go without body text. */
+    const linksSomething =
+      !isComment &&
+      ['sonar_share', 'echo_discussion'].includes(body.post_type) &&
+      body.attachment &&
+      typeof body.attachment === 'object';
+    const hasAttachment = !!(image_url || poll_data || ticker_embed || linksSomething);
     if (isComment && !content.trim()) {
       return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
     }
@@ -524,9 +588,21 @@ export async function POST(request) {
     let title = null;
     let topic_slug = null;
     if (!isComment) {
-      const t = validateTitle(sanitizeInput(typeof body.title === 'string' ? body.title : ''));
-      if (!t.ok) return NextResponse.json({ error: t.error }, { status: 400 });
-      title = t.value;
+      /* v3: a plain discussion or a share may go untitled (the feed falls
+         back to the first line); every research type needs a title. */
+      const rawTitle = sanitizeInput(typeof body.title === 'string' ? body.title : '').trim();
+      const titleOptional = [
+        undefined,
+        null,
+        'discussion',
+        'sonar_share',
+        'echo_discussion',
+      ].includes(body.post_type);
+      if (rawTitle || !titleOptional) {
+        const t = validateTitle(rawTitle);
+        if (!t.ok) return NextResponse.json({ error: t.error }, { status: 400 });
+        title = t.value;
+      }
       topic_slug = normalizeTopic(body.topic_slug ?? body.topic);
       if (!topic_slug) {
         return NextResponse.json({ error: 'Choose a topic for your post.' }, { status: 400 });
@@ -542,7 +618,8 @@ export async function POST(request) {
       }
     }
 
-    const maxLen = isComment ? 500 : 1000;
+    /* Nov 23, 2026: research posts need room (a thesis has six sections). */
+    const maxLen = isComment ? 500 : 4000;
     if (content.length > maxLen) {
       return NextResponse.json(
         {
@@ -605,24 +682,38 @@ export async function POST(request) {
     // Partner-only post formats (Analyst Take / Trade Idea / Market Brief).
     // Gated server-side: only a partner's top-level post may carry a post_type,
     // and a disclosure is only stored alongside a valid type.
+    /* Nov 23, 2026 (Community v3): research types for every member,
+       product and announcement for admins, both checked here; a plain
+       discussion is stored without a type. A Sonar share or an Echo
+       discussion carries a safe attachment built from its source. */
     let post_type = null;
     let disclosure = null;
-    if (
-      !isComment &&
-      typeof body.post_type === 'string' &&
-      ALLOWED_POST_TYPES.includes(body.post_type)
-    ) {
+    let attachment = null;
+    const requestedType = typeof body.post_type === 'string' ? body.post_type : null;
+    if (!isComment && requestedType && V3_POST_TYPES.includes(requestedType)) {
       const { data: prof } = await admin
         .from('profiles')
         .select('is_partner')
         .eq('id', user.id)
         .maybeSingle();
-      if (prof?.is_partner) {
-        post_type = body.post_type;
-        if (typeof body.disclosure === 'string' && body.disclosure.trim()) {
-          disclosure = sanitizeInput(body.disclosure.trim()).slice(0, 200);
-        }
+      const who = { partner: Boolean(prof?.is_partner), admin: isAdminUser(user) };
+      if (!canUseType(requestedType, who)) {
+        return NextResponse.json(
+          { error: "That post type isn't available on your account." },
+          { status: 403 },
+        );
       }
+      post_type = requestedType === 'discussion' ? null : requestedType;
+      if (
+        ALLOWED_POST_TYPES.includes(requestedType) &&
+        typeof body.disclosure === 'string' &&
+        body.disclosure.trim()
+      ) {
+        disclosure = sanitizeInput(body.disclosure.trim()).slice(0, 200);
+      }
+      const built = await buildAttachment(admin, user, requestedType, body.attachment);
+      if (built.error) return NextResponse.json({ error: built.error }, { status: 400 });
+      attachment = built.attachment;
     }
 
     const insertRow = {
@@ -635,6 +726,7 @@ export async function POST(request) {
       ticker_embed: isComment ? null : ticker_embed,
       post_type,
       disclosure,
+      ...(attachment ? { attachment } : {}),
       ...(isComment ? {} : { title, topic_slug }),
     };
     const returnCols =
@@ -650,6 +742,26 @@ export async function POST(request) {
       ({ data: post, error } = await supabase
         .from('community_posts')
         .insert(insertRow)
+        .select(returnCols)
+        .single());
+    }
+
+    if (error && (isTypeRejected(error) || (attachment && isMissingSchema(error)))) {
+      /* The Community v3 migration is not applied yet: keep the post as a
+         plain discussion, with the attachment's link written into the body
+         so nothing the member chose is lost. */
+      console.warn('[community posts] v3 types not in the database yet; posting as a discussion');
+      const fallback = { ...insertRow, post_type: null };
+      delete fallback.attachment;
+      if (attachment?.url)
+        fallback.content =
+          `${fallback.content}\n\n[${attachment.title || 'Linked research'}](${attachment.url})`.slice(
+            0,
+            4000,
+          );
+      ({ data: post, error } = await supabase
+        .from('community_posts')
+        .insert(fallback)
         .select(returnCols)
         .single());
     }

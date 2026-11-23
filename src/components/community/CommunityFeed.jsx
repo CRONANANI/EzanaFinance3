@@ -23,8 +23,17 @@ const TABS = [
   { key: 'saved', label: 'Saved' },
 ];
 
-function feedUrl(tab, topic, cursor) {
-  const p = new URLSearchParams({ tab, limit: String(FEED_PAGE) });
+/* v3 (Nov 23 2026): `query` = { sort, filter, builds } switches the feed API
+   to community_feed_v3; the Saved view still uses tab=saved. */
+function feedUrl(tab, topic, cursor, query) {
+  const p = new URLSearchParams({ limit: String(FEED_PAGE) });
+  if (query && tab !== 'saved') {
+    p.set('sort', query.sort || 'relevant');
+    if (query.filter && query.filter !== 'all') p.set('filter', query.filter);
+    if (query.builds) p.set('builds', '1');
+  } else {
+    p.set('tab', tab);
+  }
   if (topic) p.set('topic', topic);
   if (cursor?.before) p.set('before', cursor.before);
   if (cursor?.offset) p.set('offset', String(cursor.offset));
@@ -159,6 +168,10 @@ export function CommunityFeed({
   pinnedPostId,
   onClosePinned,
   onNewPost,
+  query = null,
+  followingIds,
+  onFollowChange,
+  emptyText = '',
 }) {
   const [posts, setPosts] = useState([]);
   const [next, setNext] = useState(null);
@@ -173,7 +186,7 @@ export function CommunityFeed({
       if (cursor) setMore(true);
       else setStatus('loading');
       try {
-        const res = await fetch(feedUrl(tab, topic, cursor), { credentials: 'include' });
+        const res = await fetch(feedUrl(tab, topic, cursor, query), { credentials: 'include' });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.error);
         if (id !== seq.current) return;
@@ -190,7 +203,8 @@ export function CommunityFeed({
         if (cursor) setMore(false);
       }
     },
-    [tab, topic],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tab, topic, query?.sort, query?.filter, query?.builds],
   );
 
   useEffect(() => {
@@ -224,7 +238,7 @@ export function CommunityFeed({
       <h2 className={s.srOnly} id="community-feed-title">
         Community feed
       </h2>
-      <div id="community-feed-panel" role="tabpanel" aria-labelledby={`feed-tab-${tab}`}>
+      <div id="community-feed-panel">
         {showFollowHint ? (
           <p className={s.hint}>
             Follow investors to build your feed.{' '}
@@ -254,15 +268,17 @@ export function CommunityFeed({
 
           {status === 'ready' && posts.length === 0 ? (
             <div className={s.feedEmpty}>
-              {saved
-                ? topicLabel
-                  ? `No saved posts in ${topicLabel} yet`
-                  : 'No saved posts yet'
-                : topicLabel
-                  ? `No posts in ${topicLabel} yet`
-                  : tab === 'following'
-                    ? 'No posts from people you follow yet'
-                    : 'No posts yet'}
+              {emptyText && !saved
+                ? emptyText
+                : saved
+                  ? topicLabel
+                    ? `No saved posts in ${topicLabel} yet`
+                    : 'No saved posts yet'
+                  : topicLabel
+                    ? `No posts in ${topicLabel} yet`
+                    : tab === 'following'
+                      ? 'No posts from people you follow yet'
+                      : 'No posts yet'}
               {saved ? (
                 <button
                   type="button"
@@ -288,6 +304,8 @@ export function CommunityFeed({
                   post={p}
                   myId={myId}
                   onTopic={onTopic}
+                  followingIds={followingIds}
+                  onFollowChange={onFollowChange}
                   onDeleted={(id) => setPosts((list) => list.filter((x) => x.id !== id))}
                   onBlocked={(uid) => setPosts((list) => list.filter((x) => x.author?.id !== uid))}
                   onUnsaved={

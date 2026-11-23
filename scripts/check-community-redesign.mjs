@@ -129,3 +129,40 @@ test('page: tokens only, no em dashes, no emoji, Bootstrap Icons', () => {
   assert.match(page, /CommunityPage/);
   assert.match(read('src/components/community/CommunityPage.jsx'), /className="ez-canvas"/);
 });
+
+/* ── Community v3 (Nov 23 2026) ─────────────────────────────────────── */
+const v3 = await import('../src/lib/community/v3.js');
+
+test('v3: filters, sorts and sections normalise to known keys', () => {
+  assert.equal(v3.normalizeFilter('ideas'), 'ideas');
+  assert.equal(v3.normalizeFilter('nope'), 'all');
+  assert.equal(v3.normalizeSort('discussed'), 'discussed');
+  assert.equal(v3.normalizeSort('x'), 'relevant');
+  assert.equal(v3.normalizeHubTab('events'), 'events');
+  assert.deepEqual(v3.kindsForFilter('research'), ['research', 'sonar_share']);
+  assert.equal(v3.kindsForFilter('all'), null);
+});
+
+test('v3: partner and admin post types are gated', () => {
+  assert.ok(v3.canUseType('discussion', {}));
+  assert.ok(!v3.canUseType('analyst_take', {}));
+  assert.ok(v3.canUseType('analyst_take', { partner: true }));
+  assert.ok(!v3.canUseType('announcement', { partner: true }));
+  assert.ok(v3.canUseType('announcement', { admin: true }));
+});
+
+test('v3: new routes read as the signed-in user; the chart uses real closes', () => {
+  for (const r of ['overview', 'contributors', 'sessions', 'featured', 'members']) {
+    const src = read(`src/app/api/community/${r}/route.js`);
+    assert.match(src, /withSession\(/, `${r} uses the user session`);
+  }
+  const extras = read('src/components/community/PostExtras.jsx');
+  assert.match(extras, /stock-candles/);
+  assert.doesNotMatch(extras, /MiniChart/);
+  const page = read('src/components/community/CommunityPage.jsx');
+  assert.match(page, /Research Builds/);
+  assert.match(
+    read('src/components/community/CommunityHub.jsx'),
+    /Research\. Discuss\. Build Together\./,
+  );
+});

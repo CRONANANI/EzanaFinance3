@@ -6,12 +6,13 @@
 import { NextResponse } from 'next/server';
 import { withSession, PRIVATE } from '@/lib/community/route-session';
 import { isCommunityDemoViewer } from '@/lib/community/demo-page';
+import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   return withSession(request, 'me', async ({ user, supabase }) => {
-    const [profile, following, friends, unread] = await Promise.all([
+    const [profile, following, friends, unread, own] = await Promise.all([
       supabase.from('public_profiles').select('username').eq('id', user.id).maybeSingle(),
       supabase
         .from('user_follows')
@@ -27,6 +28,9 @@ export async function GET(request) {
         .select('id', { count: 'exact', head: true })
         .is('read_at', null)
         .neq('sender_id', user.id),
+      /* v3: which post types the Create Post menu offers (the posts API
+         checks again). */
+      supabase.from('profiles').select('is_partner').eq('id', user.id).maybeSingle(),
     ]);
     return NextResponse.json(
       {
@@ -38,6 +42,8 @@ export async function GET(request) {
         has_unread_messages: !unread.error && (unread.count || 0) > 0,
         /* Master admin and demo accounts see sample data on this page. */
         demo: isCommunityDemoViewer(user),
+        is_partner: Boolean(own.data?.is_partner),
+        is_admin: isAdminUser(user),
       },
       { headers: PRIVATE },
     );

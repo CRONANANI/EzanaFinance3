@@ -261,6 +261,19 @@ export function EvoComposer({
   topics = [],
   defaultTopic = '',
   autoFocusTitle = false,
+  /* Nov 23, 2026 (Community v3), all optional:
+     kind           the v3 post type chosen in the Create Post dialog
+     extraBody      sent with the post ({ post_type, attachment })
+     titleRequired  false lets a plain discussion or a share go untitled
+     template       a structured starting body for research types
+     draftKey       autosaves title and body to this localStorage key
+     onPreview      not used; preview is built in */
+  kind = null,
+  extraBody = null,
+  titleRequired = true,
+  template = '',
+  draftKey = null,
+  appendText = '',
 }) {
   const { user } = useAuth();
   const { ensureAccepted, termsModal } = useCommunityTerms();
@@ -280,9 +293,45 @@ export function EvoComposer({
   const [title, setTitle] = useState('');
   const [topic, setTopic] = useState(defaultTopic || '');
   const [formError, setFormError] = useState('');
+  const [preview, setPreview] = useState(false);
   useEffect(() => {
     if (defaultTopic) setTopic(defaultTopic);
   }, [defaultTopic]);
+
+  /* Drafts (v3): restore on open, save as the member types, clear on post.
+     A structured template fills an empty body when the type changes. */
+  const draftLoaded = useRef(false);
+  useEffect(() => {
+    draftLoaded.current = false;
+    let restored = false;
+    if (draftKey) {
+      try {
+        const d = JSON.parse(window.localStorage.getItem(draftKey) || 'null');
+        if (d && (d.title || d.text)) {
+          setTitle(String(d.title || ''));
+          setText(String(d.text || ''));
+          restored = true;
+        }
+      } catch {
+        /* storage unavailable: no draft */
+      }
+    }
+    if (!restored) setText((t) => (t.trim() ? t : template || ''));
+    draftLoaded.current = true;
+  }, [draftKey, template]);
+  useEffect(() => {
+    if (!draftKey || !draftLoaded.current) return undefined;
+    const id = setTimeout(() => {
+      try {
+        const untouched = !title.trim() && (!text.trim() || text === template);
+        if (untouched) window.localStorage.removeItem(draftKey);
+        else window.localStorage.setItem(draftKey, JSON.stringify({ title, text }));
+      } catch {
+        /* storage unavailable */
+      }
+    }, 400);
+    return () => clearTimeout(id);
+  }, [draftKey, title, text, template]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -314,13 +363,22 @@ export function EvoComposer({
   const pollOptions = poll?.options?.filter((o) => o.trim()) ?? [];
   const hasPoll = poll?.question?.trim() && pollOptions.length >= 2;
   const hasTicker = tickers.length > 0;
-  const hasContent = text.trim().length > 0 || image || hasPoll || hasTicker || quoteMode;
-  const titleOk = title.trim().length >= 3 && title.trim().length <= 160;
+  const hasAttachment = Boolean(extraBody?.attachment);
+  const bodyText = text.trim() === template.trim() ? '' : text.trim();
+  const hasContent =
+    bodyText.length > 0 || image || hasPoll || hasTicker || quoteMode || hasAttachment;
+  const titleOk = titleRequired
+    ? title.trim().length >= 3 && title.trim().length <= 160
+    : title.trim().length === 0 || (title.trim().length >= 3 && title.trim().length <= 160);
   const canPost = !!user && !posting && hasContent && titleOk && Boolean(topic);
 
   const handlePost = async () => {
     if (!titleOk || !topic) {
-      setFormError('Add a title of 3 to 160 characters and choose a topic.');
+      setFormError(
+        titleRequired
+          ? 'Add a title of 3 to 160 characters and choose a topic.'
+          : 'Choose a topic (a title, if you add one, needs 3 to 160 characters).',
+      );
       return;
     }
     if (!canPost) return;
@@ -348,7 +406,10 @@ export function EvoComposer({
         image_url = image.url;
       }
 
-      let content = text.trim();
+      let content = kind ? bodyText : text.trim();
+      if (appendText && appendText.trim()) {
+        content = content ? `${content}\n\n${appendText.trim()}` : appendText.trim();
+      }
       if (quoteMode && quotedPost) {
         content = content || `Quoting @${quotedPost.author?.username || 'member'}`;
       }
@@ -373,6 +434,7 @@ export function EvoComposer({
         quoted_post_id: quoteMode && quotedPost?.id ? quotedPost.id : undefined,
         post_type: isPartner && postType ? postType : undefined,
         disclosure: isPartner && postType && disclosure.trim() ? disclosure.trim() : undefined,
+        ...(kind ? { post_type: kind, ...(extraBody || {}) } : {}),
       };
 
       const res = await fetch('/api/community/posts', {
@@ -398,6 +460,13 @@ export function EvoComposer({
         });
       }
 
+      if (draftKey) {
+        try {
+          window.localStorage.removeItem(draftKey);
+        } catch {
+          /* storage unavailable */
+        }
+      }
       setText('');
       setTitle('');
       setMode(null);
@@ -457,8 +526,8 @@ export function EvoComposer({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            aria-label="Post title"
+            placeholder={titleRequired ? 'Title' : 'Title (optional)'}
+            aria-label={titleRequired ? 'Post title' : 'Post title, optional'}
             maxLength={160}
             disabled={!user}
             autoFocus={autoFocusTitle}
@@ -473,11 +542,34 @@ export function EvoComposer({
               padding: '0 0 8px',
             }}
           />
+          {kind ? (
+            <div className="cv3-composer-tabs" role="group" aria-label="Write or preview">
+              <button type="button" aria-pressed={!preview} onClick={() => setPreview(false)}>
+                Write
+              </button>
+              <button type="button" aria-pressed={preview} onClick={() => setPreview(true)}>
+                Preview
+              </button>
+            </div>
+          ) : null}
+          {kind && preview ? (
+            <div className="cv3-composer-preview" aria-live="polite">
+              {title.trim() ? <h3>{title.trim()}</h3> : null}
+              {bodyText ? (
+                bodyText
+                  .split(/\n{2,}/)
+                  .map((para, i) => <p key={i}>{para.replace(/\*\*/g, '')}</p>)
+              ) : (
+                <p className="cv3-muted">Nothing written yet.</p>
+              )}
+            </div>
+          ) : null}
           <textarea
+            hidden={Boolean(kind && preview)}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Share a take on the markets…"
-            rows={3}
+            rows={kind && template ? 10 : 3}
             disabled={!user}
             style={{
               width: '100%',
@@ -492,7 +584,7 @@ export function EvoComposer({
             }}
           />
 
-          {isPartner && (
+          {isPartner && !kind && (
             <div style={{ marginTop: 10 }}>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span
@@ -770,7 +862,7 @@ export function EvoComposer({
                 className="ez-btn ez-btn--primary"
                 style={{ fontSize: 13, opacity: canPost ? 1 : 0.5 }}
               >
-                {posting ? 'Posting…' : 'Post take'}
+                {posting ? 'Posting…' : kind ? 'Publish' : 'Post take'}
               </button>
             </div>
           </div>

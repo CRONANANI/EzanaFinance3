@@ -24,7 +24,7 @@ function useIsMac() {
   return mac;
 }
 
-function CommunitySearch({ onOpenPost }) {
+export function CommunitySearch({ onOpenPost }) {
   const router = useRouter();
   const isMac = useIsMac();
   const inputRef = useRef(null);

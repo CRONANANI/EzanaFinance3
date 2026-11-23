@@ -131,9 +131,7 @@ export function DiscussionThread({ postId, onReplied }) {
           {data.replies.length === 1 ? 'reply' : 'replies'}
         </p>
       ) : null}
-      {data?.replies?.length ? (
-        <ThreadTimeline replies={data.replies} />
-      ) : null}
+      {data?.replies?.length ? <ThreadTimeline replies={data.replies} /> : null}
       <form className={s.replyForm} onSubmit={submit}>
         <label className={s.srOnly} htmlFor={`reply-${postId}`}>
           Write a reply

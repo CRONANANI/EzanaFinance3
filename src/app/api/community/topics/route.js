@@ -13,14 +13,32 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   return withSession(request, 'topics', async ({ user, supabase }) => {
-    const [{ data: topics, error }, { data: follows, error: fErr }] = await Promise.all([
-      supabase
-        .from('community_topics')
-        .select('slug, label, sort_order')
-        .eq('is_active', true)
-        .order('sort_order'),
-      supabase.from('community_topic_follows').select('topic_slug').eq('user_id', user.id),
-    ]);
+    /* Nov 23, 2026: each topic also carries its real post counts (all time
+       and the last 30 days) for the Topics tab. */
+    const since = new Date(Date.now() - 30 * 86400000).toISOString();
+    const [{ data: topics, error }, { data: follows, error: fErr }, { data: posted }] =
+      await Promise.all([
+        supabase
+          .from('community_topics')
+          .select('slug, label, sort_order')
+          .eq('is_active', true)
+          .order('sort_order'),
+        supabase.from('community_topic_follows').select('topic_slug').eq('user_id', user.id),
+        supabase
+          .from('community_posts')
+          .select('topic_slug, created_at')
+          .is('parent_post_id', null)
+          .is('moderation_hidden_at', null)
+          .not('topic_slug', 'is', null)
+          .limit(10000),
+      ]);
+    const counts = new Map();
+    for (const p of posted || []) {
+      const c = counts.get(p.topic_slug) || { posts: 0, recent: 0 };
+      c.posts += 1;
+      if (p.created_at >= since) c.recent += 1;
+      counts.set(p.topic_slug, c);
+    }
     if (error) throw new Error(error.message);
     if (fErr) throw new Error(fErr.message);
     const followed = new Set((follows || []).map((f) => f.topic_slug));
@@ -30,6 +48,8 @@ export async function GET(request) {
           slug: t.slug,
           label: t.label,
           followed: followed.has(t.slug),
+          posts: counts.get(t.slug)?.posts || 0,
+          recent_posts: counts.get(t.slug)?.recent || 0,
         })),
       },
       { headers: PRIVATE },

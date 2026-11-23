@@ -1,91 +1,53 @@
 'use client';
 
 /**
- * Community page (Nov 15 2026 redesign), one flat canvas:
- *   row 1  search, Messages, New post
- *   row 2  the KPI strip and the feed tabs (Following, Trending, Latest, Saved)
- *   row 3  topics as text-only filters
- *   then   the feed, and a right column split off by one vertical hairline
- *          (Community insights, Active discussions, Leaderboard, People to
- *          follow).
- * The left navigation column is gone: its destinations were duplicates of
- * the tabs, the topic row and the cards already on the page. Every section
- * loads and fails on its own. Tab, topic and a shared post (?post=) live in
- * the URL.
- *
- * Feed default: Following; Trending (with a hint) when the member follows
- * nobody yet.
+ * Community page (v3, Nov 23 2026): "Research. Discuss. Build Together."
+ *   hero        eyebrow, heading, one line
+ *   nav row     Feed / Topics / Research Builds / Members / Events, and the
+ *               Create Post button (with a post-type menu) on the right
+ *   Feed        the editorially featured Echo article, filter chips (All
+ *               Posts, Research, Analysis, Ideas, Data, Product,
+ *               Announcements), Saved, a sort menu, then posts
+ *   right rail  about 272px: Community Overview, Trending, Upcoming Events,
+ *               Top Contributors
+ * Section, filter, sort, topic, saved and a shared post (?post=) live in the
+ * URL, so back and forward work. Every section loads and fails on its own,
+ * and nothing shows a number it cannot back. Search and Messages stay in the
+ * nav row's tools.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import s from '@/app/(dashboard)/community/community.module.css';
-import { EvoComposer } from '@/components/community/redesign_v2/EvoComposer';
-import { CommunityHeader } from './CommunityHeader';
-import { CommunityTopics } from './CommunityTopics';
-import { CommunityStats } from './CommunityStats';
-import { CommunityFeed, FeedControls } from './CommunityFeed';
-import { CommunityInsights } from './CommunityInsights';
-import { ActiveDiscussions } from './ActiveDiscussions';
-import { CommunityLeaderboard } from './CommunityLeaderboard';
-import { PeopleToFollow } from './PeopleToFollow';
+import { useAuth } from '@/components/AuthProvider';
+import { CommunityFeed } from './CommunityFeed';
+import { CommunitySearch } from './CommunityHeader';
+import {
+  CommunityHero,
+  HubTabs,
+  CreatePostButton,
+  FeaturedBanner,
+  FeedFilterBar,
+} from './CommunityHub';
+import { OverviewCard, TrendingCard, EventsCard, ContributorsCard } from './CommunityRail';
+import { TopicsPanel, MembersPanel, EventsPanel } from './CommunityPanels';
+import { CreatePostDialog } from './CreatePostDialog';
 import { useCommunityResource, sendJson } from './useCommunityResource';
-import { normalizeTab, normalizeTopic } from '@/lib/community/redesign';
+import { normalizeTopic } from '@/lib/community/redesign';
+import { normalizeFilter, normalizeSort, normalizeHubTab } from '@/lib/community/v3';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function ComposerDialog({ open, onClose, topics, defaultTopic, onPosted }) {
-  const dialogRef = useRef(null);
-  useEffect(() => {
-    if (!open) return undefined;
-    const prev = document.activeElement;
-    const onKey = (e) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      prev?.focus?.();
-    };
-  }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div
-      className={s.overlay}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className={s.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="composer-title"
-        ref={dialogRef}
-      >
-        <div className={s.dialogHead}>
-          <h2 className={s.dialogTitle} id="composer-title">
-            New post
-          </h2>
-          <button type="button" className={s.iconBtn} aria-label="Close" onClick={onClose}>
-            <i className="bi bi-x-lg" aria-hidden="true" />
-          </button>
-        </div>
-        <EvoComposer
-          topics={topics}
-          defaultTopic={defaultTopic || ''}
-          onPosted={onPosted}
-          autoFocusTitle
-        />
-      </div>
-    </div>
-  );
-}
 
 export function CommunityPage() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const urlTab = normalizeTab(params.get('tab'));
+  const { user } = useAuth();
+
+  const hub = normalizeHubTab(params.get('tab')) || 'feed';
+  const filter = normalizeFilter(params.get('filter'));
+  const sort = normalizeSort(params.get('sort'));
+  const saved = params.get('view') === 'saved';
   const topic = normalizeTopic(params.get('topic'));
   const pinned = UUID.test(params.get('post') || '') ? params.get('post') : null;
 
@@ -93,46 +55,76 @@ export function CommunityPage() {
   const topicsRes = useCommunityResource('/api/community/topics', { refetchOnFocus: false });
   const topics = useMemo(() => topicsRes.data?.topics || [], [topicsRes.data]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [composerOpen, setComposerOpen] = useState(false);
+  const [composer, setComposer] = useState(null); // null | post type key
 
-  /* Following by default; Trending (with a hint) for a member who follows nobody. */
-  const followsNobody = me.data ? me.data.following === 0 : false;
-  const meSettled = !me.loading;
-  const tab = urlTab || (me.error ? 'trending' : followsNobody ? 'trending' : 'following');
-  const showFollowHint = !urlTab && followsNobody;
+  /* Partner and admin post types are offered only to those accounts (the
+     posts API checks again). */
+  const who = useMemo(
+    () => ({ partner: Boolean(me.data?.is_partner), admin: Boolean(me.data?.is_admin) }),
+    [me.data?.is_partner, me.data?.is_admin],
+  );
+
+  /* Whom the member follows, for the Follow action on each post. */
+  const [followingIds, setFollowingIds] = useState(null);
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let alive = true;
+    fetch('/api/community/follow?list=following', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { following: [] }))
+      .then((d) => alive && setFollowingIds(new Set((d.following || []).map((f) => f.id))))
+      .catch(() => alive && setFollowingIds(new Set()));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+  const onFollowChange = useCallback((id, on) => {
+    setFollowingIds((prev) => {
+      const next = new Set(prev || []);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
 
   const setParams = useCallback(
-    (patch) => {
+    (patch, { push = false } = {}) => {
       const next = new URLSearchParams(params.toString());
       for (const [k, v] of Object.entries(patch)) {
         if (v) next.set(k, v);
         else next.delete(k);
       }
       const q = next.toString();
-      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      const url = q ? `${pathname}?${q}` : pathname;
+      if (push) router.push(url, { scroll: false });
+      else router.replace(url, { scroll: false });
     },
     [params, pathname, router],
   );
 
-  const onTab = useCallback((t) => setParams({ tab: t }), [setParams]);
-  const onTopic = useCallback((slug) => setParams({ topic: slug }), [setParams]);
-  const openPost = useCallback(
-    (id) => {
-      setParams({ post: id });
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      document
-        .getElementById('community-feed-title')
-        ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    },
+  /* Sections push history (back returns to the last section); filters replace. */
+  const onHub = useCallback(
+    (t) => setParams({ tab: t === 'feed' ? null : t, post: null }, { push: true }),
     [setParams],
   );
+  const onTopic = useCallback(
+    (slug) => setParams({ topic: slug, tab: null, view: null }, { push: true }),
+    [setParams],
+  );
+  const onFilter = useCallback(
+    (f) => setParams({ filter: f === 'all' ? null : f, view: null }),
+    [setParams],
+  );
+  const onSort = useCallback((k) => setParams({ sort: k === 'relevant' ? null : k }), [setParams]);
+  const onSaved = useCallback((on) => setParams({ view: on ? 'saved' : null }), [setParams]);
 
-  const onToggleFollow = async (t) => {
+  const onToggleFollowTopic = async (t) => {
     const next = !t.followed;
-    topicsRes.setData((d) => ({
-      ...d,
-      topics: (d?.topics || []).map((x) => (x.slug === t.slug ? { ...x, followed: next } : x)),
-    }));
+    const flip = (val) =>
+      topicsRes.setData((d) => ({
+        ...d,
+        topics: (d?.topics || []).map((x) => (x.slug === t.slug ? { ...x, followed: val } : x)),
+      }));
+    flip(next);
     try {
       if (next) await sendJson('/api/community/topics', { body: { slug: t.slug } });
       else
@@ -140,98 +132,165 @@ export function CommunityPage() {
           method: 'DELETE',
         });
     } catch {
-      topicsRes.setData((d) => ({
-        ...d,
-        topics: (d?.topics || []).map((x) => (x.slug === t.slug ? { ...x, followed: !next } : x)),
-      }));
+      flip(!next);
     }
   };
 
-  const onFollowed = () => {
-    me.reload();
-    if (tab === 'following') setRefreshKey((k) => k + 1);
+  const onPosted = async () => {
+    setComposer(null);
+    /* A new post leads Recent; send the member there. */
+    setParams({ tab: null, sort: 'recent', filter: null, view: null, topic: null });
+    setRefreshKey((k) => k + 1);
   };
 
-  const onPosted = async () => {
-    setComposerOpen(false);
-    /* A new post shows under Latest (Following lists other people's posts). */
-    if (tab !== 'latest') onTab('latest');
-    else setRefreshKey((k) => k + 1);
-  };
+  const topicLabel = topics.find((t) => t.slug === topic)?.label;
+  const feedQuery = useMemo(() => ({ sort, filter }), [sort, filter]);
+  const buildsQuery = useMemo(() => ({ sort: 'recent', builds: true }), []);
 
   return (
     <div className="ez-canvas">
-      <div className={s.page}>
-        <CommunityHeader
-          hasUnreadMessages={Boolean(me.data?.has_unread_messages)}
-          demo={Boolean(me.data?.demo)}
-          onNewPost={() => setComposerOpen(true)}
-          onOpenPost={openPost}
-        />
+      <div className={`${s.page} ${s.cv3Page}`}>
+        <div className={s.cv3Layout}>
+          <main className={s.cv3Main}>
+            <CommunityHero demo={Boolean(me.data?.demo)}>
+              <CommunitySearch onOpenPost={(id) => setParams({ tab: null, post: id })} />
+            </CommunityHero>
 
-        <div className={s.band}>
-          <CommunityStats />
-          <FeedControls tab={tab} onTab={onTab} topic={topic} onTopic={onTopic} topics={topics} />
-        </div>
+            <HubTabs tab={hub} onTab={onHub}>
+              <div className={s.cv3NavTools}>
+                <Link
+                  href="/community/messages"
+                  className={s.cv3IconLink}
+                  aria-label={
+                    me.data?.has_unread_messages ? 'Messages, unread messages' : 'Messages'
+                  }
+                >
+                  <i className="bi bi-chat-dots" aria-hidden="true" />
+                  {me.data?.has_unread_messages ? (
+                    <span className={s.dot} aria-hidden="true" />
+                  ) : null}
+                </Link>
+                <CreatePostButton who={who} onCreate={(t) => setComposer(t)} />
+              </div>
+            </HubTabs>
 
-        <CommunityTopics
-          topic={topic}
-          onTopic={onTopic}
-          topics={topics}
-          onToggleFollow={onToggleFollow}
-        />
+            <div id="hub-panel" role="tabpanel" aria-labelledby={`hub-tab-${hub}`}>
+              {hub === 'feed' ? (
+                <>
+                  <FeaturedBanner />
+                  <FeedFilterBar
+                    filter={filter}
+                    onFilter={onFilter}
+                    sort={sort}
+                    onSort={onSort}
+                    saved={saved}
+                    onSaved={onSaved}
+                  />
+                  {topicLabel ? (
+                    <p className={s.cv3TopicNotice}>
+                      <i className="bi bi-hash" aria-hidden="true" />
+                      Showing <strong>{topicLabel}</strong>
+                      <button
+                        type="button"
+                        className={`${s.btn} ${s.btnLink}`}
+                        onClick={() => setParams({ topic: null })}
+                      >
+                        Clear
+                      </button>
+                    </p>
+                  ) : null}
+                  <CommunityFeed
+                    tab={saved ? 'saved' : 'latest'}
+                    onTab={(t) => onSaved(t === 'saved')}
+                    topic={topic}
+                    onTopic={onTopic}
+                    topics={topics}
+                    refreshKey={refreshKey}
+                    myId={me.data?.user_id}
+                    pinnedPostId={pinned}
+                    onClosePinned={() => setParams({ post: null })}
+                    onNewPost={() => setComposer('discussion')}
+                    query={saved ? null : feedQuery}
+                    followingIds={followingIds}
+                    onFollowChange={onFollowChange}
+                  />
+                </>
+              ) : null}
 
-        <div className={s.grid}>
-          {meSettled ? (
-            <CommunityFeed
-              tab={tab}
-              onTab={onTab}
-              topic={topic}
-              onTopic={onTopic}
-              topics={topics}
-              showFollowHint={showFollowHint && tab === 'trending'}
-              refreshKey={refreshKey}
-              myId={me.data?.user_id}
-              pinnedPostId={pinned}
-              onClosePinned={() => setParams({ post: null })}
-              onNewPost={() => setComposerOpen(true)}
-            />
-          ) : (
-            <section className={s.feed} aria-busy="true">
-              <div className={s.skel} style={{ height: 18, width: '60%', marginTop: 28 }} />
-              <div className={s.skel} style={{ height: 12, marginTop: 14 }} />
-              <div className={s.skel} style={{ height: 12, width: '80%', marginTop: 8 }} />
-            </section>
-          )}
+              {hub === 'topics' ? (
+                <TopicsPanel
+                  topics={topics}
+                  loading={topicsRes.loading}
+                  onOpenTopic={onTopic}
+                  onToggleFollow={onToggleFollowTopic}
+                />
+              ) : null}
 
-          <aside className={s.rail} aria-label="Community highlights">
-            <CommunityInsights onTopic={onTopic} />
-            <ActiveDiscussions
-              onOpenPost={openPost}
-              onViewAll={() => {
-                onTab('trending');
-                document.getElementById('community-feed-title')?.scrollIntoView({ block: 'start' });
-              }}
-            />
-            <CommunityLeaderboard />
-            <PeopleToFollow onFollowed={onFollowed} />
+              {hub === 'builds' ? (
+                <section>
+                  <div className={s.cv3PanelHead}>
+                    <div>
+                      <h2 className={s.cv3PanelTitle}>Research Builds</h2>
+                      <p className={s.cv3Note}>
+                        Sonar research members chose to publish here. A build shows only its public
+                        share page; private notes, controls and saved reports are never listed.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className={`${s.btn} ${s.btnLink}`}
+                      onClick={() => setComposer('sonar_share')}
+                    >
+                      <i className="bi bi-plus-lg" aria-hidden="true" />
+                      Share a build
+                    </button>
+                  </div>
+                  <CommunityFeed
+                    tab="latest"
+                    onTab={() => {}}
+                    topic={null}
+                    onTopic={onTopic}
+                    topics={topics}
+                    refreshKey={refreshKey}
+                    myId={me.data?.user_id}
+                    onNewPost={() => setComposer('sonar_share')}
+                    query={buildsQuery}
+                    followingIds={followingIds}
+                    onFollowChange={onFollowChange}
+                    emptyText="No research builds shared yet"
+                  />
+                </section>
+              ) : null}
+
+              {hub === 'members' ? <MembersPanel /> : null}
+              {hub === 'events' ? <EventsPanel /> : null}
+            </div>
+          </main>
+
+          <aside className={s.cv3Rail} aria-label="Community highlights">
+            <OverviewCard />
+            <TrendingCard onTopic={onTopic} />
+            <EventsCard onViewAll={() => onHub('events')} />
+            <ContributorsCard />
           </aside>
         </div>
 
         <button
           type="button"
           className={s.fab}
-          aria-label="New post"
-          onClick={() => setComposerOpen(true)}
+          aria-label="Create post"
+          onClick={() => setComposer('discussion')}
         >
-          <i className="bi bi-pencil-square" aria-hidden="true" />
+          <i className="bi bi-plus-lg" aria-hidden="true" />
         </button>
 
-        <ComposerDialog
-          open={composerOpen}
-          onClose={() => setComposerOpen(false)}
+        <CreatePostDialog
+          open={Boolean(composer)}
+          initialType={composer || 'discussion'}
+          onClose={() => setComposer(null)}
           topics={topics}
           defaultTopic={topic}
+          who={who}
           onPosted={onPosted}
         />
       </div>

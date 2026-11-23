@@ -1,5 +1,10 @@
 /**
  * GET /api/community/feed?tab=following|trending|latest|saved&topic=&before=&offset=&limit=
+ * GET /api/community/feed?sort=relevant|recent|trending|discussed&filter=all|research|...
+ *   Nov 23, 2026 (Community v3): with sort or filter, the feed reads
+ *   community_feed_v3 (kind filters, four sorts, offset paging, the post's
+ *   safe attachment). Until that migration is applied it falls back to
+ *   community_feed and filters kinds here.
  * The Community page feed (community_feed RPC, as the signed-in user), with
  * each post's author from public_profiles and a plain-text excerpt.
  *
@@ -12,6 +17,63 @@ import { NextResponse } from 'next/server';
 import { withSession, authorsFor, PRIVATE } from '@/lib/community/route-session';
 import { normalizeTab, normalizeTopic, excerpt, FEED_PAGE } from '@/lib/community/redesign';
 import { isCommunityDemoViewer, demoFeedPosts, mergeFeed } from '@/lib/community/demo-page';
+import {
+  normalizeFilter,
+  normalizeSort,
+  kindsForFilter,
+  isMissingSchema,
+  BUILD_KINDS,
+} from '@/lib/community/v3';
+
+const SORT_TO_TAB = {
+  relevant: 'latest',
+  recent: 'latest',
+  trending: 'trending',
+  discussed: 'latest',
+};
+
+/** A safe attachment as stored by the posts API; anything else is dropped. */
+function shapeAttachment(a) {
+  if (!a || typeof a !== 'object') return null;
+  const url = typeof a.url === 'string' && a.url.startsWith('/') ? a.url : null;
+  if (!url) return null;
+  if (a.kind === 'sonar')
+    return {
+      kind: 'sonar',
+      url,
+      title: String(a.title || '').slice(0, 200),
+      question: String(a.question || '').slice(0, 300),
+      subject: a.subject ? String(a.subject).slice(0, 120) : null,
+      ticker: a.ticker ? String(a.ticker).toUpperCase().slice(0, 12) : null,
+      depth: a.depth ? String(a.depth).slice(0, 20) : null,
+    };
+  if (a.kind === 'echo')
+    return {
+      kind: 'echo',
+      url,
+      title: String(a.title || '').slice(0, 200),
+      excerpt: String(a.excerpt || '').slice(0, 300),
+      image: typeof a.image === 'string' && a.image.startsWith('/') ? a.image : null,
+      read_minutes: Number(a.read_minutes) || null,
+    };
+  return null;
+}
+
+/** The v3 rows (sort + kinds), or null when community_feed_v3 is missing. */
+async function v3Rows(supabase, { sort, kinds, topic, offset, limit }) {
+  const { data, error } = await supabase.rpc('community_feed_v3', {
+    p_sort: sort,
+    p_kinds: kinds,
+    p_topic: topic,
+    p_offset: offset,
+    p_limit: limit,
+  });
+  if (error) {
+    if (isMissingSchema(error)) return null;
+    throw new Error(error.message);
+  }
+  return data || [];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -155,9 +217,38 @@ export async function GET(request) {
       Math.max(1, parseInt(sp.get('limit') || String(FEED_PAGE), 10) || FEED_PAGE),
     );
 
+    /* Community v3: sort + kind filter (or the Research Builds list). */
+    const v3 = sp.has('sort') || sp.has('filter') || sp.get('builds') === '1';
+    const sort = normalizeSort(sp.get('sort'));
+    const kinds =
+      sp.get('builds') === '1' ? BUILD_KINDS : kindsForFilter(normalizeFilter(sp.get('filter')));
+
     let rows;
     let fetched;
-    if (tab === 'saved') {
+    let v3Mode = false;
+    if (v3) {
+      const got = await v3Rows(supabase, { sort, kinds, topic, offset, limit });
+      if (got) {
+        rows = got;
+        fetched = got.length;
+        v3Mode = true;
+      } else {
+        /* Fallback: the old feed, filtered to the kinds here. */
+        const { data, error } = await supabase.rpc('community_feed', {
+          p_tab: SORT_TO_TAB[sort],
+          p_topic: topic,
+          p_before: null,
+          p_offset: offset,
+          p_limit: limit,
+        });
+        if (error) throw new Error(error.message);
+        fetched = (data || []).length;
+        rows = (data || []).filter((r) => !kinds || kinds.includes(r.post_type || 'discussion'));
+        if (sort === 'discussed')
+          rows = [...rows].sort((a, b) => (b.comments_count || 0) - (a.comments_count || 0));
+        v3Mode = true;
+      }
+    } else if (tab === 'saved') {
       ({ rows, fetched } = await savedRows(supabase, user.id, { topic, offset, limit }));
     } else {
       const { data, error } = await supabase.rpc('community_feed', {
@@ -191,6 +282,7 @@ export async function GET(request) {
       liked_by_me: Boolean(r.liked_by_me),
       saved_by_me: Boolean(r.saved_by_me),
       ...(extras.get(r.id) || NO_EXTRAS),
+      attachment: shapeAttachment(r.attachment),
       author: authors.get(r.user_id) || {
         id: r.user_id,
         name: 'Member',
@@ -204,9 +296,23 @@ export async function GET(request) {
     const next =
       fetched < limit
         ? null
-        : tab === 'trending' || tab === 'saved'
+        : v3Mode || tab === 'trending' || tab === 'saved'
           ? { offset: offset + fetched }
           : { before: last?.created_at };
+
+    if (v3Mode) {
+      /* Sample posts for admin and demo viewers on the first page of the
+         all-posts feed, as before. */
+      if (offset === 0 && !kinds && isCommunityDemoViewer(user)) {
+        const { data: topicRows } = await supabase.from('community_topics').select('slug, label');
+        const demo = demoFeedPosts({ tab: 'latest', topic, topics: topicRows || [] });
+        return NextResponse.json(
+          { sort, posts: mergeFeed('latest', posts, demo), next },
+          { headers: PRIVATE },
+        );
+      }
+      return NextResponse.json({ sort, posts, next }, { headers: PRIVATE });
+    }
 
     /* Master admin and demo accounts: sample posts join the first page (real
        posts stay, so a post the viewer writes still shows). Later pages are

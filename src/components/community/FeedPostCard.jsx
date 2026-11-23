@@ -11,7 +11,7 @@
  * disclosure, and the poll (results as rows, voting through the existing
  * PATCH /api/community/posts). Deleting confirms in a dialog.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import s from '@/app/(dashboard)/community/community.module.css';
 import ContentActionsMenu from '@/components/moderation/ContentActionsMenu';
@@ -21,12 +21,21 @@ import { Avatar, VerifiedBadge, TickerChip } from './primitives';
 import { sendJson } from './useCommunityResource';
 import { DiscussionThread } from './DiscussionThread';
 import { groupNumber, relativeTime } from '@/lib/community/redesign';
+import { kindBadge } from '@/lib/community/v3';
+import { PostAttachment, PostChart } from './PostExtras';
 
 /** "Analyst Take" -> "Analyst take" (the guide asks for sentence case). */
 const sentenceCase = (v) => {
   const t = String(v || '');
   return t.charAt(0) + t.slice(1).toLowerCase();
 };
+
+/** The first ticker the author attached as a chart (not one merely named). */
+function embedSymbolOf(post) {
+  const sym = post.ticker_embed?.symbols?.[0];
+  const v = typeof sym === 'string' ? sym : sym?.symbol;
+  return v && /^[A-Z.]{1,6}$/i.test(v) ? v.toUpperCase() : null;
+}
 
 function postLink(id) {
   if (typeof window === 'undefined') return `/community?post=${id}`;
@@ -214,6 +223,8 @@ export function FeedPostCard({
   onBlocked,
   onUnsaved,
   defaultOpen = false,
+  followingIds,
+  onFollowChange,
 }) {
   const [liked, setLiked] = useState(post.liked_by_me);
   const [likes, setLikes] = useState(post.likes_count);
@@ -232,6 +243,30 @@ export function FeedPostCard({
       : `/community/profile/${post.author?.id}`;
 
   const format = getPostType(post.post_type);
+  /* v3 kinds (Research Analysis, Investment Thesis, Sonar share, ...). */
+  const kind = format ? null : kindBadge(post.post_type);
+  const chartSymbol = !post.image_url && embedSymbolOf(post);
+  const authorId = post.author?.id;
+  const canFollow = !own && !isDemo && authorId && followingIds instanceof Set;
+  const [following, setFollowing] = useState(() =>
+    canFollow ? followingIds.has(authorId) : false,
+  );
+  useEffect(() => {
+    if (canFollow) setFollowing(followingIds.has(authorId));
+  }, [canFollow, followingIds, authorId]);
+  const toggleFollow = async () => {
+    const next = !following;
+    setFollowing(next);
+    try {
+      await sendJson('/api/community/follow', {
+        body: { target_user_id: authorId, action: next ? 'follow' : 'unfollow' },
+      });
+      onFollowChange?.(authorId, next);
+    } catch {
+      setFollowing(!next);
+      say('That did not save. Try again.');
+    }
+  };
   const embedSymbols = post.ticker_embed?.symbols || [];
   /* The mentioned ticker first, then any embedded symbols not already shown. */
   const tickers = [
@@ -318,6 +353,23 @@ export function FeedPostCard({
             · {relativeTime(post.created_at)}
           </time>
           {format ? <span className={s.formatLabel}>{sentenceCase(format.label)}</span> : null}
+          {kind ? (
+            <span className={s.cv3Kind}>
+              <i className={`bi ${kind.icon}`} aria-hidden="true" />
+              {kind.label}
+            </span>
+          ) : null}
+          {canFollow ? (
+            <button
+              type="button"
+              className={s.cv3FollowLink}
+              aria-pressed={following}
+              onClick={toggleFollow}
+              aria-label={`${following ? 'Unfollow' : 'Follow'} ${post.author?.name || 'member'}`}
+            >
+              {following ? 'Following' : 'Follow'}
+            </button>
+          ) : null}
           <div className={s.postTools}>
             {flash ? (
               <span className={s.flash} role="status">
@@ -399,6 +451,13 @@ export function FeedPostCard({
             ) : null}
           </div>
         ) : null}
+        {post.post_type === 'thesis' ? (
+          <p className={s.cv3Disclaimer}>
+            <i className="bi bi-info-circle" aria-hidden="true" /> A member&apos;s view, not
+            verified financial advice.
+          </p>
+        ) : null}
+        <PostAttachment attachment={post.attachment} />
         {post.poll ? (
           <PostPoll
             postId={post.id}
@@ -414,11 +473,11 @@ export function FeedPostCard({
             type="button"
             className={s.action}
             aria-pressed={liked}
-            aria-label={`${liked ? 'Unlike' : 'Like'}, ${likes} likes`}
+            aria-label={`${liked ? 'Remove upvote' : 'Upvote'}, ${likes} upvotes`}
             onClick={toggleLike}
           >
             <i
-              className={`bi ${liked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'}`}
+              className={`bi ${liked ? 'bi-arrow-up-circle-fill' : 'bi-arrow-up-circle'}`}
               aria-hidden="true"
             />
             <span className={s.num}>{groupNumber(likes)}</span>
@@ -458,6 +517,10 @@ export function FeedPostCard({
       {post.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img className={s.thumb} src={post.image_url} alt="" loading="lazy" decoding="async" />
+      ) : chartSymbol ? (
+        <div className={s.cv3PostChart}>
+          <PostChart symbol={chartSymbol} period={post.ticker_embed?.period || '1M'} />
+        </div>
       ) : null}
     </article>
   );
