@@ -289,7 +289,7 @@ export const tokenizedMoneyOutageTheory2026 = {
   readTime: 32,
   publishedAt: '2026-11-18',
   listMeta: 'Nov 18th, 2026',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,

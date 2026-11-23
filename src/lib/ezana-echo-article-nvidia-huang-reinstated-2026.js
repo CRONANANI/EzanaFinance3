@@ -16,13 +16,10 @@ export const nvidiaHuangReinstated2026 = {
   excerpt:
     'Nvidia’s board reinstated Jensen Huang as CEO on November 23rd, eleven days after announcing his resignation. The stock opened 33% higher at $167.04, adding about $1 trillion in value, yet it still sits 30% below its October record and at least seven outside inquiries remain open.',
   heroImage: {
-    // Original Ezana illustration drawn for this article (Nov 23rd, 2026);
-    // SVG source kept at docs/assets/echo/nvidia-huang-reinstated-2026-hero.svg.
-    // The line traces the article's own price path from Fig. 1.
-    src: '/echo/nvidia-huang-reinstated-2026-hero.webp',
-    alt: 'Abstract line chart on a dark green grid: a red line falls from a blue-ringed high on the left to a red-ringed low, then a short green segment climbs toward a glowing vertical bar on the right, well short of a dashed line marking the starting high.',
+    src: '/images/ezana-echo/nvidia-huang-reinstated-2026-hero.png',
+    alt: 'Jensen Huang in a dark suit and tie, shouting into a handheld microphone with his fist raised, a crowd behind him.',
     caption:
-      'Ezana illustration. The line follows Nvidia’s share price from its October 6th record close to the November 20th trough and Monday’s open after Huang’s reinstatement; the dashed line marks the record the stock has not regained.',
+      'Jensen Huang, Nvidia’s co-founder, was reinstated as president and CEO on November 23rd, 2026, eleven days after the board announced his resignation.',
   },
   category: 'technology',
   author: 'Ezana Finance Editorial',
@@ -89,7 +86,8 @@ export const nvidiaHuangReinstated2026 = {
   readTime: 9,
   publishedAt: '2026-11-23',
   listMeta: 'Nov 23rd, 2026',
-  featured: false,
+  featured: true,
+  articleOfMonth: true,
   likes: 0,
   comments: 0,
   reads: 0,

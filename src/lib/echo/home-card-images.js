@@ -199,6 +199,13 @@ export const HOME_CARD_IMAGES = {
     src: card('hantavirus-from-four-corners-to-open-sea'),
     alt: '',
   },
+  // Nvidia Brings Back Jensen Huang. Article of the Month, November 2026
+  // (Nov 23rd): supplied 1672 x 941 image, 2x Lanczos upscale, lossless PNG.
+  'nvidia-huang-reinstated-2026': {
+    src: card('nvidia-huang-reinstated-2026'),
+    alt: 'Jensen Huang shouting into a microphone with his fist raised, a crowd behind him.',
+    layout: 'stack',
+  },
   // Nvidia Is the World's Second Most Valuable Asset
   'nvidia-worlds-second-most-valuable-asset-2026': {
     src: card('nvidia-worlds-second-most-valuable-asset-2026'),
