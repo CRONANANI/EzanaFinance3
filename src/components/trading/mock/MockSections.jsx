@@ -192,7 +192,7 @@ export function PositionsCard({
             ))}
             <span className="mock-sr">Actions</span>
           </div>
-          <AssetList className="mock-pos-list" aria-label="Open positions">
+          <AssetList className="mock-pos-list ds-asset-list--glossy" aria-label="Open positions">
             {rows.map((r) => {
               const dir = signOf(r.pnl);
               const tone = capTone ? capTone(r) : 'within';

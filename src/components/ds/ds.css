@@ -1096,6 +1096,111 @@
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
+/* Glossy variant (Nov 23, 2026, owner's request; Watchlist securities and
+   Mock Trading open positions): AssetList glossy. No border, outline or fill
+   until hover. Hover or keyboard focus fills the tile with glossy emerald and
+   turns everything inside to contrasting white; the Buy or row button inverts
+   to white on emerald. The hover never scales the tile (a scaled tile pushed
+   its edge past a clipping list). Tiles are about 35% shorter: 44px, a 30px
+   logo, tighter padding and line heights. */
+.ds-asset-list--glossy {
+  gap: 4px;
+}
+.ds-asset-list--glossy > .ds-asset-row {
+  min-height: 44px;
+  padding: 4px 16px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.ds-asset-list--glossy > .ds-asset-row .ds-asset-logo {
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 12px !important;
+}
+.ds-asset-list--glossy > .ds-asset-row :is(.ds-asset-row__id) {
+  gap: 12px;
+}
+.ds-asset-list--glossy > .ds-asset-row :is(.ds-asset-row__names, .ds-asset-row__quote) {
+  gap: 0;
+}
+.ds-asset-list--glossy > .ds-asset-row :is(.ds-asset-row__sym, .ds-asset-row__px) {
+  line-height: 1.15;
+}
+.ds-asset-list--glossy > .ds-asset-row .ds-asset-row__name {
+  line-height: 1.2;
+}
+.ds-asset-list--glossy > .ds-asset-row .ds-asset-row__chg {
+  line-height: 1.15;
+}
+.ds-asset-list--glossy > .ds-asset-row .ds-asset-row__chg .bi {
+  line-height: 1;
+}
+.ds-asset-list--glossy > .ds-asset-row .ds-asset-row__buy {
+  min-height: 28px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    filter 0.15s ease;
+}
+.ds-asset-list--glossy > .ds-asset-row.is-selected {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--emerald) 7%, transparent);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) {
+  transform: none;
+  border-color: transparent;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 22%, transparent) 0%,
+      color-mix(in srgb, white 6%, transparent) 46%,
+      transparent 54%
+    ),
+    linear-gradient(135deg, var(--emerald) 0%, var(--emerald-hover) 55%, var(--emerald-dark) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 35%, transparent),
+    0 8px 20px -12px color-mix(in srgb, var(--emerald-dark) 70%, transparent);
+}
+/* Contrast on the emerald fill: every text, arrow, icon and sparkline turns white. */
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within),
+.ds-asset-list--glossy
+  > .ds-asset-row:is(:hover, :focus-within)
+  :is(span, i, svg, button:not(.ds-asset-row__hit)) {
+  color: var(--btn-primary-fg);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) span.ds-asset-row__name {
+  color: color-mix(in srgb, var(--btn-primary-fg) 82%, transparent);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) svg path {
+  stroke: var(--btn-primary-fg);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) span.ds-asset-logo {
+  color: var(--emerald-dark);
+  background: var(--btn-primary-fg);
+  box-shadow: 0 0 0 2px color-mix(in srgb, white 70%, transparent);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) a.ds-asset-row__buy {
+  border-color: transparent;
+  background: var(--btn-primary-fg);
+  color: var(--emerald-dark);
+}
+.ds-asset-list--glossy
+  > .ds-asset-row:is(:hover, :focus-within)
+  .ds-asset-row__end
+  :is([class*='icon-btn']:hover) {
+  background: color-mix(in srgb, white 16%, transparent);
+}
+.ds-asset-list--glossy > .ds-asset-row:is(:hover, :focus-within) .ds-asset-row__hit:focus-visible {
+  outline-color: var(--btn-primary-fg);
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-asset-list--glossy > .ds-asset-row,
+  .ds-asset-list--glossy > .ds-asset-row .ds-asset-row__buy {
+    transition: none;
+  }
+}
 @media (max-width: 560px) {
   .ds-asset-row {
     column-gap: 10px;

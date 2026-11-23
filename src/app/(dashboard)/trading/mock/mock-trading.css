@@ -1451,3 +1451,30 @@
 .mock-right-col .mock-pre-grid {
   gap: 10px;
 }
+
+/* Nov 23, 2026: the open positions use the glossy tiles (ds.css,
+   .ds-asset-list--glossy). On the emerald fill the weight bar and its track
+   turn white, and the cap warning keeps its triangle in white. */
+.mock-pos-hold {
+  gap: 1px;
+}
+.mock-pos-list.ds-asset-list--glossy :is(.mock-weight, .mock-pos-sub, .mock-pos-value > span) {
+  line-height: 1.15;
+}
+.mock-pos-value {
+  gap: 0;
+}
+.mock-pos-list > .ds-asset-row:is(:hover, :focus-within) .mock-wbar {
+  background: color-mix(in srgb, white 28%, transparent);
+}
+.mock-pos-list > .ds-asset-row:is(:hover, :focus-within) .mock-wbar > span {
+  background: var(--btn-primary-fg);
+}
+.mock-pos-list > .ds-asset-row:is(:hover, :focus-within) .ds-asset-row__end .mock-btn {
+  border-color: color-mix(in srgb, white 45%, transparent);
+  background: transparent;
+  color: var(--btn-primary-fg);
+}
+.mock-pos-list > .ds-asset-row:is(:hover, :focus-within) .ds-asset-row__end .mock-btn:hover {
+  background: color-mix(in srgb, white 16%, transparent);
+}

@@ -197,7 +197,7 @@ function PricedList({
         </span>
         <span className="wlm-sr">Actions</span>
       </div>
-      <DsAssetList className="wlr-list">
+      <DsAssetList className="wlr-list ds-asset-list--glossy">
         {rows.map((it) => {
           const key = `${it.type}:${it.ticker}`;
           const added = addedLabel(it);
@@ -228,7 +228,7 @@ function PricedList({
                   </span>
                 ) : null
               }
-              trend={<Sparkline points={sparks?.[it.ticker]} width={80} height={28} />}
+              trend={<Sparkline points={sparks?.[it.ticker]} width={80} height={22} />}
               price={fmtUSD(it.price)}
               change={it.changePct}
               changeText={fmtSignedPct(it.changePct)}
