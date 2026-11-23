@@ -754,13 +754,6 @@
 .company {
   color: var(--db-body);
 }
-.holdTable {
-  min-width: 720px;
-}
-.holdTable td.num,
-.holdTable td.r {
-  white-space: nowrap;
-}
 .tableFoot {
   display: flex;
   flex-wrap: wrap;

@@ -13,11 +13,18 @@
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Dropdown, EmptyState, MenuItem } from '@/components/ds';
+import {
+  AssetList as DsAssetList,
+  AssetRow,
+  Dropdown,
+  EmptyState,
+  MenuItem,
+} from '@/components/ds';
 import { displayTicker } from '@/lib/watchlist/asset-classes';
 import {
   addedLabel,
   filterItems,
+  fmtSignedPct,
   fmtUSD,
   paginate,
   sonarPrompt,
@@ -157,7 +164,13 @@ function SortBtn({ col, label, sort, onSort, align }) {
   );
 }
 
-function AssetList({
+/* Nov 22, 2026: each priced asset is an asset tile (ds AssetRow), the list
+   style the Dashboard shares: logo, symbol over name, the one-month
+   sparkline, price over an arrowed day change, then Buy (stocks and bond
+   ETFs, which mock trading supports), the star and the row menu. */
+const LOGO_TYPES = new Set(['stock', 'bond_etf']);
+
+function PricedList({
   rows,
   sort,
   onSort,
@@ -184,83 +197,74 @@ function AssetList({
         </span>
         <span className="wlm-sr">Actions</span>
       </div>
-      <ul className="wlr-list">
+      <DsAssetList className="wlr-list">
         {rows.map((it) => {
           const key = `${it.type}:${it.ticker}`;
-          const on = key === selectedKey;
           const added = addedLabel(it);
           const label = displayTicker(it.ticker);
-          const dir = it.changePct == null ? 'flat' : it.changePct >= 0 ? 'up' : 'down';
           return (
-            <li
+            <AssetRow
               key={key}
-              className={`wlr-row${on ? ' is-selected' : ''}`}
-              aria-current={on || undefined}
-            >
-              <button
-                type="button"
-                className="wlr-hit"
-                onClick={() => onSelect(it)}
-                aria-label={`Show ${label}${it.name ? `, ${it.name}` : ''}`}
-              />
-              <span className="wlr-asset">
-                <span className="wlr-rule" aria-hidden="true" />
-                <span className="wlr-id">
-                  <span className="wlr-sym wlm-num">
-                    {label}
-                    {it.starredAt ? (
-                      <i
-                        className="bi bi-star-fill wlr-star-mark"
-                        role="img"
-                        aria-label="Starred"
-                      />
-                    ) : null}
+              className="wlr-row"
+              ticker={label}
+              name={it.name}
+              logo={
+                LOGO_TYPES.has(it.type)
+                  ? `https://financialmodelingprep.com/image-stock/${encodeURIComponent(it.ticker)}.png`
+                  : null
+              }
+              selected={key === selectedKey}
+              onSelect={() => onSelect(it)}
+              selectLabel={`Show ${label}${it.name ? `, ${it.name}` : ''}`}
+              symExtra={
+                it.starredAt ? (
+                  <i className="bi bi-star-fill wlr-star-mark" role="img" aria-label="Starred" />
+                ) : null
+              }
+              nameExtra={
+                added.smart ? (
+                  <span className="wlr-smart" title={added.text}>
+                    <i className="bi bi-lightning-charge" aria-hidden="true" /> {added.text}
                   </span>
-                  <span className="wlr-name">
-                    {it.name || 'N/A'}
-                    {added.smart ? (
-                      <span className="wlr-smart" title={added.text}>
-                        <i className="bi bi-lightning-charge" aria-hidden="true" /> {added.text}
-                      </span>
-                    ) : null}
-                  </span>
-                </span>
-              </span>
-              <span className="wlr-trend">
-                <Sparkline points={sparks?.[it.ticker]} width={80} height={28} />
-              </span>
-              <span className="wlr-price">
-                <span className="wlr-px wlm-num">{fmtUSD(it.price)}</span>
-                <span className={`wlr-chg wlm-num is-${dir}`}>
-                  <Change value={it.changePct} />
-                </span>
-              </span>
-              <span className="wlr-actions">
-                <button
-                  type="button"
-                  className="wlm-icon-btn wlm-icon-btn--sm"
-                  aria-pressed={!!it.starredAt}
-                  aria-label={it.starredAt ? `Unstar ${label}` : `Star ${label}`}
-                  onClick={() => onStar(it, !it.starredAt)}
-                >
-                  <i
-                    className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
-                    aria-hidden="true"
+                ) : null
+              }
+              trend={<Sparkline points={sparks?.[it.ticker]} width={80} height={28} />}
+              price={fmtUSD(it.price)}
+              change={it.changePct}
+              changeText={fmtSignedPct(it.changePct)}
+              buy={
+                canPaperTrade(it)
+                  ? { href: `/trading/mock?symbol=${encodeURIComponent(it.ticker)}`, label: 'Buy' }
+                  : null
+              }
+              actions={
+                <span className="wlr-actions">
+                  <button
+                    type="button"
+                    className="wlm-icon-btn wlm-icon-btn--sm"
+                    aria-pressed={!!it.starredAt}
+                    aria-label={it.starredAt ? `Unstar ${label}` : `Star ${label}`}
+                    onClick={() => onStar(it, !it.starredAt)}
+                  >
+                    <i
+                      className={`bi ${it.starredAt ? 'bi-star-fill is-starred' : 'bi-star'}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <RowActions
+                    item={it}
+                    lists={lists}
+                    activeListId={activeListId}
+                    onMove={onMove}
+                    onStar={onStar}
+                    onRemove={onRemove}
                   />
-                </button>
-                <RowActions
-                  item={it}
-                  lists={lists}
-                  activeListId={activeListId}
-                  onMove={onMove}
-                  onStar={onStar}
-                  onRemove={onRemove}
-                />
-              </span>
-            </li>
+                </span>
+              }
+            />
           );
         })}
-      </ul>
+      </DsAssetList>
     </div>
   );
 }
@@ -358,7 +362,7 @@ export function SecuritiesTable({
     body = (
       <>
         {!isPol ? (
-          <AssetList
+          <PricedList
             rows={view.rows}
             sort={sort}
             onSort={onSort}

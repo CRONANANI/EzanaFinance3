@@ -27,6 +27,7 @@ import {
 } from '@/lib/dashboard/derive';
 import { SnapshotChart } from './SnapshotChart';
 import { EzDonut } from '@/components/charts/EzDonut';
+import { AssetList, AssetRow } from '@/components/ds';
 import {
   Badge,
   Card,
@@ -367,47 +368,27 @@ export function HoldingsCard({ data, loading, error, onRetry, range, onRange, mo
   else
     body = (
       <>
-        <div className={cx(s.tableWrap, s.scrollX)}>
-          <table className={cx(s.table, s.holdTable)}>
-            <caption className={s.srOnly}>Your holdings, largest first</caption>
-            <thead>
-              <tr>
-                <th scope="col">Ticker</th>
-                <th scope="col">Company</th>
-                <th scope="col" className={s.r}>
-                  Value
-                </th>
-                <th scope="col" className={s.r}>
-                  Quantity
-                </th>
-                <th scope="col" className={s.r}>
-                  Price / share
-                </th>
-                <th scope="col" className={s.r}>
-                  Daily change
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((h) => (
-                <tr key={h.ticker}>
-                  <td className={s.ticker}>
-                    <Link href={tradeHref(h.ticker)}>{h.ticker}</Link>
-                  </td>
-                  <td className={s.company}>{h.company}</td>
-                  <td className={cx(s.r, s.num)}>{fmtMoney(h.value)}</td>
-                  <td className={cx(s.r, s.num, s.company)}>{fmtQty(h.quantity)}</td>
-                  <td className={cx(s.r, s.num, s.company)}>{fmtMoney(h.price)}</td>
-                  <td className={cx(s.r, s.num, s[tone(h.dayChangePct)])}>
-                    {h.dayChangePct == null
-                      ? NA
-                      : `${fmtSignedPct(h.dayChangePct)} (${fmtSignedMoney(h.dayChangeAbs)})`}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* Nov 22, 2026: holdings as asset tiles (ds AssetRow), the same
+            list style as the Watchlist. Value over the day's change; shares
+            and price per share in the middle column. */}
+        <AssetList columns="minmax(0, 1fr) auto auto auto" aria-label="Your holdings, largest first">
+          {rows.map((h) => (
+            <AssetRow
+              key={h.ticker}
+              ticker={h.ticker}
+              name={h.company}
+              meta={`${fmtQty(h.quantity)} sh · ${fmtMoney(h.price)}`}
+              price={fmtMoney(h.value)}
+              change={h.dayChangePct}
+              changeText={
+                h.dayChangePct == null
+                  ? NA
+                  : `${fmtSignedPct(h.dayChangePct)} (${fmtSignedMoney(h.dayChangeAbs)})`
+              }
+              buy={{ href: tradeHref(h.ticker), label: 'Trade', ariaLabel: `Trade ${h.ticker}` }}
+            />
+          ))}
+        </AssetList>
         <div className={s.tableFoot}>
           <span>
             Showing {from}–{to} of {holdings.length}{' '}

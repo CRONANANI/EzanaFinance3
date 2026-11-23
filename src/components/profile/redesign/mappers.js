@@ -77,6 +77,16 @@ const METRIC_LABELS = {
   contributionStreak: 'CONTRIBUTION STREAK',
 };
 
+/* Sentence-case names for the metric cards (Nov 22, 2026). */
+const METRIC_TITLES = {
+  totalReturn: 'Total return',
+  vsSP500: 'vs S&P 500',
+  consistency: 'Consistency',
+  diversification: 'Diversification',
+  holdingDiscipline: 'Avg hold time',
+  contributionStreak: 'Contribution streak',
+};
+
 const METRIC_KEY_ORDER = [
   'totalReturn',
   'vsSP500',
@@ -93,6 +103,7 @@ export function mapPerfStats(metrics) {
       return {
         key: k,
         label: METRIC_LABELS[k],
+        title: METRIC_TITLES[k] || METRIC_LABELS[k],
         value: '–',
         rawValue: null,
         vsAvgLabel: '',
@@ -105,6 +116,7 @@ export function mapPerfStats(metrics) {
     return {
       key: m.key,
       label: METRIC_LABELS[k] || (m.label || k).toUpperCase(),
+      title: METRIC_TITLES[k] || m.label || k,
       value: m.value || '–',
       rawValue: m.rawValue ?? null,
       vsAvgLabel: m.vsAverageFormatted || '',

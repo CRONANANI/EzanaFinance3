@@ -33,4 +33,6 @@ export { Alert } from './Alert';
 export { EmptyState, ErrorState } from './EmptyState';
 export { IconButton } from './IconButton';
 export { VisuallyHidden } from './VisuallyHidden';
+export { AssetRow, AssetList, AssetLogo } from './AssetRow';
+export { MetricCard } from './MetricCard';
 export { token, cx } from './tokens';

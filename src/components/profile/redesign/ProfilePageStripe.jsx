@@ -393,6 +393,14 @@ export function ProfilePageStripe({ username }) {
 
   const perfStats = useMemo(() => (metrics ? mapPerfStats(metrics) : []), [metrics]);
 
+  /* The Total return card draws the year's cumulative return behind its
+     figure (the same series the performance chart uses). */
+  const returnSeries = useMemo(
+    () =>
+      (userSeriesFull ?? []).map((r) => ({ date: r.date, value: Number(r.cumReturnPct) || 0 })),
+    [userSeriesFull],
+  );
+
   const achievements = useMemo(
     () => (isOwn ? mapAchievements(achievementsState) : []),
     [isOwn, achievementsState],
@@ -509,7 +517,7 @@ export function ProfilePageStripe({ username }) {
       <div className="profile-stripe-body">
         <div className="profile-stripe-left">
           <IdentityHero user={profileUser} />
-          <PerfStats stats={perfStats} />
+          <PerfStats stats={perfStats} returnSeries={showChart ? returnSeries : null} />
           {isOwn && <Achievements achievements={achievements} />}
           {showChart && (
             <PerfChart
