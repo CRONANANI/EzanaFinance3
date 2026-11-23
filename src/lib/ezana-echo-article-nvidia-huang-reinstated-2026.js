@@ -452,7 +452,7 @@ export const nvidiaHuangReinstated2026 = {
       source:
         'JPMorgan, Michael Cembalest, "The Icarus Files," November 14th, 2026, as reported by BigGo Finance (current PDF version; an earlier chart showed Nvidia at 39%). The custom-accelerator slice is Ezana arithmetic: Broadcom 10 GW, Trainium 7 GW, TPU 6 GW.',
       unit: ' GW',
-      totalLabel: 'Announced, ',
+      totalLabel: 'Total announced',
       slices: [
         {
           label: 'Nvidia GPUs',

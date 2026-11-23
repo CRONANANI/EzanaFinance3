@@ -44,15 +44,25 @@ export function EzDonut({
   const shareOf = (seg) => (total > 0 ? (seg.value / total) * 100 : 0);
 
   /* Round caps reach stroke/2 past each end, so each arc is drawn that much
-     shorter at both ends to leave a small gap between neighbours. */
+     shorter at both ends to leave a small gap between neighbours. A slice too
+     short to hold its own caps (under about 1.5 ring widths, e.g. a 2% share)
+     would still poke a full ring width out of its share and sit on top of
+     its neighbours (seen on phones, Nov 23rd, 2026), so it is drawn with
+     square ends inside its own share, with a 1px gap each side. */
   const many = segments.filter((x) => x.value > 0).length > 1;
   let acc = 0;
   const arcs = segments
     .filter((x) => x.value > 0)
     .map((x) => {
       const full = (x.value / (total || 1)) * c;
-      const trim = many ? Math.min(stroke + 2, full * 0.6) : 0;
-      const arc = { ...x, len: Math.max(0.01, full - trim), off: acc + trim / 2 };
+      const round = many && full > stroke * 1.5 + 2;
+      const trim = !many ? 0 : round ? stroke + 2 : Math.min(2, full * 0.3);
+      const arc = {
+        ...x,
+        round,
+        len: Math.max(0.01, full - trim),
+        off: acc + trim / 2,
+      };
       acc += full;
       return arc;
     });
@@ -84,7 +94,7 @@ export function EzDonut({
             cy={size / 2}
             r={r}
             strokeWidth={stroke}
-            strokeLinecap={many ? 'round' : 'butt'}
+            strokeLinecap={a.round ? 'round' : 'butt'}
             strokeDasharray={`${a.len} ${c}`}
             initial={reduced ? false : { strokeDashoffset: -a.off + a.len, opacity: 0 }}
             animate={{ strokeDashoffset: -a.off, opacity: 1 }}
