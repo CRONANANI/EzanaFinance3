@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { SonarQueryBar } from './SonarQueryBar';
 import { SonarResearchControls } from './SonarResearchControls';
+import { SonarAnswerQueryBar } from './SonarAnswerQueryBar';
 
 /**
  * SonarHero — State 01 (pre-search). The rings-gradient centered stack: eyebrow,
@@ -23,6 +24,7 @@ export function SonarHero({
   minimal = false,
   ghostBar = false,
   bare = false,
+  onCompose = null,
   children = null,
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -58,15 +60,35 @@ export function SonarHero({
           connector runs under it). They shape the next research run, the same store the answer page's controls use. */}
       {bare ? <SonarResearchControls variant="inline" /> : null}
 
-      <SonarQueryBar
-        value={value}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        loading={loading}
-        disabled={quotaReached}
-        autoFocus
-        ghost={ghostBar}
-      />
+      {/* Nov 23: on the Sonar home page the Ping field is the shared Research Composer bar,
+          the same one every result page uses, inside the bracket frame. */}
+      {onCompose ? (
+        <div className="dsi-pingframe dsi-pingframe--composer">
+          <span className="dsi-pingframe__c dsi-pingframe__c--tl" aria-hidden="true" />
+          <span className="dsi-pingframe__c dsi-pingframe__c--tr" aria-hidden="true" />
+          <span className="dsi-pingframe__c dsi-pingframe__c--bl" aria-hidden="true" />
+          <span className="dsi-pingframe__c dsi-pingframe__c--br" aria-hidden="true" />
+          <SonarAnswerQueryBar
+            value={value}
+            onChange={onChange}
+            onSubmit={onCompose}
+            pending={loading}
+            contextEnabled
+            label="Ping Sonar"
+            placeholder="Try a person, a bank, a policy, a company, or a trend..."
+          />
+        </div>
+      ) : (
+        <SonarQueryBar
+          value={value}
+          onChange={onChange}
+          onSubmit={onSubmit}
+          loading={loading}
+          disabled={quotaReached}
+          autoFocus
+          ghost={ghostBar}
+        />
+      )}
 
       {children}
 

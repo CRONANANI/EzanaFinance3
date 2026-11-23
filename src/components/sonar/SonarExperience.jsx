@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { SonarHero } from '@/components/sonar/SonarHero';
+import { contextText } from '@/components/sonar/SonarAnswerQueryBar';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
 import { EchoResults, PredictionMarkets } from '@/components/sonar/SonarSections';
@@ -888,7 +889,28 @@ export function SonarExperience({
     startStandard(query);
   }
 
-  if (onDatasets && bandQuery) {
+  /* Nov 23 (Research Composer 4.0): the home page's composer. A plain question is a ping as
+     before; a composed one (queries, models, analyses) runs as research straight from the
+     home page with the composition's results attached, through the same deep offer (three
+     or more resources) or standard path a result page uses. */
+  function heroCompose(q, ctx, meta) {
+    const extra =
+      Array.isArray(ctx) && ctx.length
+        ? { attachment: { name: 'Research Composer', text: contextText(ctx) } }
+        : null;
+    if (!extra) {
+      runQuery(q);
+      return;
+    }
+    setQueryText(q);
+    if (meta?.deep) {
+      composerDeep(q, extra);
+      return;
+    }
+    startStandard(q, { extra });
+  }
+
+  if (onDatasets && (bandQuery || standardRun || deepRun || deepOffer)) {
     return (
       <div ref={bandRootRef} className="sonar-root sonar-root--datasets sonar-root--band">
         {/* Nov 7: while the loading screen is up the runs under it are inert, like the band. */}
@@ -1009,63 +1031,69 @@ export function SonarExperience({
           style={{ display: 'contents' }}
           inert={loader ? '' : undefined}
         >
-          <SonarBand
-            variant="page"
-            query={bandQuery}
-            onPing={onBandPing}
-            controlRef={bandControlRef}
-            onDeepOffer={(query, deep) => {
-              /* A shared or refreshed deep research link (?deep=1) runs it
+          {bandQuery ? (
+            <SonarBand
+              variant="page"
+              query={bandQuery}
+              onPing={onBandPing}
+              controlRef={bandControlRef}
+              onDeepOffer={(query, deep) => {
+                /* A shared or refreshed deep research link (?deep=1) runs it
                straight away; otherwise ask. */
-              let auto = false;
-              try {
-                auto = new URL(window.location.href).searchParams.get('deep') === '1';
-              } catch {
-                auto = false;
+                let auto = false;
+                try {
+                  auto = new URL(window.location.href).searchParams.get('deep') === '1';
+                } catch {
+                  auto = false;
+                }
+                if (auto && !deep?.guestNeedsAccount) {
+                  setStandardRun(null);
+                  setDeepRun({ query, estimate: deep?.estimate || null });
+                } else setDeepOffer({ query, deep });
+              }}
+              onComposerDeep={composerDeep}
+              onStandardResearch={(query, { classification, goDeeper: hint, extra } = {}) =>
+                startStandard(query, {
+                  classification,
+                  goDeeper: hint || null,
+                  extra: extra || null,
+                })
               }
-              if (auto && !deep?.guestNeedsAccount) {
-                setStandardRun(null);
-                setDeepRun({ query, estimate: deep?.estimate || null });
-              } else setDeepOffer({ query, deep });
-            }}
-            onComposerDeep={composerDeep}
-            onStandardResearch={(query, { classification, goDeeper: hint, extra } = {}) =>
-              startStandard(query, { classification, goDeeper: hint || null, extra: extra || null })
-            }
-            onRestoreResearch={restoreEntry}
-            onExemplary={showExemplary}
-            onAdaptive={showAdaptive}
-            onAdaptiveProgress={adaptiveProgress}
-            hidden={Boolean(deepRun || standardRun || restored || exemplary || adaptive)}
-            onEstimate={(query, data) => setEstimate({ query, data })}
-            afterAnswer={
-              answeredQuery && estimateFor(answeredQuery) ? (
-                <DeepResearchCard
-                  query={answeredQuery}
-                  estimate={estimateFor(answeredQuery)}
-                  placement="after"
-                  pingsSpent={1}
-                  onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
-                />
-              ) : null
-            }
-            deepAction={
-              /* Nov 6: the country answer board's executive answer carries deep
+              onRestoreResearch={restoreEntry}
+              onExemplary={showExemplary}
+              onAdaptive={showAdaptive}
+              onAdaptiveProgress={adaptiveProgress}
+              hidden={Boolean(deepRun || standardRun || restored || exemplary || adaptive)}
+              onEstimate={(query, data) => setEstimate({ query, data })}
+              afterAnswer={
+                answeredQuery && estimateFor(answeredQuery) ? (
+                  <DeepResearchCard
+                    query={answeredQuery}
+                    estimate={estimateFor(answeredQuery)}
+                    placement="after"
+                    pingsSpent={1}
+                    onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
+                  />
+                ) : null
+              }
+              deepAction={
+                /* Nov 6: the country answer board's executive answer carries deep
                  research as one inline button instead of the full card. */
-              answeredQuery && estimateFor(answeredQuery) ? (
-                <DeepResearchCard
-                  query={answeredQuery}
-                  estimate={estimateFor(answeredQuery)}
-                  placement="inline"
-                  pingsSpent={1}
-                  onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
-                />
-              ) : null
-            }
-            stackTop={
-              answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
-            }
-          />
+                answeredQuery && estimateFor(answeredQuery) ? (
+                  <DeepResearchCard
+                    query={answeredQuery}
+                    estimate={estimateFor(answeredQuery)}
+                    placement="inline"
+                    pingsSpent={1}
+                    onRun={(st) => chooseDeep(answeredQuery, { signup: st.blocked === 'signup' })}
+                  />
+                ) : null
+              }
+              stackTop={
+                answeredQuery ? <DatasetCardMatches query={answeredQuery} variant="rail" /> : null
+              }
+            />
+          ) : null}
         </div>
         {/* Guests only (the card checks auth itself): a centred popup once
             the briefing lands, minimizable to a small widget bottom left. */}
@@ -1137,6 +1165,7 @@ export function SonarExperience({
             minimal={onDatasets}
             ghostBar={onDatasets}
             bare={onDatasets}
+            onCompose={onDatasets ? heroCompose : null}
           >
             {heroAddon}
           </SonarHero>

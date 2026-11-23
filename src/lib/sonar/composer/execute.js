@@ -16,6 +16,11 @@
  *   backtesting           the Quant Lab engine (runBacktest) on the member's own purchase
  *                         disclosures, each dated by when it became public (no look-ahead)
  *
+ * 4.0 (Nov 23 2026): runResearchComposition executes a whole composition against its
+ * dependency graph (context.js planComposition): EzanaQL attachments run through the same
+ * validated path as /api/ezanaql/run, set operations match securities on CUSIP (never on a
+ * ticker alone), and an analysis that targets a derived set analyses exactly that set.
+ *
  * Every number is computed here from stored data. Nothing is estimated by a language model.
  */
 
@@ -25,8 +30,19 @@ import { getDailyBars } from '@/lib/prices/daily-bars';
 import { runBacktest } from '@/lib/quants/backtest-engine';
 import { validateSpec, normalizeConfig } from '@/lib/quants/strategy-spec';
 import { loadRunBars } from '@/lib/quants/lab-server';
-import { validateAttachment, relationText, CAPABILITIES } from './registry.js';
+import { validateAttachment, relationText, CAPABILITIES, onSet } from './registry.js';
 import { companyRatios, dcfValue } from './calc.js';
+import { querySchema } from './schema.js';
+import {
+  buildContext,
+  reconcileTargets,
+  planComposition,
+  matchSecurities,
+  SET_OPS,
+  EVIDENCE_OPS,
+  MATCH_LEVELS,
+} from './context.js';
+import { runEzanaQL, validateEzanaQL } from '@/lib/ezanaql';
 
 const TICKER_RE = /^\$?([A-Z]{1,5}(?:\.[A-Z])?)$/;
 
@@ -205,7 +221,24 @@ const METRIC_LABEL = {
 
 /* ── the companies an attachment covers ─────────────────────────────── */
 
-async function companiesFor(admin, att, cap) {
+async function companiesFor(admin, att, cap, env = null) {
+  if (onSet(att)) {
+    const set = env?.sets?.[att.target.dataset?.id];
+    if (!set) throw new Error('Its target set was not computed.');
+    const all = set.rows;
+    const n = att.params?.top_n
+      ? Number(att.params.top_n)
+      : cap === 3
+        ? 5
+        : Math.min(25, all.length);
+    return {
+      rows: all.slice(0, n),
+      total: null,
+      source: set.source,
+      valueLabel: set.valueLabel,
+      empty: all.length === 0,
+    };
+  }
   const s = att.subject;
   if (s.kind === 'company') return { rows: [{ issuer: s.name, tickers: [s.id], value: null }] };
   const n = Math.max(1, Number(att.params?.top_n) || cap);
@@ -227,8 +260,10 @@ async function companiesFor(admin, att, cap) {
 
 /* ── executors ──────────────────────────────────────────────────────── */
 
-async function runFundamentals(admin, att) {
-  const { rows, total, source } = await companiesFor(admin, att, 10);
+async function runFundamentals(admin, att, env) {
+  const { rows, total, source, empty, valueLabel } = await companiesFor(admin, att, 10, env);
+  if (empty) return emptyTarget(att);
+  const isCompany = !onSet(att) && att.subject.kind === 'company';
   const tickers = [...new Set(rows.flatMap((r) => r.tickers))];
   const figs = await filedFigures(admin, tickers);
   const metrics = att.params?.metrics?.length ? att.params.metrics : Object.keys(METRIC_LABEL);
@@ -251,11 +286,11 @@ async function runFundamentals(admin, att) {
     source ? `Holdings source: ${source}.` : null,
     `Coverage: ${table.length} selected, ${withData.length} with filed financials, ${complete.length} with every requested metric.`,
     '',
-    `| Company | Ticker | ${att.subject.kind === 'company' ? '' : 'Reported value | Weight | '}Revenue (FY) | ${metrics.map((m) => METRIC_LABEL[m]).join(' | ')} |`,
-    `|---|---|${att.subject.kind === 'company' ? '' : '---|---|'}---|${metrics.map(() => '---').join('|')}|`,
+    `| Company | Ticker | ${isCompany ? '' : `${valueLabel || 'Reported value'} | Weight | `}Revenue (FY) | ${metrics.map((m) => METRIC_LABEL[m]).join(' | ')} |`,
+    `|---|---|${isCompany ? '' : '---|---|'}---|${metrics.map(() => '---').join('|')}|`,
     ...table.map(
       (t) =>
-        `| ${t.issuer} | ${t.ticker} | ${att.subject.kind === 'company' ? '' : `${usd(t.value)} | ${pct(t.weight)} | `}${usd(t.ratios?.revenue)} | ${metrics
+        `| ${t.issuer} | ${t.ticker} | ${isCompany ? '' : `${usd(t.value)} | ${pct(t.weight)} | `}${usd(t.ratios?.revenue)} | ${metrics
           .map((m) =>
             m === 'debt_to_equity'
               ? t.ratios?.[m] == null
@@ -267,10 +302,13 @@ async function runFundamentals(admin, att) {
     ),
   ].filter((l) => l !== null);
   const limitations = [
-    att.subject.kind === 'institution'
+    onSet(att)
+      ? 'The companies come from the target set above; its matching method and reporting dates apply.'
+      : null,
+    !onSet(att) && att.subject.kind === 'institution'
       ? "13F holdings are a quarterly, lagged snapshot of reportable US positions, not a live or complete portfolio, and not the manager's total assets under management."
       : null,
-    att.subject.kind === 'politician'
+    !onSet(att) && att.subject.kind === 'politician'
       ? 'Holdings are estimated from disclosed transaction ranges; members report ranges, not exact positions.'
       : null,
     'Ratios use the latest filed fiscal year; revenue growth compares it with the year before.',
@@ -296,8 +334,9 @@ async function latestClose(ticker) {
   return last ? { close: last.close, date: last.date } : null;
 }
 
-async function runDcf(admin, att) {
-  const { rows, source } = await companiesFor(admin, att, 3);
+async function runDcf(admin, att, env) {
+  const { rows, source, empty } = await companiesFor(admin, att, 3, env);
+  if (empty) return emptyTarget(att);
   const tickers = [...new Set(rows.flatMap((r) => r.tickers))];
   const figs = await filedFigures(admin, tickers);
   const years = Number(att.params?.years) || 5;
@@ -462,6 +501,426 @@ async function runMemberBacktest(admin, att) {
   };
 }
 
+/** An analysis whose target set is empty is not run: nothing is invented for it. */
+function emptyTarget(att) {
+  const label = att.target?.label || 'the target set';
+  return {
+    output: 'none',
+    title: CAPABILITIES[att.capability].label,
+    skipped: true,
+    failed: `${label} is empty, so there were no companies to analyse.`,
+    text: `${CAPABILITIES[att.capability].label}: not run. ${label} is empty, so there were no companies to analyse. Alternatives the reader can choose: compare the two holdings sets instead, broaden the query beyond its current limit, or analyse each set separately.`,
+  };
+}
+
+/* ── 4.0: securities, queries and set operations ────────────────────── */
+
+const cleanTicker = (t) =>
+  String(t || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9.]/g, '');
+
+/**
+ * CUSIPs for tickers, read from the 13F book of one period (or the latest). A ticker that
+ * maps to more than one CUSIP with comparable support is ambiguous and left unmapped.
+ */
+async function cusipsForTickers(admin, tickers, period = null) {
+  const list = [...new Set(tickers.map(cleanTicker).filter(Boolean))];
+  if (!list.length) return { map: {}, ambiguous: [] };
+  let per = period;
+  if (!per) {
+    const { data } = await admin
+      .from('titans_13f_positions')
+      .select('period')
+      .order('period', { ascending: false })
+      .limit(1);
+    per = data?.[0]?.period || null;
+  }
+  let q = admin
+    .from('titans_13f_positions')
+    .select('ticker, cusip')
+    .in('ticker', list)
+    .limit(20000);
+  if (per) q = q.eq('period', per);
+  const { data, error } = await q;
+  if (error) throw new Error('Security identifiers could not be read');
+  const counts = {};
+  for (const r of data || []) {
+    if (!r.cusip) continue;
+    const t = cleanTicker(r.ticker);
+    const c = (counts[t] = counts[t] || {});
+    c[r.cusip] = (c[r.cusip] || 0) + 1;
+  }
+  const map = {};
+  const ambiguous = [];
+  for (const [t, c] of Object.entries(counts)) {
+    const ranked = Object.entries(c).sort((a, b) => b[1] - a[1]);
+    if (ranked.length > 1 && ranked[1][1] >= ranked[0][1] * 0.2) ambiguous.push(t);
+    else map[t] = ranked[0][0];
+  }
+  return { map, ambiguous, period: per };
+}
+
+/** The primary subject's holdings as securities with CUSIPs. */
+async function subjectSecurities(admin, primary) {
+  if (primary.kind === 'institution') {
+    const { data, error } = await admin
+      .from('titans_13f_positions')
+      .select('ticker, cusip, issuer, value_usd, shares, put_call')
+      .eq('cik', primary.id)
+      .eq('period', primary.period)
+      .order('value_usd', { ascending: false })
+      .limit(2000);
+    if (error) throw new Error('13F holdings could not be read');
+    const rows = (data || [])
+      .filter((r) => !r.put_call && r.cusip)
+      .map((r) => ({
+        cusip: r.cusip,
+        ticker: cleanTicker(r.ticker) || null,
+        issuer: r.issuer,
+        value: Number(r.value_usd) || null,
+        shares: Number(r.shares) || null,
+      }));
+    return {
+      rows,
+      asOf: `13F period ${primary.period}`,
+      source: `${primary.name} Form 13F, period ${primary.period}`,
+      unmapped: [],
+    };
+  }
+  const held = await memberHoldings(admin, primary.id);
+  const { map, ambiguous } = await cusipsForTickers(
+    admin,
+    held.map((h) => h.tickers[0]),
+  );
+  const { data: last } = await admin
+    .from('congress_trades')
+    .select('disclosure_date')
+    .eq('bioguide_id', primary.id)
+    .not('disclosure_date', 'is', null)
+    .order('disclosure_date', { ascending: false })
+    .limit(1);
+  const asOf = last?.[0]?.disclosure_date ? String(last[0].disclosure_date).slice(0, 10) : null;
+  const rows = [];
+  const unmapped = [];
+  for (const h of held) {
+    const t = cleanTicker(h.tickers[0]);
+    if (map[t])
+      rows.push({ cusip: map[t], ticker: t, issuer: h.issuer, est: h.value, share: h.share });
+    else unmapped.push(t);
+  }
+  return {
+    rows,
+    asOf: asOf ? `estimated from disclosures through ${asOf}` : 'estimated from disclosures',
+    source: `${primary.name}'s estimated open positions (STOCK Act disclosures at range midpoints)${asOf ? `, latest disclosure ${asOf}` : ''}`,
+    unmapped: [...unmapped, ...ambiguous.filter((t) => !unmapped.includes(t))],
+  };
+}
+
+/** Run one EzanaQL attachment through the validated path; securities rows when it has them. */
+async function runQueryAttachment(admin, item, userId) {
+  const v = validateEzanaQL(item.query, { dimension: item.dimension || null });
+  if (!v.ok) throw new Error(`The query is not valid EzanaQL: ${v.error}`);
+  const out = await runEzanaQL({
+    query: item.query,
+    admin,
+    userId,
+    dimension: item.dimension || null,
+    format: 'table',
+  });
+  if (!out.ok) throw new Error(out.error || 'The query could not run.');
+  const rows = out.result?.rows || [];
+  const keys = out.result?.keys || [];
+  const securities = [];
+  const periods = new Set();
+  if (item.schema?.shape === 'securities') {
+    const seen = new Set();
+    const needMap = [];
+    for (const r of rows) {
+      if (r.put_call) continue;
+      if (r.share_type && String(r.share_type).toUpperCase() === 'PRN') continue;
+      const cusip = r.cusip ? String(r.cusip).toUpperCase() : null;
+      const ticker = cleanTicker(r.ticker) || null;
+      const id = cusip || `t:${ticker}`;
+      if (!cusip && !ticker) continue;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      if (r.period) periods.add(String(r.period).slice(0, 10));
+      securities.push({
+        cusip,
+        ticker,
+        issuer: r.issuer || null,
+        value: r.value != null ? Number(r.value) : null,
+        shares: r.shares != null ? Number(r.shares) : null,
+        period: r.period ? String(r.period).slice(0, 10) : null,
+      });
+      if (!cusip && ticker) needMap.push(ticker);
+    }
+    if (needMap.length) {
+      const { map } = await cusipsForTickers(admin, needMap);
+      for (const sRow of securities)
+        if (!sRow.cusip && map[sRow.ticker]) sRow.cusip = map[sRow.ticker];
+    }
+  }
+  const head = keys.slice(0, 8);
+  const table = [
+    `| ${head.join(' | ')} |`,
+    `|${head.map(() => '---').join('|')}|`,
+    ...rows
+      .slice(0, 25)
+      .map((r) => `| ${head.map((k) => (r[k] == null ? '' : String(r[k]))).join(' | ')} |`),
+  ];
+  return { rows, keys, securities, periods: [...periods].sort(), table, rowCount: rows.length };
+}
+
+const fmtUsd = (v) => (v == null ? 'N/A' : usd(v));
+
+/** Compute a set operation and the text section that reports it. */
+function runSetOp({ item, left, right, leftDs, rightDs, setDs }) {
+  const op = SET_OPS[item.relation];
+  const level = item.matchLevel === 'issuer' ? 'issuer' : 'security';
+  const m = matchSecurities(left.rows, right.securities, { op: op.key, level });
+  const rightPeriods = right.periods.length ? right.periods.join(', ') : 'as returned by the query';
+  const rows = m.rows
+    .map((x) => {
+      const l = x.left[0] || null;
+      const r = x.right[0] || null;
+      return {
+        cusip: (r || l).cusip,
+        ticker: r?.ticker || l?.ticker || null,
+        issuer: r?.issuer || l?.issuer || null,
+        tickers: [...new Set([...x.left, ...x.right].map((y) => y.ticker).filter(Boolean))],
+        leftEst: l?.est ?? l?.value ?? null,
+        leftShare: l?.share ?? null,
+        rightValue: x.right.reduce((t, y) => t + (Number(y.value) || 0), 0) || null,
+        rightShares: r?.shares ?? null,
+        rightPeriod: r?.period ?? null,
+      };
+    })
+    .sort((a, b) => (b.rightValue || 0) - (a.rightValue || 0));
+  const title =
+    op.key === 'compare'
+      ? `Holdings comparison: ${leftDs.short} and ${rightDs.short}`
+      : setDs?.label || op.key;
+  const lines = [
+    `${title} (computed by Research Composer from stored filings; not an AI estimate).`,
+    `Relationship: ${op.text(leftDs, rightDs)}`,
+    `Matching: ${MATCH_LEVELS[level].note} Rows without a CUSIP are not matched on a ticker alone.`,
+    `Left: ${leftDs.label}, ${left.asOf}. ${m.leftCount} securities with identifiers${left.unmapped?.length ? `; ${left.unmapped.length} could not be mapped to a CUSIP (${left.unmapped.slice(0, 8).join(', ')})` : ''}.`,
+    `Right: ${rightDs.label}, reporting period ${rightPeriods}. ${m.rightCount} securities with identifiers${m.rightNoId ? `; ${m.rightNoId} without one` : ''}. Options and principal-amount (bond) rows are excluded.`,
+    `Result: ${m.overlap} in both, ${m.leftOnly} only on the left, ${m.rightOnly} only on the right.`,
+  ];
+  if (op.key !== 'compare') {
+    lines.push(
+      rows.length
+        ? `${rows.length} ${op.key === 'intersect' ? 'matching' : 'resulting'} ${level === 'issuer' ? 'issuers' : 'securities'}:`
+        : op.key === 'intersect'
+          ? 'No equities appear in both datasets. Nothing downstream is run on an empty set.'
+          : 'The result is empty.',
+    );
+    if (rows.length) {
+      lines.push(
+        '',
+        `| Company | Ticker | CUSIP | ${leftDs.short} est. value (midpoint) | ${rightDs.short} reported value |`,
+        '|---|---|---|---|---|',
+        ...rows
+          .slice(0, 40)
+          .map(
+            (r) =>
+              `| ${r.issuer || 'N/A'} | ${r.tickers.join(', ') || 'N/A'} | ${r.cusip} | ${fmtUsd(r.leftEst)} | ${fmtUsd(r.rightValue)} |`,
+          ),
+      );
+    }
+  }
+  lines.push(
+    '',
+    `Limitation: these are the latest available reported or estimated holdings in each dataset. The dates differ, so a match shows a security appearing in both datasets, not verified simultaneous ownership.`,
+    leftDs.semantics === 'estimated_holdings'
+      ? 'Limitation: congressional positions are estimated from disclosed transaction ranges; exact position sizes are not disclosed.'
+      : null,
+  );
+  return {
+    output: 'calculated',
+    title,
+    stats: { overlap: m.overlap, leftOnly: m.leftOnly, rightOnly: m.rightOnly, level },
+    set: setDs
+      ? {
+          rows: rows.map((r) => ({
+            issuer: r.issuer || r.ticker,
+            tickers: r.tickers.length ? r.tickers : [r.ticker].filter(Boolean),
+            value: r.rightValue,
+          })),
+          source: `${setDs.label} (${MATCH_LEVELS[level].label.toLowerCase()}; ${left.asOf}; ${rightDs.short} period ${rightPeriods})`,
+          valueLabel: `${rightDs.short} reported value`,
+        }
+      : null,
+    count: rows.length,
+    text: lines.filter((l) => l !== null).join('\n'),
+  };
+}
+
+/**
+ * Execute a whole composition. The server rebuilds the context from the submitted
+ * attachments (schemas re-derived, the subject re-resolved, targets reconciled), plans it
+ * and runs the tasks in dependency order. Failures stay local: a failed query marks only
+ * what depends on it.
+ */
+export async function runResearchComposition(
+  { question = '', primary: primaryIn = null, attachments = [], userId = null },
+  admin = getAdminClient(),
+) {
+  const primary = primaryIn?.text
+    ? await resolveSubject(primaryIn.text, admin).catch(() => null)
+    : null;
+  const items = attachments
+    .slice(0, 8)
+    .map((raw, i) => {
+      const seq = Number.isFinite(raw?.seq) ? raw.seq : i;
+      if (raw?.kind === 'query') {
+        const query = String(raw.query || '').slice(0, 4000);
+        return {
+          key: String(raw.key || `query:${i}`).slice(0, 80),
+          kind: 'query',
+          seq,
+          label: String(raw.label || 'EzanaQL query').slice(0, 120),
+          query,
+          dimension: raw.dimension || null,
+          relation: SET_OPS[raw.relation] || EVIDENCE_OPS[raw.relation] ? raw.relation : 'evidence',
+          matchLevel: raw.matchLevel === 'issuer' ? 'issuer' : 'security',
+          schema: querySchema(query, raw.dimension || null),
+        };
+      }
+      if (raw?.kind === 'analysis' && CAPABILITIES[raw.capability]) {
+        return {
+          ...raw,
+          seq,
+          /* An explicit target, or one the reader still has to reconfigure (stale), is kept as
+           explicit: a target that no longer exists stays unrun instead of moving silently. */
+          target:
+            raw.target?.explicit || raw.target?.stale
+              ? { id: String(raw.target.id || ''), explicit: true }
+              : null,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+  let ctx = buildContext({ question, primary, items });
+  const patches = reconcileTargets(items, ctx);
+  const ready = items.map((it) => {
+    const next = patches[it.key];
+    if (!next) return it;
+    /* The same rule as the composer: a count default does not carry across a change of
+       target; a count the reader set does. */
+    const params = { ...(it.params || {}) };
+    if (next.kind === 'set' && !it.editedParams?.top_n) delete params.top_n;
+    return { ...it, params, target: next };
+  });
+  ctx = buildContext({ question, primary, items: ready });
+  const { order } = planComposition(ctx);
+
+  const results = [];
+  const done = {};
+  const sets = {};
+  const failed = new Set();
+  let subjectRows = null;
+  for (const task of order) {
+    if (task.deps.some((d) => failed.has(d))) {
+      failed.add(task.id);
+      continue;
+    }
+    try {
+      if (task.id === 'subject:resolve') {
+        if (!primary?.kind || !['politician', 'institution'].includes(primary.kind))
+          throw new Error('The subject did not resolve to holdings.');
+      } else if (task.id === 'subject:holdings') {
+        subjectRows = await subjectSecurities(admin, primary);
+      } else if (task.id.startsWith('query:')) {
+        const item = ready.find((x) => `query:${x.key}` === task.id);
+        const res = await runQueryAttachment(admin, item, userId);
+        done[task.id] = res;
+        if (!SET_OPS[item.relation]) {
+          results.push({
+            key: item.key,
+            kind: 'query',
+            status: 'done',
+            title: item.label,
+            text: [
+              `EzanaQL query "${item.label}" (${res.rowCount} rows; first ${Math.min(25, res.rowCount)} shown).`,
+              `How to use it: ${EVIDENCE_OPS[item.relation].text()}`,
+              `Query: ${item.query}`,
+              '',
+              ...res.table,
+            ].join('\n'),
+          });
+        }
+      } else if (task.id.startsWith('set:')) {
+        const key = task.id.slice(4);
+        const item = ready.find((x) => x.key === key);
+        const rightDs = ctx.datasets.find((d) => d.id === `out:${key}`);
+        const setDs = ctx.datasets.find((d) => d.id === `set:${key}`) || null;
+        const leftId = setDs ? setDs.inputs[0] : 'subject:holdings';
+        const leftDs = ctx.datasets.find((d) => d.id === leftId);
+        const left =
+          leftId === 'subject:holdings'
+            ? subjectRows
+            : {
+                rows: done[`query:${leftId.slice(4)}`]?.securities || [],
+                asOf: 'as returned by its query',
+                unmapped: [],
+              };
+        const res = runSetOp({ item, left, right: done[`query:${key}`], leftDs, rightDs, setDs });
+        if (setDs && res.set) sets[setDs.id] = res.set;
+        results.push({ key, kind: 'query', status: 'done', ...res, set: undefined });
+      } else if (task.id.startsWith('analysis:')) {
+        const raw = ready.find((x) => `analysis:${x.key}` === task.id);
+        const att = validateAttachment({
+          ...raw,
+          target: raw.target && onSetTarget(raw.target, sets),
+        });
+        if (att.status !== 'supported') {
+          results.push({
+            key: att.key,
+            capability: att.capability,
+            status: att.status,
+            issues: att.issues,
+          });
+          continue;
+        }
+        const res = await EXECUTORS[att.capability](admin, att, { sets });
+        results.push({
+          key: att.key,
+          capability: att.capability,
+          origin: att.origin,
+          relation: relationText(att),
+          status: res.skipped ? 'skipped' : res.failed ? 'failed' : 'done',
+          ...res,
+        });
+      }
+    } catch (e) {
+      failed.add(task.id);
+      results.push({
+        key: task.id,
+        status: 'failed',
+        title: task.label,
+        failed: String(e?.message || 'This step could not run.'),
+      });
+    }
+  }
+  for (const id of failed) {
+    if (results.some((r) => r.key === id || `analysis:${r.key}` === id)) continue;
+    results.push({ key: id, status: 'failed', failed: 'A step it depends on could not run.' });
+  }
+  return { results, plan: order.map((t) => ({ id: t.id, label: t.label, deps: t.deps })) };
+}
+
+/** An analysis target with the computed set's size, so validation sees real counts. */
+function onSetTarget(target, sets) {
+  if (target?.kind !== 'set') return target;
+  const set = sets[target.dataset?.id];
+  return set ? { ...target, count: set.rows.length } : target;
+}
+
 const EXECUTORS = {
   'fundamental-analysis': runFundamentals,
   'dcf-valuation': runDcf,
@@ -487,7 +946,7 @@ export async function runComposition(attachments = [], admin = getAdminClient())
       continue;
     }
     try {
-      const res = await EXECUTORS[att.capability](admin, att);
+      const res = await EXECUTORS[att.capability](admin, att, null);
       results.push({
         key: att.key,
         capability: att.capability,
@@ -514,7 +973,7 @@ export function compositionText(results = []) {
     .map((r) =>
       r.text
         ? r.text
-        : `${CAPABILITIES[r.capability]?.label || r.capability}: not run (${r.failed || r.issues?.map((i) => i.message).join(' ') || r.status}).`,
+        : `${CAPABILITIES[r.capability]?.label || r.title || r.capability || r.key}: not run (${r.failed || r.issues?.map((i) => i.message).join(' ') || r.status}).`,
     )
     .join('\n\n')
     .slice(0, 11500);

@@ -8,10 +8,29 @@
  * use it, its status, and a remove action. An analysis row expands to its typed
  * parameters, its relationship choices (with "Other" for the reader's own instruction) and
  * its subject. Every control maps to a typed parameter in the registry.
+ *
+ * 4.0 (Nov 23 2026): rows follow insertion order (one list, not analyses then the rest). A
+ * query row offers analytical relationships first (a holdings intersection, comparison,
+ * difference, union) when its output and the subject's holdings are both security sets,
+ * then evidence handling. An analysis row shows "Analyze" (its target dataset) under the
+ * research subject, and a "Uses ..." line when it depends on an earlier attachment.
  */
 
 import { useState } from 'react';
-import { CAPABILITIES, paramsFor, relationText, relationsFor } from '@/lib/sonar/composer/registry';
+import {
+  CAPABILITIES,
+  paramsFor,
+  relationText,
+  relationsFor,
+  onSet,
+} from '@/lib/sonar/composer/registry';
+import {
+  analysisTargets,
+  queryRelationOptions,
+  SET_OPS,
+  MATCH_LEVELS,
+} from '@/lib/sonar/composer/context';
+import { portfolioGap } from '@/lib/sonar/composer/schema';
 
 export const KIND_LABEL = {
   analysis: 'Analysis',
@@ -103,10 +122,18 @@ function ParamControl({ a, p, onParam }) {
     );
   }
   return (
-    <label className="scr-param" htmlFor={id} title={p.effect}>
+    <label
+      className="scr-param"
+      htmlFor={id}
+      title={typeof p.effect === 'function' ? p.effect(a) : p.effect}
+    >
       <span>
-        {p.label}
-        {p.id === 'top_n' && a.subject?.eligible != null ? (
+        {p.id === 'top_n' && onSet(a) ? 'Companies' : p.label}
+        {p.id === 'top_n' && onSet(a) ? (
+          <em className="scr-param-max">
+            {a.target?.count != null ? ` of ${a.target.count}` : ' (count pending)'}
+          </em>
+        ) : p.id === 'top_n' && a.subject?.eligible != null ? (
           <em className="scr-param-max">
             {max < a.subject.eligible ? ` (max ${max})` : ` of ${a.subject.eligible}`}
           </em>
@@ -129,21 +156,44 @@ function ParamControl({ a, p, onParam }) {
   );
 }
 
-function AnalysisRow({ a, api }) {
-  /* Collapsed by default; a row that needs the reader (a value to fix, a filer to choose)
-     opens on its own. */
+function DependsOn({ a, ctx }) {
+  const prod = a.target?.dependsOn?.[0];
+  if (!prod || !a.target?.dataset) return null;
+  const n = ctx.items.findIndex((i) => i.key === prod);
+  return (
+    <p className="scr-dep">
+      <i className="bi bi-arrow-return-right" aria-hidden="true" /> Uses{' '}
+      <strong>{a.target.dataset.label}</strong>
+      {n >= 0 ? <span className="scr-dep-from"> from attachment {n + 1}</span> : null}
+    </p>
+  );
+}
+
+function AnalysisRow({ a, api, ctx, index }) {
+  /* Collapsed by default; a row that needs the reader (a value to fix, a filer to choose,
+     a stale target) opens on its own. */
   const [userOpen, setOpen] = useState(null);
-  const needs = a.status === 'validation_error' || a.subject?.candidates?.length > 1 || !a.subject;
+  const needs =
+    a.status === 'validation_error' ||
+    a.subject?.candidates?.length > 1 ||
+    (!a.subject && !onSet(a)) ||
+    Boolean(a.target?.stale);
   const open = userOpen ?? needs;
   const cap = CAPABILITIES[a.capability];
   const st = STATUS[a.status] || STATUS.conditional;
   const rels = relationsFor(a);
+  const targets = analysisTargets(a, ctx);
+  const hasSets = targets.options.some((o) => o.kind === 'set');
+  const subjectName = ctx.primary?.name || a.subject?.name || a.subject?.text || null;
+  const pointInTime =
+    a.capability === 'backtesting' && ctx.datasets.some((d) => d.role === 'derived');
   return (
-    <li className={`scr-row is-${st.tone}`}>
+    <li className={`scr-row is-${st.tone}${a.target?.dataset ? ' is-dependent' : ''}`}>
       <div className="scr-head">
+        <span className="scr-n">{index + 1}</span>
         <i className={`bi ${cap.icon} scr-icon`} aria-hidden="true" />
         <span className="scr-name">{cap.label}</span>
-        <span className="scr-type">{cap.type}</span>
+        <span className="scr-type">Model</span>
         <span className={`scr-origin${a.origin === 'auto' ? ' is-auto' : ''}`}>
           {a.origin === 'auto' ? 'Auto-configured' : 'Added'}
         </span>
@@ -166,7 +216,15 @@ function AnalysisRow({ a, api }) {
           <i className="bi bi-x-lg" aria-hidden="true" />
         </button>
       </div>
+      <DependsOn a={a} ctx={ctx} />
       <p className="scr-rel">{relationText(a) || cap.summary}</p>
+      {pointInTime ? (
+        <p className="scr-note">
+          Backtests follow the member&apos;s dated disclosures. A strategy over the matching
+          equities is not offered: which equities matched on past dates cannot be rebuilt from the
+          latest holdings snapshots, and using today&apos;s list would look ahead.
+        </p>
+      ) : null}
       {a.issues?.length ? (
         <ul className="scr-issues">
           {a.issues.map((i, n) => (
@@ -178,7 +236,16 @@ function AnalysisRow({ a, api }) {
                   className="scr-fix"
                   onClick={() => api.setParam(a.key, i.param, i.fix)}
                 >
-                  Use {i.fix}
+                  {i.fixLabel || `Use ${i.fix}`}
+                </button>
+              ) : null}
+              {i.retarget ? (
+                <button
+                  type="button"
+                  className="scr-fix"
+                  onClick={() => api.setTarget(a.key, i.retarget)}
+                >
+                  Use {i.retargetLabel || 'the suggested target'}
                 </button>
               ) : null}
             </li>
@@ -208,18 +275,46 @@ function AnalysisRow({ a, api }) {
               </select>
             </label>
           ) : null}
-          <label className="scr-param scr-param--wide">
-            <span>Subject</span>
-            <input
-              type="text"
-              defaultValue={a.subject?.name || a.subject?.text || ''}
-              placeholder="Company, fund manager or member of Congress"
-              onBlur={(e) => {
-                const t = e.target.value.trim();
-                if (t !== (a.subject?.name || a.subject?.text || '')) api.setSubject(a.key, t);
-              }}
-            />
-          </label>
+          {hasSets ? (
+            <>
+              <p className="scr-subject">
+                Research subject: <strong>{subjectName || 'not set'}</strong>
+              </p>
+              <label className="scr-param scr-param--wide">
+                <span>Analyze</span>
+                <select
+                  value={a.target?.id || targets.recommended || ''}
+                  onChange={(e) => api.setTarget(a.key, e.target.value)}
+                >
+                  {a.target?.stale ? (
+                    <option value={a.target.id} disabled>
+                      {a.target.label || 'Removed target'} (no longer available)
+                    </option>
+                  ) : null}
+                  {targets.options.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                      {o.id === targets.recommended ? ' (recommended)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          ) : null}
+          {onSet(a) ? null : (
+            <label className="scr-param scr-param--wide">
+              <span>Subject</span>
+              <input
+                type="text"
+                defaultValue={a.subject?.name || a.subject?.text || ''}
+                placeholder="Company, fund manager or member of Congress"
+                onBlur={(e) => {
+                  const t = e.target.value.trim();
+                  if (t !== (a.subject?.name || a.subject?.text || '')) api.setSubject(a.key, t);
+                }}
+              />
+            </label>
+          )}
           {rels.length ? (
             <label className="scr-param scr-param--wide">
               <span>How should Sonar use this?</span>
@@ -259,11 +354,94 @@ function AnalysisRow({ a, api }) {
   );
 }
 
-function ContextRow({ c, onRemove, onRelation }) {
+function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel }) {
+  const { options, unavailable } = queryRelationOptions(c, ctx);
+  const ops = options.filter((o) => o.family === 'portfolio_operation');
+  const evidence = options.filter((o) => o.family === 'evidence');
+  const set = ctx.datasets.find((d) => d.id === `set:${c.key}`);
+  const gap = c.schema ? portfolioGap(c.schema) : null;
+  const isSetOp = Boolean(SET_OPS[c.relation]) && c.relation !== 'compare';
+  return (
+    <li className="scr-row is-ctx is-query">
+      <div className="scr-head">
+        <span className="scr-n">{index + 1}</span>
+        <i className="bi bi-terminal scr-icon" aria-hidden="true" />
+        <span className="scr-name">{c.label}</span>
+        <span className="scr-type">EzanaQL query</span>
+        <span className="scr-origin">Added</span>
+        <button
+          type="button"
+          className="scr-btn"
+          aria-label={`Remove ${c.label}`}
+          onClick={() => onRemove(c.key)}
+        >
+          <i className="bi bi-x-lg" aria-hidden="true" />
+        </button>
+      </div>
+      <p className="scr-schema">
+        {c.schema?.ok
+          ? `Returns ${c.schema.shape === 'securities' ? 'securities' : c.schema.shape} from ${c.schema.datasetLabel}${c.schema.identifiers.length ? ` (${c.schema.identifiers.join(', ')})` : ''}${c.schema.entity?.text ? `, filtered to ${c.schema.entity.text.replace(/\.$/, '')}` : ''}.`
+          : c.schema?.error || 'Reading the query.'}
+      </p>
+      <label className="scr-param scr-param--wide">
+        <span>How should Sonar use this?</span>
+        <select
+          value={c.relation || 'evidence'}
+          onChange={(e) => onRelation(c.key, e.target.value)}
+        >
+          {ops.length ? (
+            <optgroup label="Analyse with the research subject">
+              {ops.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.text}
+                  {o.recommended ? ' (recommended)' : ''}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+          <optgroup label="Use as material">
+            {evidence.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.text}
+              </option>
+            ))}
+          </optgroup>
+        </select>
+      </label>
+      {!ops.length && (unavailable || gap) ? (
+        <p className="scr-note">Portfolio operations are not offered: {gap || unavailable}</p>
+      ) : null}
+      {isSetOp ? (
+        <label className="scr-param scr-param--wide">
+          <span>Match on</span>
+          <select
+            value={c.matchLevel || 'security'}
+            onChange={(e) => onMatchLevel(c.key, e.target.value)}
+          >
+            {Object.values(MATCH_LEVELS).map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {set ? (
+        <p className="scr-produces">
+          <i className="bi bi-diagram-2" aria-hidden="true" /> Produces <strong>{set.label}</strong>{' '}
+          (count computed when it runs)
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
+function ContextRow({ c, index, onRemove, onRelation }) {
   const rels = CONTEXT_RELATIONS[c.kind] || [];
   return (
     <li className={`scr-row is-ctx${c.status === 'reading' ? ' is-reading' : ''}`}>
       <div className="scr-head">
+        <span className="scr-n">{index + 1}</span>
         <i className={`bi ${KIND_ICON[c.kind] || 'bi-paperclip'} scr-icon`} aria-hidden="true" />
         <span className="scr-name">{c.label}</span>
         <span className="scr-type">{KIND_LABEL[c.kind] || 'Context'}</span>
@@ -299,17 +477,19 @@ function ContextRow({ c, onRemove, onRelation }) {
 }
 
 export function SonarComposerRows({
-  analyses = [],
-  context = [],
+  ordered = [],
+  ctx,
   api,
   onRemoveContext,
   onContextRelation,
+  onQueryRelation,
+  onMatchLevel,
   autoCount = 0,
   dismissedCount = 0,
   deep = null,
   running = false,
 }) {
-  if (!analyses.length && !context.length && !dismissedCount) return null;
+  if (!ordered.length && !dismissedCount) return null;
   return (
     <div className="scr" aria-label="Research Composer resources">
       {autoCount || dismissedCount ? (
@@ -327,13 +507,42 @@ export function SonarComposerRows({
           </button>
         </p>
       ) : null}
+      {ctx?.subjects?.length > 1 ? (
+        <p className="scr-subjects">
+          Subjects:{' '}
+          {ctx.subjects.map((s, i) => (
+            <span key={`${s.role}:${s.name}`}>
+              {i ? ', ' : ''}
+              <strong>{s.name}</strong> (
+              {s.role === 'primary' ? 'research subject' : 'from a query'})
+            </span>
+          ))}
+        </p>
+      ) : null}
       <ul className="scr-list">
-        {analyses.map((a) => (
-          <AnalysisRow key={a.key} a={a} api={api} />
-        ))}
-        {context.map((c) => (
-          <ContextRow key={c.key} c={c} onRemove={onRemoveContext} onRelation={onContextRelation} />
-        ))}
+        {ordered.map((c, i) =>
+          c.kind === 'analysis' ? (
+            <AnalysisRow key={c.key} a={c} api={api} ctx={ctx} index={i} />
+          ) : c.kind === 'query' ? (
+            <QueryRow
+              key={c.key}
+              c={c}
+              ctx={ctx}
+              index={i}
+              onRemove={onRemoveContext}
+              onRelation={onQueryRelation}
+              onMatchLevel={onMatchLevel}
+            />
+          ) : (
+            <ContextRow
+              key={c.key}
+              c={c}
+              index={i}
+              onRemove={onRemoveContext}
+              onRelation={onContextRelation}
+            />
+          ),
+        )}
       </ul>
       {deep?.qualifies ? (
         <p className="scr-deep">

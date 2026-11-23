@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { cacheGet, cacheSet } from '@/lib/cache';
-import { resolveSubject, runComposition, compositionText } from '@/lib/sonar/composer/execute';
+import {
+  resolveSubject,
+  runComposition,
+  runResearchComposition,
+  compositionText,
+} from '@/lib/sonar/composer/execute';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,6 +23,12 @@ export const maxDuration = 60;
  *
  *   { action: 'run', attachments: [...] }
  *     200 { results: [...], text }
+ *
+ *   { action: 'run', version: 4, question, primary: { text }, attachments: [...] }
+ *     200 { results, plan, text }
+ *     4.0: the whole composition (queries, set operations, analyses on derived sets), run in
+ *     dependency order. EzanaQL runs through the same validated path as /api/ezanaql/run,
+ *     with the reader's id for any private dataset.
  *     Executes the valid analysis attachments with deterministic code (filed SEC figures, the
  *     13F book, estimated member holdings, the Quant Lab backtest engine). Signed-in readers
  *     only: a run reads price history and can take several seconds. The research run then
@@ -57,6 +68,23 @@ export const POST = withApiGuard(
       }
       if (!user?.id) {
         return NextResponse.json({ error: 'Sign in to run research analyses.' }, { status: 401 });
+      }
+      if (body.version === 4) {
+        const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 8) : [];
+        const primary =
+          body.primary && typeof body.primary.text === 'string'
+            ? { text: body.primary.text.trim().slice(0, 80) }
+            : null;
+        const { results, plan } = await runResearchComposition(
+          {
+            question: String(body.question || '').slice(0, 600),
+            primary,
+            attachments,
+            userId: user.id,
+          },
+          admin,
+        );
+        return NextResponse.json({ results, plan, text: compositionText(results) });
       }
       const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 6) : [];
       const results = await runComposition(attachments, admin);

@@ -13,6 +13,10 @@
  *     kind       'analysis' | 'query' | 'model' | 'pack' | 'tool' | 'chart' | 'echo' | 'photo'
  *     origin     'auto' (inferred from the question) | 'user' | 'saved' | 'suggested'
  *     subject    { text, kind?: 'institution'|'politician'|'company', id?, name?, eligible? }
+ *     target     4.0: what the analysis operates on { id, kind: 'subject' | 'set', label,
+ *                dataset?, dependsOn, explicit, stale? } (lib/sonar/composer/context.js). A
+ *                'set' target (an intersection, a query's output) replaces the subject as
+ *                the analysed companies; the subject stays the research subject.
  *     relation   relationship key (RELATIONS[capability] entry) or 'other'
  *     custom     the reader's own instruction when relation is 'other'
  *     params     typed values, keyed by PARAMS[capability] ids
@@ -34,10 +38,15 @@ export const PARAMS = {
       label: 'Holdings',
       type: 'integer',
       min: 1,
-      max: (a) => Math.min(25, a?.subject?.eligible ?? 25),
-      default: 10,
-      when: (a) => a?.subject?.kind === 'institution' || a?.subject?.kind === 'politician',
-      effect: 'How many of the largest holdings are analysed.',
+      max: (a) => Math.min(25, onSet(a) ? (a.target.count ?? 25) : (a?.subject?.eligible ?? 25)),
+      default: (a) => (onSet(a) ? null : 10),
+      placeholder: 'All',
+      when: (a) =>
+        onSet(a) || a?.subject?.kind === 'institution' || a?.subject?.kind === 'politician',
+      effect: (a) =>
+        onSet(a)
+          ? 'Empty analyses every company in the target set; a number keeps the largest by reported value.'
+          : 'How many of the largest holdings are analysed.',
     },
     {
       id: 'metrics',
@@ -70,10 +79,12 @@ export const PARAMS = {
       label: 'Companies',
       type: 'integer',
       min: 1,
-      max: (a) => Math.min(5, a?.subject?.eligible ?? 5),
-      default: 3,
-      when: (a) => a?.subject?.kind === 'institution' || a?.subject?.kind === 'politician',
-      effect: 'How many of the largest holdings are valued (at most 5 per run).',
+      max: (a) => Math.min(5, onSet(a) ? (a.target.count ?? 5) : (a?.subject?.eligible ?? 5)),
+      default: (a) => (onSet(a) ? null : 3),
+      placeholder: 'All (up to 5)',
+      when: (a) =>
+        onSet(a) || a?.subject?.kind === 'institution' || a?.subject?.kind === 'politician',
+      effect: 'How many companies are valued (at most 5 per run), largest by reported value.',
     },
     {
       id: 'years',
@@ -158,6 +169,18 @@ export const PARAMS = {
 /* ── relationships ──────────────────────────────────────────────────── */
 
 const n = (a, fallback) => a?.params?.top_n ?? fallback;
+/** The analysis targets a security set (an intersection, a query's output), not its subject. */
+export const onSet = (a) => a?.target?.kind === 'set';
+const setText = (a) => a?.target?.dataset?.text || a?.target?.label || 'the target set';
+const setScope = (a) =>
+  a?.params?.top_n
+    ? `the ${a.params.top_n} largest companies (by reported value) represented by`
+    : 'the companies represented by';
+const METRIC_PRESETS = {
+  strength: ['gross_margin', 'operating_margin', 'fcf_margin', 'roe', 'debt_to_equity'],
+  growth: ['revenue_growth', 'gross_margin', 'operating_margin', 'net_margin'],
+  risk: ['debt_to_equity', 'fcf_margin', 'net_margin'],
+};
 
 /**
  * Relationship choices per capability. `for` lists the subject kinds a choice applies to;
@@ -186,6 +209,35 @@ export const RELATIONS = {
       text: (a) =>
         `Analyse ${a.subject?.name || a.subject?.text || 'the company'}'s own fundamentals.`,
     },
+    {
+      key: 'set-all',
+      family: 'derived_set_analysis',
+      for: ['set'],
+      text: (a) => `Analyse the financial fundamentals of ${setScope(a)} ${setText(a)}.`,
+    },
+    {
+      key: 'set-strength',
+      family: 'derived_set_analysis',
+      for: ['set'],
+      metrics: METRIC_PRESETS.strength,
+      text: (a) =>
+        `Compare the financial strength (margins, cash generation, returns and leverage) of ${setScope(a)} ${setText(a)}.`,
+    },
+    {
+      key: 'set-growth',
+      family: 'derived_set_analysis',
+      for: ['set'],
+      metrics: METRIC_PRESETS.growth,
+      text: (a) => `Analyse growth and profitability among ${setScope(a)} ${setText(a)}.`,
+    },
+    {
+      key: 'set-risk',
+      family: 'derived_set_analysis',
+      for: ['set'],
+      metrics: METRIC_PRESETS.risk,
+      text: (a) =>
+        `Identify financial risks (leverage, weak cash generation, thin margins) among ${setScope(a)} ${setText(a)}.`,
+    },
   ],
   'dcf-valuation': [
     {
@@ -201,6 +253,13 @@ export const RELATIONS = {
       for: ['company'],
       text: (a) =>
         `Estimate ${a.subject?.name || a.subject?.text || 'the company'}'s intrinsic value with a ${a.params?.years ?? 5}-year discounted cash-flow model.`,
+    },
+    {
+      key: 'set-value',
+      family: 'valuation',
+      for: ['set'],
+      text: (a) =>
+        `Estimate intrinsic value for ${a?.params?.top_n ? `the ${a.params.top_n} largest companies` : 'up to 5 companies'} in ${setText(a)} with a ${a.params?.years ?? 5}-year discounted cash-flow model.`,
     },
   ],
   backtesting: [
@@ -257,19 +316,24 @@ export const ANALYSES = Object.values(CAPABILITIES);
 /* ── construction and validation ────────────────────────────────────── */
 
 /** Default params for a capability, applied under any explicit values. */
+const defaultOf = (p, a) => (typeof p.default === 'function' ? p.default(a) : p.default);
+
 export function defaultParams(capability, attachment) {
   const out = {};
   for (const p of PARAMS[capability] || []) {
     if (p.when && !p.when(attachment)) continue;
-    out[p.id] = Array.isArray(p.default) ? [...p.default] : p.default;
+    const d = defaultOf(p, attachment);
+    out[p.id] = Array.isArray(d) ? [...d] : d;
   }
   return out;
 }
 
 /** The relationship choices that apply to an attachment's subject. */
 export function relationsFor(attachment) {
-  const kind = attachment?.subject?.kind || null;
-  return (RELATIONS[attachment?.capability] || []).filter((r) => !kind || r.for.includes(kind));
+  const kind = onSet(attachment) ? 'set' : attachment?.subject?.kind || null;
+  return (RELATIONS[attachment?.capability] || []).filter((r) =>
+    kind ? r.for.includes(kind) : !r.for.includes('set'),
+  );
 }
 
 /** The readable relationship for an attachment. */
@@ -313,15 +377,30 @@ export function validateAttachment(attachment) {
   for (const p of paramsFor(a)) {
     if (p.id in params) continue;
     const max = typeof p.max === 'function' ? p.max(a) : p.max;
+    const d = defaultOf(p, a);
     /* A default never starts out invalid: it stays inside the data's limit. Only a value
        the reader set can exceed it (and is then reported, not cut). */
-    params[p.id] = Array.isArray(p.default)
-      ? [...p.default]
-      : typeof p.default === 'number' && max !== undefined
-        ? Math.min(p.default, max)
-        : p.default;
+    params[p.id] = Array.isArray(d)
+      ? [...d]
+      : typeof d === 'number' && max !== undefined
+        ? Math.min(d, max)
+        : d;
   }
   a.params = params;
+  /* A relationship that does not fit the target (the target changed) falls back to the
+     first that does; a custom instruction is kept. */
+  const rels = relationsFor(a);
+  if (a.relation !== 'other' && rels.length && !rels.some((r) => r.key === a.relation))
+    a.relation = rels[0].key;
+  if (a.target?.stale) {
+    a.issues.push({
+      message: `Its target (${a.target.label || 'a derived set'}) is no longer in this composition: the attachment that produced it was removed or its relationship changed.`,
+      retarget: a.target.suggest || null,
+      retargetLabel: a.target.suggestLabel || null,
+    });
+    return { ...a, status: 'conditional' };
+  }
+  if (onSet(a)) return validateParams(a);
   const kind = a.subject?.kind || null;
   if (!a.subject?.text && !a.subject?.name) {
     a.issues.push({ message: 'Name the company, fund manager or member of Congress to analyse.' });
@@ -345,6 +424,11 @@ export function validateAttachment(attachment) {
     a.issues.push({ message: 'More than one filer matches. Choose which one to analyse.' });
     return { ...a, status: 'conditional' };
   }
+  return validateParams(a);
+}
+
+/** Range checks shared by subject and set targets. */
+function validateParams(a) {
   for (const p of paramsFor(a)) {
     const v = a.params?.[p.id];
     if (v === null || v === undefined || v === '') continue;
@@ -362,14 +446,21 @@ export function validateAttachment(attachment) {
           fix: p.min,
         });
       else if (max !== undefined && num > max) {
+        const setCount = p.id === 'top_n' && onSet(a) && a.target?.count != null;
         const eligible =
-          p.id === 'top_n' && a.subject?.eligible != null && max === a.subject.eligible;
+          p.id === 'top_n' &&
+          !onSet(a) &&
+          a.subject?.eligible != null &&
+          max === a.subject.eligible;
         a.issues.push({
           param: p.id,
-          message: eligible
-            ? `Only ${max} eligible holdings are available. Choose ${max} or fewer.`
-            : `${p.label} can be at most ${max}.`,
+          message: setCount
+            ? `Only ${a.target.count} matching eligible companies are available. Choose ${a.target.count} or fewer.`
+            : eligible
+              ? `Only ${max} eligible holdings are available. Choose ${max} or fewer.`
+              : `${p.label} can be at most ${max}.`,
           fix: max,
+          fixLabel: setCount ? `Use all ${a.target.count}` : null,
         });
       }
     }

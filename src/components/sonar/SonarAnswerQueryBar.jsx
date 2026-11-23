@@ -29,8 +29,11 @@ import { QUANT_MODELS } from '@/lib/quants/model-library';
 import { useSonarPlan } from './useSonarPlan';
 import { SonarBuildMenu } from './SonarBuildMenu';
 import { SonarComposerRows, CONTEXT_RELATIONS } from './SonarComposerRows';
-import { useResearchComposition } from './useResearchComposition';
+import { useResearchComposition, nextSeq, questionSubject } from './useResearchComposition';
 import { deepQualification } from '@/lib/sonar/composer/registry';
+import { querySchema, extractQuery } from '@/lib/sonar/composer/schema';
+import { EVIDENCE_OPS, queryRelationOptions } from '@/lib/sonar/composer/context';
+import { saveComposerDraft, loadComposerDraft } from './composer-draft';
 import { useResearchControls } from './research-controls-store';
 import './sonar-answer-query-bar.css';
 
@@ -48,7 +51,7 @@ export function contextText(items = []) {
     .map((c) =>
       [
         `[${c.kind}] ${c.label}`,
-        c.relation ? `How to use it: ${c.relation}` : null,
+        c.relationText || c.relation ? `How to use it: ${c.relationText || c.relation}` : null,
         c.kind === 'echo'
           ? 'An Ezana Echo article: editorial interpretation, not primary evidence.'
           : null,
@@ -95,6 +98,8 @@ export function SonarAnswerQueryBar({
   const [local, setLocal] = useState(initial || '');
   const current = controlled ? value : local;
   const set = (v) => (controlled ? onChange?.(v) : setLocal(v));
+  /* A composition carried from another composer for the same question (home page to the
+     result, a reopened result) starts where it was left. */
   const [context, setContext] = useState([]);
   const [menu, setMenu] = useState(false);
   const [saved, setSaved] = useState({ status: 'idle', items: [] });
@@ -102,7 +107,41 @@ export function SonarAnswerQueryBar({
   const [hint, setHint] = useState(0);
   const [running, setRunning] = useState(false);
   /* Research Composer: analyses inferred from the question or added from the menu. */
-  const composer = useResearchComposition(current, { enabled: contextEnabled });
+  const composer = useResearchComposition(current, { enabled: contextEnabled, context });
+  /* Restored after mount (sessionStorage is client-only; restoring in the first render
+     would not match the server's HTML). Query schemas are rebuilt from their EzanaQL. */
+  const restoredRef = useRef(false);
+  const restoreAnalyses = composer.restore;
+  useEffect(() => {
+    if (!contextEnabled || restoredRef.current) return;
+    restoredRef.current = true;
+    const d = loadComposerDraft(controlled ? value : initial);
+    if (!d) return;
+    if (Array.isArray(d.context) && d.context.length) {
+      setContext(
+        d.context.map((c) =>
+          c.kind === 'query'
+            ? { ...c, schema: querySchema(c.query || extractQuery(c.text), c.dimension || null) }
+            : c,
+        ),
+      );
+    }
+    if (Array.isArray(d.analyses) && d.analyses.length) restoreAnalyses(d.analyses);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount */
+  }, [contextEnabled]);
+  /* Every attachment in the context, in insertion order, with its effective relationship. */
+  const ordered = composer.ctx.items;
+  const ctxQueries = ordered.filter((c) => c.kind === 'query');
+
+  /* The composition is saved as it changes, so the next composer for this question has it. */
+  useEffect(() => {
+    if (!contextEnabled || !restoredRef.current) return undefined;
+    const t = setTimeout(
+      () => saveComposerDraft({ question: current, context, analyses: composer.items }),
+      300,
+    );
+    return () => clearTimeout(t);
+  }, [contextEnabled, current, context, composer.items]);
 
   /* The hint rotates while the field is empty, unless motion is reduced. */
   useEffect(() => {
@@ -150,6 +189,8 @@ export function SonarAnswerQueryBar({
             id: r.id,
             label: r.title || 'Saved query',
             desc: r.prompt || r.query || '',
+            query: r.query,
+            dimension: r.dataset_scope || null,
             text: [r.prompt ? `Question: ${r.prompt}` : null, `EzanaQL: ${r.query}`]
               .filter(Boolean)
               .join('\n'),
@@ -167,9 +208,32 @@ export function SonarAnswerQueryBar({
         setError(`Up to ${MAX_CONTEXT} items can be added to one question.`);
         return list;
       }
+      if (item.kind === 'query') {
+        /* A query carries its EzanaQL and output schema; its relationship stays open (the
+           context recommends one) until the reader picks. */
+        const query = item.query || extractQuery(item.text);
+        return [
+          ...list,
+          {
+            ...item,
+            query,
+            status: 'ready',
+            seq: nextSeq(),
+            relation: null,
+            relationExplicit: false,
+            matchLevel: 'security',
+            schema: querySchema(query, item.dimension || null),
+          },
+        ];
+      }
       return [
         ...list,
-        { ...item, status: 'ready', relation: item.relation || CONTEXT_RELATIONS[item.kind]?.[0] },
+        {
+          ...item,
+          status: 'ready',
+          seq: nextSeq(),
+          relation: item.relation || CONTEXT_RELATIONS[item.kind]?.[0],
+        },
       ];
     });
   }, []);
@@ -184,7 +248,10 @@ export function SonarAnswerQueryBar({
     }
     for (const f of picked) {
       const key = `photo:${f.name}:${f.size}:${f.lastModified}`;
-      setContext((list) => [...list, { key, kind: 'photo', label: f.name, status: 'reading' }]);
+      setContext((list) => [
+        ...list,
+        { key, kind: 'photo', label: f.name, status: 'reading', seq: nextSeq() },
+      ]);
       try {
         const body = new FormData();
         body.append('file', f);
@@ -206,17 +273,23 @@ export function SonarAnswerQueryBar({
   };
 
   const reading = context.some((c) => c.status === 'reading');
-  const ready = context.filter((c) => c.status === 'ready');
 
   /* Pack and lens choices (the Research controls) count as resources too. */
   const resourceList = [
     ...composer.items,
-    ...ready.filter((c) => c.kind !== 'photo'),
+    ...ordered.filter((c) => c.kind !== 'photo' && c.kind !== 'analysis' && c.status === 'ready'),
     ...(controls.sources !== 'all' ? [{ key: `pack:${controls.sources}`, kind: 'pack' }] : []),
     ...(controls.focus !== 'general' ? [{ key: `lens:${controls.focus}`, kind: 'tool' }] : []),
   ];
   const deep = deepQualification(resourceList);
   const runnable = composer.items.filter((a) => a.status === 'supported');
+  /* 4.0: the server runs the whole composition when it has an analysis or a query. */
+  const composes = runnable.length > 0 || ctxQueries.length > 0;
+  const relationTextFor = (c) => {
+    if (c.kind !== 'query') return c.relation;
+    const opts = queryRelationOptions(c, composer.ctx).options;
+    return opts.find((o) => o.key === c.relation)?.text || EVIDENCE_OPS.evidence.text();
+  };
 
   const submit = async (e) => {
     e?.preventDefault();
@@ -228,19 +301,26 @@ export function SonarAnswerQueryBar({
       return;
     }
     if (pending || reading || running) return;
+    const runsQueries = composes && !guest;
     const ctx = contextEnabled
-      ? ready.map(({ kind, label: l, text, relation }) => ({
-          kind,
-          label: l,
-          text,
-          relation,
-          status: 'ready',
-        }))
+      ? ordered
+          .filter((c) => c.kind !== 'analysis' && c.status === 'ready')
+          /* Queries the server runs arrive as results, not as their text. */
+          .filter((c) => !(runsQueries && c.kind === 'query'))
+          .map((c) => ({
+            kind: c.kind,
+            label: c.label,
+            text: c.text,
+            relation: c.relation,
+            relationText: relationTextFor(c),
+            status: 'ready',
+          }))
       : [];
-    /* Attached analyses run first, with deterministic code on the server; their results
-       travel with the question as the reader's attached material. */
-    if (contextEnabled && runnable.length) {
-      if (guest) {
+    /* The composition runs first, with deterministic code on the server, in dependency
+       order (queries, set operations, then analyses); its results travel with the
+       question as the reader's attached material. */
+    if (contextEnabled && composes) {
+      if (guest && runnable.length) {
         setError('Sign in to run the attached analyses, or remove them.');
         return;
       }
@@ -251,7 +331,28 @@ export function SonarAnswerQueryBar({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ action: 'run', attachments: runnable }),
+          body: JSON.stringify({
+            action: 'run',
+            version: 4,
+            question: q,
+            primary: questionSubject(q) ? { text: questionSubject(q) } : null,
+            attachments: ordered
+              .filter((c) => c.kind === 'analysis' || c.kind === 'query')
+              .map((c) =>
+                c.kind === 'query'
+                  ? {
+                      key: c.key,
+                      kind: 'query',
+                      seq: c.seq,
+                      label: c.label,
+                      query: c.query,
+                      dimension: c.dimension || null,
+                      relation: c.relation,
+                      matchLevel: c.matchLevel,
+                    }
+                  : c,
+              ),
+          }),
         });
         const j = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(j?.error || 'The attached analyses could not run.');
@@ -273,7 +374,8 @@ export function SonarAnswerQueryBar({
       setRunning(false);
     }
     onSubmit?.(q, ctx, { deep: deep.qualifies, resources: deep.count });
-    setContext([]);
+    /* The composition stays (it is saved as the draft for this question), so the result
+       page reopens it and an edit re-runs it. */
     setMenu(false);
   };
 
@@ -320,9 +422,17 @@ export function SonarAnswerQueryBar({
     <form className="sqb" role="search" onSubmit={submit} aria-busy={pending || undefined}>
       {contextEnabled ? (
         <SonarComposerRows
-          analyses={composer.items}
-          context={context}
+          ordered={ordered}
+          ctx={composer.ctx}
           api={composer}
+          onQueryRelation={(key, relation) =>
+            setContext((list) =>
+              list.map((x) => (x.key === key ? { ...x, relation, relationExplicit: true } : x)),
+            )
+          }
+          onMatchLevel={(key, matchLevel) =>
+            setContext((list) => list.map((x) => (x.key === key ? { ...x, matchLevel } : x)))
+          }
           autoCount={composer.autoCount}
           dismissedCount={composer.dismissedCount}
           deep={deep}

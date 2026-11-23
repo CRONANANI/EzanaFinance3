@@ -1222,3 +1222,118 @@
     transition: none;
   }
 }
+
+/* ── Research Composer 4.0 rows (Nov 23 2026) ───────────────────────────
+   Insertion-order numbers, the query's output schema, the "Uses ..." dependency line with a
+   connector to the row above, the research subject over the Analyze selector, and notes. */
+.sqb .scr-n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--sqb-emerald) 16%, transparent);
+  color: var(--sqb-accent);
+  font-family: var(--san-mono, var(--font-mono));
+  font-size: 10px;
+  font-weight: 700;
+}
+.sqb .scr-row.is-dependent {
+  position: relative;
+}
+.sqb .scr-row.is-dependent::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 16px;
+  width: 1px;
+  height: 9px;
+  background: color-mix(in srgb, var(--sqb-emerald) 55%, transparent);
+}
+.sqb .scr-dep,
+.sqb .scr-produces,
+.sqb .scr-schema,
+.sqb .scr-note,
+.sqb .scr-subject {
+  margin: 3px 0 0 24px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sqb-muted);
+}
+.sqb .scr-dep,
+.sqb .scr-produces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  color: var(--sqb-accent);
+}
+.sqb .scr-dep strong,
+.sqb .scr-produces strong,
+.sqb .scr-subject strong,
+.sqb .scr-subjects strong {
+  color: var(--sqb-text);
+  font-weight: 600;
+}
+.sqb .scr-dep-from {
+  color: var(--sqb-faint);
+}
+.sqb .scr-schema {
+  color: var(--sqb-faint);
+}
+.sqb .scr-note {
+  color: var(--sqb-faint);
+  font-style: italic;
+}
+.sqb .scr-subjects {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--sqb-muted);
+}
+.sqb .scr-row.is-query > .scr-param {
+  width: calc(100% - 24px);
+  margin: 6px 0 0 24px;
+}
+@media (max-width: 640px) {
+  .sqb .scr-dep,
+  .sqb .scr-produces,
+  .sqb .scr-schema,
+  .sqb .scr-note,
+  .sqb .scr-subject,
+  .sqb .scr-rel,
+  .sqb .scr-issues,
+  .sqb .scr-row.is-query > .scr-param {
+    width: 100%;
+    margin-left: 0;
+  }
+  .sqb .scr-param select {
+    max-width: 100%;
+  }
+}
+/* Long relationship sentences never widen the pill: rows and selects stay inside it. */
+.sqb .scr,
+.sqb .scr-list,
+.sqb .scr-row,
+.sqb .scr-body {
+  min-width: 0;
+  max-width: 100%;
+}
+.sqb .scr-row {
+  overflow: hidden;
+}
+.sqb .scr-param--wide :is(select, input) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sqb .scr-body .scr-subject {
+  margin-left: 0;
+}
+@media (max-width: 640px) {
+  .sqb .scr-body {
+    margin-left: 0;
+  }
+}

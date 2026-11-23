@@ -305,6 +305,8 @@ function QueryBuilder({ onBack, onInclude, guest }) {
     onInclude({
       key: `query:new:${hash(gen.query)}`,
       kind: 'query',
+      query: gen.query,
+      dimension,
       label: prompt.trim().slice(0, 60) || 'New EzanaQL query',
       text: [`EzanaQL (${dimension}):`, gen.query, sample].filter(Boolean).join('\n'),
     });
@@ -768,6 +770,8 @@ export function SonarBuildMenu({
                           kind: 'query',
                           label: q.label,
                           text: q.text,
+                          query: q.query,
+                          dimension: q.dimension,
                         };
                         return (
                           <Row
