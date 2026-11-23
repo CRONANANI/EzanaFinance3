@@ -47,6 +47,69 @@ function Field({ id, label, value, options, onChange, disabled }) {
  * 'inline': one compact row, for the Sonar home page above the Ping field (that page's hero is
  * always dark, so the row carries force-dark-theme).
  */
+/* Nov 23, 2026: the home page's controls as one glass dock, three segments
+   (icon, small label, value) split by hairlines, like a booking search bar.
+   The whole segment opens its dropdown (the label points at the trigger); a
+   changed setting carries an emerald dot. */
+const SEGMENTS = [
+  { key: 'focus', label: 'Focus', icon: 'bi-bullseye', options: FOCUS_OPTIONS },
+  { key: 'horizon', label: 'Time horizon', icon: 'bi-clock-history', options: HORIZON_OPTIONS },
+  { key: 'sources', label: 'Data sources', icon: 'bi-database', options: SOURCE_OPTIONS },
+];
+
+function InlineDock({ id, controls, set, guest, custom, onReset }) {
+  return (
+    <section className="src src--dock force-dark-theme" aria-labelledby={`${id}-h`}>
+      <h2 id={`${id}-h`} className="src-sr">
+        Research controls
+      </h2>
+      <div className="src-dock">
+        <span className="src-dock__badge" aria-hidden="true" title="Research controls">
+          <i className="bi bi-sliders2" />
+        </span>
+        {SEGMENTS.map((seg) => {
+          const fid = `${id}-${seg.key}`;
+          const changed = controls[seg.key] !== CONTROL_DEFAULTS[seg.key];
+          return (
+            <div key={seg.key} className={`src-seg${changed ? ' is-changed' : ''}`}>
+              <label className="src-seg__label" htmlFor={`${fid}-trigger`}>
+                <i className={`bi ${seg.icon}`} aria-hidden="true" />
+                {seg.label}
+                {changed ? <span className="src-seg__dot" aria-label="(changed)" /> : null}
+              </label>
+              <EzDropdown
+                id={fid}
+                block
+                size="sm"
+                label={seg.label}
+                value={controls[seg.key]}
+                disabled={guest}
+                onChange={(v) => set(seg.key)(v)}
+                className="src-seg__dd"
+                options={seg.options.map((o) => ({ value: o.key, label: o.label }))}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <p className="src-dock__note">
+        {guest ? (
+          'Sign in to set research controls.'
+        ) : custom ? (
+          <>
+            Sonar runs standard research with these settings.{' '}
+            <button type="button" className="src-reset" onClick={onReset}>
+              Reset
+            </button>
+          </>
+        ) : (
+          'Applies to your next research run.'
+        )}
+      </p>
+    </section>
+  );
+}
+
 export function SonarResearchControls({ variant = 'card' }) {
   const id = useId();
   const plan = useSonarPlan();
@@ -54,6 +117,17 @@ export function SonarResearchControls({ variant = 'card' }) {
   const guest = plan.isGuest;
   const custom = !isDefaultControls(controls);
   const set = (key) => (value) => setControls({ ...controls, [key]: value });
+  if (variant === 'inline')
+    return (
+      <InlineDock
+        id={id}
+        controls={controls}
+        set={set}
+        guest={guest}
+        custom={custom}
+        onReset={() => setControls(CONTROL_DEFAULTS)}
+      />
+    );
   return (
     <section
       className={

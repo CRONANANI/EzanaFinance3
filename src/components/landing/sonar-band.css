@@ -219,6 +219,18 @@
   animation-play-state: running;
 }
 
+/* Nov 23, 2026: the answer frame (.san: the query composer, the Research
+   Composer menu, the tools row popovers, the loaders) is the live product,
+   not the demo choreography, so the freeze above never reaches it. Paused,
+   the composer menu's one-shot pop-in sat on its first frame (opacity 0):
+   Compose opened an invisible menu. (0,3,0) beats the (0,2,0) pause rules. */
+.snr-band.snr-live .san,
+.snr-band.snr-live .san *,
+.snr-band.snr-paused .san,
+.snr-band.snr-paused .san * {
+  animation-play-state: running;
+}
+
 /* The idle lines ("Awaiting ping", "No matches yet") are absolutely positioned
    over the panel and fade out across the loop, so a freeze can catch them at
    full opacity and stack them on top of the real result. Once a ping has gone
