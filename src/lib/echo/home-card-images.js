@@ -126,7 +126,11 @@ export const HOME_CARD_IMAGES = {
   // The Carry Trade That Moves Everything
   'yen-carry-trade-unwind-2026': { src: card('yen-carry-trade-unwind-2026'), alt: '' },
   // The Datacenter Power Bill
-  'datacenter-power-crunch-2026': { src: card('datacenter-power-crunch-2026'), alt: '' },
+  'datacenter-power-crunch-2026': {
+    src: card('datacenter-power-crunch-2026'),
+    alt: 'Green-lit glass blocks carrying market charts, joined by network lines to government buildings.',
+    position: '50% 55%',
+  },
   // The Midterm Trade
   'midterm-trade-2026': { src: card('midterm-trade-2026'), alt: '' },
   // Central Banks Are Buying

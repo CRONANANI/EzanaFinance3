@@ -63,9 +63,10 @@ export const datacenterPowerCrunch2026 = {
     'US datacenters drew roughly 176 TWh in 2023 [VERIFY: LBNL] and could need 325-580 TWh by 2028, while interconnection queues sit on ~2,600 GW of stalled supply [VERIFY: LBNL Queued Up]. The gap is repricing nuclear fleets, uranium, and a utility capex supercycle.',
   heroImage: {
     src: '/images/ezana-echo/datacenter-power-crunch-2026-hero.png',
-    alt: 'High-voltage transmission lines converging on a glowing hyperscale datacenter campus at dusk, cooling towers of a nuclear plant on the horizon.',
+    alt: 'Dark glass blocks on a wet black surface, each lit from inside in green with candlestick, bar and surface charts, joined by glowing network lines to classical government buildings in the background.',
     caption:
       'The AI build-out has turned electricity into the scarce input: every gigawatt of compute now needs a gigawatt of firm supply, and the queue for it is years long.',
+    position: '50% 55%',
   },
   category: 'commodities-energy',
   subcategory: 'Renewables',
