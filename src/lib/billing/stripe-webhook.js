@@ -21,6 +21,7 @@
 import { getPlanKeyByPriceId } from '@/config/pricing';
 import { planKeyFromLookupKey } from '@/lib/billing/resolve-price';
 import { logFunnelEvent } from '@/lib/analytics/funnel';
+import { notifyTrialStarted } from '@/lib/notify/owner-push';
 
 const UNIQUE_VIOLATION = '23505';
 const MISSING_TABLE = new Set(['42P01', 'PGRST205']);
@@ -200,6 +201,20 @@ export async function handleStripeEvent({ admin, stripe }, event) {
             },
             { userId },
           );
+          /* Founder's phone (lib/notify/owner-push). Events are de-duplicated by id,
+             so one trial sends one notification. */
+          await notifyTrialStarted({
+            email: session.customer_details?.email || session.customer_email || null,
+            name: session.customer_details?.name || null,
+            plan: key.startsWith('personal_advanced')
+              ? 'advanced'
+              : (key.match(/^personal_([a-z]+)/) || [])[1] || null,
+            billing: key.endsWith('_annual')
+              ? 'yearly'
+              : key.endsWith('_quarterly')
+                ? 'quarterly'
+                : null,
+          });
         }
         return { result };
       }

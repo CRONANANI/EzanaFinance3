@@ -32,6 +32,7 @@ import { senderAddress } from '@/lib/waitlist/invite';
 import { WAITLIST_HEARD_FROM, WAITLIST_ROLES } from '@/lib/waitlist/options';
 import { AGE_CONFIRM_TEXT, WAITLIST_MARKETING_CONSENT_TEXT, isTrue } from '@/lib/legal/consent';
 import { emailFooterHtml } from '@/lib/email/footer';
+import { notifyWaitlistJoined } from '@/lib/notify/owner-push';
 import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
@@ -161,6 +162,16 @@ export const POST = withApiGuard(
           { status: 500 },
         );
       }
+
+      /* Founder's phone (lib/notify/owner-push): new entries only. */
+      await notifyWaitlistJoined({
+        name: `${firstName} ${lastName}`.trim(),
+        email,
+        role,
+        organization,
+        plan: plan || null,
+        billing: paid ? billing : null,
+      });
 
       if (process.env.RESEND_API_KEY) {
         try {

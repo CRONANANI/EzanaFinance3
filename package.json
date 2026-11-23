@@ -213,7 +213,8 @@
     "test:learning-hub": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-learning-hub.mjs",
     "test:performance-heatmap": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-performance-heatmap.mjs",
     "test:help-follow-ups": "node --test scripts/check-help-follow-ups.mjs",
-    "test:sonar-composer": "node --test scripts/check-sonar-composer.mjs"
+    "test:sonar-composer": "node --test scripts/check-sonar-composer.mjs",
+    "test:owner-push": "node --test scripts/check-owner-push.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
