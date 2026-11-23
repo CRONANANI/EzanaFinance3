@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { stripe } from '@/lib/services/stripe';
+import { demoBillingSummary, isDemoBillingUser } from '@/lib/billing/demo-billing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,8 @@ export const dynamic = 'force-dynamic';
 export const GET = withApiGuard(
   async (request, user) => {
     try {
+      /* The admin demo account shows example history (lib/billing/demo-billing). */
+      if (isDemoBillingUser(user)) return NextResponse.json(demoBillingSummary());
       if (!stripe) {
         return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 });
       }

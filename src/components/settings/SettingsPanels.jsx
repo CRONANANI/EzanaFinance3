@@ -1185,6 +1185,7 @@ export function BillingPanel() {
   const [isCustomer, setIsCustomer] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -1209,6 +1210,7 @@ export function BillingPanel() {
           setIsCustomer(Boolean(data.customer));
           setPaymentMethod(data.paymentMethod || null);
           setInvoices(data.invoices || []);
+          setIsDemo(Boolean(data.demo));
         }
       } catch {
         if (!cancelled) setLoadError('Failed to load billing details.');
@@ -1262,6 +1264,11 @@ export function BillingPanel() {
           </>
         ) : (
           <>
+            {isDemo ? (
+              <p className="settings-toggle-desc" role="note">
+                Example billing data for this demo account. No charges were made.
+              </p>
+            ) : null}
             <h3 className="settings-section-title">
               <i className="bi bi-credit-card" />
               Payment method
