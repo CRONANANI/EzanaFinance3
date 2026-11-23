@@ -200,6 +200,7 @@ const nextConfig = {
     dangerouslyAllowSVG: false,
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/**' },
+      { protocol: 'https', hostname: 'auth.ezana.world', pathname: '/**' },
       { protocol: 'https', hostname: 'financialmodelingprep.com', pathname: '/**' },
       { protocol: 'https', hostname: '*.finnhub.io', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
