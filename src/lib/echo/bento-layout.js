@@ -21,7 +21,10 @@
  *  - A standard slot given a story with no image is flagged `noImage`; the UI
  *    draws the tinted no-image card, never an empty picture box.
  *  - The dark slot takes the next story with a dek, else the next story.
- *  - The text slot takes the next story as text, tone 'neutral'.
+ *  - The text slot takes the next story as text, tone 'neutral', but only
+ *    when that story has no image: a story with an image is drawn as a
+ *    standard picture card in that slot (Nov 23, 2026), so no article with
+ *    a picture loses it to the page rhythm.
  *  - The chart slot exists only on page 1 and only when a chart is supplied.
  *  - Fewer stories than slots: render what exists, never empty tiles.
  */
@@ -93,6 +96,10 @@ export function packPage(stories, { page = 1, chart = null } = {}) {
       if (!hasImage(tile.story)) tile.noImage = true;
     } else {
       tile.story = queue.shift();
+      if (slot.kind === 'text' && hasImage(tile.story)) {
+        tile.kind = 'standard';
+        delete tile.tone;
+      }
     }
 
     tile.key = `p${page}-${tile.story.id}`;

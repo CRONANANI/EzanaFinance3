@@ -56,12 +56,24 @@ test('page 1 with a chart yields 10 tiles in slot order', () => {
       'standard',
       'dark',
       'standard',
-      'text',
+      'standard',
       'standard',
     ],
   );
   assert.equal(tiles[0].wide, undefined);
-  assert.equal(tiles.find((t) => t.kind === 'text').tone, 'neutral');
+  // Slot 9 is the text slot; its story has an image, so it draws as a picture.
+  assert.equal(tiles[8].slot, 9);
+  assert.equal(tiles[8].tone, undefined);
+});
+
+test('the text slot stays a neutral text card when its story has no image', () => {
+  const stories = nine();
+  stories[7] = story(8, { image: undefined });
+  const tiles = packPage(stories, { page: 1, chart });
+  const t = tiles.find((x) => x.slot === 9);
+  assert.equal(t.kind, 'text');
+  assert.equal(t.tone, 'neutral');
+  assert.equal(t.story.id, 8);
 });
 
 test('without a chart the chart slot is dropped and the lead is wide', () => {
