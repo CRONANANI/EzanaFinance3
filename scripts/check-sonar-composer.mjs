@@ -225,5 +225,9 @@ test('composer UI: rows in the pill, Compose label, five categories, slide-in Ez
   assert.match(rows, /How should Sonar use this\?/);
   const css = read('src/components/sonar/sonar-answer-query-bar.css');
   assert.match(css, /\.sqb \.sbm\.is-builder \.sbm-track/);
-  assert.match(css, /\.sqb \.sbm-tab\.is-on \{\s*color: var\(--sqb-accent\);\s*\}/);
+  assert.match(css, /\.sqb \.sbm-crumbs/);
+  assert.match(css, /\.sqb \.sbm-hl/);
+  assert.match(css, /\.sqb \.sbm-builder-head \{[^}]*align-items: center;[^}]*text-align: center;/);
+  assert.ok(!menu.includes('> Back to Research Composer'), 'the back control is an icon only');
+  assert.match(menu, /aria-label="Back to Research Composer"/);
 });
