@@ -156,7 +156,6 @@ function MockTradingPageInner() {
   const [dbTrades, setDbTrades] = useState([]);
   const [dbTradesLoaded, setDbTradesLoaded] = useState(false);
   /* Chart subject (Portfolio | Selected asset) and the close confirmation. */
-  const [chartSubject, setChartSubject] = useState('portfolio');
   const [closeRow, setCloseRow] = useState(null);
   /* Double-submit guard: one trade request in flight at a time. */
   const [tradePending, setTradePending] = useState(false);
@@ -944,13 +943,9 @@ function MockTradingPageInner() {
         ];
   return (
     <div className="mock-page dashboard-page-inset ez-canvas">
-      {/* Page-level actions only: no title block, no account or status line. */}
-      <div className="mock-head">
-        <VisuallyHidden as="h1">Mock Trading</VisuallyHidden>
-        <button className="mock-btn" type="button" onClick={() => setResetModalOpen(true)}>
-          <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset portfolio
-        </button>
-      </div>
+      {/* Nov 23, 2026: no head row, so the cards start right under the nav.
+          Reset portfolio lives in the Open positions header. */}
+      <VisuallyHidden as="h1">Mock Trading</VisuallyHidden>
 
       <ResetPortfolioModal
         open={resetModalOpen}
@@ -978,24 +973,27 @@ function MockTradingPageInner() {
         />
       ) : null}
 
+      {/* Nov 23, 2026 layout. Left: the performance card (with the
+          investment thesis strip above the figures), then open positions,
+          activity and council cards. Right: Place order at the top, aligned
+          with the performance card, then the What-if, Risk snapshot and
+          Thesis alignment cards, then market movers. */}
       <div className="mock-layout">
         <div className="mock-left-col">
           <PerformanceCard
-            subject={chartSubject}
-            onSubject={setChartSubject}
             startingCash={effectiveStart}
-            symbol={selectedSymbol}
-            name={selectedName}
-            livePrice={currentPrice}
-          />
-          <PreTradeCards
-            projection={projection}
-            risk={risk}
-            capAlert={capAlert}
-            thesis={thesis}
-            fit={fit}
-            clauses={clauses}
-            onBuild={() => setThesisModal({ open: true, thesis: null })}
+            top={
+              <ThesisPanel
+                strip
+                theses={theses}
+                alignment={alignment}
+                fit={fit}
+                onBuild={() => setThesisModal({ open: true, thesis: null })}
+                onEdit={(t) => setThesisModal({ open: true, thesis: t })}
+                onDelete={(t) => setDeleteTarget(t)}
+                onActivate={(id) => runThesis(() => theses.activate(id))}
+              />
+            }
           />
           <PositionsCard
             rows={sortedPositions}
@@ -1013,6 +1011,15 @@ function MockTradingPageInner() {
             onClose={(r) => setCloseRow(r)}
             pending={tradePending}
             priceNote={priceFetchError}
+            headerExtra={
+              <button
+                className="mock-btn mock-btn--sm"
+                type="button"
+                onClick={() => setResetModalOpen(true)}
+              >
+                <i className="bi bi-arrow-counterclockwise" aria-hidden="true" /> Reset portfolio
+              </button>
+            }
           />
           <ActivityCard
             rows={journalShown}
@@ -1060,16 +1067,7 @@ function MockTradingPageInner() {
           ) : null}
         </div>
 
-        <aside className="mock-right-col" aria-label="Thesis and trade">
-          <ThesisPanel
-            theses={theses}
-            alignment={alignment}
-            fit={fit}
-            onBuild={() => setThesisModal({ open: true, thesis: null })}
-            onEdit={(t) => setThesisModal({ open: true, thesis: t })}
-            onDelete={(t) => setDeleteTarget(t)}
-            onActivate={(id) => runThesis(() => theses.activate(id))}
-          />
+        <aside className="mock-right-col" aria-label="Place order and pre-trade checks">
           <div ref={searchRef} className="mock-ticket-wrap">
             <OrderTicket
               search={{
@@ -1101,6 +1099,15 @@ function MockTradingPageInner() {
               extra={councilCheck('ticket')}
             />
           </div>
+          <PreTradeCards
+            projection={projection}
+            risk={risk}
+            capAlert={capAlert}
+            thesis={thesis}
+            fit={fit}
+            clauses={clauses}
+            onBuild={() => setThesisModal({ open: true, thesis: null })}
+          />
           <MarketMoversCard onSelect={(sym, nm) => selectAsset(sym, nm, 'Stock')} />
         </aside>
       </div>

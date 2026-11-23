@@ -286,10 +286,24 @@ function rowValue(t, key) {
  * theses     useMockTheses() result
  * alignment  portfolioAlignment() for the active thesis (percent) or null
  * fit        thesisFit() for the ticket's order, or null
+ * strip      Nov 23, 2026: a one-line strip at the top of the performance
+ *            card ("Investment thesis: <name>", Build thesis, a chevron);
+ *            the full panel opens beneath it on demand
  */
-export function ThesisPanel({ theses, alignment, fit, onBuild, onEdit, onDelete, onActivate }) {
+export function ThesisPanel({
+  theses,
+  alignment,
+  fit,
+  onBuild,
+  onEdit,
+  onDelete,
+  onActivate,
+  strip = false,
+}) {
   const tabsRef = useRef(null);
+  const bodyId = useId();
   const [details, setDetails] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { status, theses: list, active } = theses;
   const atLimit = list.length >= THESIS_LIMITS.maxTheses;
 
@@ -306,13 +320,45 @@ export function ThesisPanel({ theses, alignment, fit, onBuild, onEdit, onDelete,
     </button>
   );
 
+  /* In the strip, the expanded panel always shows every detail row. */
+  const showDetails = strip || details;
+  const open = !strip || expanded;
+  const toggle = () => setExpanded((v) => !v);
+
   return (
-    <section className="mock-card mock-thesis" aria-labelledby="mock-thesis-h">
+    <section
+      className={`mock-card mock-thesis${strip ? ' mock-thesis--strip' : ''}${strip && expanded ? ' is-expanded' : ''}`}
+      aria-labelledby="mock-thesis-h"
+    >
       <header className="mock-card-header">
         <i className="bi bi-layers mock-card-icon" aria-hidden="true" />
-        <h2 id="mock-thesis-h" className="mock-card-title">
-          Investment thesis
-        </h2>
+        {strip ? (
+          <h2 id="mock-thesis-h" className="mock-card-title mock-thesis-strip__title">
+            <button
+              type="button"
+              className="mock-thesis-strip__toggle"
+              aria-expanded={expanded}
+              aria-controls={bodyId}
+              onClick={toggle}
+            >
+              <span>Investment thesis:</span>
+              <span className="mock-thesis-strip__name">
+                {active?.name || (status === 'loading' ? '…' : 'None yet')}
+              </span>
+              <span className="mock-thesis-strip__hint">
+                {expanded ? 'Hide' : 'Configure'}
+                <i
+                  className={`bi ${expanded ? 'bi-chevron-up' : 'bi-chevron-down'}`}
+                  aria-hidden="true"
+                />
+              </span>
+            </button>
+          </h2>
+        ) : (
+          <h2 id="mock-thesis-h" className="mock-card-title">
+            Investment thesis
+          </h2>
+        )}
         <Tooltip label={THESIS_EXPLAINER} className="mock-thesis-info">
           <button type="button" className="mock-icon-btn" aria-label="About investment theses">
             <i className="bi bi-info-circle" aria-hidden="true" />
@@ -355,109 +401,113 @@ export function ThesisPanel({ theses, alignment, fit, onBuild, onEdit, onDelete,
         </div>
       </header>
 
-      {status === 'loading' ? (
-        <div className="mock-skel-stack" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="mock-skel mock-skel--line" />
-          ))}
-        </div>
-      ) : status === 'error' && list.length === 0 ? (
-        <ErrorState
-          title="Your theses could not load"
-          description="The rest of the page keeps working."
-          action={
-            <Button variant="ghost" size="sm" onClick={theses.reload}>
-              Try again
-            </Button>
-          }
-        />
-      ) : list.length === 0 ? (
-        <EmptyState
-          icon="bi-layers"
-          description="Set an objective, horizon, sector focus and risk tolerance, and see how each order lines up with it."
-          action={
-            <button type="button" className="mock-btn" onClick={onBuild}>
-              <i className="bi bi-plus-lg" aria-hidden="true" /> Build thesis
-            </button>
-          }
-        />
-      ) : (
-        <>
-          <div ref={tabsRef} className="mock-thesis-tabs">
-            <Tabs
-              tabs={list.map((t) => ({ id: t.id, label: t.name }))}
-              value={theses.activeId}
-              onChange={onActivate}
-            />
+      <div id={bodyId} className="mock-thesis-body" hidden={!open}>
+        {!open ? null : status === 'loading' ? (
+          <div className="mock-skel-stack" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="mock-skel mock-skel--line" />
+            ))}
           </div>
-          {active ? (
-            <>
-              <div className="mock-thesis-head">
-                <span className="mock-strong">{active.name}</span>
-                <Dropdown
-                  align="right"
-                  trigger={
-                    <span className="mock-icon-btn" aria-label={`Actions for ${active.name}`}>
-                      <i className="bi bi-three-dots" aria-hidden="true" />
-                    </span>
-                  }
-                >
-                  <MenuItem icon="bi-pencil" onClick={() => onEdit(active)}>
-                    Edit thesis
-                  </MenuItem>
-                  <MenuItem icon="bi-trash" danger onClick={() => onDelete(active)}>
-                    Delete thesis
-                  </MenuItem>
-                </Dropdown>
-              </div>
-              <button
-                type="button"
-                className="mock-link mock-link--start mock-only-narrow"
-                aria-expanded={details}
-                onClick={() => setDetails((v) => !v)}
-              >
-                {details ? 'Hide thesis details' : 'Show thesis details'}{' '}
-                <i
-                  className={`bi ${details ? 'bi-chevron-up' : 'bi-chevron-down'}`}
-                  aria-hidden="true"
-                />
+        ) : status === 'error' && list.length === 0 ? (
+          <ErrorState
+            title="Your theses could not load"
+            description="The rest of the page keeps working."
+            action={
+              <Button variant="ghost" size="sm" onClick={theses.reload}>
+                Try again
+              </Button>
+            }
+          />
+        ) : list.length === 0 ? (
+          <EmptyState
+            icon="bi-layers"
+            description="Set an objective, horizon, sector focus and risk tolerance, and see how each order lines up with it."
+            action={
+              <button type="button" className="mock-btn" onClick={onBuild}>
+                <i className="bi bi-plus-lg" aria-hidden="true" /> Build thesis
               </button>
-              <dl className={`mock-thesis-dl${details ? ' is-open' : ''}`}>
-                {ROWS.map(([key, label, icon]) => (
-                  <div key={key} className="mock-thesis-dl__row">
-                    <dt>
-                      <i className={`bi ${icon}`} aria-hidden="true" /> {label}
-                    </dt>
-                    <dd className={key === 'max_single_name_pct' ? 'mock-num' : undefined}>
-                      {rowValue(active, key)}
+            }
+          />
+        ) : (
+          <>
+            <div ref={tabsRef} className="mock-thesis-tabs">
+              <Tabs
+                tabs={list.map((t) => ({ id: t.id, label: t.name }))}
+                value={theses.activeId}
+                onChange={onActivate}
+              />
+            </div>
+            {active ? (
+              <>
+                <div className="mock-thesis-head">
+                  <span className="mock-strong">{active.name}</span>
+                  <Dropdown
+                    align="right"
+                    trigger={
+                      <span className="mock-icon-btn" aria-label={`Actions for ${active.name}`}>
+                        <i className="bi bi-three-dots" aria-hidden="true" />
+                      </span>
+                    }
+                  >
+                    <MenuItem icon="bi-pencil" onClick={() => onEdit(active)}>
+                      Edit thesis
+                    </MenuItem>
+                    <MenuItem icon="bi-trash" danger onClick={() => onDelete(active)}>
+                      Delete thesis
+                    </MenuItem>
+                  </Dropdown>
+                </div>
+                {strip ? null : (
+                  <button
+                    type="button"
+                    className="mock-link mock-link--start mock-only-narrow"
+                    aria-expanded={details}
+                    onClick={() => setDetails((v) => !v)}
+                  >
+                    {details ? 'Hide thesis details' : 'Show thesis details'}{' '}
+                    <i
+                      className={`bi ${details ? 'bi-chevron-up' : 'bi-chevron-down'}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                )}
+                <dl className={`mock-thesis-dl${showDetails ? ' is-open' : ''}`}>
+                  {ROWS.map(([key, label, icon]) => (
+                    <div key={key} className="mock-thesis-dl__row">
+                      <dt>
+                        <i className={`bi ${icon}`} aria-hidden="true" /> {label}
+                      </dt>
+                      <dd className={key === 'max_single_name_pct' ? 'mock-num' : undefined}>
+                        {rowValue(active, key)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <dl className="mock-thesis-stats">
+                  <div>
+                    <dt>Portfolio alignment</dt>
+                    <dd className="mock-num">{alignment == null ? 'N/A' : fmtPct(alignment, 0)}</dd>
+                  </div>
+                  <div>
+                    <dt>Risk tolerance</dt>
+                    <dd>{riskToleranceLabel(active.risk_tolerance) || 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt>Single-name cap</dt>
+                    <dd className="mock-num">{capLabel(active.max_single_name_pct)}</dd>
+                  </div>
+                  <div>
+                    <dt>Current trade fit</dt>
+                    <dd className={fit ? `mock-fit is-${fit.label.toLowerCase()}` : undefined}>
+                      {fit ? fit.label : 'N/A'}
                     </dd>
                   </div>
-                ))}
-              </dl>
-              <dl className="mock-thesis-stats">
-                <div>
-                  <dt>Portfolio alignment</dt>
-                  <dd className="mock-num">{alignment == null ? 'N/A' : fmtPct(alignment, 0)}</dd>
-                </div>
-                <div>
-                  <dt>Risk tolerance</dt>
-                  <dd>{riskToleranceLabel(active.risk_tolerance) || 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt>Single-name cap</dt>
-                  <dd className="mock-num">{capLabel(active.max_single_name_pct)}</dd>
-                </div>
-                <div>
-                  <dt>Current trade fit</dt>
-                  <dd className={fit ? `mock-fit is-${fit.label.toLowerCase()}` : undefined}>
-                    {fit ? fit.label : 'N/A'}
-                  </dd>
-                </div>
-              </dl>
-            </>
-          ) : null}
-        </>
-      )}
+                </dl>
+              </>
+            ) : null}
+          </>
+        )}
+      </div>
     </section>
   );
 }

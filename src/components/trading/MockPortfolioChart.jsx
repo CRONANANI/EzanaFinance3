@@ -99,9 +99,18 @@ function CustomTooltip({ active, payload, startingCash, base }) {
  * @param {object} props
  * @param {number} [props.startingCash] enables all-time P&L in the tooltip
  * @param {import('react').ReactNode} [props.headerExtra] rendered beside the title
+ * @param {import('react').ReactNode} [props.top] rendered above the figures
+ *   (Mock Trading puts the investment thesis strip here)
+ * @param {boolean} [props.hideTitle] no title row: the period selector sits on
+ *   the same line as the value and the return instead (Nov 23, 2026)
  *   (the Mock Trading page puts its Portfolio / Selected asset switch here)
  */
-export default function MockPortfolioChart({ startingCash = null, headerExtra = null } = {}) {
+export default function MockPortfolioChart({
+  startingCash = null,
+  headerExtra = null,
+  top = null,
+  hideTitle = false,
+} = {}) {
   const [range, setRange] = useState(DEFAULT_RANGE);
   /* First trade date, kept across range changes, so longer ranges can be disabled. */
   const [startedAt, setStartedAt] = useState(null);
@@ -208,62 +217,82 @@ export default function MockPortfolioChart({ startingCash = null, headerExtra = 
   const lineColor = stats?.isPositive === false ? 'var(--negative)' : 'var(--emerald)';
   const gradientId = stats?.isPositive === false ? 'mpc-gradient-down' : 'mpc-gradient-up';
 
+  const dateSelector = (
+    <DateSelector
+      ranges={RANGES}
+      value={range}
+      onChange={setRange}
+      size="xs"
+      variant="default"
+      disabledRanges={disabledRanges(startedAt)}
+      disabledTitle="Longer than your account history"
+      showCustomDateButton={true}
+      onCustomDateChange={(custom) => {
+        if (custom?.start && custom?.end) {
+          setRange('CUSTOM');
+          setCustomRange(custom);
+        }
+      }}
+    />
+  );
+  const figures = stats ? (
+    <>
+      <div className="mpc-stats">
+        <span className="mpc-stat-value">{fmtCompactUSD(stats.end)}</span>
+        <span className={`mpc-stat-change is-${signOf(stats.change)}`}>
+          {fmtSignedUSD(stats.change)} ({fmtSignedPct(stats.changePct)})
+        </span>
+        {hasBench && stats.benchRet != null ? (
+          <span className="mpc-stat-bench">
+            vs. S&amp;P 500{' '}
+            <span className={`mpc-stat-change is-${signOf(stats.benchRet)}`}>
+              {fmtSignedPct(stats.benchRet)}
+            </span>
+          </span>
+        ) : null}
+      </div>
+      <span className="mpc-caption">
+        {rangeCaption(range, customRange)}
+        {hasBench ? (
+          <span className="mpc-legend" aria-hidden="true">
+            <span className="mpc-legend-item">
+              <span className="mpc-legend-swatch" /> Portfolio
+            </span>
+            <span className="mpc-legend-item">
+              <span className="mpc-legend-swatch is-bench" /> S&amp;P 500
+            </span>
+          </span>
+        ) : null}
+      </span>
+    </>
+  ) : null;
+
   return (
     <div className="mpc-root">
-      <div className="mpc-header">
-        <div className="mpc-header-left">
-          <h2 className="mpc-title">Portfolio performance</h2>
-          {headerExtra}
-        </div>
-        <DateSelector
-          ranges={RANGES}
-          value={range}
-          onChange={setRange}
-          size="xs"
-          variant="default"
-          disabledRanges={disabledRanges(startedAt)}
-          disabledTitle="Longer than your account history"
-          showCustomDateButton={true}
-          onCustomDateChange={(custom) => {
-            if (custom?.start && custom?.end) {
-              setRange('CUSTOM');
-              setCustomRange(custom);
-            }
-          }}
-        />
-      </div>
+      {top}
 
-      {stats && (
-        <div className="mpc-headline">
-          <div className="mpc-stats">
-            <span className="mpc-stat-value">{fmtCompactUSD(stats.end)}</span>
-            <span className={`mpc-stat-change is-${signOf(stats.change)}`}>
-              {fmtSignedUSD(stats.change)} ({fmtSignedPct(stats.changePct)})
-            </span>
-            {hasBench && stats.benchRet != null ? (
-              <span className="mpc-stat-bench">
-                vs. S&amp;P 500{' '}
-                <span className={`mpc-stat-change is-${signOf(stats.benchRet)}`}>
-                  {fmtSignedPct(stats.benchRet)}
-                </span>
-              </span>
-            ) : null}
+      {hideTitle ? null : (
+        <div className="mpc-header">
+          <div className="mpc-header-left">
+            <h2 className="mpc-title">Portfolio performance</h2>
+            {headerExtra}
           </div>
-          <span className="mpc-caption">
-            {rangeCaption(range, customRange)}
-            {hasBench ? (
-              <span className="mpc-legend" aria-hidden="true">
-                <span className="mpc-legend-item">
-                  <span className="mpc-legend-swatch" /> Portfolio
-                </span>
-                <span className="mpc-legend-item">
-                  <span className="mpc-legend-swatch is-bench" /> S&amp;P 500
-                </span>
-              </span>
-            ) : null}
-          </span>
+          {dateSelector}
         </div>
       )}
+
+      {hideTitle ? (
+        <div className="mpc-headline mpc-headline--row">
+          <div className="mpc-headline-main">
+            {figures || (
+              <span className="mpc-stat-value mpc-stat-value--pending" aria-hidden="true" />
+            )}
+          </div>
+          {dateSelector}
+        </div>
+      ) : figures ? (
+        <div className="mpc-headline">{figures}</div>
+      ) : null}
 
       {loading && (
         <div className="mpc-skel" aria-busy="true">

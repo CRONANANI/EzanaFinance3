@@ -1185,3 +1185,269 @@
     transition: none;
   }
 }
+
+/* ══ Nov 23, 2026 layout ════════════════════════════════════════════════
+   No head row (the cards start right under the nav; Reset portfolio moved
+   into the Open positions header). Left: the performance card with the
+   investment thesis strip above its figures, then open positions as asset
+   tiles. Right: a compact Place order at the top, then What-if, Risk
+   snapshot and Thesis alignment stacked, all visible on first load. */
+.mock-page {
+  gap: 16px;
+}
+.mock-right-col {
+  position: static;
+  gap: 14px;
+}
+@media (min-width: 1025px) {
+  .mock-right-col {
+    position: static;
+  }
+}
+
+/* ── Thesis strip (ThesisPanel strip) ─────────────────────────────── */
+.mock-thesis--strip {
+  gap: 10px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--mock-rule);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.mock-thesis--strip .mock-card-header {
+  flex-wrap: wrap;
+  min-height: 32px;
+  padding-bottom: 0;
+}
+.mock-thesis--strip .mock-card-icon {
+  font-size: 16px;
+}
+.mock-thesis-strip__title {
+  min-width: 0;
+  font-size: 15px;
+}
+.mock-thesis-strip__toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mock-thesis-strip__name {
+  color: var(--emerald-text);
+}
+.mock-thesis-strip__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.mock-thesis-strip__toggle:hover .mock-thesis-strip__hint {
+  color: var(--text-primary);
+}
+.mock-thesis--strip.is-expanded .mock-thesis-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Compact order ticket ─────────────────────────────────────────── */
+.mock-ticket {
+  gap: 10px;
+  padding: 14px 0;
+}
+.mock-ticket .mock-trade-panel-header {
+  min-height: 26px;
+  padding-bottom: 0;
+}
+.mock-ticket .mock-card-title {
+  font-size: 16px;
+}
+.mock-ticket .mock-search__input {
+  height: 38px;
+}
+.mock-ticket .mock-asset {
+  min-height: 48px;
+  padding: 8px 12px;
+}
+.mock-order-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: stretch;
+  gap: 10px;
+}
+.mock-order-row .mock-side__btn {
+  min-height: 36px;
+}
+.mock-order-row .mock-field {
+  gap: 0;
+}
+.mock-order-row .mock-amount__input {
+  height: 42px;
+}
+.mock-ticket .mock-preset {
+  min-height: 28px;
+}
+.mock-ticket .mock-summary {
+  gap: 8px;
+  padding: 6px 0;
+}
+.mock-ticket .mock-submit {
+  min-height: 42px;
+}
+.mock-ticket .mock-disclaimer {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ── Pre-trade cards, stacked under the ticket ────────────────────── */
+.mock-right-col .mock-pre-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.mock-right-col .mock-pre {
+  gap: 8px;
+  padding: 12px 0;
+}
+.mock-right-col .mock-pre .mock-card-header {
+  min-height: 24px;
+  padding-bottom: 0;
+}
+.mock-right-col .mock-pre .mock-card-title {
+  font-size: 15px;
+}
+.mock-right-col .mock-pre .mock-card-icon {
+  font-size: 16px;
+}
+.mock-right-col .mock-pre-list {
+  gap: 6px;
+}
+.mock-right-col .mock-pre-empty {
+  padding: 4px 0;
+}
+
+/* ── Open positions as asset tiles ────────────────────────────────── */
+.mock-pos {
+  --ds-asset-cols: minmax(0, 1fr) 150px 150px 112px 76px;
+  display: grid;
+  gap: 2px;
+}
+.mock-pos .mock-pos-list {
+  --ds-asset-cols: inherit;
+}
+.mock-pos-head {
+  display: grid;
+  grid-template-columns: var(--ds-asset-cols);
+  align-items: center;
+  column-gap: 16px;
+  padding: 0 17px 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.mock-pos-head > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mock-pos-head__asset {
+  /* Line the labels up with the ticker, past the logo. */
+  padding-left: 54px;
+}
+.mock-pos-head__value,
+.mock-pos-head__quote {
+  justify-content: flex-end;
+}
+.mock-pos-row .ds-asset-row__trend {
+  justify-content: flex-start;
+}
+.mock-pos-row .ds-asset-row__meta {
+  font-family: var(--font-sans);
+}
+.mock-pos-hold {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.mock-pos-hold .mock-weight {
+  justify-content: flex-start;
+}
+.mock-pos-sub {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.mock-pos-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 13px;
+}
+.mock-pos-value .mock-pl {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mock-pos-value .mock-pl > span {
+  display: inline;
+}
+@media (max-width: 860px) {
+  /* The weight column folds away first. */
+  .mock-pos {
+    --ds-asset-cols: minmax(0, 1fr) 140px 100px 72px;
+  }
+  .mock-pos-row .ds-asset-row__trend,
+  .mock-pos-head > .mock-pos-head__hold {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  /* Phones: value and P&L stay; the last price folds away. */
+  .mock-pos {
+    --ds-asset-cols: minmax(0, 1fr) 96px 68px;
+  }
+  .mock-pos-row .ds-asset-row__meta {
+    display: block;
+  }
+  .mock-pos-row .ds-asset-row__quote,
+  .mock-pos-head > .mock-pos-head__quote,
+  .mock-pos-head .mock-sort + .mock-sort,
+  .mock-pos-value .mock-pl > .mock-pos-pl-usd {
+    display: none;
+  }
+  .mock-pos-head {
+    padding-left: 13px;
+  }
+  .mock-pos-head > .mock-pos-head__asset {
+    padding-left: 42px;
+  }
+  .mock-pos .mock-card-header {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 1024px) {
+  /* One column: Place order, then the pre-trade cards, then the rest. */
+  .mock-pre-grid {
+    order: -1;
+  }
+}
+.mock-ticket .mock-asset.is-empty {
+  display: none;
+}
+/* Push the page up: this page keeps only a small gap under the nav. */
+.dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen):has(.mock-page) {
+  padding-top: calc(var(--navbar-height, 64px) + 0.5rem);
+}
+.mock-right-col .mock-pre-grid {
+  gap: 10px;
+}

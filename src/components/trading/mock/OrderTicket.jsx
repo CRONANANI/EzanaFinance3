@@ -126,6 +126,10 @@ export function OrderTicket({
   const t = ticketState({ side, amount: amt, cash, price, symbol, position });
   const isBuy = side === 'buy';
   const presetOn = (v) => Math.abs(amt - v) < 0.005;
+  /* Nov 23, 2026: with no asset picked, the ticket stays quiet (no empty
+     asset box, no "search for a ticker" warning or red amount field); the
+     search box already says what to do. */
+  const showReason = Boolean(symbol) && t.showReason;
 
   return (
     <section className="mock-trade-panel mock-ticket" aria-labelledby="mock-order-h">
@@ -145,7 +149,7 @@ export function OrderTicket({
         onSubmitTicker={search.onSubmitTicker}
       />
 
-      <div className="mock-asset" aria-live="polite">
+      <div className={`mock-asset${symbol ? '' : ' is-empty'}`} aria-live="polite">
         {symbol ? (
           <>
             <LetterAvatar symbol={symbol} />
@@ -169,50 +173,56 @@ export function OrderTicket({
             </div>
           </>
         ) : (
-          <p className="mock-muted mock-small">Search above, or pick a position or a mover.</p>
+          <p className="mock-sr">No asset selected. Search above, or pick a position or a mover.</p>
         )}
       </div>
 
-      <div className="mock-side" role="group" aria-label="Order side">
-        <button
-          type="button"
-          className={`mock-side__btn is-buy${isBuy ? ' is-on' : ''}`}
-          aria-pressed={isBuy}
-          onClick={() => onSide('buy')}
-        >
-          Buy
-        </button>
-        <button
-          type="button"
-          className={`mock-side__btn is-sell${!isBuy ? ' is-on' : ''}`}
-          aria-pressed={!isBuy}
-          onClick={() => onSide('sell')}
-        >
-          Sell
-        </button>
-      </div>
-
-      <div className="mock-field">
-        <label htmlFor={`${reasonId}-amt`} className="mock-field__label">
-          Amount (USD)
-        </label>
-        <div className="mock-amount">
-          <span className="mock-amount__prefix mock-num" aria-hidden="true">
-            $
-          </span>
-          <input
-            ref={amountRef}
-            id={`${reasonId}-amt`}
-            className="mock-amount__input mock-num"
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="0.00"
-            value={amount}
-            aria-invalid={t.showReason || undefined}
-            aria-describedby={t.showReason ? reasonId : undefined}
-            onChange={(e) => onAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
-          />
+      {/* Nov 23, 2026: compact ticket. Buy / Sell and the amount share one row
+          so the pre-trade cards fit under the ticket on first load. */}
+      <div className="mock-order-row">
+        <div className="mock-side" role="group" aria-label="Order side">
+          <button
+            type="button"
+            className={`mock-side__btn is-buy${isBuy ? ' is-on' : ''}`}
+            aria-pressed={isBuy}
+            onClick={() => onSide('buy')}
+          >
+            Buy
+          </button>
+          <button
+            type="button"
+            className={`mock-side__btn is-sell${!isBuy ? ' is-on' : ''}`}
+            aria-pressed={!isBuy}
+            onClick={() => onSide('sell')}
+          >
+            Sell
+          </button>
         </div>
+
+        <div className="mock-field">
+          <label htmlFor={`${reasonId}-amt`} className="mock-sr">
+            Amount (USD)
+          </label>
+          <div className="mock-amount">
+            <span className="mock-amount__prefix mock-num" aria-hidden="true">
+              $
+            </span>
+            <input
+              ref={amountRef}
+              id={`${reasonId}-amt`}
+              className="mock-amount__input mock-num"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="Amount (USD)"
+              value={amount}
+              aria-invalid={showReason || undefined}
+              aria-describedby={showReason ? reasonId : undefined}
+              onChange={(e) => onAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="mock-field">
         <div className="mock-presets" role="group" aria-label="Amount presets">
           {PRESETS.map((v) => (
             <button
@@ -236,7 +246,7 @@ export function OrderTicket({
             Max
           </button>
         </div>
-        {t.showReason ? (
+        {showReason ? (
           <p id={reasonId} className="mock-reason" role="status">
             {t.reason}
           </p>

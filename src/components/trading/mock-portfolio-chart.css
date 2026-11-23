@@ -30,6 +30,31 @@
   font-size: 12px;
   color: var(--text-muted);
 }
+/* Nov 23, 2026 (hideTitle): no title row; the period selector sits on the
+   same line as the value and the return, at the right. */
+.mpc-headline--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.mpc-headline-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.mpc-headline--row > :last-child {
+  margin-top: 6px;
+}
+.mpc-stat-value--pending {
+  display: block;
+  width: 9rem;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
 .mpc-stat-change.is-flat {
   color: var(--text-secondary);
 }

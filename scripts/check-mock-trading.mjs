@@ -371,23 +371,29 @@ test('page wiring and token discipline', () => {
   assert.match(page, /portfolioRows\(/, 'KPIs and rows come from one pass (portfolioRows)');
   assert.match(chart, /ranges=\{RANGES\}/, 'the chart ranges come from mock-ticket');
   assert.doesNotMatch(chart, /const RANGES =/, 'one source for the ranges');
-  /* Nov 2026: the header is the Reset action alone. No title block, no
-     account or status line, no KPI strip above the chart. */
+  /* Nov 2026: no title block, no account or status line, no KPI strip above
+     the chart. Nov 23, 2026: no head row at all (the cards start right under
+     the nav); Reset portfolio sits in the Open positions header. */
   assert.doesNotMatch(page + sections, /MockKpiRow|mock-kpis|mock-paper|mock-title/);
   assert.doesNotMatch(page, /Main paper account|Quotes updated|Auto-saved|Paper account/);
-  const head = page.slice(
-    page.indexOf('className="mock-head"'),
-    page.indexOf('<ResetPortfolioModal'),
-  );
-  assert.match(head, /Reset portfolio/);
-  assert.match(head, /<VisuallyHidden as="h1">Mock Trading<\/VisuallyHidden>/);
-  assert.equal((head.match(/<button/g) || []).length, 1, 'Reset is the only control in the header');
+  assert.doesNotMatch(page, /className="mock-head"/, 'no head row above the cards');
+  assert.match(page, /<VisuallyHidden as="h1">Mock Trading<\/VisuallyHidden>/);
+  const posCall = page.slice(page.indexOf('<PositionsCard'), page.indexOf('<ActivityCard'));
+  assert.match(posCall, /headerExtra=\{[\s\S]*Reset portfolio/, 'Reset lives in Open positions');
+  /* Nov 23, 2026 layout: left is the performance card then open positions;
+     right is Place order, then the pre-trade cards. The performance card has
+     no title and no Portfolio / Selected asset switch; the thesis strip
+     sits above its figures. */
   const left = page.slice(page.indexOf('mock-left-col'), page.indexOf('mock-right-col'));
   assert.ok(
-    left.indexOf('<PerformanceCard') < left.indexOf('<PreTradeCards') &&
-      left.indexOf('<PreTradeCards') < left.indexOf('<PositionsCard'),
-    'pre-trade cards sit between the chart and the positions',
+    left.indexOf('<PerformanceCard') > -1 &&
+      left.indexOf('<PerformanceCard') < left.indexOf('<PositionsCard'),
+    'open positions sit directly under the performance card',
   );
+  assert.equal(left.indexOf('<PreTradeCards'), -1, 'the pre-trade cards left the left column');
+  assert.match(chart, /hideTitle/, 'the chart can drop its title row');
+  assert.doesNotMatch(sections, /Selected asset|SubjectSwitch/, 'no chart subject switch');
+  assert.match(sections, /<AssetList/, 'open positions are asset tiles');
   assert.match(pre, /Enter an order in the ticket to see its effect\./);
   const route = fs.readFileSync('src/app/api/portfolio/mock-value-series/route.js', 'utf8');
   assert.match(route, /benchmark'\) === '1'/, 'the series route takes benchmark=1');
@@ -403,14 +409,17 @@ test('page wiring and token discipline', () => {
   assert.match(page, /range=3M&benchmark=1/, 'risk reads the 3M series with its benchmark');
   assert.match(page, /riskSnapshot\(/, 'risk statistics come from mock-risk');
 
-  /* Thesis layer (step 3). */
+  /* Thesis layer (step 3). Nov 23, 2026: the thesis is a collapsible strip
+     at the top of the performance card; Place order opens the right column
+     with the pre-trade cards under it. */
   const right = page.slice(page.indexOf('className="mock-right-col"'));
-  assert.ok(right.indexOf('<ThesisPanel') > -1, 'the thesis panel is in the right column');
+  assert.match(left, /<ThesisPanel\s+strip/, 'the thesis strip sits in the performance card');
   assert.ok(
-    right.indexOf('<ThesisPanel') < right.indexOf('<OrderTicket'),
-    'the thesis panel renders before the ticket',
+    right.indexOf('<OrderTicket') > -1 &&
+      right.indexOf('<OrderTicket') < right.indexOf('<PreTradeCards'),
+    'the pre-trade cards sit under Place order',
   );
-  assert.match(css, /\.mock-thesis \{\s*order: -2;/, 'stacked: the thesis panel comes first');
+  assert.match(panel, /aria-expanded=\{expanded\}/, 'the strip is a disclosure');
   assert.match(ticket, /data-task-target="mock-trade-submit"/, 'the checklist target stays');
   assert.match(ticket, /Review buy order/);
   assert.match(ticket, /aria-live="polite"/, 'the thesis check line is announced');
@@ -446,7 +455,11 @@ test('page wiring and token discipline', () => {
   }
   const tradesRoute = fs.readFileSync('src/app/api/mock-trades/route.js', 'utf8');
   assert.match(tradesRoute, /getActiveThesisId/, 'the server stamps the active thesis');
-  assert.match(sections, /aria-selected=\{isSel\}/, 'the ticket row is marked selected');
+  assert.match(
+    sections,
+    /selected=\{selected === r\.symbol\}/,
+    'the ticket row is marked selected',
+  );
   assert.match(sections, /aria-pressed=\{side === id\}/, 'Gainers and Losers are a pressed toggle');
   assert.doesNotMatch(
     css.match(/\.mock-seg__btn\.is-on \{[^}]*\}/)[0],
@@ -460,6 +473,12 @@ test('page wiring and token discipline', () => {
   );
   assert.match(page, /<ClosePositionModal/, 'Close is confirmed in a modal');
   assert.match(page, /<ResetPortfolioModal/, 'Reset is confirmed in a modal');
-  assert.match(sections, /aria-sort=/, 'sortable headers announce their state');
+  /* Nov 23, 2026: the positions are tiles, so the sort buttons carry their
+     state in their names ("Sort by Value, descending"). */
+  assert.match(
+    sections,
+    /Sort by \$\{c\.label\}\$\{on \? \(sort\.dir === 'asc' \? ', ascending' : ', descending'\) : ''\}/,
+    'sort buttons announce their state',
+  );
   assert.match(ticket, /role="combobox"/, 'keyboard-navigable typeahead');
 });

@@ -14,7 +14,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Button, Dropdown, MenuItem, Modal } from '@/components/ds';
+import { AssetList, AssetRow, Button, Dropdown, MenuItem, Modal } from '@/components/ds';
 import {
   POSITION_FILTERS,
   fmtPct,
@@ -29,10 +29,6 @@ import {
 } from '@/lib/trading/mock-ticket';
 
 const MockPortfolioChart = dynamic(() => import('@/components/trading/MockPortfolioChart'), {
-  ssr: false,
-  loading: () => <div className="mpc-skel" aria-hidden="true" />,
-});
-const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
   ssr: false,
   loading: () => <div className="mpc-skel" aria-hidden="true" />,
 });
@@ -61,57 +57,13 @@ function SkeletonRows({ rows = 4 }) {
 /* Performance                                                         */
 /* ------------------------------------------------------------------ */
 
-function SubjectSwitch({ subject, onSubject }) {
-  return (
-    <div className="mock-seg" role="group" aria-label="Chart subject">
-      {[
-        ['portfolio', 'Portfolio'],
-        ['asset', 'Selected asset'],
-      ].map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          className={`mock-seg__btn${subject === id ? ' is-on' : ''}`}
-          aria-pressed={subject === id}
-          onClick={() => onSubject(id)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function PerformanceCard({ subject, onSubject, startingCash, symbol, name, livePrice }) {
-  const sw = <SubjectSwitch subject={subject} onSubject={onSubject} />;
+/* Nov 23, 2026: no title and no chart-subject switch. The card
+   is the portfolio chart, with the investment thesis strip (`top`) above the
+   value, the return and the period selector. */
+export function PerformanceCard({ startingCash, top = null }) {
   return (
     <section className="mock-card mock-perf" aria-label="Portfolio performance">
-      {subject === 'portfolio' ? (
-        <MockPortfolioChart startingCash={startingCash} headerExtra={sw} />
-      ) : (
-        <div className="mpc-root">
-          <div className="mpc-header">
-            <div className="mpc-header-left">
-              <h2 className="mpc-title">Portfolio performance</h2>
-              {sw}
-            </div>
-          </div>
-          {symbol ? (
-            <>
-              <p className="mock-perf__asset">
-                <span className="mock-num mock-strong">{symbol}</span>
-                {name && name !== symbol ? <span className="mock-muted"> {name}</span> : null}
-              </p>
-              <StockPriceChart symbol={symbol} livePrice={livePrice || null} defaultRange="1Y" />
-            </>
-          ) : (
-            <div className="mpc-empty">
-              <i className="bi bi-search mpc-empty-icon" aria-hidden="true" />
-              <p>Search a ticker in Place order to chart it here.</p>
-            </div>
-          )}
-        </div>
-      )}
+      <MockPortfolioChart startingCash={startingCash} top={top} hideTitle />
     </section>
   );
 }
@@ -120,16 +72,38 @@ export function PerformanceCard({ subject, onSubject, startingCash, symbol, name
 /* Open positions                                                      */
 /* ------------------------------------------------------------------ */
 
-const COLUMNS = [
-  { key: 'symbol', label: 'Symbol', align: 'left' },
-  { key: 'name', label: 'Company', align: 'left' },
-  { key: 'qty', label: 'Shares' },
-  { key: 'avgCost', label: 'Avg cost' },
-  { key: 'current', label: 'Last' },
-  { key: 'dayPct', label: 'Day %' },
-  { key: 'pnl', label: 'Unrealized P&L' },
-  { key: 'value', label: 'Market value' },
+/* Nov 23, 2026: open positions as asset tiles (ds AssetRow), the same list
+   style as the Watchlist and the Dashboard. A sortable head shares the
+   tiles' columns: asset, weight (with the thesis-cap bar, shares and average
+   cost under it), market value over unrealized P&L, last price over the
+   day's change, and Close. Clicking a tile loads it into the order ticket. */
+const SORTS = [
+  { key: 'symbol', label: 'Asset', col: 'asset' },
+  { key: 'name', label: 'Company', col: 'asset' },
+  { key: 'weight', label: 'Weight', col: 'hold' },
+  { key: 'value', label: 'Value', col: 'value' },
+  { key: 'pnl', label: 'P&L', col: 'value' },
+  { key: 'current', label: 'Last', col: 'quote' },
+  { key: 'dayPct', label: 'Day', col: 'quote' },
 ];
+
+function PosSort({ c, sort, onSort }) {
+  const on = sort.key === c.key;
+  return (
+    <button
+      type="button"
+      className={`mock-sort${on ? ' is-on' : ''}`}
+      onClick={() => onSort(c.key)}
+      aria-label={`Sort by ${c.label}${on ? (sort.dir === 'asc' ? ', ascending' : ', descending') : ''}`}
+    >
+      {c.label}
+      <i
+        className={`bi ${on && sort.dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}${on ? ' is-on' : ''}`}
+        aria-hidden="true"
+      />
+    </button>
+  );
+}
 
 /**
  * rows       the sorted, filtered rows to show
@@ -156,6 +130,7 @@ export function PositionsCard({
   onClose,
   pending,
   priceNote,
+  headerExtra = null,
 }) {
   const filterLabel = POSITION_FILTERS.find((f) => f.id === filter)?.label || 'All positions';
   return (
@@ -171,8 +146,9 @@ export function PositionsCard({
             delayed. Showing cost basis for those.
           </span>
         ) : null}
-        {total > 0 ? (
-          <div className="mock-card-header__end">
+        <div className="mock-card-header__end">
+          {headerExtra}
+          {total > 0 ? (
             <Dropdown
               align="right"
               trigger={
@@ -191,8 +167,8 @@ export function PositionsCard({
                 </MenuItem>
               ))}
             </Dropdown>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </header>
       {loading ? (
         <SkeletonRows rows={5} />
@@ -205,80 +181,40 @@ export function PositionsCard({
           No {filter === 'winners' ? 'winning' : 'losing'} positions right now.
         </p>
       ) : (
-        <div className="mock-table-scroll">
-          <table className="mock-table mock-table--positions">
-            <caption className="mock-sr">Open positions, sortable by any column</caption>
-            <thead>
-              <tr>
-                {[...COLUMNS, { key: 'weight', label: 'Weight' }].map((c) => {
-                  const on = sort.key === c.key;
-                  return (
-                    <th
-                      key={c.key}
-                      scope="col"
-                      className={c.align === 'left' ? 'is-left' : undefined}
-                      aria-sort={on ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-                    >
-                      <button type="button" className="mock-sort" onClick={() => onSort(c.key)}>
-                        {c.label}
-                        <i
-                          className={`bi ${on && sort.dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}${on ? ' is-on' : ''}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </th>
-                  );
-                })}
-                <th scope="col">
-                  <span className="mock-sr">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const dir = signOf(r.pnl);
-                const isSel = selected === r.symbol;
-                const tone = capTone ? capTone(r) : 'within';
-                const fill = weightBarFill(r.weight, allRows, cap);
-                return (
-                  <tr
-                    key={r.symbol}
-                    aria-selected={isSel}
-                    className={isSel ? 'is-selected' : undefined}
-                  >
-                    <th scope="row" className="is-left">
-                      <button
-                        type="button"
-                        className="mock-asset-btn"
-                        onClick={() => onSelect(r)}
-                        aria-label={`Load ${r.symbol} into the order ticket`}
-                      >
-                        <LetterAvatar symbol={r.symbol} />
-                        <span className="mock-num mock-strong">{r.symbol}</span>
-                      </button>
-                    </th>
-                    <td className="is-left mock-soft">
-                      <span className="mock-ellipsis mock-company">
-                        {r.name && r.name !== r.symbol ? r.name : 'N/A'}
-                      </span>
-                    </td>
-                    <td className="mock-num">{fmtQty(r.qty)}</td>
-                    <td className="mock-num">{fmtUSD(r.avgCost)}</td>
-                    <td className="mock-num">{fmtUSD(r.currentPrice)}</td>
-                    <td className={`mock-num mock-tone is-${signOf(r.dayPct)}`}>
-                      {fmtSignedPct(r.dayPct)}
-                    </td>
-                    <td className={`mock-num mock-pl is-${dir}`}>
-                      <span>{fmtSignedUSD(r.pnl)}</span>
-                      <span className="mock-pl__pct">{fmtSignedPct(r.pnlPct)}</span>
-                    </td>
-                    <td className="mock-num mock-strong">{fmtUSD(r.value)}</td>
-                    <td className="mock-num">
+        <div className="mock-pos">
+          <div className="mock-pos-head" role="group" aria-label="Sort open positions">
+            {['asset', 'hold', 'value', 'quote'].map((col) => (
+              <span key={col} className={`mock-pos-head__${col}`}>
+                {SORTS.filter((c) => c.col === col).map((c) => (
+                  <PosSort key={c.key} c={c} sort={sort} onSort={onSort} />
+                ))}
+              </span>
+            ))}
+            <span className="mock-sr">Actions</span>
+          </div>
+          <AssetList className="mock-pos-list" aria-label="Open positions">
+            {rows.map((r) => {
+              const dir = signOf(r.pnl);
+              const tone = capTone ? capTone(r) : 'within';
+              const fill = weightBarFill(r.weight, allRows, cap);
+              const company = r.name && r.name !== r.symbol ? r.name : 'N/A';
+              return (
+                <AssetRow
+                  key={r.symbol}
+                  className="mock-pos-row"
+                  ticker={r.symbol}
+                  name={company}
+                  logo={r.type === 'Crypto' || r.type === 'Commodity' ? null : undefined}
+                  selected={selected === r.symbol}
+                  onSelect={() => onSelect(r)}
+                  selectLabel={`Load ${r.symbol} into the order ticket`}
+                  trend={
+                    <span className="mock-pos-hold">
                       <span className={`mock-weight is-${tone}`}>
                         {tone !== 'within' ? (
                           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
                         ) : null}
-                        <span>{fmtPct(r.weight)}</span>
+                        <span className="mock-num">{fmtPct(r.weight)}</span>
                         <span className="mock-wbar" aria-hidden="true">
                           <span style={{ '--fill': fill }} />
                         </span>
@@ -288,23 +224,38 @@ export function PositionsCard({
                           </span>
                         ) : null}
                       </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="mock-btn mock-btn--sm"
-                        onClick={() => onClose(r)}
-                        disabled={pending}
-                        aria-label={`Close ${r.symbol} position`}
-                      >
-                        Close
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <span className="mock-pos-sub mock-num">
+                        {fmtQty(r.qty)} sh · avg {fmtUSD(r.avgCost)}
+                      </span>
+                    </span>
+                  }
+                  meta={
+                    <span className="mock-pos-value">
+                      <span className="mock-num mock-strong">{fmtUSD(r.value)}</span>
+                      <span className={`mock-num mock-pl is-${dir}`}>
+                        <span className="mock-pos-pl-usd">{fmtSignedUSD(r.pnl)} </span>(
+                        {fmtSignedPct(r.pnlPct)})
+                      </span>
+                    </span>
+                  }
+                  price={fmtUSD(r.currentPrice)}
+                  change={r.dayPct}
+                  changeText={fmtSignedPct(r.dayPct)}
+                  actions={
+                    <button
+                      type="button"
+                      className="mock-btn mock-btn--sm"
+                      onClick={() => onClose(r)}
+                      disabled={pending}
+                      aria-label={`Close ${r.symbol} position`}
+                    >
+                      Close
+                    </button>
+                  }
+                />
+              );
+            })}
+          </AssetList>
         </div>
       )}
     </section>
