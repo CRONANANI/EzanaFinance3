@@ -1121,6 +1121,19 @@ body.light-mode .ech-page {
 .ech-footer__nav a:hover {
   color: var(--ech-ink);
 }
+/* About the publication: one short paragraph, readable width (Nov 23, 2026). */
+.ech-footer__about {
+  max-width: 68ch;
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ech-mute);
+}
+.ech-footer__about a {
+  color: var(--ech-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .ech-footer__legal {
   margin: 12px 0 0;
   padding-top: 12px;
@@ -2418,11 +2431,7 @@ html:has(.ech-hero) > body {
 .ech-hero--stack .ech-hero__scrim,
 .ech-hero--photo.ech-hero--stack .ech-hero__scrim {
   background:
-    linear-gradient(
-      0deg,
-      color-mix(in srgb, black 88%, var(--emerald)) 0%,
-      transparent 14%
-    ),
+    linear-gradient(0deg, color-mix(in srgb, black 88%, var(--emerald)) 0%, transparent 14%),
     linear-gradient(180deg, color-mix(in srgb, black 22%, transparent) 0%, transparent 16%);
 }
 .ech-hero--stack:hover .ech-hero__media img {

@@ -128,12 +128,29 @@ export default async function EzanaEchoArticlePage({ params }) {
     image: [ogImageFor(article)],
     datePublished: article.publishedAt || undefined,
     dateModified: article.publishedAt || undefined,
-    author: { '@type': 'Organization', name: article.author || 'Ezana Finance Editorial' },
+    /* A named writer is a Person; the house byline (or none) is the Ezana editorial team. */
+    author:
+      article.author && !/ezana/i.test(article.author)
+        ? { '@type': 'Person', name: article.author }
+        : { '@type': 'Organization', name: article.author || 'Ezana Finance Editorial' },
+    /* Nov 23, 2026: published by Ezana Finance (the Organization in the root layout's
+       graph), as part of the Ezana Echo publication. Article, not NewsArticle: Echo pieces
+       are research and analysis, not news reports. */
     publisher: {
       '@type': 'Organization',
-      name: 'Ezana',
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png` },
+      '@id': `${SITE_URL}/#organization`,
+      name: 'Ezana Finance',
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/ezana-logo.png` },
     },
+    isPartOf: {
+      '@type': 'CollectionPage',
+      '@id': `${SITE_URL}/ezana-echo#publication`,
+      name: 'Ezana Echo',
+      url: `${SITE_URL}/ezana-echo`,
+    },
+    articleSection: article.category || undefined,
+    keywords:
+      Array.isArray(article.tags) && article.tags.length ? article.tags.join(', ') : undefined,
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
   };
 

@@ -49,6 +49,7 @@ const STATIC_PATHS = [
   ['/help-center', 0.6, 'weekly'],
   ['/help-center/user', 0.6, 'weekly'],
   ['/help-center/partner', 0.5, 'weekly'],
+  ['/about', 0.8, 'monthly'],
   ['/about/noah-asheber', 0.6, 'monthly'],
   ['/accessibility', 0.2, 'yearly'],
   ['/privacy-policy', 0.2, 'yearly'],

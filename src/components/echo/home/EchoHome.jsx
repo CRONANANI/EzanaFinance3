@@ -154,12 +154,7 @@ export default function EchoHome({
     <main className="ech-page">
       {hero ? (
         bleed ? (
-          <HeroBleed
-            hero={hero}
-            options={aotmOptions}
-            month={aotmMonth}
-            onChange={onAotmChange}
-          />
+          <HeroBleed hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
         ) : (
           <>
             <Hero hero={hero} options={aotmOptions} month={aotmMonth} onChange={onAotmChange} />
@@ -346,6 +341,14 @@ export default function EchoHome({
             <a href="/auth/partner/apply">Write for Echo</a>
           </nav>
         </div>
+        {/* About the publication (Nov 23, 2026): what Echo is, in the page's own HTML. */}
+        <p className="ech-footer__about">
+          Ezana Echo is the financial research and editorial publication of{' '}
+          <Link href="/about">Ezana Finance</Link>, exploring global markets, economic trends,
+          corporate strategy, emerging technologies, and the institutions shaping the future of
+          finance. Through investigative analysis and evidence-driven commentary, Echo connects
+          financial developments with the economic, political, and technological forces behind them.
+        </p>
         <p className="ech-mono ech-footer__legal">
           Ezana Echo is published by Ezana Finance. Nothing here is investment advice.
         </p>

@@ -24,7 +24,7 @@ import NativeBridge from '@/components/native/NativeBridge';
 import LegalModalHost from '@/components/legal/LegalModalHost';
 import { getServerTheme } from '@/lib/user-preferences/server';
 import { isEchoArticleRoute, resolveRouteShellClasses } from '@/lib/route-shell';
-import { BRAND, brandJsonLd } from '@/lib/brand';
+import { BRAND, BRAND_COPY, brandJsonLd } from '@/lib/brand';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 /* Force dynamic rendering on every route. The root layout reads `cookies()`
@@ -65,16 +65,17 @@ const SHARE_IMAGE = {
   alt: 'Ezana Finance, the Walia ibex mark',
 };
 
-/* Search: the title leads with the bare brand word "Ezana" (not only
-   "Ezana Finance") so Google can tie that one-word query to this site, and
-   og:site_name / applicationName say the same. The home page is a client
-   component, so this default title IS the home page's title. */
+/* Search (Nov 23, 2026 positioning): the home page is a client component, so this
+   default title IS the home page's title. It names Ezana Finance by its purpose,
+   AI-powered financial intelligence and research; the datasets (congressional trades,
+   13F holdings, contracts) are described on the pages that serve them. og:site_name and
+   applicationName stay the bare brand word "Ezana", which ties that one-word query to
+   this site. Copy lives in BRAND_COPY (src/lib/brand.js). */
 const BASE_METADATA = {
   metadataBase: safeUrl(SITE_URL, 'https://ezana.world'),
-  title: 'Ezana | Congressional Trades, 13F and Market Intelligence',
+  title: BRAND_COPY.homeTitle,
   applicationName: BRAND.name,
-  description:
-    'Ezana (Ezana Finance) turns public filings into market intelligence: congressional trades, insider and 13F holdings, government contracts and lobbying, with institutional-grade tools for your portfolio.',
+  description: BRAND_COPY.short,
   openGraph: {
     siteName: BRAND.name,
     type: 'website',
@@ -104,6 +105,25 @@ const BASE_METADATA = {
    forwards; the layout is already dynamic, so reading it costs nothing. */
 export async function generateMetadata() {
   const path = (headers().get('x-pathname') || '/').split('?')[0] || '/';
+  /* The home page's social card names it explicitly. Other pages keep the card without
+     a title, so link previews take each page's own <title> rather than the home page's. */
+  if (path === '/') {
+    return {
+      ...BASE_METADATA,
+      alternates: { canonical: path },
+      openGraph: {
+        ...BASE_METADATA.openGraph,
+        url: '/',
+        title: BRAND_COPY.homeTitle,
+        description: BRAND_COPY.short,
+      },
+      twitter: {
+        ...BASE_METADATA.twitter,
+        title: BRAND_COPY.homeTitle,
+        description: BRAND_COPY.short,
+      },
+    };
+  }
   return { ...BASE_METADATA, alternates: { canonical: path } };
 }
 

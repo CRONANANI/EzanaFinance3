@@ -14,8 +14,12 @@ import './quant-lab.css';
 import './quant-risk.css';
 import './quant-factors.css';
 import '@/styles/home-canvas.css';
+import { BRAND_COPY } from '@/lib/brand';
 
-export const metadata = { title: 'Quant Lab | Ezana' };
+export const metadata = {
+  title: BRAND_COPY.quant.title,
+  description: BRAND_COPY.quant.description,
+};
 
 export default function QuantLabLayout({ children }) {
   return <QuantLabShell>{children}</QuantLabShell>;

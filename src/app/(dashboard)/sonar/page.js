@@ -4,12 +4,16 @@ import '@/app/datasets/ds-align.css';
 /* ds-cards.css styles the index's .dso-dimcard shells under .ds-shell (no
    outline, no halo), exactly as on /datasets. */
 import '@/app/datasets/ds-cards.css';
+import { BRAND_COPY } from '@/lib/brand';
 
 /** Ezana Sonar for signed-in users: the same Sonar as /datasets (hero, stage,
     dimension cards, band results), inside the app shell. */
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: 'Sonar | Ezana' };
+export const metadata = {
+  title: BRAND_COPY.sonar.title,
+  description: BRAND_COPY.sonar.description,
+};
 
 export default function SonarPage({ searchParams }) {
   return (

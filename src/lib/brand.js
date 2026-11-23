@@ -18,9 +18,67 @@ export const BRAND = {
   legalName: 'Ezana Finance, Inc.',
   alternateNames: ['Ezana Finance', 'ezana.world'],
   tagline: 'Follow the moves that matter',
+  /* Nov 23, 2026 positioning: Ezana is defined by its purpose (AI-powered financial
+     intelligence and investment research); congressional trades, 13F holdings and other
+     datasets are examples of what it connects, not the definition of the company. */
   description:
-    'Ezana is an investment research platform that turns public filings into market intelligence: congressional trades, insider and institutional (13F) holdings, government contracts, lobbying and more.',
+    'Ezana Finance is an AI-powered financial intelligence and investment research platform connecting market, corporate, institutional, economic and government data.',
   logo: '/ezana-logo.png',
+};
+
+/**
+ * Brand copy (Nov 23, 2026): the one source for how Ezana and its products are described
+ * in metadata, structured data and the About page. Route metadata stays specific to each
+ * page; these are the defaults and the product definitions they draw on. Every claim here
+ * is a live, shipped capability: keep it that way (no real-time, accuracy or performance
+ * claims).
+ */
+export const BRAND_COPY = {
+  /** The master positioning statement (About page, Organization description at length). */
+  long: 'Ezana Finance is an AI-powered financial intelligence and investment research platform that brings together market data, corporate financials, institutional activity, government intelligence, and macroeconomic research in one connected ecosystem. Through tools for AI-driven research, portfolio analytics, quantitative modelling, and collaborative investment research, Ezana helps individuals and investment teams uncover relationships, evaluate opportunities, and make more informed financial decisions.',
+  /** Home page and the default social description. */
+  short:
+    'Ezana Finance is an AI-powered financial intelligence platform for market research, portfolio analytics, quantitative modelling, and investment intelligence.',
+  homeTitle: 'Ezana Finance | AI-Powered Financial Intelligence & Research',
+  sonar: {
+    name: 'Ezana Sonar',
+    title: 'Ezana Sonar | AI Financial Research & Market Intelligence',
+    description:
+      'Investigate companies, markets, institutions, and economic trends with Ezana Sonar, an AI-powered financial research assistant connecting evidence across data sources.',
+    about:
+      'Ezana Sonar is an AI-powered financial research assistant that connects market, corporate, institutional, economic, and government data to investigate complex questions, evaluate evidence, and deliver structured research with its sources.',
+  },
+  echo: {
+    name: 'Ezana Echo',
+    title: 'Ezana Echo | Financial Research, Markets & Economic Analysis',
+    description:
+      "Ezana Echo is Ezana Finance's editorial research publication, covering global markets, economic trends, corporate strategy, technology, and the future of finance.",
+    about:
+      'Ezana Echo is the financial research and editorial publication of Ezana Finance, exploring global markets, economic trends, corporate strategy, emerging technologies, and the institutions shaping the future of finance. Through investigative analysis and evidence-driven commentary, Echo connects financial developments with the broader economic, political, and technological forces behind them.',
+  },
+  quant: {
+    name: 'Ezana Quant Lab',
+    title: 'Ezana Quant Lab | Quantitative Research, Models & Backtesting',
+    description:
+      'Ezana Quant Lab is the quantitative research environment of Ezana Finance: a model library, strategy building, factor and risk research, and backtesting on historical market data.',
+    about:
+      'Ezana Quant Lab is the quantitative research environment: a library of documented models, a strategy builder, factor, risk and statistical-arbitrage research, and a backtesting engine that runs strategies on historical prices with costs and its assumptions reported.',
+  },
+  organizations: {
+    name: 'Ezana Organizations',
+    about:
+      'Ezana Organizations is the collaborative research and portfolio-management workspace for investment councils and student-managed investment funds: a team hub, shared research and pitches, an organization portfolio with trading workflows, and competitions.',
+  },
+  community: {
+    name: 'Ezana Community',
+    about:
+      'Ezana Community is where investors and researchers share ideas, follow one another, message, and compare results on leaderboards.',
+  },
+  datasets: {
+    title: 'Ezana Datasets | Public Market, Government & Economic Data',
+    description:
+      'The public datasets behind Ezana Sonar, each sourced and attributed: congressional trades, federal contracts and lobbying, SEC and 13F filings, insider activity, prediction markets and global macroeconomic data.',
+  },
 };
 
 export const SOCIAL_PROFILES = {
@@ -237,12 +295,23 @@ export function brandJsonLd() {
   const org = {
     '@type': 'Organization',
     '@id': `${SITE_URL}/#organization`,
-    name: BRAND.name,
+    name: 'Ezana Finance',
     legalName: BRAND.legalName,
-    alternateName: BRAND.alternateNames,
+    alternateName: ['Ezana', 'ezana.world'],
     url: `${SITE_URL}/`,
     logo: { '@type': 'ImageObject', url: `${SITE_URL}${BRAND.logo}`, width: 1024, height: 1024 },
     description: BRAND.description,
+    /* What the company does, as topics (not claims about results). */
+    knowsAbout: [
+      'Financial intelligence',
+      'Investment research',
+      'Portfolio analytics',
+      'Quantitative analysis',
+      'Macroeconomic research',
+      'Institutional ownership (13F) data',
+      'Congressional trading disclosures',
+      'Government contracts and lobbying data',
+    ],
     founder: { '@type': 'Person', '@id': `${SITE_URL}${FOUNDER_PATH}#person`, name: FOUNDER.name },
   };
   const links = sameAs();

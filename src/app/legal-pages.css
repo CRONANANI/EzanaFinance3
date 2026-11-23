@@ -249,3 +249,15 @@
   font-style: normal;
   line-height: 1.7;
 }
+
+/* About page product blocks (Nov 23, 2026): a small heading per product. */
+.legal-subsection {
+  margin: 0 0 18px;
+}
+.legal-subsection > h3 {
+  margin: 0 0 6px;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  color: var(--text-primary);
+}

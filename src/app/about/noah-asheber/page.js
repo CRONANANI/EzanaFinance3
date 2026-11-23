@@ -68,10 +68,11 @@ export default function FounderPage() {
 
         <Section title="Ezana Finance">
           <p>
-            {BRAND.legalName} serves university student-managed investment funds and individual
-            investors. The platform turns public filings into market intelligence, including
-            congressional trades, insider and institutional holdings, government contracts and
-            lobbying records.
+            {BRAND.legalName} builds an AI-powered financial intelligence and investment research
+            platform for individual investors and investment teams, including university
+            student-managed investment funds. It connects market, corporate, institutional, economic
+            and government data, from company financials to congressional trades, institutional
+            holdings and federal contracts. <Link href="/about">About Ezana</Link>.
           </p>
         </Section>
 
