@@ -468,16 +468,20 @@
 /* Header: plain emerald icon, emerald title, muted line. */
 .sqb .sbm-head {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  justify-content: center;
   padding: 10px 10px 8px;
+  text-align: center;
 }
 .sqb .sbm-head-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
   color: var(--sqb-accent);
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1;
+}
+.sqb .sbm-head .sbm-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .sqb .sbm-head-text {
   flex: 1;
@@ -556,16 +560,17 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
   border-radius: var(--radius-md);
   background: var(--sbm-hl);
   pointer-events: none;
   transition:
     transform 0.24s var(--sbm-ease),
+    width 0.24s var(--sbm-ease),
     height 0.24s var(--sbm-ease);
 }
 .sqb .sbm-level {
   position: relative;
+  display: flow-root;
   animation: sbm-in 0.14s var(--sbm-ease);
 }
 @keyframes sbm-in {

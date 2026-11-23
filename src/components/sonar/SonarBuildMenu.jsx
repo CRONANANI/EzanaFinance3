@@ -127,8 +127,18 @@ function useSlidingHighlight(resetKey) {
   useEffect(() => setHl(null), [resetKey]);
   const track = (e) => {
     const row = e.target.closest?.('[data-sbm-row]');
-    if (!row || row.disabled || !bodyRef.current?.contains(row)) return;
-    setHl({ top: row.offsetTop, height: row.offsetHeight });
+    const body = bodyRef.current;
+    if (!row || row.disabled || !body?.contains(row)) return;
+    /* Measured against the scrolling body itself (not offsetTop, whose parent is the
+       animated level), so the highlight lands exactly on the row. */
+    const r = row.getBoundingClientRect();
+    const b = body.getBoundingClientRect();
+    setHl({
+      top: r.top - b.top - body.clientTop + body.scrollTop,
+      left: r.left - b.left - body.clientLeft,
+      width: r.width,
+      height: r.height,
+    });
   };
   const leave = () => {
     if (!bodyRef.current?.contains(document.activeElement)) setHl(null);
@@ -138,7 +148,11 @@ function useSlidingHighlight(resetKey) {
     <span
       className="sbm-hl"
       aria-hidden="true"
-      style={{ transform: `translateY(${hl.top}px)`, height: hl.height }}
+      style={{
+        transform: `translate(${hl.left}px, ${hl.top}px)`,
+        width: hl.width,
+        height: hl.height,
+      }}
     />
   ) : null;
   return { bodyProps, highlight };
@@ -644,9 +658,11 @@ export function SonarBuildMenu({
           }}
         >
           <header className="sbm-head">
-            <i className="bi bi-stack sbm-head-icon" aria-hidden="true" />
             <div className="sbm-head-text">
-              <p className="sbm-title">Research Composer</p>
+              <p className="sbm-title">
+                <i className="bi bi-stack sbm-head-icon" aria-hidden="true" />
+                Research Composer
+              </p>
               <p className="sbm-sub">
                 Add queries, models, data packs, tools and Echo articles to this search.
               </p>
