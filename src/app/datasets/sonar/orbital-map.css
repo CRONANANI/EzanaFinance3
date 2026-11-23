@@ -884,3 +884,29 @@
   -webkit-text-fill-color: var(--dsi-ink-muted);
   opacity: 1;
 }
+
+/* ── Research Composer bar in the Ping frame (Nov 23, 2026) ────────────
+   The shared composer bar (.sqb, sonar-answer-query-bar.css) reads the answer
+   surface's --san-* tokens; this page is brand-locked light, so those would
+   fall back to light values and paint the pill and its menu white. Map them to
+   this page's dark --dsi-* set instead, and keep native controls (the row
+   selects, checkboxes, number fields) on their dark rendering. The pill's own
+   focus glow marks focus, so the page-wide focus outline stays off its field. */
+.ds-shell--search .dsi-pingframe--composer .sqb {
+  --san-emerald: var(--emerald);
+  --san-accent: color-mix(in srgb, var(--emerald) 62%, white);
+  --san-text: var(--dsi-ink);
+  --san-muted: var(--dsi-ink-2);
+  --san-faint: var(--dsi-ink-muted);
+  --san-panel: var(--dsi-ping-bg);
+  --san-panel-solid: var(--dsi-base);
+  color-scheme: dark;
+  color: var(--dsi-ink);
+  background: var(--dsi-ping-bg);
+}
+.ds-shell--search .dsi-pingframe--composer .sqb .sqb-input:focus-visible {
+  outline: 0;
+}
+.ds-shell--search .dsi-pingframe--composer .sqb .sbm {
+  background: color-mix(in srgb, var(--emerald) 4%, var(--dsi-base));
+}
