@@ -18,8 +18,8 @@ export const fdaPeptidesBpc157Article2026 = {
   excerpt:
     'An FDA advisory committee voted 8–6 to recommend BPC-157 for the 503A compounding list, over the objection of the agency’s own scientists, who said the peptide is not well-characterized and has been tested in roughly 30 humans. The vote is non-binding. Hims & Hers rose as much as 13%.',
   heroImage: {
-    src: '/congress-chamber.jpg',
-    alt: 'A federal government chamber, standing in for the FDA advisory-committee proceedings',
+    src: '/images/ezana-echo/fda-peptides-bpc157-compounding-vote-2026-hero.png',
+    alt: 'An amber glass vial with a silver cap lying in bright sunlight, social media posts about peptide stacks and looksmaxxing visible through the liquid.',
     caption:
       'An FDA advisory committee voted 8–6, with one abstention, to recommend BPC-157 for the 503A Bulks List. The recommendation is advisory only and binds no one.',
   },

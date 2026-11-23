@@ -162,7 +162,7 @@ export const HOME_CARD_IMAGES = {
   // An 8-6 Vote on a Peptide Nobody Can Define
   'fda-peptides-bpc157-compounding-vote-2026': {
     src: card('fda-peptides-bpc157-compounding-vote-2026'),
-    alt: '',
+    alt: 'An amber vial in sunlight with peptide posts from social media visible through the liquid.',
   },
   // Ballroom Billions. Built Nov 21st from the article's own 5250 x 3500 hero
   // (public/echo/trumpkushner.jpg), downscaled to 3840 x 2560 and stored as a
