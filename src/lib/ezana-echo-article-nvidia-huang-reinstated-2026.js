@@ -231,7 +231,7 @@ export const nvidiaHuangReinstated2026 = {
         'Nov 18',
         'Nov 19',
         'Nov 20',
-        'Nov 23 open',
+        'Nov 23',
       ],
       series: [
         {
@@ -245,12 +245,9 @@ export const nvidiaHuangReinstated2026 = {
         },
       ],
       annotations: [
-        { x: 'Oct 6', y: 239.24, label: 'Record close', sub: '$239.24' },
-        { x: 'Nov 5', y: 181.6, label: 'Chip sell-off', sub: '−7.4% in a day' },
-        { x: 'Nov 9', y: 178.67, label: 'Affair admitted', sub: 'Sunday, Nov 8' },
-        { x: 'Nov 12', y: 166.19, label: 'Resigns', sub: '$166.19 close' },
-        { x: 'Nov 20', y: 125.53, label: 'Trough', sub: '$125.53, −48% from record' },
-        { x: 'Nov 23 open', y: 167.04, label: 'Reinstated', sub: '+33.1% at the open' },
+        { x: 'Oct 6', y: 239.24, label: 'Record', sub: '$239.24' },
+        { x: 'Nov 20', y: 125.53, label: 'Trough', sub: '$125.53' },
+        { x: 'Nov 23', y: 167.04, label: 'Reinstated', sub: '+33% at open' },
       ],
     },
     {

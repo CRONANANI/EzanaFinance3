@@ -99,6 +99,18 @@ export function EchoGlowLine({
     if (i === rows.length - 1 && rows.length > 1) return v(rows[i - 1]) > a.y;
     return false;
   };
+  /* Room under the lowest point for a label drawn below it: without it a
+     dip near the bottom of the range puts its label on the x-axis dates
+     (seen on phones, Nov 23rd, 2026). Only applied when some annotation is
+     drawn below; every other chart keeps the automatic domain. */
+  const allVals = rows.flatMap((r) =>
+    keyed.map((k) => r[k.key]).filter((v) => typeof v === 'number'),
+  );
+  const anyBelow = annotations.some((a) => isDip(a) || climbsAway(a));
+  const yLow =
+    anyBelow && allVals.length
+      ? Math.min(...allVals) - (Math.max(...allVals) - Math.min(...allVals)) * 0.28
+      : 'auto';
   const fmt = (v, s) =>
     v == null ? 'N/A' : `${Number(v).toLocaleString('en-US')}${s?.unit ?? unit ?? ''}`;
 
@@ -139,7 +151,7 @@ export function EchoGlowLine({
                 tickFormatter={xFormat ? (v) => xFormat(v) : undefined}
               />
               <YAxis
-                domain={['auto', 'auto']}
+                domain={[yLow, 'auto']}
                 tickLine={false}
                 axisLine={false}
                 width={44}
