@@ -432,7 +432,11 @@ body:has(.eth-root) .ezana-echo-container {
 /* Nov 23, 2026: extend the black band above the art down over its top edge,
    so a light border baked into the picture (the November poster has a cream
    strip about 1.2% of its height) never shows between the masthead band and
-   the art. Sized in % of the 3:2 box so it tracks the art at every width. */
+   the art, then fade it out instead of ending on a flat line. It mirrors the
+   bottom fade (solid black into the art over 14% of the box): solid for the
+   first 12% of this strip (about 1.7% of the art, covering the border), then
+   a fade to clear. Sized in % of the 3:2 box so it tracks the art at every
+   width. */
 .eth-root .ech-hero--stack .ech-hero__media::before {
   content: '';
   position: absolute;
@@ -440,8 +444,14 @@ body:has(.eth-root) .ezana-echo-container {
   left: 0;
   right: 0;
   z-index: 1;
-  height: calc(1.6% + 2px);
-  background: black;
+  height: 14%;
+  background: linear-gradient(
+    180deg,
+    black 0%,
+    black 12%,
+    color-mix(in srgb, black 55%, transparent) 45%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 /* Chips track the window edge on the full-width art. */
