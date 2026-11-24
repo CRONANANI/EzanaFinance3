@@ -3,7 +3,8 @@
    to match the figures, emerald link text. */
 
 .echo-link-list {
-  margin: 28px 0;
+  /* 24px from the text, like callouts and CTAs (Nov 24, 2026 uniformity pass) */
+  margin: 24px 0;
   padding: 18px 0 4px;
   border-top: 1px solid var(--emerald);
 }

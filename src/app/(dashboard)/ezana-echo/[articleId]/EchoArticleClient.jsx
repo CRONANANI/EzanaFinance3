@@ -2016,17 +2016,23 @@ function SemiFinancialsTable({ title, caption }) {
 
   const sortable = (key) => key === 'revenue' || key === 'netIncome' || key === 'marketCap';
 
+  /* Nov 24, 2026 layout uniformity pass: the table follows the template's
+     figure look and rhythm (40px from the text, transparent on the page
+     ground under a hairline rule) instead of a filled, bordered card. The
+     table itself still scrolls sideways when the column is narrower. */
   return (
     <div
       style={{
         width: '100%',
-        background: t.bg,
-        borderRadius: 12,
-        border: `1px solid ${t.border}`,
+        margin: '40px 0',
+        paddingTop: 20,
+        background: 'transparent',
+        borderRadius: 0,
+        borderTop: '1px solid var(--border-secondary)',
         overflow: 'hidden',
       }}
     >
-      <div style={{ padding: '1rem 1rem 0.5rem' }}>
+      <div style={{ padding: '0 0 0.5rem' }}>
         <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: 0 }}>
           {title || 'U.S. Semiconductor Financials (TTM)'}
         </h4>
@@ -2137,14 +2143,17 @@ function FoundryMarketShareChart({ title, caption }) {
 
   const hoveredRow = hovered ? FOUNDRY_MARKET_SHARE.find((d) => d.company === hovered) : null;
 
+  /* Nov 24, 2026 layout uniformity pass: template figure look and rhythm
+     (40px from the text, transparent under a hairline rule), not a card. */
   return (
     <div
       style={{
         width: '100%',
-        background: t.bg,
-        borderRadius: 12,
-        border: '1px solid transparent',
-        padding: '1rem',
+        margin: '40px 0',
+        padding: '20px 0 0',
+        background: 'transparent',
+        borderRadius: 0,
+        borderTop: '1px solid var(--border-secondary)',
       }}
     >
       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: '0 0 0.75rem' }}>
