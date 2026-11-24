@@ -595,3 +595,17 @@
     padding-left: 0;
   }
 }
+
+/* ── Nov 24, 2026: one header frame for every article ────────────────────
+   The Nvidia reinstatement article is the layout template: its header image
+   sits in a 16:9 frame, centred against the headline, at every width. Other
+   articles used a taller 16:11 crop on desktop, 16:10 on tablets and 4:3 on
+   phones, so their headers did not line up with it. Every article now uses
+   the template frame; each article's own crop position (heroImage.position
+   or its home-card entry) still decides what the frame keeps. */
+.eah-media,
+.eah-media.eah-media--whole {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  align-self: center;
+}

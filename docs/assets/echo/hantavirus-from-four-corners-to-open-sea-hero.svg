@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <!-- Original Ezana illustration, Nov 24th, 2026, for "Hantavirus: From The
+       Four Corners To The Open Sea". Abstract and calm by design: desert mesas
+       on the left give way to an open sea with one small ship on the horizon,
+       following the title. No people, no medical imagery. 16:9. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1a24"/>
+      <stop offset="0.62" stop-color="#1d3a44"/>
+      <stop offset="1" stop-color="#3f5f5c"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c3b45"/>
+      <stop offset="1" stop-color="#08151c"/>
+    </linearGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6b4a33"/>
+      <stop offset="0.55" stop-color="#4a3527"/>
+      <stop offset="1" stop-color="#2a2420" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.72" cy="0.58" r="0.45">
+      <stop offset="0" stop-color="#e8c9a0" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#e8c9a0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <!-- low sun, setting behind the horizon -->
+  <ellipse cx="1150" cy="560" rx="70" ry="70" fill="#e8c9a0" fill-opacity="0.5"/>
+  <!-- horizon and sea -->
+  <rect y="560" width="1600" height="340" fill="url(#sea)"/>
+  <g stroke="#9fc7c0" stroke-opacity="0.18" stroke-width="2" fill="none">
+    <path d="M620 610 Q 760 600 900 610 T 1180 610 T 1460 610 T 1600 608"/>
+    <path d="M560 660 Q 740 648 920 660 T 1280 660 T 1600 656"/>
+    <path d="M480 720 Q 700 704 920 720 T 1360 720 T 1600 714"/>
+    <path d="M420 800 Q 660 780 900 800 T 1380 800 T 1600 792"/>
+  </g>
+  <!-- low sun reflection -->
+  <rect x="1080" y="562" width="140" height="6" fill="#e8c9a0" fill-opacity="0.35"/>
+  <rect x="1100" y="590" width="100" height="4" fill="#e8c9a0" fill-opacity="0.25"/>
+  <rect x="1115" y="620" width="70" height="3" fill="#e8c9a0" fill-opacity="0.18"/>
+  <!-- small ship on the horizon -->
+  <g fill="#0a1218">
+    <path d="M1280 552 L1392 552 L1380 566 L1292 566 Z"/>
+    <rect x="1312" y="538" width="52" height="14"/>
+    <rect x="1326" y="526" width="22" height="12"/>
+    <rect x="1338" y="512" width="5" height="14"/>
+  </g>
+  <!-- desert mesas on the left, fading into the sea -->
+  <path d="M0 470 L120 470 L140 440 L300 440 L320 470 L420 470 L440 505 L560 505 L640 562 L0 562 Z" fill="url(#land)"/>
+  <path d="M0 520 L220 520 L250 562 L0 562 Z" fill="#5a3f2c" fill-opacity="0.8"/>
+  <path d="M0 562 L640 562 C 520 590 380 610 0 640 Z" fill="#3a2a1f" fill-opacity="0.85"/>
+  <g stroke="#c89a6c" stroke-opacity="0.25" stroke-width="2">
+    <path d="M140 452 H300"/>
+    <path d="M440 516 H556"/>
+  </g>
+</svg>

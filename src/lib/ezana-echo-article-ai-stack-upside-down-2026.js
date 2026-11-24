@@ -496,6 +496,71 @@ export const aiStackUpsideDown2026 = {
     'PEG',
     'TLN',
   ],
+  // Globe rail (Nov 24th, 2026, layout uniformity pass): one city per
+  // company the article names with a figure, at that company's headquarters;
+  // every impact line repeats the article's own numbers.
+  globeRail: {
+    metric: {
+      title: 'VERIFIED VALUE BY AI STACK LAYER ($ TRILLION)',
+      data: [
+        { x: 0, y: 12.5 },
+        { x: 1, y: 11.5 },
+        { x: 2, y: 2.2 },
+        { x: 3, y: 0.4 },
+        { x: 4, y: 0.2 },
+      ],
+      startLabel: 'Silicon · ~$12.5T',
+      endLabel: 'Power · ~$0.2T',
+      note: 'Silicon, hyperscale cloud, frontier models, applications (midpoint of ~$0.3 to 0.5T) and the four named power producers, as of October 12 to 13, 2026.',
+    },
+    cities: [
+      {
+        name: 'Santa Clara',
+        region: 'California',
+        country: 'US',
+        lat: 37.35,
+        lng: -121.96,
+        impact:
+          'Nvidia alone is about $5.5 trillion, having flirted with $6 trillion the week of October 6, the heaviest name in a silicon layer worth about $12.5 trillion against the slide’s ~$10T.',
+      },
+      {
+        name: 'Hsinchu',
+        region: 'Hsinchu',
+        country: 'Taiwan',
+        lat: 24.8,
+        lng: 120.97,
+        impact:
+          'TSMC is roughly $2.3 trillion ahead of its October 15 earnings. The silicon total uses whole-company caps, so TSMC’s iPhone work is counted in it too.',
+      },
+      {
+        name: 'Redmond',
+        region: 'Washington',
+        country: 'US',
+        lat: 47.67,
+        lng: -122.12,
+        impact:
+          'Microsoft ($4.0T) sits in a hyperscale layer of about $11.5 trillion. Azure crossed $100 billion in annual revenue, inside a $280 billion-revenue company, which is why the “cloud” label overstates the AI share.',
+      },
+      {
+        name: 'San Francisco',
+        region: 'California',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'Anthropic’s last primary round was $965 billion and OpenAI’s $852 billion; the frontier-model layer totals about $2.2 trillion, not ~$5T. Harvey, at $15.5 billion, is 0.3% of Nvidia.',
+      },
+      {
+        name: 'Baltimore',
+        region: 'Maryland',
+        country: 'US',
+        lat: 39.29,
+        lng: -76.61,
+        impact:
+          'Constellation, at roughly $95 to 105 billion, is the largest of the four power producers on the slide, worth about $200 billion combined against its ~$2T label.',
+      },
+    ],
+  },
   readTime: 9,
   publishedAt: '2026-10-13',
   featured: false,

@@ -4195,3 +4195,27 @@ body.light-mode .echo-sentiment-bar {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.08);
 }
+
+/* ── Nov 24, 2026: legacy blocks take the template's figure rhythm ───────
+   The Nvidia reinstatement article is the layout template. Its figures sit
+   40px from the text around them, on the page ground, under a hairline rule.
+   Older articles still carry legacy blocks with their own spacing and look:
+   legacy charts were a filled, bordered card 32px from the text, inline
+   images sat 32px away and the Africa map 40px. They now share the figure
+   spacing, and legacy charts drop the card for the figure look. The Africa
+   map is a grandfathered one-off component, so only its outer spacing moves.
+   The frozen Thiel page carries none of these blocks. */
+.echo-article-page .echo-article-body .echo-chart,
+body.light-mode .echo-article-page .echo-article-body .echo-chart {
+  margin: 40px 0;
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border-secondary);
+  border-radius: 0;
+  background: transparent;
+}
+.echo-article-page .echo-article-body .echo-inline-image,
+.echo-article-page .echo-article-body .echo-africa-map {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}

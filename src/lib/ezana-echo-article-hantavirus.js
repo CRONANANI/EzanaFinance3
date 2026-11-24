@@ -134,7 +134,15 @@ export const hantavirusArticle = {
     'A 30-year-old virus reemerges on a cruise ship. The investment implications span biodefense, diagnostics, and travel.',
   excerpt:
     "In May 2026, a hantavirus outbreak aboard the MV Hondius expedition cruise ship killed three passengers and sickened at least four others, the most high-profile cluster in the virus's modern history. With a 38% fatality rate, no approved vaccine, and no antiviral treatment, hantavirus is one of the deadliest pathogens without a pharmaceutical countermeasure. Here's what investors need to know.",
-  heroImage: null,
+  heroImage: {
+    // Original Ezana illustration (Nov 24th, 2026, layout uniformity pass):
+    // the article had no header image and fell back to a text-only header.
+    // SVG source: docs/assets/echo/hantavirus-from-four-corners-to-open-sea-hero.svg
+    src: '/images/ezana-echo/hantavirus-from-four-corners-to-open-sea-card.webp',
+    alt: 'Abstract illustration at dusk: desert mesas on the left give way to a calm open sea, with a low sun on the horizon and one small ship in the distance.',
+    caption:
+      'Ezana illustration. From the desert Southwest, where the “Four Corners disease” was first identified in 1993, to the MV Hondius expedition cruise outbreak at sea in May 2026.',
+  },
   contentBlocks: [
     {
       type: 'stat-grid',

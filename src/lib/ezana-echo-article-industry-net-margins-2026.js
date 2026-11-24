@@ -548,6 +548,41 @@ export const industryNetMargins2026 = {
   // Industry-level piece: the only symbols the text names are the sector ETFs
   // in the closing section.
   tickers: ['SMH', 'IGV', 'KRE', 'GDX', 'XBI'],
+  // Globe rail (Nov 24th, 2026, layout uniformity pass): the article covers
+  // US-listed industries as a whole and names one place, NYU Stern in New
+  // York, where its source table is published. One city, not invented ones.
+  globeRail: {
+    metric: {
+      title: 'NET MARGIN, TOP SIX TO BOTTOM FIVE US INDUSTRIES (%)',
+      data: [
+        { x: 0, y: 30.45 },
+        { x: 1, y: 29.93 },
+        { x: 2, y: 28.59 },
+        { x: 3, y: 27.49 },
+        { x: 4, y: 25.49 },
+        { x: 5, y: 23 },
+        { x: 6, y: -0.3 },
+        { x: 7, y: -0.93 },
+        { x: 8, y: -3.73 },
+        { x: 9, y: -4.72 },
+        { x: 10, y: -5 },
+      ],
+      startLabel: 'Semiconductors · 30.45%',
+      endLabel: 'Biotech · −5.00%',
+      note: 'Aswath Damodaran, NYU Stern, US industry margins, January 2026: the eleven industries with 20+ firms shown in Fig. 1.',
+    },
+    cities: [
+      {
+        name: 'New York',
+        region: 'New York',
+        country: 'US',
+        lat: 40.73,
+        lng: -73.99,
+        impact:
+          'Aswath Damodaran’s January 2026 industry margin table at NYU Stern covers 5,994 US-listed companies with an aggregate net margin of 9.74%. Semiconductors lead at 30.45%; biotech trails at −5.00%, though all five loss-making industries are profitable before interest and taxes.',
+      },
+    ],
+  },
   readTime: 8,
   publishedAt: '2026-10-26',
   featured: false,
