@@ -11,11 +11,11 @@ export const tokenizationCollateral2026 = {
   excerpt:
     'Farmers in Brazil borrowed nearly $20,000 against ten tokenized dairy cows registered on the B3 exchange. The mechanism they proved points at a $5.7 trillion global small-business credit gap, $8 trillion counting informal enterprises, in countries where only 6% of smallholder farmers can borrow against wealth they already own.',
   heroImage: {
-    src: '/images/ezana-echo/tokenization-collateral-2026-hero.webp',
-    // The source photo is small, so the Echo home banner shows it inside the
-    // text card rather than full-bleed (see Hero in EchoHome.jsx).
+    src: '/images/ezana-echo/tokenization-collateral-2026-hero-v2.webp',
+    // The image carries a detailed on-screen panel, so the Echo home banner shows
+    // it inside the text card rather than full-bleed (see Hero in EchoHome.jsx).
     display: 'inset',
-    alt: 'A herd of brown and white-faced cattle grazing on green pasture at sunset, with the sun low on a tree-lined horizon.',
+    alt: 'A brown cow stands behind a clear glass display at a ranch at dusk; the screen shows a livestock finance marketplace with a $2.50 per-animal token minting fee and 1.5% and 0.75% transaction fees.',
     caption:
       'In Paraná, Brazil, ten dairy cows became the first livestock tokenized and registered on the B3 exchange as loan collateral, each wearing an AI-powered collar that streams its health and location to the lender.',
   },
