@@ -23,6 +23,9 @@
 .pact-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Each card is as tall as its own content (Nov 24, 2026): a row no longer stretches
+     the shorter card to its neighbour's height, which left empty space at its bottom. */
+  align-items: start;
   gap: 16px;
 }
 
@@ -33,7 +36,8 @@
   min-width: 0;
   padding: 20px 24px;
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  /* Transparent cards (Nov 24, 2026); a card reached from its stat still flashes emerald. */
+  background: transparent;
   scroll-margin-top: 96px;
   transition: background-color 400ms ease;
 }
