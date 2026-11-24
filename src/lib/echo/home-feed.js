@@ -235,10 +235,33 @@ export function emptyMessage(filters) {
   return `No stories${q} in ${section} in ${region} for ${range}.${tail}`;
 }
 
-/** Top N by cumulative views; zero-view stories never rank. */
-export function mostRead(stories, n = 5) {
-  return [...stories]
-    .filter((s) => (s.views || 0) > 0)
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
-    .slice(0, n);
+/**
+ * Editorial overrides for the Most read rail. PINS fix a story to a 1-based
+ * rank (when it is in the feed); EXCLUDED stories never rank. Every other slot
+ * fills by cumulative views, highest first.
+ */
+export const MOST_READ_PINS = {
+  1: 'fiber-optic-cable-ai-boom-benny-fazio',
+  5: 'ossoff-2028-money-2026',
+};
+export const MOST_READ_EXCLUDED = ['dominating-us-stock-market-sectors-through-the-times'];
+
+/** Top N by cumulative views, with editorial pins; zero-view stories never fill open slots. */
+export function mostRead(stories, n = 5, pins = MOST_READ_PINS, excluded = MOST_READ_EXCLUDED) {
+  const byId = new Map(stories.map((s) => [s.id, s]));
+  const pinned = new Map();
+  for (const [rank, id] of Object.entries(pins || {})) {
+    const r = Number(rank);
+    if (r >= 1 && r <= n && byId.has(id) && !excluded.includes(id)) pinned.set(r, byId.get(id));
+  }
+  const pinnedIds = new Set([...pinned.values()].map((s) => s.id));
+  const pool = stories
+    .filter((s) => (s.views || 0) > 0 && !excluded.includes(s.id) && !pinnedIds.has(s.id))
+    .sort((a, b) => (b.views || 0) - (a.views || 0));
+  const out = [];
+  for (let r = 1; r <= n; r += 1) {
+    const s = pinned.get(r) || pool.shift();
+    if (s) out.push(s);
+  }
+  return out;
 }

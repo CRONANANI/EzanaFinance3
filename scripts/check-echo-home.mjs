@@ -267,6 +267,16 @@ test('most read ranks by views and drops zero-view stories', () => {
   );
 });
 
+test('most read honours editorial pins and exclusions', () => {
+  const s = ['a', 'b', 'c', 'd', 'e', 'f', 'x'].map((id, i) =>
+    toStory(card(id, { views: 100 - i * 10 })),
+  );
+  assert.deepEqual(
+    mostRead(s, 5, { 1: 'f', 5: 'x' }, ['a']).map((x) => x.id),
+    ['f', 'b', 'c', 'd', 'x'],
+  );
+});
+
 // ── Chart of the Week ─────────────────────────────────────────────────────
 test('trajectory figures yield ordered y series', () => {
   const c = chartFromFigure({

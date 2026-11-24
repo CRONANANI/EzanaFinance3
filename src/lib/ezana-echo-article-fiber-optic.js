@@ -958,7 +958,7 @@ export const fiberOpticArticle = {
     ],
   },
   readTime: 14,
-  publishedAt: '2026-05-02',
+  publishedAt: '2026-05-17',
   featured: false,
   likes: 287,
   comments: 64,

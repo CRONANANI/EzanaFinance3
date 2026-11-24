@@ -548,12 +548,12 @@ export const tokenizationCollateral2026 = {
   },
   tickers: ['CRCL', 'COIN', 'MA', 'V', 'PYPL', 'BLK', 'NDAQ', 'SPCX'],
   readTime: 10,
-  publishedAt: '2026-08-02',
+  publishedAt: '2026-08-28',
   featured: false,
   // AOTM fallback flag (see AOTM_HISTORY convention in ezana-echo-mock.js).
   articleOfMonth: true,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '2 Aug 2026',
+  listMeta: '28 Aug 2026',
 };

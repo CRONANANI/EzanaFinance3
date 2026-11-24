@@ -664,10 +664,10 @@ export const ossoff2028Money2026 = {
     terms: [],
   },
   readTime: 8,
-  publishedAt: '2026-11-07',
+  publishedAt: '2026-11-14',
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '7 Nov 2026',
+  listMeta: '14 Nov 2026',
 };

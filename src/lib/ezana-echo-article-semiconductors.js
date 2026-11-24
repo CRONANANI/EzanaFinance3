@@ -488,7 +488,7 @@ export const semiconductorArticle = {
   tags: ['markets', 'technology', 'semiconductors', 'geopolitics', 'policy'],
   featured: false,
   readTime: 10,
-  publishedAt: '2026-05-07',
+  publishedAt: '2026-05-15',
   tags: ['semiconductors', 'TSMC', 'taiwan', 'chips-act', 'AI', 'geopolitics'],
   relatedTickers: ['NVDA', 'AVGO', 'TSM', 'INTC', 'AMD', 'QCOM', 'AMAT', 'MU', 'LRCX', 'TXN'],
 };

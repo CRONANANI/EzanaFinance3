@@ -766,7 +766,7 @@ export const empireRankings2026 = {
   },
   tickers: ['SPY', 'MCHI', 'INDA', 'EWU', 'EWJ', 'GLD', 'UUP', 'TLT'],
   readTime: 12,
-  publishedAt: '2026-08-05',
+  publishedAt: '2026-01-07',
   // Only one article may hold the home-page featured hero at a time; the current
   // hero (johnny-mnemonic) keeps it. This article ships un-featured — it still
   // renders in the grid and is fully readable.
@@ -774,5 +774,5 @@ export const empireRankings2026 = {
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '5 Aug 2026',
+  listMeta: '7 Jan 2026',
 };

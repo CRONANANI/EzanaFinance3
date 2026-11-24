@@ -506,10 +506,10 @@ export const privateCreditMaturityWallArticle2026 = {
     ],
   },
   readTime: 12,
-  publishedAt: '2026-05-04',
+  publishedAt: '2026-03-19',
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '4 May 2026',
+  listMeta: '19 Mar 2026',
 };

@@ -584,11 +584,11 @@ export const industryNetMargins2026 = {
     ],
   },
   readTime: 8,
-  publishedAt: '2026-10-26',
+  publishedAt: '2026-02-22',
   featured: false,
   articleOfMonth: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '26 Oct 2026',
+  listMeta: '22 Feb 2026',
 };

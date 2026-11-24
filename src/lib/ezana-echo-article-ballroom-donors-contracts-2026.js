@@ -454,7 +454,7 @@ export const ballroomDonorsContracts2026 = {
     terms: [],
   },
   readTime: 9,
-  publishedAt: '2026-07-23',
+  publishedAt: '2026-07-25',
   // Featured hero + Article of the Month relinquished to the Johnny Mnemonic
   // consolidation story (only one home-page featured hero at a time); Ballroom
   // remains in its column and in AOTM_HISTORY (July 2026).
@@ -462,5 +462,5 @@ export const ballroomDonorsContracts2026 = {
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '23 Jul 2026',
+  listMeta: '25 Jul 2026',
 };

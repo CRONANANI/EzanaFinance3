@@ -550,12 +550,12 @@ export const criticalMineralsArticle2026 = {
     ],
   },
   readTime: 10,
-  publishedAt: '2026-07-05',
+  publishedAt: '2026-03-02',
   // featured hero relinquished to the newer ballroom-donors story (only one
   // article may be the home-page featured hero at a time).
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '5 Jul 2026',
+  listMeta: '2 Mar 2026',
 };

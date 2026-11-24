@@ -383,10 +383,10 @@ export const dataConsolidationArticle2026 = {
     ],
   },
   readTime: 8,
-  publishedAt: '2026-07-28',
+  publishedAt: '2026-07-22',
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '28 Jul 2026',
+  listMeta: '22 Jul 2026',
 };

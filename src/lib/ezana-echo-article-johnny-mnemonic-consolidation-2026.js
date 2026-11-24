@@ -626,10 +626,10 @@ export const johnnyMnemonicConsolidation2026 = {
   },
   tickers: ['NVDA', 'GOOGL', 'MSFT', 'IBM', 'PANW', 'CSCO', 'CRWD', 'AVGO'],
   readTime: 10,
-  publishedAt: '2026-08-02',
+  publishedAt: '2026-08-20',
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '2 Aug 2026',
+  listMeta: '20 Aug 2026',
 };

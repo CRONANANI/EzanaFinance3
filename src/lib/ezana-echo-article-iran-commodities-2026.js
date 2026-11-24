@@ -409,10 +409,10 @@ export const iranWarCommoditiesArticle2026 = {
     ],
   },
   readTime: 11,
-  publishedAt: '2026-04-26',
+  publishedAt: '2026-04-20',
   featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
-  listMeta: '26 Apr 2026',
+  listMeta: '20 Apr 2026',
 };
