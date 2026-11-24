@@ -243,10 +243,10 @@ const SHIP_STEPS = [
 ];
 
 const CURL_SNIPPET = `curl -H "Authorization: Bearer $EZANA_API_KEY" \\
-  "https://ezana.world/v1/congress/trades?ticker=NVDA&limit=5"`;
+  "https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=5"`;
 
 const JS_SNIPPET = `const res = await fetch(
-  "https://ezana.world/v1/congress/trades?ticker=NVDA&limit=5",
+  "https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=5",
   { headers: { Authorization: \`Bearer \${process.env.EZANA_API_KEY}\` } }
 );
 const { data, page, meta } = await res.json();`;
@@ -296,7 +296,7 @@ const EX_LANGS = [
   { id: 'python', label: 'Python' },
 ];
 function exampleSnippet(lang, path) {
-  const url = `https://ezana.world${path}`;
+  const url = `https://api.ezana.world${path}`;
   if (lang === 'js') {
     return `const res = await fetch(\n  "${url}",\n  { headers: { Authorization: \`Bearer \${process.env.EZANA_API_KEY}\` } }\n);\nconst { data, meta } = await res.json();`;
   }

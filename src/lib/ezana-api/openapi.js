@@ -124,7 +124,10 @@ export function buildOpenApi() {
       },
       license: { name: 'Ezana data license', url: 'https://ezana.world/terms-of-service' },
     },
-    servers: [{ url: 'https://ezana.world' }],
+    servers: [
+      { url: 'https://api.ezana.world', description: 'Production' },
+      { url: 'https://ezana.world', description: 'Direct (legacy)' },
+    ],
     security: [{ bearer: [] }],
     tags: DIMENSIONS.filter((d) => GROUPS.some((g) => g.dimension === d.id)).map((d) => ({
       name: d.label,

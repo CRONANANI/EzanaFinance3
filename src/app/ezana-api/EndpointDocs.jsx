@@ -29,7 +29,7 @@ import { PARAMS } from '@/lib/ezana-api/registry';
 import { API_EXAMPLES } from './api-examples';
 import { PM_EXAMPLES } from './prediction-examples';
 
-const ORIGIN = 'https://ezana.world';
+const ORIGIN = 'https://api.ezana.world';
 
 const TYPE_LABEL = {
   string: 'String',
