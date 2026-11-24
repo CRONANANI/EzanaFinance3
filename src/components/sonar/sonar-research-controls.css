@@ -261,7 +261,7 @@
   color: color-mix(in srgb, white 58%, transparent);
   font-family: var(--font-mono);
   font-size: var(--type-micro-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -316,6 +316,57 @@
 .src-seg.is-changed .ezdd-trigger {
   color: var(--brand-band-mint, var(--emerald-text));
 }
+/* Nov 24, 2026: the segment menus. The segment centers its label and value,
+   which the menu used to inherit (centered options, a check far from its
+   label, two-line wraps). Each menu now opens centered under its segment,
+   is wide enough for its longest option on one line, and lists options left
+   aligned on an even 36px rhythm, the check in a fixed slot at the right. */
+.src-seg .ezdd-menu {
+  left: 50%;
+  right: auto;
+  top: calc(100% + 10px);
+  width: max-content;
+  min-width: max(100%, 232px);
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 6px;
+  text-align: left;
+  transform: translateX(-50%);
+  animation-name: src-menu-in;
+}
+.src-seg .ezdd-option {
+  gap: 12px;
+  min-height: 36px;
+  padding: 0 10px 0 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.src-seg .ezdd-option + .ezdd-option {
+  margin-top: 2px;
+}
+.src-seg .ezdd-option-label {
+  flex: 1 1 auto;
+}
+.src-seg .ezdd-option .ezdd-check {
+  margin-left: auto;
+}
+/* Unselected rows reserve the check's width, so every label lines up. */
+.src-seg .ezdd-option:not(.is-selected)::after {
+  content: '';
+  flex: none;
+  width: 16px;
+}
+@keyframes src-menu-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
 .src-dock__note {
   margin: 10px 0 0;
   color: color-mix(in srgb, white 50%, transparent);
@@ -358,10 +409,39 @@
   .src-seg {
     background: color-mix(in srgb, white 4%, transparent);
   }
+  /* No centering pad on phones: the value needs the room ("General research"). */
+  .src-seg .ezdd-value {
+    padding-left: 0;
+  }
+  .src-seg {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+  .src-seg .ezdd .ezdd-trigger {
+    gap: 4px;
+    font-size: 0.875rem;
+  }
+  /* On phones a half-width segment is too narrow for its menu, so the menu
+     keeps its own width and anchors to the segment's outer edge. */
+  .src-seg .ezdd-menu {
+    left: 0;
+    right: auto;
+    min-width: max(100%, 224px);
+    max-width: calc(100vw - 32px);
+    transform: none;
+    animation-name: ezdd-fade-in;
+  }
+  .src-seg:nth-child(3) .ezdd-menu {
+    left: auto;
+    right: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .src-seg,
   .src-seg .ezdd-chevron {
     transition: none;
+  }
+  .src-seg .ezdd-menu {
+    animation: none;
   }
 }
