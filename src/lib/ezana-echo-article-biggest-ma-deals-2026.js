@@ -16,13 +16,15 @@ export const biggestMaDeals2026 = {
   excerpt:
     'Global M&A reached $4.44 trillion in the first nine months of 2026, its second-strongest start on record, and a viral leaderboard ranks nine deals at $875 billion. Checked against filings, the same nine total about $852 billion: three have closed, four are pending, and two were rejected outright.',
   heroImage: {
-    // Original Ezana illustration drawn for this article (Nov 19th, 2026);
-    // SVG source kept at docs/assets/echo/biggest-ma-deals-2026-hero.svg.
-    // Column heights scale to the nine verified headline values.
-    src: '/echo/biggest-ma-deals-2026-hero.webp',
-    alt: 'Abstract illustration of nine glowing columns of different heights on a dark grid, the tallest on the left; three are solid, four are outlined and two are hatched.',
+    // Supplied illustration (Nov 24th, 2026): 720x720 original, upscaled 4x
+    // to 2880x2880 with Real-ESRGAN x4plus, lossless WebP. The earlier
+    // column illustration stays at /echo/biggest-ma-deals-2026-hero.webp
+    // (SVG source in docs/assets/echo/).
+    src: '/images/ezana-echo/biggest-ma-deals-2026-hero.webp',
+    alt: 'Isometric illustration in blue: a puzzle piece hangs from a crane rope above a gap between two walls, its shape matching the notches cut into both sides.',
     caption:
-      'Ezana illustration. Column heights scale to the nine deals’ verified headline values: solid columns have closed, outlined columns are pending, hatched columns were rejected bids. Status as of November 19th, 2026.',
+      'Pieces still in the air: of the nine headline deals of 2026, worth about $852 billion checked against filings, three have closed, four are pending and two were rejected outright.',
+    position: '50% 40%',
   },
   category: 'markets',
   author: 'Ezana Finance Editorial',

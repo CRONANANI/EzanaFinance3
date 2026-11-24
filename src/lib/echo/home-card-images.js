@@ -72,7 +72,8 @@ export const HOME_CARD_IMAGES = {
   // The Biggest M&A Deals of 2026, Checked (original Ezana illustration, Nov 19th)
   'biggest-ma-deals-2026': {
     src: card('biggest-ma-deals-2026'),
-    alt: 'Abstract illustration of nine glowing columns of different heights on a dark grid.',
+    alt: 'A blue puzzle piece hanging from a crane rope above a gap between two walls.',
+    position: '50% 40%',
   },
   // Five Outages, One Story? (supplied retro poster illustration, second
   // version, Nov 20th; 3:2, served at 2x for high-density screens).
