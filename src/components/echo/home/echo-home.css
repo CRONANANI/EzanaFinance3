@@ -2491,3 +2491,111 @@ html:has(.ech-hero) > body {
     min-height: 0;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Nov 23, 2026: The Evening Brief, redesigned for the rail.
+   It reads as one more rail module (same 20px head as Most read and Chart
+   of the Week) with tight internal rhythm, and signs up in one line at every
+   width: a filled, borderless field beside a compact primary button
+   (Branding guide 6.3 and 21: inputs and buttons on --radius-md, compact
+   13px semibold button, no outlines at rest, a focus ring for the keyboard).
+   The "Email address" label stays for screen readers (.ech-sr). From 768 to
+   1199px, where the rail spans the page, copy and form sit side by side.
+   ══════════════════════════════════════════════════════════════ */
+.ech-rail .ech-brief {
+  margin-top: 0;
+  padding: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 0;
+  border-top: 1px solid var(--ech-hair);
+}
+.ech-rail .ech-brief__copy {
+  gap: 6px;
+}
+.ech-rail .ech-brief__title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.ech-rail .ech-brief__body {
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.ech-rail .ech-brief__form {
+  gap: 10px;
+}
+.ech-rail .ech-brief__row {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+}
+.ech-rail .ech-brief__row input {
+  height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ech-brief-fg) 7%, transparent);
+  font-size: 14px;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.ech-rail .ech-brief__row input::placeholder {
+  color: var(--ech-brief-faint);
+  opacity: 1;
+}
+.ech-rail .ech-brief__row input:focus {
+  outline: none;
+  background: color-mix(in srgb, var(--ech-brief-fg) 9%, transparent);
+  box-shadow: 0 0 0 2px var(--ech-emerald);
+}
+.ech-rail .ech-brief__row input[aria-invalid='true'] {
+  box-shadow: 0 0 0 2px var(--ech-danger);
+}
+.ech-rail .ech-brief__submit {
+  flex: none;
+  width: auto;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  filter: none;
+}
+.ech-rail .ech-brief__submit:focus-visible {
+  outline: 2px solid var(--ech-emerald);
+  outline-offset: 2px;
+}
+.ech-rail .ech-brief__consent {
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.ech-rail .ech-brief__consent input {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 2px 0 0;
+}
+.ech-rail .ech-brief__note {
+  /* aligned with the consent text: 14px box + 8px gap */
+  padding-left: 22px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.ech-rail .ech-brief__note.is-error {
+  padding-left: 0;
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .ech-rail .ech-brief {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px 40px;
+    align-items: start;
+    padding-top: 32px;
+    border-top: 1px solid var(--ech-hair);
+  }
+}

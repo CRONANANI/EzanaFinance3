@@ -1306,7 +1306,7 @@ function EveningBrief({ onSubscribe }) {
         </p>
       ) : (
         <form className="ech-brief__form" onSubmit={submit} noValidate>
-          <label htmlFor="ech-brief-email" className="ech-brief__label">
+          <label htmlFor="ech-brief-email" className="ech-brief__label ech-sr">
             Email address
           </label>
           <div className="ech-brief__row">
