@@ -636,6 +636,12 @@ body.light-mode .ech-page {
   max-width: 320px;
   padding: 16px 0 0;
 }
+/* The meta line sits flush with the card's bottom-left corner, so the card's
+   rounded clip shaved the first letter of the section label. The image keeps
+   its own rounded clip; the card itself does not need one here. */
+.ech-card--standard.has-img {
+  overflow: visible;
+}
 
 /* standard, no image: an intentional text card on a tinted ground */
 .ech-card--standard.is-noimg {

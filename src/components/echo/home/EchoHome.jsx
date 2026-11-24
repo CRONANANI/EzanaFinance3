@@ -39,7 +39,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SECTION_SHORT = Object.fromEntries(SECTIONS.map((s) => [s.id, s.short]));
 /* The Our names tab's value: never a section id. */
 const OUR_NAMES = '__ours';
-const fmtReads = (n) => `${Number(n || 0).toLocaleString('en-US')} READS`;
 
 /* `sizes` per image box; keep in step with the max-width caps in the CSS. */
 const SIZES = {
@@ -654,7 +653,8 @@ function RiverSkeleton() {
   );
 }
 
-/* ---------- Rail: Most read (cumulative views, from the hub) ---------- */
+/* ---------- Rail: Most read (ranked by views with editorial pins; counts
+   stay hidden until views are de-duplicated per reader and bots excluded) ---------- */
 function RailMostRead({ items }) {
   if (!items.length) return null;
   return (
@@ -668,16 +668,14 @@ function RailMostRead({ items }) {
             <Link
               href={m.href}
               className="ech-mostlist__link"
-              aria-label={`${i + 1}. ${m.title}, ${Number(m.views || 0).toLocaleString('en-US')} reads`}
+              aria-label={`${i + 1}. ${m.title}, ${m.mins} minute read`}
             >
               <span className="ech-mostlist__rank" aria-hidden="true">
                 {i + 1}
               </span>
               <span className="ech-mostlist__text" aria-hidden="true">
                 <span className="ech-mostlist__title">{m.title}</span>
-                <span className="ech-mono ech-mostlist__reads">
-                  {fmtReads(m.views)} · {m.mins} MIN READ
-                </span>
+                <span className="ech-mono ech-mostlist__reads">{m.mins} MIN READ</span>
               </span>
             </Link>
           </li>
