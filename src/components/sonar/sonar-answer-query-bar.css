@@ -1337,3 +1337,18 @@
     margin-left: 0;
   }
 }
+/* Sonar 5.0: a choice that contradicts the question, with its one-click correction. */
+.sqb .scr-conflict {
+  margin: 6px 0 0 24px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--warning, var(--sqb-accent)) 10%, transparent);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sqb-text);
+}
+@media (max-width: 640px) {
+  .sqb .scr-conflict {
+    margin-left: 0;
+  }
+}

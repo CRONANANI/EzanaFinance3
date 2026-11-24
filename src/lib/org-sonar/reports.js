@@ -221,6 +221,8 @@ export function snapshotFromState(state) {
     analysis: state.analysis || null,
     relationships: state.relationships || null,
     coverage: state.coverage || null,
+    /* Sonar 5.0: the composition's typed results, so a saved report keeps its tables. */
+    composition: state.composition || null,
     report: state.report,
     brief: state.brief || null,
     run,
@@ -252,6 +254,7 @@ export function stateFromSnapshot(snapshot) {
     error: null,
     remaining: null,
     coverage: snapshot.coverage || null,
+    composition: snapshot.composition || null,
     signup: false,
     standardAvailable: false,
     org: null,

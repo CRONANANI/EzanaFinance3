@@ -305,6 +305,7 @@ async function runFundamentals(admin, att, env) {
     onSet(att)
       ? 'The companies come from the target set above; its matching method and reporting dates apply.'
       : null,
+    'Margin and leverage ratios are not comparable for banks, insurers and other financial companies, whose statements are built differently.',
     !onSet(att) && att.subject.kind === 'institution'
       ? "13F holdings are a quarterly, lagged snapshot of reportable US positions, not a live or complete portfolio, and not the manager's total assets under management."
       : null,
@@ -742,6 +743,35 @@ function runSetOp({ item, left, right, leftDs, rightDs, setDs }) {
   return {
     output: 'calculated',
     title,
+    op: op.key,
+    /* Sonar 5.0: the structured result the research engine and the report consume (the
+       text below is the same result in words, for the writer). */
+    left: {
+      label: leftDs.label,
+      short: leftDs.short,
+      semantics: leftDs.semantics,
+      asOf: left.asOf,
+      count: m.leftCount,
+      unmapped: (left.unmapped || []).slice(0, 20),
+    },
+    right: {
+      label: rightDs.label,
+      short: rightDs.short,
+      semantics: rightDs.semantics,
+      periods: right.periods,
+      count: m.rightCount,
+      noId: m.rightNoId,
+    },
+    matches: rows.slice(0, 100).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker,
+      tickers: r.tickers,
+      issuer: r.issuer,
+      leftEst: r.leftEst,
+      leftShare: r.leftShare,
+      rightValue: r.rightValue,
+      rightPeriod: r.rightPeriod,
+    })),
     stats: { overlap: m.overlap, leftOnly: m.leftOnly, rightOnly: m.rightOnly, level },
     set: setDs
       ? {
@@ -785,6 +815,11 @@ export async function runResearchComposition(
           label: String(raw.label || 'EzanaQL query').slice(0, 120),
           query,
           dimension: raw.dimension || null,
+          /* A query Sonar built for a resolved filer names it (a label only). */
+          entityName:
+            typeof raw.entityName === 'string'
+              ? raw.entityName.replace(/[\r\n]+/g, ' ').slice(0, 80)
+              : null,
           relation: SET_OPS[raw.relation] || EVIDENCE_OPS[raw.relation] ? raw.relation : 'evidence',
           matchLevel: raw.matchLevel === 'issuer' ? 'issuer' : 'security',
           schema: querySchema(query, raw.dimension || null),
@@ -824,11 +859,14 @@ export async function runResearchComposition(
   const sets = {};
   const failed = new Set();
   let subjectRows = null;
+  const timings = {};
+  const runStarted = Date.now();
   for (const task of order) {
     if (task.deps.some((d) => failed.has(d))) {
       failed.add(task.id);
       continue;
     }
+    const t0 = Date.now();
     try {
       if (task.id === 'subject:resolve') {
         if (!primary?.kind || !['politician', 'institution'].includes(primary.kind))
@@ -901,17 +939,25 @@ export async function runResearchComposition(
       failed.add(task.id);
       results.push({
         key: task.id,
+        task: task.id,
         status: 'failed',
         title: task.label,
         failed: String(e?.message || 'This step could not run.'),
       });
     }
+    timings[task.id] = Date.now() - t0;
   }
   for (const id of failed) {
     if (results.some((r) => r.key === id || `analysis:${r.key}` === id)) continue;
     results.push({ key: id, status: 'failed', failed: 'A step it depends on could not run.' });
   }
-  return { results, plan: order.map((t) => ({ id: t.id, label: t.label, deps: t.deps })) };
+  return {
+    results,
+    plan: order.map((t) => ({ id: t.id, label: t.label, deps: t.deps, ms: timings[t.id] ?? null })),
+    failedTasks: [...failed],
+    durationMs: Date.now() - runStarted,
+    subject: primary?.name ? { name: primary.name, kind: primary.kind } : null,
+  };
 }
 
 /** An analysis target with the computed set's size, so validation sees real counts. */

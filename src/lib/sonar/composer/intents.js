@@ -70,7 +70,10 @@ export function extractParams(question) {
   );
   if (years) out.years = toNum(years[1]);
   const hold = q.match(
-    new RegExp(`\\bhold(?:ing)?(?: (?:for|each|them|positions|it|every position)){0,2}\\s+${NUM}\\s+days?\\b`, 'i'),
+    new RegExp(
+      `\\bhold(?:ing)?(?: (?:for|each|them|positions|it|every position)){0,2}\\s+${NUM}\\s+days?\\b`,
+      'i',
+    ),
   );
   if (hold) out.hold_days = toNum(hold[1]);
   const wacc = q.match(/\b(?:wacc|discount rate)\s+(?:of\s+)?(\d{1,2}(?:\.\d+)?)\s?%/i);
@@ -113,6 +116,68 @@ export function extractSubject(question) {
   return null;
 }
 
+/* ── Sonar 5.0: two-entity holdings relationships (Nov 24 2026) ───────────
+   "Fundamental analysis of the shares both Nancy Pelosi and BlackRock hold", "stocks
+   Pelosi owns that BlackRock also owns", "compare Pelosi's portfolio with BlackRock's top
+   ten": the question names two holders and asks for their overlap (or a comparison).
+   Read deterministically: two named entities plus overlap or comparison language. The
+   names are only text here; resolution decides whether each one holds securities. */
+
+const OVERLAP_RE =
+  /\b(both|in common|common (?:stocks?|equities|holdings|positions|shares|names|companies)|overlap(?:s|ping)?|shared (?:stocks?|equities|holdings|positions|names)|also (?:has|have|holds?|owns?)|that .{1,40}? also\b|appear(?:s|ing)? in (?:both|each))\b/i;
+const COMPARE_RE = /\b(compare|comparison|versus|vs\.?|against)\b/i;
+const NAME_RE = /\b([A-Z][\w.&'’-]*(?:\s+(?:of\s+)?[A-Z][\w.&'’-]*){0,3})\b/g;
+/* Capitalised words that are not names (question openers, products, finance terms). */
+const NOT_NAME =
+  /^(Can|Could|Would|Will|Should|Do|Does|Did|Is|Are|Was|What|Which|Who|Whose|How|Why|When|Where|Find|Show|Give|List|Compare|Run|Analy[sz]e|Please|Fundamental|Fundamentals|Stocks?|Shares?|Holdings?|Equities|Companies|I|The|A|An|And|Then|Top|DCF|EzanaQL|Sonar|Ezana|SEC|ETF|FY|Q[1-4]|US|U\.S\.)$/;
+
+function namesIn(q) {
+  const out = [];
+  for (const m of q.matchAll(NAME_RE)) {
+    let n = m[1].replace(/['’]s?$/, '').trim();
+    const words = n.split(/\s+/);
+    while (words.length && NOT_NAME.test(words[0])) words.shift();
+    n = words.join(' ');
+    if (!n || NOT_NAME.test(n) || n.length < 3) continue;
+    if (!out.some((x) => x.name.toLowerCase() === n.toLowerCase()))
+      out.push({ name: n, index: m.index + m[1].indexOf(n) });
+  }
+  return out;
+}
+
+/**
+ * The question's two-holder relationship, or null:
+ *   { op: 'intersect' | 'compare', left, right, topN, topNFor }
+ * left is the question's first holder (the research subject), right the second. topN is
+ * a "top N" scope and topNFor the holder it qualifies (the nearest name before it, or
+ * "its" referring back to the latest name), so "BlackRock's top 10" never becomes the
+ * analysis's own count.
+ */
+export function extractRelation(question) {
+  const q = String(question || '');
+  const overlap = OVERLAP_RE.test(q);
+  const compare = !overlap && COMPARE_RE.test(q);
+  if (!overlap && !compare) return null;
+  const names = namesIn(q);
+  if (names.length < 2) return null;
+  const [left, right] = names;
+  let topN = null;
+  let topNFor = null;
+  const top = q.match(new RegExp(`\\b(?:top|largest|biggest)\\s+${NUM}\\b`, 'i'));
+  if (top) {
+    topN = toNum(top[1]);
+    const before = names.filter((n) => n.index < top.index);
+    topNFor = (before[before.length - 1] || right).name;
+  }
+  return {
+    op: overlap ? 'intersect' : 'compare',
+    left: left.name,
+    right: right.name,
+    topN,
+    topNFor,
+  };
+}
+
 /**
  * Attachments the question asks for, deduplicated by capability (one Fundamental Analysis
  * however many ways the question says it). Each carries origin 'auto', the subject text,
@@ -122,9 +187,13 @@ export function inferComposition(question) {
   const q = String(question || '');
   if (q.trim().length < 6) return { subject: null, attachments: [] };
   const caps = OPS.filter((o) => o.re.test(q)).map((o) => o.capability);
-  if (!caps.length) return { subject: null, attachments: [] };
-  const subjectText = extractSubject(q);
+  const relation = extractRelation(q);
+  if (!caps.length) return { subject: relation?.left || null, attachments: [], relation };
+  /* A two-holder question's subject is its first holder; its "top N" scopes a holdings
+     set, not the analysis (Sonar 5.0). */
+  const subjectText = relation?.left || extractSubject(q);
   const params = extractParams(q);
+  if (relation?.topN != null) delete params.top_n;
   const subject = subjectText ? { text: subjectText } : null;
   const attachments = [...new Set(caps)].map((capability) => {
     const own = {};
@@ -140,13 +209,15 @@ export function inferComposition(question) {
     }
     /* "Run a DCF on the top 10 holdings" asks for 10 companies, but a DCF run values at
        most 5: keep the reader's number and let validation say so, never cut it silently. */
-    return makeAnalysis(capability, { origin: 'auto', subject, params: own });
+    const a = makeAnalysis(capability, { origin: 'auto', subject, params: own });
+    /* It analyses the set the question describes (the overlap), not the first holder. */
+    return relation ? { ...a, wantsSet: true } : a;
   });
-  return { subject: subjectText, attachments };
+  return { subject: subjectText, attachments, relation };
 }
 
 /** A question changed enough that inferred attachments must be recomputed. */
 export function compositionKey(question) {
-  const { subject, attachments } = inferComposition(question);
-  return `${(subject || '').toLowerCase()}|${attachments.map((a) => a.capability).join(',')}`;
+  const { subject, attachments, relation } = inferComposition(question);
+  return `${(subject || '').toLowerCase()}|${attachments.map((a) => a.capability).join(',')}|${relation ? `${relation.op}:${relation.right}:${relation.topN ?? ''}` : ''}`;
 }

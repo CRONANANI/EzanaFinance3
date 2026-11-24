@@ -38,6 +38,10 @@ export const EMPTY_RESEARCH_STATE = {
      and the audit review run (deep research, or an org that requires a red team). Shown as
      under review until findings arrives, which clears it. Never part of a saved snapshot. */
   draft: null,
+  /* Sonar 5.0 (Nov 24 2026): the Research Composer's typed results (overlap tables, company
+     fundamentals, the fulfillment contract), sent before the engine runs, so the report
+     renders them even when the written analysis fails. */
+  composition: null,
 };
 
 const ANALYST_ROLES = new Set(['lead', 'supporting', 'director', 'auditor', 'red-team']);
@@ -94,6 +98,8 @@ export function reduceEvent(state, [type, d]) {
       return { ...state, relationships: d };
     case 'coverage':
       return { ...state, coverage: d };
+    case 'composition':
+      return d && typeof d === 'object' ? { ...state, composition: d } : state;
     /* Nov 13: a plain-language notice for the answer (a control the plan could not honour). */
     case 'notice':
       return d?.message

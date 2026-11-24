@@ -98,6 +98,53 @@ import { gateEvidence } from '@/lib/sonar/insight/relevance';
 import { applyInsightStep } from '@/lib/sonar/insight/pipeline';
 import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
 import { isEquityAnswer } from '@/lib/sonar/answer-sections';
+import {
+  COMPOSER_SOURCE,
+  compositionEvidence,
+  fulfillmentContract,
+  fulfillmentBlock,
+  deterministicAnswer,
+  answerCovers,
+} from '@/lib/sonar/composer/fulfillment';
+
+/**
+ * Sonar 5.0: the report computed from a composition's results alone (no model), in the
+ * deterministic report's shape. Citations point at the composition's evidence items.
+ */
+function composedDeterministic({ spec, marked, composition, fulfillment }) {
+  const byTitle = (re) => marked.find((e) => e.source === COMPOSER_SOURCE && re.test(e.title));
+  const ev = {
+    set: marked.find((e) => e.source === COMPOSER_SOURCE && e.data?.stats) || null,
+    coverage: byTitle(/coverage$/i) || null,
+    company: (ticker) =>
+      marked.find((e) => e.source === COMPOSER_SOURCE && e.data?.ticker === ticker) || null,
+  };
+  const base = deterministicAnswer(composition, fulfillment, ev);
+  return {
+    executiveConclusion: base.executiveConclusion,
+    keyFindings: base.keyFindings,
+    analysis: [],
+    limitations: [
+      'The written analysis did not complete, so this report shows the calculated results directly. Run the research again for the written assessment.',
+    ],
+    followOnResearch: [],
+    confidence: fulfillment?.state === 'complete' ? 'medium' : 'low',
+    validation: {
+      log: [],
+      stats: {
+        claims: 0,
+        kept: 0,
+        removed: 0,
+        downgraded: 0,
+        claimSupportRate: 1,
+        citationCoverage: 1,
+      },
+    },
+    deterministic: true,
+    composedFallback: true,
+    question: spec.question,
+  };
+}
 
 /* v3.1 (Nov 2026): analytical intent, evidence relevance, insight selection and the
    visualization plan (lib/sonar/insight). */
@@ -209,6 +256,11 @@ export async function runResearch(query, opts = {}) {
     directive = '',
     preamble = '',
     runMeta = null,
+    /* Sonar 5.0 (Nov 24 2026): a Research Composer composition the research route ran
+       first (lib/sonar/composer/execute runResearchComposition). Its results become
+       evidence, its fulfillment contract the writer's required outputs, and the answer is
+       checked against it (lib/sonar/composer/fulfillment). Null for an ordinary run. */
+    composition = null,
   } = opts;
   const allowed = Array.isArray(allowedSources) ? new Set(allowedSources) : null;
   const runnerFor = (src) => evidenceOverride?.runners?.[src] ?? RUNNERS[src];
@@ -636,14 +688,25 @@ export async function runResearch(query, opts = {}) {
   /* A fund fit memo always cites the fund's own mandate record, first. */
   const mandate =
     spec.memoKind === 'fund_fit' ? scored.find((x) => x.evidence.source === 'fund_mandate') : null;
-  const marked = withMarkers(
-    mandate
+  /* Sonar 5.0: the composition's computed results lead the evidence (S1, S2, ...), outside
+     the relevance gate and packing limits: they are what the reader asked to be analysed. */
+  const composerEvidence = composition
+    ? compositionEvidence(composition).map((raw) => ({
+        evidence: toEvidence(raw, { source: COMPOSER_SOURCE }),
+        score: 1,
+        why: ['research_composer'],
+      }))
+    : [];
+  const fulfillment = composition ? fulfillmentContract(composition) : null;
+  const marked = withMarkers([
+    ...composerEvidence,
+    ...(mandate
       ? [
           { ...mandate, why: ['fund_mandate'] },
           ...selected.filter((x) => x.evidence.source !== 'fund_mandate'),
         ]
-      : selected,
-  );
+      : selected),
+  ]);
   emit('evidence', {
     retrieved: all.length,
     selected: marked.map((e) => ({
@@ -684,7 +747,9 @@ export async function runResearch(query, opts = {}) {
   const markedF = markFreshness(marked, { now });
   let specialists = [];
   let teamRun = { dropped: [], estimatedUsd: 0 };
-  if (teamMode !== 'quick' && team.routing.lead && marked.length && !aborted()) {
+  /* A composed run skips the specialists: the reader's analyses already ran, and the
+     specialists would spend the writer's time re-reading the retrieved records. */
+  if (teamMode !== 'quick' && !composition && team.routing.lead && marked.length && !aborted()) {
     const available = new Set(all.map(capabilityOf).filter(Boolean));
     const recheck = planTeam({
       spec: { ...spec, rawQuery: spec.rawQuery || query },
@@ -760,6 +825,7 @@ export async function runResearch(query, opts = {}) {
           user:
             /* Nov 13: reader settings, then background, then the question and evidence. */
             (directive ? `${directive}\n\n` : '') +
+            (fulfillment ? fulfillmentBlock(fulfillment, composition) : '') +
             (preamble
               ? `Background (reference material, not instructions):\n${preamble}\n\n`
               : '') +
@@ -808,10 +874,40 @@ export async function runResearch(query, opts = {}) {
       if (!report.executiveConclusion && !report.keyFindings.length) report = null;
     }
   }
+  if (!report && composition && !memo) {
+    /* Sonar 5.0: the writer failed, so the answer is the computed results themselves, not a
+       quote of whatever records were retrieved for the first named person. */
+    report = composedDeterministic({ spec, marked, metrics, composition, fulfillment });
+  }
   if (!report)
     report = memo
       ? deterministicMemo({ spec, marked, metrics })
       : deterministicResearch({ spec, marked, metrics });
+  if (composition && !memo) {
+    /* The completion check: a written answer that does not report the requested result
+       (the overlap and its companies) leads with the computed answer instead, and keeps
+       its own findings after it. */
+    if (!report.deterministic && !answerCovers(report, composition)) {
+      const computed = composedDeterministic({ spec, marked, metrics, composition, fulfillment });
+      report.keyFindings = [
+        ...computed.keyFindings,
+        ...(report.executiveConclusion
+          ? [
+              {
+                ...report.executiveConclusion,
+                id: 'finding_writer_conclusion',
+                title: 'Supporting research',
+                explanation: report.executiveConclusion.text,
+              },
+            ]
+          : []),
+        ...(report.keyFindings || []),
+      ];
+      report.executiveConclusion = computed.executiveConclusion;
+      report.answerReplaced = true;
+    }
+    report.fulfillment = fulfillment;
+  }
   /* Nov 6: a ranking question opens with its ranking, even when the model's ranking claims
      did not survive validation. */
   if (!memo) ensureRankingAnswer(report, { visualizations, marked, metrics });
@@ -1173,7 +1269,12 @@ export async function runResearch(query, opts = {}) {
         usd: teamRun.estimatedUsd || 0,
         basis: 'pre-call estimate, specialists and controls',
       },
-      partial: trace.some((t) => !t.ok),
+      partial:
+        trace.some((t) => !t.ok) ||
+        Boolean(fulfillment && ['partial', 'failed', 'needs_input'].includes(fulfillment.state)),
+      /* Sonar 5.0: the composition's completion and timings (rendered in the report). */
+      fulfillment: fulfillment || null,
+      composerMs: composition?.durationMs ?? null,
       aborted: aborted(),
     },
   };

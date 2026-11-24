@@ -45,6 +45,22 @@ const HINTS = [
 ];
 
 /** One attached item's text, as the research run receives it. */
+/**
+ * Sonar 5.0: what a composer submission adds to a research request: the text context
+ * (photos, charts, models, Echo articles) as an attached file, and the composition
+ * (queries and analyses) that the research route runs as its first stage. Null when the
+ * question carries neither.
+ */
+export function composerExtra(ctx, meta, name = 'Research Composer') {
+  const hasCtx = Array.isArray(ctx) && ctx.length > 0;
+  const comp = meta?.composition || null;
+  if (!hasCtx && !comp) return null;
+  return {
+    ...(hasCtx ? { attachment: { name, text: contextText(ctx) } } : {}),
+    ...(comp ? { composition: comp } : {}),
+  };
+}
+
 export function contextText(items = []) {
   return items
     .filter((c) => c && c.status === 'ready' && c.text)
@@ -319,61 +335,41 @@ export function SonarAnswerQueryBar({
     /* The composition runs first, with deterministic code on the server, in dependency
        order (queries, set operations, then analyses); its results travel with the
        question as the reader's attached material. */
+    /* Sonar 5.0: the composition is sent with the question and runs as the first stage of
+       the research run itself (/api/sonar/research), so its results reach the engine as
+       structured evidence and the report as typed tables. Nothing is pre-run here. */
+    let composition = null;
     if (contextEnabled && composes) {
       if (guest && runnable.length) {
         setError('Sign in to run the attached analyses, or remove them.');
         return;
       }
-      setRunning(true);
       setError(null);
-      try {
-        const res = await fetch('/api/sonar/composer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            action: 'run',
-            version: 4,
-            question: q,
-            primary: questionSubject(q) ? { text: questionSubject(q) } : null,
-            attachments: ordered
-              .filter((c) => c.kind === 'analysis' || c.kind === 'query')
-              .map((c) =>
-                c.kind === 'query'
-                  ? {
-                      key: c.key,
-                      kind: 'query',
-                      seq: c.seq,
-                      label: c.label,
-                      query: c.query,
-                      dimension: c.dimension || null,
-                      relation: c.relation,
-                      matchLevel: c.matchLevel,
-                    }
-                  : c,
-              ),
-          }),
-        });
-        const j = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(j?.error || 'The attached analyses could not run.');
-        if (j.text) {
-          ctx.unshift({
-            kind: 'analysis',
-            label: 'Research Composer results',
-            text: j.text,
-            status: 'ready',
-          });
-        }
-        const failed = (j.results || []).filter((r) => r.status === 'failed');
-        if (failed.length && !j.text) throw new Error(failed[0].failed);
-      } catch (err) {
-        setRunning(false);
-        setError(err?.message || 'The attached analyses could not run.');
-        return;
+      if (!guest) {
+        composition = {
+          version: 5,
+          primary: questionSubject(q) ? { text: questionSubject(q) } : null,
+          attachments: ordered
+            .filter((c) => c.kind === 'analysis' || c.kind === 'query')
+            .map((c) =>
+              c.kind === 'query'
+                ? {
+                    key: c.key,
+                    kind: 'query',
+                    seq: c.seq,
+                    label: c.label,
+                    query: c.query,
+                    dimension: c.dimension || null,
+                    entityName: c.entityName || null,
+                    relation: c.relation,
+                    matchLevel: c.matchLevel,
+                  }
+                : c,
+            ),
+        };
       }
-      setRunning(false);
     }
-    onSubmit?.(q, ctx, { deep: deep.qualifies, resources: deep.count });
+    onSubmit?.(q, ctx, { deep: deep.qualifies, resources: deep.count, composition });
     /* The composition stays (it is saved as the draft for this question), so the result
        page reopens it and an edit re-runs it. */
     setMenu(false);
@@ -425,19 +421,25 @@ export function SonarAnswerQueryBar({
           ordered={ordered}
           ctx={composer.ctx}
           api={composer}
-          onQueryRelation={(key, relation) =>
+          onQueryRelation={(key, relation) => {
+            composer.patchQuery(key, { relation, relationExplicit: true });
             setContext((list) =>
               list.map((x) => (x.key === key ? { ...x, relation, relationExplicit: true } : x)),
-            )
-          }
-          onMatchLevel={(key, matchLevel) =>
-            setContext((list) => list.map((x) => (x.key === key ? { ...x, matchLevel } : x)))
-          }
+            );
+          }}
+          onMatchLevel={(key, matchLevel) => {
+            composer.patchQuery(key, { matchLevel });
+            setContext((list) => list.map((x) => (x.key === key ? { ...x, matchLevel } : x)));
+          }}
+          conflicts={composer.conflicts}
           autoCount={composer.autoCount}
           dismissedCount={composer.dismissedCount}
           deep={deep}
           running={running}
-          onRemoveContext={(key) => setContext((list) => list.filter((x) => x.key !== key))}
+          onRemoveContext={(key) => {
+            composer.removeQuery(key);
+            setContext((list) => list.filter((x) => x.key !== key));
+          }}
           onContextRelation={(key, relation) =>
             setContext((list) => list.map((x) => (x.key === key ? { ...x, relation } : x)))
           }

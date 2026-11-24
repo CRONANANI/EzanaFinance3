@@ -49,6 +49,8 @@ import {
   CONTEXT_SOURCES,
 } from '@/lib/sonar/research-controls';
 import { followUpContext, followUpPreamble, attachmentBlock } from '@/lib/sonar/workspace';
+import { runResearchComposition } from '@/lib/sonar/composer/execute';
+import { clientComposition, fulfillmentContract } from '@/lib/sonar/composer/fulfillment';
 import { RUNNERS } from '@/lib/sonar/engine/sources';
 import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
 import { isUuid } from '@/lib/sonar/saved';
@@ -440,6 +442,75 @@ const POST_HANDLER = withApiGuard(
         let run = null;
         /* An org member's run keeps the state the analyst saw, to save it. */
         let snap = orgId ? EMPTY_RESEARCH_STATE : null;
+
+        /* Sonar 5.0 (Nov 24 2026): a Research Composer composition runs here, as the first
+           stage of this research run, so the engine receives its results as structured
+           evidence and a fulfillment contract (not a pasted text block). It needs a signed-in
+           reader (private EzanaQL datasets run with the reader's id). Its typed results go to
+           the report at once, so they render even if the written analysis fails. */
+        let composition = null;
+        const compIn =
+          body?.composition && typeof body.composition === 'object' ? body.composition : null;
+        if (compIn && Array.isArray(compIn.attachments) && compIn.attachments.length) {
+          if (!access.user) {
+            send('notice', {
+              message:
+                'Sign in to run the attached analyses. This answer uses ordinary research only.',
+            });
+          } else {
+            send('stage', { stage: 'composing' });
+            const cap = deepMode ? 45_000 : 20_000;
+            const comp = await withTimeout(
+              runResearchComposition(
+                {
+                  question: String(runQuery || '').slice(0, 600),
+                  primary:
+                    compIn.primary && typeof compIn.primary.text === 'string'
+                      ? { text: compIn.primary.text.trim().slice(0, 80) }
+                      : null,
+                  attachments: compIn.attachments.slice(0, 8),
+                  userId: access.user.id,
+                },
+                admin,
+              ),
+              cap,
+              'composition',
+            );
+            if (comp.ok) {
+              composition = comp.value;
+              const payload = clientComposition(composition, fulfillmentContract(composition));
+              send('composition', payload);
+              if (snap) snap = reduceEvent(snap, ['composition', payload]);
+            } else {
+              const payload = {
+                version: 5,
+                fulfillment: {
+                  state: 'failed',
+                  label: 'Failed',
+                  objectives: [
+                    {
+                      id: 'composition',
+                      label: 'Run the configured analyses',
+                      status: 'failed',
+                      detail: 'They did not finish within the time limit.',
+                    },
+                  ],
+                },
+                sets: [],
+                analyses: [],
+                failures: [
+                  {
+                    key: 'composition',
+                    title: 'Research Composer',
+                    failed: 'The configured analyses did not finish within the time limit.',
+                  },
+                ],
+              };
+              send('composition', payload);
+              if (snap) snap = reduceEvent(snap, ['composition', payload]);
+            }
+          }
+        }
         if (controlsNotice) {
           send('notice', { message: controlsNotice });
           if (snap) snap = reduceEvent(snap, ['notice', { message: controlsNotice }]);
@@ -449,8 +520,12 @@ const POST_HANDLER = withApiGuard(
             admin,
             runId,
             depth,
-            deadlineAt:
-              startedAt + Math.min(DEPTH_PROFILES[depth].budgetMs, (maxDuration - 6) * 1000),
+            /* A composed run starts the engine's budget after the composition, so its
+               writer is not left the remainder (still inside the function's cap). */
+            deadlineAt: Math.min(
+              (composition ? Date.now() : startedAt) + DEPTH_PROFILES[depth].budgetMs,
+              startedAt + (maxDuration - 6) * 1000,
+            ),
             /* Deep mode reads every dataset, as a quick ping does for anyone. */
             entitledDatasets: deepMode ? null : access.entitlements.datasets,
             /* Nov 13: Research Controls and a follow-up's background (see above). */
@@ -482,6 +557,7 @@ const POST_HANDLER = withApiGuard(
             force,
             fund,
             challenge,
+            composition,
           });
         } catch (e) {
           console.error('[sonar/research] run failed', e?.name);

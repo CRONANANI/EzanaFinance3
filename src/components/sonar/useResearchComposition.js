@@ -31,7 +31,13 @@ import {
   relationsFor,
   RELATIONS,
 } from '@/lib/sonar/composer/registry';
-import { inferComposition, compositionKey, extractSubject } from '@/lib/sonar/composer/intents';
+import {
+  inferComposition,
+  compositionKey,
+  extractSubject,
+  extractRelation,
+} from '@/lib/sonar/composer/intents';
+import { holdingsQueryFor, queryCovers } from '@/lib/sonar/composer/auto-queries';
 import { buildContext, reconcileTargets, queryRelationOptions } from '@/lib/sonar/composer/context';
 
 /** Insertion order: increasing, and later than anything restored from a draft. */
@@ -68,6 +74,9 @@ async function resolveText(text) {
 /** The question's subject: the extracted one, or a short bare name ("Nancy Pelosi"). */
 export function questionSubject(question) {
   const q = String(question || '').trim();
+  /* A two-holder question's research subject is its first holder (Sonar 5.0). */
+  const rel = extractRelation(q);
+  if (rel?.left) return rel.left;
   const s = extractSubject(q);
   if (s) return s;
   const words = q.split(/\s+/).filter(Boolean);
@@ -290,9 +299,44 @@ export function useResearchComposition(
     }
   }, [entityTexts, enabled, names]);
 
+  /* Sonar 5.0: a two-holder question whose second holder has no attached query gets one
+     Sonar builds (lib/sonar/composer/auto-queries), shown and removable like the rest. */
+  const relation = useMemo(() => (enabled ? extractRelation(question) : null), [enabled, question]);
+  const [autoQueries, setAutoQueries] = useState([]);
+  const dismissedQueries = useRef(new Set());
+  const covered = relation ? context.some((c) => queryCovers(c, relation.right)) : false;
+  useEffect(() => {
+    if (!relation || covered) {
+      setAutoQueries((cur) => (cur.length ? [] : cur));
+      return undefined;
+    }
+    let live = true;
+    resolveText(relation.right).then((r) => {
+      if (!live) return;
+      const topN =
+        relation.topNFor && relation.topNFor.toLowerCase() === relation.right.toLowerCase()
+          ? relation.topN
+          : null;
+      const item =
+        r?.kind === 'institution' ? holdingsQueryFor(r, { topN, op: relation.op }) : null;
+      setAutoQueries(item && !dismissedQueries.current.has(item.key) ? [item] : []);
+    });
+    return () => {
+      live = false;
+    };
+  }, [relation, covered]);
+  const removeQuery = useCallback((key) => {
+    dismissedQueries.current.add(key);
+    setAutoQueries((cur) => cur.filter((q) => q.key !== key));
+  }, []);
+  /** Edit a query Sonar built (its relationship or match level), like an attached one. */
+  const patchQuery = useCallback((key, patch) => {
+    setAutoQueries((cur) => cur.map((q) => (q.key === key ? { ...q, ...patch } : q)));
+  }, []);
+
   const ctxItems = useMemo(
     () =>
-      context.map((c) =>
+      [...context, ...autoQueries].map((c) =>
         c.kind === 'query' && c.schema?.entity?.text && names[c.schema.entity.text]
           ? {
               ...c,
@@ -303,7 +347,7 @@ export function useResearchComposition(
             }
           : c,
       ),
-    [context, names],
+    [context, autoQueries, names],
   );
   /* A query the reader has not given a relationship takes the recommended one (a holdings
      intersection when both sides are security sets), never a generic default. */
@@ -345,6 +389,38 @@ export function useResearchComposition(
     );
   }, [ctx, items, enabled]);
 
+  /* Sonar 5.0: where an explicit choice contradicts what the question asks for, say so and
+     offer the correction; nothing is changed without the reader. */
+  const conflicts = useMemo(() => {
+    const out = {};
+    if (relation?.op !== 'intersect') return out;
+    for (const it of ctx.items) {
+      if (
+        it.kind === 'query' &&
+        it.relationExplicit &&
+        !SET_OPS[it.relation]?.derives &&
+        queryCovers(it, relation.right)
+      ) {
+        out[it.key] = {
+          message: `This question asks for the holdings ${relation.left} and ${relation.right} have in common, but this query is set to "${queryRelationOptions(it, ctx).options.find((o) => o.key === it.relation)?.text || it.relation}"`,
+          fix: { type: 'relation', value: 'intersect', label: 'Apply the holdings intersection' },
+        };
+      }
+    }
+    const derived = ctx.datasets.find((d) => d.role === 'derived' && d.op === 'intersect');
+    if (derived) {
+      for (const a of ctx.items) {
+        if (a.kind !== 'analysis' || !a.target?.explicit || a.target.id === derived.id) continue;
+        if (a.capability !== 'fundamental-analysis' && a.capability !== 'dcf-valuation') continue;
+        out[a.key] = {
+          message: `This question asks about the shares ${relation.left} and ${relation.right} both hold, but this analysis is set to ${a.target.label || 'another target'}.`,
+          fix: { type: 'target', value: derived.id, label: `Use ${derived.label}` },
+        };
+      }
+    }
+    return out;
+  }, [relation, ctx]);
+
   /** Restore a saved draft's analyses (home page to result page, a reopened composition). */
   const restore = useCallback((list) => {
     if (!Array.isArray(list)) return;
@@ -355,6 +431,10 @@ export function useResearchComposition(
     items,
     ctx,
     primary,
+    relation,
+    conflicts,
+    removeQuery,
+    patchQuery,
     setTarget,
     restore,
     autoCount: items.filter((a) => a.origin === 'auto').length,

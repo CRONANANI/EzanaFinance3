@@ -23,7 +23,7 @@
 
 import { useMemo } from 'react';
 import { SonarAnswerFrame } from './SonarAnswerFrame';
-import { SonarAnswerQueryBar, contextText } from './SonarAnswerQueryBar';
+import { SonarAnswerQueryBar, composerExtra } from './SonarAnswerQueryBar';
 import { SonarRelatedQuestions } from './SonarDeskSummary';
 import { workspaceTools } from './SonarToolsRow';
 import { useSonarPlan } from './useSonarPlan';
@@ -103,16 +103,13 @@ export function SonarSkeleton({
   const submit = (q, ctx, meta) => {
     const text = String(q || '').trim();
     if (!text) return;
-    const extra = ctx?.length ? contextText(ctx) : '';
+    const extra = composerExtra(ctx, meta);
     if (meta?.deep && typeof onComposerDeep === 'function') {
-      onComposerDeep(
-        text,
-        extra ? { attachment: { name: 'Research Composer', text: extra } } : null,
-      );
+      onComposerDeep(text, extra);
       return;
     }
     if (extra && typeof onResearch === 'function')
-      onResearch(text, { attachment: { name: 'Context added in Sonar', text: extra } });
+      onResearch(text, composerExtra(ctx, meta, 'Context added in Sonar'));
     else onPing?.(text);
   };
 

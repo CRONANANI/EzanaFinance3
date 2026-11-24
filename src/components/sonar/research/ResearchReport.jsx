@@ -32,6 +32,7 @@ import FundFitMemo from './FundFitMemo';
 import ChallengeBanner from './ChallengeBanner';
 import ReportContents from './ReportContents';
 import ResearchBoard from './ResearchBoard';
+import CompositionReport from './CompositionReport';
 import { useSonarPlan } from '@/components/sonar/useSonarPlan';
 import { sectionAccess } from '@/lib/sonar/answer-sections';
 import './research-report.css';
@@ -58,6 +59,7 @@ export const SOURCE_LABELS = {
   industry_registry: 'Industry registry',
   prediction_markets: 'Prediction markets',
   echo: 'Ezana Echo',
+  research_composer: 'Research Composer results',
   news: 'News',
   ipo_filings: 'IPO filings',
   company_financials: 'Reported financials (SEC)',
@@ -152,7 +154,11 @@ function progressSteps(state, tp) {
   const last = state.stage;
   const running = state.status === 'running';
   const spec = state.plan?.spec;
-  const steps = STAGES.map(([id, label]) => {
+  /* Sonar 5.0: a composed question runs its configured analyses first. */
+  const stages = seen.has('composing')
+    ? [['composing', 'Running your configured analyses'], ...STAGES]
+    : STAGES;
+  const steps = stages.map(([id, label]) => {
     let status = 'pending';
     if (seen.has(id)) {
       const controlRunning =
@@ -847,6 +853,9 @@ export default function ResearchReport({
           {report?.challenge ? (
             <ChallengeBanner challenge={report.challenge} onCite={cite} />
           ) : null}
+          {state.composition ? (
+            <CompositionReport composition={state.composition} onFollowUp={onFollowUp} />
+          ) : null}
           <ResearchBoard
             state={state}
             team={team}
@@ -938,6 +947,9 @@ export default function ResearchReport({
             </header>
           ) : null}
 
+          {state.composition ? (
+            <CompositionReport composition={state.composition} onFollowUp={onFollowUp} />
+          ) : null}
           {state.status === 'running' ? <Progress state={state} /> : null}
           {state.memory ? (
             <p className="srr-note">

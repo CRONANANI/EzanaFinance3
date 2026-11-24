@@ -51,7 +51,9 @@ function subjectDataset(primary) {
 function queryDataset(item) {
   const s = item.schema;
   if (!s?.ok || portfolioGap(s)) return null;
-  const who = s.entity?.text || null;
+  /* A query Sonar built for a resolved filer carries the filer's name (its WHERE has the
+     CIK, not the name). */
+  const who = item.entityName || s.entity?.text || null;
   const top =
     s.limit && s.orderBy?.dir === 'desc' && /value|shares/.test(s.orderBy.field || '')
       ? `top ${s.limit} `
@@ -178,11 +180,11 @@ export function buildContext({ question = '', primary = null, items = [] } = {})
   const subjects = [
     primary?.name ? { ...primary, role: 'primary' } : null,
     ...ordered
-      .filter((it) => it.kind === 'query' && it.schema?.entity?.text)
+      .filter((it) => it.kind === 'query' && (it.entityName || it.schema?.entity?.text))
       .map((it) => ({
-        text: it.schema.entity.text,
-        name: it.schema.entity.text,
-        kind: it.schema.entity.role,
+        text: it.entityName || it.schema.entity.text,
+        name: it.entityName || it.schema.entity.text,
+        kind: it.schema?.entity?.role || 'institution',
         role: 'secondary',
         via: it.key,
       })),
@@ -265,14 +267,21 @@ export function analysisTargets(a, ctx) {
       label: a.subject?.name || a.subject?.text || ctx.primary?.name,
       kind: 'subject',
     });
+  /* Sonar 5.0: an analysis inferred from a two-holder question ("the shares both X and Y
+     hold") analyses the overlap whatever order the pieces were added in; any other
+     inferred analysis keeps the question's own subject. */
+  const anyDerived = options.find((o) => o.dataset?.role === 'derived')?.id || null;
   const recommended =
-    a.origin === 'auto'
-      ? 'subject'
-      : options.find((o) => o.dataset?.role === 'derived' && earlierThan(o.dataset, a, ctx))?.id ||
-        options.find((o) => o.dataset?.role === 'output' && earlierThan(o.dataset, a, ctx))?.id ||
-        options.find((o) => o.id === 'subject')?.id ||
-        options[0]?.id ||
-        null;
+    a.origin === 'auto' && a.wantsSet && anyDerived
+      ? anyDerived
+      : a.origin === 'auto'
+        ? 'subject'
+        : options.find((o) => o.dataset?.role === 'derived' && earlierThan(o.dataset, a, ctx))
+            ?.id ||
+          options.find((o) => o.dataset?.role === 'output' && earlierThan(o.dataset, a, ctx))?.id ||
+          options.find((o) => o.id === 'subject')?.id ||
+          options[0]?.id ||
+          null;
   return { options, recommended };
 }
 

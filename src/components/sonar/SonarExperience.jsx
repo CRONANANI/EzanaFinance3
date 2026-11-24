@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { SonarHero } from '@/components/sonar/SonarHero';
-import { contextText } from '@/components/sonar/SonarAnswerQueryBar';
+import { composerExtra } from '@/components/sonar/SonarAnswerQueryBar';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
 import { EchoResults, PredictionMarkets } from '@/components/sonar/SonarSections';
@@ -894,10 +894,7 @@ export function SonarExperience({
      home page with the composition's results attached, through the same deep offer (three
      or more resources) or standard path a result page uses. */
   function heroCompose(q, ctx, meta) {
-    const extra =
-      Array.isArray(ctx) && ctx.length
-        ? { attachment: { name: 'Research Composer', text: contextText(ctx) } }
-        : null;
+    const extra = composerExtra(ctx, meta);
     if (!extra) {
       runQuery(q);
       return;

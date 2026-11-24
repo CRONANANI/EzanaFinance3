@@ -89,7 +89,7 @@ import { SonarCountryBoard } from './SonarCountryBoard';
 import { SonarPingBoard } from './SonarPingBoard';
 import { Face } from '@/components/sonar/SonarFace';
 import { answerCharts } from '@/lib/sonar/answer-charts';
-import { SonarAnswerQueryBar, contextText } from '@/components/sonar/SonarAnswerQueryBar';
+import { SonarAnswerQueryBar, composerExtra } from '@/components/sonar/SonarAnswerQueryBar';
 import { controlsNeedResearch, readControls } from '@/components/sonar/research-controls-store';
 import { addSessionEntry } from '@/components/sonar/session-thread';
 import { deepNoteFrom } from '@/components/sonar/workspace-rail-helpers';
@@ -3097,20 +3097,15 @@ export function SonarSection({
         setQueryValue(v);
       }}
       onSubmit={(q, ctx, meta) => {
-        const extra =
-          Array.isArray(ctx) && ctx.length
-            ? { attachment: { name: 'Research Composer', text: contextText(ctx) } }
-            : null;
+        const extra = composerExtra(ctx, meta);
         if (meta?.deep && typeof onComposerDeep === 'function') {
           setQueryValue(q);
           onComposerDeep(q, extra);
           return;
         }
-        if (canCarryContext && Array.isArray(ctx) && ctx.length) {
+        if (canCarryContext && extra) {
           setQueryValue(q);
-          onStandardResearch(q, {
-            extra: { attachment: { name: 'Context added in Sonar', text: contextText(ctx) } },
-          });
+          onStandardResearch(q, { extra: composerExtra(ctx, meta, 'Context added in Sonar') });
           return;
         }
         runPing(q);

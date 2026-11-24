@@ -169,7 +169,7 @@ function DependsOn({ a, ctx }) {
   );
 }
 
-function AnalysisRow({ a, api, ctx, index }) {
+function AnalysisRow({ a, api, ctx, index, conflict }) {
   /* Collapsed by default; a row that needs the reader (a value to fix, a filer to choose,
      a stale target) opens on its own. */
   const [userOpen, setOpen] = useState(null);
@@ -217,6 +217,7 @@ function AnalysisRow({ a, api, ctx, index }) {
         </button>
       </div>
       <DependsOn a={a} ctx={ctx} />
+      <ConflictNote conflict={conflict} onFix={() => api.setTarget(a.key, conflict.fix.value)} />
       <p className="scr-rel">{relationText(a) || cap.summary}</p>
       {pointInTime ? (
         <p className="scr-note">
@@ -354,7 +355,20 @@ function AnalysisRow({ a, api, ctx, index }) {
   );
 }
 
-function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel }) {
+/** Sonar 5.0: an explicit choice that contradicts the question, with its correction. */
+function ConflictNote({ conflict, onFix }) {
+  if (!conflict) return null;
+  return (
+    <p className="scr-conflict" role="status">
+      <i className="bi bi-exclamation-diamond" aria-hidden="true" /> {conflict.message}.{' '}
+      <button type="button" className="scr-fix" onClick={onFix}>
+        {conflict.fix.label}
+      </button>
+    </p>
+  );
+}
+
+function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel, conflict }) {
   const { options, unavailable } = queryRelationOptions(c, ctx);
   const ops = options.filter((o) => o.family === 'portfolio_operation');
   const evidence = options.filter((o) => o.family === 'evidence');
@@ -368,7 +382,7 @@ function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel }) {
         <i className="bi bi-terminal scr-icon" aria-hidden="true" />
         <span className="scr-name">{c.label}</span>
         <span className="scr-type">EzanaQL query</span>
-        <span className="scr-origin">Added</span>
+        <span className="scr-origin">{c.origin === 'auto' ? 'Auto-configured' : 'Added'}</span>
         <button
           type="button"
           className="scr-btn"
@@ -408,6 +422,7 @@ function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel }) {
           </optgroup>
         </select>
       </label>
+      <ConflictNote conflict={conflict} onFix={() => onRelation(c.key, conflict.fix.value)} />
       {!ops.length && (unavailable || gap) ? (
         <p className="scr-note">Portfolio operations are not offered: {gap || unavailable}</p>
       ) : null}
@@ -484,6 +499,7 @@ export function SonarComposerRows({
   onContextRelation,
   onQueryRelation,
   onMatchLevel,
+  conflicts = {},
   autoCount = 0,
   dismissedCount = 0,
   deep = null,
@@ -522,7 +538,14 @@ export function SonarComposerRows({
       <ul className="scr-list">
         {ordered.map((c, i) =>
           c.kind === 'analysis' ? (
-            <AnalysisRow key={c.key} a={c} api={api} ctx={ctx} index={i} />
+            <AnalysisRow
+              key={c.key}
+              a={c}
+              api={api}
+              ctx={ctx}
+              index={i}
+              conflict={conflicts[c.key]}
+            />
           ) : c.kind === 'query' ? (
             <QueryRow
               key={c.key}
@@ -532,6 +555,7 @@ export function SonarComposerRows({
               onRemove={onRemoveContext}
               onRelation={onQueryRelation}
               onMatchLevel={onMatchLevel}
+              conflict={conflicts[c.key]}
             />
           ) : (
             <ContextRow

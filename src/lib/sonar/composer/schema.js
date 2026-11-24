@@ -28,6 +28,7 @@ const SEMANTICS = {
 /** The entity a query is about, read from its WHERE clause (filer, politician, fund). */
 const ENTITY_FIELDS = {
   filer: 'institution',
+  filer_cik: 'institution',
   politician: 'politician',
   fund: 'fund',
   etf: 'fund',
