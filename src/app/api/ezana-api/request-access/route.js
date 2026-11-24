@@ -1,23 +1,16 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+import { ALL_SCOPES } from '@/lib/ezana-api/tiers';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 const ROLES = ['trader', 'quant_firm', 'institution', 'developer', 'other'];
 const VOLUMES = ['<10k', '10-100k', '100k-1M', '1M+'];
-const DATASETS = [
-  'congress',
-  'committees',
-  'lobbying',
-  'fec',
-  'contracts',
-  'predictions',
-  'institutional',
-  'insider',
-  'news',
-];
+/* Every API scope (the form lists one checkbox per scope), plus the legacy
+   'news' key older requests used. Derived from tiers so the two cannot drift. */
+const DATASETS = [...ALL_SCOPES, 'news'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**

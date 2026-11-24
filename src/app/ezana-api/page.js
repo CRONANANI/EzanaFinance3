@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { DIMENSIONS, GROUPS, LIVE_ENDPOINTS, PARAMS } from '@/lib/ezana-api/registry';
 import { TIERS as API_TIERS, TIER_ORDER } from '@/lib/ezana-api/tiers';
+import { SIGNALS as ALPHA_SIGNALS } from '@/lib/ezana-api/alpha/signals';
 import { PM_EXAMPLES } from './prediction-examples';
 import { API_EXAMPLES } from './api-examples';
 import { EndpointArgs, ExampleButton, ExamplePanel } from './EndpointDocs';
@@ -51,6 +52,7 @@ const Database = biIcon('bi-database');
 const GitBranch = biIcon('bi-git');
 const ShieldCheck = biIcon('bi-shield-check');
 const HelpCircle = biIcon('bi-question-circle');
+const Activity = biIcon('bi-activity');
 
 /* Legend / scroll-spy order. */
 const SECTIONS = [
@@ -59,6 +61,7 @@ const SECTIONS = [
   { id: 'getting-access', label: 'Getting access' },
   { id: 'authentication', label: 'Authentication' },
   { id: 'endpoints', label: 'Endpoints' },
+  { id: 'alpha-intelligence', label: 'Alpha Intelligence' },
   { id: 'pagination', label: 'Pagination' },
   { id: 'errors', label: 'Errors' },
   { id: 'data-coverage', label: 'Data coverage' },
@@ -173,6 +176,10 @@ const COVERAGE_ROWS = [
 ];
 
 const CHANGELOG = [
+  {
+    date: '2026-11-24',
+    text: 'Alpha Intelligence: a new /v1/alpha group. GET /v1/alpha/signals lists every designed signal with its maturity, method, limits and the data gate that blocks it, measured live. Procurement acceleration is the first live signal, with calibrated tail probabilities and false-discovery-adjusted q-values. The API is also served at api.ezana.world.',
+  },
   {
     date: '2026-10-27',
     text: `Every live Ezana dataset is now on the API: ${LIVE_ENDPOINTS.length} endpoints across Capitol Watch, Titans Shadow, Eyes Above, The Hive, Global Empire Lighthouse and cross-dimensional joins, ${INSIGHT_COUNT} of them insights that state their method. Endpoints that could not be built from data Ezana holds were removed from the documentation rather than listed as coming soon.`,
@@ -392,6 +399,7 @@ const REQ_DATASETS = [
   { key: 'macro', label: 'Empire rankings, OECD, World Bank' },
   { key: 'sanctions', label: 'Sanctions' },
   { key: 'cross', label: 'Cross-dimensional signals' },
+  { key: 'alpha', label: 'Alpha Intelligence signals' },
 ];
 const REQ_ROLES = [
   { value: '', label: 'Select…' },
@@ -887,6 +895,14 @@ export default function EzanaApiPage() {
                 <p>Sources are synced hourly to daily; see Data coverage for each dataset.</p>
               </div>
               <div className="ea-feature">
+                <Activity size={18} aria-hidden />
+                <h3>Alpha Intelligence</h3>
+                <p>
+                  Statistical signals that state their maturity, sample, uncertainty and limits,
+                  published only once the data behind them passes its readiness gates.
+                </p>
+              </div>
+              <div className="ea-feature">
                 <History size={18} aria-hidden />
                 <h3>Disclosure dates kept</h3>
                 <p>
@@ -1186,6 +1202,99 @@ export default function EzanaApiPage() {
                 <code>{RESPONSE_SNIPPET}</code>
               </pre>
             </div>
+          </section>
+
+          {/* Alpha Intelligence */}
+          <section id="alpha-intelligence" className="ea-section">
+            <h2>
+              <Activity size={18} aria-hidden className="ea-h2-icon" />
+              Alpha Intelligence
+            </h2>
+            <p>
+              Alpha Intelligence turns changes in capital allocation, corporate behaviour,
+              government activity and economic conditions into testable signals. Each signal says
+              how mature it is, and none is promoted past what its evidence supports:
+            </p>
+            <ul>
+              <li>
+                <strong>Descriptive</strong>: a validated calculation about the data as it stands
+                (how unusual a value is against its own history or its peers).
+              </li>
+              <li>
+                <strong>Statistical</strong>: a relationship tested with stated uncertainty and
+                controls, never presented as causal.
+              </li>
+              <li>
+                <strong>Predictive</strong>: skill shown out of sample, after costs, against a
+                simpler baseline. No Alpha signal is predictive today.
+              </li>
+            </ul>
+            <p>
+              A signal is published only when it is built on real data and passes its readiness
+              gates (enough history, complete ingestion, verified entity mappings, point-in-time
+              timestamps, redistribution rights). <code>GET /v1/alpha/signals</code> lists every
+              designed signal with each gate and the figure observed when you call it, so you can
+              see what is live, what is blocked and why.
+            </p>
+            <h3>Reading a signal</h3>
+            <p>
+              Every row shares one shape: <code>signal_id</code>, <code>signal_version</code>,{' '}
+              <code>entity</code>, <code>signal_type</code>, <code>as_of</code> (the period
+              measured), <code>available_at</code> (the first date the data could be used),{' '}
+              <code>value</code> and its <code>unit</code>, <code>baseline_value</code>,{' '}
+              <code>percentile</code>, <code>sample_size</code>, <code>metrics</code>,{' '}
+              <code>statistical_validation</code> and <code>limitations</code>. Missing inputs are{' '}
+              <code>null</code>, never zero.
+            </p>
+            <p>
+              A robust z from a short history is not a probability: with eight annual points, |z|
+              above 3 happens about 7% of the time on pure noise. So each row also carries{' '}
+              <code>null_exceedance</code> (the chance of a value this extreme by chance for that
+              history length), <code>q_value</code> (the same, corrected for every entity evaluated
+              at once) and <code>rank_p</code> (an assumption-light check that cannot fall below 1 /
+              (years + 1)). Read q-values, not raw z, when you screen many names.
+            </p>
+            <div className="ea-table-wrap">
+              <table className="ea-table">
+                <thead>
+                  <tr>
+                    <th>Signal</th>
+                    <th>Maturity</th>
+                    <th>Status</th>
+                    <th>Depends on</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ALPHA_SIGNALS.map((sg) => (
+                    <tr key={sg.id}>
+                      <td>
+                        {sg.name}
+                        {sg.route ? (
+                          <>
+                            <br />
+                            <code>{sg.route}</code>
+                          </>
+                        ) : null}
+                      </td>
+                      <td>{sg.maturity}</td>
+                      <td>
+                        {sg.route
+                          ? 'Live'
+                          : sg.covered_by
+                            ? `Served by ${sg.covered_by}`
+                            : 'Gated: see /v1/alpha/signals'}
+                      </td>
+                      <td>{sg.dependencies.join('; ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Alpha routes need the <code>alpha</code> scope, included with Quant Firm and
+              Institution keys. Signals describe data; they are not investment advice or buy and
+              sell calls.
+            </p>
           </section>
 
           {/* Pagination */}

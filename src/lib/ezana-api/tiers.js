@@ -20,6 +20,7 @@ export const ALL_SCOPES = [
   'macro',
   'sanctions',
   'cross',
+  'alpha',
 ];
 
 /* The tier split below is a proposal for Axum to confirm. Public-domain
@@ -83,6 +84,7 @@ export const TIERS = {
       '1,500 requests / min',
       'No delay',
       'Every live dataset, including 13F, insider trades and cross-dimensional signals',
+      'Alpha Intelligence signals and the signal registry',
       'Priority support',
     ],
   },

@@ -104,6 +104,9 @@ export const INSIGHT_TTL = {
   lighthouse: 21600,
   hive: 60,
   cross: 900,
+  /* Alpha reads annual contract history and filing coverage; both change at
+     most daily, and the cache key carries the data's sync time. */
+  alpha: 21600,
 };
 
 /**

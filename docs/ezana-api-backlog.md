@@ -30,3 +30,22 @@ being built against data Ezana holds and added to a catalog module in
 | -------------------------------------- | ------------------------------ |
 | `/v1/lobbying/signals/policy-exposure` | `/v1/lobbying/spend-vs-awards` |
 | `/v1/contracts/agencies/{id}/spending` | `/v1/contracts/agencies`       |
+
+## Alpha Intelligence: designed, gated by data (24 Nov 2026)
+
+Not routes yet. Each is in `src/lib/ezana-api/alpha/signals.js` and listed by `GET /v1/alpha/signals` with the
+gate that blocks it, measured live. Details: `docs/ezana-api/alpha-intelligence/`.
+
+| Proposed route                                                      | Blocked by (observed 24 Nov 2026)                                                     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `/v1/alpha/institutional-divergence`                                | 13F Q3 holdings 9.4% parsed (148 of 1,575); 29 comparable filers                      |
+| `/v1/alpha/ownership-confirmation`                                  | Same 13F gate; Form 4 covers 54 days (needs a full quarter)                           |
+| `/v1/alpha/insider-behavior-anomaly`                                | Form 4 covers 54 days (needs 730)                                                     |
+| `/v1/alpha/lobbying-procurement-leadlag`                            | Lobbying starts 2024 (needs 5 complete years)                                         |
+| `/v1/alpha/innovation-capital-divergence`                           | Patent table empty; 13F gate                                                          |
+| `/v1/alpha/capital-crowding`                                        | 13F gate; outcome testing needs licensed prices (internal only)                       |
+| `/v1/alpha/sector-rotation-pressure`                                | 13F gate                                                                              |
+| `/v1/alpha/macro-regime-shift`                                      | No release dates or vintages for macro values                                         |
+| `/v1/alpha/geopolitical-exposure`                                   | No verified company to geography or counterparty mapping                              |
+| `/v1/alpha/event-probability-divergence`                            | Served by `/v1/predictions/consensus`; calibration needs 1 year of snapshots          |
+| `/v1/alpha/alerts`, `/alert-subscriptions`, `/signals/{id}/history` | No snapshot store, delivery or POST/DELETE support yet (see 06_ALERT_ARCHITECTURE.md) |
