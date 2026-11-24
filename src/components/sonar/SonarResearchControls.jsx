@@ -16,6 +16,7 @@ import {
   isDefaultControls,
 } from '@/lib/sonar/research-controls';
 import { EzDropdown } from '@/components/ui/ez-dropdown';
+import { AnimatedDropdown } from '@/components/ui/animated-dropdown';
 import { useResearchControls } from './research-controls-store';
 import { useSonarPlan } from './useSonarPlan';
 import './sonar-research-controls.css';
@@ -77,10 +78,9 @@ function InlineDock({ id, controls, set, guest, custom, onReset }) {
                 {seg.label}
                 {changed ? <span className="src-seg__dot" aria-label="(changed)" /> : null}
               </label>
-              <EzDropdown
+              {/* Nov 24 2026: the animated dropdown is this dock's default. */}
+              <AnimatedDropdown
                 id={fid}
-                block
-                size="sm"
                 label={seg.label}
                 value={controls[seg.key]}
                 disabled={guest}

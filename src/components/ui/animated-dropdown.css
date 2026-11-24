@@ -1,0 +1,143 @@
+/* AnimatedDropdown (src/components/ui/animated-dropdown.jsx), Nov 24 2026.
+   The emerald-ui design in Ezana tokens: an outlined trigger, a bordered
+   menu centered under it, rows ruled off with a 1px line, a hover wash, and
+   the selected row in emerald with a check. Override the --ezad-* variables
+   to restyle it in context (the Sonar research dock does). */
+.ezad {
+  --ezad-text: var(--text-primary);
+  --ezad-muted: var(--text-muted);
+  --ezad-trigger-bg: var(--bg-primary);
+  --ezad-trigger-border: color-mix(in srgb, var(--text-primary) 16%, transparent);
+  --ezad-menu-bg: var(--bg-secondary);
+  --ezad-row-bg: color-mix(in srgb, var(--text-primary) 2%, var(--bg-secondary));
+  --ezad-row-hover: color-mix(in srgb, var(--text-primary) 8%, var(--bg-secondary));
+  --ezad-line: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --ezad-accent: var(--emerald-text);
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-sans);
+}
+.ezad-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ezad-trigger-border);
+  border-radius: var(--radius-md);
+  background: var(--ezad-trigger-bg);
+  color: var(--ezad-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.ezad-trigger:hover:not(:disabled) {
+  background: var(--ezad-row-hover);
+}
+.ezad-trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.ezad-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ezad-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ezad-chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--ezad-muted);
+}
+.ezad-chevron svg {
+  width: 16px;
+  height: 16px;
+}
+.ezad-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 1000;
+  width: max-content;
+  min-width: max(100%, 224px);
+  max-width: min(320px, calc(100vw - 32px));
+  translate: -50% 0;
+  overflow: hidden;
+  border: 1px solid var(--ezad-line);
+  border-radius: var(--radius-md);
+  background: var(--ezad-menu-bg);
+  box-shadow: var(--shadow-lg);
+  transform-origin: top center;
+}
+.ezad-list {
+  max-height: min(320px, 60vh);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  outline: none;
+}
+.ezad-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 12px 0 14px;
+  border-bottom: 1px solid var(--ezad-line);
+  background: var(--ezad-row-bg);
+  color: var(--ezad-text);
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+.ezad-option:last-child {
+  border-bottom: 0;
+}
+.ezad-option.is-active {
+  background: var(--ezad-row-hover);
+}
+.ezad-list:focus-visible .ezad-option.is-active {
+  box-shadow: inset 2px 0 0 var(--emerald);
+}
+.ezad-option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ezad-check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ezad-accent);
+  visibility: hidden;
+}
+.ezad-option.is-selected {
+  color: var(--ezad-accent);
+  font-weight: 600;
+}
+.ezad-option.is-selected .ezad-check {
+  visibility: visible;
+}
+@media (max-width: 720px) {
+  .ezad-option {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ezad-trigger,
+  .ezad-option {
+    transition: none;
+  }
+}
