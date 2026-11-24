@@ -2589,6 +2589,14 @@ html:has(.ech-hero) > body {
 .ech-rail .ech-brief__note.is-error {
   padding-left: 0;
 }
+/* Phones: the site-wide 44px tap-target minimum applies to the button, so
+   the field matches it and the two stay one line of equal height. */
+@media (max-width: 768px) {
+  .ech-rail .ech-brief__row input,
+  .ech-rail .ech-brief__submit {
+    height: 44px;
+  }
+}
 @media (min-width: 768px) and (max-width: 1199px) {
   .ech-rail .ech-brief {
     display: grid;
