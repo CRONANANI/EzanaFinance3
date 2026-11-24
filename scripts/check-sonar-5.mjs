@@ -136,6 +136,27 @@ test('other overlap phrasings', () => {
   }
 });
 
+test('names typed in lower case are read from the phrase that pairs them', () => {
+  for (const q of [
+    'can you do fundamental analysis on the shares that both nancy pelosi has and blackrock also has in its top 10 positions by weight?',
+    'which stocks do nancy pelosi and blackrock have in common?',
+    'fundamental analysis on stocks held by both nancy pelosi and blackrock in their top 10',
+  ]) {
+    const r = intents.extractRelation(q);
+    assert.ok(r, q);
+    assert.equal(r.left, 'Nancy Pelosi', q);
+    assert.equal(r.right, 'Blackrock', q);
+  }
+  assert.doesNotMatch(
+    String(
+      intents.extractSubject(
+        'can you do fundamental analysis on the shares that both nancy pelosi has and blackrock also has',
+      ),
+    ),
+    /^both /i,
+  );
+});
+
 test('H: questions about one subject invent no relation', () => {
   for (const q of [
     'Who is Nancy Pelosi?',

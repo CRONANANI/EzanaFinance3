@@ -41,7 +41,11 @@ import {
   SET_OPS,
   EVIDENCE_OPS,
   MATCH_LEVELS,
+  queryRelationOptions,
+  COMPANY_TARGETING,
 } from './context.js';
+import { extractRelation } from './intents.js';
+import { holdingsQueryFor, queryCovers } from './auto-queries.js';
 import { runEzanaQL, validateEzanaQL } from '@/lib/ezanaql';
 
 const TICKER_RE = /^\$?([A-Z]{1,5}(?:\.[A-Z])?)$/;
@@ -799,9 +803,18 @@ export async function runResearchComposition(
   { question = '', primary: primaryIn = null, attachments = [], userId = null },
   admin = getAdminClient(),
 ) {
-  const primary = primaryIn?.text
-    ? await resolveSubject(primaryIn.text, admin).catch(() => null)
-    : null;
+  /* Sonar 5.0 (Nov 24 2026): the server reads the question itself, so a two-holder
+     question runs as an overlap whatever the client sent (an older page, a subject it
+     could not resolve, names typed in lower case). The question's first holder is the
+     subject; its second gets a holdings query when nothing attached covers it. */
+  const relation = extractRelation(question);
+  const primaryText =
+    relation?.left ||
+    String(primaryIn?.text || '')
+      .replace(/^both\s+/i, '')
+      .trim() ||
+    null;
+  const primary = primaryText ? await resolveSubject(primaryText, admin).catch(() => null) : null;
   const items = attachments
     .slice(0, 8)
     .map((raw, i) => {
@@ -821,6 +834,9 @@ export async function runResearchComposition(
               ? raw.entityName.replace(/[\r\n]+/g, ' ').slice(0, 80)
               : null,
           relation: SET_OPS[raw.relation] || EVIDENCE_OPS[raw.relation] ? raw.relation : 'evidence',
+          /* Only a relationship the reader chose is kept as is; any other takes the
+             recommended one below, as in the composer. */
+          relationExplicit: raw.relationExplicit === true,
           matchLevel: raw.matchLevel === 'issuer' ? 'issuer' : 'security',
           schema: querySchema(query, raw.dimension || null),
         };
@@ -835,11 +851,39 @@ export async function runResearchComposition(
             raw.target?.explicit || raw.target?.stale
               ? { id: String(raw.target.id || ''), explicit: true }
               : null,
+          /* A two-holder question's analysis covers the overlap. */
+          wantsSet: Boolean(relation) && COMPANY_TARGETING.has(raw.capability),
+          origin: relation && COMPANY_TARGETING.has(raw.capability) ? 'auto' : raw.origin,
         };
       }
       return null;
     })
     .filter(Boolean);
+  if (relation?.right && !items.some((it) => queryCovers(it, relation.right))) {
+    const right = await resolveSubject(relation.right, admin).catch(() => null);
+    const topN =
+      relation.topNFor && relation.topNFor.toLowerCase() === relation.right.toLowerCase()
+        ? relation.topN
+        : null;
+    const auto =
+      right?.kind === 'institution' ? holdingsQueryFor(right, { topN, op: relation.op }) : null;
+    if (auto) items.push({ ...auto, seq: -1 });
+  }
+  /* Relationships the reader did not choose take the recommended one (a holdings
+     intersection when both sides are security sets); an overlap question asks for it. */
+  const pre = buildContext({
+    question,
+    primary,
+    items: items.map((it) =>
+      it.kind === 'query' && !it.relationExplicit ? { ...it, relation: 'evidence' } : it,
+    ),
+  });
+  for (const it of items) {
+    if (it.kind !== 'query' || it.relationExplicit) continue;
+    const opts = queryRelationOptions(it, pre);
+    const want = relation && queryCovers(it, relation.right) ? relation.op : opts.recommended;
+    it.relation = opts.options.some((o) => o.key === want && !o.disabled) ? want : opts.recommended;
+  }
   let ctx = buildContext({ question, primary, items });
   const patches = reconcileTargets(items, ctx);
   const ready = items.map((it) => {
@@ -877,6 +921,17 @@ export async function runResearchComposition(
         const item = ready.find((x) => `query:${x.key}` === task.id);
         const res = await runQueryAttachment(admin, item, userId);
         done[task.id] = res;
+        /* A query's own securities are a set an analysis can target (out:<key>). */
+        if (res.securities?.length)
+          sets[`out:${item.key}`] = {
+            rows: res.securities.map((x) => ({
+              issuer: x.issuer || x.ticker,
+              tickers: [x.ticker].filter(Boolean),
+              value: x.value,
+            })),
+            source: `${item.label} (EzanaQL${res.periods.length ? `, period ${res.periods.join(', ')}` : ''})`,
+            valueLabel: 'Reported value',
+          };
         if (!SET_OPS[item.relation]) {
           results.push({
             key: item.key,

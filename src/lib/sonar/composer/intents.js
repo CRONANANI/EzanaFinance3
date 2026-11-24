@@ -105,6 +105,7 @@ export function extractSubject(question) {
     if (!m) continue;
     let s = m[1]
       .replace(LEAD_VERB, '')
+      .replace(/^both\s+/i, '')
       .replace(/^(?:the\s+)?(?:top|largest|biggest)\s+\S+\s+/i, '')
       .replace(/\s+(?:and|then|over|for|with)\b.*$/i, '')
       .replace(/['’]s$/i, '')
@@ -145,6 +146,43 @@ function namesIn(q) {
   return out;
 }
 
+/* Words that end a holder's name in a paired phrase (verbs, scope, possessive). */
+const NAME_END =
+  /\s+(?:also|both|each|has|have|had|hold|holds|held|own|owns|owned|is|are|in|on|at|by|with|for|from|top|largest|biggest|portfolio|portfolios|positions?|holdings?|stocks?|shares?|equities|book)\b.*$/i;
+const NAME_LEAD =
+  /^(?:the\s+)?(?:shares?|stocks?|equities|holdings?|positions?|companies|names)?\s*(?:that|which|both|do|does|did|of|between)?\s*/i;
+const PAIRS = [
+  /\bboth\s+(.{2,60}?)\s+(?:(?:has|have|holds?|owns?)\s+)?and\s+(.{2,60}?)(?=\s+(?:also\s+)?(?:has|have|hold|holds|own|owns|in|both)\b|[?.,]|$)/i,
+  /\b(?:that|which|do|does|did|of|between)\s+(.{2,60}?)\s+and\s+(.{2,60}?)(?=\s+(?:both|each|all|also|have|has|hold|holds|own|owns|share|in common)\b|['’]s?\b|[?.,]|$)/i,
+  /\bby\s+both\s+(.{2,60}?)\s+and\s+(.{2,60}?)(?=\s+in\b|[?.,]|$)/i,
+];
+const cleanName = (raw) => {
+  let n = String(raw || '')
+    .replace(NAME_LEAD, '')
+    .replace(NAME_END, '')
+    .replace(/['’]s?$/, '')
+    .replace(/[^\w.&' -]+/g, ' ')
+    .trim();
+  n = n.replace(/\s+/g, ' ');
+  if (!n || n.length < 3 || n.split(' ').length > 5 || NOT_NAME.test(n)) return null;
+  /* Title case for display; resolution matches either way. */
+  return n.replace(/\b([a-z])/g, (c) => c.toUpperCase());
+};
+function pairedNames(q) {
+  for (const re of PAIRS) {
+    const m = q.match(re);
+    if (!m) continue;
+    const a = cleanName(m[1]);
+    const b = cleanName(m[2]);
+    if (a && b && a.toLowerCase() !== b.toLowerCase())
+      return [
+        { name: a, index: m.index + m[0].indexOf(m[1]) },
+        { name: b, index: m.index + m[0].indexOf(m[2]) },
+      ];
+  }
+  return [];
+}
+
 /**
  * The question's two-holder relationship, or null:
  *   { op: 'intersect' | 'compare', left, right, topN, topNFor }
@@ -158,7 +196,10 @@ export function extractRelation(question) {
   const overlap = OVERLAP_RE.test(q);
   const compare = !overlap && COMPARE_RE.test(q);
   if (!overlap && !compare) return null;
-  const names = namesIn(q);
+  let names = namesIn(q);
+  /* Typed in lower case ("nancy pelosi and blackrock"), the names are read from the
+     phrase that pairs them instead of from capitals. */
+  if (names.length < 2) names = pairedNames(q);
   if (names.length < 2) return null;
   const [left, right] = names;
   let topN = null;

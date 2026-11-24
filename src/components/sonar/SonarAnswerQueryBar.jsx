@@ -362,6 +362,7 @@ export function SonarAnswerQueryBar({
                     dimension: c.dimension || null,
                     entityName: c.entityName || null,
                     relation: c.relation,
+                    relationExplicit: c.relationExplicit === true,
                     matchLevel: c.matchLevel,
                   }
                 : c,

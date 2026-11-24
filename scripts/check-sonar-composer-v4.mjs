@@ -533,3 +533,73 @@ test('end to end: a stale explicit target is not run against another subject', a
   const fund = results.find((r) => r.capability === 'fundamental-analysis');
   assert.equal(fund.status, 'conditional');
 });
+
+/* Sonar 5.0 (Nov 24 2026): the server reads the question itself. Reproduces the production
+   run that returned "Its target set was not computed": the query arrived as supporting
+   evidence (or with no relationship) and the subject did not resolve on the client. */
+test('end to end: the server derives the overlap whatever the client sent', async () => {
+  const { runResearchComposition } = await import('../src/lib/sonar/composer/execute.js');
+  const LQ =
+    'can you do fundamental analysis on the shares that both nancy pelosi has and blackrock also has in its top 10 positions by weight?';
+  const brQuery = (relation) => ({
+    key: 'query:br',
+    kind: 'query',
+    seq: 1,
+    label: 'top 10 positions in blackrocks portfolio by weight',
+    query: BLACKROCK_Q,
+    dimension: 'titans',
+    relation,
+    matchLevel: 'security',
+  });
+  const cases = [
+    ['Nancy Pelosi', { text: 'Nancy Pelosi' }, [brQuery('evidence')]],
+    ['Nancy Pelosi', { text: 'Nancy Pelosi' }, [brQuery(undefined)]],
+    [LQ, null, [brQuery('evidence')]],
+    [LQ, { text: 'both nancy pelosi' }, [brQuery('evidence')]],
+    [LQ, null, []],
+  ];
+  for (const [question, primary, queries] of cases) {
+    const out = await runResearchComposition(
+      {
+        question,
+        primary,
+        attachments: [...queries, { ...fa(), origin: 'manual', seq: 2, target: null }],
+        userId: 'u1',
+      },
+      admin,
+    );
+    const label = `${question.slice(0, 24)} / ${queries[0]?.relation ?? 'auto query'}`;
+    assert.equal(out.subject?.name, 'Nancy Pelosi', label);
+    const set = out.results.find((r) => r.op === 'intersect');
+    assert.ok(set, `${label}: an intersection ran`);
+    assert.equal(set.stats.overlap, 6, label);
+    const fund = out.results.find((r) => r.capability === 'fundamental-analysis');
+    assert.equal(fund.status, 'done', `${label}: ${fund.failed}`);
+    assert.equal(fund.table.length, 6, label);
+  }
+});
+
+test('end to end: a relationship the reader chose explicitly is kept', async () => {
+  const { runResearchComposition } = await import('../src/lib/sonar/composer/execute.js');
+  const out = await runResearchComposition(
+    {
+      question: 'Nancy Pelosi',
+      primary: { text: 'Nancy Pelosi' },
+      attachments: [
+        {
+          key: 'query:br',
+          kind: 'query',
+          seq: 1,
+          label: 'BlackRock',
+          query: BLACKROCK_Q,
+          dimension: 'titans',
+          relation: 'evidence',
+          relationExplicit: true,
+        },
+      ],
+      userId: 'u1',
+    },
+    admin,
+  );
+  assert.ok(!out.results.some((r) => r.op));
+});
