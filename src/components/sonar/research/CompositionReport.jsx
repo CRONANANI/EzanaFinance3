@@ -238,7 +238,12 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
       ? `${comp.subject.name} | Research Composer results`
       : 'Research Composer results';
   const empty = set && set.op === 'intersect' && (set.stats?.overlap ?? 0) === 0;
-  const limitations = [...new Set((comp.analyses || []).flatMap((a) => a.limitations || []))];
+  const limitations = [
+    ...new Set([
+      ...(comp.sets || []).flatMap((x) => x.notes || []),
+      ...(comp.analyses || []).flatMap((a) => a.limitations || []),
+    ]),
+  ];
   const followUps = empty
     ? [
         `Compare ${short(set.left?.short)} with ${short(set.right?.short)}'s top 50 holdings`,

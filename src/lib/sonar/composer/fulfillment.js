@@ -85,6 +85,7 @@ export function compositionEvidence(c) {
           ? `${both ? 'Matching' : 'Resulting'} securities: ${list.slice(0, 25).join(', ')}.`
           : null,
         `${s.left?.label}: ${s.left?.count} securities with identifiers, ${s.left?.asOf || 'date not stated'}. ${s.right?.label}: ${s.right?.count} securities, reporting period ${(s.right?.periods || []).join(', ') || 'as returned by the query'}.`,
+        ...(s.notes || []),
         'These are the latest available reported or estimated holdings in each dataset; a match is not verified simultaneous ownership.',
       ]
         .filter(Boolean)
@@ -362,6 +363,7 @@ export function clientComposition(c, f) {
       left: s.left,
       right: s.right,
       matches: s.matches || [],
+      notes: s.notes || [],
     })),
     analyses: analysisResults(c).map((a) => ({
       key: a.key,

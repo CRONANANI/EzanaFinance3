@@ -46,34 +46,67 @@ import {
 } from './context.js';
 import { extractRelation } from './intents.js';
 import { holdingsQueryFor, queryCovers } from './auto-queries.js';
+import { scope13FQuery, latestRowsPerFiler } from './thirteen-f.js';
 import { runEzanaQL, validateEzanaQL } from '@/lib/ezanaql';
 
 const TICKER_RE = /^\$?([A-Z]{1,5}(?:\.[A-Z])?)$/;
 
 /* ── subjects ───────────────────────────────────────────────────────── */
 
+/* ── 13F: a filer's own latest filing ───────────────────────────────────
+   Per-filer reads use the filer's newest filed period, amendments applied
+   (sec_13f_effective_filings, migration 20261129090000), not the market-wide snapshot,
+   which waits for a quarter to be complete across filers. Until that migration is applied
+   these fall back to the snapshot. See ./thirteen-f.js. */
+
 async function latestFilers(admin, text) {
-  const { data } = await admin
+  const t = text.replace(/[%_]/g, '');
+  const { data, error } = await admin.rpc('sec_13f_latest_filers', { p_text: t, p_limit: 10 });
+  if (!error && Array.isArray(data) && data.length)
+    return data.map((r) => ({
+      cik: r.cik,
+      filer_name: r.filer_name,
+      period: String(r.period).slice(0, 10),
+      positions: r.positions,
+      book: r.book,
+    }));
+  const { data: snap } = await admin
     .from('titans_13f_filers')
     .select('cik, filer_name, period, positions, book')
-    .ilike('filer_name', `%${text.replace(/[%_]/g, '')}%`)
+    .ilike('filer_name', `%${t}%`)
     .order('period', { ascending: false })
     .limit(40);
   const byCik = new Map();
-  for (const r of data || []) if (!byCik.has(r.cik)) byCik.set(r.cik, r);
+  for (const r of snap || []) if (!byCik.has(r.cik)) byCik.set(r.cik, r);
   return [...byCik.values()].sort((a, b) => Number(b.book || 0) - Number(a.book || 0));
 }
 
-/** The filer's largest holdings, one row per issuer (share classes merged). */
-async function filerHoldings(admin, cik, period, limit = 400) {
+/** One filer's positions for a period: its effective filing, common shares and options. */
+async function filerPositions(admin, cik, period, limit = 2000) {
   const { data, error } = await admin
+    .from('ezq_13f_holdings')
+    .select('ticker, cusip, issuer, value_usd, shares, put_call, share_type')
+    .eq('filer_cik', cik)
+    .eq('period_of_report', period)
+    .eq('is_current', true)
+    .order('value_usd', { ascending: false })
+    .limit(limit);
+  if (!error && data?.length)
+    return data.filter((r) => String(r.share_type || 'SH').toUpperCase() !== 'PRN');
+  const { data: snap, error: e2 } = await admin
     .from('titans_13f_positions')
-    .select('ticker, issuer, value_usd, put_call')
+    .select('ticker, cusip, issuer, value_usd, shares, put_call')
     .eq('cik', cik)
     .eq('period', period)
     .order('value_usd', { ascending: false })
     .limit(limit);
-  if (error) throw new Error('13F holdings could not be read');
+  if (e2) throw new Error('13F holdings could not be read');
+  return snap || [];
+}
+
+/** The filer's largest holdings, one row per issuer (share classes merged). */
+async function filerHoldings(admin, cik, period, limit = 400) {
+  const data = await filerPositions(admin, cik, period, limit);
   const byIssuer = new Map();
   for (const r of data || []) {
     if (r.put_call) continue;
@@ -569,14 +602,7 @@ async function cusipsForTickers(admin, tickers, period = null) {
 /** The primary subject's holdings as securities with CUSIPs. */
 async function subjectSecurities(admin, primary) {
   if (primary.kind === 'institution') {
-    const { data, error } = await admin
-      .from('titans_13f_positions')
-      .select('ticker, cusip, issuer, value_usd, shares, put_call')
-      .eq('cik', primary.id)
-      .eq('period', primary.period)
-      .order('value_usd', { ascending: false })
-      .limit(2000);
-    if (error) throw new Error('13F holdings could not be read');
+    const data = await filerPositions(admin, primary.id, primary.period, 2000);
     const rows = (data || [])
       .filter((r) => !r.put_call && r.cusip)
       .map((r) => ({
@@ -626,15 +652,28 @@ async function subjectSecurities(admin, primary) {
 async function runQueryAttachment(admin, item, userId) {
   const v = validateEzanaQL(item.query, { dimension: item.dimension || null });
   if (!v.ok) throw new Error(`The query is not valid EzanaQL: ${v.error}`);
-  const out = await runEzanaQL({
-    query: item.query,
-    admin,
-    userId,
-    dimension: item.dimension || null,
-    format: 'table',
-  });
+  const run = (query) =>
+    runEzanaQL({ query, admin, userId, dimension: item.dimension || null, format: 'table' });
+  /* A holdings query means each filer's own latest filing unless it names a period
+     (then that period's effective filing); see ./thirteen-f.js. */
+  const scoped = scope13FQuery(item.query);
+  let scopeNote = scoped.note;
+  let out = scoped.scope ? await run(scoped.query) : await run(item.query);
+  let fallback = false;
+  if (scoped.scope && !out.ok) {
+    out = await run(item.query);
+    fallback = true;
+  }
   if (!out.ok) throw new Error(out.error || 'The query could not run.');
-  const rows = out.result?.rows || [];
+  let rows = out.result?.rows || [];
+  if (fallback && scoped.scope === 'latest') {
+    const before = rows.length;
+    rows = latestRowsPerFiler(rows);
+    scopeNote =
+      before !== rows.length
+        ? "Rows from earlier quarters were dropped, keeping each filer's newest period in the result."
+        : null;
+  } else if (fallback) scopeNote = null;
   const keys = out.result?.keys || [];
   const securities = [];
   const periods = new Set();
@@ -675,7 +714,17 @@ async function runQueryAttachment(admin, item, userId) {
       .slice(0, 25)
       .map((r) => `| ${head.map((k) => (r[k] == null ? '' : String(r[k]))).join(' | ')} |`),
   ];
-  return { rows, keys, securities, periods: [...periods].sort(), table, rowCount: rows.length };
+  return {
+    rows,
+    keys,
+    securities,
+    periods: [...periods].sort(),
+    table,
+    rowCount: rows.length,
+    scope: scopeNote
+      ? { kind: scoped.scope, note: scopeNote, query: fallback ? item.query : scoped.query }
+      : null,
+  };
 }
 
 const fmtUsd = (v) => (v == null ? 'N/A' : usd(v));
@@ -737,6 +786,24 @@ function runSetOp({ item, left, right, leftDs, rightDs, setDs }) {
       );
     }
   }
+  /* 13F periods: say how each side was scoped, and when two 13F sides are from different
+     quarters (one filer has filed its newest quarter, the other has not yet). */
+  const notes = [];
+  if (right.scope?.note) notes.push(`${rightDs.short}: ${right.scope.note}`);
+  if (left.scope?.note) notes.push(`${leftDs.short}: ${left.scope.note}`);
+  const leftPeriods = left.periods?.length
+    ? left.periods
+    : String(left.asOf || '').match(/\d{4}-\d{2}-\d{2}/g) || [];
+  if (
+    leftDs.semantics !== 'estimated_holdings' &&
+    leftPeriods.length &&
+    right.periods.length &&
+    leftPeriods.join() !== right.periods.join()
+  )
+    notes.push(
+      `The two sides are from different 13F quarters (${leftDs.short} ${leftPeriods.join(', ')}; ${rightDs.short} ${right.periods.join(', ')}): each is that filer's latest filing, and a match is not ownership in the same quarter.`,
+    );
+  if (notes.length) lines.push('', ...notes.map((n) => `Note: ${n}`));
   lines.push(
     '',
     `Limitation: these are the latest available reported or estimated holdings in each dataset. The dates differ, so a match shows a security appearing in both datasets, not verified simultaneous ownership.`,
@@ -777,6 +844,7 @@ function runSetOp({ item, left, right, leftDs, rightDs, setDs }) {
       rightPeriod: r.rightPeriod,
     })),
     stats: { overlap: m.overlap, leftOnly: m.leftOnly, rightOnly: m.rightOnly, level },
+    notes,
     set: setDs
       ? {
           rows: rows.map((r) => ({
@@ -941,10 +1009,13 @@ export async function runResearchComposition(
             text: [
               `EzanaQL query "${item.label}" (${res.rowCount} rows; first ${Math.min(25, res.rowCount)} shown).`,
               `How to use it: ${EVIDENCE_OPS[item.relation].text()}`,
-              `Query: ${item.query}`,
+              res.scope ? `Scope: ${res.scope.note}` : null,
+              `Query: ${res.scope?.query || item.query}`,
               '',
               ...res.table,
-            ].join('\n'),
+            ]
+              .filter((l) => l !== null)
+              .join('\n'),
           });
         }
       } else if (task.id.startsWith('set:')) {
@@ -959,7 +1030,11 @@ export async function runResearchComposition(
             ? subjectRows
             : {
                 rows: done[`query:${leftId.slice(4)}`]?.securities || [],
-                asOf: 'as returned by its query',
+                periods: done[`query:${leftId.slice(4)}`]?.periods || [],
+                scope: done[`query:${leftId.slice(4)}`]?.scope || null,
+                asOf: done[`query:${leftId.slice(4)}`]?.periods?.length
+                  ? `period ${done[`query:${leftId.slice(4)}`].periods.join(', ')}`
+                  : 'as returned by its query',
                 unmapped: [],
               };
         const res = runSetOp({ item, left, right: done[`query:${key}`], leftDs, rightDs, setDs });

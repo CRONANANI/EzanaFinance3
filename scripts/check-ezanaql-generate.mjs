@@ -147,7 +147,7 @@ test('the prompt schema lists live datasets and names the rest as not queryable'
   for (const d of dark) {
     assert.ok(text.includes(d.name), `${d.name} should be named as not queryable`);
   }
-  assert.equal(CATALOG_VERSION, '1.5.0');
+  assert.equal(CATALOG_VERSION, '1.6.0');
   assert.match(text, /capitol\.congress_trades .*joinable with gov\.contracts ON ticker/);
 });
 

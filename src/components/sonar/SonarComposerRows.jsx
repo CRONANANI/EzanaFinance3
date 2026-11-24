@@ -31,6 +31,7 @@ import {
   MATCH_LEVELS,
 } from '@/lib/sonar/composer/context';
 import { portfolioGap } from '@/lib/sonar/composer/schema';
+import { scope13FQuery } from '@/lib/sonar/composer/thirteen-f';
 
 export const KIND_LABEL = {
   analysis: 'Analysis',
@@ -423,6 +424,11 @@ function QueryRow({ c, ctx, index, onRemove, onRelation, onMatchLevel, conflict 
         </select>
       </label>
       <ConflictNote conflict={conflict} onFix={() => onRelation(c.key, conflict.fix.value)} />
+      {scope13FQuery(c.query).note ? (
+        <p className="scr-scope">
+          <i className="bi bi-calendar-check" aria-hidden="true" /> {scope13FQuery(c.query).note}
+        </p>
+      ) : null}
       {!ops.length && (unavailable || gap) ? (
         <p className="scr-note">Portfolio operations are not offered: {gap || unavailable}</p>
       ) : null}

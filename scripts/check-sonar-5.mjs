@@ -21,6 +21,8 @@ const auto = await import('../src/lib/sonar/composer/auto-queries.js');
 const ful = await import('../src/lib/sonar/composer/fulfillment.js');
 const { reduceEvent, EMPTY_RESEARCH_STATE } = await import('../src/lib/sonar/research-state.js');
 const ctxLib = await import('../src/lib/sonar/composer/context.js');
+const tf = await import('../src/lib/sonar/composer/thirteen-f.js');
+const { validateEzanaQL } = await import('../src/lib/ezanaql/index.js');
 
 const Q =
   'Can you do fundamental analysis on the shares that both Nancy Pelosi has and BlackRock also has in its top 10 positions by weight?';
@@ -338,4 +340,76 @@ test('G: an inferred analysis on a two-holder question targets the overlap', () 
   const rec = t.options.find((o) => o.id === t.recommended);
   assert.ok(rec, 'a target is recommended');
   assert.equal(rec.dataset?.role, 'derived', 'the overlap, not Pelosi alone');
+});
+
+/* ── 13F periods: a filer's own latest filing ────────────────────────── */
+
+test("a holdings query without a period means each filer's latest filing", () => {
+  const q = `FROM titans.holdings_13f
+WHERE filer LIKE "%BLACKROCK%"
+SELECT ticker, issuer, cusip, value, shares, period
+ORDER BY value DESC
+LIMIT 10;`;
+  const r = tf.scope13FQuery(q);
+  assert.equal(r.scope, 'latest');
+  assert.match(r.query, /WHERE latest = TRUE AND \(filer LIKE "%BLACKROCK%"\)/);
+  assert.match(r.query, /ORDER BY value DESC\s+LIMIT 10;$/);
+  assert.ok(validateEzanaQL(r.query, { dimension: 'titans' }).ok, r.query);
+  assert.match(r.note, /latest filed 13F/);
+});
+
+test('a named period keeps its period and drops superseded amendments', () => {
+  const q = `FROM titans.holdings_13f
+WHERE filer_cik = "0002012383" AND period = "2026-06-30" AND share_type = "SH"
+SELECT ticker, cusip, value
+ORDER BY value DESC
+LIMIT 10;`;
+  const r = tf.scope13FQuery(q);
+  assert.equal(r.scope, 'current');
+  assert.match(r.query, /current = TRUE AND \(filer_cik = "0002012383" AND period = "2026-06-30"/);
+  assert.ok(validateEzanaQL(r.query, { dimension: 'titans' }).ok, r.query);
+});
+
+test('no WHERE, an explicit scope, OR groups, quoted keywords and other datasets', () => {
+  const none = tf.scope13FQuery(
+    'FROM titans.holdings_13f\nSELECT ticker, value\nORDER BY value DESC\nLIMIT 5;',
+  );
+  assert.equal(none.scope, 'latest');
+  assert.match(none.query, /FROM titans\.holdings_13f\nWHERE latest = TRUE\nSELECT/);
+  assert.ok(validateEzanaQL(none.query, { dimension: 'titans' }).ok, none.query);
+  for (const q of [
+    'FROM titans.holdings_13f\nWHERE latest = TRUE AND ticker = "NVDA"\nSELECT filer, value\nLIMIT 5;',
+    'FROM titans.holdings_13f\nWHERE accession_no = "x"\nSELECT ticker\nLIMIT 5;',
+    'FROM capitol.trades\nWHERE ticker = "NVDA"\nSELECT politician\nLIMIT 5;',
+  ])
+    assert.equal(tf.scope13FQuery(q).scope, null, q);
+  const tricky = tf.scope13FQuery(
+    'FROM titans.holdings_13f\nWHERE issuer LIKE "%ORDER BY%" OR ticker = "AAPL"\nSELECT ticker\nLIMIT 5;',
+  );
+  assert.match(
+    tricky.query,
+    /WHERE latest = TRUE AND \(issuer LIKE "%ORDER BY%" OR ticker = "AAPL"\)/,
+  );
+  assert.ok(validateEzanaQL(tricky.query, { dimension: 'titans' }).ok, tricky.query);
+});
+
+test("the fallback keeps each filer's newest period in an unscoped result", () => {
+  const rows = [
+    { filer: 'BlackRock', period: '2026-09-30', ticker: 'NVDA' },
+    { filer: 'BlackRock', period: '2026-06-30', ticker: 'NVDA' },
+    { filer: 'Vanguard', period: '2026-06-30', ticker: 'AAPL' },
+    { ticker: 'X' },
+  ];
+  assert.deepEqual(
+    tf.latestRowsPerFiler(rows).map((r) => `${r.filer || '-'}:${r.period || '-'}`),
+    ['BlackRock:2026-09-30', 'Vanguard:2026-06-30', '-:-'],
+  );
+});
+
+test('the EzanaQL catalog exposes latest and current for 13F holdings', async () => {
+  const { CATALOG, catalogSchemaForPrompt } = await import('../src/lib/ezanaql/catalog.js');
+  const d = CATALOG['titans.holdings_13f'];
+  assert.equal(d.columnMap.latest, 'is_latest');
+  assert.equal(d.columnMap.current, 'is_current');
+  assert.match(catalogSchemaForPrompt('titans'), /WHERE latest = TRUE/);
 });

@@ -30,8 +30,8 @@ const { FEW_SHOTS_BY_DIMENSION } = await import('../src/app/api/ezanaql/generate
 const DIMENSIONS = ['capitol', 'titans', 'eyes', 'whispers', 'hive', 'lighthouse', 'regulatory'];
 const check = (q, dimension) => validate(parse(q), { dimension });
 
-test('catalog version is 1.5.0', () => {
-  assert.equal(CATALOG_VERSION, '1.5.0');
+test('catalog version is 1.6.0', () => {
+  assert.equal(CATALOG_VERSION, '1.6.0');
 });
 
 test('DIMENSION_DATASETS covers the seven dimensions and names only catalog datasets', () => {

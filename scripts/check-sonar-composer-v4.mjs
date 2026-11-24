@@ -373,6 +373,8 @@ const ezq = BR_TOP10.map(([ticker, cusip, issuer, value]) => ({
   shares: 1,
   share_type: 'SH',
   put_call: null,
+  is_current: true,
+  is_latest: true,
 }));
 const fundamentals = ['NVDA', 'AAPL'].flatMap((t) =>
   [

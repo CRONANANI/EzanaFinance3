@@ -458,6 +458,14 @@ async function run(request) {
       `[ingest-sec-holdings] retention removed ${removed} holdings older than ${oldestKept}`,
     );
 
+  /* Nov 24 2026: newly parsed 13Fs move their filers' latest filing at once (the
+     15-minute schedule is the backstop). Absent before migration 20261129090000. */
+  if ((holdingsRows || removed) && !outOfTime()) {
+    const { error: effErr } = await admin.rpc('sec_13f_refresh_effective_filings');
+    if (effErr && !/function .* does not exist|Could not find the function/i.test(effErr.message))
+      errors.push(`effective filings: ${effErr.message}`);
+  }
+
   if (holdingsRows || positions || reparsed || removed) {
     revalidateTag('titans');
     revalidateTag('hubs');

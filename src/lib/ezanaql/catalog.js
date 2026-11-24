@@ -22,7 +22,7 @@
  * @typedef {'string'|'money'|'int'|'float'|'date'|'bool'} FieldType
  */
 
-export const CATALOG_VERSION = '1.5.0';
+export const CATALOG_VERSION = '1.6.0';
 
 /* Every Titans Shadow dataset keys on ticker, so each is joinable with all the
    others. Joins stay inside a dimension. */
@@ -507,8 +507,14 @@ export const CATALOG = {
       shares: 'shares',
       share_type: 'share_type',
       put_call: 'put_call',
+      /* Nov 24 2026 (sec_13f_effective_filings): the filer's effective filing for the
+         row's period (amendments applied), and its newest period. */
+      current: 'is_current',
+      latest: 'is_latest',
     },
     defaultProjection: ['filer', 'ticker', 'value', 'shares', 'period'],
+    promptNote:
+      "A filer's current holdings: WHERE latest = TRUE (its newest filed 13F, amendments applied). With a period filter add current = TRUE so a restated amendment is not counted twice.",
     fields: {
       accession_no: { type: 'string' },
       filer_cik: { type: 'string', nullable: true },
@@ -523,6 +529,8 @@ export const CATALOG = {
       shares: { type: 'float', nullable: true },
       share_type: { type: 'string', nullable: true },
       put_call: { type: 'string', nullable: true },
+      current: { type: 'bool' },
+      latest: { type: 'bool' },
     },
     joinableWith: TITANS_PEERS('titans.holdings_13f'),
     joinKeys: ['ticker'],
@@ -1200,7 +1208,7 @@ export function catalogSchemaForPrompt(dimension = null) {
         });
       return `${d.name} (${d.label}) fields: ${fields}${
         joins.length ? `; joinable with ${joins.join(', ')}` : ''
-      }`;
+      }${d.promptNote ? `. ${d.promptNote}` : ''}`;
     })
     .join('\n');
   /* Named, not hidden. The model needs to know these exist so it does not

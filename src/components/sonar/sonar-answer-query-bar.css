@@ -1352,3 +1352,15 @@
     margin-left: 0;
   }
 }
+/* How Sonar scopes a 13F holdings query (each filer's latest filing). */
+.sqb .scr-scope {
+  margin: 4px 0 0 24px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sqb-muted, var(--text-muted));
+}
+@media (max-width: 640px) {
+  .sqb .scr-scope {
+    margin-left: 0;
+  }
+}
