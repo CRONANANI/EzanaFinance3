@@ -10,11 +10,10 @@
  *   1. hub-cache.js `slim`: the article's heroImage.src (else coverImage),
  *      dropped when it is a local path that is not in public/.
  *   2. home-card-images.js `withHomeImage`: an uploaded
- *      public/images/ezana-echo/<slug>-card.<ext> overrides it, with that
- *      entry's alt and crop position.
- * Because step 2 is the very same function the home calls, a card image
- * override (for example the NYSE photograph on the tokenized-money article)
- * reaches the article header automatically.
+ *      public/images/ezana-echo/<slug>-card.<ext> fills in only when the
+ *      article has no hero image (Nov 25 2026: the hero wins).
+ * Because step 2 is the very same function the home calls, the header and
+ * the home card always show the same picture.
  */
 import PUBLIC_IMAGES from '@/lib/echo/public-images.json';
 import { withHomeImage } from '@/lib/echo/home-card-images';

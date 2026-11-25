@@ -11,8 +11,8 @@ export const dataConsolidationArticle2026 = {
   excerpt:
     "Across a map of 2026's biggest acquirers and their targets, one pattern holds: Salesforce, Databricks, OpenAI, Anthropic and the rest aren't paying for algorithms, they're paying for proprietary data and the workflow positions that make any model useful. It's a land-grab for pipelines, and the open question is whether it's the new shape of competition or a signal the macro data hasn't caught.",
   heroImage: {
-    src: '/sector-dominance-chart.jpg',
-    alt: 'Abstract market-data chart used to illustrate the flow and consolidation of data assets',
+    src: '/images/ezana-echo/acquirers-buy-the-pipeline-not-the-model-2026-card.webp',
+    alt: 'Illustration: a factory press stamped Alphabet, Meta, Amazon and Microsoft feeds a conveyor belt of dollar bills into the fanged mouth of a data center marked AI.',
     caption:
       "2026's tech M&A cleared $100 billion, and the pattern underneath it is a land-grab for data pipelines, not models.",
   },

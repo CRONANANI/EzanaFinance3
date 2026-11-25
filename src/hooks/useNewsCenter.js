@@ -108,10 +108,10 @@ export function useNewsCenter({ tickers } = {}) {
 
   const feed = useMemo(() => {
     if (!raw) return null;
-    /* The Echo lead wears the article's current editorial card photo (the
-       same one the Echo home shows), falling back to its own hero image. */
+    /* The Echo lead wears the same picture the Echo home shows: the
+       article's own hero image, else its card photo (Nov 25 2026). */
     const echoCards = (raw.echoCards || []).map((c) => {
-      const s = withHomeImage({ id: c.id, image: null });
+      const s = withHomeImage({ id: c.id, image: c.heroImage?.src || null });
       return s?.image
         ? {
             ...c,

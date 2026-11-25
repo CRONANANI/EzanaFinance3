@@ -8,9 +8,10 @@
  * found wins, in that order). One extension only: `x-card.webp.jpg` won't match. Upload a file under that exact name and the card
  * picks it up on the next deploy: the build regenerates
  * src/lib/echo/public-images.json, and an entry is only used once its file is
- * in that manifest. Until then the card falls back to the article's own
- * heroImage, or a text tile if the article has none, so no card ever shows an
- * empty picture box.
+ * in that manifest. Since Nov 25 2026 a card file is used only when the
+ * article has no heroImage of its own: the home shows each article's hero, so
+ * the card and the article always match. With neither, the card is a text
+ * tile, so no card ever shows an empty picture box.
  *
  * Only owned, generated, or Unsplash/Pexels License photos. When a photo is
  * chosen, fill in `alt` (plain description) and, for stock photos, `credit`,
@@ -226,10 +227,20 @@ export function hasHomeCardImage(slug) {
   return Boolean(HOME_CARD_IMAGES[slug] && cardSrc(slug));
 }
 
-/** The home image for a story: none while disabled, else the uploaded card file, else its own. */
+/**
+ * The home image for a story: none while disabled, else the article's own hero
+ * image, else the uploaded card file (only for an article without a hero).
+ *
+ * Nov 25 2026: the article's hero image now wins. Every Echo card on the home
+ * shows the same picture as the top of its article, so a new hero reaches the
+ * home the moment it is published, and an older card file can no longer hide
+ * it (the private-credit maturity wall card kept showing a retired
+ * illustration). Card files still fill in for articles with no hero.
+ */
 export function withHomeImage(story) {
   if (!story) return story;
   if (!HOME_IMAGES_ENABLED) return { ...story, image: null, imageAlt: '', imagePosition: null };
+  if (story.image) return story;
   if (!hasHomeCardImage(story.id)) return story;
   const img = HOME_CARD_IMAGES[story.id];
   return {

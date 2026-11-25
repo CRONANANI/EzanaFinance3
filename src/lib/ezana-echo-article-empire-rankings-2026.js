@@ -17,8 +17,8 @@ export const empireRankings2026 = {
   excerpt:
     'In 1500, China and India produced roughly half of world output; in 1950 the United States alone produced about 27%. Across five hundred years, eight powers have held the top of the global rankings, and every transition followed the same measurable sequence. Ezana now scores that sequence live across 18 power dimensions.',
   heroImage: {
-    src: '/echo/critical-minerals-hero.jpg',
-    alt: 'A world map rendered as a dotted globe with historical trade routes traced between former imperial capitals',
+    src: '/images/ezana-echo/empire-rankings-1500-2026-card.jpg',
+    alt: 'The Pyramid of the Moon at Teotihuacan, seen across the ruined city with green hills behind it.',
     caption:
       'Five centuries of hegemony compress into a handful of measurable transitions, output, trade, financial centers, and finally the reserve currency. The order never changes; only the names do.',
   },
