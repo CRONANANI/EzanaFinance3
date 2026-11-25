@@ -643,6 +643,10 @@ export function Navbar() {
           </div>
           {/* Nov 20, 2026: no Login / Become a Partner on article pages; the
               reading nav is the logo and the centred wordmark/title only. */}
+          {/* Nov 25, 2026: right-hand slot for super-admin article actions
+              (Archive / Republish), filled by EchoArticleClient through a
+              portal. Empty, and so invisible, for every other reader. */}
+          <div id="echo-nav-actions" className="nav-echo-actions" />
         </div>
       </nav>
     );

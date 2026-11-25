@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import DottedMap from 'dotted-map';
 import {
   AreaChart,
@@ -2805,6 +2806,12 @@ export default function EchoArticleClient({
     articleBodyRef,
   });
 
+  /* The reading nav's right-hand slot (see Navbar), found after mount. */
+  const [navActionsEl, setNavActionsEl] = useState(null);
+  useEffect(() => {
+    setNavActionsEl(document.getElementById('echo-nav-actions'));
+  }, []);
+
   async function handleArchive() {
     if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
     setBusy(true);
@@ -2909,18 +2916,17 @@ export default function EchoArticleClient({
   return (
     <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
-        {/* Admin-only top bar. For regular users nothing renders here, so the
-            title band rides up tight to the nav. The "Back to Ezana Echo" link
-            has moved to the bottom-left of the title band (see echo-title-actions). */}
-        {isAdmin && (
-          <div className="echo-article-topbar">
-            <div className="echo-article-admin-bar">
-              {isArchived && (
-                <span className="echo-article-archived-badge">
-                  <i className="bi bi-archive-fill" /> Archived (only admins can see this)
-                </span>
-              )}
-              <div className="echo-article-admin-actions">
+        {/* Nov 25, 2026: super-admin Archive / Republish now sits at the right
+            end of the reading nav, on the logo's row (portalled into the nav's
+            #echo-nav-actions slot); the gold admin band is gone. */}
+        {isAdmin && navActionsEl
+          ? createPortal(
+              <>
+                {isArchived && (
+                  <span className="echo-article-archived-badge" title="Only admins can see this">
+                    <i className="bi bi-archive-fill" aria-hidden /> Archived
+                  </span>
+                )}
                 {isArchived ? (
                   <button
                     type="button"
@@ -2928,7 +2934,7 @@ export default function EchoArticleClient({
                     onClick={handleRepublish}
                     disabled={busy}
                   >
-                    <i className="bi bi-arrow-counterclockwise" />
+                    <i className="bi bi-arrow-counterclockwise" aria-hidden />
                     {busy ? 'Republishing…' : 'Republish'}
                   </button>
                 ) : (
@@ -2938,14 +2944,14 @@ export default function EchoArticleClient({
                     onClick={handleArchive}
                     disabled={busy}
                   >
-                    <i className="bi bi-archive" />
+                    <i className="bi bi-archive" aria-hidden />
                     {busy ? 'Archiving…' : 'Archive Article'}
                   </button>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
+              </>,
+              navActionsEl,
+            )
+          : null}
 
         {legacyHeader ? (
           <>

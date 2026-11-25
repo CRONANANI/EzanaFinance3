@@ -721,6 +721,20 @@ body.light-mode {
   justify-content: space-between;
 }
 
+/* Nov 25, 2026: super-admin article actions sit at the right end of the
+   reading nav, on the logo's row. */
+.navbar--echo-article .nav-echo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  position: relative;
+  z-index: 1; /* above the absolutely centred wordmark box */
+}
+.navbar--echo-article .nav-echo-actions:empty {
+  display: none;
+}
+
 /* ── /pricing nav (Nov 21, 2026): the Ezana logo alone, centred ── */
 .navbar--pricing .nav-container--logo-only {
   justify-content: center;

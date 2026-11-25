@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
-import { shareLink } from '@/lib/share';
+import { EchoShareMenu } from '@/components/echo/EchoShareMenu';
 import { formatPublishedDate } from '@/lib/echo-format';
 import './echo-article-hero.css';
 
@@ -66,30 +66,15 @@ export function EchoArticleEyebrow({ eyebrow }) {
 
 /** Byline row: avatar, author(s), date, read time, then Save and Share. */
 export function EchoArticleMetadata({ article, articleTags, articleTracker }) {
-  const [shareNote, setShareNote] = useState('');
   const author = article.author || 'Ezana Finance Editorial';
   const initial = author.trim().charAt(0).toUpperCase() || 'E';
   const date = article.listMeta || formatPublishedDate(article.publishedAt);
 
-  /* Same share path as the engagement bar (lib/share.js + the tracker's
-     recordShare), so shares from either place count once each, in one system. */
-  const handleShare = useCallback(async () => {
-    const slug = article.slug || article.id;
-    const url =
-      typeof window !== 'undefined'
-        ? `${window.location.origin}/ezana-echo/${slug}`
-        : `/ezana-echo/${slug}`;
-    const result = await shareLink({ title: article.title || 'Ezana Echo', url });
-    if (result === 'native' || result === 'shared') {
-      articleTracker?.recordShare?.('native');
-      setShareNote('');
-    } else if (result === 'copied') {
-      articleTracker?.recordShare?.('link');
-      setShareNote('Link copied');
-    } else if (result === 'failed') {
-      setShareNote('Could not share. Copy the address bar link.');
-    }
-  }, [article.slug, article.id, article.title, articleTracker]);
+  /* Nov 25 2026: Share opens the Echo share card (copy link, email, message,
+     the device share sheet, and the URL itself). Each method is recorded with
+     the tracker's recordShare, the same system the engagement bar uses. */
+  const slug = article.slug || article.id;
+  const onShared = useCallback((method) => articleTracker?.recordShare?.(method), [articleTracker]);
 
   return (
     <div className="eah-meta">
@@ -142,13 +127,20 @@ export function EchoArticleMetadata({ article, articleTags, articleTracker }) {
           placement="top"
           articleTracker={articleTracker}
         />
-        <button type="button" className="eah-text-btn eah-share" onClick={handleShare}>
-          <i className="bi bi-share" aria-hidden />
-          <span>Share</span>
-        </button>
-        <span className="eah-share-note" role="status" aria-live="polite">
-          {shareNote}
-        </span>
+        <EchoShareMenu title={article.title} url={`/ezana-echo/${slug}`} onShared={onShared}>
+          {({ ref, open, toggle, triggerProps }) => (
+            <button
+              ref={ref}
+              type="button"
+              className={`eah-text-btn eah-share${open ? ' is-open' : ''}`}
+              onClick={toggle}
+              {...triggerProps}
+            >
+              <i className="bi bi-share" aria-hidden />
+              <span>Share</span>
+            </button>
+          )}
+        </EchoShareMenu>
       </div>
     </div>
   );
@@ -280,7 +272,10 @@ function useHeaderEdges(ref) {
     const sync = () => {
       const r = el.getBoundingClientRect();
       root.style.setProperty('--echo-head-left', `${Math.max(0, Math.round(r.left))}px`);
-      root.style.setProperty('--eah-bleed', `${Math.max(0, Math.round(root.clientWidth - r.right))}px`);
+      root.style.setProperty(
+        '--eah-bleed',
+        `${Math.max(0, Math.round(root.clientWidth - r.right))}px`,
+      );
     };
     sync();
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null;

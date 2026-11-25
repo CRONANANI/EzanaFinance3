@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useEchoEngagement } from '@/hooks/useEchoEngagement';
-import { shareLink } from '@/lib/share';
+import { EchoShareMenu } from '@/components/echo/EchoShareMenu';
 
 const SAVED_KEY = 'echo_saved_articles';
 
@@ -79,21 +79,7 @@ export function EchoArticleEngagement({ articleId, articleTitle, articleTracker 
     setActionMessage(null);
   }, [user, articleId, articleTracker]);
 
-  const handleShare = useCallback(async () => {
-    const url =
-      typeof window !== 'undefined'
-        ? `${window.location.origin}/ezana-echo/${articleId}`
-        : `/ezana-echo/${articleId}`;
-    const title = articleTitle || 'Ezana Echo';
-    const result = await shareLink({ title, url });
-    if (result === 'native' || result === 'shared') articleTracker?.recordShare?.('native');
-    else if (result === 'copied') {
-      setActionMessage({ type: 'info', text: 'Link copied to clipboard' });
-      articleTracker?.recordShare?.('link');
-    } else if (result === 'failed') {
-      setActionMessage({ type: 'error', text: 'Could not share. Try copying the URL.' });
-    }
-  }, [articleId, articleTitle, articleTracker]);
+  const onShared = useCallback((method) => articleTracker?.recordShare?.(method), [articleTracker]);
 
   const onLikeClick = async () => {
     if (!user) {
@@ -151,15 +137,21 @@ export function EchoArticleEngagement({ articleId, articleTitle, articleTracker 
           <span className="echo-engage-btn-label">{isSaved ? 'Saved' : 'Save'}</span>
         </button>
 
-        <button
-          type="button"
-          className="echo-engage-btn"
-          onClick={handleShare}
-          aria-label="Share article"
-        >
-          <i className="bi bi-share" aria-hidden />
-          <span className="echo-engage-btn-label">Share</span>
-        </button>
+        <EchoShareMenu title={articleTitle} url={`/ezana-echo/${articleId}`} onShared={onShared}>
+          {({ ref, toggle, triggerProps }) => (
+            <button
+              ref={ref}
+              type="button"
+              className="echo-engage-btn"
+              onClick={toggle}
+              aria-label="Share article"
+              {...triggerProps}
+            >
+              <i className="bi bi-share" aria-hidden />
+              <span className="echo-engage-btn-label">Share</span>
+            </button>
+          )}
+        </EchoShareMenu>
 
         <button
           type="button"
