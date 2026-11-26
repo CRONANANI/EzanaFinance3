@@ -62,6 +62,8 @@ import { ossoff2028Money2026 } from './ezana-echo-article-ossoff-2028-money-2026
 import { tokenizedMoneyOutageTheory2026 } from './ezana-echo-article-tokenized-money-outage-theory-2026.js';
 import { biggestMaDeals2026 } from './ezana-echo-article-biggest-ma-deals-2026.js';
 import { nvidiaHuangReinstated2026 } from './ezana-echo-article-nvidia-huang-reinstated-2026.js';
+import { wallStreetTokenizationTenWeeks2026 } from './ezana-echo-article-wall-street-tokenization-ten-weeks-2026.js';
+import { metaMoneyMachineChecked2026 } from './ezana-echo-article-meta-money-machine-checked-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -103,6 +105,8 @@ const ARTICLES = [
   tokenizedMoneyOutageTheory2026,
   biggestMaDeals2026,
   nvidiaHuangReinstated2026,
+  wallStreetTokenizationTenWeeks2026,
+  metaMoneyMachineChecked2026,
 ];
 
 export { AOTM_HISTORY } from './echo/aotm.js';

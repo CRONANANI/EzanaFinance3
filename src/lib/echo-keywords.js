@@ -3340,9 +3340,21 @@ export const KEYWORDS = {
     templateData: {
       title: 'How the idea travelled',
       events: [
-        { year: '1970s', label: 'Late Soviet stagnation', detail: 'The plan fails; daily life carries on as if it has not' },
-        { year: '2005', label: 'Named in scholarship', detail: 'Alexei Yurchak’s study of the last Soviet generation' },
-        { year: '2016', label: 'Curtis’s film', detail: 'HyperNormalisation applies it to the West since 1975' },
+        {
+          year: '1970s',
+          label: 'Late Soviet stagnation',
+          detail: 'The plan fails; daily life carries on as if it has not',
+        },
+        {
+          year: '2005',
+          label: 'Named in scholarship',
+          detail: 'Alexei Yurchak’s study of the last Soviet generation',
+        },
+        {
+          year: '2016',
+          label: 'Curtis’s film',
+          detail: 'HyperNormalisation applies it to the West since 1975',
+        },
       ],
     },
   },
@@ -3356,9 +3368,21 @@ export const KEYWORDS = {
     templateData: {
       title: 'From essay to everyday software',
       events: [
-        { year: '1966', label: 'ELIZA', detail: 'A scripted chatbot at MIT that users confided in' },
-        { year: '1993', label: 'Vinge’s essay', detail: 'Names the coming technological singularity' },
-        { year: '2020s', label: 'Consumer AI', detail: 'Capable models sold by monthly subscription' },
+        {
+          year: '1966',
+          label: 'ELIZA',
+          detail: 'A scripted chatbot at MIT that users confided in',
+        },
+        {
+          year: '1993',
+          label: 'Vinge’s essay',
+          detail: 'Names the coming technological singularity',
+        },
+        {
+          year: '2020s',
+          label: 'Consumer AI',
+          detail: 'Capable models sold by monthly subscription',
+        },
       ],
     },
   },
@@ -3732,6 +3756,81 @@ export const KEYWORDS = {
       'Marvell agreed to pay Lumentum $3.2 billion if regulators block their $115 billion deal; Paramount agreed to $7 billion in its Warner Bros. Discovery deal before winning approval.',
   },
 
+  'tokenized-securities-venue': {
+    id: 'tokenized-securities-venue',
+    term: 'Tokenized Securities Venue (TSV)',
+    definition:
+      'A trading venue that lets screened participants trade tokenized versions of US exchange-listed stocks through automated market makers on a public blockchain. Under the SEC’s Innovation Exemption, a qualifying venue does not have to register as an exchange, but it must meet conditions on transparency, access and size.',
+    template: 'comparison',
+    templateData: {
+      title: 'A stock exchange versus a tokenized securities venue',
+      headers: ['', 'Registered exchange', 'Tokenized securities venue'],
+      rows: [
+        { label: 'Hours', cells: ['Market hours', 'Can run 24/7'] },
+        { label: 'Matching', cells: ['Order book', 'Automated market maker pools'] },
+        { label: 'Code', cells: ['Private systems', 'Public, auditable smart contracts'] },
+        { label: 'Size limits', cells: ['None by symbol count', 'Symbol and volume caps'] },
+      ],
+      footnote: 'The exemption runs from September 17th, 2026 to September 17th, 2031.',
+    },
+    realWorld:
+      'OKXICE, the venture between OKX and the NYSE’s owner, opened the first such venue to eligible US customers on November 23rd, 2026, with more than 70 assets.',
+  },
+
+  'settlement-cycle': {
+    id: 'settlement-cycle',
+    term: 'Settlement cycle',
+    definition:
+      'The time between agreeing a trade and the official transfer of securities to the buyer and cash to the seller. The US standard for most stock trades has shortened over the decades and is now one business day after the trade date, written T+1.',
+    template: 'timeline',
+    templateData: {
+      title: 'How US stock settlement has shortened',
+      events: [
+        { year: '1993', label: 'T+3', detail: 'The SEC sets a three-business-day standard' },
+        { year: '2017', label: 'T+2', detail: 'Shortened to two business days' },
+        { year: '2024', label: 'T+1', detail: 'One business day, from May 28th, 2024' },
+      ],
+    },
+    realWorld:
+      'Tokenized securities can move between wallets around the clock, which is why tokenization is pitched as the next step after T+1.',
+  },
+
+  'operating-margin': {
+    id: 'operating-margin',
+    term: 'Operating margin',
+    definition:
+      'The share of revenue left after the costs of running the business, before interest and taxes. It shows how much profit each dollar of sales produces from operations, and it moves when costs grow faster or slower than revenue.',
+    template: 'formula',
+    templateData: {
+      formula: 'Operating margin = Income from operations / Revenue',
+      example: {
+        title: 'Meta, full year 2024',
+        substitution:
+          'Income from operations: $69.38B · Revenue: $164.50B · Operating margin: 42.2%',
+      },
+    },
+    realWorld:
+      'Meta’s operating margin was 42% in 2024 and about 33% over the twelve months to September 30th, 2026, after legal charges and rising AI costs.',
+  },
+
+  'trailing-twelve-months': {
+    id: 'trailing-twelve-months',
+    term: 'Trailing twelve months (TTM)',
+    definition:
+      'A company’s results for the most recent four reported quarters added together. It gives a full year of data that is more current than the last annual report, at the cost of mixing two fiscal years.',
+    template: 'formula',
+    templateData: {
+      formula: 'TTM = sum of the latest four quarterly results',
+      example: {
+        title: 'Meta revenue to September 30th, 2026',
+        substitution:
+          'Q4 2025 $59.89B + Q1 2026 $56.31B + Q2 2026 $60.80B + Q3 2026 $64.60B = $241.61B',
+      },
+    },
+    realWorld:
+      'A chart using an annual report can be almost two years out of date by the time the next annual report is due; a TTM figure is at most one quarter old.',
+  },
+
   'key-person-discount': {
     id: 'key-person-discount',
     term: 'Key-Person Discount',
@@ -3754,7 +3853,8 @@ export const KEYWORDS = {
         {
           year: 'Step 3',
           label: 'Resolution',
-          detail: 'A return or a credible successor narrows the discount; new findings can reopen it',
+          detail:
+            'A return or a credible successor narrows the discount; new findings can reopen it',
         },
       ],
     },
