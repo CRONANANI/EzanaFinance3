@@ -84,7 +84,8 @@ export default async function DatasetsSonarIndex({ searchParams, stage = 'datase
   const map = (
     <SonarSelectionProvider initial={selected} ids={DIM_IDS}>
       <PulseProvider initial={pulse} initialKey={signal}>
-        <OrbitalNewsTicker>
+        {/* Nov 26 2026: no signal belt in the top bar on the Sonar home (/sonar). */}
+        <OrbitalNewsTicker publish={stage !== 'app'}>
           <PulseStage>
             <OrbitalMap dims={ORBIT_DIMS} pinging={COUNTS.live} silent={COUNTS.roadmap} />
           </PulseStage>

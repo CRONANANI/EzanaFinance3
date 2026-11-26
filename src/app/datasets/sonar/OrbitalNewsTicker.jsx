@@ -8,14 +8,19 @@
  * layout's ticker slot, with the handler that opens a signal's brief on this
  * page and the key of the one open now. Every row is real (the pulse adapters
  * map the live datasets' own readers); with none, the belt is simply absent.
+ *
+ * Nov 26 2026: `publish={false}` (the in-app Sonar home) keeps the top bar
+ * clear: nothing is handed to the slot, so no belt is drawn there.
  */
 import { usePublishTicker } from '@/components/datasets/ticker-slot';
 import { usePulse } from './PulseProvider';
 
-export default function OrbitalNewsTicker({ children }) {
+const NO_ITEMS = [];
+
+export default function OrbitalNewsTicker({ children, publish = true }) {
   const { items, open, openKey } = usePulse();
   usePublishTicker({
-    items,
+    items: publish ? items : NO_ITEMS,
     onSelect: open,
     ariaLabel: 'Latest signals from Ezana datasets',
     activeKey: openKey,

@@ -124,7 +124,7 @@ export function GettingStartedSection() {
           {/* #social: the nav's Social link lands here, with the heading just
               under the sticky nav and the Social Investing section in view. */}
           <h2 className="how-title" id="social">
-            From accounts to action in four steps
+            Four steps to investing together
           </h2>
           <div className="how-steps">
             {HOW_STEPS.map((s, i) => (

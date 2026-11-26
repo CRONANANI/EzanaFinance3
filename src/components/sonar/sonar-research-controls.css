@@ -225,7 +225,8 @@
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  /* Nov 26 2026: a little air between the label and its value. */
+  gap: 5px;
   padding: 3px 8px 2px;
   border-radius: var(--radius-lg);
   text-align: center;
@@ -302,6 +303,12 @@
   flex: 0 1 auto;
   padding-left: 18px;
   line-height: 1.2;
+}
+/* Nov 26 2026: the chosen value reads in capitals, like its label (the menu
+   options below keep their normal case). */
+.src-seg .ezdd-trigger .ezdd-value {
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
 }
 .src-seg .ezdd-trigger:hover:not(:disabled) {
   background: transparent;
@@ -419,7 +426,11 @@
   }
   .src-seg .ezdd .ezdd-trigger {
     gap: 4px;
-    font-size: 0.875rem;
+    /* Capitals in mono run wide: one step down so "GENERAL RESEARCH" fits. */
+    font-size: 0.8125rem;
+  }
+  .src-seg .ezdd-trigger .ezdd-value {
+    letter-spacing: 0.02em;
   }
   /* On phones a half-width segment is too narrow for its menu, so the menu
      keeps its own width and anchors to the segment's outer edge. */
