@@ -13,10 +13,10 @@ export const aiStackUpsideDown2026 = {
   excerpt:
     'A popular slide pegs the AI stack at roughly $28 trillion across five layers. We re-weighed every layer against live market caps and last-round private marks. The bottom two layers are worth more than the slide says. The top three are worth a lot less.',
   heroImage: {
-    src: '/echo/ai-stack-illustration.png',
-    alt: 'Editorial chart: the AI stack re-weighed. Five horizontal bars, one per layer, show verified market value against the dashed outline of the figure on the circulating AI Stack slide. Silicon and hyperscale cloud are far larger than the slide says; models, applications and power are far smaller.',
+    src: '/echo/ai-stack-upside-down-2026-hero.webp',
+    alt: 'Illustration: the AI stack as an inverted pyramid of glowing green glass layers, with apps, video, images and assistants on the widest top layer, code and tools below, then models, cloud servers, and a single chip at the bottom point, over world maps and rising market charts.',
     caption:
-      'Ezana graphic. Market value by layer, verified against public market caps and last primary private rounds, 13 October 2026. Dashed outlines are the figures on the circulating slide.',
+      'The stack as it is usually drawn: applications on the widest layer, all of it balanced on a single point of silicon. Markets value it the other way up.',
   },
   contentBlocks: [
     {

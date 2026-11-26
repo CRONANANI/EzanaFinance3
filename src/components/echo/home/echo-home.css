@@ -670,7 +670,9 @@ body.light-mode .ech-page {
   display: grid;
   grid-template-columns: minmax(0, 384px) minmax(0, 1fr);
   gap: 28px;
-  padding: 20px;
+  /* Nov 26, 2026: no side inset, so the image starts on the column's left edge
+     like every other card's image (it sat 20px in). */
+  padding: 20px 0;
   align-items: center;
 }
 .ech-card--lead .ech-card__img {
@@ -2010,6 +2012,12 @@ html:has(.ech-hero) > body {
 }
 .ech-more-stories .ech-grid {
   margin-top: 20px;
+}
+/* Nov 26, 2026: no ink rule above "More stories"; the heading alone marks the
+   section. */
+.ech-more-stories .ech-sechead {
+  border-top: 0;
+  padding-top: 0;
 }
 .ech-river .ech-card {
   grid-column: span 4;
