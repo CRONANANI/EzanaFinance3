@@ -5,7 +5,11 @@
  * Controls card, above Next steps. Three labelled selects (focus, horizon, data sources) that
  * shape the NEXT research run only, never a finished answer. A quick ping cannot honour them,
  * so with non-default settings the next question runs as standard research, and the card
- * says so. A guest sees the selects disabled. Styles: sonar-research-controls.css (src-).
+ * says so. Styles: sonar-research-controls.css (src-).
+ *
+ * Nov 26 2026: the selects work for signed-out visitors too (they arrive from the landing
+ * page's "View all datasets" and found every filter disabled). The choice is kept in this
+ * browser and applies once they sign in and run research; the note says so.
  */
 import { useId } from 'react';
 import {
@@ -16,7 +20,6 @@ import {
   isDefaultControls,
 } from '@/lib/sonar/research-controls';
 import { EzDropdown } from '@/components/ui/ez-dropdown';
-import { AnimatedDropdown } from '@/components/ui/animated-dropdown';
 import { useResearchControls } from './research-controls-store';
 import { useSonarPlan } from './useSonarPlan';
 import './sonar-research-controls.css';
@@ -78,12 +81,12 @@ function InlineDock({ id, controls, set, guest, custom, onReset }) {
                 {seg.label}
                 {changed ? <span className="src-seg__dot" aria-label="(changed)" /> : null}
               </label>
-              {/* Nov 24 2026: the animated dropdown is this dock's default. */}
-              <AnimatedDropdown
+              <EzDropdown
                 id={fid}
+                block
+                size="sm"
                 label={seg.label}
                 value={controls[seg.key]}
-                disabled={guest}
                 onChange={(v) => set(seg.key)(v)}
                 className="src-seg__dd"
                 options={seg.options.map((o) => ({ value: o.key, label: o.label }))}
@@ -94,7 +97,16 @@ function InlineDock({ id, controls, set, guest, custom, onReset }) {
       </div>
       <p className="src-dock__note">
         {guest ? (
-          'Sign in to set research controls.'
+          custom ? (
+            <>
+              Sign in to run research with these settings.{' '}
+              <button type="button" className="src-reset" onClick={onReset}>
+                Reset
+              </button>
+            </>
+          ) : (
+            'Choose how Sonar researches. Sign in to run it.'
+          )
         ) : custom ? (
           <>
             Sonar runs standard research with these settings.{' '}
@@ -147,7 +159,6 @@ export function SonarResearchControls({ variant = 'card' }) {
         value={controls.focus}
         options={FOCUS_OPTIONS}
         onChange={set('focus')}
-        disabled={guest}
       />
       <Field
         id={`${id}-horizon`}
@@ -155,7 +166,6 @@ export function SonarResearchControls({ variant = 'card' }) {
         value={controls.horizon}
         options={HORIZON_OPTIONS}
         onChange={set('horizon')}
-        disabled={guest}
       />
       <Field
         id={`${id}-sources`}
@@ -163,10 +173,9 @@ export function SonarResearchControls({ variant = 'card' }) {
         value={controls.sources}
         options={SOURCE_OPTIONS}
         onChange={set('sources')}
-        disabled={guest}
       />
       {guest ? (
-        <p className="src-note">Sign in to set research controls.</p>
+        <p className="src-note">Sign in to run research with these settings.</p>
       ) : (
         <p className="src-note">
           Applies to your next research run.
