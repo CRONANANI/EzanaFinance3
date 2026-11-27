@@ -842,21 +842,27 @@ export default function ResearchReport({
     return (
       <div className="srr-frame">
         <div className="srr" ref={rootRef}>
-          {state.memory ? (
-            <p className="srr-note">
-              Sonar researched this subject before (last retrieved{' '}
-              {String(state.memory.lastRetrievedAt || '').slice(0, 10)}).{' '}
-              {state.memory.newSinceLast} records are new since then; earlier records are marked and
-              dated.
-            </p>
-          ) : null}
-          {report?.challenge ? (
-            <ChallengeBanner challenge={report.challenge} onCite={cite} />
-          ) : null}
-          {state.composition ? (
-            <CompositionReport composition={state.composition} onFollowUp={onFollowUp} />
-          ) : null}
           <ResearchBoard
+            lead={
+              state.memory || report?.challenge || state.composition ? (
+                <>
+                  {state.memory ? (
+                    <p className="srr-note">
+                      Sonar researched this subject before (last retrieved{' '}
+                      {String(state.memory.lastRetrievedAt || '').slice(0, 10)}).{' '}
+                      {state.memory.newSinceLast} records are new since then; earlier records are
+                      marked and dated.
+                    </p>
+                  ) : null}
+                  {report?.challenge ? (
+                    <ChallengeBanner challenge={report.challenge} onCite={cite} />
+                  ) : null}
+                  {state.composition ? (
+                    <CompositionReport composition={state.composition} onFollowUp={onFollowUp} />
+                  ) : null}
+                </>
+              ) : null
+            }
             state={state}
             team={team}
             limitations={limitations}

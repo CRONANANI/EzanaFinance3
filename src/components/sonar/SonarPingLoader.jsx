@@ -32,13 +32,12 @@ import { useEffect, useRef, useState } from 'react';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { STEP_MS, sweepView } from '@/lib/sonar/ping-progress';
 import './sonar-ping-loader.css';
+import { claimPingGround } from '@/lib/sonar/ping-ground';
 
 const SLOW_MS = 20_000;
 const FADE_MS = 300;
 
 const DEFAULT_DIMENSIONS = DATASET_TAXONOMY.map((d) => ({ id: d.id, name: d.label }));
-
-let mounted = 0;
 
 export function SonarPingLoader({
   entityLabel = '',
@@ -56,14 +55,7 @@ export function SonarPingLoader({
   const sweeping = phase === 'sweeping';
 
   /* The nav follows the loader's ground while it is up. */
-  useEffect(() => {
-    mounted += 1;
-    document.body.classList.add('sonar-ping-active');
-    return () => {
-      mounted = Math.max(0, mounted - 1);
-      if (!mounted) document.body.classList.remove('sonar-ping-active');
-    };
-  }, []);
+  useEffect(() => claimPingGround(), []);
 
   /* The sweep timer restarts with each new sweep (a retry). */
   useEffect(() => {

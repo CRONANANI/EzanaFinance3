@@ -880,6 +880,10 @@ export default function ResearchBoard({
   deepNote = null,
   /* Nov 13: the workspace's query bar (the run's ping bar), for the top of the centre column. */
   queryBar = null,
+  /* Nov 27 2026: content that leads the answer (a composed analysis such as the
+     institutional ownership ranking, the memory note). It sits inside the frame, beside the
+     contents menu, instead of above the whole frame where it pushed the menu down. */
+  lead = null,
   /* Nov 13: Save, Share and More (a live run only; a saved or org copy passes false). */
   saveable = false,
   /* Nov 13: the follow-up composer under the board, and the session thread's restore. */
@@ -1180,6 +1184,7 @@ export default function ResearchBoard({
       followUps={<SonarRelatedQuestions questions={relatedQs} onAsk={onRun} />}
     >
       <div className="srb" role="region" aria-label="Research answer">
+        {lead ? <div className="srb-lead">{lead}</div> : null}
         <div className="srb-grid">
           {cells.map((c) => (
             <div

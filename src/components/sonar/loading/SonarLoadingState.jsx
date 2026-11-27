@@ -33,6 +33,7 @@ import SonarCube from './SonarCube';
 import { useSonarProgress } from './useSonarProgress';
 import { STATUS_LABELS, TICKER_PHRASES } from './dimensions';
 import './sonar-loading.css';
+import { claimPingGround } from '@/lib/sonar/ping-ground';
 
 /**
  * @param {object} props
@@ -66,12 +67,7 @@ export default function SonarLoadingState({
 
   /* The nav takes the loader's ground while this is up (nav-sonar-dark.css),
      as it does for the Pulse loader. Left on if a Pulse loader is mounted. */
-  useEffect(() => {
-    document.body.classList.add('sonar-ping-active');
-    return () => {
-      if (!document.querySelector('.snrp')) document.body.classList.remove('sonar-ping-active');
-    };
-  }, []);
+  useEffect(() => claimPingGround(), []);
 
   useEffect(() => {
     if (!running || !onCancel) return undefined;

@@ -28,6 +28,12 @@
   font-family: var(--san-sans);
 }
 
+/* Nov 27 2026: on the Sonar page's evergreen ground, menus and popovers take that ground
+   instead of the loader's blue-black, so nothing reads as a black slab on the green page. */
+.ds-shell--search .san {
+  --san-panel-solid: var(--dsi-ground, var(--sonar-ping-bg));
+}
+
 /* Wide screens: the menu moves into the page margin (as far as the margin allows), and the
    canvas reaches further right, about 20% wider in all. */
 @media (min-width: 1180px) {

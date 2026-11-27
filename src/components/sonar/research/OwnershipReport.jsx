@@ -8,8 +8,10 @@
  * the largest reporting managers, findings, caveats and the methodology.
  *
  * Every figure is a computed value. A missing figure reads N/A, never zero. The ranking
- * control re-sorts with the same deterministic comparator the server used. Sonar card rule:
- * no outlines, tokens only, findings only.
+ * control re-sorts with the same deterministic comparator the server used. It is built from
+ * the research board's own card system (srb-card, srb-exec, srb-kpi, srb-table, srb-pill in
+ * research-board.css) so it reads as one Sonar answer; ownership-report.css holds only what
+ * the board has no class for. Sonar card rule: no outlines, tokens only, findings only.
  */
 
 import { useMemo, useState } from 'react';
@@ -22,6 +24,7 @@ import {
   fmtPct,
   fmtSigned,
 } from '@/lib/sonar/composer/ownership';
+import './research-board.css';
 import './ownership-report.css';
 
 const SERIES = [
@@ -41,11 +44,11 @@ const STATE_TONE = {
 
 function Tile({ label, value, note, tone = '' }) {
   return (
-    <div className={`sio-tile ${tone}`}>
-      <p className="sio-tile-label">{label}</p>
-      <p className="sio-tile-value">{value}</p>
-      {note ? <p className="sio-tile-note">{note}</p> : null}
-    </div>
+    <li className={`srb-card srb-kpi sio-kpi ${tone}`}>
+      <span className="srb-kpi-value">{value}</span>
+      <span className="srb-kpi-label">{label}</span>
+      {note ? <span className="srb-kpi-sub">{note}</span> : null}
+    </li>
   );
 }
 
@@ -57,14 +60,14 @@ function Bars({ rows }) {
     <ol className="sio-bars" aria-label="Distinct 13F reporting managers per holding">
       {top.map((r) => (
         <li key={r.cusip} className="sio-bar">
-          <span className="sio-bar-name sio-mono">{r.ticker}</span>
+          <span className="sio-bar-name srb-mono">{r.ticker}</span>
           <span className="sio-bar-track" aria-hidden="true">
             <span
               className={`sio-bar-fill ${r.floor ? 'is-floor' : ''}`}
               style={{ width: `${(r.managers / max) * 100}%` }}
             />
           </span>
-          <span className="sio-bar-value sio-mono">{fmtInt(r.managers)}</span>
+          <span className="sio-bar-value srb-mono">{fmtInt(r.managers)}</span>
         </li>
       ))}
     </ol>
@@ -105,7 +108,7 @@ function Trend({ trend }) {
         </title>
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} className="sio-grid" />
+            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} className="sio-gridline" />
             <text x={pad.l - 6} y={y(t) + 4} textAnchor="end" className="sio-axis">
               {fmtInt(t)}
             </text>
@@ -144,12 +147,12 @@ function Trend({ trend }) {
           );
         })}
       </svg>
-      <figcaption className="sio-note">
+      <figcaption className="srb-cap">
         Filers loaded per quarter:{' '}
         {trend.periods.map((p, i) => `${quarterLabel(p)} ${fmtInt(trend.filers[i])}`).join(', ')}.
         Counts move with the number of filers loaded as well as with ownership.
       </figcaption>
-      <table className="sio-sr">
+      <table className="srb-sr">
         <caption>Managers per quarter</caption>
         <thead>
           <tr>
@@ -198,7 +201,6 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
         { added: 0, exited: 0, up: 0, down: 0 },
       )
     : null;
-  const unmatched = (o.excluded || []).filter((x) => /^unmatched|^ambiguous/.test(x.reason));
   const followUps = [
     metric !== 'value' ? `Rank ${name}'s holdings by aggregate 13F value` : null,
     o.prior ? `Which of ${name}'s holdings added the most 13F managers?` : null,
@@ -207,44 +209,56 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
 
   if (analysis.status !== 'done' || !o.rows?.length) {
     return (
-      <section className="sio" aria-labelledby="sio-h">
-        <header className="sio-head">
-          <p className="sio-eyebrow">Institutional ownership</p>
-          <h2 id="sio-h" className="sio-title">
+      <section className="srb sio" aria-labelledby="sio-h">
+        <div className="srb-card srb-exec">
+          <p className="srb-eyebrow">Institutional ownership</p>
+          <h2 id="sio-h" className="srb-exec-title">
             The ownership ranking did not complete
           </h2>
-        </header>
-        <p className="sio-answer-text">{analysis.failed || 'No eligible holdings were found.'}</p>
+          <p className="srb-lede">{analysis.failed || 'No eligible holdings were found.'}</p>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="sio" aria-labelledby="sio-h">
-      <header className="sio-head">
-        <p className="sio-eyebrow">
-          {isMember ? 'Congressional' : '13F'} × institutional intelligence
-        </p>
-        <h2 id="sio-h" className="sio-title">
+    <section className="srb sio" aria-labelledby="sio-h">
+      <div className="srb-card srb-exec">
+        <div className="srb-exec-top">
+          <p className="srb-eyebrow">
+            <i className="bi bi-bank" aria-hidden="true" />
+            {isMember ? 'Congressional' : '13F'} × institutional intelligence
+          </p>
+          {fulfillment ? (
+            <span className={`sio-state ${STATE_TONE[fulfillment.state] || ''}`}>
+              {fulfillment.label}
+            </span>
+          ) : null}
+        </div>
+        <h2 id="sio-h" className="srb-exec-title">
           Which {name} holdings are most widely held by investment firms?
         </h2>
-        {fulfillment ? (
-          <span className={`sio-state ${STATE_TONE[fulfillment.state] || ''}`}>
-            {fulfillment.label}
-          </span>
-        ) : null}
-      </header>
-
-      <div className="sio-answer" role="note" aria-label="Direct answer">
-        <p className="sio-label">Direct answer</p>
-        <p className="sio-answer-text">{o.answer?.text}</p>
-        <p className="sio-sub">
-          Counted as distinct 13F reporting managers (filer CIKs) for the quarter ending{' '}
-          <span className="sio-mono">{o.period}</span>. Breadth of ownership, not conviction.
-        </p>
+        <ul className="srb-exec-meta">
+          <li>
+            <i className="bi bi-calendar3" aria-hidden="true" />
+            13F quarter ending <span className="srb-mono">{o.period}</span>
+          </li>
+          <li>
+            <i className="bi bi-building" aria-hidden="true" />
+            <span className="srb-mono">{fmtInt(o.coverage?.filers)}</span> filers loaded
+          </li>
+          <li>
+            <i className="bi bi-person-badge" aria-hidden="true" />
+            Counted as distinct reporting managers (filer CIKs)
+          </li>
+        </ul>
+        <div className="srb-exec-points">
+          <p className="srb-exec-label">Direct answer</p>
+          <p className="sio-answer">{o.answer?.text}</p>
+        </div>
       </div>
 
-      <div className="sio-tiles">
+      <ul className="srb-kpis">
         <Tile
           label={isMember ? `Eligible ${name} equities` : 'Holdings ranked'}
           value={fmtInt(o.universe?.eligible)}
@@ -261,17 +275,13 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
           note={leader ? `${leader.ticker}, ${leader.issuer}` : null}
           tone="is-accent"
         />
-        <Tile
-          label="Reporting quarter"
-          value={q}
-          note={`${fmtInt(o.coverage?.filers)} filers loaded`}
-        />
-      </div>
+        <Tile label="Reporting quarter" value={q} note={`Period ${o.period}`} />
+      </ul>
 
       <div className="sio-grid">
-        <div className="sio-card sio-span-2">
+        <div className="srb-card sio-span-2">
           <div className="sio-card-head">
-            <h3 className="sio-h3">Most widely held equities</h3>
+            <p className="srb-eyebrow">Most widely held equities</p>
             <div className="sio-seg" role="group" aria-label="Rank by">
               {Object.values(METRICS).map((m) =>
                 m.key === 'change' && !o.prior ? null : (
@@ -288,9 +298,9 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
               )}
             </div>
           </div>
-          <div className="sio-table-wrap">
-            <table className="sio-table">
-              <caption className="sio-sr">
+          <div className="srb-tablewrap">
+            <table className="srb-table sio-table">
+              <caption className="srb-sr">
                 {name} holdings ranked by {METRICS[metric].label.toLowerCase()}, {q}
               </caption>
               <thead>
@@ -316,22 +326,22 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.cusip} className={r.rank == null ? 'is-muted' : ''}>
-                    <td className="is-num sio-mono">{r.rank ?? 'N/A'}</td>
+                    <td className="is-num">{r.rank ?? 'N/A'}</td>
                     <th scope="row">
-                      <span className="sio-mono sio-ticker">{r.ticker}</span>
-                      <span className="sio-sub">
+                      <span className="srb-mono sio-ticker">{r.ticker}</span>
+                      <span className="sio-issuer">
                         {r.issuer}
                         {r.partnership ? ', partnership units' : ''}
                       </span>
                     </th>
-                    <td className="is-num sio-mono">
+                    <td className="is-num">
                       {r.weight != null ? fmtPct(r.weight) : 'N/A'}
                       {r.floor ? <span className="sio-flag">floor</span> : null}
                     </td>
-                    <td className="is-num sio-mono">{fmtInt(r.managers)}</td>
-                    <td className="is-num sio-mono">{r.managers ? fmtUsd(r.value) : 'N/A'}</td>
+                    <td className="is-num">{fmtInt(r.managers)}</td>
+                    <td className="is-num">{r.managers ? fmtUsd(r.value) : 'N/A'}</td>
                     <td
-                      className={`is-num sio-mono ${r.change > 0 ? 'is-up' : r.change < 0 ? 'is-down' : ''}`}
+                      className={`is-num ${r.change > 0 ? 'is-up' : r.change < 0 ? 'is-down' : ''}`}
                     >
                       {r.change == null ? 'N/A' : fmtSigned(r.change)}
                     </td>
@@ -340,22 +350,22 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
               </tbody>
             </table>
           </div>
-          <p className="sio-note">
+          <p className="srb-cap">
             Δ Q/Q is the net change in managers among the {fmtInt(o.coverage?.comparable)} filers
             that reported in both {quarterLabel(o.prior)} and {q}. Floor marks a position estimated
             at the $1,001 disclosure minimum.
           </p>
         </div>
 
-        <div className="sio-card">
-          <h3 className="sio-h3">Institutional participation</h3>
-          <Bars rows={byManagers.map((r) => ({ ...r }))} />
-          <p className="sio-note">Distinct 13F reporting managers, {q}.</p>
+        <div className="srb-card">
+          <p className="srb-eyebrow">Institutional participation</p>
+          <Bars rows={byManagers} />
+          <p className="srb-cap">Distinct 13F reporting managers, {q}.</p>
         </div>
       </div>
 
       {qoq ? (
-        <div className="sio-tiles">
+        <ul className="srb-kpis">
           <Tile
             label="Quarterly participation"
             value={`${qoq.up} up · ${qoq.down} down`}
@@ -378,31 +388,31 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
             value={fmtPct(o.coverage?.ratio, 0)}
             note={`${fmtInt(o.coverage?.filers)} of ${fmtInt(o.coverage?.best)} filers in the best recent quarter`}
           />
-        </div>
+        </ul>
       ) : null}
 
       <div className="sio-grid">
         {o.trend ? (
-          <div className="sio-card sio-span-2">
-            <h3 className="sio-h3">Ownership breadth across reporting periods</h3>
+          <div className="srb-card sio-span-2">
+            <p className="srb-eyebrow">Ownership breadth across reporting periods</p>
             <Trend trend={o.trend} />
           </div>
         ) : null}
         {o.managers?.length ? (
-          <div className="sio-card">
-            <h3 className="sio-h3">Largest reporting managers</h3>
+          <div className="srb-card">
+            <p className="srb-eyebrow">Largest reporting managers</p>
             <ol className="sio-mgrs">
               {o.managers.map((m) => (
                 <li key={m.cik} className="sio-mgr">
                   <span className="sio-mgr-name">{m.name || `CIK ${m.cik}`}</span>
-                  <span className="sio-mgr-meta sio-mono">
+                  <span className="sio-mgr-meta srb-mono">
                     CIK {m.cik} · {q} 13F · {m.holdings.slice(0, 4).join(', ')}
                   </span>
-                  <span className="sio-mgr-value sio-mono">{fmtUsd(m.value)}</span>
+                  <span className="sio-mgr-value srb-mono">{fmtUsd(m.value)}</span>
                 </li>
               ))}
             </ol>
-            <p className="sio-note">
+            <p className="srb-cap">
               Summed reported value in these holdings, among each holding&apos;s five largest
               reporters.
             </p>
@@ -412,8 +422,8 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
 
       <div className="sio-grid">
         {o.answer?.findings?.length ? (
-          <div className="sio-card">
-            <h3 className="sio-h3">Key findings</h3>
+          <div className="srb-card">
+            <p className="srb-eyebrow">Key findings</p>
             <ul className="sio-list">
               {o.answer.findings.map((x) => (
                 <li key={x.title}>
@@ -423,17 +433,17 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
             </ul>
           </div>
         ) : null}
-        <div className="sio-card">
-          <h3 className="sio-h3">Interpretation and caveats</h3>
+        <div className="srb-card">
+          <p className="srb-eyebrow">Interpretation and caveats</p>
           <ul className="sio-list">
             {(o.limitations || []).slice(0, 4).map((l) => (
               <li key={l}>{l}</li>
             ))}
           </ul>
         </div>
-        <div className="sio-card">
-          <h3 className="sio-h3">Methodology and evidence</h3>
-          <ol className="sio-steps">
+        <div className="srb-card">
+          <p className="srb-eyebrow">Methodology and evidence</p>
+          <ol className="sio-list">
             <li>
               <strong>Universe.</strong> {o.universe?.source}. {fmtInt(o.universe?.eligible)} common
               equities kept
@@ -470,19 +480,19 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
               ))}
             </ul>
           ) : null}
-          {unmatched.length || o.excluded?.length ? (
+          {o.excluded?.length ? (
             <details className="sio-details">
               <summary>Excluded holdings ({o.excluded.length})</summary>
               <ul>
                 {o.excluded.map((x) => (
                   <li key={`${x.ticker}-${x.issuer}`}>
-                    <span className="sio-mono">{x.ticker || 'N/A'}</span> {x.issuer}: {x.reason}
+                    <span className="srb-mono">{x.ticker || 'N/A'}</span> {x.issuer}: {x.reason}
                   </li>
                 ))}
               </ul>
             </details>
           ) : null}
-          <p className="sio-note">
+          <p className="srb-cap">
             Ownership percentage is not shown: it needs shares outstanding on the same date.
             {o.durationMs != null ? ` Computed in ${(o.durationMs / 1000).toFixed(1)}s.` : ''}
           </p>
@@ -490,12 +500,16 @@ export default function OwnershipReport({ analysis, fulfillment = null, onFollow
       </div>
 
       {onFollowUp ? (
-        <div className="sio-follow">
-          {followUps.map((t) => (
-            <button key={t} type="button" className="sio-pill" onClick={() => onFollowUp(t)}>
-              {t}
-            </button>
-          ))}
+        <div className="srb-card sio-follow">
+          <p className="srb-eyebrow">Continue the research</p>
+          <div className="sio-pills">
+            {followUps.map((t) => (
+              <button key={t} type="button" className="srb-pill" onClick={() => onFollowUp(t)}>
+                <i className="bi bi-arrow-return-right" aria-hidden="true" />
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

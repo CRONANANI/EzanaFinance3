@@ -101,3 +101,24 @@ html :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav) .nav-ac
 html :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav) .mobile-hamburger {
   color: white;
 }
+
+/* Nov 27 2026: on the in-app Sonar page the bar is the page's own ground, not a darker band.
+   The page paints its evergreen radial ground (orbital-map.css, .ds-shell--search); here both
+   the page shell and the bar paint that same gradient anchored to the viewport
+   (background-attachment: fixed), so the bar shows exactly the colour behind it at every
+   scroll position and the seam disappears. The loader state above still wins while a
+   loader is up. */
+html body:has(.ds-shell--in-app) {
+  --nav-sonar-ground-base: color-mix(in srgb, white 3%, black);
+  --nav-sonar-ground: radial-gradient(
+    ellipse 90% 70% at 50% 30%,
+    color-mix(in srgb, var(--emerald) 9%, var(--nav-sonar-ground-base)),
+    color-mix(in srgb, var(--emerald) 5%, var(--nav-sonar-ground-base)) 80%
+  );
+}
+html body:has(.ds-shell--in-app):not(.sonar-ping-active) #mainNav.main-nav--sonar {
+  background: var(--nav-sonar-ground) fixed !important;
+}
+html body:has(.ds-shell--in-app) .ds-shell--in-app {
+  background: var(--nav-sonar-ground) fixed;
+}
