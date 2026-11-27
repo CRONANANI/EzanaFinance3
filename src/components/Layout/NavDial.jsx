@@ -319,7 +319,7 @@ export function NavDial({
   const caption = active
     ? active.description || (active.items ? 'Open section' : '')
     : parent
-      ? 'Select the logo to go back'
+      ? 'Select the logo for Home, or the arrow to go back'
       : 'Choose a section, or the logo for Home';
   const captionLocked = active && isBetaLockedRoute(active.url) && !hasFullBetaAccess;
 
@@ -453,32 +453,35 @@ export function NavDial({
                 );
               })}
 
+              {/* Nov 27, 2026: the logo always goes Home, on the main ring and
+                  inside a section (it used to step back there, so signed-in
+                  members could not get Home from a section ring). Inside a
+                  section the arrow under the logo is its own button and steps
+                  back to all sections; Escape does too. */}
+              <Link
+                href={homeHref}
+                className={`nd-hub${parent ? ' nd-hub--sub' : ''}`}
+                style={{ width: HUB_R * 2, height: HUB_R * 2 }}
+                data-nd-stop=""
+                aria-label="Home"
+                onClick={(e) => go(e, homeHref, -1)}
+                onMouseEnter={() => setActiveIndex(null)}
+              >
+                <EzanaNavLogo className="nav-logo-img nd-hub-logo" />
+              </Link>
               {parent ? (
                 <button
                   type="button"
-                  className="nd-hub"
-                  style={{ width: HUB_R * 2, height: HUB_R * 2 }}
+                  className="nd-hub-backbtn"
+                  style={{ top: `calc(50% + ${HUB_R - 20}px)` }}
                   data-nd-stop=""
                   aria-label="Back to all sections"
                   onClick={stepBack}
                   onMouseEnter={() => setActiveIndex(null)}
                 >
-                  <EzanaNavLogo className="nav-logo-img nd-hub-logo" />
-                  <i className="bi bi-arrow-left nd-hub-back" aria-hidden="true" />
+                  <i className="bi bi-arrow-left" aria-hidden="true" />
                 </button>
-              ) : (
-                <Link
-                  href={homeHref}
-                  className="nd-hub"
-                  style={{ width: HUB_R * 2, height: HUB_R * 2 }}
-                  data-nd-stop=""
-                  aria-label="Home"
-                  onClick={(e) => go(e, homeHref, -1)}
-                  onMouseEnter={() => setActiveIndex(null)}
-                >
-                  <EzanaNavLogo className="nav-logo-img nd-hub-logo" />
-                </Link>
-              )}
+              ) : null}
             </div>
           </div>
 

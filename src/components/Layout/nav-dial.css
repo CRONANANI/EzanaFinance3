@@ -312,17 +312,38 @@ html :is(body #mainNav.main-nav--sonar, body.sonar-ping-active #mainNav) .nd-tri
   mix-blend-mode: normal;
   filter: brightness(1.55) saturate(1.1);
 }
-.nd-hub-back {
+/* Nov 27, 2026: inside a section the logo still goes Home and the back arrow
+   is its own button under it (positioned from the hub's centre in JS). The
+   logo lifts a little so the two do not crowd each other. */
+.nd-hub--sub .nd-hub-logo {
+  transform: translateY(-8px);
+}
+.nd-hub-backbtn {
   position: absolute;
   left: 50%;
-  bottom: 6px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
   color: var(--nd-muted);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   line-height: 1;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
 }
-.nd-hub:hover .nd-hub-back {
+.nd-hub-backbtn:hover {
+  background: var(--nd-hover);
   color: var(--nd-accent);
+}
+.nd-hub-backbtn:focus-visible {
+  outline: 2px solid var(--nd-accent);
+  outline-offset: 1px;
 }
 
 /* What the pointed-at wedge does, in words (its name is on the wedge). A
