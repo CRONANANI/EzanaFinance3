@@ -40,6 +40,9 @@ const toNum = (s) => {
   return Number.isFinite(v) ? v : null;
 };
 
+/* Who an institutional ownership question counts. */
+const FIRMS = String.raw`investment\s+(?:firms?|managers?|companies|funds?)|institutions?|institutional\s+(?:investors?|managers?|holders?)|(?:hedge|mutual|pension|index)\s+funds?|funds|fund\s+managers?|money\s+managers?|asset\s+managers?|wall\s+street(?:\s+firms)?|big\s+money|13f\s+(?:filers?|managers?)`;
+
 /* Operation detectors: each matches the analytical intent, not a dataset name. */
 const OPS = [
   {
@@ -54,7 +57,43 @@ const OPS = [
     capability: 'backtesting',
     re: /\b(back-?test(s|ing|ed)?|how would (that|this|a|the) [\w\s'-]{0,40}(strategy|portfolio) have (performed|done)|simulate (the )?(historical )?returns|strategy that follows|following (her|his|their|[\w.'-]+'s) (disclosed )?(purchases|buys|trades))\b/i,
   },
+  {
+    /* Nov 27 2026: "what stocks does Nancy Pelosi own that are most owned by investment
+       firms", "which of BlackRock's holdings are most widely held by hedge funds". */
+    capability: 'institutional-ownership',
+    re: new RegExp(
+      [
+        String.raw`\b(?:most|widely|heavily|broadly|commonly)\s+(?:owned|held)\s+(?:by|among)\s+(?:the\s+)?(?:${FIRMS})`,
+        String.raw`\b(?:owned|held)\s+by\s+(?:the\s+)?(?:most|many|more)\s+(?:${FIRMS})`,
+        String.raw`\b(?:popular|crowded)\s+(?:with|among)\s+(?:${FIRMS})`,
+        String.raw`\b(?:${FIRMS})\s+(?:own|hold)\s+(?:the\s+)?most\b`,
+        String.raw`\binstitutional\s+(?:ownership|holders?|participation|breadth)\b`,
+        String.raw`\b(?:number|count)\s+of\s+(?:13f\s+)?(?:${FIRMS})\s+(?:that\s+)?(?:own|hold|holding|owning)`,
+        String.raw`\b13f\s+(?:managers|filers|ownership)\s+(?:own|hold|of|for|in)\b`,
+        String.raw`\b(?:added|gained|lost)\s+(?:the\s+)?(?:most|fewest)\s+(?:13f\s+)?(?:${FIRMS}|holders|managers)`,
+      ].join('|'),
+      'i',
+    ),
+  },
 ];
+
+/** The ranking an institutional ownership question asks for. */
+export function ownershipMetric(question) {
+  const q = String(question || '');
+  if (
+    /\b(?:added|gained|increase[sd]?|rising|new)\s+(?:the\s+)?(?:most\s+)?(?:13f\s+)?(?:managers|institutions|holders|investment firms|funds)\b|\bchange in (?:institutional|13f|managers)/i.test(
+      q,
+    )
+  )
+    return 'change';
+  if (
+    /\b(?:by|in)\s+(?:dollar|reported|aggregate|total|market)?\s*value\b|\bdollars?\s+(?:held|invested)\b/i.test(
+      q,
+    )
+  )
+    return 'value';
+  return 'managers';
+}
 
 /** Explicit numbers in the question. */
 export function extractParams(question) {
@@ -83,12 +122,14 @@ export function extractParams(question) {
 
 /* Subject patterns, most specific first. The capture is the subject's name. */
 const SUBJECT_PATTERNS = [
-  /\b(?:stocks|holdings|positions|companies|shares)\s+(?:that\s+)?(.{2,60}?)\s+(?:owns|holds|has|is holding)\b/i,
+  /\b(?:stocks|holdings|positions|companies|shares)\s+(?:that\s+|does\s+|do\s+|did\s+)?(.{2,60}?)\s+(?:owns?|holds?|has|have|is holding)\b/i,
   /\b(?:follows?|following|copy(?:ing)?|mirror(?:ing)?)\s+(.{2,60}?)'s?\s+(?:publicly\s+)?(?:disclosed\s+)?(?:purchases|buys|trades|holdings|portfolio)/i,
   /\b(?:of|from|in)\s+(.{2,60}?)'s?\s+(?:top|largest|biggest|disclosed|13f|current|latest)?\s*(?:\d+\s+)?(?:holdings|stocks|positions|portfolio|purchases)/i,
   /\b([A-Z][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})'s\s+(?:top|largest|biggest|disclosed|13f|current|latest)?\s*(?:\d+\s+)?(?:holdings|stocks|positions|portfolio|purchases|fundamentals|financials|valuation)/,
   /\b(?:fundamentals?|financials|valuation|dcf|intrinsic value)\s+(?:analysis\s+)?(?:of|for|on)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})/,
   /\b(?:analy[sz]e|value)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})(?:'s)?\b/,
+  /* "Which Pelosi holdings ...", "rank Nancy Pelosi stocks by ..." */
+  /\b([A-Z][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,3})\s+(?:stocks|holdings|positions|portfolio|shares)\b/,
   /\b(?:of|for|on)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})\b/,
 ];
 /* Verbs a capitalised capture can start with ("Analyze BlackRock's ..."). */
@@ -111,6 +152,14 @@ export function extractSubject(question) {
       .replace(/['’]s$/i, '')
       .replace(/[,.;:!?]+$/, '')
       .trim();
+    s = s
+      .split(/\s+/)
+      .filter(
+        (w, i, all) =>
+          !(i < all.length - 1 && /^(Which|What|Rank|Show|List|Are|Do|Does|Did|Is)$/i.test(w)),
+      )
+      .join(' ');
+    if (/^(Which|What|Who|Rank|Show|List|How)$/i.test(s)) continue;
     if (!s || STOP_SUBJECT.test(s) || s.length < 2) continue;
     return s;
   }
@@ -241,6 +290,7 @@ export function inferComposition(question) {
     for (const [k, v] of Object.entries(params)) {
       if (v == null) continue;
       if (capability === 'backtesting' && k === 'top_n') continue;
+      if (capability === 'institutional-ownership' && k !== 'top_n') continue;
       if (capability !== 'backtesting' && k === 'hold_days') continue;
       if (capability === 'fundamental-analysis' && (k === 'years' || k === 'wacc_pct')) continue;
       if (capability === 'dcf-valuation' && k === 'years' && caps.includes('backtesting')) continue;
@@ -250,6 +300,7 @@ export function inferComposition(question) {
     }
     /* "Run a DCF on the top 10 holdings" asks for 10 companies, but a DCF run values at
        most 5: keep the reader's number and let validation say so, never cut it silently. */
+    if (capability === 'institutional-ownership') own.metric = ownershipMetric(q);
     const a = makeAnalysis(capability, { origin: 'auto', subject, params: own });
     /* It analyses the set the question describes (the overlap), not the first holder. */
     return relation ? { ...a, wantsSet: true } : a;

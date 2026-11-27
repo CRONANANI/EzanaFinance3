@@ -1,0 +1,412 @@
+/* Sonar Institutional Ownership Analysis (OwnershipReport.jsx). Page-scoped `sio-` prefix.
+   Sonar card rule: no outlines, tokens only; mono for numbers, tickers, CIKs and dates. */
+
+.sio {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.sio-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+.sio-eyebrow {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.sio-title {
+  margin: 0;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  line-height: var(--type-section-leading);
+  color: var(--text-primary);
+}
+.sio-state {
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--type-caption-size);
+  background: var(--surface-2);
+}
+.sio-state.is-ok {
+  color: var(--positive);
+  background: var(--positive-bg);
+}
+.sio-state.is-warn {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+.sio-state.is-bad {
+  color: var(--negative);
+  background: var(--negative-bg);
+}
+
+.sio-answer {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--emerald-bg-subtle);
+}
+.sio-label,
+.sio-tile-label {
+  margin: 0;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sio-answer-text {
+  margin: 0.35rem 0;
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
+  color: var(--text-primary);
+}
+.sio-sub {
+  display: block;
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+.sio-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.sio-tile {
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  text-align: center;
+}
+.sio-tile-value {
+  margin: 0.3rem 0 0.15rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
+  color: var(--text-primary);
+}
+.sio-tile.is-accent .sio-tile-value,
+.sio-tile.is-up .sio-tile-value {
+  color: var(--positive);
+}
+.sio-tile.is-down .sio-tile-value {
+  color: var(--negative);
+}
+.sio-tile-note {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+.sio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.sio-card {
+  min-width: 0;
+  padding: 1rem 1.125rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.sio-span-2 {
+  grid-column: span 2;
+}
+.sio-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.sio-h3 {
+  margin: 0 0 0.5rem;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  color: var(--text-primary);
+}
+.sio-card-head .sio-h3 {
+  margin: 0;
+}
+.sio-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+.sio-seg-btn {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sio-seg-btn.is-on {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+.sio-seg-btn:focus-visible,
+.sio-pill:focus-visible,
+.sio-details summary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.sio-table-wrap {
+  overflow-x: auto;
+}
+.sio-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body-size);
+}
+.sio-table th,
+.sio-table td {
+  padding: 0.5rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+.sio-table thead th {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.sio-table tbody tr:nth-child(odd) {
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+}
+.sio-table tbody th {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.sio-table .is-num {
+  text-align: right;
+  white-space: nowrap;
+}
+.sio-table tr.is-muted {
+  color: var(--text-faint);
+}
+.sio-ticker {
+  color: var(--text-primary);
+}
+.sio-table .is-up {
+  color: var(--positive);
+}
+.sio-table .is-down {
+  color: var(--negative);
+}
+.sio-flag {
+  margin-left: 0.35rem;
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-family: var(--font-sans);
+  font-size: var(--type-micro-size);
+}
+.sio-mono {
+  font-family: var(--font-mono);
+}
+.sio-note {
+  margin: 0.5rem 0 0;
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+.sio-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sio-bar {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) 3.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--type-caption-size);
+}
+.sio-bar-name {
+  color: var(--text-primary);
+}
+.sio-bar-track {
+  height: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.sio-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--emerald);
+}
+.sio-bar-fill.is-floor {
+  background: var(--text-faint);
+}
+.sio-bar-value {
+  text-align: right;
+}
+
+.sio-trend {
+  margin: 0;
+}
+.sio-trend svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.sio-grid line.sio-grid,
+.sio-trend .sio-grid {
+  stroke: var(--border-secondary);
+  stroke-dasharray: 3 3;
+}
+.sio-axis {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.sio-series-label {
+  font-weight: 600;
+}
+
+.sio-mgrs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sio-mgr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 0.5rem;
+}
+.sio-mgr-name {
+  color: var(--text-primary);
+  font-size: var(--type-body-size);
+  overflow-wrap: anywhere;
+}
+.sio-mgr-meta {
+  grid-column: 1;
+  font-size: var(--type-micro-size);
+  color: var(--text-muted);
+}
+.sio-mgr-value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--text-primary);
+}
+
+.sio-list,
+.sio-steps,
+.sio-states {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+}
+.sio-list strong,
+.sio-steps strong {
+  color: var(--text-primary);
+}
+.sio-states {
+  margin-top: 0.75rem;
+  padding-left: 0;
+  list-style: none;
+  font-size: var(--type-caption-size);
+}
+.sio-state-row {
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.sio-state-row.is-failed {
+  color: var(--negative);
+  background: var(--negative-bg);
+}
+.sio-details {
+  margin-top: 0.75rem;
+  font-size: var(--type-caption-size);
+}
+.sio-details summary {
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.sio-details ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.sio-follow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.sio-pill {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  cursor: pointer;
+}
+.sio-pill:hover {
+  background: var(--surface-card-hover);
+}
+
+.sio-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .sio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .sio-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sio-span-2 {
+    grid-column: auto;
+  }
+  .sio-table {
+    font-size: var(--type-caption-size);
+  }
+}

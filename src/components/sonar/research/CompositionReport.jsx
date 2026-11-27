@@ -11,6 +11,7 @@
  */
 
 import { useMemo } from 'react';
+import OwnershipReport from './OwnershipReport';
 import './composition-report.css';
 
 const METRICS = [
@@ -231,7 +232,12 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
   const f = comp.fulfillment;
   const set = (comp.sets || []).find((s) => s.op === 'intersect') || comp.sets?.[0] || null;
   const fa = (comp.analyses || []).find((a) => a.capability === 'fundamental-analysis') || null;
-  const others = (comp.analyses || []).filter((a) => a !== fa);
+  /* Nov 27 2026: an institutional ownership ranking has its own answer layout. On its own it
+     is the whole block; beside other analyses it renders first and they follow. */
+  const own = (comp.analyses || []).find((a) => a.capability === 'institutional-ownership') || null;
+  if (own && !set && !fa && (comp.analyses || []).length === 1)
+    return <OwnershipReport analysis={own} fulfillment={f} onFollowUp={onFollowUp} />;
+  const others = (comp.analyses || []).filter((a) => a !== fa && a !== own);
   const title = set
     ? `${short(set.left?.short)} × ${short(set.right?.short)} | Shared Holdings${fa ? ' Fundamental Analysis' : ''}`
     : comp.subject?.name
@@ -262,6 +268,8 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
         </h2>
         {f ? <span className={`scr5-state ${STATE_TONE[f.state] || ''}`}>{f.label}</span> : null}
       </header>
+
+      {own ? <OwnershipReport analysis={own} onFollowUp={null} /> : null}
 
       {set ? (
         <div className="scr5-tiles">

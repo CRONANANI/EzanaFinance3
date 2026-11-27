@@ -48,6 +48,8 @@ import { extractRelation } from './intents.js';
 import { holdingsQueryFor, queryCovers } from './auto-queries.js';
 import { scope13FQuery, latestRowsPerFiler } from './thirteen-f.js';
 import { runEzanaQL, validateEzanaQL } from '@/lib/ezanaql';
+import { rankInstitutionalOwnershipForUniverse, universeForSubject } from './ownership-server.js';
+import { ownershipText, ownershipStates, OWNERSHIP_CAPABILITY } from './ownership.js';
 
 const TICKER_RE = /^\$?([A-Z]{1,5}(?:\.[A-Z])?)$/;
 
@@ -912,6 +914,14 @@ export async function runResearchComposition(
       if (raw?.kind === 'analysis' && CAPABILITIES[raw.capability]) {
         return {
           ...raw,
+          /* The server's own resolution of the question's subject stands in for a subject
+             the client sent only as text (a guest, or a question Sonar inferred itself). */
+          subject:
+            raw.subject?.kind && raw.subject?.id
+              ? raw.subject
+              : primary?.kind && primary.kind !== 'unresolved'
+                ? primary
+                : raw.subject || null,
           seq,
           /* An explicit target, or one the reader still has to reconfigure (stale), is kept as
            explicit: a target that no longer exists stays unrun instead of moving silently. */
@@ -1097,10 +1107,51 @@ function onSetTarget(target, sets) {
   return set ? { ...target, count: set.rows.length } : target;
 }
 
+/**
+ * Institutional Ownership Analysis (Nov 27 2026): the subject's holdings ranked by how many
+ * 13F reporting managers hold each one, in the latest adequately covered quarter.
+ * See ./ownership.js (definitions) and ./ownership-server.js (bounded reads).
+ */
+async function runOwnership(admin, att) {
+  const s = att.subject;
+  const universe = await universeForSubject(admin, s);
+  if (!universe.eligible.length) {
+    return {
+      output: 'calculated',
+      title: 'Institutional Ownership Analysis',
+      failed: `None of ${s.name}'s disclosed holdings could be matched to a listed common stock.`,
+      ownership: { universe: { total: universe.total, eligible: 0 }, excluded: universe.excluded },
+      text: `Institutional Ownership Analysis: not run. None of ${s.name}'s ${universe.total} disclosed holdings matched a listed common stock (${universe.excluded.map((x) => `${x.ticker || x.issuer}: ${x.reason}`).join('; ')}).`,
+    };
+  }
+  const result = await rankInstitutionalOwnershipForUniverse(admin, {
+    universe,
+    metric: att.params?.metric || 'managers',
+    topN: att.params?.top_n ? Number(att.params.top_n) : null,
+    comparePrior: att.params?.compare_prior !== 'no',
+    subject: s,
+  });
+  const states = ownershipStates(result);
+  const ranked = result.rows.filter((r) => r.rank != null).length;
+  return {
+    output: 'calculated',
+    title: 'Institutional Ownership Analysis',
+    coverage: {
+      selected: universe.eligible.length,
+      withData: ranked,
+      complete: ranked,
+    },
+    ownership: { ...result, states },
+    limitations: result.limitations,
+    text: ownershipText(result),
+  };
+}
+
 const EXECUTORS = {
   'fundamental-analysis': runFundamentals,
   'dcf-valuation': runDcf,
   backtesting: runMemberBacktest,
+  [OWNERSHIP_CAPABILITY]: runOwnership,
 };
 
 /**

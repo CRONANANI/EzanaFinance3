@@ -164,6 +164,42 @@ export const PARAMS = {
       effect: 'Compared over the same window.',
     },
   ],
+  'institutional-ownership': [
+    {
+      id: 'metric',
+      label: 'Rank by',
+      type: 'enum',
+      options: [
+        { value: 'managers', label: 'Distinct 13F managers' },
+        { value: 'value', label: 'Aggregate 13F value' },
+        { value: 'change', label: 'Change in managers' },
+      ],
+      default: 'managers',
+      effect:
+        'Managers counts distinct 13F reporting filers; value sums what they reported; change compares filers that reported in both quarters.',
+    },
+    {
+      id: 'top_n',
+      label: 'Holdings shown',
+      type: 'integer',
+      min: 1,
+      max: 50,
+      default: null,
+      placeholder: 'All',
+      effect: 'Empty ranks every eligible holding; a number keeps the top ranked.',
+    },
+    {
+      id: 'compare_prior',
+      label: 'Prior quarter',
+      type: 'enum',
+      options: [
+        { value: 'yes', label: 'Compare' },
+        { value: 'no', label: 'Skip' },
+      ],
+      default: 'yes',
+      effect: 'Adds new and exited managers against the previous quarter.',
+    },
+  ],
 };
 
 /* ── relationships ──────────────────────────────────────────────────── */
@@ -262,6 +298,22 @@ export const RELATIONS = {
         `Estimate intrinsic value for ${a?.params?.top_n ? `the ${a.params.top_n} largest companies` : 'up to 5 companies'} in ${setText(a)} with a ${a.params?.years ?? 5}-year discounted cash-flow model.`,
     },
   ],
+  'institutional-ownership': [
+    {
+      key: 'holdings',
+      family: 'institutional_ownership',
+      for: ['politician'],
+      text: (a) =>
+        `Rank ${a.subject?.name || a.subject?.text || 'the member'}'s estimated disclosed stock holdings by ${ownershipMetricText(a)} in the latest adequately covered 13F quarter.`,
+    },
+    {
+      key: 'holdings',
+      family: 'institutional_ownership',
+      for: ['institution'],
+      text: (a) =>
+        `Rank ${a.subject?.name || a.subject?.text || 'the manager'}'s 13F holdings by ${ownershipMetricText(a)} across all loaded 13F filers.`,
+    },
+  ],
   backtesting: [
     {
       key: 'follow',
@@ -272,6 +324,15 @@ export const RELATIONS = {
     },
   ],
 };
+
+function ownershipMetricText(a) {
+  const m = a?.params?.metric;
+  return m === 'value'
+    ? 'aggregate reported 13F value'
+    : m === 'change'
+      ? 'the change in 13F reporting managers'
+      : 'how many distinct 13F reporting managers hold them';
+}
 
 /* ── capabilities ───────────────────────────────────────────────────── */
 
@@ -307,6 +368,20 @@ export const CAPABILITIES = {
         'A strategy that follows 13F changes is not connected yet. Backtesting runs on congressional disclosures.',
       company:
         'Backtesting needs a strategy subject, such as a member of Congress whose disclosed purchases it follows.',
+    },
+  },
+  'institutional-ownership': {
+    key: 'institutional-ownership',
+    label: 'Institutional Ownership Analysis',
+    type: 'Analysis',
+    icon: 'bi-bank',
+    summary:
+      'Ranks holdings by how many 13F managers report them, with value and quarter-over-quarter change.',
+    subjects: ['politician', 'institution'],
+    output: 'calculated',
+    unsupportedFor: {
+      company:
+        'Institutional ownership ranks a set of holdings. Name a member of Congress or a fund manager whose holdings to rank.',
     },
   },
 };

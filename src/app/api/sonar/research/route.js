@@ -51,6 +51,8 @@ import {
 import { followUpContext, followUpPreamble, attachmentBlock } from '@/lib/sonar/workspace';
 import { runResearchComposition } from '@/lib/sonar/composer/execute';
 import { clientComposition, fulfillmentContract } from '@/lib/sonar/composer/fulfillment';
+import { inferComposition } from '@/lib/sonar/composer/intents';
+import { OWNERSHIP_CAPABILITY } from '@/lib/sonar/composer/ownership';
 import { RUNNERS } from '@/lib/sonar/engine/sources';
 import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
 import { isUuid } from '@/lib/sonar/saved';
@@ -451,8 +453,30 @@ const POST_HANDLER = withApiGuard(
         let composition = null;
         const compIn =
           body?.composition && typeof body.composition === 'object' ? body.composition : null;
-        if (compIn && Array.isArray(compIn.attachments) && compIn.attachments.length) {
-          if (!access.user) {
+        let compAttachments = Array.isArray(compIn?.attachments) ? compIn.attachments : [];
+        let compPrimary =
+          compIn?.primary && typeof compIn.primary.text === 'string'
+            ? { text: compIn.primary.text.trim().slice(0, 80) }
+            : null;
+        /* Nov 27 2026: an institutional ownership question ("what stocks does X own that are
+           most owned by investment firms") runs its ranking even when the page sent no
+           composition (an older page, a guest, a quick question). It reads public filings
+           only, so a guest runs it too. */
+        if (!compAttachments.length) {
+          const inferred = inferComposition(String(runQuery || '').slice(0, 600));
+          const own = inferred.attachments.filter((a) => a.capability === OWNERSHIP_CAPABILITY);
+          if (own.length && inferred.subject && !inferred.relation) {
+            compAttachments = own;
+            compPrimary = { text: String(inferred.subject).slice(0, 80) };
+          }
+        }
+        const publicOnly =
+          compAttachments.length > 0 &&
+          compAttachments.every(
+            (a) => a?.kind === 'analysis' && a.capability === OWNERSHIP_CAPABILITY,
+          );
+        if (compAttachments.length) {
+          if (!access.user && !publicOnly) {
             send('notice', {
               message:
                 'Sign in to run the attached analyses. This answer uses ordinary research only.',
@@ -464,12 +488,9 @@ const POST_HANDLER = withApiGuard(
               runResearchComposition(
                 {
                   question: String(runQuery || '').slice(0, 600),
-                  primary:
-                    compIn.primary && typeof compIn.primary.text === 'string'
-                      ? { text: compIn.primary.text.trim().slice(0, 80) }
-                      : null,
-                  attachments: compIn.attachments.slice(0, 8),
-                  userId: access.user.id,
+                  primary: compPrimary,
+                  attachments: compAttachments.slice(0, 8),
+                  userId: access.user?.id || null,
                 },
                 admin,
               ),

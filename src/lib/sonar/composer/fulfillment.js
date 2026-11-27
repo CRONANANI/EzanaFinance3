@@ -20,6 +20,16 @@
  *   clientComposition(c, f)  the compact typed payload the report renders
  */
 
+import {
+  OWNERSHIP_CAPABILITY,
+  ownershipAnswer,
+  quarterLabel,
+  fmtInt,
+  fmtUsd,
+  fmtPct,
+  fmtSigned,
+} from './ownership.js';
+
 export const COMPOSER_SOURCE = 'research_composer';
 
 /** Completion states (spec: complete, limited coverage, partial, needs input, failed). */
@@ -129,7 +139,42 @@ export function compositionEvidence(c) {
       });
     }
   }
-  for (const a of analysisResults(c).filter((x) => x.capability !== 'fundamental-analysis')) {
+  for (const a of analysisResults(c, OWNERSHIP_CAPABILITY)) {
+    const o = a.ownership;
+    if (a.status !== 'done' || !o?.rows) continue;
+    const ans = ownershipAnswer(o);
+    const q = quarterLabel(o.period);
+    out.push({
+      kind: 'aggregate',
+      category: 'ezana_datasets',
+      reliability: 0.95,
+      title: `Institutional ownership ranking, 13F ${q}`,
+      text: `${ans.text} Ranked by ${ans.metricLabel.toLowerCase()} among ${fmtInt(o.coverage?.filers)} 13F filers with an effective filing for the quarter ending ${o.period}${o.prior ? `; quarter-over-quarter changes compare the ${fmtInt(o.coverage?.comparable)} filers that reported in both ${quarterLabel(o.prior)} and ${q}` : ''}. Universe: ${o.universe?.eligible} eligible common stocks from ${o.universe?.source}.`,
+      period: o.period,
+      date: o.period,
+      entities: o.rows.map((r) => r.ticker).filter(Boolean),
+      data: { ownership: true, period: o.period, metric: o.metric },
+    });
+    for (const r of o.rows.filter((x) => x.rank != null).slice(0, 25)) {
+      out.push({
+        kind: 'record',
+        category: 'ezana_datasets',
+        reliability: 0.95,
+        title: `${nameOf(r)} institutional ownership, 13F ${q}`,
+        text: `${nameOf(r)} is reported by ${fmtInt(r.managers)} distinct 13F managers with aggregate reported value ${fmtUsd(r.value)} for the quarter ending ${o.period} (rank ${r.rank} of the universe by ${ans.metricLabel.toLowerCase()}).${r.change != null ? ` Among filers that reported in both quarters, ${fmtInt(r.newManagers)} started and ${fmtInt(r.exitedManagers)} stopped reporting it (net ${fmtSigned(r.change)}).` : ''}${r.weight != null ? ` Estimated weight in the subject's holdings: ${fmtPct(r.weight)}${r.floor ? ' (at the disclosure floor)' : ''}.` : ''}`,
+        period: o.period,
+        date: o.period,
+        entities: [r.ticker].filter(Boolean),
+        data: {
+          ticker: r.ticker,
+          ownership: { managers: r.managers, value: r.value, change: r.change },
+        },
+      });
+    }
+  }
+  for (const a of analysisResults(c).filter(
+    (x) => x.capability !== 'fundamental-analysis' && x.capability !== OWNERSHIP_CAPABILITY,
+  )) {
     if (a.status !== 'done' || !a.text) continue;
     out.push({
       kind: 'aggregate',
@@ -203,7 +248,9 @@ export function fulfillmentContract(c) {
         r?.title || (r?.capability ? r.capability.replace(/-/g, ' ') : t.label),
         st,
         r?.coverage
-          ? `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
+          ? r.capability === OWNERSHIP_CAPABILITY
+            ? `${r.coverage.withData} of ${r.coverage.selected} holdings reported by 13F managers${r.ownership?.period ? `, ${quarterLabel(r.ownership.period)}` : ''}`
+            : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
           : r?.failed || null,
       );
     }
@@ -227,6 +274,9 @@ export function fulfillmentBlock(f, c) {
     ...f.objectives.map((o) => `- ${o.label}: ${o.status}${o.detail ? ` (${o.detail})` : ''}`),
     sets.some((s) => s.op === 'intersect')
       ? '- The executive conclusion must state how many securities matched and name them, then summarise what the fundamentals show for those companies (profitability, growth, cash generation, leverage), citing the computed items. Do not substitute a profile of either holder.'
+      : null,
+    analysisResults(c, OWNERSHIP_CAPABILITY).some((a) => a.status === 'done')
+      ? '- The executive conclusion must answer directly: name the holdings most widely held by 13F reporting managers with their manager counts and the reporting quarter, citing the computed ownership items. Do not lead with a profile of the person, their trading history or other members. A manager count measures breadth of ownership, not conviction; a change in reported value is not a purchase; 13F dates and disclosure dates differ.'
       : null,
     f.state !== 'complete'
       ? `- Completion: ${f.label}. Say plainly which required output is missing or limited and why; never fill it with an estimate.`
@@ -258,7 +308,34 @@ export function deterministicAnswer(c, f, ev = {}) {
   const table = (fa?.table || []).filter((t) => t.ratios?.revenue != null);
   const cite = (e) =>
     e ? { evidenceIds: [e.id], markers: [e.marker] } : { evidenceIds: [], markers: [] };
+  const own = analysisResults(c, OWNERSHIP_CAPABILITY).find((a) => a.status === 'done') || null;
   let text;
+  if (own?.ownership?.rows && !set) {
+    const ans = ownershipAnswer(own.ownership);
+    const byTitle = (re) => ev.byTitle?.(re) || null;
+    const rec = (t) => (t ? ev.company?.(t) || null : null);
+    return {
+      executiveConclusion: {
+        id: 'conclusion_composer',
+        text: ans.text,
+        classification: 'calculated_result',
+        ...cite(byTitle(/^Institutional ownership ranking/) || ev.set),
+        metrics: [],
+        validation: { action: 'kept', problems: [] },
+      },
+      keyFindings: ans.findings.map((x, i) => ({
+        id: `composer_${i + 1}`,
+        title: x.title,
+        explanation: x.explanation,
+        classification: 'calculated_result',
+        ...cite(rec(x.tickers?.[0])),
+        metrics: [],
+        entities: x.tickers || [],
+        validation: { action: 'kept', problems: [] },
+      })),
+      fulfillment: f,
+    };
+  }
   if (set && set.op === 'intersect') {
     const names = (set.matches || []).slice(0, 12).map(nameOf);
     text =
@@ -329,13 +406,25 @@ export function deterministicAnswer(c, f, ev = {}) {
 /** Does a written answer report the requested result (the overlap and its names)? */
 export function answerCovers(report, c) {
   const set = setResults(c).find((s) => s.op === 'intersect');
-  if (!set) return true;
   const text = [
     report?.executiveConclusion?.text,
     ...(report?.keyFindings || []).slice(0, 3).map((x) => `${x.title} ${x.explanation || ''}`),
   ]
     .filter(Boolean)
     .join(' ');
+  const own = analysisResults(c, OWNERSHIP_CAPABILITY).find((a) => a.status === 'done');
+  if (!set && own?.ownership?.rows) {
+    /* The conclusion itself must name the leader and say it is about 13F managers. */
+    const lead = own.ownership.rows.find((r) => r.rank === 1);
+    const concl = String(report?.executiveConclusion?.text || '');
+    if (!lead) return true;
+    const named =
+      new RegExp(`\\b${String(lead.ticker).replace('.', '\\.')}\\b`).test(concl) ||
+      (lead.issuer &&
+        concl.toLowerCase().includes(String(lead.issuer).toLowerCase().split(/[ ,]/)[0]));
+    return Boolean(named) && /13f|manager|institution|investment firm|fund/i.test(concl);
+  }
+  if (!set) return true;
   if (set.stats.overlap === 0) return /\b(no|zero|none)\b/i.test(text);
   const tickers = (set.matches || []).map((m) => m.ticker).filter(Boolean);
   const named = tickers.filter((t) =>
@@ -383,6 +472,7 @@ export function clientComposition(c, f) {
         reason: t.reason ?? null,
       })),
       metrics: a.metrics || null,
+      ownership: a.ownership ? compactOwnership(a.ownership) : null,
       limitations: a.limitations || [],
       failed: a.failed || null,
     })),
@@ -391,5 +481,44 @@ export function clientComposition(c, f) {
       title: r.title || r.key,
       failed: r.failed,
     })),
+  };
+}
+
+/** The ownership result as the report renders it (no prose to parse). */
+function compactOwnership(o) {
+  if (!o.rows) return { universe: o.universe || null, excluded: o.excluded || [], rows: [] };
+  return {
+    version: o.version,
+    metric: o.metric,
+    subject: o.subject,
+    period: o.period,
+    prior: o.prior,
+    coverage: o.coverage,
+    universe: o.universe,
+    excluded: (o.excluded || []).slice(0, 30),
+    rows: o.rows.slice(0, 50).map((r) => ({
+      cusip: r.cusip,
+      ticker: r.ticker,
+      issuer: r.issuer,
+      rank: r.rank,
+      weight: r.weight ?? null,
+      floor: Boolean(r.floor),
+      partnership: Boolean(r.partnership),
+      managers: r.managers,
+      value: r.value,
+      shares: r.shares,
+      comparableNow: r.comparableNow ?? null,
+      comparablePrior: r.comparablePrior ?? null,
+      newManagers: r.newManagers ?? null,
+      exitedManagers: r.exitedManagers ?? null,
+      change: r.change ?? null,
+    })),
+    trend: o.trend || null,
+    managers: o.managers || [],
+    states: o.states || [],
+    method: o.method || null,
+    answer: ownershipAnswer(o),
+    limitations: o.limitations || [],
+    durationMs: o.durationMs ?? null,
   };
 }

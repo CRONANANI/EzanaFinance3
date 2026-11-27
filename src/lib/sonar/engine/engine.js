@@ -116,6 +116,7 @@ function composedDeterministic({ spec, marked, composition, fulfillment }) {
   const ev = {
     set: marked.find((e) => e.source === COMPOSER_SOURCE && e.data?.stats) || null,
     coverage: byTitle(/coverage$/i) || null,
+    byTitle,
     company: (ticker) =>
       marked.find((e) => e.source === COMPOSER_SOURCE && e.data?.ticker === ticker) || null,
   };
