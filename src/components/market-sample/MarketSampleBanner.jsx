@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import {
+  observeMarketDataState,
+  subscribeMarketDataState,
+  getMarketDataState,
+  setMarketDataStateFromServer,
+} from '@/lib/market-sample/client-state';
 import './market-sample-banner.css';
 
-/* Pages whose equities and asset figures can fall back to sample values. */
+/* Pages whose equities and asset figures can fall back to demonstration data. */
 const PAGES = [
   '/company-research',
   '/market-analysis',
@@ -13,43 +19,29 @@ const PAGES = [
   '/watchlist',
   '/financial-analytics',
 ];
-const KEY = 'ezana-market-sample';
-const TTL_MS = 5 * 60 * 1000;
 
 /**
- * Temporary notice (Nov 28 2026): while the market data provider refuses Ezana's key, the
- * equities and asset pages show sample values. This says so, plainly, on those pages.
+ * Persistent sample-data disclosure. Shown only when the SERVER declared sample data for this
+ * session (the sample-status answer or an `x-ezana-data-state: sample` response); sample data
+ * is served only in authorized demonstration contexts (lib/market-sample/index.js).
  */
 export function MarketSampleBanner() {
   const pathname = usePathname() || '';
-  const [sample, setSample] = useState(false);
+  const [state, setState] = useState(getMarketDataState());
   const onPage = PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+  useEffect(() => {
+    observeMarketDataState();
+    return subscribeMarketDataState(setState);
+  }, []);
 
   useEffect(() => {
     if (!onPage) return undefined;
     let cancelled = false;
-    try {
-      const cached = JSON.parse(window.sessionStorage.getItem(KEY) || 'null');
-      if (cached && Date.now() - cached.at < TTL_MS) {
-        setSample(Boolean(cached.sample));
-        return undefined;
-      }
-    } catch {
-      /* storage unavailable */
-    }
     fetch('/api/market-data/sample-status', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : { sample: false }))
+      .then((r) => (r.ok ? r.json() : { state: 'live' }))
       .then((j) => {
-        if (cancelled) return;
-        setSample(Boolean(j.sample));
-        try {
-          window.sessionStorage.setItem(
-            KEY,
-            JSON.stringify({ at: Date.now(), sample: Boolean(j.sample) }),
-          );
-        } catch {
-          /* storage unavailable */
-        }
+        if (!cancelled && j.state !== 'unavailable') setMarketDataStateFromServer(j.state);
       })
       .catch(() => {});
     return () => {
@@ -57,14 +49,15 @@ export function MarketSampleBanner() {
     };
   }, [onPage, pathname]);
 
-  if (!onPage || !sample) return null;
+  if (state !== 'sample') return null;
   return (
-    <div className="market-sample-banner" role="status">
-      <i className="bi bi-info-circle" aria-hidden="true" />
+    <div className="market-sample-banner" role="status" aria-live="polite">
+      <i className="bi bi-exclamation-triangle" aria-hidden="true" />
       <span>
-        <strong>Sample data.</strong> Live market data is temporarily unavailable, so prices, charts
-        and company figures on this page are illustrative sample values, not market or reported
-        data.
+        <strong>Sample data (demonstration).</strong> The market data provider is unavailable, so
+        prices, charts and company figures here are synthetic values, not market or reported data.
+        They are not used in research, valuations, trading or saved records, and exports are
+        labelled as sample.
       </span>
     </div>
   );

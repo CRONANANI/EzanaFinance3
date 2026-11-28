@@ -9,6 +9,7 @@
  * asserted. The AI narrative that used to be the whole model is still one
  * click away as commentary.
  */
+import { getMarketDataState } from '@/lib/market-sample/client-state';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Bar,
@@ -240,11 +241,22 @@ export function ThreeStatementWorkspace({ symbol, onAiCommentary }) {
     equity: base.equity,
   };
   const download = () => {
-    const blob = new Blob([toCsv(y, base)], { type: 'text/csv' });
+    /* Sonar 6.4 final integration: an export built on demonstration data says so in the
+       file and its name (state from the server's data-state header). */
+    const sample = getMarketDataState() === 'sample';
+    const csv = toCsv(y, base);
+    const blob = new Blob(
+      [
+        sample
+          ? `"SAMPLE DATA: synthetic demonstration figures, not reported financials"\n${csv}`
+          : csv,
+      ],
+      { type: 'text/csv' },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${symbol}-3-statement-${scenario}.csv`;
+    a.download = `${symbol}-3-statement-${scenario}${sample ? '-SAMPLE' : ''}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

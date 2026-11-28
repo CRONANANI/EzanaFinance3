@@ -1,4 +1,7 @@
 .market-sample-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -15,4 +18,39 @@
 .market-sample-banner .bi {
   color: var(--amber);
   margin-top: 2px;
+}
+
+/* Sonar 6.4 final integration: in sample mode every chart and tooltip says so. */
+body[data-market-data='sample'] .recharts-wrapper,
+body[data-market-data='sample'] canvas {
+  outline: 1px dashed var(--amber);
+}
+
+body[data-market-data='sample'] .recharts-wrapper {
+  position: relative;
+}
+
+body[data-market-data='sample'] .recharts-wrapper::after {
+  content: 'SAMPLE DATA';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+body[data-market-data='sample'] .recharts-default-tooltip::before,
+body[data-market-data='sample'] .recharts-tooltip-wrapper > div::before {
+  content: 'Sample data, not market data';
+  display: block;
+  margin-bottom: 4px;
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 600;
 }
