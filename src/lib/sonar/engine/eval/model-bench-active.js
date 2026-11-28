@@ -35,9 +35,13 @@ export const MODEL_BENCH_SUITES = [
     deepTrials: 2,
     variant: 'profile-d',
   },
+  /* Stopped at 15:10 UTC: the 5.5 models think by default (Sonnet 5.5 at high effort) and
+     max_tokens covers thinking plus text, so specialists and reviewers on 5.5 models were
+     cut before writing any text. Superseded by profile-d3 once requests set thinking and
+     effort per role. */
   {
     suite: 'model-bench-2026-11-28-profile-d2',
-    until: '2026-11-30T05:00:00Z',
+    until: '2026-11-28T15:10:00Z',
     maxUsd: 45,
     deepTrials: 2,
     variant: 'profile-d',
