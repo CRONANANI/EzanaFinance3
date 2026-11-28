@@ -2,7 +2,7 @@
 
 Nov 28 2026. From Sonar 6.3 (`2ff32eee`). Commits: `49ff4b9c` (held-out cases and
 baseline, before any 6.4 code), `2c0a5f2e`, `16c9f025`, `12b29d21`, `0b857008`, and
-`3a551f1d` (deploy fix). Routing, semantic intent and the execution graph are unchanged in
+`3a551f1d` (deploy fix) and `aece38d3`. Routing, semantic intent and the execution graph are unchanged in
 structure; 6.4 adds executors, data and verification.
 
 ## 1. What is now implemented (calculations run and render)
@@ -29,7 +29,8 @@ account's quota. Source records were recomputed with read-only SQL.
 | Semiconductors with margin > 25% | Refused: "No companies are classified as Semiconductors (SIC 3674) ... Sonar does not substitute a broader sector" | correct refusal (data not loaded) | 17.2 s | 3/3 |
 | Rank defense contractors by revenue growth | 31-company universe (contract-defined), 23 with filings, ranked, acquisition flag | met | 33.2 s | 6/7; 3 |
 | Is US inflation re-accelerating? | 3.7% y/y (Sep), 3m 3.6%, mixed; gap disclosed | met | 30.1 s | 7/7; 7 (one false positive, fixed) |
-| Has the Bank of Canada cut rates this year? | **Wrong: 75 "changes"** | not met; **bug found and fixed** | 2.0 s | |
+| Has the Bank of Canada cut rates this year? | **Wrong: 75 "changes"**, then the run failed | not met; **two bugs found and fixed** | 2.0 s | |
+| (re-run on `aece38d3`) Has the Bank of Canada cut rates in 2026? | "No. The Bank of Canada raised its policy rate by 0.25 points on 2026-10-29" (one change, from BIS daily data; matches the series exactly) | met | 25.4 s (composition 70 ms) | 2/7: verification removed 5 unsupported claims; confidence claimed high, audited **low** |
 | How dependent is Palantir on government revenue? | $1.34B FY2026 awards (+31.3%); 22.8% paired indicator; recognized share "not available in this research"; no mislabeled ratio, no "does not disclose" | met | 26.3 s | 12/13 |
 
 Bugs the live checks found, all fixed in `0b857008` (with tests):
@@ -44,6 +45,12 @@ Bugs the live checks found, all fixed in `0b857008` (with tests):
    sharing the label kind "rate" with the policy rate. A contradiction now needs the same
    label kind and subject, and the other value must be in no source.
 4. **Macro fulfillment wording** said "companies with filed financials"; now "countries".
+5. **"Bank of Canada" resolved to the banking industry** and to Bank of the James (BOTJ),
+   and the run failed with a TypeError, also with the composition turned off: a
+   pre-existing understanding bug (that error group first appeared Nov 8). Central banks
+   (Bank of Canada, Federal Reserve, Reserve Bank of India and 13 others) now resolve to
+   their country first (`aece38d3`); the re-run completes. This also raised the analyst
+   eval from 143 to **153** of 253. The route now logs the failure message and frame.
 
 Provider costs are not stored per production run yet (the model-usage capture writes to
 the benchmark records); the benchmark's measured cost for the current standard profile is
@@ -63,7 +70,7 @@ fixtures **before any 6.4 code** (`49ff4b9c`); routing was not tuned on them.
 | Executed (29 executable) | 14 | 23 |
 | Correct numbers | 11 | 21 |
 | Lead analyst (14) | 12 | 12 |
-| Analyst eval (routing, 253) | 143 | 143 |
+| Analyst eval (routing, 253) | 143 | **153** (central-bank resolution) |
 | Held-out routing (20) | 15 | 15 |
 
 Gains: V01, V02, V04, V05 (valuation), I01, I04 (industry), M01 to M04 (macro).
@@ -175,4 +182,10 @@ objective), `api/sonar/research/route.js`, `api/sonar/landing-query/route.js`,
 - Inflation uses the unadjusted IMF index (3-month rates are noisy; stated); no core
   inflation or expectations.
 - Claim checks cover percentages; dollar figures are checked for support, not for label.
-- Per-run provider cost is not stored for production research runs yet.
+- Per-run provider cost is not stored for production research runs yet (`researchMetadata.cost`
+  holds a pre-call estimate only).
+- "Bank of America" still resolves to the banking industry in the United States (the same
+  class of bug as the central banks; a company-name phrase pass is needed).
+- The standard writer (Haiku 4.5) still writes many unsupported claims on macro questions:
+  5 of 7 were removed on the Bank of Canada run. Verification keeps them off the page and
+  confidence reflects it, but the writer quality is the next lever (see the model benchmark).
