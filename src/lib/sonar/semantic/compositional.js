@@ -417,7 +417,11 @@ function readFilters(t) {
   const filters = [];
   /* A leading question word opens the question, not a relative clause. */
   const body = t.replace(/^\s*(?:which|what|that|where)\b/, '');
-  const parts = body.split(/\b(?:that|which|with|whose|where|and|but|while|plus|having)\b|,/);
+  /* Sonar 6.4 final hardening: multi-word conjunctions ("as well as", "in addition to",
+     "together with") separate conditions like "and". */
+  const parts = body
+    .replace(/\b(?:as well as|in addition to|together with)\b/g, ' and ')
+    .split(/\b(?:that|which|with|whose|where|and|but|while|plus|having)\b|,/);
   parts.forEach((raw, k) => {
     const c = raw.trim();
     if (!c) return;
@@ -576,7 +580,13 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
   )
     operation = 'screen';
   /* "sorted by", "ordered by" rank like "ranked by". */
-  if (!operation && /\b(?:sort(?:ed)?|order(?:ed)?)\s+by\b/.test(t)) operation = 'rank';
+  if (
+    !operation &&
+    /\b(?:sort(?:ed)?|order(?:ed)?)\s+by\b|\bin\s+(?:descending\s+|ascending\s+)?order\s+of\b|\b(?:ordered|sorted|ranked)\s+(?:according\s+to|on)\b/.test(
+      t,
+    )
+  )
+    operation = 'rank';
   const tickers = [...t.matchAll(/\$([a-z]{1,5})\b/g)].map((m) => m[1].toUpperCase());
   const universeCountry = sector ? countryOfUniverse(t, SECTOR_RES[sector]) : null;
   const universe = sector

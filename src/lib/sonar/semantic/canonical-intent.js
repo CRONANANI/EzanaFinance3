@@ -671,11 +671,28 @@ export function companyList(question) {
     /\b(?:compare|comparing)\s+(.+?)(?=\s+(?:on|in terms of|by|for|across|over)\b|[?.!]|$)/i,
   );
   const before = q.match(/^(?:how|where)\s+(?:do|does|did)\s+(.+?)\s+(?:compare|stack up)\b/i);
+  /* Sonar 6.4 final hardening: "How does X compare with/to/against Y (on M)?" names the
+     companies on both sides of the verb. */
+  const beforeOther = before
+    ? q
+        .slice(before.index + before[0].length)
+        .match(
+          /^\s+(?:with|to|against|versus|vs\.?)\s+(.+?)(?=\s+(?:on|in terms of|by|for|across|over)\b|[?.!]|$)/i,
+        )
+    : null;
   const vs = q.match(
     /([A-Z$][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,2})\s+(?:vs\.?|versus)\s+([A-Z$][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,2})/,
   );
-  const afterSeg = after?.[1] && !/^(?:on|in|by|for|across|over)\b/i.test(after[1]) ? after[1] : '';
-  const seg = afterSeg || before?.[1] || (vs ? `${vs[1]}, ${vs[2]}` : '');
+  /* "Compare the <measure> of A, B and C": the companies follow the measure phrase. */
+  const afterRaw = after?.[1] && !/^(?:on|in|by|for|across|over)\b/i.test(after[1]) ? after[1] : '';
+  const afterSeg = /^(?:the\s+)?[a-z]/.test(afterRaw)
+    ? afterRaw.replace(/^(?:the\s+)?(?:[a-z][\w/&'-]*\s+){0,5}?(?:of|for|between|among)\s+/i, '')
+    : afterRaw;
+  const seg =
+    (before?.[1] && beforeOther ? `${before[1]}, ${beforeOther[1]}` : '') ||
+    afterSeg ||
+    before?.[1] ||
+    (vs ? `${vs[1]}, ${vs[2]}` : '');
   return seg
     .split(/,|\band\b|\bvs\.?\b|\bversus\b|\bwith\b/i)
     .map((x) =>

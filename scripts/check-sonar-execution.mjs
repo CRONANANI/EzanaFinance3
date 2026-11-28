@@ -1106,3 +1106,23 @@ test('coverage: an industry screen while classification loads is bounded', async
   assert.equal(c.exhaustive, false);
   assert.match(c.excluded[0].reason, /not yet classified/);
 });
+
+test('final hardening grammar: in order of, as well as, how does X compare with Y, three named securities', () => {
+  const s1 = inferComposition('Defense contractors in order of revenue growth').attachments[0];
+  assert.equal(s1.params.rank_by, 'revenue_growth');
+  const s2 = inferComposition('Energy stocks with P/E below 12 as well as revenue growth above 20%')
+    .attachments[0];
+  assert.deepEqual(
+    s2.params.filters.map((f) => [f.metric, f.op, f.value]),
+    [
+      ['pe_ratio', '<', 12],
+      ['revenue_growth', '>', 20],
+    ],
+  );
+  const c1 = inferComposition('How does Nvidia compare with AMD on operating margin?')
+    .attachments[0];
+  assert.deepEqual(c1.params.company_names, ['Nvidia', 'AMD']);
+  const c2 = inferComposition('Compare the free cash flow of Apple, Microsoft and Alphabet')
+    .attachments[0];
+  assert.deepEqual(c2.params.company_names, ['Apple', 'Microsoft', 'Alphabet']);
+});
