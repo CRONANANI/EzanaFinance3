@@ -176,3 +176,7 @@ red team, use `SONAR_MODEL_ROLE_<ROLE>`.
 - **Proposed next cases.** Ten cases in `MODEL_BENCH_PROPOSED_CASES` are defined but not yet
   run. They cover complex cross-dataset screening, financial modelling, contradictory
   evidence, causal reasoning, and partially available data.
+
+## 8. Results
+
+The first run (Nov 28 2026) and its recommendation: `docs/SONAR_MODEL_BENCHMARK_RESULTS_2026-11-28.md`.

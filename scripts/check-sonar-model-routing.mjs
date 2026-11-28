@@ -450,3 +450,30 @@ test('judge parser recovers scores from a reply cut off after them', () => {
   assert.equal(missingOne.relationships, null);
   assert.equal(missingOne.overall, 3);
 });
+
+test('profile D: the benchmark recommendation, not served by default', () => {
+  const D = R.resolveModelRouting({ profile: 'D' });
+  assert.equal(D.profile, 'D');
+  assert.deepEqual(
+    [
+      D.quick,
+      D.standard,
+      D.standard_specialist,
+      D.deep_director,
+      D.deep_specialist,
+      D.deep_red_team,
+      D.deep_auditor,
+    ],
+    [
+      MODELS.haiku45,
+      MODELS.sonnet55,
+      MODELS.sonnet55,
+      MODELS.opus55,
+      MODELS.sonnet55,
+      MODELS.sonnet55,
+      MODELS.sonnet55,
+    ],
+  );
+  assert.equal(R.deepDirectorFor(D, { crossDomain: true }), MODELS.opus55);
+  assert.equal(R.routingForRun({ userId: 'u', env: {} }).profile, 'current');
+});

@@ -344,7 +344,7 @@ export async function judgeRow(
 ) {
   const c = caseOf(caseId);
   const r = await loadRun(admin, { suite, caseId, cellId, trial });
-  const ask = await askJudge(judge, judgePrompt(c, r.run), 900);
+  const ask = await askJudge(judge, judgePrompt(c, r.run), 1400);
   const scores = parseJudge(ask.answer);
   await insertRow(admin, {
     suite_run: suite,
@@ -385,7 +385,7 @@ export async function pairJudge(
   const L = await loadRun(admin, { suite, caseId, cellId: left, trial });
   const R = await loadRun(admin, { suite, caseId, cellId: right, trial });
   const [x, y] = xIs === 'left' ? [L.run, R.run] : [R.run, L.run];
-  const ask = await askJudge(judge, pairPrompt(c, x, y), 1400);
+  const ask = await askJudge(judge, pairPrompt(c, x, y), 1800);
   const verdict = parsePair(ask.answer, { xIs });
   const label =
     (pairsFor(c, variant).find((p) => p[0] === left && p[1] === right) || [])[2] ||

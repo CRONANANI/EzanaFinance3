@@ -125,9 +125,26 @@ const FIXED = {
     legacy_standard: M.sonnet55,
     legacy_deep: M.sonnet55,
   },
+  /* D (Nov 28 2026, from the model benchmark): Haiku 4.5 keeps quick (Haiku 5.5 lost every
+     quick comparison); Sonnet 5.5 writes and specializes at standard; Opus 5.5 writes deep
+     reports (won 22 of 24 paired judgments over a Sonnet 5.5 writer on the same evidence)
+     while Sonnet 5.5 runs the deep specialists and review. Not served unless selected. */
+  D: {
+    quick: M.haiku45,
+    standard: M.sonnet55,
+    standard_specialist: M.sonnet55,
+    deep_director: M.opus55,
+    deep_specialist: M.sonnet55,
+    deep_red_team: M.sonnet55,
+    deep_resolve: M.opus55,
+    deep_auditor: M.sonnet55,
+    cross_domain_director: null,
+    legacy_standard: M.sonnet55,
+    legacy_deep: M.opus55,
+  },
 };
 
-const PROFILES = ['current', 'A', 'B', 'C'];
+const PROFILES = ['current', 'A', 'B', 'C', 'D'];
 
 /**
  * The model for every role under a profile, with SONAR_MODEL_ROLE_<ROLE> overrides and
