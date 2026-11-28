@@ -100,10 +100,15 @@ async function handle(request, requestId) {
      directly and reject any redirect, so they pass through untouched. */
   if (pathname.startsWith('/.well-known/')) return NextResponse.next();
 
-  /* Ezana API v1: keys authenticate and rate-limit per key in the route, so
-     skip the session lookup, profile gates, CSP nonce and per-IP limit here
-     (next.config.js still adds the security headers). */
-  if (pathname === '/v1' || pathname.startsWith('/v1/') || pathname.startsWith('/api/v1/')) {
+  /* Ezana API v1 and its MCP server: keys authenticate and rate-limit per key
+     in the route, so skip the session lookup, profile gates, CSP nonce and
+     per-IP limit here (next.config.js still adds the security headers). */
+  if (
+    pathname === '/v1' ||
+    pathname.startsWith('/v1/') ||
+    pathname.startsWith('/api/v1/') ||
+    pathname === '/api/mcp'
+  ) {
     const h = new Headers(request.headers);
     h.delete('x-ezana-uid');
     h.set('x-request-id', requestId);

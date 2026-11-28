@@ -23,6 +23,12 @@ export const ALL_SCOPES = [
   'alpha',
 ];
 
+/* Scopes no tier grants. An admin adds one to a key by hand (api_keys.scopes)
+   while the data behind it is not cleared for redistribution: options
+   exposure is computed from Alpaca options data, and Alpaca/OPRA terms must
+   be confirmed in writing before it is sold through the API. */
+export const RESTRICTED_SCOPES = ['options'];
+
 /* The tier split below is a proposal for Axum to confirm. Public-domain
    series (Eyes Above, macro, sanctions) are open to Developer keys; the
    SEC-derived Titans sets and the cross-dimensional joins are paid tiers. */

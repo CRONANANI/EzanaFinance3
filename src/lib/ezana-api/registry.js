@@ -25,6 +25,8 @@ import * as HIVE from './catalog/hive';
 import * as LIGHTHOUSE from './catalog/lighthouse';
 import * as CROSS from './catalog/cross';
 import * as ALPHA from './catalog/alpha';
+import * as OPTIONS from './catalog/options';
+import * as CHARTS from './catalog/charts';
 
 /** Dimensions in taxonomy order (src/lib/datasets/taxonomy.js). */
 export const DIMENSIONS = [
@@ -35,8 +37,10 @@ export const DIMENSIONS = [
   { id: 'lighthouse', label: 'Global Empire Lighthouse', color: 'var(--indigo)' },
   { id: 'cross', label: 'Cross-dimensional', color: 'var(--text-muted)' },
   { id: 'alpha', label: 'Alpha Intelligence', color: 'var(--emerald)' },
+  { id: 'options', label: 'Options exposure', color: 'var(--gold-champagne)' },
+  { id: 'charts', label: 'Charts', color: 'var(--text-secondary)' },
 ];
-const CATALOGS = [CAPITOL, TITANS, EYES, HIVE, LIGHTHOUSE, CROSS, ALPHA];
+const CATALOGS = [CAPITOL, TITANS, EYES, HIVE, LIGHTHOUSE, CROSS, ALPHA, OPTIONS, CHARTS];
 
 /** Query parameters, defined once. Endpoints list the names they accept. */
 const BASE_PARAMS = {

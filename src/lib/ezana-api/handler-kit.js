@@ -107,6 +107,8 @@ export const INSIGHT_TTL = {
   /* Alpha reads annual contract history and filing coverage; both change at
      most daily, and the cache key carries the data's sync time. */
   alpha: 21600,
+  /* Options chains move intraday; keep them fresh. */
+  options: 60,
 };
 
 /**

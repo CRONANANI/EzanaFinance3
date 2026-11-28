@@ -14,7 +14,8 @@ register('./mobile-node-loader.mjs', import.meta.url);
 process.env.API_KEY_PEPPER = 'test-pepper-0123456789abcdef';
 
 const keys = await import('../src/lib/ezana-api/keys.js');
-const { TIERS, TIER_ORDER, ALL_SCOPES } = await import('../src/lib/ezana-api/tiers.js');
+const { TIERS, TIER_ORDER, ALL_SCOPES, RESTRICTED_SCOPES } =
+  await import('../src/lib/ezana-api/tiers.js');
 const reg = await import('../src/lib/ezana-api/registry.js');
 const q = await import('../src/lib/ezana-api/query.js');
 const { HANDLERS } = await import('../src/lib/ezana-api/handlers.js');
@@ -67,6 +68,11 @@ test('tiers match the docs', () => {
   for (const s of ['exec-comp', 'etf', 'eyes', 'macro', 'sanctions', 'cross'])
     assert.ok(ALL_SCOPES.includes(s), `scope ${s}`);
   assert.ok(!TIERS.developer.scopes.includes('cross'));
+  /* Restricted scopes are granted by hand, never by a tier. */
+  for (const s of RESTRICTED_SCOPES) {
+    assert.ok(!ALL_SCOPES.includes(s), `${s} is not a tier scope`);
+    for (const t of Object.values(TIERS)) assert.ok(!t.scopes.includes(s), `${t.id} lacks ${s}`);
+  }
 });
 
 test('registry: every live endpoint has a handler and every handler is registered', () => {
@@ -76,7 +82,7 @@ test('registry: every live endpoint has a handler and every handler is registere
   for (const id of live) assert.equal(typeof HANDLERS[id], 'function', `handler for ${id}`);
   for (const id of Object.keys(HANDLERS)) assert.ok(live.includes(id), `${id} is in the registry`);
   for (const e of reg.LIVE_ENDPOINTS) {
-    assert.ok(ALL_SCOPES.includes(e.scope), `${e.id} scope`);
+    assert.ok(ALL_SCOPES.includes(e.scope) || RESTRICTED_SCOPES.includes(e.scope), `${e.id} scope`);
     for (const p of e.params || []) assert.ok(reg.PARAMS[p], `${e.id} param ${p}`);
   }
 });

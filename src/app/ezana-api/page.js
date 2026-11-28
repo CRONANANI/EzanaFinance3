@@ -53,6 +53,7 @@ const GitBranch = biIcon('bi-git');
 const ShieldCheck = biIcon('bi-shield-check');
 const HelpCircle = biIcon('bi-question-circle');
 const Activity = biIcon('bi-activity');
+const Cpu = biIcon('bi-cpu');
 
 /* Legend / scroll-spy order. */
 const SECTIONS = [
@@ -62,6 +63,7 @@ const SECTIONS = [
   { id: 'authentication', label: 'Authentication' },
   { id: 'endpoints', label: 'Endpoints' },
   { id: 'alpha-intelligence', label: 'Alpha Intelligence' },
+  { id: 'ai-tools', label: 'AI tools and MCP' },
   { id: 'pagination', label: 'Pagination' },
   { id: 'errors', label: 'Errors' },
   { id: 'data-coverage', label: 'Data coverage' },
@@ -175,7 +177,53 @@ const COVERAGE_ROWS = [
   { dataset: 'Sanctions', source: 'US Treasury OFAC', cadence: 'Daily' },
 ];
 
+const MCP_URL = 'https://ezana.world/api/mcp';
+const MCP_SNIPPETS = [
+  {
+    tool: 'Claude Code',
+    code: `claude mcp add --transport http ezana ${MCP_URL} \\
+  --header "Authorization: Bearer $EZANA_API_KEY"`,
+  },
+  {
+    tool: 'Codex (CLI, IDE extension)',
+    code: `codex mcp add ezana --url ${MCP_URL} --bearer-token-env-var EZANA_API_KEY
+
+# or in ~/.codex/config.toml
+[mcp_servers.ezana]
+url = "${MCP_URL}"
+bearer_token_env_var = "EZANA_API_KEY"`,
+  },
+  {
+    tool: 'Grok CLI',
+    code: `grok mcp add --transport http ezana ${MCP_URL} \\
+  --header "Authorization: Bearer \${EZANA_API_KEY}"`,
+  },
+  {
+    tool: 'Cursor (~/.cursor/mcp.json)',
+    code: `{
+  "mcpServers": {
+    "ezana": {
+      "url": "${MCP_URL}",
+      "headers": { "Authorization": "Bearer ezk_live_..." }
+    }
+  }
+}`,
+  },
+];
+const CHART_SNIPPET = `# A PNG to show or save
+curl -H "Authorization: Bearer $EZANA_API_KEY" \\
+  "https://api.ezana.world/v1/charts/congress-insider-flow?days=90&limit=15&format=png" \\
+  -o flow.png
+
+# JSON: the chart model, a Vega-Lite spec and an SVG in one response
+curl -H "Authorization: Bearer $EZANA_API_KEY" \\
+  "https://api.ezana.world/v1/charts/contracts/LMT?format=json"`;
+
 const CHANGELOG = [
+  {
+    date: '2026-11-28',
+    text: 'Charts and MCP: /v1/charts routes return any of five charts as PNG, SVG, a Vega-Lite spec or JSON, and a remote MCP server at /api/mcp lets Claude Code, Codex, Grok, Cursor and other AI tools call the API and show charts with your key. New /v1/options/exposure/{ticker}: strike by expiration delta, gamma and open-interest tables (restricted while data licensing is confirmed).',
+  },
   {
     date: '2026-11-24',
     text: 'Alpha Intelligence: a new /v1/alpha group. GET /v1/alpha/signals lists every designed signal with its maturity, method, limits and the data gate that blocks it, measured live. Procurement acceleration is the first live signal, with calibrated tail probabilities and false-discovery-adjusted q-values. The API is also served at api.ezana.world.',
@@ -400,6 +448,7 @@ const REQ_DATASETS = [
   { key: 'sanctions', label: 'Sanctions' },
   { key: 'cross', label: 'Cross-dimensional signals' },
   { key: 'alpha', label: 'Alpha Intelligence signals' },
+  { key: 'options', label: 'Options exposure (restricted)' },
 ];
 const REQ_ROLES = [
   { value: '', label: 'Select…' },
@@ -1294,6 +1343,87 @@ export default function EzanaApiPage() {
               Alpha routes need the <code>alpha</code> scope, included with Quant Firm and
               Institution keys. Signals describe data; they are not investment advice or buy and
               sell calls.
+            </p>
+          </section>
+
+          {/* AI tools and MCP */}
+          <section id="ai-tools" className="ea-section">
+            <h2>
+              <Cpu size={18} aria-hidden className="ea-h2-icon" />
+              AI tools and MCP
+            </h2>
+            <p>
+              Ezana runs a remote MCP (Model Context Protocol) server at <code>{MCP_URL}</code>, so
+              AI coding tools can query the API and show charts inline while you work. It
+              authenticates with your normal API key, and every tool call counts against that
+              key&apos;s scopes, rate limit and usage exactly like a REST request.
+            </p>
+            {MCP_SNIPPETS.map((sn) => (
+              <div className="ea-code" key={sn.tool}>
+                <div className="ea-code-head">
+                  <Terminal size={13} aria-hidden /> {sn.tool}
+                </div>
+                <pre>
+                  <code>{sn.code}</code>
+                </pre>
+              </div>
+            ))}
+            <p>
+              Other clients that speak Streamable HTTP connect with the same URL and an{' '}
+              <code>Authorization: Bearer</code> header. Tools exposed:
+            </p>
+            <ul>
+              <li>
+                <code>ezana_list_endpoints</code>: the routes your key can call, by dimension or
+                keyword.
+              </li>
+              <li>
+                <code>ezana_call_endpoint</code>: any GET route with query parameters, returned as
+                JSON.
+              </li>
+              <li>
+                <code>ezana_chart</code>: a chart as an image (options exposure, procurement
+                acceleration, congressional flow, company contracts, prediction-market history).
+              </li>
+              <li>
+                <code>ezana_delta_exposure</code>: a strike by expiration exposure table and heatmap
+                for one underlying (needs the options scope).
+              </li>
+              <li>
+                <code>ezana_alpha_signals</code>: the Alpha signal registry with live readiness
+                gates.
+              </li>
+            </ul>
+            <h3>Charts over REST</h3>
+            <p>
+              Every <code>/v1/charts</code> route takes the same parameters as the data route it
+              wraps, plus <code>format</code> (<code>png</code>, <code>svg</code>, <code>vega</code>{' '}
+              or <code>json</code>) and <code>theme</code> (<code>dark</code> or <code>light</code>
+              ). PNG suits chat and IDE panes, SVG embeds cleanly in docs, and Vega-Lite lets you
+              restyle the chart yourself.
+            </p>
+            <div className="ea-code">
+              <div className="ea-code-head">
+                <Terminal size={13} aria-hidden /> curl
+              </div>
+              <pre>
+                <code>{CHART_SNIPPET}</code>
+              </pre>
+            </div>
+            <h3>Delta exposure tables</h3>
+            <p>
+              <code>GET /v1/options/exposure/{'{ticker}'}</code> returns the strikes nearest the
+              underlying price against the next expirations. Each cell sums open interest times a
+              greek times contract size over that strike&apos;s calls and puts. <code>mode</code>{' '}
+              picks <code>net_delta</code> (delta-equivalent shares, the default),{' '}
+              <code>net_delta_usd</code>, <code>call_delta</code>, <code>put_delta</code>,{' '}
+              <code>gamma_usd_1pct</code> (dollar delta change for a 1% move; calls positive, puts
+              negative) or <code>open_interest</code>. Responses include totals by strike and by
+              expiration, a flat <code>table</code> view, and the coverage behind every cell
+              (contracts without a greek are counted, never treated as zero). Open interest is as of
+              the prior session. This is the delta held by option holders in aggregate, not dealer
+              positioning. The <code>options</code> scope is granted on request while data licensing
+              is confirmed.
             </p>
           </section>
 

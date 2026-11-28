@@ -18,6 +18,8 @@ import { HANDLERS as HIVE } from './handlers/hive';
 import { HANDLERS as LIGHTHOUSE } from './handlers/lighthouse';
 import { HANDLERS as CROSS, bindAllHandlers } from './handlers/cross';
 import { HANDLERS as ALPHA } from './handlers/alpha';
+import { HANDLERS as OPTIONS } from './handlers/options';
+import { HANDLERS as CHARTS, bindChartHandlers } from './handlers/charts';
 import { getTrendingMarkets } from '@/lib/prediction-markets/trending-store';
 import { PAGE_CATEGORIES } from '@/lib/prediction-markets/page-model';
 import {
@@ -1057,5 +1059,18 @@ const PREDICTION_HANDLERS = {
 /* Declared after HANDLERS (they use helpers defined below it), so attached
    here, with each dimension's own handler module. A duplicate id is a bug:
    the test suite checks every id is registered exactly once. */
-Object.assign(HANDLERS, PREDICTION_HANDLERS, CAPITOL, TITANS, EYES, HIVE, LIGHTHOUSE, CROSS, ALPHA);
+Object.assign(
+  HANDLERS,
+  PREDICTION_HANDLERS,
+  CAPITOL,
+  TITANS,
+  EYES,
+  HIVE,
+  LIGHTHOUSE,
+  CROSS,
+  ALPHA,
+  OPTIONS,
+  CHARTS,
+);
 bindAllHandlers(HANDLERS);
+bindChartHandlers(HANDLERS);
