@@ -17,6 +17,7 @@ import { makeAnalysis } from './registry.js';
 import { extractParams, extractSubject, extractRelation } from './subject.js';
 import { canonicalIntent, composerMetric } from '../semantic/canonical-intent.js';
 import { SCREEN_MEASURES, universeFor } from './screen.js';
+import { planSeed } from './stages.js';
 import { macroCountries } from './macro.js';
 
 /* Composition measure → comparison metric (filed ratios only). */
@@ -32,7 +33,7 @@ const COMPARE_METRIC = {
   debt: 'debt_to_equity',
 };
 
-const WINDOW_DAYS = { day: 1, week: 7, month: 30, quarter: 91, year: 365 };
+const WINDOW_DAYS = { day: 1, week: 7, month: 365 / 12, quarter: 91, year: 365 };
 
 /* Sonar 6.4: macro questions (inflation trend, real policy rate, policy changes). */
 const MACRO_MEASURES = [
@@ -77,6 +78,44 @@ export function macroAttachment(question, intent = null) {
 export function analyticsAttachment(intent) {
   if (!intent || intent.unsupported) return null;
   const comp = intent.composition;
+  /* Nov 28 2026: a screen with no sector or companies whose first condition can list
+     companies itself (congressional purchases, insider purchases, new federal awards) is
+     seeded from that dataset, and every later stage runs on the verified survivors. "In the
+     same period" contracts are then read as awards signed inside the screen window. */
+  if (intent.family === 'multi_stage_screen' && !comp?.universe && comp?.filters?.length) {
+    const t = comp.time;
+    const windowDays =
+      t?.kind === 'window' && WINDOW_DAYS[t.unit] ? Math.round(t.n * WINDOW_DAYS[t.unit]) : null;
+    const asked = comp.filters
+      .filter((f) => SCREEN_MEASURES[f.metric])
+      .map((f) => ({
+        metric:
+          windowDays && f.metric === 'gov_contract_value' ? 'gov_contract_value_window' : f.metric,
+        op: f.op,
+        ...(f.value != null ? { value: f.value } : {}),
+        unit: f.unit || null,
+      }));
+    const { seed } = planSeed(asked, SCREEN_MEASURES);
+    if (!seed) return null;
+    const explicitRank = (comp.measures || []).find((m) => SCREEN_MEASURES[m]) || null;
+    /* "Rank them" with no measure: by the last stated condition with a magnitude (the
+       chain's final signal), stated in the report as the basis. */
+    const rank =
+      explicitRank ||
+      [...asked].reverse().find((f) => f.op !== 'exists' || f.metric !== seed.metric)?.metric ||
+      seed.metric;
+    return makeAnalysis('financial-screen', {
+      origin: 'auto',
+      subject: null,
+      params: {
+        universe_from: seed.source,
+        filters: asked,
+        rank_by: rank,
+        direction: comp.direction === 'ascending' ? 'ascending' : 'descending',
+        ...(windowDays ? { window_days: windowDays } : {}),
+      },
+    });
+  }
   if (intent.family === 'multi_stage_screen' && comp?.universe?.type === 'sector') {
     const sector = comp.universe.id;
     if (universeFor(sector).kind === 'unsupported') return null;

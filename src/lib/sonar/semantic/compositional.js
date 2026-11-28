@@ -175,6 +175,16 @@ export const METRICS = {
     available: true,
     kind: 'event',
   },
+  /* Nov 28 2026: "institutional ownership rose / increased". A condition, not a ranking:
+     the net change in comparable 13F managers is above zero. */
+  institutional_breadth_change: {
+    words: String.raw`<inst>\s+(?:ownership|holdings?|positions?|holders?|interest)\s+(?:rose|risen|rising|rises|increased|increases|increasing|grew|grown|growing|climbed|went up|was up|is up)|(?:rising|increasing|growing|higher)\s+<inst>\s+(?:ownership|holdings?|interest)|<inst>\s+(?:added|bought|accumulated|increased)\s+(?:shares|stakes|positions)`,
+    dataset: 'sec_13f_holdings',
+    unit: 'count',
+    available: true,
+    kind: 'holder',
+    impliedFilter: { op: '>', value: 0 },
+  },
   institutional_breadth: {
     words: String.raw`(?:most|widely|broadly)\s+(?:owned|held)|(?:held|owned)\s+by\s+(?:the\s+)?(?:most\s+)?<inst>|<inst>\s+(?:ownership|own|hold)\w*|(?:popular|crowded)\s+(?:with|among)\s+<inst>`,
     dataset: 'sec_13f_holdings',
@@ -275,6 +285,7 @@ const METRIC_ORDER = [
   'insider_buying',
   'insider_selling',
   'congress_holders',
+  'institutional_breadth_change',
   'institutional_breadth',
   'short_interest',
   'esg_score',
@@ -466,6 +477,9 @@ function readFilters(t) {
         value: num.value,
         unit: num.unit || METRICS[metric].unit,
       });
+    } else if (METRICS[metric].impliedFilter && !rankedFirst) {
+      /* A direction word is the condition itself ("institutional ownership rose"). */
+      filters.push({ metric, ...METRICS[metric].impliedFilter, unit: METRICS[metric].unit });
     } else if (k > 0 && METRICS[metric].kind === 'event' && !rankedFirst) {
       /* The opening segment holds the universe; only a numeric condition is read there. */
       filters.push({ metric, op: 'exists' });
@@ -539,6 +553,8 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
     )
       continue;
     if (id === 'price_return' && measures.length) continue;
+    if (id === 'institutional_breadth' && measures.includes('institutional_breadth_change'))
+      continue;
     if (
       id === 'interest_rate' &&
       (measures.includes('fx_rate') ||

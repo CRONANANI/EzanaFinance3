@@ -3,8 +3,10 @@
  * Supports the chain the composer executors use: select (with count/head), eq, neq, in,
  * gte, lte, gt, lt, not(col, 'is', null), ilike, order, limit, range, and await.
  * Every call is recorded in `calls`, so a test can assert what an executor read.
+ * Options (Nov 28 2026): `rpc` maps a function name to a handler (args => rows); `fail`
+ * maps a table to an error message, to test explicit failed states.
  */
-export function fakeSupabase(tables) {
+export function fakeSupabase(tables, { rpc = {}, fail = {} } = {}) {
   const calls = [];
   const from = (table) => {
     const rows = tables[table] || [];
@@ -51,6 +53,12 @@ export function fakeSupabase(tables) {
       range: (a, z) => ((st.range = [a, z]), b),
       then(res, rej) {
         try {
+          if (fail[table])
+            return Promise.resolve({
+              data: null,
+              count: null,
+              error: { message: fail[table] },
+            }).then(res, rej);
           let out = rows.filter((r) => st.filters.every((f) => f(r)));
           for (const [c, asc] of [...st.orders].reverse())
             out = [...out].sort((x, y) =>
@@ -74,6 +82,14 @@ export function fakeSupabase(tables) {
   return {
     from,
     calls,
-    rpc: async () => ({ data: null, error: { message: 'no rpc in fixtures' } }),
+    rpc: async (name, args) => {
+      calls.push({ rpc: name, args });
+      if (!rpc[name])
+        return {
+          data: null,
+          error: { code: 'PGRST202', message: `function ${name} does not exist` },
+        };
+      return { data: await rpc[name](args), error: null };
+    },
   };
 }

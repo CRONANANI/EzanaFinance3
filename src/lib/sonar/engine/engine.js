@@ -34,6 +34,7 @@ import { enforceGrounding } from '@/lib/sonar/groundingGuard';
 import { getAdminClient } from '@/lib/supabase';
 import { scoreDomains, buildResearchSpec } from './research-spec';
 import { resolveResearch } from './resolution';
+import { universeFromComposition } from '@/lib/sonar/composer/stages';
 import {
   planResearch,
   memoContextCountries,
@@ -108,7 +109,7 @@ import { gateEvidence } from '@/lib/sonar/insight/relevance';
 import { objectiveOf, typedGate } from './typed-relevance.js';
 import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
 import { applyInsightStep } from '@/lib/sonar/insight/pipeline';
-import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
+import { fetchDeepValuation, storedClose } from '@/lib/sonar/valuation/fetch';
 import { isEquityAnswer } from '@/lib/sonar/answer-sections';
 import {
   COMPOSER_SOURCE,
@@ -359,7 +360,7 @@ export async function runResearch(query, opts = {}) {
     (v) => v.intent,
   );
   const prelim = scoreDomains(query, understood);
-  const resolution = evidenceOverride?.resolution
+  const resolved = evidenceOverride?.resolution
     ? evidenceOverride.resolution
     : await leg(
         'resolve',
@@ -372,6 +373,18 @@ export async function runResearch(query, opts = {}) {
         universe: null,
         notes: ['resolution_failed'],
       }));
+  /* Nov 28 2026: a composed screen's verified survivors become the planner's universe when
+     the question names no company, so contracts, 13F and per-company congressional sources
+     run on the companies the screen verified (stages.js) instead of being unmet. */
+  const composedUniverse =
+    !resolved.universe && !resolved.company ? universeFromComposition(composition) : null;
+  const resolution = composedUniverse
+    ? {
+        ...resolved,
+        universe: composedUniverse,
+        notes: [...(resolved.notes || []), 'universe:from-screen'],
+      }
+    : resolved;
   const spec = buildResearchSpec(understood, { query, resolution, depth, now, fund });
   if (challenge?.claim) spec.challenge = { claim: String(challenge.claim).slice(0, 900) };
   /* Nov 2026: what the question is trying to establish (lib/sonar/insight/intent.js). The
@@ -396,7 +409,12 @@ export async function runResearch(query, opts = {}) {
   const valuationP = evidenceOverride
     ? Promise.resolve(depth === 'deep' && equityTicker ? evidenceOverride.valuation || null : null)
     : equityTicker && depth === 'deep'
-      ? fetchDeepValuation(equityTicker, { ms: 6000, now }).catch(() => null)
+      ? fetchDeepValuation(equityTicker, {
+          ms: 6000,
+          now,
+          /* Nov 28 2026: the stored close when there is no live quote (never estimated). */
+          priceLookup: (t) => storedClose(admin, t, now),
+        }).catch(() => null)
       : Promise.resolve(null);
   /* Nov 6: the active organization's research methodology (defaults for everyone else). Its
      horizon applies when the question names none; it reaches the director and the valuation,

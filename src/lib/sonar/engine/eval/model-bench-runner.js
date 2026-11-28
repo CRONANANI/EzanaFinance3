@@ -12,7 +12,7 @@ import { understandQuery } from '@/lib/sonar/understand';
 import { scoreDomains } from '@/lib/sonar/engine/research-spec';
 import { resolveResearch } from '@/lib/sonar/engine/resolution';
 import { loadActiveConfig } from '@/lib/sonar/engine/config-store';
-import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
+import { fetchDeepValuation, storedClose } from '@/lib/sonar/valuation/fetch';
 import { runResearchComposition, resolveSubject } from '@/lib/sonar/composer/execute';
 import { inferComposition } from '@/lib/sonar/composer/intents';
 import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
@@ -238,7 +238,11 @@ export async function capture(admin, { suite, caseId, stepKey }) {
   const ticker = resolved?.company?.ticker || null;
   const valuation =
     c.depth === 'deep' && ticker
-      ? await fetchDeepValuation(ticker, { ms: 8000, now }).catch(() => null)
+      ? await fetchDeepValuation(ticker, {
+          ms: 8000,
+          now,
+          priceLookup: (t) => storedClose(admin, t, now),
+        }).catch(() => null)
       : null;
   const snapshot = {
     caseId: c.id,

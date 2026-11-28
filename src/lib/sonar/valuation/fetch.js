@@ -108,13 +108,43 @@ export async function fetchPeerSet(ticker, { ms = 5000, max = 6 } = {}) {
   }
 }
 
+/**
+ * The latest stored close for a ticker within 10 days (price_data_cache, written by the
+ * price sync jobs from licensed sources), or null. Nov 28 2026: deep runs called
+ * fetchDeepValuation without a quote, so the DCF never had a price even when the cache held
+ * yesterday's close. A missing price stays missing: nothing is estimated.
+ */
+export async function storedClose(admin, ticker, now = new Date()) {
+  if (!admin) return null;
+  const since = new Date(now.getTime() - 10 * 86400000).toISOString().slice(0, 10);
+  const asOf = now.toISOString().slice(0, 10);
+  const { data, error } = await admin
+    .from('price_data_cache')
+    .select('date, close')
+    .eq('ticker', String(ticker || '').toUpperCase())
+    .gte('date', since)
+    .lte('date', asOf)
+    .order('date', { ascending: false })
+    .limit(1);
+  if (error || !data?.length) return null;
+  const c = Number(data[0].close);
+  if (!Number.isFinite(c) || c <= 0) return null;
+  return { price: c, asOf: String(data[0].date).slice(0, 10), source: 'stored_close' };
+}
+
 /** The deep research valuation model, or null. */
 export async function fetchDeepValuation(
   ticker,
-  { quote = null, ms = 6000, now = new Date() } = {},
+  { quote = null, ms = 6000, now = new Date(), priceLookup = null, capexTerminalPct = null } = {},
 ) {
   const t = String(ticker || '').toUpperCase();
   try {
+    /* A live quote's price first; otherwise the stored close (dated and labelled). */
+    if (!(num(quote?.price) > 0) && priceLookup) {
+      const sc = await Promise.resolve(priceLookup(t)).catch(() => null);
+      if (sc?.price > 0)
+        quote = { ...(quote || {}), price: sc.price, asOf: sc.asOf, source: sc.source };
+    }
     const tFrom = new Date(now.getTime() - 14 * 24 * 3600 * 1000).toISOString().slice(0, 10);
     const [raw, subject, treasury] = await Promise.all([
       fetchValuationRaw(t, { ms, now }),
@@ -144,6 +174,7 @@ export async function fetchDeepValuation(
       peers,
       peerLogic: { ...sel.logic, treasuryDate: tr?.date || null },
       subject,
+      capexTerminalPct,
     });
   } catch {
     return null;

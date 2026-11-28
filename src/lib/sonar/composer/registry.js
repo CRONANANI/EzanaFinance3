@@ -533,7 +533,10 @@ export function validateAttachment(attachment) {
         ? (p.countries || []).length > 0
         : a.capability === 'company-comparison'
           ? Math.max((p.tickers || []).length, (p.company_names || []).length) >= 2
-          : Boolean(p.sector) || (p.tickers || []).length > 0;
+          : Boolean(p.sector) ||
+            (p.tickers || []).length > 0 ||
+            /* Nov 28 2026: a seed stage lists the universe (stages.js). */
+            ['congress', 'insider', 'contracts'].includes(p.universe_from);
     if (!ready) {
       a.issues.push({
         message:
@@ -541,7 +544,7 @@ export function validateAttachment(attachment) {
             ? 'Name at least two companies to compare.'
             : a.capability === 'macro-indicators'
               ? 'Name a country with data.'
-              : 'Name a sector or the companies to screen.',
+              : 'Name a sector or the companies to screen, or a condition that lists companies (congressional purchases, insider purchases, new federal contracts).',
       });
       return { ...a, status: 'conditional' };
     }
@@ -658,6 +661,8 @@ const SCREEN_SOURCE_DATASET = {
   congress: 'congress',
   lobbying: 'lobbying',
   holders13f: '13f',
+  holders13f_change: '13f',
+  contracts_window: 'gov-contracts',
 };
 
 export const PUBLIC_ANALYTICS = new Set([

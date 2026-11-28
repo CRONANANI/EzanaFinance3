@@ -392,6 +392,18 @@ export function buildValuationHistory(raw, { now = new Date(), years = LOOKBACK_
   const threeAgo = idx >= 12 ? ttmRows[idx - 12] : null;
   const growth = (a, b) => (a != null && b != null && b > 0 ? (a / b - 1) * 100 : null);
   const lastQ = inp.quarters.at(-1);
+  /* Nov 28 2026: capex intensity by fiscal-year-spaced trailing windows (the latest, then
+     every fourth window back), the historical evidence the DCF's capex path fades toward. */
+  const capexHistory = [];
+  for (let k = idx; k >= 0 && capexHistory.length < 6; k -= 4) {
+    const w = ttmRows[k];
+    if (w?.revenue > 0 && w.capex != null)
+      capexHistory.push({
+        period: w.period,
+        capexPct: w.capex / w.revenue,
+        daPct: w.da != null ? w.da / w.revenue : null,
+      });
+  }
   return {
     version: VALUATION_VERSION,
     asOf: iso(now),
@@ -401,6 +413,9 @@ export function buildValuationHistory(raw, { now = new Date(), years = LOOKBACK_
       marketCap: cap,
       enterpriseValue: num(cur.ev),
       price,
+      /* Where the price came from: the live quote, or a stored close (fetch.js). */
+      priceAsOf: price != null ? inp.quote?.asOf || iso(now) : null,
+      priceSource: price != null ? inp.quote?.source || 'quote' : null,
       debt: bsNow?.debt ?? null,
       cash: bsNow?.cash ?? null,
       minority: bsNow?.minority ?? null,
@@ -408,6 +423,7 @@ export function buildValuationHistory(raw, { now = new Date(), years = LOOKBACK_
       forwardEps: fwd,
     },
     ttm,
+    capexHistory,
     growth: {
       revenueYoyPct: growth(ttmNow?.revenue, yearAgo?.revenue),
       revenueCagr3yPct:

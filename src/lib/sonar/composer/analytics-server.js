@@ -43,6 +43,14 @@ import {
   governmentDependence,
   screenSources,
 } from './screen.js';
+import {
+  SEED_SOURCES,
+  emptyStage,
+  failedStage,
+  filterStage,
+  stageResult,
+  stageRow,
+} from './stages.js';
 
 const RATIO_CONCEPTS = [
   'revenue',
@@ -648,6 +656,241 @@ async function holders13f(admin, tickers, issuers) {
   return { values: out, period: ranked.period || ranked.meta?.period || null };
 }
 
+/* ── seed stages and windowed reads (Nov 28 2026, stages.js) ─────────── */
+
+/* A listed equity ticker (drops options, notes, "--" and free text in trade records). */
+const TICKER_RE = /^[A-Z][A-Z0-9]{0,4}(?:[.-][A-Z])?$/;
+
+/**
+ * The companies a seed source lists from dated records in [since, until] (until = today:
+ * future-dated records are excluded). Returns a stage result: ok with one row per company
+ * (value = members buying, purchase dollars, or award dollars), empty with a reason, or
+ * failed when the read errors. Nothing is inferred for a company without a record.
+ */
+export async function seedUniverse(admin, source, since, until) {
+  const stage = `seed:${source}`;
+  const period = { from: since, to: until };
+  const def = SEED_SOURCES[source];
+  if (!def) return failedStage(stage, source, `unknown seed source ${source}`);
+  let rows;
+  try {
+    if (source === 'congress') {
+      rows = await pageAll(() =>
+        admin
+          .from('congress_trades')
+          .select('ticker, bioguide_id, type, transaction_date')
+          .gte('transaction_date', since)
+          .lte('transaction_date', until)
+          .order('id', { ascending: true }),
+      );
+    } else if (source === 'insider') {
+      rows = await pageAll(() =>
+        admin
+          .from('sec_insider_transactions')
+          .select('issuer_ticker, value_usd, transaction_date')
+          .eq('transaction_code', 'P')
+          .gte('transaction_date', since)
+          .lte('transaction_date', until)
+          .order('accession_no', { ascending: true }),
+      );
+    } else {
+      rows = await pageAll(
+        () =>
+          admin
+            .from('contract_awards_resolved')
+            .select('ticker, award_amount, action_date')
+            .not('ticker', 'is', null)
+            .gte('action_date', since)
+            .lte('action_date', until)
+            .order('generated_award_id', { ascending: true }),
+        80,
+      );
+    }
+  } catch (e) {
+    return failedStage(
+      stage,
+      source,
+      `${def.table} could not be read: ${String(e?.message || e).slice(0, 120)}`,
+      { period },
+    );
+  }
+  return seedFromRows(source, rows, { since, until });
+}
+
+/** Pure part of seedUniverse (exported for fixture tests). */
+export function seedFromRows(source, rows = [], { since, until }) {
+  const stage = `seed:${source}`;
+  const period = { from: since, to: until };
+  const def = SEED_SOURCES[source];
+  const by = new Map();
+  let dateKey = 'transaction_date';
+  let dropped = 0;
+  let asOf = null;
+  for (const r of rows) {
+    let t;
+    let v;
+    if (source === 'congress') {
+      if (!/purchase|buy/i.test(String(r.type || ''))) continue;
+      t = String(r.ticker || '')
+        .trim()
+        .toUpperCase();
+      v = r.bioguide_id;
+    } else if (source === 'insider') {
+      t = String(r.issuer_ticker || '')
+        .trim()
+        .toUpperCase();
+      v = Number(r.value_usd);
+    } else {
+      dateKey = 'action_date';
+      t = String(r.ticker || '')
+        .trim()
+        .toUpperCase();
+      v = Number(r.award_amount);
+    }
+    const d = String(r[dateKey] || '').slice(0, 10);
+    if (!d || d < since || d > until) {
+      dropped += 1;
+      continue;
+    }
+    if (!TICKER_RE.test(t)) {
+      dropped += 1;
+      continue;
+    }
+    if (!asOf || d > asOf) asOf = d;
+    const cur = by.get(t) || (source === 'congress' ? new Set() : 0);
+    if (source === 'congress') {
+      if (v) cur.add(v);
+      by.set(t, cur);
+    } else if (Number.isFinite(v)) by.set(t, cur + v);
+  }
+  const out = [...by.entries()]
+    .map(([ticker, v]) => stageRow({ ticker, value: source === 'congress' ? v.size : v }))
+    .filter((r) => r.value != null && r.value > 0)
+    .sort((a, b) => (a.ticker < b.ticker ? -1 : 1));
+  const lineage = [
+    {
+      source,
+      table: def.table,
+      filter: `${dateKey} ${since} to ${until}${source === 'congress' ? ', purchases' : source === 'insider' ? ', code P' : ', resolved ticker'}`,
+      asOf,
+      recordsRead: rows.length,
+      recordsDropped: dropped,
+    },
+  ];
+  if (!out.length)
+    return emptyStage(
+      stage,
+      source,
+      `no ${def.label.toLowerCase()} between ${since} and ${until}`,
+      {
+        measure: def.measure,
+        period,
+        lineage,
+        coverage: { requested: 0, covered: 0, missing: 0 },
+      },
+    );
+  return stageResult({
+    stage,
+    source,
+    measure: def.measure,
+    status: 'ok',
+    rows: out,
+    period,
+    asOf: lineage[0].asOf,
+    lineage,
+  });
+}
+
+/** New federal award dollars per ticker with an action date in [since, until]. */
+async function contractsInWindow(admin, tickers, since, until) {
+  const values = {};
+  let asOf = null;
+  for (const batch of chunk(tickers, 200)) {
+    const rows = await pageAll(() =>
+      admin
+        .from('contract_awards_resolved')
+        .select('ticker, award_amount, action_date')
+        .in('ticker', batch)
+        .gte('action_date', since)
+        .lte('action_date', until)
+        .order('generated_award_id', { ascending: true }),
+    );
+    for (const r of rows) {
+      const a = Number(r.award_amount);
+      if (!Number.isFinite(a)) continue;
+      values[r.ticker] = (values[r.ticker] || 0) + a;
+      const d = String(r.action_date || '').slice(0, 10);
+      if (d && (!asOf || d > asOf)) asOf = d;
+    }
+  }
+  return { values, asOf };
+}
+
+/** Net change in comparable 13F managers per ticker (latest covered quarter vs prior). */
+async function holders13fChange(admin, tickers, issuers) {
+  const holdings = tickers.map((t) => ({ ticker: t, issuer: issuers[t] || t }));
+  const master = await securityMaster(admin, tickers);
+  const universe = normalizeUniverse(holdings, master);
+  if (!universe.eligible.length) return { values: {}, period: null, prior: null };
+  const ranked = await rankInstitutionalOwnershipForUniverse(admin, {
+    universe,
+    metric: 'change',
+    comparePrior: true,
+  });
+  const out = {};
+  if (ranked.prior)
+    for (const r of ranked.rows || [])
+      if (r.ticker && r.comparablePrior != null && r.comparableNow != null)
+        out[r.ticker] = r.comparableNow - r.comparablePrior;
+  return { values: out, period: ranked.period || null, prior: ranked.prior || null };
+}
+
+/** The result of a screen whose seed stage found nothing: explicit, not an error. */
+function emptyScreenResult({ seed, filters, rankBy, direction, windowDays, stages }) {
+  const funnel = [{ step: 'universe', label: seed.reason, count: 0 }];
+  const coverage = screenCoverage({
+    eligible: 0,
+    evaluated: 0,
+    withData: 0,
+    shown: 0,
+    priceCoverage: null,
+    capped13f: 0,
+    funnel,
+    unclassified: 0,
+  });
+  const limitations = [
+    `The screen stopped at its first stage: ${seed.reason}. Later conditions (${filters.map((f) => f.metric).join(', ')}) were not run.`,
+    `Window: the last ${windowDays} days.`,
+  ];
+  return {
+    output: 'calculated',
+    title: 'Financial Screen',
+    version: SCREEN_VERSION,
+    coverage,
+    funnel,
+    columns: [],
+    table: [],
+    rankBy,
+    direction,
+    limitations,
+    stages: [
+      ...stages,
+      ...filters.slice(1).map((f) =>
+        stageResult({
+          stage: `filter:${f.metric}`,
+          source: SCREEN_MEASURES[f.metric]?.source || null,
+          status: 'skipped',
+          reason: `not run: stage ${seed.stage} was ${seed.status} (${seed.reason})`,
+        }),
+      ),
+    ],
+    text: [
+      `Financial screen (${SCREEN_VERSION}, calculated): no companies.`,
+      ...limitations.map((l) => `Limitation: ${l}`),
+    ].join('\n'),
+  };
+}
+
 /* ── financial-screen ──────────────────────────────────────────────────── */
 
 export async function runScreen(admin, att, { now = new Date() } = {}) {
@@ -659,11 +902,17 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   const windowDays = Math.min(730, Math.max(7, Number(p.window_days) || 90));
   const since = new Date(now.getTime() - windowDays * 86400000).toISOString().slice(0, 10);
 
-  /* Universe: named tickers, an exact GICS sector, or a verified industry (6.4). */
+  /* Universe: named tickers, an exact GICS sector, a verified industry (6.4), or (Nov 28
+     2026) a seed stage that lists companies from dated records: congressional purchases,
+     insider purchases or new federal awards in the screen window. */
+  const until = now.toISOString().slice(0, 10);
   let universe = [];
   let universeLabel = '';
   let unclassified = 0;
   const universeNotes = [];
+  const stages = [];
+  const seedValues = {};
+  let seedSource = null;
   if (Array.isArray(p.tickers) && p.tickers.length) {
     universe = p.tickers.slice(0, 60).map((t) => ({ ticker: String(t).toUpperCase() }));
     universeLabel = `${universe.length} named companies`;
@@ -673,6 +922,15 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     universeLabel = u.label;
     universeNotes.push(...u.notes);
     unclassified = u.unclassified || 0;
+  } else if (p.universe_from && SEED_SOURCES[p.universe_from]) {
+    seedSource = p.universe_from;
+    const seed = await seedUniverse(admin, seedSource, since, until);
+    stages.push(seed);
+    if (seed.status !== 'ok' && seed.status !== 'partial')
+      return emptyScreenResult({ seed, filters, rankBy, direction, windowDays, stages });
+    universe = seed.rows.map((r) => ({ ticker: r.ticker }));
+    for (const r of seed.rows) seedValues[r.ticker] = r.value;
+    universeLabel = `${SEED_SOURCES[seedSource].label} (${since} to ${until})`;
   } else {
     throw new Error('The screen has no universe: name a sector, an industry or companies.');
   }
@@ -704,11 +962,26 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         }
       : {};
   }
-  const withFilings = universe.filter((u) => values[u.ticker]?.revenue != null);
+  /* The seed's own measure is already read: its value carries forward. A contracts seed
+     inside a window is the windowed measure (awards signed in the window). */
+  const seedRead = seedSource === 'contracts' && p.window_days ? 'contracts_window' : seedSource;
+  const seedKey = seedRead
+    ? Object.values(SCREEN_MEASURES).find((m) => m.source === seedRead)?.key
+    : null;
+  if (seedKey) for (const u of universe) values[u.ticker][seedKey] = seedValues[u.ticker] ?? null;
 
-  /* Cheap filters first (filed figures), then the event sources only for survivors. */
+  /* A sector or ticker universe needs filed revenue to be evaluated at all; a seeded
+     universe needs it only when a condition or the ranking reads filed figures. */
   const ratioFilters = filters.filter((f) => SCREEN_MEASURES[f.metric]?.source === 'ratios');
   const otherFilters = filters.filter((f) => SCREEN_MEASURES[f.metric]?.source !== 'ratios');
+  const needsFilings =
+    !seedSource || ratioFilters.length || SCREEN_MEASURES[rankBy]?.source === 'ratios';
+  const withFilings = needsFilings
+    ? universe.filter((u) => values[u.ticker]?.revenue != null)
+    : universe;
+
+  /* Cheap filters first (filed figures), then each event source only for the survivors
+     of the stage before it, in the order the question states the conditions. */
   const stage1 = applyScreen({
     universe: withFilings,
     values,
@@ -717,21 +990,39 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     topN: 100000,
   });
   let survivors = stage1.rows.map((r) => ({ ticker: r.ticker }));
-  const sources = screenSources(otherFilters, rankBy).filter((s) => s !== 'ratios');
   const notes = [];
   const valuationNotes = [];
   let priceCoverage = null;
   let capped13f = 0;
   let lobbyYear = null;
   let period13f = null;
-  for (const src of sources) {
-    const tick = survivors.map((s) => s.ticker);
-    if (!tick.length) break;
+  let prior13f = null;
+  const read = new Set(seedRead ? [seedRead] : []);
+  const lineage = {};
+
+  async function readSource(src, tick) {
+    if (!tick.length || read.has(src)) return;
+    read.add(src);
     if (src === 'contracts') {
       const v = await contractsByTicker(admin, tick, now);
       for (const t of tick) values[t].contracts = v[t] ?? null;
+      lineage[src] = {
+        table: 'company_contract_history',
+        filter: `fiscal_year = ${completeFederalFy(now)}`,
+      };
       notes.push(
         `Federal contracts: value of prime awards that started in federal fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30), obligated to date, for every company. This is not revenue.`,
+      );
+    } else if (src === 'contracts_window') {
+      const v = await contractsInWindow(admin, tick, since, until);
+      for (const t of tick) values[t].contracts_window = v.values[t] ?? 0;
+      lineage[src] = {
+        table: 'contract_awards_resolved',
+        filter: `action_date ${since} to ${until}`,
+        asOf: v.asOf,
+      };
+      notes.push(
+        `New federal contracts: prime awards with an action date from ${since} to ${until} (future-dated records excluded), by resolved ticker. A company with no award in the window counts as none.`,
       );
     } else if (src === 'valuation') {
       /* Stored closes first for every company; live quotes only for the rest, largest by
@@ -756,6 +1047,11 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       for (const t of tick) Object.assign(values[t], v.values[t] || {});
       valuationNotes.push(...valuationGaps(valued, v.values));
       const dates = [...new Set(valued.map((t) => v.values[t]?.priceAsOf).filter(Boolean))].sort();
+      lineage[src] = {
+        table: 'price_data_cache',
+        filter: 'stored closes, then live quotes',
+        asOf: dates[dates.length - 1] || null,
+      };
       if (dates.length)
         notes.push(
           `Prices as of ${dates[dates.length - 1]}${dates.length > 1 ? ` (earliest ${dates[0]})` : ''}; earnings and revenue are trailing twelve months from filed 10-K and 10-Q figures; share counts are the latest filed cover-page counts.`,
@@ -763,42 +1059,122 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     } else if (src === 'insider') {
       const v = await insiderPurchases(admin, tick, since);
       for (const t of tick) values[t].insider = v[t] ?? 0;
+      lineage[src] = { table: 'sec_insider_transactions', filter: `code P since ${since}` };
     } else if (src === 'congress') {
       const v = await congressBuyers(admin, tick, since);
       for (const t of tick) values[t].congress = v[t] ?? 0;
+      lineage[src] = { table: 'congress_trades', filter: `purchases since ${since}` };
     } else if (src === 'lobbying') {
       const v = await lobbyingSpend(admin, tick);
       lobbyYear = v.year;
       for (const t of tick) values[t].lobbying = v.values[t] ?? null;
-    } else if (src === 'holders13f') {
-      /* 13F breadth is the costliest read: only after every other filter, and capped. */
+      lineage[src] = { table: 'lobbying_filings', filter: `filing_year ${v.year}` };
+    } else if (src === 'holders13f' || src === 'holders13f_change') {
+      /* 13F is the costliest read: only after every other filter, and capped. */
       const ranked = tick.slice(0, MAX_RANKED_13F);
-      capped13f = Math.max(0, tick.length - MAX_RANKED_13F);
+      capped13f = Math.max(capped13f, tick.length - MAX_RANKED_13F);
       if (tick.length > MAX_RANKED_13F)
         notes.push(
-          `13F breadth was computed for the first ${MAX_RANKED_13F} of ${tick.length} remaining companies (alphabetical).`,
+          `13F was computed for the first ${MAX_RANKED_13F} of ${tick.length} remaining companies (alphabetical).`,
         );
-      const v = await holders13f(admin, ranked, issuers);
-      period13f = v.period;
-      for (const t of tick) values[t].holders13f = v.values[t] ?? null;
+      if (src === 'holders13f') {
+        const v = await holders13f(admin, ranked, issuers);
+        period13f = v.period;
+        for (const t of tick) values[t].holders13f = v.values[t] ?? null;
+      } else {
+        const v = await holders13fChange(admin, ranked, issuers);
+        period13f = v.period;
+        prior13f = v.prior;
+        for (const t of tick) values[t].holders13f_change = v.values[t] ?? null;
+      }
+      lineage[src] = {
+        table: 'sec_13f_holdings',
+        filter: `period ${period13f}${prior13f ? ` vs ${prior13f}` : ''}`,
+        asOf: period13f,
+      };
     }
   }
+
+  /* The chain: one stage per condition, each on its predecessor's verified survivors. */
+  const unsupportedNotes = [...stage1.unsupported];
+  const filterFunnel = [];
+  let stopped = null;
+  for (const f of otherFilters) {
+    const m = SCREEN_MEASURES[f.metric];
+    if (stopped) {
+      stages.push(
+        stageResult({
+          stage: `filter:${f.metric}`,
+          source: m?.source || null,
+          status: 'skipped',
+          reason: `not run: stage ${stopped.stage} was ${stopped.status} (${stopped.reason})`,
+        }),
+      );
+      continue;
+    }
+    /* The seed stage is this condition when it only asks for a record; a threshold
+       ("more than two members") still runs on the seed's values. */
+    if (m && seedRead && m.source === seedRead && f.op === 'exists') continue;
+    // eslint-disable-next-line no-await-in-loop
+    if (m)
+      await readSource(
+        m.source,
+        survivors.map((x) => x.ticker),
+      );
+    const r = applyScreen({
+      universe: survivors,
+      values,
+      filters: [f],
+      rankBy: null,
+      topN: 100000,
+    });
+    unsupportedNotes.push(...r.unsupported);
+    filterFunnel.push(...r.funnel.slice(1));
+    if (!m) continue;
+    const stage = filterStage({
+      stage: `filter:${f.metric}`,
+      source: m.source,
+      measure: f.metric,
+      universe: survivors,
+      values: Object.fromEntries(
+        survivors.map((x) => [x.ticker, values[x.ticker]?.[m.key] ?? null]),
+      ),
+      passed: new Set(r.rows.map((x) => x.ticker)),
+      period: { from: since, to: until },
+      asOf: lineage[m.source]?.asOf || null,
+      lineage: [{ source: m.source, ...(lineage[m.source] || {}) }],
+    });
+    stages.push(stage);
+    survivors = r.rows.map((x) => ({ ticker: x.ticker }));
+    if (!survivors.length) stopped = stage;
+  }
+  const rankSrc = rankBy ? SCREEN_MEASURES[rankBy]?.source : null;
+  if (rankSrc && rankSrc !== 'ratios')
+    await readSource(
+      rankSrc,
+      survivors.map((x) => x.ticker),
+    );
+  const sources = [...read];
   const final = applyScreen({
     universe: survivors,
     values,
-    filters: otherFilters,
+    filters: [],
     rankBy,
     direction,
     topN,
   });
-  /* One funnel across both stages. */
+  unsupportedNotes.push(...final.unsupported);
+  /* One funnel across every stage. */
   const funnel = [
     { step: 'universe', label: universeLabel, count: fullUniverse },
     ...(fullUniverse > universe.length
       ? [{ step: 'cap', label: `First ${MAX_UNIVERSE} screened`, count: universe.length }]
       : []),
-    { step: 'filings', label: 'With filed annual revenue', count: withFilings.length },
+    ...(needsFilings
+      ? [{ step: 'filings', label: 'With filed annual revenue', count: withFilings.length }]
+      : []),
     ...stage1.funnel.slice(1),
+    ...filterFunnel,
     ...final.funnel.slice(1),
   ];
   const rankM = rankBy ? SCREEN_MEASURES[rankBy] : null;
@@ -906,9 +1282,13 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     lobbyYear
       ? `Lobbying spend is the ${lobbyYear} total of LD-2 filings for clients verified against a ticker; unverified clients are left out.`
       : null,
-    period13f ? `13F breadth is the count of distinct managers in the ${period13f} quarter.` : null,
-    ...final.unsupported,
-    ...stage1.unsupported,
+    period13f && !prior13f
+      ? `13F breadth is the count of distinct managers in the ${period13f} quarter.`
+      : null,
+    prior13f
+      ? `Change in 13F managers is ${period13f} against ${prior13f}, counting only managers that filed in both quarters.`
+      : null,
+    ...unsupportedNotes,
     ...notes,
   ].filter(Boolean);
   /* Sonar 6.4 hardening: machine-readable coverage. A screen is complete only when every
@@ -956,6 +1336,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     rankBy,
     direction,
     limitations,
+    /* Nov 28 2026: the typed stage chain (stages.js) behind the funnel. */
+    stages,
     text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`)].join('\n'),
   };
 }

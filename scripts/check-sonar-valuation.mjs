@@ -511,3 +511,35 @@ test('branding: tokens only, no em dashes, neutral valuation colours', () => {
   ])
     assert.ok(!read(f).includes('—'), `${f}: em dash`);
 });
+
+test('Nov 28 2026: capex history and price provenance reach the DCF', () => {
+  const h = H.buildValuationHistory(
+    { ...fixture(), quote: { price: 210, asOf: '2026-11-27', source: 'stored_close' } },
+    { now: NOW },
+  );
+  /* Fiscal-year-spaced trailing windows, newest first, up to six. */
+  assert.ok(h.capexHistory.length >= 3 && h.capexHistory.length <= 6);
+  const rev0 = [24, 25, 26, 27].reduce((s, k) => s + 80e9 + k * 1.5e9, 0);
+  assert.ok(Math.abs(h.capexHistory[0].capexPct - 10e9 / rev0) < 1e-12);
+  assert.equal(h.current.price, 210);
+  assert.equal(h.current.priceSource, 'stored_close');
+  assert.equal(h.current.priceAsOf, '2026-11-27');
+  const m = M.buildValuationModel({ history: h, market: { beta: 1.1, riskFree: 0.042 } });
+  const capexRow = m.dcf.assumptions.find((a) => a.label === 'Capital expenditure');
+  assert.equal(capexRow.editable, 'capexTerminalPct');
+  assert.match(capexRow.note, /median of \d fiscal-year trailing windows/);
+  const priceRow = m.dcf.assumptions.find((a) => a.label === 'Share price');
+  assert.match(priceRow.note, /stored close as of 2026-11-27/);
+  assert.ok(m.sensitivity.capex.length >= 1);
+  /* An override is the reader's and is labelled so. */
+  const o = M.buildValuationModel({
+    history: h,
+    market: { beta: 1.1, riskFree: 0.042 },
+    capexTerminalPct: 0.05,
+  });
+  assert.equal(o.dcf.inputs.capexSource, 'override');
+  assert.equal(o.dcf.inputs.capexTerminalPct, 0.05);
+  /* More terminal capex than the history path: a lower value, every other input equal. */
+  assert.ok(o.dcf.inputs.capexTerminalPct > m.dcf.inputs.capexTerminalPct);
+  assert.ok(o.dcf.result.perShare < m.dcf.result.perShare);
+});

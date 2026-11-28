@@ -7,7 +7,12 @@
  * Column and function shapes were checked against the live database on Nov 17, 2026
  * (docs/sonar/adaptive-research/DATA_COVERAGE.md).
  */
-import { fetchValuationRaw, fetchDeepValuation, fetchPeerSet } from '@/lib/sonar/valuation/fetch';
+import {
+  fetchValuationRaw,
+  fetchDeepValuation,
+  storedClose,
+  fetchPeerSet,
+} from '@/lib/sonar/valuation/fetch';
 import { normalizeInputs } from '@/lib/sonar/valuation/history';
 import { getMacroRankings } from '@/lib/sonar/macro/store';
 import { countryBrief, rankCountries, seriesHistory } from '@/lib/sonar/macro/series-store';
@@ -67,7 +72,12 @@ export function adaptiveDataDeps(admin) {
     return new Map((data || []).map((m) => [m.bioguide_id, m.full_name]));
   };
   return {
-    valuation: (ticker, { now } = {}) => fetchDeepValuation(ticker, { now, ms: 6000 }),
+    valuation: (ticker, { now } = {}) =>
+      fetchDeepValuation(ticker, {
+        now,
+        ms: 6000,
+        priceLookup: (t) => storedClose(admin, t, now || new Date()),
+      }),
     peerSet: (ticker) => fetchPeerSet(ticker),
     rankings: () => getMacroRankings(),
     revenueMix: (ticker) => fetchRevenueMix(ticker, { ms: 4000 }),

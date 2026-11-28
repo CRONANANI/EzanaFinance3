@@ -18,6 +18,15 @@
  *   NOPAT_t       = EBIT_t x (1 - tax rate)
  *   reinvestment  = (capex - D&A) as a share of revenue + working capital as a share of the
  *                   change in revenue
+ *   capex_t       = revenue_t x capex intensity_t. Nov 28 2026: the intensity fades linearly
+ *                   from the trailing ratio (year 1) to a terminal ratio by year 5, and the
+ *                   terminal value uses the terminal ratio. The terminal ratio is, in order:
+ *                   a reader override (capexTerminalPct), else the median of the company's
+ *                   own fiscal-year-spaced trailing capex/revenue history (at least three
+ *                   years), floored at D&A/revenue, else the trailing ratio held flat. Holding
+ *                   a capex peak flat forever (MSFT: 39% of revenue against 12% D&A) assumes
+ *                   the peak is permanent while growth falls to 2.5%, which the model now
+ *                   states and lets the reader change, with a capex sensitivity.
  *   FCFF_t        = NOPAT_t + D&A_t - capex_t - change in working capital_t
  * Discount rate: WACC = E/(D+E) x (rf + beta x ERP) + D/(D+E) x cost of debt x (1 - tax).
  * Terminal value: Gordon growth on the year after the forecast, FCFF_{n+1} / (WACC - g).
@@ -26,7 +35,7 @@
  */
 import { quantile, percentileRank } from './history';
 
-export const MODEL_VERSION = 'valuation-model-v1';
+export const MODEL_VERSION = 'valuation-model-v2';
 export const FORECAST_YEARS = 5;
 export const ASSUMPTIONS = {
   equityRiskPremium: 0.05,
@@ -44,7 +53,54 @@ const pct = (v) => +(v * 100).toFixed(2);
  * market: { beta, riskFree (decimal), price }, consensus: { revenueGrowthNextFy (decimal) }
  * -> { ok, missing: string[], inputs }
  */
-export function dcfInputs(history, { beta = null, riskFree = null, consensusGrowth = null } = {}) {
+const median = (xs) => {
+  const v = [...xs].sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+};
+
+/**
+ * The terminal capex intensity and where it came from (see the header). Never invented:
+ * an override is the reader's, a history median is reported data, a flat ratio is the TTM.
+ */
+export function capexPlan({ capexPct, daPct, capexHistory = [], override = null }) {
+  const hist = (capexHistory || []).map((h) => num(h?.capexPct)).filter((v) => v != null && v >= 0);
+  if (num(override) != null && override >= 0)
+    return {
+      terminalPct: override,
+      source: 'override',
+      note: "the reader's terminal capex intensity",
+      history: hist,
+    };
+  if (hist.length >= 3) {
+    const med = median(hist);
+    const floored = Math.max(med, daPct);
+    return {
+      terminalPct: floored,
+      source: 'reported',
+      note: `fades from the trailing ${pct(capexPct)}% to ${pct(floored)}% by year 5: the median of ${hist.length} fiscal-year trailing windows (${hist.map((v) => `${pct(v)}%`).join(', ')})${floored > med ? `, floored at D&A (${pct(daPct)}%)` : ''}`,
+      history: hist,
+    };
+  }
+  return {
+    terminalPct: capexPct,
+    source: 'reported',
+    note: 'trailing four quarters, held flat (fewer than three years of capex history)',
+    history: hist,
+  };
+}
+
+/** Capex intensity in forecast year t (1-based): linear from the trailing ratio to terminal. */
+export function capexPctAt(i, t) {
+  const term = num(i.capexTerminalPct) ?? i.capexPct;
+  return i.capexPct + ((term - i.capexPct) * (t - 1)) / (FORECAST_YEARS - 1);
+}
+
+export function dcfInputs(
+  history,
+  { beta = null, riskFree = null, consensusGrowth = null, capexTerminalPct = null } = {},
+) {
   const t = history?.ttm || {};
   const c = history?.current || {};
   const missing = [];
@@ -85,6 +141,14 @@ export function dcfInputs(history, { beta = null, riskFree = null, consensusGrow
   const growthSource =
     num(consensusGrowth) != null ? 'market' : num(hist) != null ? 'reported' : 'assumption';
   const marketCap = num(c.marketCap);
+  const capexPct = capex / revenue;
+  const daPct = da / revenue;
+  const plan = capexPlan({
+    capexPct,
+    daPct,
+    capexHistory: history.capexHistory,
+    override: capexTerminalPct,
+  });
   return {
     ok: true,
     missing: [],
@@ -93,8 +157,12 @@ export function dcfInputs(history, { beta = null, riskFree = null, consensusGrow
       margin: ebit / revenue,
       taxRate,
       taxSource,
-      daPct: da / revenue,
-      capexPct: capex / revenue,
+      daPct,
+      capexPct,
+      capexTerminalPct: plan.terminalPct,
+      capexSource: plan.source,
+      capexNote: plan.note,
+      capexHistory: plan.history,
       /* Working capital: the trailing change against the trailing change in revenue is noisy,
          so the model holds it at 2% of the change in revenue, a stated convention. */
       wcPct: 0.02,
@@ -111,6 +179,10 @@ export function dcfInputs(history, { beta = null, riskFree = null, consensusGrow
       shares,
       marketCap,
       price: num(c.price),
+      priceAsOf: c.priceAsOf || null,
+      priceSource: c.priceSource || null,
+      /* Market-value weights need a market cap; without one WACC is the cost of equity. */
+      waccWeights: marketCap > 0 ? 'market' : 'equity_only',
     },
   };
 }
@@ -147,7 +219,7 @@ export function runDcf(i, over = {}) {
     const ebit = rev * x.margin;
     const nopat = ebit * (1 - x.taxRate);
     const da = rev * x.daPct;
-    const capex = rev * x.capexPct;
+    const capex = rev * capexPctAt(x, t);
     const dwc = (rev - prev) * x.wcPct;
     const fcff = nopat + da - capex - dwc;
     const df = 1 / (1 + r) ** t;
@@ -159,7 +231,7 @@ export function runDcf(i, over = {}) {
   const nextFcff =
     nextRev * x.margin * (1 - x.taxRate) +
     nextRev * x.daPct -
-    nextRev * x.capexPct -
+    nextRev * (num(x.capexTerminalPct) ?? x.capexPct) -
     (nextRev - last.revenue) * x.wcPct;
   const tv = nextFcff / (r - g);
   const pvTv = tv / (1 + r) ** FORECAST_YEARS;
@@ -232,6 +304,34 @@ export function sensitivityWaccGrowth(
       }),
     ),
   };
+}
+
+/**
+ * Per-share value across terminal capex intensity: D&A (sustaining only), the history
+ * median, the midpoint to the trailing ratio, and the trailing ratio held flat (the old
+ * assumption). Distinct values only, ascending.
+ */
+export function sensitivityCapex(i) {
+  const hist = i.capexHistory?.length >= 3 ? median(i.capexHistory) : null;
+  const pts = [
+    ['D&A only', i.daPct],
+    ['History median', hist],
+    ['Midpoint', hist != null ? (hist + i.capexPct) / 2 : null],
+    ['Trailing, held flat', i.capexPct],
+  ].filter(([, v]) => num(v) != null);
+  const seen = new Set();
+  return pts
+    .filter(([, v]) => (seen.has(v.toFixed(6)) ? false : seen.add(v.toFixed(6))))
+    .sort((a, b) => a[1] - b[1])
+    .map(([label, v]) => {
+      const out = runDcf(i, { capexTerminalPct: v });
+      return {
+        label,
+        terminalCapexPct: pct(v),
+        perShare: out.error ? null : out.perShare,
+        current: Math.abs(v - (i.capexTerminalPct ?? i.capexPct)) < 1e-9,
+      };
+    });
 }
 
 /**
@@ -365,6 +465,12 @@ export function valuationConclusion({ history, peers, dcf, scen, inputs }) {
       kind: 'risk',
       text: `The value is most sensitive to the discount rate and terminal growth: the terminal value carries most of it, so a small change in either moves the result a lot (see the sensitivity table).`,
     });
+  } else if (dcf && !dcf.error && dcf.perShare != null) {
+    /* Nov 28 2026: no price is no comparison, not no DCF. */
+    out.push({
+      kind: 'model',
+      text: `The base DCF gives $${fx(dcf.perShare, 2)} per share with a WACC of ${fx(dcf.wacc * 100, 2)}% and terminal growth of ${fx(dcf.terminalGrowth * 100, 1)}%; the terminal value is ${fx((dcf.terminalShare || 0) * 100, 0)}% of enterprise value. No current share price was available, so the value is not compared with one.`,
+    });
   } else if (dcf?.error || dcf?.missing) {
     out.push({
       kind: 'risk',
@@ -385,12 +491,19 @@ export function buildValuationModel({
   peers = [],
   peerLogic = null,
   subject = null,
+  capexTerminalPct = null,
 }) {
   if (!history) return null;
-  const di = dcfInputs(history, { beta: market.beta, riskFree: market.riskFree, consensusGrowth });
+  const di = dcfInputs(history, {
+    beta: market.beta,
+    riskFree: market.riskFree,
+    consensusGrowth,
+    capexTerminalPct,
+  });
   const dcf = di.ok ? runDcf(di.inputs) : { missing: di.missing };
   const scen = di.ok && !dcf.error ? scenarios(di.inputs) : [];
   const sens = di.ok && !dcf.error ? sensitivityWaccGrowth(di.inputs) : null;
+  const sensCapex = di.ok && !dcf.error ? sensitivityCapex(di.inputs) : null;
   const sens2 = sensitivityGrowthMultiple(history);
   const comp = peerComparison(subject, peers, peerLogic);
   const assumptions = di.ok
@@ -424,9 +537,13 @@ export function buildValuationModel({
         },
         {
           label: 'Capital expenditure',
-          value: `${pct(di.inputs.capexPct)}% of revenue`,
-          source: 'reported',
-          note: 'trailing four quarters',
+          value:
+            Math.abs(di.inputs.capexTerminalPct - di.inputs.capexPct) < 1e-9
+              ? `${pct(di.inputs.capexPct)}% of revenue`
+              : `${pct(di.inputs.capexPct)}% of revenue in year 1, ${pct(di.inputs.capexTerminalPct)}% by year 5 and in the terminal value`,
+          source: di.inputs.capexSource,
+          note: di.inputs.capexNote,
+          editable: 'capexTerminalPct',
         },
         {
           label: 'Working capital',
@@ -441,6 +558,15 @@ export function buildValuationModel({
           note: '10-year US Treasury yield',
         },
         { label: 'Beta', value: fx(di.inputs.beta, 2), source: 'market', note: 'provider beta' },
+        {
+          label: 'Share price',
+          value: di.inputs.price > 0 ? `$${fx(di.inputs.price, 2)}` : 'not available',
+          source: di.inputs.price > 0 ? 'market' : 'unavailable',
+          note:
+            di.inputs.price > 0
+              ? `${di.inputs.priceSource === 'stored_close' ? 'stored close' : 'live quote'} as of ${di.inputs.priceAsOf || 'today'}`
+              : 'no live quote or stored close within 10 days; the value is not compared with a price',
+        },
         {
           label: 'Equity risk premium',
           value: `${pct(di.inputs.erp)}%`,
@@ -457,7 +583,10 @@ export function buildValuationModel({
           label: 'WACC',
           value: dcf.error ? 'n/a' : `${pct(dcf.wacc)}%`,
           source: 'model',
-          note: 'market-value weights',
+          note:
+            di.inputs.waccWeights === 'market'
+              ? 'market-value weights'
+              : 'cost of equity only: no market capitalization to weight debt against',
         },
         {
           label: 'Terminal growth',
@@ -489,7 +618,7 @@ export function buildValuationModel({
         }
       : { ok: false, missing: di.missing, assumptions: [] },
     scenarios: scen,
-    sensitivity: { waccGrowth: sens, growthMultiple: sens2 },
+    sensitivity: { waccGrowth: sens, growthMultiple: sens2, capex: sensCapex },
     conclusion: valuationConclusion({
       history,
       peers: comp,

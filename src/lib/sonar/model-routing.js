@@ -27,6 +27,9 @@
  *   B        Haiku 5.5 quick, Sonnet 5.5 standard, Opus 5.5 deep director
  *   C        Haiku 5.5 quick, Sonnet 5.5 standard and deep director; Opus 5.5 for
  *            cross-domain deep synthesis and for critical review (red team, auditor)
+ *   D        Haiku 4.5 quick, Sonnet 5.5 standard writer and specialists, Opus 5.5 deep
+ *            writer and resolve, Sonnet 5.5 deep specialists, red team and auditor
+ *   D-efficient  D with Haiku 5.5 standard specialists (proposed; disabled by default)
  *
  * Selection (feature flag, all environment variables, all optional)
  *   SONAR_MODEL_PROFILE          base profile for everyone (default current)
@@ -142,9 +145,28 @@ const FIXED = {
     legacy_standard: M.sonnet55,
     legacy_deep: M.opus55,
   },
+  /* D-efficient (proposed Nov 28 2026, not authorized for any traffic): D with Haiku 5.5
+     standard specialists. On the d4 benchmark it scored 60.4 against D's 61.1 at $0.041 a
+     standard run against $0.065 (pairwise D 32-20, order consistency 0.69). Deep is
+     unchanged from D: Opus 5.5 writes and resolves (final synthesis), Sonnet 5.5 runs the
+     specialists, red team and audit. Served only when a flag names it. */
+  'D-efficient': {
+    quick: M.haiku45,
+    standard: M.sonnet55,
+    standard_specialist: M.haiku55,
+    deep_director: M.opus55,
+    deep_specialist: M.sonnet55,
+    deep_red_team: M.sonnet55,
+    deep_resolve: M.opus55,
+    deep_auditor: M.sonnet55,
+    cross_domain_director: null,
+    legacy_standard: M.sonnet55,
+    legacy_deep: M.opus55,
+  },
 };
 
-const PROFILES = ['current', 'A', 'B', 'C', 'D'];
+/** Every selectable profile. Only `current` is served unless a flag names another. */
+export const PROFILES = ['current', 'A', 'B', 'C', 'D', 'D-efficient'];
 
 /**
  * The model for every role under a profile, with SONAR_MODEL_ROLE_<ROLE> overrides and

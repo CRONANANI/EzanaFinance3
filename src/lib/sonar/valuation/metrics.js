@@ -62,11 +62,26 @@ export function valuationMetrics(valuation) {
   if (inp) {
     add(
       'dcf_capex_pct_assumed',
-      'DCF capex as a share of revenue (assumed)',
+      'DCF capex as a share of revenue, year 1 (trailing)',
       r4(inp.capexPct),
       'ratio',
-      'latest reported capex / revenue, held through the forecast',
+      'latest reported trailing capex / revenue',
     );
+    add(
+      'dcf_capex_pct_terminal',
+      'DCF capex as a share of revenue, year 5 and terminal',
+      r4(inp.capexTerminalPct ?? inp.capexPct),
+      'ratio',
+      inp.capexNote || 'trailing capex / revenue, held flat',
+    );
+    if (inp.price > 0)
+      add(
+        'dcf_price_used',
+        'Share price the DCF is compared with',
+        r2(inp.price),
+        'USD',
+        `${inp.priceSource === 'stored_close' ? 'stored close' : 'live quote'} as of ${inp.priceAsOf || valuation.asOf}`,
+      );
     add(
       'dcf_margin_assumed',
       'DCF operating margin (assumed)',
@@ -109,6 +124,20 @@ export function valuationMetrics(valuation) {
         'USD',
         `scenario: WACC ${s.assumptions?.waccPct}%, margin ${s.assumptions?.marginPct}%, first-year growth ${s.assumptions?.startGrowthPct}%`,
       );
+  }
+  for (const c of valuation.sensitivity?.capex || []) {
+    if (c?.perShare == null) continue;
+    const id = String(c.label || '')
+      .toLowerCase()
+      .replace(/[^a-z]+/g, '_')
+      .replace(/^_|_$/g, '');
+    add(
+      `dcf_capex_${id}_per_share`,
+      `DCF value per share with terminal capex at ${c.terminalCapexPct}% of revenue (${c.label})`,
+      r2(c.perShare),
+      'USD',
+      'capex sensitivity: terminal capex intensity varied, every other input held',
+    );
   }
   const cells = (valuation.sensitivity?.waccGrowth?.cells || [])
     .flat()

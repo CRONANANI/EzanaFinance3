@@ -73,6 +73,24 @@ export const SCREEN_MEASURES = {
     key: 'holders13f',
     unit: 'count',
   },
+  /* Nov 28 2026: "institutional ownership rose". Net change in managers holding the
+     security, counted only among managers that filed in both quarters (comparable filers),
+     so a manager that simply did not file yet is not read as selling. */
+  institutional_breadth_change: {
+    label: 'Change in 13F managers (comparable filers, QoQ)',
+    source: 'holders13f_change',
+    key: 'holders13f_change',
+    unit: 'count',
+  },
+  /* Nov 28 2026: new federal awards signed within the screen window (dated prime awards
+     with a resolved ticker; future-dated rows excluded). Used for "won new contracts in the
+     same period"; gov_contract_value stays the latest complete fiscal year. */
+  gov_contract_value_window: {
+    label: 'New federal awards (screen window)',
+    source: 'contracts_window',
+    key: 'contracts_window',
+    unit: 'usd',
+  },
 };
 
 /** Measures the screen cannot compute yet (reported, never substituted). */
