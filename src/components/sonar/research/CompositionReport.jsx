@@ -467,8 +467,8 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
             )}
             {a.aligned === false ? (
               <p className="scr5-note">
-                These companies close their fiscal years in different months, so the periods overlap
-                only in part.
+                The latest fiscal years of these companies end on different dates, so the periods
+                overlap only in part or not at all.
               </p>
             ) : null}
           </div>

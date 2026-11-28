@@ -83,6 +83,8 @@ export async function recordRun(
       analysis: run.analysis,
       limitations: run.limitations,
       confidence: run.confidence,
+      /* Sonar 6.3: why the stated confidence was lowered, for production audit. */
+      confidenceAudit: run.confidenceAudit || null,
       metrics: run.quantitativeMetrics,
       evidence: run.evidence,
     }),

@@ -204,11 +204,15 @@ export function compareCompanies(rows, metrics) {
     leaders[m] = best.ticker;
   }
   const ends = [...new Set(rows.map((r) => r.ratios?.fiscalYearEnd).filter(Boolean))];
-  const months = new Set(ends.map((e) => String(e).slice(5, 7)));
+  /* Sonar 6.3: aligned means the latest fiscal years end within 45 days of each other;
+     the same month in different years (a company that has not filed its newest year)
+     is not aligned. */
+  const times = ends.map((e) => Date.parse(e)).filter(Number.isFinite);
+  const gapDays = times.length ? (Math.max(...times) - Math.min(...times)) / 86400000 : 0;
   return {
     leaders,
     fiscalYearEnds: ends,
-    aligned: months.size <= 1,
+    aligned: gapDays <= 45,
     missing: rows.filter((r) => metrics.some((m) => r.ratios?.[m] == null)).map((r) => r.ticker),
   };
 }

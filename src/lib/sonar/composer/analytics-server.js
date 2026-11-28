@@ -491,7 +491,7 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
   const limitations = [
     cmp.aligned
       ? null
-      : `Fiscal years end in different months (${cmp.fiscalYearEnds.join(', ')}), so the periods overlap only in part.`,
+      : `The latest fiscal years end on different dates (${cmp.fiscalYearEnds.join(', ')}), so the periods overlap only in part or not at all.`,
     cmp.missing.length
       ? `Missing filed figures for some metrics: ${cmp.missing.join(', ')}.`
       : null,

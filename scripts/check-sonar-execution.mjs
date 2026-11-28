@@ -88,7 +88,7 @@ test('E2E comparison: named companies on revenue growth and operating margin', a
   assert.equal(res.leaders.revenue_growth, 'AAA');
   /* TTT closes its year in June: the periods only partly overlap, and that is said. */
   assert.equal(res.aligned, false);
-  assert.ok(res.limitations.some((l) => /different months/.test(l)));
+  assert.ok(res.limitations.some((l) => /different dates/.test(l)));
 });
 
 test('E2E comparison: fewer than two resolved companies fails instead of guessing', async () => {
@@ -173,6 +173,9 @@ test('confidence audit: high needs coverage, validation and complete calculation
   assert.equal(auditConfidence({ ...good, fulfillmentState: 'failed' }).level, 'low');
   assert.equal(auditConfidence({ ...good, citationCoverage: 0.3 }).level, 'low');
   assert.equal(auditConfidence({ ...good, evidenceCount: 1 }).level, 'medium');
+  /* Production runs on Nov 28 stated high with 2 and 3 of 7 claims surviving validation. */
+  assert.equal(auditConfidence({ ...good, claimSupportRate: 2 / 7 }).level, 'low');
+  assert.equal(auditConfidence({ ...good, claimSupportRate: 0.7 }).level, 'medium');
   /* Never raised. */
   assert.equal(auditConfidence({ ...good, claimed: 'low' }).level, 'low');
   assert.ok(auditConfidence({ ...good, writerTruncated: true }).reasons.length);
@@ -366,4 +369,21 @@ test('recognized government revenue comes from the segment disclosure for the sa
   });
   assert.equal(other.dependence.recognizedGovernmentShare, null);
   assert.match(other.text, /does not cover the fiscal year ending 2025-12-31/);
+});
+
+test('fiscal years in the same month of different years are not aligned', async () => {
+  const { compareCompanies } = await import('../src/lib/sonar/composer/screen.js');
+  const row = (ticker, end) => ({ ticker, ratios: { fiscalYearEnd: end, revenue_growth: 0.1 } });
+  assert.equal(
+    compareCompanies([row('A', '2025-12-27'), row('B', '2025-12-31')], ['revenue_growth']).aligned,
+    true,
+  );
+  assert.equal(
+    compareCompanies([row('A', '2025-12-31'), row('B', '2024-12-31')], ['revenue_growth']).aligned,
+    false,
+  );
+  assert.equal(
+    compareCompanies([row('A', '2025-12-27'), row('B', '2026-09-27')], ['revenue_growth']).aligned,
+    false,
+  );
 });

@@ -19,6 +19,7 @@ export const CONFIDENCE_RULES = {
   highMinEvidence: 3,
   highMinAuditPass: 0.8,
   mediumMinCitationCoverage: 0.5,
+  mediumMinClaimSupport: 0.5,
 };
 
 /**
@@ -63,7 +64,9 @@ export function auditConfidence({
     else if (citationCoverage < R.highMinCitationCoverage)
       lower(1, 'Not every finding cites evidence or a calculated metric.');
   }
-  if (claimSupportRate != null && claimSupportRate < R.highMinClaimSupport)
+  if (claimSupportRate != null && claimSupportRate < R.mediumMinClaimSupport)
+    lower(0, 'Validation removed or downgraded most of the written claims.');
+  else if (claimSupportRate != null && claimSupportRate < R.highMinClaimSupport)
     lower(1, 'Validation removed or downgraded unsupported claims.');
   if (evidenceCount < R.highMinEvidence)
     lower(1, 'Too little evidence was selected for high confidence.');
