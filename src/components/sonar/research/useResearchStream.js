@@ -83,6 +83,10 @@ export function useResearchStream() {
       }));
       return;
     }
+    /* Nov 28: the run id is known from the first byte (X-Research-Run), so a surface can keep
+       it across navigation and reopen the stored run instead of starting a second one. */
+    const headerRunId = res.headers.get('X-Research-Run');
+    if (headerRunId) setState((s) => ({ ...s, runId: headerRunId }));
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '';

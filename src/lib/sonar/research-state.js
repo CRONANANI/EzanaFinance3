@@ -137,10 +137,19 @@ export function reduceEvent(state, [type, d]) {
     case 'audit':
       return d && typeof d === 'object' ? { ...state, audit: d } : state;
     case 'done':
-      return { ...state, status: 'done', remaining: d.remaining ?? null, org: d.org ?? null };
+      /* Nov 28: keep the run id the server already sends, so a surface that only holds the
+         id (Sonar Companion) can reopen the stored run without running it again. */
+      return {
+        ...state,
+        status: 'done',
+        remaining: d.remaining ?? null,
+        org: d.org ?? null,
+        ...(d.runId ? { runId: d.runId } : {}),
+      };
     case 'error':
       return {
         ...state,
+        ...(d.runId ? { runId: d.runId } : {}),
         status: 'error',
         error: d.message || 'That research run did not complete.',
       };

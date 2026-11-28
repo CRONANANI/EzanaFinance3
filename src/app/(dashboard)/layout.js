@@ -23,6 +23,7 @@ import { CongressProvider } from '@/contexts/CongressContext';
 import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { BeginnerLevelProvider } from '@/contexts/BeginnerLevelContext';
 import { OrgThemeProvider } from '@/components/org/OrgThemeProvider';
+import { SonarCompanionProvider } from '@/components/sonar/companion/SonarCompanionProvider';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
 import './dashboard-polish.css';
@@ -163,8 +164,12 @@ function DashboardShell({
   isAuthenticated,
   children,
 }) {
-  return (
-    <ErrorBoundary>
+  /* Nov 28 2026: Sonar Companion, mounted once for the authenticated segment (personal and
+     organization workspaces alike) so it survives client-side navigation. The provider
+     always wraps the shell (so auth resolving never remounts the page); it renders nothing
+     for signed-out visitors on the public routes in this segment. */
+  const shell = (
+    <>
       <TutorialWalkthrough />
       <main
         className={`dashboard-main dashboard-main-content bg-app${
@@ -191,6 +196,11 @@ function DashboardShell({
           hidden. Signed-out visitors get PublicMobileCta from the root layout
           instead. */}
       {isAuthenticated ? <MobileBottomNav /> : null}
+    </>
+  );
+  return (
+    <ErrorBoundary>
+      <SonarCompanionProvider enabled={Boolean(isAuthenticated)}>{shell}</SonarCompanionProvider>
     </ErrorBoundary>
   );
 }

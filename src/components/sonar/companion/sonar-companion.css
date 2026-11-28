@@ -1,0 +1,497 @@
+/* Sonar Companion (Nov 28 2026). Scoped scc-. A compact institutional research terminal,
+   not a support chat: dark surface, hairlines, emerald for interaction only, mono figures.
+   An overlay (launcher, window) keeps a solid surface and a small shadow (branding guide
+   4.4); nothing inside it has an outline. Tokens only. z-index sits under the design
+   system's modals (1000+) and above page content; on phones the open sheet sits above the
+   tab bar, and the launcher sits above the tab bar and the safe area. */
+
+.scc-launcher,
+.scc-window {
+  --scc-bg: var(--bg-primary);
+  --scc-text: var(--text-primary);
+  --scc-muted: var(--text-muted);
+  --scc-rule: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --scc-accent: var(--emerald-text);
+  --scc-gap: 16px;
+  font-family: var(--font-sans);
+}
+
+/* ── launcher ─────────────────────────────────────────────── */
+.scc-launcher {
+  position: fixed;
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 990;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+  border-radius: var(--radius-xl);
+  background: var(--scc-bg);
+  color: var(--scc-text);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.scc-launcher.is-left {
+  right: auto;
+  left: 24px;
+}
+.scc-launcher .bi {
+  color: var(--emerald);
+}
+.scc-launcher:hover {
+  color: var(--scc-accent);
+  border-color: var(--emerald);
+}
+.scc-launcher:focus-visible,
+.scc-window button:focus-visible,
+.scc-window a:focus-visible,
+.scc-window textarea:focus-visible,
+.scc-resize:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.scc-launcher-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: scc-pulse 1.6s ease-in-out infinite;
+}
+@keyframes scc-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ── window ───────────────────────────────────────────────── */
+.scc-window {
+  position: fixed;
+  z-index: 990;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--scc-rule);
+  background: var(--scc-bg);
+  color: var(--scc-text);
+  box-shadow: var(--shadow-lg);
+  animation: scc-in 0.18s ease;
+}
+@keyframes scc-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.scc-window.is-compact {
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  width: min(400px, calc(100vw - 32px));
+  height: min(580px, calc(100vh - 120px));
+  border-radius: var(--radius-lg);
+}
+.scc-window.is-compact.is-left {
+  right: auto;
+  left: 24px;
+}
+.scc-window.is-sidebar {
+  top: var(--navbar-height, 64px);
+  right: 0;
+  bottom: 0;
+  width: var(--scc-w, 480px);
+  max-width: calc(100vw - 48px);
+  border-width: 0 0 0 1px;
+}
+.scc-window.is-sidebar.is-left {
+  right: auto;
+  left: 0;
+  border-width: 0 1px 0 0;
+}
+/* Docked: the page keeps its room (only when prefs.canDock said it fits). */
+body.scc-docked .dashboard-main {
+  margin-right: var(--scc-dock-w, 480px);
+}
+body.scc-docked.scc-docked-left .dashboard-main {
+  margin-right: 0;
+  margin-left: var(--scc-dock-w, 480px);
+}
+.scc-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  width: 8px;
+  cursor: ew-resize;
+}
+.scc-window.is-left .scc-resize {
+  left: auto;
+  right: -4px;
+}
+
+.scc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px var(--scc-gap);
+  border-bottom: 1px solid var(--scc-rule);
+}
+.scc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.scc-brand .bi {
+  color: var(--emerald);
+}
+.scc-scope {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--scc-muted);
+}
+.scc-tools {
+  display: inline-flex;
+  gap: 2px;
+}
+.scc-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--scc-muted);
+  cursor: pointer;
+}
+.scc-icon:hover,
+.scc-icon[aria-expanded='true'] {
+  color: var(--scc-text);
+}
+
+.scc-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  padding: 8px var(--scc-gap);
+  border-bottom: 1px solid var(--scc-rule);
+  font-size: 12px;
+  color: var(--scc-muted);
+}
+.scc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  color: var(--scc-text);
+}
+.scc-chip-x {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: transparent;
+  color: var(--scc-muted);
+  cursor: pointer;
+}
+
+.scc-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--scc-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.scc-window.is-dense {
+  --scc-gap: 12px;
+}
+.scc-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--scc-muted);
+}
+.scc-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--scc-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.scc-history ul {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.scc-hist {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--scc-rule);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.scc-hist.is-on {
+  color: var(--scc-accent);
+}
+.scc-hist-status {
+  flex: none;
+  font-size: 11px;
+  color: var(--scc-muted);
+}
+
+.scc-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scc-eyebrow {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.scc-headline {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.scc-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.scc-flag {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--warning);
+}
+.scc-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--negative);
+}
+.scc-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+.scc-metrics dt {
+  font-size: 12px;
+  color: var(--scc-muted);
+}
+.scc-metrics dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.scc-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.scc-visuals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scc-sources,
+.scc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--scc-muted);
+}
+.scc-source {
+  color: var(--text-secondary);
+}
+
+.scc-suggest {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.scc-sugg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--scc-rule);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.scc-sugg:hover {
+  color: var(--scc-accent);
+}
+.scc-sugg-tag {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--scc-muted);
+}
+
+.scc-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px var(--scc-gap);
+  border-bottom: 1px solid var(--scc-rule);
+  font-size: 13px;
+}
+.scc-range {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scc-mono {
+  font-family: var(--font-mono);
+}
+
+.scc-live {
+  margin: 0;
+  padding: 0 var(--scc-gap);
+  min-height: 0;
+  font-size: 12px;
+  color: var(--scc-muted);
+}
+.scc-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px var(--scc-gap) calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--scc-rule);
+}
+.scc-composer textarea {
+  flex: 1;
+  min-height: 40px;
+  max-height: 140px;
+  padding: 9px 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: var(--scc-text);
+  font: inherit;
+  font-size: 14px;
+}
+.scc-send {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--btn-primary-bg, var(--emerald));
+  color: var(--btn-primary-fg, var(--bg-primary));
+  cursor: pointer;
+}
+.scc-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.scc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── phones and tablets ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .scc-launcher {
+    right: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  .scc-launcher.is-left {
+    left: 16px;
+  }
+  .scc-launcher-label {
+    display: none;
+  }
+  .scc-window.is-compact,
+  .scc-window.is-sidebar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    height: min(88vh, 720px);
+    border-width: 1px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    z-index: 10050;
+  }
+  .scc-resize {
+    display: none;
+  }
+  body.scc-docked .dashboard-main,
+  body.scc-docked.scc-docked-left .dashboard-main {
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scc-window,
+  .scc-launcher-dot {
+    animation: none;
+  }
+  .scc-launcher {
+    transition: none;
+  }
+}

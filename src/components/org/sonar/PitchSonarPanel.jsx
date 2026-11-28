@@ -7,9 +7,12 @@
  */
 import Link from 'next/link';
 import SonarReportsList from './SonarReportsList';
+import { useSonarPageContext } from '@/components/sonar/companion/SonarCompanionContext';
 import './org-sonar.css';
 
 export default function PitchSonarPanel({ pitchId }) {
+  /* Nov 28: tell Sonar Companion which pitch is open (a hint; the server checks it again). */
+  useSonarPageContext(pitchId ? { pageType: 'org_pitch', objectId: pitchId } : null);
   if (!pitchId) return null;
   return (
     <section className="osr-pitch" aria-label="Sonar research">
