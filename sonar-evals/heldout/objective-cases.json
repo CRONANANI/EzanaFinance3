@@ -83,17 +83,6 @@
       }
     },
     {
-      "id": "C02",
-      "kind": "execute",
-      "question": "How does TTT compare with AAA on margins?",
-      "capability": "company-comparison",
-      "expect": {
-        "leaders": {
-          "operating_margin": "TTT"
-        }
-      }
-    },
-    {
       "id": "C03",
       "kind": "execute",
       "question": "AAA versus CCC on debt",
@@ -106,15 +95,6 @@
         "leaders": {
           "debt_to_equity": "AAA"
         }
-      }
-    },
-    {
-      "id": "C04",
-      "kind": "execute",
-      "question": "Compare the free cash flow of AAA, BBB and CCC",
-      "capability": "company-comparison",
-      "expect": {
-        "tickers": ["AAA", "BBB", "CCC"]
       }
     },
     {
@@ -531,21 +511,41 @@
       }
     },
     {
-      "id": "H10",
+      "id": "H12",
       "kind": "execute",
-      "question": "Defense contractors in order of revenue growth",
+      "question": "List defense contractors from highest to lowest revenue growth",
       "capability": "financial-screen",
       "expect": {
         "orderPrefix": ["DEF"]
       }
     },
     {
-      "id": "H11",
+      "id": "H13",
       "kind": "execute",
-      "question": "Energy stocks with P/E below 12 as well as revenue growth above 20%",
+      "question": "Energy names with a P/E under 12 along with revenue growth over 20%",
       "capability": "financial-screen",
       "expect": {
         "set": ["AAA"]
+      }
+    },
+    {
+      "id": "C05",
+      "kind": "execute",
+      "question": "How do TTT and AAA stack up on operating margin?",
+      "capability": "company-comparison",
+      "expect": {
+        "leaders": {
+          "operating_margin": "TTT"
+        }
+      }
+    },
+    {
+      "id": "C06",
+      "kind": "execute",
+      "question": "Show me net margin for BBB, CCC and AAA side by side",
+      "capability": "company-comparison",
+      "expect": {
+        "tickers": ["AAA", "BBB", "CCC"]
       }
     }
   ],
@@ -599,8 +599,29 @@
       "id": "H7",
       "question": "Energy companies with margins above 15% but P/E under 10",
       "reason": "failure inspected and a targeted grammar rule written for its phrasing during 6.4 development (2026-11-28); moved to development tests and replaced"
+    },
+    {
+      "id": "C02",
+      "question": "How does TTT compare with AAA on margins?",
+      "reason": "phrasing named in the 6.4 final hardening brief (in order of, as well as, how does X compare with Y, named-metric comparison of three securities); used as development examples and replaced, 2026-11-28"
+    },
+    {
+      "id": "C04",
+      "question": "Compare the free cash flow of AAA, BBB and CCC",
+      "reason": "phrasing named in the 6.4 final hardening brief (in order of, as well as, how does X compare with Y, named-metric comparison of three securities); used as development examples and replaced, 2026-11-28"
+    },
+    {
+      "id": "H10",
+      "question": "Defense contractors in order of revenue growth",
+      "reason": "phrasing named in the 6.4 final hardening brief (in order of, as well as, how does X compare with Y, named-metric comparison of three securities); used as development examples and replaced, 2026-11-28"
+    },
+    {
+      "id": "H11",
+      "question": "Energy stocks with P/E below 12 as well as revenue growth above 20%",
+      "reason": "phrasing named in the 6.4 final hardening brief (in order of, as well as, how does X compare with Y, named-metric comparison of three securities); used as development examples and replaced, 2026-11-28"
     }
   ],
   "v2_written": "2026-11-28, before any Sonar 6.4 code",
-  "v3_written": "2026-11-28, before any 6.4 hardening code"
+  "v3_written": "2026-11-28, before any 6.4 hardening code",
+  "v3_final_hardening_written": "2026-11-28, H12/H13/C05/C06 written before the final-hardening grammar changes"
 }
