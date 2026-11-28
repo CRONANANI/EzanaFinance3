@@ -129,13 +129,51 @@ export function agenciesInQuestion(question) {
   return { agencies: found, basis, explicitBasis };
 }
 
+/**
+ * Known source spellings that map to a canonical agency (Sonar 6.5.2). Empty until a
+ * variant is OBSERVED in the stored data (docs/sql/sonar-6-5-2/SQL_01 query 1 lists every
+ * distinct name with its count) and reviewed; a guessed alias would silently widen a filter.
+ * Shape: { 'exact source string, lower case': 'AGENCY_ID' }.
+ */
+export const SOURCE_ALIASES = Object.freeze({});
+
+/**
+ * Resolution of one stored agency value (Sonar 6.5.2).
+ * -> { status: 'matched' | 'alias' | 'unmatched' | 'missing', agency, value }
+ * Matching is exact after trimming and case-folding; nothing fuzzy.
+ */
+export function resolveAgency(value) {
+  const v = String(value ?? '').trim();
+  if (!v) return { status: 'missing', agency: null, value: null };
+  const exact = byName.get(v.toLowerCase());
+  if (exact) return { status: 'matched', agency: exact, value: v };
+  const alias = SOURCE_ALIASES[v.toLowerCase()];
+  if (alias && byId.get(alias)) return { status: 'alias', agency: byId.get(alias), value: v };
+  return { status: 'unmatched', agency: null, value: v };
+}
+
+/**
+ * Three-valued agency test for one row: 'match', 'no_match', or 'unresolved' when the row's
+ * agency value is missing or matches no canonical agency (so the row can neither pass nor
+ * fail the filter). A stored toptier code, when present, decides.
+ */
+export function agencyMatchState(row, agency, basis = 'awarding') {
+  if (!agency) return 'match';
+  const a = typeof agency === 'string' ? agencyById(agency) : agency;
+  if (!a) return 'no_match';
+  const code = row?.[`${basis}_toptier_code`];
+  if (code) return String(code) === a.cgac ? 'match' : 'no_match';
+  const r = resolveAgency(row?.[`${basis}_agency`]);
+  if (r.status === 'missing' || r.status === 'unmatched') return 'unresolved';
+  return r.agency.id === a.id ? 'match' : 'no_match';
+}
+
 /** Whether one award row matches an agency filter on a basis. */
 export function awardMatchesAgency(row, agency, basis = 'awarding') {
   if (!agency) return true;
   const a = typeof agency === 'string' ? agencyById(agency) : agency;
   if (!a) return false;
-  if (row?.[`${basis}_toptier_code`]) return String(row[`${basis}_toptier_code`]) === a.cgac;
-  return agencyFromSourceName(row?.[`${basis}_agency`])?.id === a.id;
+  return agencyMatchState(row, a, basis) === 'match';
 }
 
 /** A label for results: which agency, on which basis. */

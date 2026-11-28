@@ -58,6 +58,14 @@ const norm = (s) =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '');
 
+/* First significant word of a name (3+ characters), for the look-alike label only. */
+const firstWord = (n) => {
+  const w = String(n || '')
+    .toUpperCase()
+    .match(/[A-Z0-9]{3,}/);
+  return w ? w[0] : `\u0000${Math.abs(String(n || '').length)}`;
+};
+
 /**
  * Attribute one award to one company.
  * @param award     { recipient, ticker?, cik?, uei? }
@@ -78,6 +86,10 @@ export function attributeAward(award, company, relations = []) {
       (r.child?.cik && award.cik && r.child.cik === award.cik);
     if (!childMatch) continue;
     if (String(r.parentCik) !== String(company.cik)) continue;
+    /* Sonar 6.5.2: a relationship holds only for its own period. */
+    const d = String(award.date || award.action_date || '').slice(0, 10);
+    if (d && ((r.effectiveFrom && d < r.effectiveFrom) || (r.effectiveTo && d > r.effectiveTo)))
+      return { attribution: 'inferred', joins: false, basis: `relationship not in effect on ${d}` };
     if (r.verified && r.source)
       return {
         attribution: 'parent_group',
@@ -95,7 +107,8 @@ export function attributeAward(award, company, relations = []) {
     attribution: 'unresolved',
     joins: false,
     basis:
-      norm(award.recipient).slice(0, 6) === norm(company.name).slice(0, 6)
+      norm(award.recipient).slice(0, 6) === norm(company.name).slice(0, 6) ||
+      firstWord(award.recipient) === firstWord(company.name)
         ? 'similar name only; no supported relationship'
         : 'no supported relationship',
   };

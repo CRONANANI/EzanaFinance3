@@ -86,6 +86,7 @@ export function telemetry({
   entityResolutionFailures = 0,
   crossDatasetJoins = null,
   planGenerated = true,
+  dataQuality = null,
 }) {
   const by = (st) => steps.filter((s) => s.status === st).length;
   const reqs = objective?.requirements || [];
@@ -119,6 +120,10 @@ export function telemetry({
     entityResolutionFailures,
     crossDatasetJoins: crossDatasetJoins ?? Math.max(0, new Set(required).size - 1),
     objectiveComplete: objective?.objectiveStatus === 'complete',
+    /* Sonar 6.5.2: aggregate data-quality counts (numbers only). */
+    dataQuality: dataQuality
+      ? Object.fromEntries(Object.entries(dataQuality).map(([k, v]) => [k, Number(v) || 0]))
+      : null,
     durationMs,
     providerRequests,
     cacheHits,

@@ -51,13 +51,31 @@ export const AWARDS = [
   /* An agency spelling that matches no canonical toptier name. */
   award('AW-6', 'XDEL', '2026-03-01', 15e6, 'Department of Defence Logistics'),
   /* A subsidiary's award (no ticker on the row) and a look-alike name. */
-  award('AW-7', null, '2026-06-01', 70e6, DOD, DOD, { recipient: 'XALP FEDERAL SERVICES LLC', recipient_id: 'UEI-XSUB' }),
-  award('AW-8', null, '2026-05-01', 33e6, DOD, DOD, { recipient: 'XALP HOLDINGS GROUP PLC', recipient_id: 'UEI-XLOOK' }),
+  award('AW-7', null, '2026-06-01', 70e6, DOD, DOD, {
+    recipient: 'XALP FEDERAL SERVICES LLC',
+    recipient_id: 'UEI-XSUB',
+  }),
+  award('AW-8', null, '2026-05-01', 33e6, DOD, DOD, {
+    recipient: 'XALP HOLDINGS GROUP PLC',
+    recipient_id: 'UEI-XLOOK',
+  }),
 ];
 
 export const AWARD_FACTS = {
-  'AW-1': { total_obligation: 300e6, base_exercised_options: 420e6, base_and_all_options: 900e6, pop_start: '2025-03-01', pop_end: '2029-02-28' },
-  'AW-4': { total_obligation: 40e6, base_exercised_options: 40e6, base_and_all_options: 120e6, pop_start: '2025-11-01', pop_end: '2031-12-31' },
+  'AW-1': {
+    total_obligation: 300e6,
+    base_exercised_options: 420e6,
+    base_and_all_options: 900e6,
+    pop_start: '2025-03-01',
+    pop_end: '2029-02-28',
+  },
+  'AW-4': {
+    total_obligation: 40e6,
+    base_exercised_options: 40e6,
+    base_and_all_options: 120e6,
+    pop_start: '2025-11-01',
+    pop_end: '2031-12-31',
+  },
 };
 
 const tx = (id, awardId, date, delta, mod, type = 'Funding only action') => ({
@@ -84,20 +102,61 @@ export const TRANSACTIONS = [
 
 /* Verified relationship (effective from 2024) and one that starts after the award. */
 export const RELATIONSHIPS = [
-  { parent: { cik: '9300001', name: 'Xalp Corp' }, child: { identifierType: 'uei', identifier: 'UEI-XSUB', name: 'XALP FEDERAL SERVICES LLC' }, type: 'subsidiary', effectiveFrom: '2024-01-01', effectiveTo: null, source: { kind: 'sec_ex21', reference: '0009300001-25-000004' }, status: 'verified', evidence: 'filed_exhibit' },
+  {
+    parent: { cik: '9300001', name: 'Xalp Corp' },
+    child: { identifierType: 'uei', identifier: 'UEI-XSUB', name: 'XALP FEDERAL SERVICES LLC' },
+    type: 'subsidiary',
+    effectiveFrom: '2024-01-01',
+    effectiveTo: null,
+    source: { kind: 'sec_ex21', reference: '0009300001-25-000004' },
+    status: 'verified',
+    evidence: 'filed_exhibit',
+  },
 ];
 export const LATE_RELATIONSHIP = { ...RELATIONSHIPS[0], effectiveFrom: '2026-07-01' };
 
 export const COMPANIES = {
-  XALP: { ticker: 'XALP', cik: '9300001', name: 'Xalp Corp', revenue: 2.3e9, revenueFyEnd: '2025-12-31', currency: 'USD' },
-  XBET: { ticker: 'XBET', cik: '9300002', name: 'Xbet Inc', revenue: -5e6, revenueFyEnd: '2025-12-31', currency: 'USD' },
-  XGAM: { ticker: 'XGAM', cik: '9300003', name: 'Xgam Inc', revenue: null, revenueFyEnd: null, currency: 'USD' },
-  XDEL: { ticker: 'XDEL', cik: '9300004', name: 'Xdel Inc', revenue: 0.5e9, revenueFyEnd: '2025-12-31', currency: 'USD' },
+  XALP: {
+    ticker: 'XALP',
+    cik: '9300001',
+    name: 'Xalp Corp',
+    revenue: 2.3e9,
+    revenueFyEnd: '2025-12-31',
+    currency: 'USD',
+  },
+  XBET: {
+    ticker: 'XBET',
+    cik: '9300002',
+    name: 'Xbet Inc',
+    revenue: -5e6,
+    revenueFyEnd: '2025-12-31',
+    currency: 'USD',
+  },
+  XGAM: {
+    ticker: 'XGAM',
+    cik: '9300003',
+    name: 'Xgam Inc',
+    revenue: null,
+    revenueFyEnd: null,
+    currency: 'USD',
+  },
+  XDEL: {
+    ticker: 'XDEL',
+    cik: '9300004',
+    name: 'Xdel Inc',
+    revenue: 0.5e9,
+    revenueFyEnd: '2025-12-31',
+    currency: 'USD',
+  },
 };
 
 /* Filed revenue rows with conflicting concepts between years (M). */
 export const REVENUE_CONFLICT = [
-  { end: '2025-12-31', value: 1.2e9, concept: 'RevenueFromContractWithCustomerExcludingAssessedTax' },
+  {
+    end: '2025-12-31',
+    value: 1.2e9,
+    concept: 'RevenueFromContractWithCustomerExcludingAssessedTax',
+  },
   { end: '2024-12-31', value: 1.0e9, concept: 'SalesRevenueNet' },
 ];
 
@@ -118,7 +177,7 @@ export const EXPECTED = {
   flowGrowth: { XALP: { change: 80e6, pct: 53.333333 } },
   /* Ratios over XALP revenue 2.3e9 (FY ending 2025-12-31). */
   ratio: { flow: 0.1, cohort: 0.034783 },
-  boundary: { 'CONT_TX_AW1_P01': 2025, 'CONT_TX_AW1_P02': 2026 },
+  boundary: { CONT_TX_AW1_P01: 2025, CONT_TX_AW1_P02: 2026 },
   futureStartExcluded: ['AW-5'],
   unresolvedAgency: ['XDEL'],
 };

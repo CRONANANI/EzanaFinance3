@@ -100,26 +100,29 @@ const RULES = [
       /\binstitutional (?:ownership|participation|holders)\b(?![^.]*\b(?:contract|obligation|award)s?\b)/i,
     make: () => ({
       id: 'contracts_growth',
-      metric: 'federal_obligations_change',
+      /* Sonar 6.5.2: a change in obligations is a fiscal-year FLOW question. It needs
+         transaction records (execution/contracts.js obligationFlowGrowth); until they are
+         ingested the condition is unavailable. The award-start cohort is never substituted. */
+      metric: 'federal_obligation_flow_change',
       op: '>',
       value: 0,
-      resolution: 'proxy',
-      source: 'contracts_growth',
-      label: 'Increasing federal obligations',
-      note: 'Latest complete federal fiscal year against the prior one: net obligations (obligated to date, deobligations included) on prime awards that started in each year. Not revenue; a company with no award observed in one of the years is unknown.',
+      resolution: 'exact',
+      source: 'contracts_flow',
+      label: 'Increasing federal obligations (incurred, federal FY vs prior)',
+      note: 'Signed obligation changes of contract actions dated in the latest complete federal fiscal year against the prior one (transaction records). Unavailable for a company whose transaction records are incomplete; not replaced by award start dates.',
     }),
   },
   {
     re: /\b(?:declining|falling|decreasing|lower|shrinking)\b[^.]{0,30}\b(?:federal |government )?(?:contract |award )?(?:obligations|awards|contract exposure)\b|\bobligations (?:fell|declined|decreased)\b/i,
     make: () => ({
       id: 'contracts_growth',
-      metric: 'federal_obligations_change',
+      metric: 'federal_obligation_flow_change',
       op: '<',
       value: 0,
-      resolution: 'proxy',
-      source: 'contracts_growth',
-      label: 'Declining federal obligations',
-      note: 'Latest complete federal fiscal year against the prior one; net obligations on awards that started in each year.',
+      resolution: 'exact',
+      source: 'contracts_flow',
+      label: 'Declining federal obligations (incurred, federal FY vs prior)',
+      note: 'Signed obligation changes dated in each federal fiscal year (transaction records); missing records are unknown, never a decline.',
     }),
   },
   {
@@ -406,31 +409,45 @@ export function extractRequirements(question, { orgContext = null } = {}) {
     /\b(?:contract(?:ing)?|obligations?|award|government|federal)\b[^.]{0,60}\b(?:relative to|compared (?:with|to)|as a (?:share|percentage) of|to)\s+(?:[\w.'’-]+\s+){0,3}?revenue\b/i.test(
       q,
     ) || /\brevenue\b[^.]{0,20}\b(?:federal|government) (?:contract|obligation)/i.test(q);
+  /* Sonar 6.5.2: "obligated during the year" / "annual obligations" asks for the flow
+     ratio (transaction records); otherwise the labelled award-start cohort proxy. */
+  const flowAsk =
+    /\b(?:incurred|during (?:the |fiscal |federal )?(?:fy|year|fiscal year)|in (?:fy ?)?20\d\d|annual (?:federal )?obligations|obligated (?:in|during))\b/i.test(
+      q,
+    );
   if (ratioAsk && CONTRACT_WORDS.test(q))
-    ranking = {
-      measure: 'federal_contract_obligations_to_revenue',
-      resolution: 'proxy',
-      label: 'Federal obligations relative to revenue',
-      note: 'An exposure proxy: obligations on prime awards that started in the latest complete federal fiscal year, over the latest filed annual revenue; not the share of revenue from the government.',
-    };
+    ranking = flowAsk
+      ? {
+          measure: 'federal_obligation_flow_to_revenue',
+          resolution: 'proxy',
+          label: 'Federal obligations incurred relative to revenue (annual flow)',
+          note: 'Signed obligation changes dated in the latest complete federal fiscal year (transaction records) over the latest filed annual revenue; unavailable without complete transaction records. Not the share of revenue from the government.',
+        }
+      : {
+          measure: 'federal_award_cohort_exposure_to_revenue',
+          resolution: 'proxy',
+          label: 'Award-start cohort obligations relative to revenue',
+          note: 'An exposure proxy: obligated to date on prime awards that STARTED in the latest complete federal fiscal year, over the latest filed annual revenue. Not obligations incurred in the year, and not the share of revenue from the government.',
+        };
   else if (
     /\bthe most (?:federal )?(?:obligations|awards|contract (?:dollars|value))\b|\b(?:largest|biggest|top) (?:federal )?(?:obligations|contract recipients)\b/i.test(
       q,
     )
   )
     ranking = {
-      measure: 'federal_obligations_current_period',
-      resolution: 'exact',
-      label: 'Federal obligations (latest complete federal FY)',
+      measure: 'federal_award_cohort_obligations',
+      resolution: 'proxy',
+      label: 'Obligated to date on awards started in the latest federal FY (award-start cohort)',
+      note: 'Ranks recent awards by what has been obligated on them so far; obligations incurred in the year need transaction records.',
     };
   if (!ranking && rankBy) {
     const what = rankBy[1].toLowerCase();
     if (/contract|award|obligation/.test(what) && rankBy[2] && /revenue/.test(rankBy[2]))
       ranking = {
-        measure: 'federal_contract_obligations_to_revenue',
+        measure: 'federal_award_cohort_exposure_to_revenue',
         resolution: 'proxy',
-        label: 'Federal award obligations relative to filed revenue',
-        note: 'An exposure proxy: obligations in a federal fiscal year over the company’s filed revenue for the overlapping fiscal year; not the share of revenue from government.',
+        label: 'Award-start cohort obligations relative to filed revenue',
+        note: 'An exposure proxy over awards that started in the latest complete federal fiscal year (cumulative amounts); not obligations incurred in the year, and not the share of revenue from government.',
       };
     else if (/revenue growth/.test(what))
       ranking = { measure: 'revenue_growth', resolution: 'exact', label: 'Revenue growth' };

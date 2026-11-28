@@ -249,14 +249,16 @@ export function requirementsScreen(question, analytic, intent = null) {
     !(computable.length === 1 && reqs.conditions.length >= 2) &&
     !contractRank &&
     !(agencyReq && computable.length) &&
-    !computable.some((f) => SCREEN_MEASURES[f.metric]?.source === 'contracts_growth')
+    !computable.some((f) =>
+      ['contracts_growth', 'contracts_flow'].includes(SCREEN_MEASURES[f.metric]?.source),
+    )
   )
     return analytic;
   if (!reqs.conditions.length && !contractRank) return analytic;
   const base = screenable ? analytic : null;
   /* A measured change in obligations supersedes "any award" filters the intent inferred. */
-  const growthAsked = computable.some(
-    (f) => SCREEN_MEASURES[f.metric]?.source === 'contracts_growth',
+  const growthAsked = computable.some((f) =>
+    ['contracts_growth', 'contracts_flow'].includes(SCREEN_MEASURES[f.metric]?.source),
   );
   const filters = (base?.params.filters || []).filter(
     (x) => !(growthAsked && x.metric.startsWith('gov_contract_value')),

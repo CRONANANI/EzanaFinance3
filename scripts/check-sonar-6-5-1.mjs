@@ -99,14 +99,15 @@ test('A: "rank by obligations relative to revenue" is an executable plan', () =>
     'Rank publicly traded companies by federal contract obligations relative to annual revenue.',
   );
   assert.equal(att.capability, 'financial-screen');
-  assert.equal(att.params.rank_by, 'federal_contract_obligations_to_revenue');
+  /* 6.5.2: plans use the cohort id, which names what is measured (same computation). */
+  assert.equal(att.params.rank_by, 'federal_award_cohort_exposure_to_revenue');
   assert.equal(att.params.universe_from, 'contracts');
   for (const q of [
     'Which defense companies have the highest federal contracting exposure compared with annual revenue?',
     "How significant are government obligations relative to Palantir's reported revenue?",
     'Compare federal obligations relative to revenue for Lockheed Martin, RTX, and Northrop Grumman.',
   ])
-    assert.equal(plan(q)?.params.rank_by, 'federal_contract_obligations_to_revenue', q);
+    assert.equal(plan(q)?.params.rank_by, 'federal_award_cohort_exposure_to_revenue', q);
   assert.deepEqual(
     plan(
       'Compare federal obligations relative to revenue for Lockheed Martin, RTX, and Northrop Grumman.',
@@ -210,7 +211,7 @@ test('B: Department of Energy is an agency, not the energy sector', () => {
   );
   assert.equal(att.params.sector, undefined);
   assert.deepEqual(att.params.agency, { agency: 'DOE', basis: 'awarding' });
-  assert.equal(att.params.rank_by, 'federal_obligations_current_period');
+  assert.equal(att.params.rank_by, 'federal_award_cohort_obligations');
 });
 
 /* ═══ C. Congress + DoD + 13F ═══════════════════════════════════════════════════ */
@@ -263,9 +264,32 @@ test('D: comparable federal fiscal years, net and gross obligations, and unknown
   const att = plan(
     'Which publicly traded companies experienced increasing federal contract obligations over the last two comparable periods?',
   );
-  assert.equal(att.params.filters[0].metric, 'federal_obligations_change');
-  const r = await A.runScreen(db(), att, { now: F.NOW });
-  assert.deepEqual(verdictsOf(r), F.EXPECTED.D);
+  /* 6.5.2: "increasing obligations" is a fiscal-year flow question (transactions). With no
+     transaction table every company is unknown (dataset unavailable), never a cohort
+     substitute. The 6.5.1 cohort computation is still checked under its cohort id. */
+  assert.equal(att.params.filters[0].metric, 'federal_obligation_flow_change');
+  const missing = {
+    usaspending_award_transaction_sync:
+      'relation "public.usaspending_award_transaction_sync" does not exist',
+    usaspending_contract_transactions:
+      'relation "public.usaspending_contract_transactions" does not exist',
+  };
+  const r = await A.runScreen(db({ fail: missing }), att, { now: F.NOW });
+  assert.equal(verdictsOf(r).pass.length + verdictsOf(r).fail.length, 0);
+  assert.ok(r.steps.some((x) => x.source === 'contracts_flow' && x.status === 'unavailable'));
+  const cohort = await A.runScreen(
+    db(),
+    {
+      ...att,
+      params: {
+        ...att.params,
+        filters: [{ metric: 'federal_award_cohort_change', op: '>', value: 0 }],
+        rank_by: 'federal_award_cohort_change',
+      },
+    },
+    { now: F.NOW },
+  );
+  assert.deepEqual(verdictsOf(cohort), F.EXPECTED.D);
 });
 
 test('E: increasing obligations AND declining margin (two-condition intersection)', async () => {
@@ -273,14 +297,24 @@ test('E: increasing obligations AND declining margin (two-condition intersection
     'Find defense contractors with increasing federal obligations but declining operating margins.',
   );
   assert.deepEqual(sorted(att.params.filters.map((f) => f.metric)), [
-    'federal_obligations_change',
+    'federal_obligation_flow_change',
     'margin_change',
   ]);
+  /* 6.5.2: the 6.5.1 cohort intersection, run under the cohort id (same computation). */
   const r = await A.runScreen(
     db(),
     {
       ...att,
-      params: { ...att.params, sector: undefined, tickers: ['XLMT', 'XRTX', 'XNOC', 'XGRP'] },
+      params: {
+        ...att.params,
+        sector: undefined,
+        tickers: ['XLMT', 'XRTX', 'XNOC', 'XGRP'],
+        filters: att.params.filters.map((f) =>
+          f.metric === 'federal_obligation_flow_change'
+            ? { ...f, metric: 'federal_award_cohort_change' }
+            : f,
+        ),
+      },
     },
     { now: F.NOW },
   );

@@ -513,10 +513,11 @@ test('SCENARIO M: wording variants keep every condition; unsupported ones stay v
   const growth = I.inferComposition(
     'Which defense companies have growing federal award exposure but declining operating margins?',
   ).attachments[0];
-  /* 6.5.1: growth in obligations is a comparable-period measure (a labelled proxy). */
+  /* 6.5.2: growth in obligations is the fiscal-year flow (transaction records), which is
+     unavailable until ingested; never the award-start cohort. */
   const g = growth.params.requirements.find((r) => r.id === 'contracts_growth');
-  assert.equal(g.resolution, 'proxy');
-  assert.equal(g.metric, 'federal_obligations_change');
+  assert.equal(g.metric, 'federal_obligation_flow_change');
+  assert.equal(g.source, 'contracts_flow');
   assert.ok(
     !growth.params.filters.some((f) => f.metric === 'gov_contract_value'),
     'growth is not silently read as "any award"',

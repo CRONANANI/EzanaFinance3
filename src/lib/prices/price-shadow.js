@@ -44,6 +44,7 @@ export function comparePriceSelection(rows = [], { asOf } = {}) {
   ].sort();
   const out = [];
   const summary = {};
+  const byCategory = {};
   for (const t of tickers) {
     const l = legacy[t] || null;
     const c = prices[t] || null;
@@ -59,6 +60,25 @@ export function comparePriceSelection(rows = [], { asOf } = {}) {
       flags.push('adjusted_close_differs');
     if (newest && newest.volume == null) flags.push('quote_row');
     if (newest?.state === 'sample' || newest?._sample) flags.push('sample');
+    /* Sonar 6.5.2 categories. An adjusted close below the close by under 5% looks like a
+       dividend adjustment; a larger gap looks like a split or another corporate action,
+       where valuation must use the per-share basis that matches the share count. */
+    const all = rows.filter((r) => String(r.ticker).toUpperCase() === t);
+    if (all.some((r) => day(r.date) > asOf)) flags.push('future_dated');
+    if (newest?.adj_close != null && Number(newest.close) > 0) {
+      const gap = Math.abs(1 - Number(newest.adj_close) / Number(newest.close));
+      if (gap > 0 && gap < 0.05) flags.push('adjustment_dividend_like');
+      else if (gap >= 0.05) flags.push('adjustment_corporate_action_like');
+    }
+    const valid = all.filter((r) => day(r.date) <= asOf);
+    const latest = valid.sort((a, b) => (day(a.date) < day(b.date) ? 1 : -1))[0];
+    if (
+      latest &&
+      (Date.parse(`${asOf}T00:00:00Z`) - Date.parse(`${day(latest.date)}T00:00:00Z`)) / 86400000 >
+        VALUATION_MAX_AGE_DAYS
+    )
+      flags.push('stale');
+    if (latest && !(Number(latest.close) > 0)) flags.push('zero_or_missing');
     const verdict =
       l && c
         ? l.price === c.price && l.asOf === c.asOf
@@ -70,6 +90,7 @@ export function comparePriceSelection(rows = [], { asOf } = {}) {
             ? 'contract_only'
             : 'neither';
     summary[verdict] = (summary[verdict] || 0) + 1;
+    for (const f of flags) byCategory[f] = (byCategory[f] || 0) + 1;
     out.push({
       ticker: t,
       verdict,
@@ -79,5 +100,5 @@ export function comparePriceSelection(rows = [], { asOf } = {}) {
       flags,
     });
   }
-  return { rows: out, summary };
+  return { rows: out, summary, byCategory };
 }

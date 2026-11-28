@@ -26,10 +26,15 @@ import {
   comparableFederalYears,
   obligationsInPeriod,
   obligationsGrowth,
-  obligationsToRevenue,
+  obligationFlowGrowth,
+  exposureToRevenue,
   agencyBasisNote,
   OBLIGATIONS_BASIS,
+  FLOW_BASIS,
+  METHODOLOGY,
 } from '../execution/contracts.js';
+import { enforce as enforceIntegrity, researchState } from '../execution/integrity.js';
+import { TRANSACTION_TABLE, TRANSACTION_SYNC_TABLE } from '../../contractors/transactions.js';
 import { awardMatchesAgency, agencyById } from '../../contractors/agencies.js';
 import { valuationPrices, priceContractEnabled } from '../../prices/sonar-valuation-prices.js';
 import {
@@ -933,6 +938,16 @@ export function seedFromRows(
   });
 }
 
+/* Sonar 6.5.2: why a source read failed. A table that is not deployed yet (the transaction
+   table before its migration) is a dataset that is unavailable, not a provider outage. */
+export function readFailureStatus(msg) {
+  const m = String(msg || '');
+  if (/\b403\b|permission|not entitled/i.test(m)) return 'permission_denied';
+  if (/does not exist|schema cache|PGRST205|42P01|relation .* not found/i.test(m))
+    return 'unavailable';
+  return 'provider_error';
+}
+
 /** Award rows for the contract measures (6.5.1): one row per award, by start date. */
 async function contractRows(admin, tickers, from, to) {
   const out = [];
@@ -1085,6 +1100,18 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     p.universe_from === 'contracts' &&
     (usesSource('contracts_ratio') || usesSource('contracts_growth'));
   const exposure = {};
+  /* Sonar 6.5.2: aggregate data-quality counts (no tickers, no research text). */
+  const dataQuality = {
+    missingTransactionDates: 0,
+    unresolvedAgency: 0,
+    unresolvedRecipients: 0,
+    unknownAnnualObligations: 0,
+    missingRevenue: 0,
+    incompatiblePeriods: 0,
+    integrityViolations: 0,
+    invalidPriceInputs: 0,
+    temporalMismatches: 0,
+  };
   let universe = [];
   let universeLabel = '';
   let unclassified = 0;
@@ -1159,6 +1186,9 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
           revenue: r.revenue,
           revenue_prior: r.revenue_prior,
           fiscalYearEnd: r.fiscalYearEnd,
+          revenue_concept:
+            r.revenue_concept ?? figs[u.ticker]?.annual?.revenue?.[0]?.concept ?? null,
+          sic: figs[u.ticker]?.sic ?? null,
         }
       : {};
   }
@@ -1239,12 +1269,19 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       );
     } else if (src === 'contracts_window' && agencyId) {
       const rows = await contractRows(admin, tick, since, until);
+      const stats = {};
       const ob = obligationsInPeriod(
         rows,
         { from: since, to: until, label: `${since} to ${until}` },
-        { agency: agencyId, basis: agencyBasis, asOf: until },
+        { agency: agencyId, basis: agencyBasis, asOf: until, stats },
       );
-      for (const t of tick) values[t].contracts_window = ob[t] ? ob[t].net : 0;
+      /* Sonar 6.5.2: no matching award but some awards with an unresolved agency: unknown. */
+      for (const t of tick)
+        values[t].contracts_window = ob[t] ? ob[t].net : stats.unresolvedAgency?.[t] ? null : 0;
+      dataQuality.unresolvedAgency += Object.values(stats.unresolvedAgency || {}).reduce(
+        (a, b) => a + b,
+        0,
+      );
       lineage[src] = {
         table: 'contract_awards_resolved',
         filter: `award start ${since} to ${until}, ${agencyBasis} agency ${agencyById(agencyId)?.name}`,
@@ -1252,26 +1289,47 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       notes.push(agencyBasisNote(agencyId, agencyBasis));
     } else if (src === 'contracts_ratio' || src === 'contracts_growth') {
       const rows = await contractRows(admin, tick, ffy.prior.from, ffy.current.to);
-      const opts = { agency: agencyId, basis: agencyBasis, asOf: until };
+      const stats = {};
+      const opts = { agency: agencyId, basis: agencyBasis, asOf: until, stats };
       if (agencyId) notes.push(agencyBasisNote(agencyId, agencyBasis));
+      const unresolvedAg = (t) => Boolean(agencyId && stats.unresolvedAgency?.[t]);
       if (src === 'contracts_ratio') {
         const ob = obligationsInPeriod(rows, ffy.current, opts);
         for (const t of tick) {
-          const r = obligationsToRevenue({
-            ticker: t,
-            obligations: ob[t] ? ob[t].net : null,
-            revenue: values[t].revenue ?? null,
-            revenueFyEnd: values[t].fiscalYearEnd ?? null,
-            contractPeriod: ffy.current,
-            sources: ['contract_awards_resolved', 'sec_fundamentals'],
-          });
+          /* Sonar 6.5.2: the award-start cohort ratio, labelled as such, with its full output
+             contract, checked by the integrity rules before it is shown. */
+          const r = enforceIntegrity(
+            exposureToRevenue({
+              methodology: METHODOLOGY.COHORT,
+              ticker: t,
+              obligations: ob[t] ? ob[t].net : null,
+              revenue: values[t].revenue ?? null,
+              revenueFyEnd: values[t].fiscalYearEnd ?? null,
+              revenueConcept: values[t].revenue_concept ?? null,
+              sic: values[t].sic ?? null,
+              contractPeriod: ffy.current,
+              sources: ['contract_awards_resolved', 'sec_fundamentals'],
+              company: { ticker: t, cik: null },
+              recipients: ob[t]?.ids
+                ? [{ basis: 'resolved ticker on the award row', awards: ob[t].ids.length }]
+                : [],
+            }),
+            { asOf: until },
+          );
+          if (r.integrity && !r.integrity.ok) dataQuality.integrityViolations += 1;
+          if (r.exposureRatio == null && unresolvedAg(t))
+            r.reason = `agency_unresolved: ${stats.unresolvedAgency[t]} awards have an agency that matches no canonical agency`;
           exposure[t] = r;
           values[t].contracts_ratio = r.exposureRatio;
           values[t].contracts_obligations = r.obligations;
+          if (r.exposureRatio == null) {
+            if (/revenue/.test(String(r.reason))) dataQuality.missingRevenue += 1;
+            if (/^period/.test(String(r.reason))) dataQuality.incompatiblePeriods += 1;
+          }
         }
         const off = tick.filter((t) => exposure[t].exposureRatio == null);
         notes.push(
-          `Federal obligations relative to revenue: ${OBLIGATIONS_BASIS}, ${ffy.current.label} (${ffy.current.from} to ${ffy.current.to}), divided by each company's latest filed annual revenue ending within 365 days before ${ffy.current.to}. An exposure proxy, not the share of revenue from the government.${
+          `Award-start cohort obligations relative to revenue (methodology ${METHODOLOGY.COHORT}): ${OBLIGATIONS_BASIS}, ${ffy.current.label} (${ffy.current.from} to ${ffy.current.to}), divided by each company's latest filed annual revenue ending within 365 days before ${ffy.current.to}. An exposure proxy over a cohort of awards with cumulative amounts: not obligations incurred in the year, and not the share of revenue from the government.${
             off.length
               ? ` Not computed for ${off.length} companies (${off
                   .slice(0, 8)
@@ -1283,6 +1341,12 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       } else {
         const g = obligationsGrowth(rows, tick, ffy, opts);
         for (const t of tick) {
+          if (unresolvedAg(t)) {
+            if (g[t].current === null || g[t].prior === null)
+              g[t].reason =
+                `${g[t].reason || ''} (agency unresolved on ${stats.unresolvedAgency[t]} awards)`.trim();
+          }
+          g[t].methodology = METHODOLOGY.COHORT;
           values[t].obl_current = g[t].current;
           values[t].obl_prior = g[t].prior;
           values[t].obl_change = g[t].change;
@@ -1291,14 +1355,116 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
           exposure[t] = { ...(exposure[t] || {}), ticker: t, growth: g[t] };
         }
         notes.push(
-          `Federal obligations change: ${ffy.current.label} against ${ffy.prior.label} (complete years), ${OBLIGATIONS_BASIS}. Net obligations include deobligations; a company with no resolved award in one of the years is unknown, not zero.`,
+          `Award-start cohort comparison (methodology ${METHODOLOGY.COHORT}): awards started in ${ffy.current.label} against awards started in ${ffy.prior.label}, ${OBLIGATIONS_BASIS}. This compares two cohorts of awards; it is not the change in obligations incurred, which needs transaction records. A company with no resolved award in one of the years is unknown, not zero.`,
         );
       }
+      if (agencyId && stats.unresolvedAgency)
+        notes.push(
+          `${Object.values(stats.unresolvedAgency).reduce((a, b) => a + b, 0)} awards carry a ${agencyBasis} agency that matches no canonical agency; they are neither counted nor treated as another agency.`,
+        );
+      if (agencyId)
+        dataQuality.unresolvedAgency += Object.values(stats.unresolvedAgency || {}).reduce(
+          (a, b) => a + b,
+          0,
+        );
       lineage[src] = {
         table: 'contract_awards_resolved',
+        methodology: METHODOLOGY.COHORT,
         filter: `award start ${src === 'contracts_ratio' ? ffy.current.from : ffy.prior.from} to ${ffy.current.to}${agencyId ? `, ${agencyBasis} agency ${agencyById(agencyId)?.name}` : ''}`,
         period:
           src === 'contracts_ratio' ? ffy.current : { current: ffy.current, prior: ffy.prior },
+      };
+    } else if (src === 'contracts_flow' || src === 'contracts_flow_ratio') {
+      /* Sonar 6.5.2: obligations incurred in the federal fiscal year, from transaction
+         records. Until usaspending_contract_transactions exists (docs/sql/sonar-6-5-2,
+         not applied) the read fails and the measure is UNAVAILABLE; it is never replaced by
+         the award-start cohort. */
+      const awards = await pageAll(() =>
+        admin
+          .from('contract_awards_resolved')
+          .select('generated_award_id, ticker, action_date, awarding_agency, funding_agency')
+          .in('ticker', tick)
+          .lte('action_date', ffy.current.to)
+          .order('generated_award_id', { ascending: true }),
+      );
+      const ids = awards.map((a) => a.generated_award_id);
+      const synced = new Set();
+      const tx = [];
+      for (const batch of chunk(ids, 200)) {
+        // eslint-disable-next-line no-await-in-loop
+        const [sy, tr] = await Promise.all([
+          pageAll(() =>
+            admin
+              .from(TRANSACTION_SYNC_TABLE)
+              .select('generated_award_id, complete')
+              .in('generated_award_id', batch)
+              .eq('complete', true)
+              .order('generated_award_id', { ascending: true }),
+          ),
+          pageAll(() =>
+            admin
+              .from(TRANSACTION_TABLE)
+              .select(
+                'source_transaction_id, generated_award_id, action_date, federal_action_obligation',
+              )
+              .in('generated_award_id', batch)
+              .gte('action_date', ffy.prior.from)
+              .lte('action_date', ffy.current.to)
+              .order('source_transaction_id', { ascending: true }),
+          ),
+        ]);
+        for (const r of sy) synced.add(r.generated_award_id);
+        tx.push(...tr);
+      }
+      const stats = {};
+      const g = obligationFlowGrowth({
+        transactions: tx,
+        awards,
+        syncedComplete: synced,
+        tickers: tick,
+        periods: ffy,
+        opts: { agency: agencyId, basis: agencyBasis, asOf: until, stats },
+      });
+      dataQuality.missingTransactionDates += stats.missingActionDate || 0;
+      dataQuality.unresolvedRecipients += stats.unresolvedRecipient || 0;
+      for (const t of tick) {
+        values[t].flow_current = g[t].current;
+        values[t].flow_prior = g[t].prior;
+        values[t].flow_change = g[t].change;
+        values[t].flow_growth = g[t].growthPct == null ? null : g[t].growthPct / 100;
+        if (g[t].current == null) dataQuality.unknownAnnualObligations += 1;
+        exposure[t] = { ...(exposure[t] || {}), ticker: t, flow: g[t] };
+        if (src === 'contracts_flow_ratio') {
+          const r = enforceIntegrity(
+            exposureToRevenue({
+              methodology: METHODOLOGY.FLOW,
+              ticker: t,
+              obligations: g[t].current,
+              revenue: values[t].revenue ?? null,
+              revenueFyEnd: values[t].fiscalYearEnd ?? null,
+              revenueConcept: values[t].revenue_concept ?? null,
+              sic: values[t].sic ?? null,
+              contractPeriod: ffy.current,
+              sources: [TRANSACTION_TABLE, 'contract_awards_resolved', 'sec_fundamentals'],
+              company: { ticker: t, cik: null },
+            }),
+            { asOf: until },
+          );
+          if (g[t].current == null) r.reason = g[t].reason || 'transaction records incomplete';
+          if (r.integrity && !r.integrity.ok) dataQuality.integrityViolations += 1;
+          exposure[t] = { ...exposure[t], ...r };
+          values[t].flow_ratio = r.exposureRatio;
+        }
+      }
+      const covered = tick.filter((t) => g[t].coverage.current?.complete).length;
+      notes.push(
+        `Federal obligations incurred (methodology ${METHODOLOGY.FLOW}): ${FLOW_BASIS}, ${ffy.current.label} against ${ffy.prior.label}. Transaction records are complete for ${covered} of ${tick.length} companies; the others are unknown, not zero.`,
+      );
+      lineage[src] = {
+        table: TRANSACTION_TABLE,
+        methodology: METHODOLOGY.FLOW,
+        filter: `action_date ${ffy.prior.from} to ${ffy.current.to}`,
+        coverage: { companies: tick.length, complete: covered },
       };
     } else if (src === 'contracts_window') {
       const v = await contractsInWindow(admin, tick, since, until);
@@ -1437,9 +1603,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       } catch (e) {
         const msg = String(e?.message || e).slice(0, 200);
         sourceStatus[m.source] = {
-          status: /\b403\b|permission|not entitled/i.test(msg)
-            ? 'permission_denied'
-            : 'provider_error',
+          status: readFailureStatus(msg),
           reason: msg,
         };
       }
@@ -1511,9 +1675,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     } catch (e) {
       const msg = String(e?.message || e).slice(0, 200);
       sourceStatus[rankSrc] = {
-        status: /\b403\b|permission|not entitled/i.test(msg)
-          ? 'permission_denied'
-          : 'provider_error',
+        status: readFailureStatus(msg),
         reason: msg,
       };
       for (const x of survivors)
@@ -1709,7 +1871,9 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         op: f.op,
         value: f.value != null && m.unit === 'pct' ? Number(f.value) / 100 : (f.value ?? null),
         /* Dated sources over a complete window: no record is a confirmed zero. */
-        zeroIsConfirmed: ['congress', 'insider', 'contracts_window'].includes(m.source),
+        /* Sonar 6.5.2: readers store an explicit 0 for a confirmed absence; a null is an
+           undetermined value (for example an unresolved agency) and stays unknown. */
+        zeroIsConfirmed: ['congress', 'insider'].includes(m.source),
       };
     });
   /* Sonar 6.5.1: a ranking with no condition still has to be computable per company; a
@@ -1821,6 +1985,13 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         overflow.length && report.outcome.status === 'complete' ? 'bounded' : report.outcome.status,
       exhaustive: report.exhaustive && !overflow.length,
     },
+    researchState: researchState({
+      steps,
+      outcome: report.outcome,
+      objective,
+      integrityViolations: dataQuality.integrityViolations,
+    }),
+    dataQuality,
     contractExposure: Object.keys(exposure).length
       ? Object.values(exposure).slice(0, 400)
       : undefined,
@@ -1854,6 +2025,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
             ? 'bounded'
             : report.outcome.status,
       },
+      dataQuality,
       entityResolutionFailures:
         Number(lineage.congress?.historicalIdentityExcluded || 0) +
         Number(

@@ -98,45 +98,145 @@ export const SCREEN_MEASURES = {
     key: 'contracts_window',
     unit: 'usd',
   },
-  /* Sonar 6.5.1 (execution/contracts.js). Obligations are USAspending Award Amount
-     (obligated to date) on prime awards that started in the latest complete federal fiscal
-     year; never the ceiling, never revenue. The ratio divides by the latest filed annual
-     revenue ending within 365 days before that year ends (a disclosed proxy). */
-  federal_contract_obligations_to_revenue: {
-    label: 'Federal obligations / revenue (exposure proxy)',
+  /* Sonar 6.5.2 (execution/contracts.js). Two different measures, never combined.
+
+     Award-start cohort (methodology award_start_cohort_v1): awards whose recorded start date
+     falls in the latest complete federal fiscal year, each with everything obligated on it
+     to date (USAspending Award Amount, cumulative). Never the ceiling, never revenue, and
+     NOT obligations incurred in the year. The 6.5.1 ids below keep their 6.5.1 computation
+     (saved research stays reproducible) and now say what they measure; new plans use the
+     federal_award_cohort_* ids.
+
+     Transaction-period flow (methodology transaction_period_flow_v1): signed obligation
+     changes of contract actions dated in the year (USAspending transactions). The fiscal-
+     year obligation measure. Unavailable until the transaction table is ingested; never
+     replaced by the cohort. */
+  federal_award_cohort_exposure_to_revenue: {
+    label: 'Award-start cohort obligations / revenue (proxy)',
     source: 'contracts_ratio',
     key: 'contracts_ratio',
     unit: 'pct',
+    methodology: 'award_start_cohort_v1',
   },
-  federal_obligations_current_period: {
-    label: 'Federal obligations (latest complete federal FY)',
+  federal_award_cohort_obligations: {
+    label: 'Obligated to date on awards started in the latest federal FY',
     source: 'contracts_growth',
     key: 'obl_current',
     unit: 'usd',
+    methodology: 'award_start_cohort_v1',
   },
-  federal_obligations_prior_period: {
-    label: 'Federal obligations (prior federal FY)',
+  federal_award_cohort_obligations_prior: {
+    label: 'Obligated to date on awards started in the prior federal FY',
     source: 'contracts_growth',
     key: 'obl_prior',
     unit: 'usd',
+    methodology: 'award_start_cohort_v1',
   },
-  federal_obligations_change: {
-    label: 'Change in federal obligations (federal FY vs prior)',
+  federal_award_cohort_change: {
+    label: 'Award-start cohort, latest FY cohort minus prior FY cohort (not a flow change)',
     source: 'contracts_growth',
     key: 'obl_change',
     unit: 'usd',
+    methodology: 'award_start_cohort_v1',
   },
-  federal_obligations_growth_pct: {
-    label: 'Federal obligations growth (federal FY vs prior)',
+  federal_award_cohort_growth_pct: {
+    label: 'Award-start cohort growth (latest FY cohort vs prior; not obligation growth)',
     source: 'contracts_growth',
     key: 'obl_growth',
     unit: 'pct',
+    methodology: 'award_start_cohort_v1',
   },
-  federal_awarding_agency_concentration: {
-    label: 'Largest agency share of federal obligations',
+  federal_award_cohort_agency_concentration: {
+    label: 'Largest agency share of the award-start cohort',
     source: 'contracts_growth',
     key: 'obl_concentration',
     unit: 'pct',
+    methodology: 'award_start_cohort_v1',
+  },
+  /* 6.5.1 ids: compatibility, same computation, labels corrected. */
+  federal_contract_obligations_to_revenue: {
+    label: 'Award-start cohort obligations / revenue (6.5.1 id)',
+    source: 'contracts_ratio',
+    key: 'contracts_ratio',
+    unit: 'pct',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_exposure_to_revenue',
+  },
+  federal_obligations_current_period: {
+    label: 'Award-start cohort, latest federal FY (6.5.1 id; not obligations incurred in the year)',
+    source: 'contracts_growth',
+    key: 'obl_current',
+    unit: 'usd',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_obligations',
+  },
+  federal_obligations_prior_period: {
+    label: 'Award-start cohort, prior federal FY (6.5.1 id)',
+    source: 'contracts_growth',
+    key: 'obl_prior',
+    unit: 'usd',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_obligations_prior',
+  },
+  federal_obligations_change: {
+    label: 'Award-start cohort change (6.5.1 id; not a fiscal-year obligation change)',
+    source: 'contracts_growth',
+    key: 'obl_change',
+    unit: 'usd',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_change',
+  },
+  federal_obligations_growth_pct: {
+    label: 'Award-start cohort growth (6.5.1 id; not fiscal-year obligation growth)',
+    source: 'contracts_growth',
+    key: 'obl_growth',
+    unit: 'pct',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_growth_pct',
+  },
+  federal_awarding_agency_concentration: {
+    label: 'Largest agency share of the award-start cohort (6.5.1 id)',
+    source: 'contracts_growth',
+    key: 'obl_concentration',
+    unit: 'pct',
+    methodology: 'award_start_cohort_v1',
+    aliasOf: 'federal_award_cohort_agency_concentration',
+  },
+  /* Transaction-period flow. */
+  federal_obligation_flow: {
+    label: 'Federal obligations incurred, latest complete federal FY (transactions)',
+    source: 'contracts_flow',
+    key: 'flow_current',
+    unit: 'usd',
+    methodology: 'transaction_period_flow_v1',
+  },
+  federal_obligation_flow_prior: {
+    label: 'Federal obligations incurred, prior federal FY (transactions)',
+    source: 'contracts_flow',
+    key: 'flow_prior',
+    unit: 'usd',
+    methodology: 'transaction_period_flow_v1',
+  },
+  federal_obligation_flow_change: {
+    label: 'Change in federal obligations incurred (federal FY vs prior, transactions)',
+    source: 'contracts_flow',
+    key: 'flow_change',
+    unit: 'usd',
+    methodology: 'transaction_period_flow_v1',
+  },
+  federal_obligation_flow_growth_pct: {
+    label: 'Growth in federal obligations incurred (federal FY vs prior, transactions)',
+    source: 'contracts_flow',
+    key: 'flow_growth',
+    unit: 'pct',
+    methodology: 'transaction_period_flow_v1',
+  },
+  federal_obligation_flow_to_revenue: {
+    label: 'Federal obligations incurred / revenue (annual flow proxy)',
+    source: 'contracts_flow_ratio',
+    key: 'flow_ratio',
+    unit: 'pct',
+    methodology: 'transaction_period_flow_v1',
   },
 };
 
