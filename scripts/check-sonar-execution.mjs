@@ -962,3 +962,53 @@ test('typing: a company measure is never read as a macro theme', async () => {
     ),
   );
 });
+
+test('evidence contract: verified figures, allowed and unsupported conclusions, unknowns', async () => {
+  const { runMacro } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const { evidenceContract, evidenceContractBlock } =
+    await import('../src/lib/sonar/composer/evidence-contract.js');
+  const macro = await runMacro(
+    fakeSupabase(FIXTURES),
+    {
+      capability: 'macro-indicators',
+      params: { countries: ['CAN'], measures: ['policy_changes', 'policy_rate'] },
+    },
+    { now: NOW },
+  );
+  const bounded = {
+    capability: 'financial-screen',
+    status: 'done',
+    title: 'Financial Screen',
+    columns: [{ key: 'pe', label: 'P/E (TTM)', unit: 'x' }],
+    table: [
+      { ticker: 'AAA', pe: 5.71, ttmThrough: '2026-09-30' },
+      { ticker: 'BBB', pe: null },
+    ],
+    coverage: {
+      status: 'bounded',
+      eligibleUniverse: 400,
+      evaluatedCount: 400,
+      unchecked: 130,
+      excluded: [{ kind: 'unchecked', reason: 'not priced', count: 130 }],
+    },
+  };
+  const c = evidenceContract([
+    { ...macro, capability: 'macro-indicators', status: 'done' },
+    bounded,
+    { capability: 'company-comparison', status: 'failed', failed: 'no companies resolved' },
+  ]);
+  const [m, s, f] = c.steps;
+  assert.ok(m.allowed.some((a) => /Canada: 3 policy rate change\(s\) since 2026-01 \(2026-03 -0.25 points, 2026-06 -0.25 points, 2026-10 \+0.25 points\)/.test(a)));
+  assert.ok(m.unsupported.some((a) => /forecast/i.test(a)));
+  assert.deepEqual(s.verified[0], {
+    entity: 'AAA',
+    label: 'P/E (TTM)',
+    value: '5.71x',
+    period: 'TTM through 2026-09-30',
+  });
+  assert.ok(s.unknowns.some((u) => /BBB: P\/E \(TTM\): missing \(not zero\)/.test(u)));
+  assert.ok(s.unsupported.some((u) => /130 of 400/.test(u)));
+  assert.ok(/among the 270 companies checked/.test(s.allowed[0]));
+  assert.equal(f.verified.length, 0);
+  assert.match(evidenceContractBlock(c), /EVIDENCE CONTRACT/);
+});

@@ -355,6 +355,9 @@ export async function runCell(
       scope: { userId: null, orgId: null },
       modelRouting: cell.routing,
       outputScale: cell.outputScale || 1,
+      /* Sonar 6.4: the evidence contract only where the cell asks for it, so suites that
+         started before it keep the writer prompt they began with. */
+      evidenceContract: cell.evidenceContract === true,
       composition: snap.composition || undefined,
       /* The production function's own ceiling, as the research route sets it. */
       deadlineAt: startedAt + RUN_BUDGET_MS,

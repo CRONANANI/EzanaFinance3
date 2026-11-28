@@ -454,7 +454,54 @@ function profileDCells(c, env) {
   return cells;
 }
 
+/* Suite 4, "contract" (Sonar 6.4 hardening, Nov 28 2026): the typed evidence contract and
+   the Standard Research Sonnet 5.5 writer candidate, on the same frozen evidence. One
+   variable per pair; production routing is not changed (each cell passes its routing).
+     current            production standard (Haiku 4.5 writer), no contract
+     current+contract   the same with the evidence contract
+     s55w               production routing with a Sonnet 5.5 standard writer, no contract
+     s55w+contract      the same with the evidence contract */
+function contractCells(c, env) {
+  const current = resolveModelRouting({ profile: 'current', env });
+  const s55w = {
+    ...current,
+    profile: 's55w',
+    standard: MODELS.sonnet55,
+    legacy_standard: MODELS.sonnet55,
+  };
+  return [
+    { id: 'current', label: 'Current (Haiku 4.5 writer)', routing: current },
+    {
+      id: 'current+contract',
+      label: 'Current + evidence contract',
+      routing: current,
+      evidenceContract: true,
+    },
+    { id: 's55w', label: 'Sonnet 5.5 standard writer', routing: s55w },
+    {
+      id: 's55w+contract',
+      label: 'Sonnet 5.5 writer + evidence contract',
+      routing: s55w,
+      evidenceContract: true,
+    },
+  ];
+}
+
 const VARIANTS = {
+  contract: {
+    cases: () =>
+      [...MODEL_BENCH_CASES, ...MODEL_BENCH_PROPOSED_CASES].filter((c) => c.depth === 'standard'),
+    cells: (c, env) => contractCells(c, env),
+    pairs: () => [
+      ['current', 'current+contract', 'Evidence contract, Haiku 4.5 writer'],
+      ['s55w', 's55w+contract', 'Evidence contract, Sonnet 5.5 writer'],
+      [
+        'current+contract',
+        's55w+contract',
+        'Writer: Haiku 4.5 vs Sonnet 5.5, both with the contract',
+      ],
+    ],
+  },
   'profile-d': {
     cases: () => [
       ...MODEL_BENCH_CASES,
@@ -672,6 +719,18 @@ export function scoreRun(run, c) {
       sentencesWithUntracedNumbers: untracedSentences.size,
       examples: [...unsupportedExamples, ...[...untracedSentences].slice(0, 4)],
     },
+    /* Sonar 6.4 hardening: claim survival through validation (written vs kept). */
+    claims: (() => {
+      const v = meta.validation || {};
+      const written = Number(v.claims) || 0;
+      return {
+        written,
+        kept: v.kept ?? null,
+        removed: v.removed ?? null,
+        rewritten: v.rewritten ?? 0,
+        survival: written ? round((Number(v.kept) || 0) / written) : null,
+      };
+    })(),
     relationships,
     textChars: text.length,
     fingerprint: fp,

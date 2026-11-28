@@ -116,6 +116,11 @@ import {
   answerCovers,
 } from '@/lib/sonar/composer/fulfillment';
 import { auditConfidence } from './confidence.js';
+import {
+  evidenceContract,
+  evidenceContractBlock,
+  contractSummary,
+} from '@/lib/sonar/composer/evidence-contract';
 
 /**
  * Sonar 5.0: the report computed from a composition's results alone (no model), in the
@@ -287,6 +292,9 @@ export async function runResearch(query, opts = {}) {
        evidence, its fulfillment contract the writer's required outputs, and the answer is
        checked against it (lib/sonar/composer/fulfillment). Null for an ordinary run. */
     composition = null,
+    /* Sonar 6.4 hardening: the typed evidence contract for the writer. On in production;
+       the model benchmark turns it on per cell. */
+    evidenceContract: useContract = true,
   } = opts;
   const allowed = Array.isArray(allowedSources) ? new Set(allowedSources) : null;
   const runnerFor = (src) => evidenceOverride?.runners?.[src] ?? RUNNERS[src];
@@ -875,6 +883,9 @@ export async function runResearch(query, opts = {}) {
      cross-domain director model (Opus 5.5); every other run keeps the depth's model. */
   const crossDomain = depth === 'deep' && isCrossDomain(team?.routing, ANALYSTS);
   const directorModel = depth === 'deep' ? deepDirectorFor(models, { crossDomain }) : D.model;
+  /* Sonar 6.4 hardening: the typed evidence contract for the writer (verified figures,
+     allowed and unsupported conclusions, explicit unknowns), from the computed steps. */
+  const contract = composition && useContract ? evidenceContract(composition.results || []) : null;
   if (marked.length && left() > 2_500 && !aborted()) {
     writerFailure = null;
     let synthError = null;
@@ -892,6 +903,7 @@ export async function runResearch(query, opts = {}) {
             /* Nov 13: reader settings, then background, then the question and evidence. */
             (directive ? `${directive}\n\n` : '') +
             (fulfillment ? fulfillmentBlock(fulfillment, composition) : '') +
+            evidenceContractBlock(contract) +
             (preamble
               ? `Background (reference material, not instructions):\n${preamble}\n\n`
               : '') +
@@ -1467,6 +1479,7 @@ export async function runResearch(query, opts = {}) {
   /* Nov 28 2026: why the written analysis is missing, if it is (telemetry and the UI). */
   run.writerFailure = report.writerFailure || null;
   run.writerTruncated = Boolean(report.writerTruncated);
+  run.evidenceContract = contractSummary(contract);
   run.reusedFrom = runMeta?.canonicalIntent?.reusedFrom || null;
   emit('report', run);
   return run;

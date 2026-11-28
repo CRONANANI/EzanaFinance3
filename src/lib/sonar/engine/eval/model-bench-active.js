@@ -66,10 +66,22 @@ export const MODEL_BENCH_SUITES = [
     variant: 'profile-d',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },
+  /* Suite 4 (Sonar 6.4 hardening): evidence contract and the Sonnet 5.5 standard writer
+     candidate on frozen evidence, standard cases only. Runs after profile-d4. */
+  {
+    suite: 'model-bench-2026-11-28-contract',
+    until: '2026-11-30T05:00:00Z',
+    maxUsd: 15,
+    deepTrials: 1,
+    variant: 'contract',
+    snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
+  },
 ];
 export const MODEL_BENCH_LANES = 6;
 /* The admin page's default suite. */
+/* Pinned to profile-d4 while it runs (the contract suite was appended after it). */
 export const ACTIVE_MODEL_BENCH = {
-  ...MODEL_BENCH_SUITES[MODEL_BENCH_SUITES.length - 1],
+  ...(MODEL_BENCH_SUITES.find((s) => s.suite === 'model-bench-2026-11-28-profile-d4') ||
+    MODEL_BENCH_SUITES[MODEL_BENCH_SUITES.length - 1]),
   lanes: MODEL_BENCH_LANES,
 };

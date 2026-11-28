@@ -18,6 +18,7 @@
 import { withTimeout } from '@/lib/with-timeout';
 import { aliasedCompany, resolveCompany } from '@/lib/sonar/landing-pipeline';
 import { mentionedCompany } from '@/lib/sonar/company-mentions';
+import { canonicalMatches } from '@/lib/sonar/canonical-entities';
 import { resolvePolitician, resolvePoliticianById } from '@/lib/sonar/landing-politician';
 import { resolveCountry } from '@/lib/sonar/landing-country';
 import { sectorUniverse } from '@/lib/sonar/sector-screen';
@@ -139,13 +140,27 @@ export async function resolveResearch(understood, { query, admin, ms = 1100, dom
     notes: [],
   };
 
+  /* Sonar 6.4 hardening: canonical identities first. A named issuer is that company; a
+     central bank with no issuer named means no company at all (a live "Has the Bank of
+     Canada cut rates" resolved a bank company here and read its filings, 13F and peers,
+     and the writer's claims about them were removed). */
+  const canon = canonicalMatches(query);
+  const canonCompany = canon.find((m) => m.type === 'company') || null;
+  const centralBankOnly = !canonCompany && canon.some((m) => m.type === 'central_bank');
   /* Company: an alias, a ticker the layer chose, or a company named in words. */
-  const alias = aliasedCompany(query) || aliasedCompany(q);
+  const alias = centralBankOnly
+    ? null
+    : canonCompany
+      ? `$${canonCompany.id}`
+      : aliasedCompany(query) || aliasedCompany(q);
   const tickerEnt = entity('ticker');
-  const mention = !alias && !tickerEnt ? mentionedCompany(query) || mentionedCompany(q) : null;
+  const mention =
+    !alias && !tickerEnt && !centralBankOnly
+      ? mentionedCompany(query) || mentionedCompany(q)
+      : null;
   /* Database aliases last, and only when nothing above named a company. */
   const dbAlias =
-    !alias && !tickerEnt && !mention
+    !alias && !tickerEnt && !mention && !centralBankOnly
       ? await bound(aliasCompany(admin, q), Math.min(ms, 500))
       : null;
   if (dbAlias?.ambiguous) {

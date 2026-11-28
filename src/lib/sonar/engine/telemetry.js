@@ -72,6 +72,8 @@ export async function recordRun(
         failure: run.writerFailure || null,
         truncated: Boolean(run.writerTruncated),
         reused: run.reusedFrom || null,
+        /* Sonar 6.4 hardening: evidence contract counts (no figures). */
+        evidenceContract: run.evidenceContract || null,
       },
       /* Nov 28 2026: model routing telemetry for the Profile D canary (per role outcome,
          served model, fallbacks, cost). */
