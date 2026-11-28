@@ -76,12 +76,22 @@ export const MODEL_BENCH_SUITES = [
     variant: 'contract',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },
-  /* Confirmation: deep DCF cases after the valuation model reaches the writer. */
+  /* Stopped: launched before its variant was defined, so it ran the default seven-case plan
+     on d3's evidence. Not a DCF confirmation; excluded from the report. */
   {
     suite: 'model-bench-2026-11-28-profile-d-dcf',
-    until: '2026-11-30T05:00:00Z',
+    until: '2026-11-28T16:40:00Z',
     maxUsd: 8,
     deepTrials: 1,
+    variant: 'profile-d-dcf',
+    snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
+  },
+  /* Confirmation: the two DCF cases, current vs D, after the valuation model reaches the writer. */
+  {
+    suite: 'model-bench-2026-11-28-profile-d-dcf2',
+    until: '2026-11-28T22:00:00Z',
+    maxUsd: 6,
+    deepTrials: 2,
     variant: 'profile-d-dcf',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },

@@ -521,6 +521,15 @@ const VARIANTS = {
             ['D-h55spec', 'D', 'Specialists: Haiku 5.5 vs Sonnet 5.5 (Sonnet writes)'],
           ],
   },
+  /* Confirmation: the two DCF cases after the valuation model reaches the writer. */
+  'profile-d-dcf': {
+    cases: () => [
+      MODEL_BENCH_DEEP_EXTRA_CASES.find((c) => c.id === 'deep_valuation'),
+      MODEL_BENCH_PROPOSED_CASES.find((c) => c.id === 'model_dcf_sensitivity'),
+    ],
+    cells: (c, env) => profileDCells(c, env).filter((x) => x.id === 'current' || x.id === 'D'),
+    pairs: () => [['current', 'D', 'Current vs Profile D (valuation reaches the writer)']],
+  },
   'deep-uncapped': {
     cases: () => [byId('deep_research'), ...MODEL_BENCH_DEEP_EXTRA_CASES],
     cells: () => deepCells(),

@@ -538,3 +538,14 @@ test('valuation results reach the writer as computed metrics', async () => {
     false,
   );
 });
+
+test('profile-d-dcf confirmation plan: two DCF cases, current vs D, one pair', () => {
+  const cases = B.casesForVariant('profile-d-dcf');
+  assert.deepEqual(
+    cases.map((c) => c.id),
+    ['deep_valuation', 'model_dcf_sensitivity'],
+  );
+  const src = read('src/lib/sonar/engine/eval/model-bench.js');
+  assert.match(src, /'profile-d-dcf':\s*\{/);
+  assert.match(src, /x\.id === 'current' \|\| x\.id === 'D'/);
+});
