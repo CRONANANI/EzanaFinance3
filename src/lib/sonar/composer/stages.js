@@ -293,6 +293,19 @@ export function universeFromComposition(composition, { max = 12 } = {}) {
             reason: `downstream research reads are limited to ${max} companies`,
           }
         : { applied: false, kept: tickers.length, total: all.length },
+      /* Sonar 6.5.1 Stage B: the follow-on research subset and how it was chosen, kept
+         apart from the screen (Stage A), whose table and universeReport stay complete. */
+      research: {
+        selection: r.rankBy ? 'top_ranked_passing' : 'first_page_unranked',
+        selectionLabel: r.rankBy
+          ? `the top ${tickers.length} passing companies ranked by ${r.rankBy}`
+          : `the first ${tickers.length} passing companies in screen order (no ranking: a bounded first page, not a representative sample)`,
+        followOnCount: tickers.length,
+        totalQualified: all.length,
+        exhaustive: !limited,
+        screenCoverage: r.universeReport?.coverageStatus || r.coverage?.status || null,
+        uncheckedInScreen: r.universeReport?.unchecked ?? 0,
+      },
       names: {},
       label: limited
         ? `the first ${tickers.length} of the ${all.length} companies that passed the screen (${r.rankBy ? `ranked by ${r.rankBy}` : 'screen order'}; the other ${all.length - tickers.length} are in the screen table, not researched further)`

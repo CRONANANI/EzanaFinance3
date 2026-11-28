@@ -506,14 +506,17 @@ test('SCENARIO M: wording variants keep every condition; unsupported ones stay v
     'Find companies traded by members of Congress that also received Department of Defense contracts and experienced increasing institutional ownership.',
   ).attachments[0];
   const agency = dod.params.requirements.find((r) => r.id === 'agency');
-  assert.equal(agency.resolution, 'unsupported', 'DoD no longer disappears silently');
+  /* 6.5.1 superseded the 6.5 "unsupported" state: the agency is now executed (awarding
+     basis by default, labelled), and still never disappears. */
+  assert.equal(agency.resolution, 'proxy', 'DoD no longer disappears silently');
+  assert.deepEqual(dod.params.agency, { agency: 'DOD', basis: 'awarding' });
   const growth = I.inferComposition(
     'Which defense companies have growing federal award exposure but declining operating margins?',
   ).attachments[0];
-  assert.equal(
-    growth.params.requirements.find((r) => r.id === 'contracts_growth').resolution,
-    'unsupported',
-  );
+  /* 6.5.1: growth in obligations is a comparable-period measure (a labelled proxy). */
+  const g = growth.params.requirements.find((r) => r.id === 'contracts_growth');
+  assert.equal(g.resolution, 'proxy');
+  assert.equal(g.metric, 'federal_obligations_change');
   assert.ok(
     !growth.params.filters.some((f) => f.metric === 'gov_contract_value'),
     'growth is not silently read as "any award"',
@@ -521,8 +524,9 @@ test('SCENARIO M: wording variants keep every condition; unsupported ones stay v
 });
 
 test('SCENARIO M: the objective is partial while a requirement is unsupported; fulfillment names it', () => {
+  /* 6.5.1: DoD is executed now, so the still-unsupported condition here is a second agency. */
   const reqs = Rq.extractRequirements(
-    'Find companies traded by members of Congress that also received Department of Defense contracts and experienced increasing institutional ownership.',
+    'Find companies traded by members of Congress that also received Department of Defense and NASA contracts and experienced increasing institutional ownership.',
   );
   const screen = {
     conditionReport: {
@@ -537,7 +541,7 @@ test('SCENARIO M: the objective is partial while a requirement is unsupported; f
   };
   const obj = Rq.evaluateObjective(reqs, screen);
   assert.equal(obj.objectiveStatus, 'partial');
-  assert.equal(obj.requirements.find((r) => r.id === 'agency').status, 'unsupported');
+  assert.equal(obj.requirements.find((r) => r.id === 'agency_nasa').status, 'unsupported');
 });
 
 /* ═══ N, O. Bounded coverage and zero results ═════════════════════════════════════ */

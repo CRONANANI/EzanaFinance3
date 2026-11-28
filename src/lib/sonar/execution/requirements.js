@@ -22,6 +22,11 @@
  * Pure; unit-tested in scripts/check-sonar-6-5.mjs.
  */
 
+import { agenciesInQuestion, agencyById } from '../../contractors/agencies.js';
+
+const agencyMatchesId = (applied, id) => agencyById(id)?.cgac === applied.cgac;
+import { canonicalMatches } from '../canonical-entities.js';
+
 export const REQUIREMENT_STATUSES = [
   'satisfied',
   'partially_satisfied',
@@ -86,23 +91,41 @@ const RULES = [
       label: 'New federal awards in the window',
     }),
   },
+  /* Sonar 6.5.1: comparable-period change in federal obligations (execution/contracts.js):
+     latest complete federal fiscal year against the one before, net obligations on awards
+     that started in each year. A company without awards in one of the years is unknown. */
   {
-    re: /\b(?:growing|increasing|rising)\b[^.]{0,20}\b(?:federal )?(?:award|contract)s? exposure\b|\b(?:federal |government )?(?:award|contract) (?:exposure|obligations) (?:grew|rose|increased|growing)\b/i,
+    re: /\b(?:growing|increasing|rising|higher|growth in)\b[^.]{0,30}\b(?:federal |government |dod |defen[cs]e )?(?:contract(?:ing)? |award )?(?:obligations|exposure|awards|contracting|contract (?:value|dollars))\b|\b(?:federal |government )?(?:award|contract)(?:s|ing)? (?:exposure|obligations) (?:grew|rose|increased|growing)\b|\bobligations (?:grew|rose|increased)\b/i,
+    skipIf:
+      /\binstitutional (?:ownership|participation|holders)\b(?![^.]*\b(?:contract|obligation|award)s?\b)/i,
     make: () => ({
       id: 'contracts_growth',
-      metric: null,
+      metric: 'federal_obligations_change',
       op: '>',
       value: 0,
-      resolution: 'unsupported',
-      source: 'contracts',
-      label: 'Growing federal award exposure',
-      note: 'Year-over-year change in award obligations is not a screen measure yet.',
+      resolution: 'proxy',
+      source: 'contracts_growth',
+      label: 'Increasing federal obligations',
+      note: 'Latest complete federal fiscal year against the prior one: net obligations (obligated to date, deobligations included) on prime awards that started in each year. Not revenue; a company with no award observed in one of the years is unknown.',
+    }),
+  },
+  {
+    re: /\b(?:declining|falling|decreasing|lower|shrinking)\b[^.]{0,30}\b(?:federal |government )?(?:contract |award )?(?:obligations|awards|contract exposure)\b|\bobligations (?:fell|declined|decreased)\b/i,
+    make: () => ({
+      id: 'contracts_growth',
+      metric: 'federal_obligations_change',
+      op: '<',
+      value: 0,
+      resolution: 'proxy',
+      source: 'contracts_growth',
+      label: 'Declining federal obligations',
+      note: 'Latest complete federal fiscal year against the prior one; net obligations on awards that started in each year.',
     }),
   },
   {
     re: /\b(?:significant|large|major|substantial)?\s*(?:federal|government|dod|defen[cs]e department|department of defen[cs]e|pentagon) (?:contracts?|awards?)\b|\bcontract exposure\b|\bfederal (?:contractors?|awards?)\b/i,
     skipIf:
-      /\b(?:growing|increasing|rising)\b[^.]{0,20}\b(?:federal )?(?:award|contract)s? exposure\b/i,
+      /\b(?:growing|increasing|rising|higher|declining|falling|decreasing)\b[^.]{0,30}\b(?:federal |government )?(?:contract(?:ing)? |award )?(?:obligations|exposure|awards|contracting)\b|\b(?:relative to|compared (?:with|to)|as a (?:share|percentage) of)\b[^.]{0,30}\brevenue\b|\bthe most (?:federal )?(?:obligations|awards|contracts)\b/i,
     make: (q) => {
       const over = q.match(
         /(?:contracts?|awards?|exposure)[^.]{0,20}(?:above|over|more than|greater than)\s*\$?([\d.]+)\s*(million|billion|m|bn|b)\b/i,
@@ -138,6 +161,36 @@ const RULES = [
       source: 'holders13f_change',
       label: 'Institutional selling increased',
       note: 'Read as fewer comparable 13F managers holding the security, quarter over quarter; share-level selling is not computed.',
+    }),
+  },
+  /* Sonar 6.5.1: "institutional ownership" has three different calculations. Share holdings
+     and ownership percentage are not computed (no comparable share totals, and no shares-
+     outstanding denominator for the same date); they stay visible as unsupported instead of
+     being replaced by the manager count. */
+  {
+    re: /\binstitutional ownership (?:percentage|percent|share)\b|\b(?:percentage|percent|share) (?:of (?:shares )?)?(?:owned|held) by institutions\b|\binstitutional (?:ownership )?% \b/i,
+    make: () => ({
+      id: 'institutional',
+      metric: null,
+      op: '>',
+      value: 0,
+      resolution: 'unsupported',
+      source: 'holders13f_change',
+      label: 'Institutional ownership percentage increased',
+      note: 'Ownership percentage needs shares outstanding for the same date, which Sonar does not hold; the 13F manager count is a different measure and is not substituted.',
+    }),
+  },
+  {
+    re: /\binstitutional (?:share ?holdings|shares held)\b|\b(?:more|higher) shares held by institutions\b|\binstitutions? (?:hold|held) more shares\b/i,
+    make: () => ({
+      id: 'institutional',
+      metric: null,
+      op: '>',
+      value: 0,
+      resolution: 'unsupported',
+      source: 'holders13f_change',
+      label: 'Institutional share holdings increased',
+      note: 'Reported share totals across comparable 13F filers are not a screen measure yet; the manager count is not substituted.',
     }),
   },
   {
@@ -266,7 +319,7 @@ const RULES = [
   },
 ];
 
-const AGENCY = /\b(?:dod|department of defen[cs]e|defen[cs]e department|pentagon)\b/i;
+const CONTRACT_WORDS = /\b(?:contracts?|awards?|obligations|contracting|contractors?)\b/i;
 
 /** -> { universe, conditions, ranking, outputs, requirements } */
 export function extractRequirements(question, { orgContext = null } = {}) {
@@ -295,29 +348,86 @@ export function extractRequirements(question, { orgContext = null } = {}) {
     const s = SECTORS.find(([re]) => re.test(q));
     if (s) universe = { kind: 'sector', id: s[1] };
   }
-  const agency =
-    AGENCY.test(q) && conditions.some((c) => c.source?.startsWith('contracts'))
-      ? {
-          id: 'agency',
-          metric: null,
-          op: 'equals',
-          value: 'DOD',
-          resolution: 'unsupported',
-          source: 'contracts',
-          label: 'Awards from the Department of Defense',
-          note: 'The screen measure counts awards from every agency; an agency filter is not applied.',
-        }
-      : null;
-  if (agency) conditions.push(agency);
+  /* Sonar 6.5.1: agency filters are executed (lib/contractors/agencies.js), matched on the
+     stored USAspending toptier agency name, on the awarding basis unless the question says
+     funding. One agency per screen; a second named agency stays visible as unsupported. */
+  const ag = agenciesInQuestion(q);
+  let agency = null;
+  if (ag.agencies.length && CONTRACT_WORDS.test(q)) {
+    const a = ag.agencies[0];
+    agency = {
+      id: 'agency',
+      kind: 'condition',
+      metric: null,
+      param: { agency: a.id, basis: ag.basis },
+      op: 'equals',
+      value: a.id,
+      resolution: ag.explicitBasis ? 'exact' : 'proxy',
+      source: 'contracts',
+      label: `${ag.basis === 'funding' ? 'Funded' : 'Awarded'} by ${a.short}`,
+      note: ag.explicitBasis
+        ? undefined
+        : `Read as the awarding agency (the agency that signed the award); funding agency is a different basis.`,
+    };
+    conditions.push(agency);
+    for (const extra of ag.agencies.slice(1))
+      conditions.push({
+        id: `agency_${extra.id.toLowerCase()}`,
+        metric: null,
+        op: 'equals',
+        value: extra.id,
+        resolution: 'unsupported',
+        source: 'contracts',
+        label: `Also ${extra.short}`,
+        note: 'One agency filter per screen; compare agencies in separate screens.',
+      });
+  }
+  /* "Share of revenue from the government" is an accounting question the obligations proxy
+     does not answer; asked directly, it stays visible as unsupported. */
+  if (
+    /\b(?:share|percentage|percent|portion) of (?:its |their )?(?:reported )?revenue (?:from|coming from) (?:the )?(?:government|federal)|\bgovernment revenue (?:share|percentage|dependence)\b|\brevenue (?:dependence|reliance) on (?:the )?(?:federal )?government\b/i.test(
+      q,
+    )
+  )
+    conditions.push({
+      id: 'gov_revenue_share',
+      metric: null,
+      op: null,
+      resolution: 'unsupported',
+      source: 'ratios',
+      label: 'Share of reported revenue from the US government',
+      note: 'Companies disclose government revenue in segment notes that Sonar does not parse; obligations relative to revenue is an exposure proxy, reported separately and labelled as such.',
+    });
   const rankBy = q.match(
     /\brank(?:ed)?\b[^.]*\bby ([a-z0-9 /-]+?)(?:\s+relative to\s+([a-z ]+))?(?:[.?]|$| and )/i,
   );
   let ranking = null;
-  if (rankBy) {
+  const ratioAsk =
+    /\b(?:contract(?:ing)?|obligations?|award|government|federal)\b[^.]{0,60}\b(?:relative to|compared (?:with|to)|as a (?:share|percentage) of|to)\s+(?:[\w.'’-]+\s+){0,3}?revenue\b/i.test(
+      q,
+    ) || /\brevenue\b[^.]{0,20}\b(?:federal|government) (?:contract|obligation)/i.test(q);
+  if (ratioAsk && CONTRACT_WORDS.test(q))
+    ranking = {
+      measure: 'federal_contract_obligations_to_revenue',
+      resolution: 'proxy',
+      label: 'Federal obligations relative to revenue',
+      note: 'An exposure proxy: obligations on prime awards that started in the latest complete federal fiscal year, over the latest filed annual revenue; not the share of revenue from the government.',
+    };
+  else if (
+    /\bthe most (?:federal )?(?:obligations|awards|contract (?:dollars|value))\b|\b(?:largest|biggest|top) (?:federal )?(?:obligations|contract recipients)\b/i.test(
+      q,
+    )
+  )
+    ranking = {
+      measure: 'federal_obligations_current_period',
+      resolution: 'exact',
+      label: 'Federal obligations (latest complete federal FY)',
+    };
+  if (!ranking && rankBy) {
     const what = rankBy[1].toLowerCase();
-    if (/contract|award/.test(what) && rankBy[2] && /revenue/.test(rankBy[2]))
+    if (/contract|award|obligation/.test(what) && rankBy[2] && /revenue/.test(rankBy[2]))
       ranking = {
-        measure: 'contracts_to_revenue',
+        measure: 'federal_contract_obligations_to_revenue',
         resolution: 'proxy',
         label: 'Federal award obligations relative to filed revenue',
         note: 'An exposure proxy: obligations in a federal fiscal year over the company’s filed revenue for the overlapping fiscal year; not the share of revenue from government.',
@@ -330,6 +440,18 @@ export function extractRequirements(question, { orgContext = null } = {}) {
       ranking = { measure: 'gov_contract_value', resolution: 'exact', label: 'Federal awards' };
     else ranking = { measure: null, resolution: 'unsupported', label: what };
   }
+  /* Sonar 6.5.1: named companies ("Lockheed Martin, RTX, and Northrop Grumman") are the
+     universe of a contract question when no sector or fund is named. */
+  if (universe.kind === 'unspecified' && CONTRACT_WORDS.test(q)) {
+    const named = [
+      ...new Set(
+        canonicalMatches(q)
+          .filter((m) => m.type === 'company')
+          .map((m) => m.id),
+      ),
+    ];
+    if (named.length) universe = { kind: 'tickers', tickers: named };
+  }
   const requirements = [
     {
       id: 'universe',
@@ -337,9 +459,11 @@ export function extractRequirements(question, { orgContext = null } = {}) {
       label:
         universe.kind === 'sector'
           ? `Universe: ${universe.id}`
-          : universe.kind === 'org_holdings'
-            ? 'Universe: the council fund'
-            : 'Universe: from the first condition that can list companies',
+          : universe.kind === 'tickers'
+            ? `Universe: ${universe.tickers.join(', ')}`
+            : universe.kind === 'org_holdings'
+              ? 'Universe: the council fund'
+              : 'Universe: from the first condition that can list companies',
       universe,
     },
     ...conditions.map((c) => ({ id: `condition:${c.id}`, kind: 'condition', ...c })),
@@ -424,6 +548,34 @@ export function evaluateObjective(reqs, screen = null) {
               ? r.note || null
               : `the screen ranked by ${screen.rankBy || 'nothing'}`,
         });
+      continue;
+    }
+    /* Sonar 6.5.1: an agency requirement is a parameter of the contract reads. It is
+       satisfied only when the screen actually applied that agency on that basis. */
+    if (r.param?.agency) {
+      const applied = screen?.agencyFilter;
+      const ok =
+        applied &&
+        applied.cgac &&
+        screen.agencyFilter.basis === r.param.basis &&
+        String(applied.agency).length &&
+        agencyMatchesId(applied, r.param.agency);
+      out.push({
+        id: r.id,
+        label: r.label,
+        status: !screen
+          ? 'not_executed'
+          : ok
+            ? r.resolution === 'proxy'
+              ? 'partially_satisfied'
+              : 'satisfied'
+            : 'not_executed',
+        reason: !screen
+          ? 'no screen ran'
+          : ok
+            ? r.note || `applied: ${applied.basis} agency ${applied.agency}`
+            : 'the screen did not apply this agency filter',
+      });
       continue;
     }
     if (r.resolution === 'unsupported' || !r.metric) {

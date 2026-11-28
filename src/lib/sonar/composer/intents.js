@@ -235,15 +235,33 @@ export function requirementsScreen(question, analytic, intent = null) {
   const computable = screenFilters(reqs.conditions);
   const screenable = analytic?.capability === 'financial-screen';
   if (analytic && !screenable) return analytic;
+  /* Sonar 6.5.1: an agency is a parameter of the contract reads; an obligations ranking
+     (relative to revenue, or the most obligations) is a plan on its own. */
+  const agencyReq = reqs.conditions.find((c) => c.param?.agency) || null;
+  const rankMeasure =
+    reqs.ranking?.measure && SCREEN_MEASURES[reqs.ranking.measure] ? reqs.ranking.measure : null;
+  const contractRank = Boolean(
+    rankMeasure && SCREEN_MEASURES[rankMeasure].source.startsWith('contracts'),
+  );
   if (
     !screenable &&
     computable.length < 2 &&
-    !(computable.length === 1 && reqs.conditions.length >= 2)
+    !(computable.length === 1 && reqs.conditions.length >= 2) &&
+    !contractRank &&
+    !(agencyReq && computable.length) &&
+    !computable.some((f) => SCREEN_MEASURES[f.metric]?.source === 'contracts_growth')
   )
     return analytic;
-  if (!reqs.conditions.length) return analytic;
+  if (!reqs.conditions.length && !contractRank) return analytic;
   const base = screenable ? analytic : null;
-  const filters = [...(base?.params.filters || [])];
+  /* A measured change in obligations supersedes "any award" filters the intent inferred. */
+  const growthAsked = computable.some(
+    (f) => SCREEN_MEASURES[f.metric]?.source === 'contracts_growth',
+  );
+  const filters = (base?.params.filters || []).filter(
+    (x) => !(growthAsked && x.metric.startsWith('gov_contract_value')),
+  );
+  const before = filters.length;
   for (const f of computable)
     if (
       !filters.some(
@@ -253,39 +271,58 @@ export function requirementsScreen(question, analytic, intent = null) {
       )
     )
       filters.push(f);
+  const changed = filters.length !== before || growthAsked || Boolean(agencyReq) || contractRank;
   const params = { ...(base?.params || {}), filters, requirements: reqs.requirements };
-  /* "Department of Defense contracts" names an awarding agency, not a defense-sector
-     universe. When the question names no sector, the screen is seeded from its own
-     conditions instead (the agency requirement stays visible as unsupported). */
-  if (base && params.sector === 'defense' && reqs.universe.kind === 'unspecified') {
-    const { seed } = planSeed(filters, SCREEN_MEASURES);
-    if (seed) {
+  if (agencyReq) params.agency = { ...agencyReq.param };
+  const seedFor = () => planSeed(filters, SCREEN_MEASURES).seed;
+  /* Universe. Named companies win; an agency ("Department of Defense", "Department of
+     Energy") is never read as a sector; otherwise the conditions seed it, and a contract
+     measure with nothing else to seed from lists companies with awards. */
+  if (reqs.universe.kind === 'tickers') {
+    delete params.sector;
+    delete params.universe_from;
+    params.tickers = reqs.universe.tickers;
+  } else if (
+    base &&
+    params.sector &&
+    reqs.universe.kind === 'unspecified' &&
+    (agencyReq || params.sector === 'defense')
+  ) {
+    const seed = seedFor();
+    if (seed || contractRank || agencyReq) {
       delete params.sector;
-      params.universe_from = seed.source;
-      if (!params.window_days) params.window_days = 365;
+      params.universe_from = seed ? seed.source : 'contracts';
     }
   }
   if (!base) {
     if (reqs.universe.kind === 'sector' && universeFor(reqs.universe.id).kind !== 'unsupported')
       params.sector = reqs.universe.id;
-    else if (reqs.universe.kind !== 'org_holdings') {
-      const { seed } = planSeed(filters, SCREEN_MEASURES);
+    else if (reqs.universe.kind === 'tickers') {
+      /* set above */
+    } else if (reqs.universe.kind !== 'org_holdings') {
+      const seed = seedFor();
       /* No sector and no condition that can list companies: the screen is still planned, so
          the reader is asked for a universe instead of the conditions disappearing. */
       if (seed) params.universe_from = seed.source;
+      else if (contractRank || growthAsked || agencyReq) params.universe_from = 'contracts';
     } else return analytic;
-    const dated = filters.some((f) =>
-      ['congress', 'insider', 'contracts_window'].includes(SCREEN_MEASURES[f.metric]?.source),
-    );
-    if (dated && !params.window_days) params.window_days = 365;
-    params.rank_by =
-      reqs.ranking?.measure && SCREEN_MEASURES[reqs.ranking.measure]
-        ? reqs.ranking.measure
-        : [...filters].reverse().find((f) => f.op !== 'exists')?.metric ||
-          filters[0]?.metric ||
-          null;
     params.direction = 'descending';
   }
+  const dated = filters.some((f) =>
+    ['congress', 'insider', 'contracts_window'].includes(SCREEN_MEASURES[f.metric]?.source),
+  );
+  if ((dated || params.universe_from === 'contracts') && !params.window_days)
+    params.window_days = 365;
+  /* Ranking: the one the question asked for; otherwise, when the requirements changed the
+     filters, a measured condition (never the level of a measure whose change was asked). */
+  if (rankMeasure) params.rank_by = rankMeasure;
+  else if (!base || (changed && !filters.some((f) => f.metric === params.rank_by)))
+    params.rank_by =
+      [...filters].reverse().find((f) => f.op !== 'exists')?.metric ||
+      filters[0]?.metric ||
+      params.rank_by ||
+      null;
+  if (!params.direction) params.direction = 'descending';
   /* The seeding condition is evaluated first (it lists the companies the others read). */
   if (params.universe_from) {
     const i = filters.findIndex((f) => SCREEN_MEASURES[f.metric]?.source === params.universe_from);

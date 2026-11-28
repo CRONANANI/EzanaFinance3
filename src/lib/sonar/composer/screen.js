@@ -98,6 +98,46 @@ export const SCREEN_MEASURES = {
     key: 'contracts_window',
     unit: 'usd',
   },
+  /* Sonar 6.5.1 (execution/contracts.js). Obligations are USAspending Award Amount
+     (obligated to date) on prime awards that started in the latest complete federal fiscal
+     year; never the ceiling, never revenue. The ratio divides by the latest filed annual
+     revenue ending within 365 days before that year ends (a disclosed proxy). */
+  federal_contract_obligations_to_revenue: {
+    label: 'Federal obligations / revenue (exposure proxy)',
+    source: 'contracts_ratio',
+    key: 'contracts_ratio',
+    unit: 'pct',
+  },
+  federal_obligations_current_period: {
+    label: 'Federal obligations (latest complete federal FY)',
+    source: 'contracts_growth',
+    key: 'obl_current',
+    unit: 'usd',
+  },
+  federal_obligations_prior_period: {
+    label: 'Federal obligations (prior federal FY)',
+    source: 'contracts_growth',
+    key: 'obl_prior',
+    unit: 'usd',
+  },
+  federal_obligations_change: {
+    label: 'Change in federal obligations (federal FY vs prior)',
+    source: 'contracts_growth',
+    key: 'obl_change',
+    unit: 'usd',
+  },
+  federal_obligations_growth_pct: {
+    label: 'Federal obligations growth (federal FY vs prior)',
+    source: 'contracts_growth',
+    key: 'obl_growth',
+    unit: 'pct',
+  },
+  federal_awarding_agency_concentration: {
+    label: 'Largest agency share of federal obligations',
+    source: 'contracts_growth',
+    key: 'obl_concentration',
+    unit: 'pct',
+  },
 };
 
 /** Measures the screen cannot compute yet (reported, never substituted). */

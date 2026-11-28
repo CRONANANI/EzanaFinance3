@@ -81,8 +81,14 @@ export function telemetry({
   durationMs = null,
   providerRequests = 0,
   cacheHits = 0,
+  outcome = null,
+  universe = null,
+  entityResolutionFailures = 0,
+  crossDatasetJoins = null,
+  planGenerated = true,
 }) {
   const by = (st) => steps.filter((s) => s.status === st).length;
+  const reqs = objective?.requirements || [];
   return {
     planType,
     requiredDatasets: [...new Set(required)],
@@ -101,9 +107,59 @@ export function telemetry({
     providerErrors: by('provider_error'),
     permissionDenied: by('permission_denied'),
     objective: objective?.objectiveStatus || null,
-    unsupported: (objective?.requirements || []).filter((q) => q.status === 'unsupported').length,
+    unsupported: reqs.filter((q) => q.status === 'unsupported').length,
+    /* Sonar 6.5.1: aggregate counts only (no tickers, no research text, no org ids). */
+    planGenerated: Boolean(planGenerated),
+    executedRequirements: reqs.filter(
+      (q) => q.status === 'satisfied' || q.status === 'partially_satisfied',
+    ).length,
+    unknownConditions: outcome?.unknown ?? null,
+    uncheckedUniverse: universe?.unchecked ?? outcome?.unchecked ?? null,
+    bounded: (universe?.coverageStatus || outcome?.status) === 'bounded',
+    entityResolutionFailures,
+    crossDatasetJoins: crossDatasetJoins ?? Math.max(0, new Set(required).size - 1),
+    objectiveComplete: objective?.objectiveStatus === 'complete',
     durationMs,
     providerRequests,
     cacheHits,
   };
+}
+
+/**
+ * Internal category for a failed research attempt (Sonar 6.5.1). Provider internals are
+ * reduced to a category; the user sees the category's plain message, never the raw error.
+ */
+export const FAILURE_CATEGORIES = Object.freeze({
+  provider_entitlement: 'A data provider refused the request (plan or entitlement).',
+  dataset_unavailable: 'A required dataset could not be read.',
+  timeout: 'The research ran out of time before every step finished.',
+  dependency_failure: 'A step could not run because a step it depends on failed.',
+  invalid_output: 'The research produced an output that failed validation.',
+  unexpected: 'An unexpected application error stopped the research.',
+});
+
+export function failureCategory(e) {
+  const status = e?.status ?? e?.httpStatus ?? null;
+  const msg = String(e?.message || e?.reason || e || '');
+  if (
+    status === 401 ||
+    status === 402 ||
+    status === 403 ||
+    e?.entitlement ||
+    /billing|credit balance|quota|entitle|forbidden|permission denied|payment required/i.test(msg)
+  )
+    return 'provider_entitlement';
+  if (e?.status === 'cancelled' || /timed? ?out|deadline|abort/i.test(msg)) return 'timeout';
+  if (e?.status === 'skipped_dependency' || /depends on|skipped_dependency/i.test(msg))
+    return 'dependency_failure';
+  if (
+    /could not be read|does not exist|relation .* does not exist|unavailable|ECONN|fetch failed|provider_error/i.test(
+      msg,
+    ) ||
+    e?.status === 'provider_error' ||
+    e?.status === 'unavailable'
+  )
+    return 'dataset_unavailable';
+  if (/invalid|validation|schema|parse/i.test(msg)) return 'invalid_output';
+  return 'unexpected';
 }

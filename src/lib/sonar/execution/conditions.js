@@ -34,6 +34,8 @@ export function evaluate(cond, raw) {
     return 'unknown';
   }
   switch (cond.op) {
+    case 'has_value':
+      return 'pass';
     case 'exists':
       return v > 0 ? 'pass' : 'fail';
     case 'not_exists':

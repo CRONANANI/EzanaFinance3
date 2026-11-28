@@ -3,10 +3,11 @@
 Read-only. Nothing here changes data. Run in the Supabase SQL editor for project
 `jhdzpadfzrhiekcfgtai` when you want to size the issue. Claude has not executed these.
 
-Background: an award's `action_date` is the date the obligation was made, so it cannot be in
-the future. A future `period_of_performance` end date is normal and valid; a future
-`action_date` is a data error (typo, wrong field mapped, or a placeholder). Sonar 6.5 excludes
-future `action_date` rows from every window and reports how many it excluded.
+Background (corrected in Sonar 6.5.1): the ingest (`src/app/api/cron/ingest-usaspending/route.js`)
+stores the award's USAspending **Start Date** (period of performance start) in the column named
+`action_date`. A row dated after today is therefore an award whose work has not started yet,
+which is valid, not a data error. Sonar excludes those rows from "awards in the window" and
+reports how many it excluded. Bucket (c) below can still reveal genuine typos.
 
 ## 1. How many rows, and how far in the future
 

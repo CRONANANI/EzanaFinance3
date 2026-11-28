@@ -1,3 +1,4 @@
+import { failureCategory } from '@/lib/sonar/execution/synthesis';
 import crypto from 'crypto';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { collectUsage } from '@/lib/sonar/llm-providers';
@@ -475,6 +476,7 @@ const POST_HANDLER = withApiGuard(
         });
 
         let run = null;
+        let failureCat = null;
         /* An org member's run keeps the state the analyst saw, to save it. */
         let snap = orgId ? EMPTY_RESEARCH_STATE : null;
 
@@ -843,10 +845,14 @@ const POST_HANDLER = withApiGuard(
           if (run?.researchMetadata)
             run.researchMetadata.modelUsage = compactUsage(collected.calls);
         } catch (e) {
+          /* Sonar 6.5.1: an internal failure category (provider entitlement, dataset,
+             timeout, dependency, invalid output, unexpected), never the provider's text. */
+          failureCat = failureCategory(e);
           /* Sonar 6.4: the message and the first frame, so a failure can be located (a
              TypeError on rate questions recurred since Nov 8 with nothing to go on). */
           console.error(
             '[sonar/research] run failed',
+            failureCat,
             e?.name,
             String(e?.message || '').slice(0, 200),
             String(e?.stack || '')
@@ -858,6 +864,12 @@ const POST_HANDLER = withApiGuard(
         }
 
         const answered = Boolean(run && (run.executiveConclusion || run.keyFindings?.length));
+        if (!answered && !failureCat)
+          failureCat = abort.signal.aborted
+            ? 'timeout'
+            : run?.writerFailure
+              ? 'invalid_output'
+              : 'unexpected';
         /* Charge exactly once: complete on an answer, release otherwise. */
         if (!settled) {
           settled = true;
@@ -926,6 +938,7 @@ const POST_HANDLER = withApiGuard(
             message: abort.signal.aborted
               ? 'Research cancelled. Nothing was spent.'
               : 'That research run did not complete. Nothing was spent.',
+            category: failureCat,
             refund: isGuest ? refundToken(runId, used) : null,
           });
         }

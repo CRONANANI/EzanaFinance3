@@ -172,6 +172,13 @@ export const COMPANY_NAMES = [
   { id: 'GM', label: 'General Motors', names: ['general motors'] },
   { id: 'LMT', label: 'Lockheed Martin', names: ['lockheed martin', 'lockheed'] },
   { id: 'NOC', label: 'Northrop Grumman', names: ['northrop grumman', 'northrop'] },
+  /* Sonar 6.5.1: federal-contractor comparisons name these issuers; claimed whole. */
+  {
+    id: 'RTX',
+    label: 'RTX',
+    names: ['rtx corporation', 'rtx', 'raytheon technologies', 'raytheon'],
+  },
+  { id: 'PLTR', label: 'Palantir Technologies', names: ['palantir technologies', 'palantir'] },
   { id: 'TXN', label: 'Texas Instruments', names: ['texas instruments'] },
   { id: 'AMD', label: 'Advanced Micro Devices', names: ['advanced micro devices'] },
   { id: 'MU', label: 'Micron Technology', names: ['micron technology', 'micron'] },
