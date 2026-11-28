@@ -34,7 +34,8 @@ import { NUM, toNum } from '../composer/subject.js';
  */
 export const METRICS = {
   revenue_growth: {
-    words: String.raw`(?:revenue|sales|top[- ]line)\s+(?:growth|growing|grew|increase)|grow(?:ing|th in)?\s+(?:revenue|sales)`,
+    /* Sonar 6.4: verb forms ("grew revenue", "saw revenue rise", "increased sales"). */
+    words: String.raw`(?:revenue|sales|top[- ]line)\s+(?:growth|growing|grew|increase[sd]?|rise|rising|rose|gains?|expansion)|(?:grow(?:ing|th in)?|grew|increas(?:e|ed|ing)|rais(?:e|ed|ing)|expand(?:ed|ing)?|boost(?:ed|ing)?)\s+(?:their\s+|its\s+)?(?:revenue|sales|top[- ]line)`,
     dataset: 'sec_fundamentals',
     unit: 'pct',
     available: true,
@@ -63,7 +64,7 @@ export const METRICS = {
   },
   /* Sonar 6.4: valuation measures from filed TTM figures and an authorized price. */
   ps_ratio: {
-    words: String.raw`p\/s(?:\s+ratio)?|price[- ]to[- ]sales(?:\s+ratio)?|sales multiple`,
+    words: String.raw`p\/s(?:\s+ratio)?|price[- ]to[- ]sales(?:\s+ratio)?|sales multiple|\d+(?:\.\d+)?\s*(?:x|times)\s+(?:sales|revenue)`,
     dataset: 'sec_fundamentals',
     unit: 'x',
     available: true,
@@ -402,7 +403,7 @@ function readFilters(t) {
   const filters = [];
   /* A leading question word opens the question, not a relative clause. */
   const body = t.replace(/^\s*(?:which|what|that|where)\b/, '');
-  const parts = body.split(/\b(?:that|which|with|whose|where|and|having)\b|,/);
+  const parts = body.split(/\b(?:that|which|with|whose|where|and|but|while|plus|having)\b|,/);
   parts.forEach((raw, k) => {
     const c = raw.trim();
     if (!c) return;
@@ -427,7 +428,12 @@ function readFilters(t) {
     const rankedFirst =
       RANK_WORD.test(c.slice(0, Math.max(0, at))) ||
       /^(?:the\s+)?(?:most|least|highest|lowest|fewest)\b/.test(after);
-    if (cmp && num) {
+    const unitOk = !num?.unit || !METRICS[metric].unit || num.unit === METRICS[metric].unit;
+    if (cmp && num && !unitOk) {
+      /* A percentage against a dollar measure ("revenue jumped more than 20%") is not a
+         condition Sonar can apply; it is reported as unread, never applied or dropped. */
+      filters.push({ metric, op: cmp[0], value: num.value, unit: num.unit, mismatch: c });
+    } else if (cmp && num) {
       filters.push({
         metric,
         op: cmp[0],
@@ -499,7 +505,7 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
   const measures = [];
   for (const id of METRIC_ORDER) {
     if (!METRIC_RES[id].test(t)) continue;
-    if (id === 'revenue' && measures.some((m) => /revenue|gov_/.test(m))) continue;
+    if (id === 'revenue' && measures.some((m) => /revenue|gov_|ps_ratio/.test(m))) continue;
     if (
       id === 'gov_contract_value' &&
       measures.includes('gov_revenue_share') &&
@@ -516,7 +522,9 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
       continue;
     measures.push(id);
   }
-  const filters = readFilters(t);
+  const read = readFilters(t);
+  const mismatched = read.filter((f) => f.mismatch);
+  const filters = read.filter((f) => !f.mismatch);
   const filtered = new Set(filters.map((f) => f.metric));
   const computed = measures.filter((m) => !filtered.has(m));
 
@@ -534,15 +542,18 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
           ? 'monte_carlo'
           : null;
   if (model) operation = 'model';
-  if (
-    filters.length &&
-    (operation === 'rank' || !operation) &&
-    /\b(?:find|screen|filter|list|show|which|what)\b/.test(t)
-  )
-    operation = 'screen';
-
   const sector = Object.keys(SECTORS).find((id) => SECTOR_RES[id].test(t)) || null;
   const index = (INDEXES.find(([, re]) => re.test(t)) || [null])[0];
+  /* A filtered universe is a screen whether or not a verb says so: "Energy stocks with
+     debt to equity below 0.6" (Sonar 6.4: verbless screens). */
+  if (
+    read.length &&
+    (operation === 'rank' || !operation) &&
+    (/\b(?:find|screen|filter|list|show|which|what)\b/.test(t) || sector || index)
+  )
+    operation = 'screen';
+  /* "sorted by", "ordered by" rank like "ranked by". */
+  if (!operation && /\b(?:sort(?:ed)?|order(?:ed)?)\s+by\b/.test(t)) operation = 'rank';
   const tickers = [...t.matchAll(/\$([a-z]{1,5})\b/g)].map((m) => m[1].toUpperCase());
   const universe = sector
     ? { type: 'sector', id: sector }
@@ -570,6 +581,10 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
       : null;
 
   const unsupported = [...new Set([...computed, ...filtered])].filter((m) => !METRICS[m].available);
+  /* Sonar 6.4: every numeric condition in the question must become a filter. A condition
+     Sonar cannot read ("revenue jumped more than 20%") is reported, never dropped, so a
+     screen never silently runs on the unfiltered universe. */
+  const unread = [...mismatched.map((f) => f.mismatch), ...unreadConditions(t, read)];
 
   let family = null;
   const companyLead = computed.find((m) => FUNDAMENTAL_MEASURES.has(m));
@@ -606,8 +621,31 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
     time: readTime(t),
     model,
     unsupported,
+    unread,
     family,
   };
+}
+
+/** Numeric conditions ("more than 20%", "under 0.6") not consumed by a numeric filter. */
+export function unreadConditions(t, filters) {
+  const numeric = filters.filter((f) => f.op === '>' || f.op === '<').length;
+  const found = [];
+  const re = new RegExp(
+    `(?:${CMP.map(([, r]) => r.source.replace(/^\\b\(\?:|\)\\b$/g, '')).join('|')})\\s*\\$?\\s*\\d`,
+    'gi',
+  );
+  for (const m of String(t).matchAll(re)) {
+    /* "over 3 years" is a time window, not a condition. */
+    const rest = String(t).slice(m.index + m[0].length - 1);
+    if (/^\d+(?:\.\d+)?\s*(?:years?|quarters?|months?|weeks?|days?)\b/.test(rest)) continue;
+    const start = Math.max(0, String(t).lastIndexOf(',', m.index) + 1);
+    found.push(
+      String(t)
+        .slice(start, m.index + m[0].length + 12)
+        .trim(),
+    );
+  }
+  return found.length > numeric ? found.slice(numeric) : [];
 }
 
 /** Datasets the composition needs, from its measures and filters. */

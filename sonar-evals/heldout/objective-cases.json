@@ -439,48 +439,12 @@
       }
     },
     {
-      "id": "H3",
-      "kind": "execute",
-      "question": "Energy stocks trading below 1x sales",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["BBB", "CCC"]
-      }
-    },
-    {
-      "id": "H4",
-      "kind": "execute",
-      "question": "Which tech names saw revenue rise by more than 20%?",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["TTT"]
-      }
-    },
-    {
-      "id": "H5",
-      "kind": "execute",
-      "question": "Defense contractors sorted by revenue growth",
-      "capability": "financial-screen",
-      "expect": {
-        "orderPrefix": ["DEF"]
-      }
-    },
-    {
       "id": "H6",
       "kind": "execute",
       "question": "Energy companies with revenue growth above 20% and P/E below 12",
       "capability": "financial-screen",
       "expect": {
         "set": ["AAA"]
-      }
-    },
-    {
-      "id": "H7",
-      "kind": "execute",
-      "question": "Energy companies with margins above 15% but P/E under 10",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["BBB"]
       }
     },
     {
@@ -547,6 +511,42 @@
         "universe": "semiconductors",
         "rankBy": "pe_ratio"
       }
+    },
+    {
+      "id": "H8",
+      "kind": "execute",
+      "question": "Tech stocks where revenue jumped more than 20%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "H9",
+      "kind": "execute",
+      "question": "Energy companies priced under 1 times revenue",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["BBB", "CCC"]
+      }
+    },
+    {
+      "id": "H10",
+      "kind": "execute",
+      "question": "Defense contractors in order of revenue growth",
+      "capability": "financial-screen",
+      "expect": {
+        "orderPrefix": ["DEF"]
+      }
+    },
+    {
+      "id": "H11",
+      "kind": "execute",
+      "question": "Energy stocks with P/E below 12 as well as revenue growth above 20%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA"]
+      }
     }
   ],
   "retired": [
@@ -579,6 +579,26 @@
       "id": "I03",
       "question": "Which defense contractors grew revenue the fastest?",
       "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "H3",
+      "question": "Energy stocks trading below 1x sales",
+      "reason": "failure inspected and a targeted grammar rule written for its phrasing during 6.4 development (2026-11-28); moved to development tests and replaced"
+    },
+    {
+      "id": "H4",
+      "question": "Which tech names saw revenue rise by more than 20%?",
+      "reason": "failure inspected and a targeted grammar rule written for its phrasing during 6.4 development (2026-11-28); moved to development tests and replaced"
+    },
+    {
+      "id": "H5",
+      "question": "Defense contractors sorted by revenue growth",
+      "reason": "failure inspected and a targeted grammar rule written for its phrasing during 6.4 development (2026-11-28); moved to development tests and replaced"
+    },
+    {
+      "id": "H7",
+      "question": "Energy companies with margins above 15% but P/E under 10",
+      "reason": "failure inspected and a targeted grammar rule written for its phrasing during 6.4 development (2026-11-28); moved to development tests and replaced"
     }
   ],
   "v2_written": "2026-11-28, before any Sonar 6.4 code",

@@ -893,6 +893,10 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
       else if (sector && universeFor(sector).kind === 'unsupported')
         unsupported = universeFor(sector).reason;
     }
+    /* Sonar 6.4: a numeric condition Sonar could not read stops the screen with a specific
+       notice; running without it would return the unfiltered universe. */
+    if (family === 'multi_stage_screen' && composition?.unread?.length && !unsupported)
+      unsupported = `Sonar could not read the condition \u201c${composition.unread[0]}\u201d as a measure it can screen on, so it did not run the screen without it. Name the measure (for example revenue growth, operating margin, P/E, P/S or debt to equity).`;
     if (composition?.unsupported?.length && !unsupported)
       unsupported = `Not available in Ezana's data yet: ${composition.unsupported.join(', ').replace(/_/g, ' ')}.`;
   }
