@@ -30,6 +30,7 @@ import { removeEmDashes } from '@/lib/text/em-dash';
 import { logZeroResult } from '@/lib/rag/zero-results';
 import { reservePing, completePing, failPing, annotatePing } from '@/lib/sonar/quota';
 import { createRequestTimer } from '@/lib/rag/request-timer';
+import { routingForRun } from '@/lib/sonar/model-routing';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -53,19 +54,11 @@ export const maxDuration = 60;
 // model when a richer request 400s (e.g. deep-tier model access or the web tool).
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
-// Synthesis model by plan depth so cost tracks revenue: cheap Haiku for
-// free/standard grounded summaries; a stronger model for paid "deep" synthesis.
-// (Grounded summarization doesn't need a frontier model — Haiku is plenty and ~10x
-// cheaper on the same Anthropic key.)
-function modelForDepth(depth) {
-  switch (depth) {
-    case 'deep':
-      return 'claude-sonnet-5';
-    case 'standard':
-    case 'summary':
-    default:
-      return HAIKU_MODEL;
-  }
+// Synthesis model by plan depth so cost tracks revenue (Nov 28 2026: from the model
+// routing, lib/sonar/model-routing; its default "current" profile keeps Haiku 4.5 for
+// standard and Sonnet 5 for deep, as before).
+function modelForDepth(depth, routing) {
+  return depth === 'deep' ? routing.legacy_deep : routing.legacy_standard;
 }
 
 const DISCLAIMER =
@@ -325,7 +318,10 @@ async function handlePing(request, user, ping) {
         system: SYSTEM_PROMPT + GROUNDING_RULES,
         user: buildUserPrompt(query, marked, context),
         maxTokens: budget.maxTokens,
-        model: modelForDepth(entitlements.depth),
+        model: modelForDepth(
+          entitlements.depth,
+          routingForRun({ userId: user?.id || null, env: process.env }),
+        ),
         fallbackModel: HAIKU_MODEL,
         webSearch: entitlements.webSearch,
         deadlineAt,

@@ -28,6 +28,7 @@ import {
   isStale,
 } from './dataset-capabilities.js';
 import { loadSkill } from './skills.js';
+import { priceOf as priceOfModel } from '../model-routing.js';
 import { MACRO_LENS } from '../macro/playbook.js';
 import { validateClaim, parseResearchJson } from '../engine/findings.js';
 
@@ -380,17 +381,13 @@ export function validateSpecialist(parsed, { analyst, marked, metrics }) {
 /* ── Cost and budgets ─────────────────────────────────────────────────────────────── */
 
 /* Approximate list prices per million tokens (input, output), for the pre-call ceiling. */
-const PRICES = [
-  [/haiku/i, 1, 5],
-  [/sonnet/i, 3, 15],
-  [/opus/i, 15, 75],
-];
-function priceOf(model) {
-  return PRICES.find(([re]) => re.test(String(model || ''))) || PRICES[1];
-}
+/* Nov 28 2026: list prices come from the model routing table (the old table here
+   priced every Haiku at 4.5 rates and Opus at $15/$75, which would make an Opus 5.5
+   run look three times dearer than it is and trip the cost ceiling early). An unknown
+   model is estimated at Sonnet 4.x rates, as before. */
 export function callCostUsd(model, inputChars, outputTokens) {
-  const [, pin, pout] = priceOf(model);
-  return (Math.ceil(inputChars / 4) * pin + outputTokens * pout) / 1e6;
+  const p = priceOfModel(model) || { input: 3, output: 15 };
+  return (Math.ceil(inputChars / 4) * p.input + outputTokens * p.output) / 1e6;
 }
 
 /** The run's cost ceiling for a mode, in US dollars. */

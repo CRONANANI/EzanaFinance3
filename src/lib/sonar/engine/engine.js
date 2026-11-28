@@ -20,7 +20,8 @@
  * orchestrates.
  */
 import { understandQuery } from '@/lib/sonar/understand';
-import { synthesizeWithFallback, HAIKU_MODEL } from '@/lib/sonar/llm-providers';
+import { synthesizeWithFallback, HAIKU_MODEL, withUsageLabel } from '@/lib/sonar/llm-providers';
+import { routingForRun, isCrossDomain, deepDirectorFor } from '@/lib/sonar/model-routing';
 import { enforceGrounding } from '@/lib/sonar/groundingGuard';
 import { getAdminClient } from '@/lib/supabase';
 import { scoreDomains, buildResearchSpec } from './research-spec';
@@ -247,6 +248,10 @@ export async function runResearch(query, opts = {}) {
     signal = null,
     scope = {},
     noCorrect = false,
+    /* Nov 28 2026: the model for each role (lib/sonar/model-routing). Benchmarks pass
+       one; otherwise the feature-flagged routing for this user applies, and its default
+       profile ("current") is exactly the earlier behaviour. */
+    modelRouting = null,
     force = null,
     now = new Date(),
     /* Sonar for organizations (Nov 2026), set by the research route only:
@@ -275,7 +280,15 @@ export async function runResearch(query, opts = {}) {
   const allowed = Array.isArray(allowedSources) ? new Set(allowedSources) : null;
   const runnerFor = (src) => evidenceOverride?.runners?.[src] ?? RUNNERS[src];
   setCacheClient(() => admin);
-  const D = DEPTH_PROFILES[depth] || DEPTH_PROFILES.standard;
+  const D0 = DEPTH_PROFILES[depth] || DEPTH_PROFILES.standard;
+  const models = modelRouting || routingForRun({ userId: scope?.userId || null, env: process.env });
+  /* The synthesis model for this depth; deep re-checks for cross-domain once the team is
+     routed (see directorModel below). */
+  const D = {
+    ...D0,
+    model:
+      depth === 'deep' ? models.deep_director : depth === 'quick' ? models.quick : models.standard,
+  };
   const startedAt = Date.now();
   const deadline = Number(opts.deadlineAt) || startedAt + D.budgetMs;
   const left = () => deadline - Date.now();
@@ -284,7 +297,7 @@ export async function runResearch(query, opts = {}) {
   const leg = async (name, fn, note) => {
     const t0 = Date.now();
     try {
-      const v = await fn();
+      const v = await withUsageLabel(name, fn);
       trace.push({ leg: name, ok: true, ms: Date.now() - t0, note: note ? note(v) : undefined });
       return v;
     } catch (e) {
@@ -794,10 +807,7 @@ export async function runResearch(query, opts = {}) {
             emit,
             methodology,
             synth: synthesizeWithFallback,
-            models: {
-              fast: process.env.SONAR_ANALYST_FAST_MODEL || DEPTH_PROFILES.standard.model,
-              strong: process.env.SONAR_ANALYST_STRONG_MODEL || DEPTH_PROFILES.deep.model,
-            },
+            models: { fast: models.standard_specialist, strong: models.deep_specialist },
             today: todayLine(now),
           }),
         (v) =>
@@ -825,6 +835,10 @@ export async function runResearch(query, opts = {}) {
   /* Nov 28 2026: why the written analysis is missing, when it is (WRITER_FAILURE). */
   let writerFailure = marked.length && !aborted() ? 'skipped' : null;
   let writerTruncated = false;
+  /* Profile C: a deep run whose routed team spans two or more analyst groups gets the
+     cross-domain director model (Opus 5.5); every other run keeps the depth's model. */
+  const crossDomain = depth === 'deep' && isCrossDomain(team?.routing, ANALYSTS);
+  const directorModel = depth === 'deep' ? deepDirectorFor(models, { crossDomain }) : D.model;
   if (marked.length && left() > 2_500 && !aborted()) {
     writerFailure = null;
     let synthError = null;
@@ -861,7 +875,7 @@ export async function runResearch(query, opts = {}) {
               : D.memoTokens || D.tokens
             : /* Nov 13: room for the Desk Summary fields at the end of the JSON. */
               D.tokens + DESK_JSON_TOKENS,
-          model: D.model,
+          model: directorModel,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
           deadlineAt: deadline - 400,
@@ -886,7 +900,7 @@ export async function runResearch(query, opts = {}) {
       return null;
     });
     providerErrors = synth?.providerErrors || [];
-    model = synth?.model || D.model;
+    model = synth?.model || directorModel;
     const parsed = parseResearchJson(synth?.answer);
     parsedChallenge = parsed?.challenge || null;
     writerTruncated = Boolean(parsed?._truncated) || synth?.stopReason === 'max_tokens';
@@ -1033,7 +1047,7 @@ export async function runResearch(query, opts = {}) {
       role: 'red-team',
       status: 'started',
     });
-    const strong = process.env.SONAR_ANALYST_STRONG_MODEL || DEPTH_PROFILES.deep.model;
+    const strong = models.deep_red_team;
     const draft = memo ? renderMemoBrief(report) : renderBrief(report);
     const rt = await leg('red-team', () =>
       synthesizeWithFallback({
@@ -1063,7 +1077,7 @@ export async function runResearch(query, opts = {}) {
             .map((p, i) => `${i}. (${p.kind}) ${p.text} ${p.refs.map((r) => `[${r}]`).join('')}`)
             .join('\n')}\n\nEvidence:\n${evidenceLines(markedF)}`,
           maxTokens: 900,
-          model: strong,
+          model: models.deep_resolve,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
           deadlineAt: Math.min(deadline - 8_000, Date.now() + 30_000),
@@ -1133,7 +1147,7 @@ export async function runResearch(query, opts = {}) {
           .map((c) => `${c.pass ? 'PASS' : 'FAIL'} ${c.id}: ${c.detail || ''}`)
           .join('\n')}\n\nEvidence:\n${evidenceLines(markedF)}`,
         maxTokens: ANALYSTS['methodology-auditor'].maxOutputTokens?.deep || 900,
-        model: process.env.SONAR_ANALYST_STRONG_MODEL || DEPTH_PROFILES.deep.model,
+        model: models.deep_auditor,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
         deadlineAt: Math.min(deadline - 4_000, Date.now() + 30_000),
@@ -1282,6 +1296,8 @@ export async function runResearch(query, opts = {}) {
       durationMs: Date.now() - startedAt,
       phase1Ms: phase1.phase1Ms,
       model,
+      modelProfile: models.profile,
+      crossDomain,
       providerErrors,
       validation: report.validation?.stats || null,
       validationLog: report.validation?.log || [],

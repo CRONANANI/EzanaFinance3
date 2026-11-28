@@ -21,7 +21,32 @@
  * ─────────────────────────────────────────────────────────────────────────────────
  */
 
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { removeEmDashes } from '@/lib/text/em-dash';
+
+/* ── Usage collection (Nov 28 2026) ────────────────────────────────────────────────
+   Benchmarks and telemetry need every model call a run made: the model asked for, the
+   model that answered (a 400 retries quietly on Haiku, which must not pass as the
+   requested model), tokens and time. collectUsage(fn) gathers the calls made inside fn;
+   withUsageLabel(label, fn) tags them (the engine labels each leg). Outside a collector
+   nothing is recorded. */
+const usageStore = new AsyncLocalStorage();
+const labelStore = new AsyncLocalStorage();
+
+export async function collectUsage(fn) {
+  const calls = [];
+  const result = await usageStore.run({ calls }, fn);
+  return { result, calls };
+}
+
+export function withUsageLabel(label, fn) {
+  return labelStore.run(label, fn);
+}
+
+function recordUsage(entry) {
+  const store = usageStore.getStore();
+  if (store) store.calls.push({ label: labelStore.getStore() || null, ...entry });
+}
 // ── Typed errors so the chain can distinguish "provider unavailable" (fall through
 //    quietly) from "we sent a bad request" (fall through, but log loudly so a code
 //    bug isn't masked by failover) from a rate limit.
@@ -244,7 +269,10 @@ async function anthropicSynthesize({
   system,
   user,
   maxTokens,
-  model,
+  /* Callers that name no model (the adaptive executors) used to send none, take a 400
+     and land on Haiku through the retry below: same model, one wasted round trip. The
+     default sends Haiku directly. */
+  model = HAIKU_MODEL,
   fallbackModel,
   webSearch,
   deadlineAt = null,
@@ -259,6 +287,20 @@ async function anthropicSynthesize({
   const hop = { minHopMs, reserveMs };
   if (!apiKey) throw new ProviderUnavailableError('anthropic: no ANTHROPIC_API_KEY');
   const safeFallback = fallbackModel || HAIKU_MODEL;
+  const startedAt = Date.now();
+  let fellBackFrom = null;
+  const timedOut = () => {
+    recordUsage({
+      provider: 'anthropic',
+      requested: model,
+      served: null,
+      ok: false,
+      status: 'timeout',
+      ms: Date.now() - startedAt,
+      fellBackFrom,
+    });
+    return new ProviderUnavailableError('anthropic: timed out');
+  };
 
   const baseBody = {
     model,
@@ -287,7 +329,7 @@ async function anthropicSynthesize({
     try {
       res = await callAnthropic(withTool, apiKey, hopMs(38_000, deadlineAt, reserveMs));
     } catch (e) {
-      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      if (isAbort(e)) throw timedOut();
       throw e;
     }
     if (res.status === 400) {
@@ -296,7 +338,7 @@ async function anthropicSynthesize({
       try {
         res = await callAnthropic(baseBody, apiKey, guardHop(20_000, deadlineAt, hop));
       } catch (e) {
-        if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+        if (isAbort(e)) throw timedOut();
         throw e;
       }
     }
@@ -304,7 +346,7 @@ async function anthropicSynthesize({
     try {
       res = await callAnthropic(baseBody, apiKey, guardHop(longHop || 25_000, deadlineAt, hop));
     } catch (e) {
-      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      if (isAbort(e)) throw timedOut();
       throw e;
     }
   }
@@ -313,6 +355,7 @@ async function anthropicSynthesize({
   if (res.status === 400 && model !== safeFallback) {
     const detail = await readBody(res);
     console.warn('[sonar] model 400, retrying on Haiku', { model, detail });
+    fellBackFrom = { model, status: 400, detail: String(detail || '').slice(0, 300) };
     try {
       res = await callAnthropic(
         { ...baseBody, model: safeFallback },
@@ -320,7 +363,7 @@ async function anthropicSynthesize({
         guardHop(longHop || 20_000, deadlineAt, hop),
       );
     } catch (e) {
-      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      if (isAbort(e)) throw timedOut();
       throw e;
     }
   }
@@ -328,10 +371,34 @@ async function anthropicSynthesize({
   if (!res.ok) {
     const detail = await readBody(res);
     console.error('[sonar] anthropic synthesis error', { model, status: res.status, detail });
+    recordUsage({
+      provider: 'anthropic',
+      requested: model,
+      served: null,
+      ok: false,
+      status: res.status,
+      ms: Date.now() - startedAt,
+      fellBackFrom,
+    });
     throw classifyProviderError('anthropic', res.status, detail);
   }
 
   const data = await res.json();
+  recordUsage({
+    provider: 'anthropic',
+    requested: model,
+    served: data?.model || (fellBackFrom ? safeFallback : model),
+    ok: true,
+    status: 200,
+    ms: Date.now() - startedAt,
+    inputTokens: data?.usage?.input_tokens ?? null,
+    outputTokens: data?.usage?.output_tokens ?? null,
+    cacheReadTokens: data?.usage?.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: data?.usage?.cache_creation_input_tokens ?? 0,
+    webSearches: data?.usage?.server_tool_use?.web_search_requests ?? 0,
+    stopReason: data?.stop_reason || null,
+    fellBackFrom,
+  });
   // Spend visibility: token usage per ping to the server console, so the
   // credit burn is auditable from the deployment logs.
   if (data?.usage) {
