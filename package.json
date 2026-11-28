@@ -218,7 +218,8 @@
     "test:owner-push": "node --test scripts/check-owner-push.mjs",
     "test:sonar-composer-v4": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-composer-v4.mjs",
     "test:sonar-5": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-5.mjs",
-    "test:sonar-ownership": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-ownership.mjs"
+    "test:sonar-ownership": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-ownership.mjs",
+    "test:sonar-semantic": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-semantic.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

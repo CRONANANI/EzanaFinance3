@@ -14,31 +14,10 @@
  */
 
 import { makeAnalysis } from './registry.js';
+import { extractParams, extractSubject, extractRelation } from './subject.js';
+import { canonicalIntent, composerMetric } from '../semantic/canonical-intent.js';
 
-const WORD_NUM = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-  ten: 10,
-  twelve: 12,
-  fifteen: 15,
-  twenty: 20,
-  'twenty five': 25,
-};
-const NUM = `(\\d{1,3}|${Object.keys(WORD_NUM).join('|')})`;
-const toNum = (s) => {
-  if (s == null) return null;
-  const t = String(s).toLowerCase().trim();
-  if (WORD_NUM[t] != null) return WORD_NUM[t];
-  const v = Number(t);
-  return Number.isFinite(v) ? v : null;
-};
+export { extractParams, extractSubject, extractRelation };
 
 /* Who an institutional ownership question counts. */
 const FIRMS = String.raw`investment\s+(?:firms?|managers?|companies|funds?)|institutions?|institutional\s+(?:investors?|managers?|holders?)|(?:hedge|mutual|pension|index)\s+funds?|funds|fund\s+managers?|money\s+managers?|asset\s+managers?|wall\s+street(?:\s+firms)?|big\s+money|13f\s+(?:filers?|managers?)`;
@@ -95,193 +74,36 @@ export function ownershipMetric(question) {
   return 'managers';
 }
 
-/** Explicit numbers in the question. */
-export function extractParams(question) {
-  const q = String(question || '');
-  const out = {};
-  const top = q.match(new RegExp(`\\b(?:top|largest|biggest)\\s+${NUM}\\b`, 'i'));
-  if (top) out.top_n = toNum(top[1]);
-  const years = q.match(
-    new RegExp(
-      `\\b(?:over|for|across|during)?\\s*(?:the\\s+)?(?:last|past|previous)?\\s*${NUM}[- ]years?\\b`,
-      'i',
-    ),
-  );
-  if (years) out.years = toNum(years[1]);
-  const hold = q.match(
-    new RegExp(
-      `\\bhold(?:ing)?(?: (?:for|each|them|positions|it|every position)){0,2}\\s+${NUM}\\s+days?\\b`,
-      'i',
-    ),
-  );
-  if (hold) out.hold_days = toNum(hold[1]);
-  const wacc = q.match(/\b(?:wacc|discount rate)\s+(?:of\s+)?(\d{1,2}(?:\.\d+)?)\s?%/i);
-  if (wacc) out.wacc_pct = Number(wacc[1]);
-  return out;
-}
-
-/* Subject patterns, most specific first. The capture is the subject's name. */
-const SUBJECT_PATTERNS = [
-  /\b(?:stocks|holdings|positions|companies|shares)\s+(?:that\s+|does\s+|do\s+|did\s+)?(.{2,60}?)\s+(?:owns?|holds?|has|have|is holding)\b/i,
-  /\b(?:follows?|following|copy(?:ing)?|mirror(?:ing)?)\s+(.{2,60}?)'s?\s+(?:publicly\s+)?(?:disclosed\s+)?(?:purchases|buys|trades|holdings|portfolio)/i,
-  /\b(?:of|from|in)\s+(.{2,60}?)'s?\s+(?:top|largest|biggest|disclosed|13f|current|latest)?\s*(?:\d+\s+)?(?:holdings|stocks|positions|portfolio|purchases)/i,
-  /\b([A-Z][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})'s\s+(?:top|largest|biggest|disclosed|13f|current|latest)?\s*(?:\d+\s+)?(?:holdings|stocks|positions|portfolio|purchases|fundamentals|financials|valuation)/,
-  /\b(?:fundamentals?|financials|valuation|dcf|intrinsic value)\s+(?:analysis\s+)?(?:of|for|on)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})/,
-  /\b(?:analy[sz]e|value)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})(?:'s)?\b/,
-  /* "Which Pelosi holdings ...", "rank Nancy Pelosi stocks by ..." */
-  /\b([A-Z][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,3})\s+(?:stocks|holdings|positions|portfolio|shares)\b/,
-  /\b(?:of|for|on)\s+([A-Z$][\w.&-]*(?:\s+[A-Z][\w.&-]*){0,4})\b/,
-];
-/* Verbs a capitalised capture can start with ("Analyze BlackRock's ..."). */
-const LEAD_VERB =
-  /^(?:please\s+)?(?:analy[sz]e|backtest|back-test|value|run|give me|compare|evaluate|assess|review|show me|test)\s+/i;
-
-const STOP_SUBJECT = /^(the|a|an|their|his|her|its|my|our|top|largest|biggest|this|that)$/i;
-
-/** The question's subject as text, or null. */
-export function extractSubject(question) {
-  const q = String(question || '').trim();
-  for (const re of SUBJECT_PATTERNS) {
-    const m = q.match(re);
-    if (!m) continue;
-    let s = m[1]
-      .replace(LEAD_VERB, '')
-      .replace(/^both\s+/i, '')
-      .replace(/^(?:the\s+)?(?:top|largest|biggest)\s+\S+\s+/i, '')
-      .replace(/\s+(?:and|then|over|for|with)\b.*$/i, '')
-      .replace(/['’]s$/i, '')
-      .replace(/[,.;:!?]+$/, '')
-      .trim();
-    s = s
-      .split(/\s+/)
-      .filter(
-        (w, i, all) =>
-          !(i < all.length - 1 && /^(Which|What|Rank|Show|List|Are|Do|Does|Did|Is)$/i.test(w)),
-      )
-      .join(' ');
-    if (/^(Which|What|Who|Rank|Show|List|How)$/i.test(s)) continue;
-    if (!s || STOP_SUBJECT.test(s) || s.length < 2) continue;
-    return s;
-  }
-  return null;
-}
-
-/* ── Sonar 5.0: two-entity holdings relationships (Nov 24 2026) ───────────
-   "Fundamental analysis of the shares both Nancy Pelosi and BlackRock hold", "stocks
-   Pelosi owns that BlackRock also owns", "compare Pelosi's portfolio with BlackRock's top
-   ten": the question names two holders and asks for their overlap (or a comparison).
-   Read deterministically: two named entities plus overlap or comparison language. The
-   names are only text here; resolution decides whether each one holds securities. */
-
-const OVERLAP_RE =
-  /\b(both|in common|common (?:stocks?|equities|holdings|positions|shares|names|companies)|overlap(?:s|ping)?|shared (?:stocks?|equities|holdings|positions|names)|also (?:has|have|holds?|owns?)|that .{1,40}? also\b|appear(?:s|ing)? in (?:both|each))\b/i;
-const COMPARE_RE = /\b(compare|comparison|versus|vs\.?|against)\b/i;
-const NAME_RE = /\b([A-Z][\w.&'’-]*(?:\s+(?:of\s+)?[A-Z][\w.&'’-]*){0,3})\b/g;
-/* Capitalised words that are not names (question openers, products, finance terms). */
-const NOT_NAME =
-  /^(Can|Could|Would|Will|Should|Do|Does|Did|Is|Are|Was|What|Which|Who|Whose|How|Why|When|Where|Find|Show|Give|List|Compare|Run|Analy[sz]e|Please|Fundamental|Fundamentals|Stocks?|Shares?|Holdings?|Equities|Companies|I|The|A|An|And|Then|Top|DCF|EzanaQL|Sonar|Ezana|SEC|ETF|FY|Q[1-4]|US|U\.S\.)$/;
-
-function namesIn(q) {
-  const out = [];
-  for (const m of q.matchAll(NAME_RE)) {
-    let n = m[1].replace(/['’]s?$/, '').trim();
-    const words = n.split(/\s+/);
-    while (words.length && NOT_NAME.test(words[0])) words.shift();
-    n = words.join(' ');
-    if (!n || NOT_NAME.test(n) || n.length < 3) continue;
-    if (!out.some((x) => x.name.toLowerCase() === n.toLowerCase()))
-      out.push({ name: n, index: m.index + m[1].indexOf(n) });
-  }
-  return out;
-}
-
-/* Words that end a holder's name in a paired phrase (verbs, scope, possessive). */
-const NAME_END =
-  /\s+(?:also|both|each|has|have|had|hold|holds|held|own|owns|owned|is|are|in|on|at|by|with|for|from|top|largest|biggest|portfolio|portfolios|positions?|holdings?|stocks?|shares?|equities|book)\b.*$/i;
-const NAME_LEAD =
-  /^(?:the\s+)?(?:shares?|stocks?|equities|holdings?|positions?|companies|names)?\s*(?:that|which|both|do|does|did|of|between)?\s*/i;
-const PAIRS = [
-  /\bboth\s+(.{2,60}?)\s+(?:(?:has|have|holds?|owns?)\s+)?and\s+(.{2,60}?)(?=\s+(?:also\s+)?(?:has|have|hold|holds|own|owns|in|both)\b|[?.,]|$)/i,
-  /\b(?:that|which|do|does|did|of|between)\s+(.{2,60}?)\s+and\s+(.{2,60}?)(?=\s+(?:both|each|all|also|have|has|hold|holds|own|owns|share|in common)\b|['’]s?\b|[?.,]|$)/i,
-  /\bby\s+both\s+(.{2,60}?)\s+and\s+(.{2,60}?)(?=\s+in\b|[?.,]|$)/i,
-];
-const cleanName = (raw) => {
-  let n = String(raw || '')
-    .replace(NAME_LEAD, '')
-    .replace(NAME_END, '')
-    .replace(/['’]s?$/, '')
-    .replace(/[^\w.&' -]+/g, ' ')
-    .trim();
-  n = n.replace(/\s+/g, ' ');
-  if (!n || n.length < 3 || n.split(' ').length > 5 || NOT_NAME.test(n)) return null;
-  /* Title case for display; resolution matches either way. */
-  return n.replace(/\b([a-z])/g, (c) => c.toUpperCase());
-};
-function pairedNames(q) {
-  for (const re of PAIRS) {
-    const m = q.match(re);
-    if (!m) continue;
-    const a = cleanName(m[1]);
-    const b = cleanName(m[2]);
-    if (a && b && a.toLowerCase() !== b.toLowerCase())
-      return [
-        { name: a, index: m.index + m[0].indexOf(m[1]) },
-        { name: b, index: m.index + m[0].indexOf(m[2]) },
-      ];
-  }
-  return [];
-}
-
-/**
- * The question's two-holder relationship, or null:
- *   { op: 'intersect' | 'compare', left, right, topN, topNFor }
- * left is the question's first holder (the research subject), right the second. topN is
- * a "top N" scope and topNFor the holder it qualifies (the nearest name before it, or
- * "its" referring back to the latest name), so "BlackRock's top 10" never becomes the
- * analysis's own count.
- */
-export function extractRelation(question) {
-  const q = String(question || '');
-  const overlap = OVERLAP_RE.test(q);
-  const compare = !overlap && COMPARE_RE.test(q);
-  if (!overlap && !compare) return null;
-  let names = namesIn(q);
-  /* Typed in lower case ("nancy pelosi and blackrock"), the names are read from the
-     phrase that pairs them instead of from capitals. */
-  if (names.length < 2) names = pairedNames(q);
-  if (names.length < 2) return null;
-  const [left, right] = names;
-  let topN = null;
-  let topNFor = null;
-  const top = q.match(new RegExp(`\\b(?:top|largest|biggest)\\s+${NUM}\\b`, 'i'));
-  if (top) {
-    topN = toNum(top[1]);
-    const before = names.filter((n) => n.index < top.index);
-    topNFor = (before[before.length - 1] || right).name;
-  }
-  return {
-    op: overlap ? 'intersect' : 'compare',
-    left: left.name,
-    right: right.name,
-    topN,
-    topNFor,
-  };
-}
-
 /**
  * Attachments the question asks for, deduplicated by capability (one Fundamental Analysis
  * however many ways the question says it). Each carries origin 'auto', the subject text,
  * and the question's explicit parameters over the defaults.
  */
-export function inferComposition(question) {
+export function inferComposition(question, { semanticMeasure = null } = {}) {
   const q = String(question || '');
   if (q.trim().length < 6) return { subject: null, attachments: [] };
-  const caps = OPS.filter((o) => o.re.test(q)).map((o) => o.capability);
   const relation = extractRelation(q);
-  if (!caps.length) return { subject: relation?.left || null, attachments: [], relation };
+  /* Sonar 6.0 (Nov 28 2026): institutional ownership is decided by the canonical intent's
+     slots (holder, institution class, measure), not by phrase: "stocks owned by Nancy
+     Pelosi that are also owned the most by investment firms" and "...most owned by
+     investment firms" attach the same analysis with the same metric. A measure the
+     analysis cannot compute (ownership percentage, lowest first, recent trades only) is
+     never attached as a different ranking. */
+  const intent = canonicalIntent(q, { semanticMeasure });
+  let caps = OPS.filter((o) => o.re.test(q)).map((o) => o.capability);
+  if (intent.family === 'institutional_ownership') {
+    if (intent.unsupported) caps = caps.filter((c) => c !== 'institutional-ownership');
+    else if (!caps.includes('institutional-ownership')) caps.push('institutional-ownership');
+  } else if (intent.family === 'congressional_overlap') {
+    caps = caps.filter((c) => c !== 'institutional-ownership');
+  }
+  if (!caps.length) return { subject: relation?.left || null, attachments: [], relation, intent };
   /* A two-holder question's subject is its first holder; its "top N" scopes a holdings
      set, not the analysis (Sonar 5.0). */
-  const subjectText = relation?.left || extractSubject(q);
+  const subjectText =
+    relation?.left ||
+    (intent.family === 'institutional_ownership' ? intent.primary_entity?.text : null) ||
+    extractSubject(q);
   const params = extractParams(q);
   if (relation?.topN != null) delete params.top_n;
   const subject = subjectText ? { text: subjectText } : null;
@@ -300,12 +122,13 @@ export function inferComposition(question) {
     }
     /* "Run a DCF on the top 10 holdings" asks for 10 companies, but a DCF run values at
        most 5: keep the reader's number and let validation say so, never cut it silently. */
-    if (capability === 'institutional-ownership') own.metric = ownershipMetric(q);
+    if (capability === 'institutional-ownership')
+      own.metric = composerMetric(intent) || ownershipMetric(q);
     const a = makeAnalysis(capability, { origin: 'auto', subject, params: own });
     /* It analyses the set the question describes (the overlap), not the first holder. */
     return relation ? { ...a, wantsSet: true } : a;
   });
-  return { subject: subjectText, attachments, relation };
+  return { subject: subjectText, attachments, relation, intent };
 }
 
 /** A question changed enough that inferred attachments must be recomputed. */

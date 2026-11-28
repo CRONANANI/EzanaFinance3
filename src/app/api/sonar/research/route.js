@@ -52,6 +52,15 @@ import { followUpContext, followUpPreamble, attachmentBlock } from '@/lib/sonar/
 import { runResearchComposition } from '@/lib/sonar/composer/execute';
 import { clientComposition, fulfillmentContract } from '@/lib/sonar/composer/fulfillment';
 import { inferComposition } from '@/lib/sonar/composer/intents';
+import {
+  canonicalIntent,
+  intentFulfillment,
+  intentTelemetry,
+  planSignature,
+  withResolution,
+} from '@/lib/sonar/semantic/canonical-intent';
+import { INTENT_EXEMPLARS, semanticMeasure } from '@/lib/sonar/semantic/intent-exemplars';
+import { nearestExemplars } from '@/lib/sonar/insight/semantic';
 import { OWNERSHIP_CAPABILITY } from '@/lib/sonar/composer/ownership';
 import { RUNNERS } from '@/lib/sonar/engine/sources';
 import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
@@ -462,8 +471,29 @@ const POST_HANDLER = withApiGuard(
            most owned by investment firms") runs its ranking even when the page sent no
            composition (an older page, a guest, a quick question). It reads public filings
            only, so a guest runs it too. */
+        /* Sonar 6.0 (Nov 28 2026): the canonical research intent, read once here. Equivalent
+           wordings get the same intent; the embedding stage only fills an ownership measure
+           the question left unstated (bounded, and skipped for every other question). */
+        const intentQuery = String(runQuery || '').slice(0, 600);
+        let canonical = canonicalIntent(intentQuery);
+        let semMeasure = null;
+        if (
+          canonical.family === 'institutional_ownership' &&
+          canonical.measure_source === 'default'
+        ) {
+          const cands = await nearestExemplars(intentQuery, INTENT_EXEMPLARS, {
+            embed: (t) =>
+              import('@/lib/rag/embed-cached')
+                .then((m) => m.embedViaSupabaseCached(t))
+                .catch(() => null),
+            timeoutMs: 500,
+          }).catch(() => null);
+          semMeasure = semanticMeasure(cands);
+          if (semMeasure) canonical = canonicalIntent(intentQuery, { semanticMeasure: semMeasure });
+        }
+        if (canonical.unsupported) send('notice', { message: canonical.unsupported });
         if (!compAttachments.length) {
-          const inferred = inferComposition(String(runQuery || '').slice(0, 600));
+          const inferred = inferComposition(intentQuery, { semanticMeasure: semMeasure });
           const own = inferred.attachments.filter((a) => a.capability === OWNERSHIP_CAPABILITY);
           if (own.length && inferred.subject && !inferred.relation) {
             compAttachments = own;
@@ -499,7 +529,25 @@ const POST_HANDLER = withApiGuard(
             );
             if (comp.ok) {
               composition = comp.value;
+              canonical = withResolution(canonical, composition.subject);
               const payload = clientComposition(composition, fulfillmentContract(composition));
+              payload.intent = {
+                version: canonical.intent_version,
+                signature: planSignature(canonical).id,
+                family: canonical.family,
+                reportFamily: canonical.report_family,
+                paraphrase: canonical.canonical_paraphrase,
+                defaults: canonical.inferred_defaults.map((d) => d.why),
+                ambiguities: canonical.ambiguities.map((d) => d.question),
+              };
+              const met = intentFulfillment(canonical, payload);
+              if (met.required && !met.met)
+                send('notice', {
+                  message: `The requested ranking is incomplete: ${met.checks
+                    .filter((c) => !c.ok)
+                    .map((c) => c.label.toLowerCase())
+                    .join('; ')} did not succeed.`,
+                });
               send('composition', payload);
               if (snap) snap = reduceEvent(snap, ['composition', payload]);
             } else {
@@ -558,6 +606,7 @@ const POST_HANDLER = withApiGuard(
               followUpTo: parentQuestion,
               parentRunId,
               attachmentName: attachment ? attachName : null,
+              canonicalIntent: intentTelemetry(canonical),
             },
             /* A standard run whose real plan leaves out evidence the question
                asked for says so right after the plan (never escalates). */

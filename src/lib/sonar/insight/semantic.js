@@ -67,6 +67,34 @@ export async function semanticFamilyScores(query, { embed, timeoutMs = 600 } = {
   }
 }
 
+/**
+ * Nearest exemplars of any list ({ id, text, ...meta }) to a query, best first, or null when
+ * embedding is unavailable or slower than `timeoutMs`. Shares the exemplar vector cache.
+ * Sonar 6.0 (Nov 28 2026): the canonical intent's candidate retrieval.
+ */
+export async function nearestExemplars(query, exemplars, { embed, timeoutMs = 600, k = 5 } = {}) {
+  if (typeof embed !== 'function' || !String(query || '').trim() || !exemplars?.length) return null;
+  const work = (async () => {
+    const q = await Promise.resolve(embed(String(query))).catch(() => null);
+    if (!q) return null;
+    const vecs = await Promise.all(exemplars.map((x) => exemplarVector(x.text, embed)));
+    return exemplars
+      .map((x, i) => ({ ...x, score: vecs[i] ? +cosine(q, vecs[i]).toFixed(3) : 0 }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, k);
+  })();
+  let timer = null;
+  const cap = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(null), timeoutMs);
+  });
+  try {
+    return await Promise.race([work, cap]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** For tests: forget the exemplar vectors. */
 export function resetSemanticCache() {
   exemplarCache.clear();

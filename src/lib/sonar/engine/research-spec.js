@@ -14,6 +14,11 @@
  */
 import { scoreDomains } from './domain-score';
 import { classifyCore, isPositioningQuestion, DEEP_ANGLES } from '@/lib/sonar/research-mode-core';
+import {
+  canonicalIntent,
+  planSignature,
+  requiredTasks,
+} from '@/lib/sonar/semantic/canonical-intent';
 
 export { scoreDomains };
 
@@ -317,5 +322,22 @@ export function buildResearchSpec(
     depth,
   };
   spec.reportComponents = reportComponents(spec);
+  /* Sonar 6.0 (Nov 28 2026): the canonical research intent. Equivalent wordings carry the
+     same intent, signature and required tasks; an ownership ranking sets the spec's
+     objective and ranking metric from it instead of from the first metric word found. */
+  const ci = canonicalIntent(text);
+  spec.canonicalIntent = ci;
+  spec.planSignature = planSignature(ci).id;
+  spec.requiredTasks = requiredTasks(ci);
+  if (ci.family === 'institutional_ownership' && !ci.unsupported) {
+    spec.objective = { ...spec.objective, primary: 'rank' };
+    spec.ranking = {
+      required: true,
+      n: Math.min(25, ci.ranking.top_n ?? spec.ranking.n),
+      metric: ci.ranking.metric,
+      direction: ci.ranking.direction,
+    };
+    if (!spec.analyses.includes('rank')) spec.analyses = ['rank', ...spec.analyses];
+  }
   return spec;
 }

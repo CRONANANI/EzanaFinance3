@@ -1096,7 +1096,9 @@ export async function runResearchComposition(
     plan: order.map((t) => ({ id: t.id, label: t.label, deps: t.deps, ms: timings[t.id] ?? null })),
     failedTasks: [...failed],
     durationMs: Date.now() - runStarted,
-    subject: primary?.name ? { name: primary.name, kind: primary.kind } : null,
+    subject: primary?.name
+      ? { name: primary.name, kind: primary.kind, id: primary.id ?? null }
+      : null,
   };
 }
 

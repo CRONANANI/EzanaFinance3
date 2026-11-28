@@ -1285,6 +1285,8 @@ export async function runResearch(query, opts = {}) {
     run.followUpTo = runMeta.followUpTo || null;
     run.parentRunId = runMeta.parentRunId || null;
     run.attachmentName = runMeta.attachmentName || null;
+    /* Sonar 6.0: the canonical research intent's summary (signature, family, measure). */
+    run.canonicalIntent = runMeta.canonicalIntent || null;
   }
   emit('report', run);
   return run;
