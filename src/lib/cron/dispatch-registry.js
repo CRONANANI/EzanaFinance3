@@ -38,4 +38,16 @@ export const DISPATCH_JOBS = [
     groupLimit: 1,
     retries: 1,
   },
+  /* Sonar 6.4 hardening: stored daily closes for valuation screens (FMP quotes after the
+     US close). Off until SONAR_PRICE_SYNC is set: about 6,000 quotes a trading day is an
+     FMP budget decision for the owner. */
+  {
+    id: 'sync-screen-prices',
+    path: '/api/cron/sync-screen-prices?max=1500',
+    schedule: '15,45 21,22,23 * * 1-5',
+    group: 'fmp',
+    groupLimit: 1,
+    retries: 1,
+    enabledEnv: 'SONAR_PRICE_SYNC',
+  },
 ];

@@ -222,6 +222,9 @@ async function fmpQuotes(tickers) {
   return out;
 }
 
+/** The licensed quote reader for the price sync job (never the test provider). */
+export const fmpQuotesForSync = (tickers) => fmpQuotes(tickers);
+
 let quoteProvider = fmpQuotes;
 /** Tests and evaluations supply their own authorized prices. */
 export function setQuoteProvider(fn) {
