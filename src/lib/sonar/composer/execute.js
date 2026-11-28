@@ -302,7 +302,7 @@ async function filedFigures(admin, tickers) {
   if (!tickers.length) return {};
   const { data, error } = await admin
     .from('sec_fundamentals')
-    .select('ticker, concept, period_type, period_end, value')
+    .select('ticker, concept, period_type, period_end, value, taxonomy_concept')
     .in('ticker', tickers)
     .in('concept', CONCEPTS)
     .in('period_type', ['annual', 'instant'])
@@ -318,7 +318,8 @@ async function filedFigures(admin, tickers) {
     if (!Number.isFinite(v)) continue;
     if (r.period_type === 'annual') {
       const list = (t.annual[r.concept] = t.annual[r.concept] || []);
-      if (!list.some((x) => x.end === r.period_end)) list.push({ end: r.period_end, value: v });
+      if (!list.some((x) => x.end === r.period_end))
+        list.push({ end: r.period_end, value: v, concept: r.taxonomy_concept || null });
     } else if (!t.instant[r.concept]) {
       t.instant[r.concept] = { end: r.period_end, value: v };
     }

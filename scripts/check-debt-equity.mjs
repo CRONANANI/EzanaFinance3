@@ -114,3 +114,74 @@ test('DCF: a missing debt figure is not zero debt', () => {
   });
   assert.equal(r.ok, false);
 });
+
+/* ── Sonar 6.4 final integration additions ─────────────────────────────── */
+
+test('commercial paper is a kind of short-term borrowing, never added on top of it', () => {
+  const both = f({
+    debt_noncurrent: 100,
+    debt_current_portion: 10,
+    short_term_borrowings: 30,
+    commercial_paper: 20,
+    equity: 1000,
+  });
+  const t = totalDebt(both.instant, END);
+  assert.equal(t.status, 'complete');
+  close(t.value / 1e6, 140);
+  /* Commercial paper alone stands in for short-term borrowings. */
+  const cpOnly = f({
+    debt_noncurrent: 100,
+    debt_current_portion: 10,
+    commercial_paper: 20,
+    equity: 1000,
+  });
+  close(totalDebt(cpOnly.instant, END).value / 1e6, 130);
+});
+
+test('finance leases are counted only where the filer combines them, and flagged', () => {
+  const t = totalDebt(f({ debt_and_leases_noncurrent: 50, debt_current: 5 }).instant, END);
+  assert.ok(t.flags.includes('includes finance lease obligations'));
+  const plain = totalDebt(f({ debt_noncurrent: 50, debt_current: 5 }).instant, END);
+  assert.ok(!plain.flags.includes('includes finance lease obligations'));
+});
+
+test('missing components never make a definitive 0.00x, even when every tagged part is zero', () => {
+  for (const parts of [
+    { debt_noncurrent: 0 },
+    { debt_current_portion: 0 },
+    { short_term_borrowings: 0 },
+    { commercial_paper: 0 },
+    { line_of_credit: 0 },
+  ]) {
+    const d = debtToEquity(f({ ...parts, equity: 100 }));
+    assert.notEqual(d.value, 0, JSON.stringify(parts));
+    assert.notEqual(d.status, 'complete', JSON.stringify(parts));
+  }
+});
+
+test('ratios carry the method, completeness and balance-sheet date', () => {
+  const r = companyRatios({
+    ...f({ debt_noncurrent: 70, debt_current_portion: 7, equity: 140 }),
+    annual: {},
+  });
+  close(r.debt_to_equity, 0.55);
+  assert.equal(r.debt_to_equity_status, 'complete');
+  assert.equal(r.total_debt_status, 'complete');
+  assert.match(r.total_debt_method, /LongTermDebtNoncurrent|noncurrent/i);
+  assert.equal(r.balance_sheet_date, END);
+  const q = companyRatios({ ...f({ debt_noncurrent: 70, equity: 140 }), annual: {} });
+  assert.equal(q.total_debt, null);
+  assert.equal(q.debt_to_equity_status, 'qualified');
+});
+
+test('a restated filing replaces the earlier value for the same registrant, concept and frame', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync('src/app/api/cron/ingest-fundamentals/route.js', 'utf8');
+  /* One row per (cik, concept, frame): the latest filing's value and accession overwrite the
+     earlier one, so a restatement is never summed with or shadowed by the original. */
+  assert.match(src, /onConflict: 'cik,concept,frame'/);
+  assert.match(src, /accession_no: p\.accn/);
+  /* The loader keeps one value per balance-sheet date. */
+  const restated = f({ debt_noncurrent: 80, debt_current_portion: 8, equity: 160 });
+  close(debtToEquity(restated).value, 0.55);
+});

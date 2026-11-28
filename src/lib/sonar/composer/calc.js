@@ -182,12 +182,45 @@ export function debtToEquity(f, { sic = f?.sic ?? null } = {}) {
   return { value: debt.value / equity, status: 'complete', reason: null, debt };
 }
 
+/**
+ * Year-over-year revenue growth, only between comparable figures (Sonar 6.4 final
+ * integration). Two fiscal years are compared only when:
+ *   - both are filed (missing is never zero) and the prior year is positive
+ *   - their period ends are 330 to 400 days apart (consecutive annual frames, no skipped
+ *     or mixed-length years)
+ *   - they use the same XBRL revenue concept when both rows record one, so revenue gross
+ *     of excise taxes (RevenueFromContractWithCustomerIncludingAssessedTax) is never
+ *     divided by revenue net of them, and a company that switched tags reports no growth
+ *     rather than a tagging artefact
+ * Rows stored before taxonomy_concept existed carry no concept and are compared as before.
+ * Pure. @returns {{ value: number|null, reason: string|null }}
+ */
+export function revenueGrowth(list) {
+  const cur = list?.[0];
+  const prev = list?.[1];
+  if (!cur || cur.value == null || !Number.isFinite(cur.value))
+    return { value: null, reason: 'revenue not filed' };
+  if (!prev || prev.value == null || !Number.isFinite(prev.value))
+    return { value: null, reason: 'prior-year revenue not filed' };
+  if (!(prev.value > 0)) return { value: null, reason: 'prior-year revenue is zero or negative' };
+  const days = (Date.parse(cur.end) - Date.parse(prev.end)) / 86400000;
+  if (!(days >= 330 && days <= 400))
+    return { value: null, reason: 'the two fiscal years are not consecutive' };
+  if (cur.concept && prev.concept && cur.concept !== prev.concept)
+    return {
+      value: null,
+      reason: `revenue was tagged ${prev.concept} then ${cur.concept}; not comparable`,
+    };
+  return { value: cur.value / prev.value - 1, reason: null };
+}
+
 /** Ratios from one company's filed figures. Pure. */
 export function companyRatios(f) {
   if (!f) return null;
   const a = (c, i = 0) => f.annual?.[c]?.[i]?.value ?? null;
   const rev = a('revenue');
   const revPrev = a('revenue', 1);
+  const growth = revenueGrowth(f.annual?.revenue);
   const ocf = a('operating_cash_flow');
   const capex = a('capex');
   const fcf = ocf != null && capex != null ? ocf - Math.abs(capex) : null;
@@ -199,7 +232,9 @@ export function companyRatios(f) {
     fiscalYearEnd: f.annual?.revenue?.[0]?.end || null,
     revenue: rev,
     revenue_prior: revPrev,
-    revenue_growth: rev != null && revPrev ? rev / revPrev - 1 : null,
+    revenue_growth: growth.value,
+    revenue_growth_reason: growth.reason,
+    revenue_concept: f.annual?.revenue?.[0]?.concept || null,
     /* Sonar 6.2: net income growth, only between two positive years (a swing from a loss
        has no meaningful growth rate). */
     earnings_growth:
@@ -217,6 +252,9 @@ export function companyRatios(f) {
     debt_to_equity_reason: de.reason,
     total_debt: de.debt.status === 'complete' ? de.debt.value : null,
     total_debt_method: de.debt.method,
+    total_debt_status: de.debt.status,
+    /* the balance-sheet date both figures describe */
+    balance_sheet_date: f.instant?.equity?.end || null,
   };
 }
 

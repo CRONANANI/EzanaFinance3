@@ -477,3 +477,23 @@ test('profile D: the benchmark recommendation, not served by default', () => {
   assert.equal(R.deepDirectorFor(D, { crossDomain: true }), MODELS.opus55);
   assert.equal(R.routingForRun({ userId: 'u', env: {} }).profile, 'current');
 });
+
+/* ── Sonar 6.4 final integration: the S55W writer canary, disabled by default ── */
+test('S55W: only the standard writer changes, and nobody gets it without the flag', async () => {
+  const { resolveModelRouting, profileForUser, routingForRun } =
+    await import('../src/lib/sonar/model-routing.js');
+  const cur = resolveModelRouting({ profile: 'current', env: {} });
+  const s = resolveModelRouting({ profile: 'S55W', env: {} });
+  assert.equal(s.profile, 'S55W');
+  assert.equal(s.standard, 'claude-sonnet-5-5');
+  for (const k of Object.keys(cur))
+    if (k !== 'standard' && k !== 'profile') assert.equal(s[k], cur[k], k);
+  /* Default env: everyone, staff included, stays on current. */
+  assert.equal(profileForUser({ userId: 'u1', isStaff: true, env: {} }), 'current');
+  assert.equal(routingForRun({ userId: 'u1', isStaff: true, env: {} }).standard, cur.standard);
+  /* Staff-only enablement. */
+  const env = { SONAR_MODEL_CANARY_PROFILE: 'S55W', SONAR_MODEL_CANARY_STAFF: '1' };
+  assert.equal(profileForUser({ userId: 'admin', isStaff: true, env }), 'S55W');
+  assert.equal(profileForUser({ userId: 'member', isStaff: false, env }), 'current');
+  assert.equal(profileForUser({ userId: null, isStaff: true, env }), 'current');
+});

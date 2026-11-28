@@ -232,7 +232,11 @@
     "test:quiver-proxy": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-quiver-proxy.mjs",
     "test:market-sample": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-market-sample.mjs",
     "test:debt-equity": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-debt-equity.mjs",
-    "test:typed-relevance": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-typed-relevance.mjs"
+    "test:typed-relevance": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-typed-relevance.mjs",
+    "test:registrant-map": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-registrant-map.mjs",
+    "test:revenue-growth": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-revenue-growth.mjs",
+    "test:price-contract": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-price-contract.mjs",
+    "test:provider-isolation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-provider-isolation.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

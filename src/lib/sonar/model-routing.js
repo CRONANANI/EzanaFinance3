@@ -165,16 +165,30 @@ const FIXED = {
   },
 };
 
+/* Sonar 6.4 final integration: S55W, the Sonnet 5.5 standard-writer canary. Everything is
+   the `current` profile except the standard writer. From the Nov 28 2026 benchmark
+   (model-bench-2026-11-28-contract, no new runs): claim survival 0.946 vs 0.830 for the
+   Haiku writer with the same contract, judge pairs 45 to 7, writer cost $0.050 vs $0.030 a
+   run, writer time 25.9 s vs 14.8 s. Not served unless SONAR_MODEL_CANARY_PROFILE=S55W;
+   docs/SONAR_6_4_FINAL_INTEGRATION.md has enablement, monitoring and rollback. */
+const DERIVED = {
+  S55W: (env) => ({ ...currentProfile(env), standard: M.sonnet55 }),
+};
+
 /** Every selectable profile. Only `current` is served unless a flag names another. */
-export const PROFILES = ['current', 'A', 'B', 'C', 'D', 'D-efficient'];
+export const PROFILES = ['current', 'A', 'B', 'C', 'D', 'D-efficient', 'S55W'];
 
 /**
  * The model for every role under a profile, with SONAR_MODEL_ROLE_<ROLE> overrides and
  * explicit `overrides` (benchmarks) applied last. Unknown profiles fall back to current.
  */
 export function resolveModelRouting({ profile = 'current', env = {}, overrides = null } = {}) {
-  const base = FIXED[profile] ? { ...FIXED[profile] } : currentProfile(env);
-  const name = FIXED[profile] ? profile : 'current';
+  const base = FIXED[profile]
+    ? { ...FIXED[profile] }
+    : DERIVED[profile]
+      ? DERIVED[profile](env)
+      : currentProfile(env);
+  const name = FIXED[profile] || DERIVED[profile] ? profile : 'current';
   for (const role of ROLES) {
     const v = env[`SONAR_MODEL_ROLE_${role.toUpperCase()}`];
     if (v) base[role] = v;

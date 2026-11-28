@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { getAdminClient } from '@/lib/supabase';
 import { getTickerMap, buildCikTickerIndex, secRequestCount } from '@/lib/sec-edgar';
 import { METRICS, framePeriods, getFrame, pickFirstConcept, periodTypeOf } from '@/lib/sec/xbrl';
+import { indexSuccessions, tickerForFact } from '@/lib/sec/registrant-map';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
 
 /**
@@ -53,6 +54,24 @@ async function run(request) {
     );
   }
 
+  /* Sonar 6.4 final integration: verified predecessor registrants (Form 8-K12B successors),
+     used only when SEC_PREDECESSOR_MAPPING=1 (an approved backfill), and only for periods
+     ending before the succession (lib/sec/registrant-map.js). */
+  let successions = new Map();
+  if (process.env.SEC_PREDECESSOR_MAPPING === '1') {
+    try {
+      const { data } = await admin
+        .from('sec_registrant_successions')
+        .select(
+          'ticker, successor_cik, predecessor_cik, effective_date, relationship, source_accession, verified, applies_from, applies_to',
+        )
+        .eq('verified', true);
+      successions = indexSuccessions(data || []);
+    } catch {
+      successions = new Map();
+    }
+  }
+
   const { durations, instants } = framePeriods(
     new Date(),
     backfill ? { years: 6, quarters: 12, currentYear: true } : { currentYear: true },
@@ -85,9 +104,13 @@ async function run(request) {
       }
       const picked = pickFirstConcept(frames);
       const rows = [];
+      /* The successor's own fact for a frame wins over its predecessor's. */
+      const direct = new Set([...picked.values()].map((p) => tickers.get(p.cik)).filter(Boolean));
       for (const p of picked.values()) {
-        const ticker = tickers.get(p.cik);
-        if (!ticker) continue;
+        const hit = tickerForFact(p.cik, p.end, tickers, successions);
+        if (!hit) continue;
+        if (hit.via === 'predecessor' && direct.has(hit.ticker)) continue;
+        const ticker = hit.ticker;
         rows.push({
           cik: p.cik,
           concept: metric.key,

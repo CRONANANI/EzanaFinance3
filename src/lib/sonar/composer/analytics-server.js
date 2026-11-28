@@ -109,7 +109,7 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       pageAll(() =>
         admin
           .from('sec_fundamentals')
-          .select('ticker, concept, period_end, value')
+          .select('ticker, concept, period_end, value, taxonomy_concept')
           .in('ticker', batch)
           .in('concept', RATIO_CONCEPTS)
           .eq('period_type', 'annual')
@@ -138,7 +138,8 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       if (!Number.isFinite(v)) continue;
       const t = (out[r.ticker] ||= { annual: {}, instant: {} });
       const list = (t.annual[r.concept] ||= []);
-      if (!list.some((x) => x.end === r.period_end)) list.push({ end: r.period_end, value: v });
+      if (!list.some((x) => x.end === r.period_end))
+        list.push({ end: r.period_end, value: v, concept: r.taxonomy_concept || null });
     }
     for (const r of instant) {
       /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */

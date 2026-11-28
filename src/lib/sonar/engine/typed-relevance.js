@@ -60,12 +60,18 @@ export function objectiveOf({ family = null, understood = null, resolution = nul
   const ents = understood?.entities || [];
   const centralBank = ents.find((e) => e.kind === 'central_bank' || e.type === 'central_bank');
   const namedCountries = ents.filter((e) => e.kind === 'country' && e.via !== 'central_bank');
+  /* Sonar 6.4 final integration: a named company alongside a central bank ("How would Bank
+     of Canada cuts affect RBC?") is a cross-domain question; the company's own sources are
+     its evidence, not noise. */
+  const namedCompany =
+    resolution?.company?.ticker || ents.find((e) => e.kind === 'ticker')?.id || null;
   return {
+    crossDomain: Boolean(centralBank && namedCompany),
     kind: centralBank ? 'central_bank' : COMPANY_FAMILIES.has(family) ? 'company_measure' : 'other',
     family,
     centralBank: centralBank ? { id: centralBank.id, country: centralBank.country } : null,
     namesCountry: namedCountries.length > 0,
-    company: resolution?.company?.ticker || null,
+    company: namedCompany,
   };
 }
 
@@ -73,11 +79,14 @@ export function objectiveOf({ family = null, understood = null, resolution = nul
 export function typedRole(e, objective) {
   const src = String(e?.source || '');
   if (src === 'research_composer') return { role: 'input', reason: null };
-  if (objective.kind === 'central_bank' && COMPANY_SOURCES.has(src))
+  if (objective.kind === 'central_bank' && COMPANY_SOURCES.has(src)) {
+    if (objective.crossDomain)
+      return { role: 'input', reason: 'company source for the company the question names' };
     return {
       role: 'rejected',
       reason: `company source (${src}) on a central-bank policy question`,
     };
+  }
   if (objective.kind === 'company_measure' && MACRO_SOURCES.has(src)) {
     /* A country named in the question makes country macro data legitimate context. */
     if (objective.namesCountry)
