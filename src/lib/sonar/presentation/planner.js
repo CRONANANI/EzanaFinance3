@@ -174,8 +174,18 @@ export function payloadFromVisualization(vis) {
           spark: vis.spark || null,
         },
       });
-    default:
-      return null;
+    default: {
+      /* Council cards (registry entries with org: true) take the council layer's data as
+         it is: the intelligence layer already shaped and verified it. */
+      const c = componentForVisType(vis.type);
+      if (!c || !c.org) return null;
+      return normalizePayload({
+        ...base,
+        componentId: c.id,
+        objective: c.objectives[0],
+        data: vis.data || {},
+      });
+    }
   }
 }
 

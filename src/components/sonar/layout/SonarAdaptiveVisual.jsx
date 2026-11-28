@@ -58,6 +58,15 @@ const IMPL = {
     () => import('../charts/SonarActivityTimeline').then((m) => m.SonarActivityTimeline),
     { loading: wait(260) },
   ),
+  /* Sonar for organizations (Nov 28 2026): the council cards. */
+  SonarOrgChecklistCard: dynamic(
+    () => import('../cards/SonarOrgChecklistCard').then((m) => m.SonarOrgChecklistCard),
+    { loading: wait(200) },
+  ),
+  SonarVersionComparison: dynamic(
+    () => import('../cards/SonarVersionComparison').then((m) => m.SonarVersionComparison),
+    { loading: wait(220) },
+  ),
   SonarFinancialMetricCard: dynamic(
     () => import('../cards/SonarFinancialMetricCard').then((m) => m.SonarFinancialMetricCard),
     { loading: wait(60) },
@@ -75,7 +84,7 @@ export function SonarAdaptiveVisual({ item, onAsk = null }) {
   if (!Impl) return null;
   /* A metric card is its own compact surface, not a framed chart. */
   if (c.id === 'financial-metric-card') return <Impl payload={item.payload} />;
-  if (c.id === 'financial-research-table') {
+  if (c.impl === 'SonarFinancialResearchTable') {
     const d = item.payload?.data || {};
     return (
       <SonarComponentFrame

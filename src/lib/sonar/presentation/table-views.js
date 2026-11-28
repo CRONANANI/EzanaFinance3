@@ -153,6 +153,9 @@ const VIEWS = {
   'research-activity-timeline': timeline,
   'research-securities-monitor': securities,
   'financial-research-table': (p) => ({ columns: p.data?.columns || [], rows: p.data?.rows || [] }),
+  /* Council cards that reuse a library implementation share its table view. */
+  'council-portfolio-exposure': breakdown,
+  'research-coverage-matrix': (p) => ({ columns: p.data?.columns || [], rows: p.data?.rows || [] }),
 };
 
 /** The table view of a payload, or null when its component has none. */

@@ -32,6 +32,7 @@ import { useSonarResearchData } from './useSonarResearchData';
 import { ReportsTab } from './ReportsTab';
 import { ResearchTab } from './ResearchTab';
 import { AnalyticsTab } from './AnalyticsTab';
+import { CouncilIntelligenceTab } from './CouncilIntelligenceTab';
 import { BudgetSettingsDialog } from './BudgetSettingsDialog';
 import '@/components/org/command-center/command-center.css';
 import './sonar-research.css';
@@ -381,6 +382,15 @@ export function SonarResearchPage({ sampleViewer = false, initial = {} }) {
             onSettings={() => setSettingsOpen(true)}
           />
         ) : null}
+      </div>
+
+      <div
+        role="tabpanel"
+        id="osp-panel-intelligence"
+        aria-labelledby="osp-tab-intelligence"
+        hidden={tab !== 'intelligence'}
+      >
+        {tab === 'intelligence' ? <CouncilIntelligenceTab /> : null}
       </div>
 
       <BudgetSettingsDialog

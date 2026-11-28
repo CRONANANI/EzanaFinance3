@@ -264,6 +264,121 @@ export const COMPONENTS = [
   },
 ];
 
+/* ── Sonar for organizations (Nov 28 2026) ─────────────────────────────────────────────
+   Council cards. They reuse the library's implementations where the shape matches (the
+   exposure breakdown, the research table) and share two council components for the rest:
+   a sectioned checklist (each item with its status and the record that motivated it) and a
+   version comparison. Every council card requires the evidence of a council record and
+   renders only inside an authorized organization context (org: true). */
+
+const sectionsOk = (what) => (d) => {
+  const n =
+    (d?.sections || []).reduce((a, s) => a + (s.items || []).length, 0) + (d?.rows || []).length;
+  return n ? ok : no(`No ${what} recorded.`, 'empty');
+};
+const orgCard = (id, label, objectives, visType, impl = 'SonarOrgChecklistCard', extra = {}) => ({
+  id,
+  impl,
+  label,
+  objectives,
+  families: ['council'],
+  visTypes: [visType],
+  requires: ['sections'],
+  sufficiency: sectionsOk(label.toLowerCase()),
+  span: { wide: 6, mid: 6, min: 6 },
+  minHeight: 220,
+  interactions: ['source-drilldown'],
+  a11y: ['text-equivalent'],
+  states: STATES(label.toLowerCase()),
+  freshness: null,
+  entitlement: 'org_membership',
+  evidence: true,
+  org: true,
+  signature: (p) => sig(p, visType),
+  ...extra,
+});
+
+COMPONENTS.push(
+  {
+    ...orgCard(
+      'council-portfolio-exposure',
+      'Council portfolio exposure',
+      ['composition', 'metric'],
+      'org_exposure',
+      'SonarExposureBreakdown',
+    ),
+    requires: ['parts'],
+    sufficiency: (d) =>
+      (d?.parts || []).filter((x) => num(x?.value) !== null).length >= 1
+        ? ok
+        : no('The council holds no positions.', 'empty'),
+    span: { wide: 6, mid: 6, min: 6 },
+    a11y: ['table-view', 'text-equivalent'],
+  },
+  {
+    ...orgCard(
+      'research-coverage-matrix',
+      'Research coverage',
+      ['list'],
+      'org_coverage',
+      'SonarFinancialResearchTable',
+    ),
+    requires: ['columns', 'rows'],
+    sufficiency: (d) =>
+      (d?.rows || []).length ? ok : no('The council holds no positions to cover.', 'empty'),
+    span: { wide: 12, mid: 6, min: 12 },
+    interactions: ['sort', 'search', 'source-drilldown'],
+    a11y: ['semantic-table', 'aria-sort'],
+  },
+  orgCard('investment-thesis', 'Investment thesis', ['thesis'], 'org_thesis'),
+  orgCard('valuation-assumption', 'Valuation assumptions', ['valuation'], 'org_valuation'),
+  orgCard('ips-observation', 'Investment policy observations', ['policy'], 'org_policy'),
+  orgCard(
+    'ic-questions',
+    'Investment committee questions',
+    ['questions'],
+    'org_questions',
+    'SonarOrgChecklistCard',
+    {
+      span: { wide: 12, mid: 6, min: 12 },
+    },
+  ),
+  orgCard('thesis-completeness', 'Thesis checklist', ['thesis'], 'org_completeness'),
+  orgCard('pitch-evidence-summary', 'Pitch evidence', ['evidence'], 'org_pitch_evidence'),
+  orgCard(
+    'meeting-briefing',
+    'Meeting briefing',
+    ['briefing'],
+    'org_briefing',
+    'SonarOrgChecklistCard',
+    {
+      span: { wide: 12, mid: 6, min: 12 },
+    },
+  ),
+  orgCard('thesis-monitoring', 'Thesis monitors', ['monitoring'], 'org_monitors'),
+  orgCard('hindsight-analysis', 'Hindsight review', ['hindsight'], 'org_hindsight'),
+  orgCard('team-research-activity', 'Team research activity', ['activity'], 'org_activity'),
+  {
+    ...orgCard(
+      'research-version-comparison',
+      'Research version comparison',
+      ['history'],
+      'org_versions',
+      'SonarVersionComparison',
+    ),
+    requires: ['original'],
+    sufficiency: (d) =>
+      d?.original ? ok : no('No earlier version of this research is on record.', 'empty'),
+    span: { wide: 12, mid: 6, min: 12 },
+  },
+);
+
+/** Council cards only render inside an authorized organization context. */
+export const isOrgComponent = (id) => Boolean(getComponentRaw(id)?.org);
+function getComponentRaw(id) {
+  return COMPONENTS.find((c) => c.id === id) || null;
+}
+
 const BY_ID = new Map(COMPONENTS.map((c) => [c.id, c]));
 const BY_VIS = new Map();
 for (const c of COMPONENTS) for (const t of c.visTypes) if (!BY_VIS.has(t)) BY_VIS.set(t, c);

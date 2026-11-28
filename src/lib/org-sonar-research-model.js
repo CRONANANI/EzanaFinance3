@@ -33,6 +33,8 @@ export const TABS = [
   { id: 'reports', label: 'Reports' },
   { id: 'research', label: 'Research' },
   { id: 'analytics', label: 'Analytics' },
+  /* Nov 28 2026: council research on the fund's own records (CouncilIntelligenceTab). */
+  { id: 'intelligence', label: 'Council intelligence' },
 ];
 export const WINDOWS = [
   { v: '30', l: '30 days' },
