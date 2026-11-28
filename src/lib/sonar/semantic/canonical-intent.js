@@ -42,6 +42,25 @@ import {
 } from './compositional.js';
 import { SCREEN_MEASURES, SCREEN_UNSUPPORTED, universeFor } from '../composer/screen.js';
 
+/* Countries company_industry.business_country can hold (SQL_02, Sonar 6.4 hardening). */
+const SCREEN_COUNTRIES = new Set(['US', 'CA']);
+const COUNTRY_NAMES = {
+  GB: 'United Kingdom',
+  JP: 'Japanese',
+  DE: 'German',
+  CN: 'Chinese',
+  IN: 'Indian',
+  FR: 'French',
+  AU: 'Australian',
+  KR: 'Korean',
+  TW: 'Taiwanese',
+  MX: 'Mexican',
+  BR: 'Brazilian',
+  CH: 'Swiss',
+  EU: 'European',
+};
+import { canonicalFor, canonicalMatches, entityKey } from '../canonical-entities.js';
+
 export const CANONICAL_INTENT_VERSION = 1;
 /** Methodology of the institutional ownership calculation (bump when ownership.js changes). */
 export const OWNERSHIP_METHOD_VERSION = 'own-13f-v1';
@@ -476,6 +495,10 @@ function timeScope(t) {
 /* A name key that survives "Pelosi" vs "Nancy Pelosi" before resolution: the last word of
    a person-like name. Only ever used while unresolved, and never for result reuse. */
 function nameKey(text) {
+  /* Sonar 6.4: a canonical identity keys by type and id ("company:BAC"), so "Bank of
+     America" never shares a key with the country America or "Bank of Canada". */
+  const canon = canonicalFor(text);
+  if (canon) return entityKey(canon);
   const w = String(text || '')
     .toLowerCase()
     .replace(/['’]s$/, '')
@@ -892,6 +915,12 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
           'Index membership is not in Ezana\u2019s data, so an index cannot be screened yet; name a sector instead.';
       else if (sector && universeFor(sector).kind === 'unsupported')
         unsupported = universeFor(sector).reason;
+      else if (
+        sector &&
+        composition.universe.country &&
+        !SCREEN_COUNTRIES.has(composition.universe.country)
+      )
+        unsupported = `Ezana classifies listed companies by business address in the United States and Canada only, so a ${COUNTRY_NAMES[composition.universe.country] || composition.universe.country} universe cannot be established yet; Sonar does not substitute the whole industry.`;
     }
     /* Sonar 6.4: a numeric condition Sonar could not read stops the screen with a specific
        notice; running without it would return the unfiltered universe. */
@@ -907,11 +936,26 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
   const universeDefined =
     ['sector', 'index'].includes(composition?.universe?.type) ||
     (composition?.universe?.type === 'tickers' && !comparedCompanies);
-  const subjectRaw = comparedCompanies
+  let subjectRaw = comparedCompanies
     ? comparedCompanies[0]
     : family === 'institutional_ownership' || family === 'congressional_overlap'
       ? subjectText
       : relation?.left || extractSubject(original) || looseSubject(original);
+  /* A canonical name in the question is the subject when the extracted subject does not
+     contain it ("America" out of "Bank of America", or nothing at all). */
+  const canonNamed = canonicalMatches(original);
+  if (
+    !comparedCompanies &&
+    !relation &&
+    canonNamed.length &&
+    family !== 'institutional_ownership' &&
+    family !== 'congressional_overlap'
+  ) {
+    const lower = String(subjectRaw || '').toLowerCase();
+    if (!canonNamed.some((m) => lower.includes(m.surface.toLowerCase())))
+      subjectRaw = canonNamed[0].surface;
+  }
+  const canonSubject = subjectRaw ? canonicalFor(subjectRaw) : null;
   const time = timeScope(tokens);
 
   const ownership = family === 'institutional_ownership' ? OWNERSHIP_MEASURE[measure] : null;
@@ -961,16 +1005,26 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
               family === 'institutional_ownership' || family === 'congressional_overlap'
                 ? 'holder'
                 : 'subject',
-            type: null,
-            id: null,
-            status: candidates ? 'candidate' : 'unresolved',
-            ...(candidates ? { alternates: candidates } : {}),
+            type: canonSubject?.type || null,
+            id: canonSubject?.id || null,
+            ...(canonSubject
+              ? { name: canonSubject.label, status: 'resolved', source: 'canonical' }
+              : { status: candidates ? 'candidate' : 'unresolved' }),
+            ...(canonSubject?.country ? { country: canonSubject.country } : {}),
+            ...(candidates && !canonSubject ? { alternates: candidates } : {}),
           }
         : null,
     secondary_entities: comparedCompanies
-      ? comparedCompanies
-          .slice(1)
-          .map((t) => ({ text: t, key: nameKey(t), role: 'compared_company', id: null }))
+      ? comparedCompanies.slice(1).map((t) => {
+          const c = canonicalFor(t);
+          return {
+            text: t,
+            key: nameKey(t),
+            role: 'compared_company',
+            id: c?.id || null,
+            ...(c ? { type: c.type, name: c.label, status: 'resolved', source: 'canonical' } : {}),
+          };
+        })
       : relation
         ? [{ text: relation.right, key: nameKey(relation.right), role: 'second_holder', id: null }]
         : [],
@@ -1010,7 +1064,11 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
           operation: composition.operation,
           direction: composition.direction,
           universe: composition.universe
-            ? { type: composition.universe.type, id: composition.universe.id || null }
+            ? {
+                type: composition.universe.type,
+                id: composition.universe.id || null,
+                ...(composition.universe.country ? { country: composition.universe.country } : {}),
+              }
             : null,
           filters: composition.filters,
           measures: composition.measures,

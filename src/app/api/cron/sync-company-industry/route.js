@@ -7,6 +7,7 @@ import {
   secRequestCount,
 } from '@/lib/sec-edgar';
 import { cronRoute } from '@/lib/cron/with-cron-lock';
+import { edgarCountry } from '@/lib/sec-edgar-codes';
 
 /**
  * GET /api/cron/sync-company-industry (Sonar 6.4, Nov 28 2026)
@@ -26,6 +27,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 const BUDGET_MS = 260_000;
+
+const MISSING_COLUMN = new Set(['PGRST204', '42703']);
 const STALE_DAYS = 90;
 
 async function run(request) {
@@ -49,15 +52,25 @@ async function run(request) {
     if (!data || data.length < 1000) break;
   }
   const have = new Map();
+  let hasCountry = true;
   for (let from = 0; ; from += 1000) {
     // eslint-disable-next-line no-await-in-loop
     const { data, error } = await admin
       .from('company_industry')
-      .select('ticker, verified_at')
+      .select(hasCountry ? 'ticker, verified_at, business_state_code' : 'ticker, verified_at')
       .order('ticker')
       .range(from, from + 999);
+    if (error && hasCountry && MISSING_COLUMN.has(error.code)) {
+      /* SQL_02 (country columns) not applied yet: run as before, without them. */
+      hasCountry = false;
+      from = -1000;
+      have.clear();
+      continue;
+    }
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    for (const r of data || []) have.set(r.ticker, Date.parse(r.verified_at) || 0);
+    /* A row read before the country columns existed is refreshed first (verified_at 0). */
+    for (const r of data || [])
+      have.set(r.ticker, hasCountry && !r.business_state_code ? 0 : Date.parse(r.verified_at) || 0);
     if (!data || data.length < 1000) break;
   }
   const staleBefore = Date.now() - STALE_DAYS * 86400000;
@@ -100,11 +113,18 @@ async function run(request) {
       // eslint-disable-next-line no-await-in-loop
       const sub = await getSubmissions(cik);
       const sic = sub?.sic ? String(sub.sic).trim() : null;
-      if (!sic) {
-        skipped.no_sic += 1;
-        continue;
-      }
+      /* A registrant with no SIC (a fund, a trust) is recorded with sic null, so it is not
+         requested again on every run; it is in no industry. */
+      if (!sic) skipped.no_sic += 1;
+      const stateCode = sub?.addresses?.business?.stateOrCountry || null;
       rows.push({
+        ...(hasCountry
+          ? {
+              business_state_code: stateCode,
+              business_country: edgarCountry(stateCode),
+              incorporation_state_code: sub?.stateOfIncorporation || null,
+            }
+          : {}),
         ticker: t,
         cik: String(cik).padStart(10, '0'),
         sic,
@@ -133,10 +153,8 @@ async function run(request) {
     queued: queue.length,
     written,
     skipped,
-    remaining: Math.max(
-      0,
-      queue.length - written - skipped.no_cik - skipped.no_sic - skipped.failed,
-    ),
+    remaining: Math.max(0, queue.length - written - skipped.no_cik - skipped.failed),
+    countryColumns: hasCountry,
     secRequests: secRequestCount(),
     ms: Date.now() - started,
     errors,

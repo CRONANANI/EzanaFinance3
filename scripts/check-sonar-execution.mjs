@@ -778,3 +778,169 @@ test('claim check: a sourced number with a different metric of the same kind is 
     [],
   );
 });
+
+/* ── Sonar 6.4 hardening ─────────────────────────────────────────────── */
+
+test('coverage: screens report complete, missing-data and bounded status', async () => {
+  const { screenCoverage } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const full = screenCoverage({ eligible: 4, evaluated: 4, withData: 4, shown: 2 });
+  assert.equal(full.status, 'complete');
+  assert.equal(full.exhaustive, true);
+  const gaps = screenCoverage({ eligible: 4, evaluated: 4, withData: 3, shown: 2 });
+  assert.equal(gaps.status, 'complete_with_missing_data');
+  assert.equal(gaps.exhaustive, true);
+  assert.equal(gaps.unavailable, 1);
+  const bounded = screenCoverage({
+    eligible: 400,
+    evaluated: 400,
+    withData: 380,
+    shown: 15,
+    priceCoverage: { candidates: 380, cached: 100, live: 150, unchecked: new Array(130).fill('X') },
+  });
+  assert.equal(bounded.status, 'bounded');
+  assert.equal(bounded.exhaustive, false);
+  assert.equal(bounded.unchecked, 130);
+  assert.deepEqual(bounded.sampling, ['largest_by_filed_revenue']);
+  assert.equal(bounded.prices.cached, 100);
+});
+
+test('prices: stored closes first, live quotes only for the rest, unchecked beyond the cap', async () => {
+  const { pricesFor, setQuoteProvider } =
+    await import('../src/lib/sonar/composer/analytics-server.js');
+  const admin = fakeSupabase({
+    price_data_cache: [
+      { ticker: 'AAA', date: '2026-11-27', close: 10 },
+      { ticker: 'AAA', date: '2026-11-26', close: 9 },
+      { ticker: 'BBB', date: '2026-11-01', close: 5 }, // older than 10 days: not used
+      { ticker: 'CCC', date: '2026-11-27', close: null }, // null is never a price
+    ],
+  });
+  const asked = [];
+  setQuoteProvider(async (ts) => {
+    asked.push(...ts);
+    return Object.fromEntries(ts.map((t) => [t, { price: 20, asOf: '2026-11-28' }]));
+  });
+  try {
+    const r = await pricesFor(admin, ['AAA', 'BBB', 'CCC', 'DDD'], {
+      now: NOW,
+      liveCap: 2,
+      sizeOf: (t) => ({ BBB: 1, CCC: 3, DDD: 2 })[t] ?? -1,
+    });
+    assert.deepEqual(r.prices.AAA, { price: 10, asOf: '2026-11-27', source: 'cache' });
+    assert.deepEqual(asked.sort(), ['CCC', 'DDD']);
+    assert.deepEqual(r.unchecked, ['BBB']);
+    assert.equal(r.cached, 1);
+    assert.equal(r.live, 2);
+  } finally {
+    setQuoteProvider(null);
+  }
+});
+
+test('screen grammar: verbless screens keep every filter and operator', () => {
+  const cases = [
+    ['Energy stocks with debt to equity below 0.6', 'energy', [['debt', '<', 0.6]], null],
+    [
+      'Semiconductor companies with operating margins above 25%',
+      'semiconductors',
+      [['margin', '>', 25]],
+      null,
+    ],
+    ['Energy companies with P/S under 1', 'energy', [['ps_ratio', '<', 1]], null],
+    [
+      'Which technology companies grew revenue more than 20%?',
+      'technology',
+      [['revenue_growth', '>', 20]],
+      null,
+    ],
+    ['Defense contractors ranked by revenue growth', 'defense', [], 'revenue_growth'],
+    ['Energy stocks trading below 1x sales', 'energy', [['ps_ratio', '<', 1]], null],
+    ['Defense contractors sorted by revenue growth', 'defense', [], 'revenue_growth'],
+    [
+      'Energy companies with margins above 15% but P/E under 10',
+      'energy',
+      [
+        ['margin', '>', 15],
+        ['pe_ratio', '<', 10],
+      ],
+      null,
+    ],
+  ];
+  for (const [q, sector, filters, rank] of cases) {
+    const att = inferComposition(q).attachments[0];
+    assert.equal(att?.capability, 'financial-screen', q);
+    assert.equal(att.params.sector, sector, q);
+    assert.deepEqual(
+      att.params.filters.map((f) => [f.metric, f.op, f.value]),
+      filters,
+      q,
+    );
+    if (rank) assert.equal(att.params.rank_by, rank, q);
+  }
+});
+
+test('screen grammar: an unreadable condition stops the screen with a specific notice', async () => {
+  const { canonicalIntent } = await import('../src/lib/sonar/semantic/canonical-intent.js');
+  for (const q of [
+    'Tech stocks where revenue jumped more than 20%',
+    'Energy stocks with sparkle above 3',
+  ]) {
+    assert.equal(
+      inferComposition(q).attachments.filter((a) => a.capability === 'financial-screen').length,
+      0,
+      q,
+    );
+    assert.match(canonicalIntent(q).unsupported || '', /could not read the condition/i, q);
+  }
+  /* A time window is not a condition. */
+  assert.equal(
+    canonicalIntent('Energy companies ranked by revenue growth over 3 years').unsupported,
+    null,
+  );
+});
+
+test('entities: canonical identities win over their parts', async () => {
+  const { understandDeterministic } = await import('../src/lib/sonar/understand/index.js');
+  const { canonicalIntent } = await import('../src/lib/sonar/semantic/canonical-intent.js');
+  const kinds = (q) =>
+    understandDeterministic(q).entities.map((e) => `${e.type || e.kind}:${e.id}`);
+  assert.deepEqual(kinds('Has the Bank of Canada cut rates?').sort(), [
+    'central_bank:boc',
+    'country:CA',
+  ]);
+  assert.deepEqual(kinds('Bank of America revenue growth'), ['company:BAC']);
+  assert.deepEqual(kinds('Royal Bank of Canada revenue'), ['company:RY']);
+  assert.ok(kinds('Has the Fed cut rates this year?').includes('central_bank:fed'));
+  const i = canonicalIntent('Compare Bank of America and Goldman Sachs on operating margin');
+  assert.equal(i.primary_entity.key, 'company:BAC');
+  assert.equal(i.secondary_entities[0].key, 'company:GS');
+  /* "Bank of America" and the country America never share a signature key. */
+  assert.notEqual(canonicalIntent('Bank of America revenue growth').primary_entity.key, 'america');
+});
+
+test('country universe: Canadian banks are the banks with a Canadian business address, never all banks', async () => {
+  const att = inferComposition('Which Canadian banks grew revenue the most?').attachments[0];
+  assert.equal(att.params.sector, 'banks');
+  assert.equal(att.params.country, 'CA');
+  assert.equal(att.params.rank_by, 'revenue_growth');
+  const withCountry = {
+    ...FIXTURES,
+    company_industry: [
+      ...FIXTURES.company_industry.map((r) => ({ ...r, business_country: 'US' })),
+      {
+        ticker: 'CBK',
+        cik: '99',
+        sic: '6029',
+        business_country: 'CA',
+        verified_at: '2026-11-20T00:00:00Z',
+      },
+    ],
+  };
+  const res = await runScreen(fakeSupabase(withCountry), att, { now: NOW });
+  /* CBK files under IFRS (no US GAAP figures in the store): checked, data unavailable. */
+  assert.equal(res.coverage.eligibleUniverse, 1);
+  assert.equal(res.coverage.status, 'complete_with_missing_data');
+  assert.equal(res.table.length, 0);
+  assert.ok(!res.table.some((r) => r.ticker === 'BNK'));
+  /* Addresses not classified (before SQL_02 or the refresh): refused, never all banks. */
+  await assert.rejects(runScreen(fakeSupabase(FIXTURES), att, { now: NOW }), /business address/);
+});

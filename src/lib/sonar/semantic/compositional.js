@@ -418,7 +418,15 @@ function readFilters(t) {
       }
     }
     if (!metric) return;
-    const cmp = CMP.find(([, re]) => re.test(c));
+    /* "over 3 years" is a window, not a comparison. */
+    const cmp = CMP.find(
+      ([, re]) =>
+        re.test(c) &&
+        !new RegExp(
+          `${re.source}\\s*\\d+(?:\\.\\d+)?\\s*(?:years?|quarters?|months?|weeks?|days?)\\b`,
+          'i',
+        ).test(c),
+    );
     const num = cmp ? readNumber(c.slice(c.search(cmp[1]))) : null;
     /* A ranking word before the measure ("received the most contract dollars") makes it
        what is ranked, not a condition. */
@@ -523,6 +531,7 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
     measures.push(id);
   }
   const read = readFilters(t);
+  const pendingUnread = unreadConditions(t, read);
   const mismatched = read.filter((f) => f.mismatch);
   const filters = read.filter((f) => !f.mismatch);
   const filtered = new Set(filters.map((f) => f.metric));
@@ -547,7 +556,7 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
   /* A filtered universe is a screen whether or not a verb says so: "Energy stocks with
      debt to equity below 0.6" (Sonar 6.4: verbless screens). */
   if (
-    read.length &&
+    (read.length || pendingUnread.length) &&
     (operation === 'rank' || !operation) &&
     (/\b(?:find|screen|filter|list|show|which|what)\b/.test(t) || sector || index)
   )
@@ -555,8 +564,9 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
   /* "sorted by", "ordered by" rank like "ranked by". */
   if (!operation && /\b(?:sort(?:ed)?|order(?:ed)?)\s+by\b/.test(t)) operation = 'rank';
   const tickers = [...t.matchAll(/\$([a-z]{1,5})\b/g)].map((m) => m[1].toUpperCase());
+  const universeCountry = sector ? countryOfUniverse(t, SECTOR_RES[sector]) : null;
   const universe = sector
-    ? { type: 'sector', id: sector }
+    ? { type: 'sector', id: sector, ...(universeCountry ? { country: universeCountry } : {}) }
     : index
       ? { type: 'index', id: index }
       : tickers.length > 1
@@ -584,7 +594,7 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
   /* Sonar 6.4: every numeric condition in the question must become a filter. A condition
      Sonar cannot read ("revenue jumped more than 20%") is reported, never dropped, so a
      screen never silently runs on the unfiltered universe. */
-  const unread = [...mismatched.map((f) => f.mismatch), ...unreadConditions(t, read)];
+  const unread = [...mismatched.map((f) => f.mismatch), ...pendingUnread];
 
   let family = null;
   const companyLead = computed.find((m) => FUNDAMENTAL_MEASURES.has(m));
@@ -624,6 +634,44 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
     unread,
     family,
   };
+}
+
+/* Sonar 6.4 hardening: a country qualifier on a universe ("Canadian banks", "banks in
+   Canada"). Only the words right before the industry, or "in/from <country>" right after,
+   qualify it; a country elsewhere in the question does not. */
+const UNIVERSE_COUNTRIES = [
+  ['CA', String.raw`canadian|canada`],
+  ['US', String.raw`american|u\.?s\.?|united states|america`],
+  ['GB', String.raw`british|u\.?k\.?|united kingdom|britain`],
+  ['JP', String.raw`japanese|japan`],
+  ['DE', String.raw`german|germany`],
+  ['CN', String.raw`chinese|china`],
+  ['IN', String.raw`indian|india`],
+  ['FR', String.raw`french|france`],
+  ['AU', String.raw`australian|australia`],
+  ['KR', String.raw`korean|south korea|korea`],
+  ['TW', String.raw`taiwanese|taiwan`],
+  ['MX', String.raw`mexican|mexico`],
+  ['BR', String.raw`brazilian|brazil`],
+  ['CH', String.raw`swiss|switzerland`],
+  ['EU', String.raw`european|europe`],
+];
+export function countryOfUniverse(t, sectorRe) {
+  const m = sectorRe.exec(t);
+  if (!m) return null;
+  const before = t.slice(0, m.index);
+  const after = t.slice(m.index + m[0].length);
+  for (const [iso2, words] of UNIVERSE_COUNTRIES) {
+    if (new RegExp(`\\b(?:${words})\\s+(?:\\w+\\s+)?$`, 'i').test(before)) return iso2;
+    if (
+      new RegExp(
+        `^\\s*(?:\\w+\\s+)?(?:in|from|based in|headquartered in)\\s+(?:the\\s+)?(?:${words})\\b`,
+        'i',
+      ).test(after)
+    )
+      return iso2;
+  }
+  return null;
 }
 
 /** Numeric conditions ("more than 20%", "under 0.6") not consumed by a numeric filter. */

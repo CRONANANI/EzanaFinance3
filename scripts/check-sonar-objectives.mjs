@@ -77,13 +77,13 @@ async function runEntityCase(c, out) {
   if (e.entity) {
     const hit = ents.some(
       (x) =>
-        x.kind === e.entity.kind &&
+        (x.type === e.entity.kind || x.kind === e.entity.kind) &&
         (!e.entity.id || x.id === e.entity.id) &&
         (!e.entity.country || x.country === e.entity.country || x.id === e.entity.country),
     );
     if (!hit) why.push(`entities ${ents.map((x) => `${x.kind}:${x.id}`).join(',') || 'none'}`);
   }
-  if (e.notEntity && ents.some((x) => x.kind === e.notEntity.kind))
+  if (e.notEntity && ents.some((x) => x.kind === e.notEntity.kind || x.type === e.notEntity.kind))
     why.push(`unexpected ${e.notEntity.kind}`);
   if (e.family && intent.family !== e.family) why.push(`family ${intent.family}`);
   if (e.companies) {

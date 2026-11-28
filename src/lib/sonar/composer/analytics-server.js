@@ -219,12 +219,69 @@ export function setQuoteProvider(fn) {
 }
 
 /**
+ * Sonar 6.4 hardening: prices for a screen without one live request per company.
+ * Closes already stored in price_data_cache (written by the price sync jobs from the same
+ * licensed sources) within the 7-day staleness limit are used first, for every company;
+ * live quotes are requested only for the companies the cache does not hold, the largest
+ * `liveCap` by `sizeOf` (filed revenue). Companies left without a price are returned as
+ * `unchecked`, so the screen reports itself as bounded instead of complete.
+ * @returns {{ prices: Record<string,{price,asOf,source}>, cached: number, live: number,
+ *   unchecked: string[] }}
+ */
+export async function pricesFor(
+  admin,
+  tickers,
+  { now = new Date(), liveCap = MAX_VALUED, sizeOf = () => -1 } = {},
+) {
+  const prices = {};
+  const since = new Date(now.getTime() - 10 * 86400000).toISOString().slice(0, 10);
+  const asOf = now.toISOString().slice(0, 10);
+  for (const batch of chunk([...new Set(tickers)], 200)) {
+    let rows = [];
+    try {
+      rows = await pageAll(() =>
+        admin
+          .from('price_data_cache')
+          .select('ticker, date, close')
+          .in('ticker', batch)
+          .gte('date', since)
+          .lte('date', asOf)
+          .order('ticker', { ascending: true })
+          .order('date', { ascending: false }),
+      );
+    } catch {
+      rows = [];
+    }
+    for (const r of rows || []) {
+      const c = r.close == null || r.close === '' ? NaN : Number(r.close);
+      if (!Number.isFinite(c) || c <= 0 || prices[r.ticker]) continue;
+      prices[r.ticker] = { price: c, asOf: String(r.date).slice(0, 10), source: 'cache' };
+    }
+  }
+  const cached = Object.keys(prices).length;
+  const missing = tickers.filter((t) => !prices[t]);
+  const ask = [...missing].sort((x, y) => sizeOf(y) - sizeOf(x)).slice(0, liveCap);
+  const live = ask.length
+    ? (await Promise.resolve(quoteProvider(ask)).catch(() => ({}))) || {}
+    : {};
+  for (const t of ask) if (live[t]) prices[t] = { ...live[t], source: 'live' };
+  const askedSet = new Set(ask);
+  return {
+    prices,
+    cached,
+    live: ask.filter((t) => live[t]).length,
+    asked: ask.length,
+    unchecked: missing.filter((t) => !askedSet.has(t)),
+  };
+}
+
+/**
  * TTM net income and revenue, the latest filed share count and a price for each ticker,
  * then P/E, P/S, earnings yield and market cap (calc.js). Filed periods after the price
  * date are never used.
  * @returns {{ values: Record<string, object>, priceSource: string }}
  */
-export async function valuationFor(admin, tickers, figs, now = new Date()) {
+export async function valuationFor(admin, tickers, figs, now = new Date(), given = null) {
   const asOf = now.toISOString().slice(0, 10);
   const since = new Date(now.getTime() - 2.5 * 365 * 86400000).toISOString().slice(0, 10);
   const quarters = {};
@@ -268,7 +325,7 @@ export async function valuationFor(admin, tickers, figs, now = new Date()) {
         shares[r.ticker] = { end: r.period_end, value: v };
     }
   }
-  const prices = (await Promise.resolve(quoteProvider(tickers)).catch(() => ({}))) || {};
+  const prices = given || (await Promise.resolve(quoteProvider(tickers)).catch(() => ({}))) || {};
   const values = {};
   for (const t of tickers) {
     const f = figs[t] || { annual: {} };
@@ -325,9 +382,44 @@ function valuationGaps(tickers, values) {
  * The tickers a universe id names, from verified data only.
  * @returns {{ tickers: string[], label: string, notes: string[] }}
  */
-async function resolveUniverse(admin, id, now) {
+async function resolveUniverse(admin, id, now, country = null) {
   const u = universeFor(id);
   if (u.kind === 'unsupported') throw new Error(u.reason);
+  /* Sonar 6.4 hardening: a country-qualified universe ("Canadian banks") is the industry
+     members whose EDGAR business address is in that country; never the whole industry. */
+  if (country) {
+    const base = await resolveUniverse(admin, id, now, null);
+    let rows = [];
+    try {
+      rows = await pageAll(() =>
+        admin
+          .from('company_industry')
+          .select('ticker, business_country')
+          .in('ticker', base.tickers)
+          .order('ticker', { ascending: true }),
+      );
+    } catch {
+      throw new Error(
+        'Company business addresses are not classified in Ezana\u2019s data yet, so a country-specific universe cannot be established; Sonar does not substitute the whole industry.',
+      );
+    }
+    const classified = rows.filter((r) => r.business_country != null);
+    const tickers = classified.filter((r) => r.business_country === country).map((r) => r.ticker);
+    const label = `${base.label}, business address in ${country === 'CA' ? 'Canada' : country === 'US' ? 'the United States' : country}`;
+    if (!tickers.length)
+      throw new Error(
+        `No companies in ${base.label} have a business address in ${country === 'CA' ? 'Canada' : country} in Ezana\u2019s classified data (${classified.length} of ${base.tickers.length} members have a classified address), so that universe cannot be screened; Sonar does not substitute the whole industry.`,
+      );
+    return {
+      tickers,
+      label,
+      notes: [
+        ...base.notes,
+        `Country from each registrant's EDGAR business address; ${base.tickers.length - classified.length} of ${base.tickers.length} industry members have no classified address and are not included.`,
+      ],
+      unclassifiedCountry: base.tickers.length - classified.length,
+    };
+  }
   if (u.kind === 'gics') {
     const rows = await pageAll(() =>
       admin
@@ -521,7 +613,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     universe = p.tickers.slice(0, 60).map((t) => ({ ticker: String(t).toUpperCase() }));
     universeLabel = `${universe.length} named companies`;
   } else if (p.sector) {
-    const u = await resolveUniverse(admin, p.sector, now);
+    const u = await resolveUniverse(admin, p.sector, now, p.country || null);
     universe = u.tickers.map((t) => ({ ticker: t }));
     universeLabel = u.label;
     universeNotes.push(...u.notes);
@@ -570,6 +662,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   const sources = screenSources(otherFilters, rankBy).filter((s) => s !== 'ratios');
   const notes = [];
   const valuationNotes = [];
+  let priceCoverage = null;
+  let capped13f = 0;
   let lobbyYear = null;
   let period13f = null;
   for (const src of sources) {
@@ -582,18 +676,25 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         `Federal contracts: value of prime awards that started in federal fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30), obligated to date, for every company. This is not revenue.`,
       );
     } else if (src === 'valuation') {
-      /* Over the cap, the largest companies by filed revenue are valued (said so). */
-      const valued =
-        tick.length > MAX_VALUED
-          ? [...tick]
-              .sort((x, y) => (values[y]?.revenue ?? -1) - (values[x]?.revenue ?? -1))
-              .slice(0, MAX_VALUED)
-          : tick;
-      if (tick.length > MAX_VALUED)
+      /* Stored closes first for every company; live quotes only for the rest, largest by
+         filed revenue first, capped. Companies left unpriced are unchecked (coverage). */
+      const pr = await pricesFor(admin, tick, {
+        now,
+        liveCap: MAX_VALUED,
+        sizeOf: (t) => values[t]?.revenue ?? -1,
+      });
+      priceCoverage = {
+        candidates: tick.length,
+        cached: pr.cached,
+        live: pr.live,
+        unchecked: pr.unchecked,
+      };
+      const valued = tick.filter((t) => pr.prices[t]);
+      if (pr.unchecked.length)
         notes.push(
-          `Valuation was computed for the ${MAX_VALUED} largest of ${tick.length} remaining companies by filed revenue; the others have no valuation in this screen.`,
+          `Valuation could be checked for ${valued.length} of ${tick.length} remaining companies (${pr.cached} from stored closes, ${pr.live} from live quotes, live quotes capped at ${MAX_VALUED}, largest by filed revenue first); ${pr.unchecked.length} were not checked, so this is not a complete ranking of the universe.`,
         );
-      const v = await valuationFor(admin, valued, figs, now);
+      const v = await valuationFor(admin, valued, figs, now, pr.prices);
       for (const t of tick) Object.assign(values[t], v.values[t] || {});
       valuationNotes.push(...valuationGaps(valued, v.values));
       const dates = [...new Set(valued.map((t) => v.values[t]?.priceAsOf).filter(Boolean))].sort();
@@ -614,6 +715,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     } else if (src === 'holders13f') {
       /* 13F breadth is the costliest read: only after every other filter, and capped. */
       const ranked = tick.slice(0, MAX_RANKED_13F);
+      capped13f = Math.max(0, tick.length - MAX_RANKED_13F);
       if (tick.length > MAX_RANKED_13F)
         notes.push(
           `13F breadth was computed for the first ${MAX_RANKED_13F} of ${tick.length} remaining companies (alphabetical).`,
@@ -713,8 +815,12 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   const ends = [
     ...new Set(final.rows.map((r) => values[r.ticker]?.fiscalYearEnd).filter(Boolean)),
   ].sort();
+  const noFilings = universe.filter((u) => values[u.ticker]?.revenue == null).map((u) => u.ticker);
   const limitations = [
     ...universeNotes,
+    noFilings.length
+      ? `${noFilings.length} of ${universe.length} companies have no filed annual revenue in Ezana's filed-figure store and could not be evaluated (for example, foreign private issuers reporting under IFRS on Forms 20-F or 40-F, which are not ingested yet): ${noFilings.slice(0, 12).join(', ')}${noFilings.length > 12 ? ` and ${noFilings.length - 12} more` : ''}.`
+      : null,
     ends.length > 1
       ? `Filed figures are each company's latest fiscal year, which end between ${ends[0]} and ${ends[ends.length - 1]}; the periods are not the same for every company.`
       : 'Filed figures are the latest fiscal year each company reported.',
@@ -736,8 +842,27 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     ...stage1.unsupported,
     ...notes,
   ].filter(Boolean);
+  /* Sonar 6.4 hardening: machine-readable coverage. A screen is complete only when every
+     eligible company was checked against every condition; caps make it bounded. */
+  const coverage = screenCoverage({
+    eligible: fullUniverse,
+    evaluated: universe.length,
+    withData: withFilings.length,
+    shown: table.length,
+    priceCoverage,
+    capped13f,
+    funnel,
+  });
+  if (coverage.status === 'bounded')
+    limitations.unshift(
+      `Bounded screen: ${coverage.unchecked} of ${coverage.eligibleUniverse} eligible companies were not checked against every condition (${coverage.excluded
+        .filter((e) => e.kind === 'unchecked')
+        .map((e) => `${e.count} ${e.reason}`)
+        .join('; ')}). The ranking covers the companies checked, not the whole universe.`,
+    );
   const lines = [
     `Financial screen (${SCREEN_VERSION}, calculated): ${universeLabel}.`,
+    `Coverage: ${coverage.status} (${coverage.evaluatedCount} of ${coverage.eligibleUniverse} eligible companies evaluated; ${coverage.unchecked} unchecked; ${coverage.unavailable} without the required data).`,
     `Funnel: ${funnel.map((f) => `${f.label} ${f.count}${f.noData ? ` (${f.noData} without the data)` : ''}`).join(' -> ')}.`,
     rankM
       ? `Ranked by ${rankM.label}, ${direction === 'ascending' ? 'lowest' : 'highest'} first.`
@@ -754,7 +879,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     output: 'calculated',
     title: 'Financial Screen',
     version: SCREEN_VERSION,
-    coverage: { selected: fullUniverse, withData: withFilings.length, complete: table.length },
+    coverage,
     funnel,
     columns,
     table,
@@ -762,6 +887,91 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     direction,
     limitations,
     text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`)].join('\n'),
+  };
+}
+
+/**
+ * Coverage metadata for a screen (exported for tests): eligible universe, evaluated count,
+ * unchecked (caps: universe cap, unpriced valuation candidates, 13F cap) and unavailable
+ * (checked, but without the data a condition needs), the sampling method when a cap
+ * applied, and the completeness status:
+ *   complete                    every eligible company checked, every one had the data
+ *   complete_with_missing_data  every eligible company checked; some lacked data
+ *   bounded                     some eligible companies were not checked (never exhaustive)
+ */
+export function screenCoverage({
+  eligible,
+  evaluated,
+  withData,
+  shown,
+  priceCoverage,
+  capped13f = 0,
+  funnel = [],
+}) {
+  const excluded = [];
+  const sampling = [];
+  if (eligible > evaluated) {
+    excluded.push({
+      kind: 'unchecked',
+      reason: `beyond the first ${evaluated} companies (alphabetical universe cap)`,
+      count: eligible - evaluated,
+    });
+    sampling.push('alphabetical_universe_cap');
+  }
+  if (priceCoverage?.unchecked?.length) {
+    excluded.push({
+      kind: 'unchecked',
+      reason: 'not priced (live quotes capped; largest by filed revenue first)',
+      count: priceCoverage.unchecked.length,
+    });
+    sampling.push('largest_by_filed_revenue');
+  }
+  if (capped13f) {
+    excluded.push({
+      kind: 'unchecked',
+      reason: '13F breadth not computed (cap, alphabetical)',
+      count: capped13f,
+    });
+    sampling.push('alphabetical_13f_cap');
+  }
+  if (evaluated > withData)
+    excluded.push({
+      kind: 'unavailable',
+      reason: 'no filed annual revenue',
+      count: evaluated - withData,
+    });
+  const noData = funnel.reduce((n, f) => n + (Number(f.noData) || 0), 0);
+  if (noData)
+    excluded.push({
+      kind: 'unavailable',
+      reason: 'missing a figure a condition needs',
+      count: noData,
+    });
+  const unchecked = excluded.filter((e) => e.kind === 'unchecked').reduce((n, e) => n + e.count, 0);
+  const unavailable = excluded
+    .filter((e) => e.kind === 'unavailable')
+    .reduce((n, e) => n + e.count, 0);
+  return {
+    status: unchecked ? 'bounded' : unavailable ? 'complete_with_missing_data' : 'complete',
+    exhaustive: unchecked === 0,
+    eligibleUniverse: eligible,
+    evaluatedCount: evaluated,
+    unchecked,
+    unavailable,
+    excluded,
+    sampling: sampling.length ? sampling : null,
+    prices: priceCoverage
+      ? {
+          candidates: priceCoverage.candidates,
+          cached: priceCoverage.cached,
+          live: priceCoverage.live,
+          unchecked: priceCoverage.unchecked.length,
+        }
+      : null,
+    /* earlier keys, kept for consumers */
+    selected: eligible,
+    withData,
+    complete: shown,
   };
 }
 

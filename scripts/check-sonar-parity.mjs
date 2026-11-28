@@ -46,10 +46,15 @@ test('framing never merges different questions', async () => {
   assert.equal((await keyOf('tell me about Nancy Pelosi')).key, pelosi.key);
   assert.notEqual((await keyOf('What has Nancy Pelosi been buying lately?')).key, pelosi.key);
 
-  /* No entities: the words are the question, never a shared empty key. */
+  /* No entities: the words are the question, never a shared empty key. (Sonar 6.4: Lockheed
+     Martin is now a canonical company, so an unknown name stands in for it; the company
+     keeps one entity key under both phrasings.) */
+  const unknown = await keyOf('Zorblax Dynamics');
+  assert.equal((await keyOf('Give me a breakdown of Zorblax Dynamics')).key, unknown.key);
+  assert.notEqual((await keyOf('copper')).key, unknown.key);
   const lmt = await keyOf('Lockheed Martin');
-  assert.equal((await keyOf('Give me a breakdown of Lockheed Martin')).key, lmt.key);
-  assert.notEqual((await keyOf('copper')).key, lmt.key);
+  assert.deepEqual((await keyOf('Give me a breakdown of Lockheed Martin')).entities, lmt.entities);
+  assert.deepEqual(lmt.entities, ['ticker:LMT']);
   assert.notEqual((await keyOf('give me')).key, (await keyOf('show me')).key);
 });
 

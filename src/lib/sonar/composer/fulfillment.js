@@ -234,7 +234,8 @@ export function fulfillmentContract(c) {
         : !r
           ? 'failed'
           : r.status === 'done'
-            ? r.coverage && r.coverage.withData < r.coverage.selected
+            ? r.coverage &&
+              (r.coverage.withData < r.coverage.selected || r.coverage.status === 'bounded')
               ? 'limited'
               : 'done'
             : r.status === 'skipped'
@@ -258,7 +259,9 @@ export function fulfillmentContract(c) {
             ? `${r.coverage.withData} of ${r.coverage.selected} holdings reported by 13F managers${r.ownership?.period ? `, ${quarterLabel(r.ownership.period)}` : ''}`
             : r.capability === 'macro-indicators'
               ? `${r.coverage.withData} of ${r.coverage.selected} countries with data`
-              : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
+              : r.coverage.status === 'bounded'
+                ? `bounded: ${r.coverage.unchecked} of ${r.coverage.eligibleUniverse} companies not checked; ${r.coverage.withData} with filed financials`
+                : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
           : r?.failed || null,
       );
       if (reqs.length) objectives[objectives.length - 1].requirements = reqs;

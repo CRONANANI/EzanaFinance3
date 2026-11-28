@@ -9,6 +9,7 @@
  */
 import { correct } from '@/lib/sonar/understand/spell';
 import { resolveToken } from '@/lib/sonar/understand/entities';
+import { canonicalMatches } from '@/lib/sonar/canonical-entities';
 import { COUNTRIES } from '@/lib/sonar/understand/geo-codes';
 import {
   INDUSTRIES,
@@ -64,25 +65,6 @@ export function tokenize(text) {
   return normalise(text).match(/"[^"]*"|\$?[A-Za-z0-9][\w.&'-]*/g) || [];
 }
 
-const CENTRAL_BANKS = [
-  ['bank of canada', 'CA', 'Canada'],
-  ['bank of england', 'GB', 'United Kingdom'],
-  ['bank of japan', 'JP', 'Japan'],
-  ['bank of korea', 'KR', 'South Korea'],
-  ['bank of mexico', 'MX', 'Mexico'],
-  ['bank of israel', 'IL', 'Israel'],
-  ['bank of thailand', 'TH', 'Thailand'],
-  ['federal reserve', 'US', 'United States'],
-  ['reserve bank of australia', 'AU', 'Australia'],
-  ['reserve bank of new zealand', 'NZ', 'New Zealand'],
-  ['reserve bank of india', 'IN', 'India'],
-  ['south african reserve bank', 'ZA', 'South Africa'],
-  ["people's bank of china", 'CN', 'China'],
-  ['swiss national bank', 'CH', 'Switzerland'],
-  ['central bank of brazil', 'BR', 'Brazil'],
-  ['central bank of turkey', 'TR', 'Turkey'],
-];
-
 /* ── phrase pass: multi-word entities consume their tokens ─────────── */
 
 function phraseEntities(tokens) {
@@ -105,20 +87,34 @@ function phraseEntities(tokens) {
     }
     return false;
   };
-  /* Sonar 6.4: a central bank names its country's monetary authority, never the banking
-     industry or a bank company (a live "Has the Bank of Canada cut rates" resolved to the
-     banking industry and Bank of the James, then failed). Claimed first, as a country. */
-  for (const [phrase, iso2, label] of CENTRAL_BANKS) {
-    if (
-      claim(phrase.split(' '), {
-        kind: 'country',
-        id: iso2,
-        label,
-        confidence: 0.95,
-        centralBank: true,
-      })
-    )
-      break;
+  /* Sonar 6.4 hardening: canonical identities (canonical-entities.js) are claimed first,
+     longest name first, so their words never resolve as an industry, a country or another
+     company. A central bank is its country's monetary authority (typed central_bank, plus
+     the country so geography consumers are unchanged); a named issuer is a company. */
+  for (const m of canonicalMatches(text)) {
+    const words = m.surface.toLowerCase().split(/\s+/);
+    if (m.type === 'central_bank') {
+      claim(words, {
+        kind: 'central_bank',
+        type: 'central_bank',
+        id: m.id,
+        label: m.label,
+        country: m.country,
+        confidence: 0.97,
+      });
+      if (m.country && m.country !== 'EU')
+        out.push({
+          kind: 'country',
+          id: m.country,
+          label: m.label,
+          confidence: 0.95,
+          via: 'central_bank',
+          surface: m.surface,
+          prefix: '',
+        });
+    } else {
+      claim(words, { kind: 'ticker', type: 'company', id: m.id, label: m.label, confidence: 0.97 });
+    }
   }
   for (const s of SECTORS) {
     for (const re of s.phrases) {
@@ -439,6 +435,9 @@ export function understandDeterministic(raw, { noCorrect = false, tickerName = n
     surface: e.surface,
     confidence: e.confidence,
     ...(e.noun ? { noun: e.noun } : {}),
+    ...(e.type ? { type: e.type } : {}),
+    ...(e.country ? { country: e.country } : {}),
+    ...(e.via ? { via: e.via } : {}),
     ...(e.takesThe ? { takesThe: true } : {}),
     ...(e.alternatives?.length ? { alternatives: e.alternatives } : {}),
   }));

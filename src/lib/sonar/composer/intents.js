@@ -92,6 +92,7 @@ export function analyticsAttachment(intent) {
       subject: null,
       params: {
         sector,
+        ...(comp.universe.country ? { country: comp.universe.country } : {}),
         filters,
         rank_by: rank,
         direction: comp.direction === 'ascending' ? 'ascending' : 'descending',

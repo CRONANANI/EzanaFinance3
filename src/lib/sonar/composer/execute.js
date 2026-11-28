@@ -24,6 +24,7 @@
  * Every number is computed here from stored data. Nothing is estimated by a language model.
  */
 
+import { canonicalFor } from '../canonical-entities.js';
 import { runComparison, runGovDependence, runMacro, runScreen } from './analytics-server.js';
 import { getAdminClient } from '@/lib/supabase';
 import { resolvePolitician } from '@/lib/sonar/landing-politician';
@@ -151,6 +152,24 @@ async function memberHoldings(admin, bioguide) {
 export async function resolveSubject(text, admin = getAdminClient()) {
   const t = String(text || '').trim();
   if (!t) return null;
+  /* Sonar 6.4: a canonical identity resolves to its own symbol first; a central bank is
+     never a company ("Bank of Canada" is not Bank of the James). */
+  const canon = canonicalFor(t);
+  if (canon?.type === 'central_bank') return null;
+  if (canon?.type === 'company') {
+    const { data } = await admin
+      .from('sec_fundamentals')
+      .select('ticker, entity_name')
+      .eq('ticker', canon.id)
+      .limit(1);
+    return {
+      text: t,
+      kind: 'company',
+      id: canon.id,
+      name: data?.[0]?.entity_name || canon.label,
+      ...(data?.[0]?.ticker ? {} : { filedFigures: false }),
+    };
+  }
   const tick = t.match(TICKER_RE);
   if (!tick) {
     const member = await resolvePolitician(t, admin).catch(() => null);
