@@ -11,6 +11,7 @@
  *                                              yield, consensus revenue growth, and industry
  *                                              peers' trailing multiples
  */
+import { valuationPrices, priceContractEnabled } from '@/lib/prices/sonar-valuation-prices';
 import { fmp } from '@/lib/sonar/engine/sources-memo';
 import { buildValuationHistory, valuationSnapshot, LOOKBACK_YEARS } from './history';
 import { buildValuationModel, peerComparison } from './model';
@@ -114,10 +115,28 @@ export async function fetchPeerSet(ticker, { ms = 5000, max = 6 } = {}) {
  * fetchDeepValuation without a quote, so the DCF never had a price even when the cache held
  * yesterday's close. A missing price stays missing: nothing is estimated.
  */
-export async function storedClose(admin, ticker, now = new Date()) {
+export async function storedClose(admin, ticker, now = new Date(), env = process.env) {
   if (!admin) return null;
   const since = new Date(now.getTime() - 10 * 86400000).toISOString().slice(0, 10);
   const asOf = now.toISOString().slice(0, 10);
+  /* Sonar 6.5: the shared price contract (lib/prices/sonar-valuation-prices.js), only behind
+     SONAR_PRICE_CONTRACT=1 (off by default; shadow-compare first, docs/SONAR_6_4_INTEGRATION
+     _COMPATIBILITY.md section 7). Same { price, asOf, source } shape, plus provenance
+     (provider, adjustment, currency, age, contract). SONAR_PRICE_SYNC is not read here. */
+  if (priceContractEnabled(env)) {
+    const t = String(ticker || '').toUpperCase();
+    const { data, error } = await admin
+      .from('price_data_cache')
+      .select('ticker, date, close, adj_close, volume')
+      .eq('ticker', t)
+      .gte('date', since)
+      .lte('date', asOf)
+      .order('date', { ascending: false })
+      .limit(1);
+    if (error || !data?.length) return null;
+    const p = valuationPrices({ cacheRows: data, asOf }).prices[t];
+    return p ? { ...p, source: 'stored_close' } : null;
+  }
   const { data, error } = await admin
     .from('price_data_cache')
     .select('date, close')

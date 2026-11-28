@@ -18,6 +18,7 @@
  * All numbers are computed in ./ownership.js; nothing here estimates a value.
  */
 
+import { lookupTickers } from '../../sec/security-identity.js';
 import {
   OWNERSHIP_VERSION,
   OWNERSHIP_LIMITATIONS,
@@ -336,9 +337,17 @@ async function ownershipFor(admin, filings, cusips, period, prior, top = 5) {
 /* ── universe ───────────────────────────────────────────────────────── */
 
 /** Security-master candidates per ticker (OpenFIGI map), one read. */
-export async function securityMaster(admin, tickers) {
+export async function securityMaster(admin, tickers, { asOf = new Date() } = {}) {
   const list = [...new Set(tickers.map(cleanTicker).filter(Boolean))];
-  const want = [...new Set([...list, ...list.map((t) => TICKER_ALIASES[t]).filter(Boolean)])];
+  /* Renames (TICKER_ALIASES) plus the date-aware symbols of the same legal entity
+     (lib/sec/security-identity.js). A reused symbol is read as itself only. */
+  const want = [
+    ...new Set([
+      ...list,
+      ...list.map((t) => TICKER_ALIASES[t]).filter(Boolean),
+      ...list.flatMap((t) => lookupTickers(TICKER_ALIASES[t] || t, { asOf })),
+    ]),
+  ];
   if (!want.length) return {};
   const { data, error } = await admin
     .from('sec_cusip_map')

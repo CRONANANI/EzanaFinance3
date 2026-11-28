@@ -340,10 +340,10 @@ test('10 institutional ownership identity: 13F research reads SEC tables; alias 
   const sonar = walk('src/lib/sonar');
   assert.ok(sonar.some((f) => /from\('sec_13f_(effective_filings|holdings)'\)/.test(read(f))));
   assert.ok(sonar.every((f) => !/quiverquant|api\/quiver\/sec13f/.test(read(f))));
-  /* Known 6.5 coordination item: PARA is aliased to PSKY, but the PARA symbol now belongs to
-     Parabolic Technologies (CIK 1826011). This test pins the current behaviour so a fix in
-     ownership.js (period- or CUSIP-scoped aliases) is a deliberate, visible change. */
-  assert.equal(TICKER_ALIASES.PARA, 'PSKY');
+  /* Resolved in Sonar 6.5: PARA is no longer an unconditional alias of PSKY. The symbol is
+     resolved by date (lib/sec/security-identity.js): Paramount Global through 2025-08-06,
+     Parabolic Technologies (CIK 1826011) after. Covered in scripts/check-sonar-6-5.mjs. */
+  assert.equal(TICKER_ALIASES.PARA, undefined);
   const { eligible, excluded } = normalizeUniverse([{ ticker: 'ZZZQ', issuer: 'Unknown' }], {});
   assert.equal(eligible.length, 0);
   assert.equal(excluded.length, 1);

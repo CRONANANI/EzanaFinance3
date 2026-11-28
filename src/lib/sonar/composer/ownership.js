@@ -31,6 +31,8 @@
  *   that denominator, so the percentage is null, never estimated.
  */
 
+import { resolveTicker, lookupTickers, candidatesForEntity } from '../../sec/security-identity.js';
+
 export const OWNERSHIP_VERSION = 'ownership-v1';
 export const OWNERSHIP_CAPABILITY = 'institutional-ownership';
 
@@ -129,8 +131,20 @@ export function previousQuarter(period) {
 
 /* ── universe ───────────────────────────────────────────────────────── */
 
-/** Renamed tickers that disclosures still carry. */
-export const TICKER_ALIASES = { SQ: 'XYZ', FB: 'META', ANTM: 'ELV', RE: 'EG', PARA: 'PSKY' };
+/**
+ * Renamed tickers that disclosures still carry: renames of ONE legal entity (same CIK).
+ * Sonar 6.5: PARA is no longer here. The symbol was reused (Paramount Global until
+ * 2025-08-07, Parabolic Technologies after), so it is resolved by date through
+ * lib/sec/security-identity.js, never by an unconditional alias.
+ */
+export const TICKER_ALIASES = { SQ: 'XYZ', FB: 'META', ANTM: 'ELV', RE: 'EG' };
+
+/** The symbol whose security-master rows describe `raw` at `asOf` (rename-aware, date-aware). */
+export function aliasFor(raw, asOf) {
+  if (TICKER_ALIASES[raw]) return TICKER_ALIASES[raw];
+  const r = resolveTicker(raw, { asOf });
+  return r?.ticker || raw;
+}
 
 /** Security types counted as common equity (OpenFIGI security_type). */
 const EQUITY_TYPES = new Set([
@@ -157,7 +171,7 @@ export const cleanTicker = (t) =>
  * master. A ticker with more than one candidate common-equity CUSIP is ambiguous and is not
  * guessed. Returns { eligible, excluded: [{ ticker, issuer, reason }] }.
  */
-export function normalizeUniverse(holdings = [], map = {}) {
+export function normalizeUniverse(holdings = [], map = {}, { asOf = new Date() } = {}) {
   const eligible = [];
   const excluded = [];
   const seen = new Set();
@@ -167,8 +181,16 @@ export function normalizeUniverse(holdings = [], map = {}) {
       excluded.push({ ticker: null, issuer: h.issuer || null, reason: 'no ticker disclosed' });
       continue;
     }
-    const ticker = TICKER_ALIASES[raw] || raw;
-    const cands = (map[ticker] || []).filter(Boolean);
+    const ticker = aliasFor(raw, asOf);
+    /* Same legal entity under another symbol (PSKY and SKYD, CIK 2041610); a reused symbol
+       (PARA) keeps only the candidates whose issuer is the entity that held it at asOf. */
+    const symbols = lookupTickers(ticker, { asOf });
+    const pooled = symbols.flatMap((s) => map[s] || []).filter(Boolean);
+    const cands = candidatesForEntity(
+      ticker,
+      [...new Map(pooled.map((c) => [c.cusip || JSON.stringify(c), c])).values()],
+      { asOf },
+    );
     if (!cands.length) {
       excluded.push({
         ticker: raw,

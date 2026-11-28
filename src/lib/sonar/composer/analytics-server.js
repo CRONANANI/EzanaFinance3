@@ -20,6 +20,8 @@
 import { companyRatios, ttmFigure, valuationRatios } from './calc.js';
 import { universeFor, dodDefined, industryMembers } from './industries.js';
 import { DEBT_COMPONENTS } from '../../sec/concept-map.js';
+import { indexSuccessions, preferSuccessorFacts } from '../../sec/registrant-map.js';
+import { resolveTicker } from '../../sec/security-identity.js';
 import {
   MACRO_VERSION,
   inflationTrend,
@@ -110,12 +112,54 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
   const out = {};
   if (!tickers.length) return out;
   const since = new Date(now.getTime() - 3.2 * 365 * 86400000).toISOString().slice(0, 10);
-  for (const batch of chunk(tickers, 200)) {
-    const [annual, instant] = await Promise.all([
+  /* Sonar 6.5. Verified successions (6.4 registrant map): after a predecessor backfill a
+     frame both registrants reported must resolve to one fact, the successor's
+     (preferSuccessorFacts). Unread or missing table: no successions, nothing preferred,
+     which is exactly today's state until the backfill is approved. */
+  let successions = new Map();
+  try {
+    const { data, error } = await admin
+      .from('sec_registrant_successions')
+      .select(
+        'ticker, predecessor_cik, successor_cik, effective_date, relationship, source_accession, verified, applies_from, applies_to',
+      )
+      .eq('verified', true)
+      .limit(500);
+    if (!error) successions = indexSuccessions(data || []);
+  } catch {
+    /* successions unavailable: loaders behave as before */
+  }
+  /* Same legal entity under another symbol (PSKY and SKYD, CIK 2041610): its filed rows are
+     read under the requested symbol, joined only when the filing CIK is the entity's own. */
+  const asOf = now.toISOString().slice(0, 10);
+  const alt = new Map();
+  for (const t of tickers) {
+    const r = resolveTicker(t, { asOf });
+    if (!r?.cik) continue;
+    for (const x of r.lookupTickers)
+      if (x !== t && !tickers.includes(x)) alt.set(x, { to: t, cik: r.cik });
+  }
+  const remap = (rows) => {
+    const kept = [];
+    for (const r of rows) {
+      /* Missing stays missing, and is dropped before the one-fact-per-frame rule so a null
+         row can never displace a filed figure. */
+      if (r.value == null || r.value === '' || !Number.isFinite(Number(r.value))) continue;
+      const a = alt.get(r.ticker);
+      if (!a) kept.push(r);
+      else if (r.cik && String(r.cik).replace(/^0+/, '') === a.cik)
+        kept.push({ ...r, ticker: a.to, filedTicker: r.ticker });
+    }
+    const keyed = kept.map((r) => ({ ...r, frame: r.period_end }));
+    return preferSuccessorFacts(keyed, successions).rows;
+  };
+  for (const batch0 of chunk(tickers, 200)) {
+    const batch = [...batch0, ...[...alt.keys()].filter((x) => batch0.includes(alt.get(x).to))];
+    const [annual0, instant0] = await Promise.all([
       pageAll(() =>
         admin
           .from('sec_fundamentals')
-          .select('ticker, concept, period_end, value, taxonomy_concept')
+          .select('ticker, cik, accession_no, concept, period_end, value, taxonomy_concept')
           .in('ticker', batch)
           .in('concept', RATIO_CONCEPTS)
           .eq('period_type', 'annual')
@@ -127,7 +171,7 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       pageAll(() =>
         admin
           .from('sec_fundamentals')
-          .select('ticker, concept, period_end, value')
+          .select('ticker, cik, accession_no, concept, period_end, value')
           .in('ticker', batch)
           .in('concept', INSTANT_CONCEPTS)
           .eq('period_type', 'instant')
@@ -137,6 +181,8 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
           .order('period_end', { ascending: false }),
       ),
     ]);
+    const annual = remap(annual0);
+    const instant = remap(instant0);
     for (const r of annual) {
       /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */
       if (r.value == null || r.value === '') continue;
@@ -145,7 +191,15 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       const t = (out[r.ticker] ||= { annual: {}, instant: {} });
       const list = (t.annual[r.concept] ||= []);
       if (!list.some((x) => x.end === r.period_end))
-        list.push({ end: r.period_end, value: v, concept: r.taxonomy_concept || null });
+        /* Provenance kept: the filing CIK and accession (original registrant, 6.4). */
+        list.push({
+          end: r.period_end,
+          value: v,
+          concept: r.taxonomy_concept || null,
+          cik: r.cik || null,
+          accession: r.accession_no || null,
+          ...(r.filedTicker ? { filedTicker: r.filedTicker } : {}),
+        });
     }
     for (const r of instant) {
       /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */

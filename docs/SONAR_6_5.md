@@ -3,7 +3,8 @@
 Nov 28, 2026. No Anthropic API calls were made. No model benchmarks, live research, LLM judges
 or model evaluations were run. Model routing, Profile D and Profile D-Efficient are unchanged.
 No migrations were applied and no ingestion was scheduled. Verification is deterministic
-(`npm run test:sonar-6-5`, 28 tests, fixtures committed first in `34c348a`).
+(`npm run test:sonar-6-5`, 33 tests, fixtures committed first in the baseline commit). Rebased on
+`5a38ed83` (6.4 integration compatibility).
 
 ## 1. Audit and root cause
 
@@ -120,10 +121,33 @@ Rollout is the deploy itself; there is no flag and no migration. Rollback means 
 6.5 commit. Result fields are additive, and saved reports written by 6.5 still render on 6.4,
 which ignores the new fields.
 
-## 8. Shared-file conflicts
+## 8. 6.4 integration compatibility follow-ups (`5a38ed83`)
+
+| # | Finding | Status | What changed |
+| --- | --- | --- | --- |
+| 1 | Historical CIK mapping and successor facts | **Resolved in code**; data **pending approval** | `filedFiguresPaged` reads verified rows from `sec_registrant_successions` (6.4 `indexSuccessions`) and applies `preferSuccessorFacts` per ticker, concept and period end, so the successor's filing wins deterministically. Filing `cik` and `accession_no` stay on every figure. Null rows are dropped before the rule, so they never displace a filed figure. A missing table means no preference, which is today's state. |
+| 2 | PARA mapped to PSKY | **Resolved** | The unconditional alias is removed. The new `src/lib/sec/security-identity.js` resolves PARA by date: Paramount Global (CIK 813828) through 2025-08-06, Parabolic Technologies (CIK 1826011) after. Security-master candidates are kept only when their issuer matches the entity at that date. Paramount Global is not merged into Paramount Skydance, because that succession is unverified in 6.4. The pinning assertion in `check-6-4-compat.mjs` test 10 was updated deliberately. |
+| 3 | SKYD and PSKY split across datasets | **Resolved for ownership and fundamentals**; sector tables **need more work** | PSKY and SKYD resolve to one CIK (2041610). The 13F universe pools both symbols' CUSIPs. The fundamentals loader reads SKYD rows under PSKY only when the filing CIK is 2041610; rows filed by any other CIK never join. The PSKY to SKYD rename date is not on record, so it is marked `dateVerified: false`. `ticker_sectors` still files the company under PSKY; a sector screen lists it as PSKY and now finds its fundamentals. |
+| 4 | Price adapter not connected | **Connected behind a flag**; shadow comparison **pending** | `storedClose` uses `valuationPrices` only when `SONAR_PRICE_CONTRACT=1` (off by default). The shape is the same, with provider, adjustment, currency, age and contract added; zero and sample prices are rejected. Tests show identical output with the flag off. `SONAR_PRICE_SYNC` is not read or changed. `pricesFor` (screens) is not switched yet. SQL 09 still needs approval. |
+| 5 | SQL 03, SQL 08 and the predecessor backfill | **Pending approval** | Nothing assumes they ran. The successor rule is a no-op until predecessor rows exist. No migration was applied. |
+| 6 | Typed stage chaining, complete universes, bounded coverage, missing data | **Resolved** | See section 4: `stages.js` reused; full result identity in the handoff; 13F cap reported as `bounded` with unchecked companies; unknown kept separate from fail. |
+| 7 | Revenue comparability and debt safeguards | **Retained** | `companyRatios` was only extended (`operating_margin_prior` requires consecutive comparable years, the same `growth.reason == null` gate). `test:revenue-growth`, `test:debt-equity` and `test:6-4-compat` pass. |
+
+**Still requires additional work:**
+- Date-aware ticker resolution for congressional disclosures (reused symbols such as PARA in old trades).
+- `ticker_sectors` keyed by the SEC ticker.
+- Switching `pricesFor` after a week of shadow comparison.
+- REAX and SKYD successions stay unverified (human review).
+
+## 9. Shared-file conflicts
 
 The other session's `5a38ed8` (6.4 integration compatibility) overlapped only on
-`package.json` scripts, and the rebase resolved it by appending. This work also edits
+`package.json` scripts, and the rebase resolved it by appending. This work then changed one
+assertion in that session's `scripts/check-6-4-compat.mjs` (test 10, the PARA pin, which its
+own comment asked to be changed deliberately). It also edited `ownership.js`,
+`ownership-server.js` and `valuation/fetch.js`, which the 6.4 report assigned to 6.5. The
+6.4 modules (`registrant-map.js`, `sonar-valuation-prices.js`, `price-contract.js`) were
+consumed and not modified. This work also edits
 `check-sonar-hardening.mjs` and `check-sonar-valuation.mjs` (capex scenario assertions),
 `analytics-server.js`, `model.js`, `calc.js`, `screen.js`, `intents.js`, `stages.js` and
 `fulfillment.js`. None of these were changed upstream.

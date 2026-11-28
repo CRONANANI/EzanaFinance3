@@ -424,7 +424,10 @@ test('SCENARIO J: a failed source makes its condition unknown for everyone; the 
   );
   assert.ok(r.steps.some((s) => s.source === 'contracts_window' && !E.USABLE.has(s.status)));
   assert.ok(r.limitations.some((l) => /contract/i.test(l)));
-  assert.ok(r.gaps.some((g) => g.kind === 'entitlement_limitation' || g.kind === 'provider_unavailable'), 'the failed read is a reported gap');
+  assert.ok(
+    r.gaps.some((g) => g.kind === 'entitlement_limitation' || g.kind === 'provider_unavailable'),
+    'the failed read is a reported gap',
+  );
 });
 
 test('SCENARIO K: gap recovery is bounded to one attempt and never substitutes a dataset', () => {
@@ -771,3 +774,158 @@ function screenDb({ congress, fail } = {}) {
     },
   );
 }
+
+/* ═══ 6.4 compatibility follow-ups (5a38ed83) ═════════════════════════════════════ */
+
+const Id = await import('../src/lib/sec/security-identity.js');
+const Own = await import('../src/lib/sonar/composer/ownership.js');
+const Fe = await import('../src/lib/sonar/valuation/fetch.js');
+
+test('identity: PARA is resolved by date, never an unconditional alias of PSKY', () => {
+  const now = Id.resolveTicker('PARA', { asOf: '2026-11-28' });
+  assert.equal(now.cik, '1826011');
+  assert.match(now.name, /Parabolic/);
+  assert.deepEqual(now.lookupTickers, ['PARA'], 'a reused symbol never pulls in another company');
+  const before = Id.resolveTicker('PARA', { asOf: '2025-03-31' });
+  assert.equal(before.cik, '813828');
+  assert.ok(
+    !before.lookupTickers.includes('PSKY'),
+    'Paramount Global is not merged into Paramount Skydance',
+  );
+  assert.equal(Own.TICKER_ALIASES.PARA, undefined);
+  assert.equal(Own.aliasFor('PARA', new Date('2026-11-28')), 'PARA');
+  assert.equal(
+    Own.aliasFor('FB', new Date('2026-11-28')),
+    'META',
+    'same-entity renames keep working',
+  );
+});
+
+test('identity: PSKY and SKYD are one legal entity (CIK 2041610); 13F universe finds it under either symbol', () => {
+  assert.deepEqual(sorted(Id.lookupTickers('PSKY', { asOf: '2026-11-28' })), ['PSKY', 'SKYD']);
+  const map = {
+    SKYD: [
+      {
+        cusip: '69932A204',
+        securityType: 'Common Stock',
+        marketSector: 'Equity',
+        name: 'SKYDANCE CORP',
+      },
+    ],
+  };
+  const { eligible } = Own.normalizeUniverse(
+    [{ ticker: 'PSKY', issuer: 'Paramount Skydance' }],
+    map,
+    { asOf: new Date('2026-11-28') },
+  );
+  assert.equal(eligible.length, 1);
+  assert.equal(eligible[0].cusip || eligible[0].cusips?.[0], '69932A204');
+});
+
+test('identity: a reused symbol keeps only the issuer that held it at the date', () => {
+  const map = {
+    PARA: [
+      {
+        cusip: '92556H206',
+        securityType: 'Common Stock',
+        marketSector: 'Equity',
+        name: 'PARAMOUNT GLOBAL CL B',
+      },
+      {
+        cusip: '69900P101',
+        securityType: 'Common Stock',
+        marketSector: 'Equity',
+        name: 'PARABOLIC TECHNOLOGIES',
+      },
+    ],
+  };
+  const today = Own.normalizeUniverse([{ ticker: 'PARA', issuer: 'x' }], map, {
+    asOf: new Date('2026-11-28'),
+  });
+  assert.equal(today.eligible.length, 1);
+  assert.match(JSON.stringify(today.eligible[0]), /69900P101/);
+  const then = Own.normalizeUniverse([{ ticker: 'PARA', issuer: 'x' }], map, {
+    asOf: new Date('2025-03-31'),
+  });
+  assert.match(JSON.stringify(then.eligible[0]), /92556H206/);
+});
+
+test('financial loader: successor facts win deterministically; filing CIK and accession are kept; other CIKs never join', async () => {
+  const row = (ticker, cik, acc, end, value) => ({
+    ticker,
+    cik,
+    accession_no: acc,
+    concept: 'revenue',
+    taxonomy_concept: 'Revenues',
+    period_type: 'annual',
+    period_end: end,
+    value,
+  });
+  const db = fakeSupabase({
+    sec_registrant_successions: [
+      {
+        ticker: 'XNEW',
+        predecessor_cik: '111',
+        successor_cik: '222',
+        effective_date: '2026-01-02',
+        relationship: 'holding_company_reorganization',
+        source_accession: '0000000222-26-000001',
+        verified: true,
+      },
+    ],
+    sec_fundamentals: [
+      /* the predecessor's backfilled row for FY2025 sorts first; the successor's must win */
+      row('XNEW', '111', '0000000111-26-000009', '2025-12-31', 90),
+      row('XNEW', '222', '0000000222-26-000010', '2025-12-31', 100),
+      row('XNEW', '111', '0000000111-25-000003', '2024-12-31', 80),
+      /* same-entity symbol (CIK 2041610) joins PSKY; a row filed by another CIK does not */
+      row('SKYD', '2041610', '0002041610-26-000001', '2025-12-31', 29e9),
+      row('SKYD', '9999999', '0009999999-26-000001', '2024-12-31', 1),
+      { ...row('XNEW', '222', 'n', '2023-12-31', null) },
+    ],
+  });
+  const out = await A.filedFiguresPaged(db, ['XNEW', 'PSKY'], F.NOW);
+  const rev = out.XNEW.annual.revenue;
+  assert.deepEqual(
+    rev.map((r) => [r.end, r.value, r.cik]),
+    [
+      ['2025-12-31', 100, '222'],
+      ['2024-12-31', 80, '111'],
+    ],
+  );
+  assert.equal(rev[0].accession, '0000000222-26-000010');
+  const psky = out.PSKY.annual.revenue;
+  assert.deepEqual(
+    psky.map((r) => [r.end, r.value, r.filedTicker]),
+    [['2025-12-31', 29e9, 'SKYD']],
+  );
+});
+
+test('price contract: storedClose is unchanged with SONAR_PRICE_CONTRACT off; behind the flag it adds provenance and rejects zero prices', async () => {
+  const rows = [
+    { ticker: 'XAAA', date: '2026-11-27', close: 101.5, adj_close: 101.5, volume: 1000 },
+  ];
+  const off = await Fe.storedClose(fakeSupabase({ price_data_cache: rows }), 'XAAA', F.NOW, {});
+  assert.deepEqual(off, { price: 101.5, asOf: '2026-11-27', source: 'stored_close' });
+  const on = await Fe.storedClose(fakeSupabase({ price_data_cache: rows }), 'XAAA', F.NOW, {
+    SONAR_PRICE_CONTRACT: '1',
+  });
+  assert.equal(on.price, 101.5);
+  assert.equal(on.asOf, '2026-11-27');
+  assert.equal(on.source, 'stored_close');
+  assert.equal(on.currency, 'USD');
+  assert.ok('adjustment' in on && 'provider' in on);
+  const zero = await Fe.storedClose(
+    fakeSupabase({ price_data_cache: [{ ...rows[0], close: 0 }] }),
+    'XAAA',
+    F.NOW,
+    { SONAR_PRICE_CONTRACT: '1' },
+  );
+  assert.equal(zero, null);
+  assert.ok(
+    !readFileSync(new URL('../src/lib/sonar/valuation/fetch.js', import.meta.url), 'utf8').includes(
+      'SONAR_PRICE_SYNC ===',
+    ),
+    'price sync flag is not read',
+  );
+});
