@@ -25,186 +25,7 @@ import { PARTNERS } from '../src/lib/sonar/analysts/partners.js';
 import { derivePartners } from './gen-sonar-partners.mjs';
 import { getSonarEntitlements } from '../src/lib/sonar/entitlements.js';
 
-const NOW = new Date('2026-11-28T12:00:00Z');
-
-/* Annual filed figures: revenue (2 years), operating income, net income, OCF, capex,
-   plus instant equity and long-term debt. */
-function filed(
-  ticker,
-  {
-    rev,
-    revPrev,
-    opInc,
-    ni,
-    niPrev,
-    ocf,
-    capex,
-    equity,
-    debt,
-    end = '2025-12-31',
-    prevEnd = '2024-12-31',
-  },
-) {
-  const a = (concept, value, period_end) => ({
-    ticker,
-    concept,
-    value,
-    period_end,
-    period_type: 'annual',
-    entity_name: `${ticker} Corp`,
-  });
-  const rows = [
-    a('revenue', rev, end),
-    a('revenue', revPrev, prevEnd),
-    a('operating_income', opInc, end),
-    a('net_income', ni, end),
-    a('net_income', niPrev, prevEnd),
-    a('operating_cash_flow', ocf, end),
-    a('capex', capex, end),
-  ];
-  if (equity != null)
-    rows.push({
-      ticker,
-      concept: 'equity',
-      value: equity,
-      period_end: end,
-      period_type: 'instant',
-      entity_name: `${ticker} Corp`,
-    });
-  if (debt != null)
-    rows.push({
-      ticker,
-      concept: 'long_term_debt',
-      value: debt,
-      period_end: end,
-      period_type: 'instant',
-      entity_name: `${ticker} Corp`,
-    });
-  return rows;
-}
-
-const FIXTURES = {
-  ticker_sectors: [
-    { ticker: 'AAA', sector: 'Energy' },
-    { ticker: 'BBB', sector: 'Energy' },
-    { ticker: 'CCC', sector: 'Energy' },
-    { ticker: 'DDD', sector: 'Energy' }, // no filings
-    { ticker: 'TTT', sector: 'Information Technology' },
-  ],
-  sec_fundamentals: [
-    // AAA: growth 25%, op margin 20%
-    ...filed('AAA', {
-      rev: 1250,
-      revPrev: 1000,
-      opInc: 250,
-      ni: 150,
-      niPrev: 100,
-      ocf: 300,
-      capex: -100,
-      equity: 1000,
-      debt: 500,
-    }),
-    // BBB: growth 10%, op margin 16%
-    ...filed('BBB', {
-      rev: 1100,
-      revPrev: 1000,
-      opInc: 176,
-      ni: 90,
-      niPrev: 100,
-      ocf: 200,
-      capex: 50,
-      equity: 800,
-      debt: 200,
-    }),
-    // CCC: growth 30%, op margin 5% (fails a 15% margin filter)
-    ...filed('CCC', {
-      rev: 1300,
-      revPrev: 1000,
-      opInc: 65,
-      ni: -10,
-      niPrev: 20,
-      ocf: 50,
-      capex: 80,
-      equity: 500,
-      debt: 900,
-    }),
-    ...filed('TTT', {
-      rev: 2000,
-      revPrev: 1600,
-      opInc: 600,
-      ni: 400,
-      niPrev: 300,
-      ocf: 700,
-      capex: 200,
-      equity: 3000,
-      debt: 0,
-      end: '2025-06-30',
-      prevEnd: '2024-06-30',
-    }),
-  ],
-  sec_insider_transactions: [
-    {
-      issuer_ticker: 'AAA',
-      value_usd: 100000,
-      transaction_code: 'P',
-      transaction_date: '2026-10-01',
-      accession_no: 'a1',
-    },
-    {
-      issuer_ticker: 'BBB',
-      value_usd: 400000,
-      transaction_code: 'P',
-      transaction_date: '2026-11-01',
-      accession_no: 'a2',
-    },
-    {
-      issuer_ticker: 'BBB',
-      value_usd: 900000,
-      transaction_code: 'S',
-      transaction_date: '2026-11-02',
-      accession_no: 'a3',
-    }, // a sale: excluded
-    {
-      issuer_ticker: 'AAA',
-      value_usd: 5000000,
-      transaction_code: 'P',
-      transaction_date: '2025-01-01',
-      accession_no: 'a4',
-    }, // outside 90 days
-  ],
-  company_contract_history: [
-    {
-      ticker: 'AAA',
-      fiscal_year: 2026,
-      awarding_agency: 'Department of Defense',
-      award_count: 3,
-      total_amount: 300,
-    },
-    {
-      ticker: 'AAA',
-      fiscal_year: 2026,
-      awarding_agency: 'Department of Energy',
-      award_count: 1,
-      total_amount: 100,
-    },
-    {
-      ticker: 'AAA',
-      fiscal_year: 2025,
-      awarding_agency: 'Department of Defense',
-      award_count: 2,
-      total_amount: 200,
-    },
-    /* FY2027 is in progress on NOW (Nov 2026): never compared with a full year. */
-    {
-      ticker: 'AAA',
-      fiscal_year: 2027,
-      awarding_agency: 'Department of Defense',
-      award_count: 1,
-      total_amount: 999,
-    },
-  ],
-  congress_trades: [],
-};
+import { NOW, FIXTURES } from './lib/sonar-exec-fixtures.mjs';
 
 test('E2E screen: energy companies with operating margin above 15%, ranked by insider buying', async () => {
   const q =
@@ -281,19 +102,26 @@ test('E2E comparison: fewer than two resolved companies fails instead of guessin
   );
 });
 
-test('E2E government dependence: obligations, growth, ratio to revenue and agency mix', async () => {
+test('E2E government dependence: award vintages, paired periods, agency mix, no recognized share', async () => {
   const { attachments } = inferComposition('How dependent is AAA on government revenue?');
   assert.equal(attachments[0].capability, 'government-dependence');
   const res = await runGovDependence(
     fakeSupabase(FIXTURES),
     { ...attachments[0], subject: { kind: 'company', id: 'AAA' } },
-    { now: NOW },
+    { now: NOW, fetchMix: async () => null },
   );
   const d = res.dependence;
   assert.equal(d.latestFiscalYear, 2026);
   assert.equal(d.latestObligations, 400);
   assert.ok(Math.abs(d.obligationGrowth - 1.0) < 1e-9); // 400 vs 200
-  assert.ok(Math.abs(d.obligationsToRevenue - 400 / 1250) < 1e-9);
+  /* Revenue for the year ending Dec 2025 pairs with federal FY2025 (Oct 2024 to Sep 2025,
+     9 shared months), not with the latest award year. */
+  assert.equal(d.pairedFiscalYear, 2025);
+  assert.equal(d.pairedOverlapMonths, 9);
+  assert.ok(Math.abs(d.obligationsToRevenue - 200 / 1250) < 1e-9);
+  /* Never derived from contracts. */
+  assert.equal(d.recognizedGovernmentShare, null);
+  assert.match(res.text, /not recognized government revenue/);
   assert.equal(d.topAgencies[0].agency, 'Department of Defense');
   assert.ok(Math.abs(d.topAgencies[0].share - 0.75) < 1e-9);
 });
@@ -397,4 +225,145 @@ test('company names resolve to whole-word filer names only', async () => {
   assert.equal((await resolveCompany('Qualcomm', db)).id, 'QCOM');
   /* "AMD" is not AMDOCS: unresolved, and the comparison says so. */
   assert.equal((await resolveCompany('AMD', db)).kind, 'unresolved');
+});
+
+test('federal year pairing follows the months shared with the company year', async () => {
+  const { federalFyForCompanyYear } = await import('../src/lib/sonar/composer/screen.js');
+  assert.deepEqual(federalFyForCompanyYear('2025-12-31', [2024, 2025, 2026]), {
+    fy: 2025,
+    months: 9,
+  });
+  assert.deepEqual(federalFyForCompanyYear('2025-09-30', [2025, 2026]), { fy: 2025, months: 12 });
+  assert.deepEqual(federalFyForCompanyYear('2026-01-31', [2025, 2026]), { fy: 2025, months: 8 });
+  assert.equal(federalFyForCompanyYear(null, [2025]), null);
+});
+
+test('13F public preview exposes only allow-listed aggregate fields', async () => {
+  const P = await import('../src/lib/sonar/composer/ownership-preview.js');
+  const full = {
+    key: 'institutional-ownership',
+    capability: 'institutional-ownership',
+    status: 'done',
+    title: 'Institutional Ownership Analysis',
+    coverage: { selected: 10, withData: 9, complete: 9 },
+    ownership: {
+      period: '2026-09-30',
+      prior: '2026-06-30',
+      metric: 'managers',
+      universe: { total: 12, eligible: 10, excluded: 2, source: 'member disclosures' },
+      coverage: { filers: 5000, comparable: 4800 },
+      rows: [
+        {
+          rank: 2,
+          ticker: 'MSFT',
+          issuer: 'Microsoft',
+          managers: 4100,
+          value: 9e11,
+          weight: 0.12,
+          change: 30,
+          top: [{ name: 'Vanguard' }],
+        },
+        {
+          rank: 1,
+          ticker: 'AAPL',
+          issuer: 'Apple',
+          managers: 4300,
+          value: 1e12,
+          weight: 0.2,
+          change: 12,
+          top: [{ name: 'BlackRock' }],
+        },
+        {
+          rank: 3,
+          ticker: 'NVDA',
+          issuer: 'Nvidia',
+          managers: 3900,
+          value: 8e11,
+          weight: 0.1,
+          change: -5,
+        },
+        {
+          rank: 4,
+          ticker: 'AMZN',
+          issuer: 'Amazon',
+          managers: 3800,
+          value: 7e11,
+          weight: 0.05,
+          change: 1,
+        },
+        { rank: null, ticker: 'XYZ', issuer: 'Private', managers: 0 },
+      ],
+    },
+    text: 'FULL TABLE with values 1000000000000',
+  };
+  const p = P.ownershipPreview(full);
+  assert.deepEqual(
+    p.ownership.rows.map((r) => r.ticker),
+    ['AAPL', 'MSFT', 'NVDA'],
+  );
+  for (const r of p.ownership.rows)
+    assert.deepEqual(Object.keys(r).sort(), ['issuer', 'managers', 'rank', 'ticker']);
+  assert.equal(p.ownership.prior, undefined);
+  assert.equal(p.ownership.coverage, undefined);
+  assert.equal(p.ownership.universe.source, undefined);
+  assert.equal(p.ownership.ranked, 4);
+  assert.doesNotMatch(p.text, /AMZN|1000000000000|Vanguard|BlackRock/);
+  assert.equal(p.preview, true);
+
+  /* Default mode is today's behaviour; entitled readers are never projected. */
+  assert.equal(P.unentitledOwnershipMode({}), 'full');
+  const comp = { results: [full] };
+  assert.equal(
+    P.applyOwnershipAccess(comp, { entitlements: { datasets: ['echo'] }, mode: 'full' })
+      .composition,
+    comp,
+  );
+  assert.equal(
+    P.applyOwnershipAccess(comp, { entitlements: { datasets: ['13f'] }, mode: 'preview' })
+      .composition,
+    comp,
+  );
+  assert.equal(P.applyOwnershipAccess(comp, { entitlements: null, mode: 'off' }).composition, comp);
+  const prev = P.applyOwnershipAccess(comp, {
+    entitlements: { datasets: ['echo'] },
+    mode: 'preview',
+  });
+  assert.equal(prev.applied, 'preview');
+  assert.equal(prev.composition.results[0].preview, true);
+  const off = P.applyOwnershipAccess(comp, { entitlements: { datasets: ['echo'] }, mode: 'off' });
+  assert.equal(off.composition.results.length, 0);
+  assert.match(off.notice, /13F/);
+});
+
+test('a comparison on a measure filed figures cannot give is unsupported, not defaulted', () => {
+  /* Retired from the held-out set (U10) when this was fixed. */
+  const { attachments, intent } = inferComposition('Compare Tesla and Ford on P/E');
+  assert.equal(attachments.length, 0);
+  assert.match(intent.unsupported || '', /P\/E/);
+});
+
+test('recognized government revenue comes from the segment disclosure for the same year', async () => {
+  const att = {
+    capability: 'government-dependence',
+    subject: { kind: 'company', id: 'AAA' },
+    params: {},
+  };
+  const mix = (date) => async () => ({
+    annual: [{ date, gov: 500, other: 750, total: 1250, govShare: 0.4, govLabel: 'Government' }],
+  });
+  const same = await runGovDependence(fakeSupabase(FIXTURES), att, {
+    now: NOW,
+    fetchMix: mix('2025-12-31'),
+  });
+  assert.ok(Math.abs(same.dependence.recognizedGovernmentShare - 0.4) < 1e-9);
+  assert.equal(same.dependence.recognizedGovernmentRevenue, 500);
+  /* The award-value indicator stays a separate figure. */
+  assert.ok(Math.abs(same.dependence.obligationsToRevenue - 0.16) < 1e-9);
+  /* A segment year that is not the filed revenue year is never paired. */
+  const other = await runGovDependence(fakeSupabase(FIXTURES), att, {
+    now: NOW,
+    fetchMix: mix('2024-12-31'),
+  });
+  assert.equal(other.dependence.recognizedGovernmentShare, null);
+  assert.match(other.text, /does not cover the fiscal year ending 2025-12-31/);
 });

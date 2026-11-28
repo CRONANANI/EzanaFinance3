@@ -18,6 +18,7 @@
  */
 
 import { companyRatios } from './calc.js';
+import { fetchRevenueMix } from '@/lib/sonar/revenue-mix';
 import { normalizeUniverse } from './ownership.js';
 import {
   pageAll,
@@ -333,7 +334,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       const v = await contractsByTicker(admin, tick, now);
       for (const t of tick) values[t].contracts = v[t] ?? null;
       notes.push(
-        `Federal obligations are for fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30) for every company.`,
+        `Federal contracts: value of prime awards that started in federal fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30), obligated to date, for every company. This is not revenue.`,
       );
     } else if (src === 'insider') {
       const v = await insiderPurchases(admin, tick, since);
@@ -532,7 +533,11 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
 
 /* ── government-dependence ─────────────────────────────────────────────── */
 
-export async function runGovDependence(admin, att, { now = new Date() } = {}) {
+export async function runGovDependence(
+  admin,
+  att,
+  { now = new Date(), fetchMix = fetchRevenueMix } = {},
+) {
   const ticker = String(att.params?.ticker || att.subject?.id || '').toUpperCase();
   if (!ticker) throw new Error('Government dependence needs a resolved company ticker.');
   const [rows, figs] = await Promise.all([
@@ -564,34 +569,52 @@ export async function runGovDependence(admin, att, { now = new Date() } = {}) {
       awards: Number(r.award_count) || 0,
     }));
   const r = companyRatios(figs[ticker]);
+  /* Recognized government revenue: the company's own segment disclosure (10-K), for the
+     SAME fiscal year as the filed revenue. A different year is never paired silently. */
+  const mix = await Promise.resolve(fetchMix(ticker)).catch(() => null);
+  const seg = mix?.annual?.find((p) => r?.fiscalYearEnd && p.date === r.fiscalYearEnd) || null;
   const g = governmentDependence({
     byYear,
     agencies,
     revenue: r?.revenue ?? null,
     fiscalYearEnd: r?.fiscalYearEnd ?? null,
+    recognizedGovernmentRevenue: seg ? seg.gov : null,
+    recognizedSegmentTotal: seg ? seg.total : null,
   });
+  if (seg) g.recognizedLabel = seg.govLabel;
   const columns = [
-    { key: 'fiscal_year', label: 'Federal fiscal year' },
-    { key: 'total', label: 'Obligations', unit: 'usd' },
+    { key: 'fiscal_year', label: 'Award start (federal FY)' },
+    { key: 'total', label: 'Value of awards started, obligated to date', unit: 'usd' },
   ];
+  const fyRange = (fy) => `Oct ${fy - 1} to Sep ${fy}`;
   const limitations = [
-    'Obligations are amounts committed when a contract or modification is signed; revenue is recognised over the work, so the ratio to revenue is an exposure indicator, not a revenue share.',
-    'The federal fiscal year ends on September 30; the company’s fiscal year may not.',
-    'Only prime contract awards matched to the company are counted (no subcontracts, grants or classified work).',
+    'Each federal prime award is counted once, in the federal fiscal year its performance starts, at the amount obligated on it to date. A year’s figure is the value of awards that began that year, not the money obligated or paid during it, and the latest years keep growing as options are exercised.',
+    'This is not recognized government revenue: revenue is recognized as work is delivered, multi-year awards span several company years, and only prime awards matched to the company by recipient name are counted (no subcontracts, grants, other transaction agreements or classified work).',
+    g.recognizedGovernmentShare != null
+      ? `Recognized government revenue is the company’s ${g.recognizedLabel} segment for the fiscal year ending ${g.fiscalYearEnd}, as reported; the share is of total segment revenue. It covers every government customer the segment includes, not only US federal agencies.`
+      : mix?.annual?.length
+        ? `The company’s segment disclosure does not cover the fiscal year ending ${g.fiscalYearEnd}, so no recognized government revenue share is given.`
+        : 'No government segment disclosure is available for this company, so no recognized government revenue share is given.',
+    g.pairedFiscalYear != null
+      ? `The ratio pairs federal FY${g.pairedFiscalYear} (${fyRange(g.pairedFiscalYear)}) with the company’s fiscal year ending ${g.fiscalYearEnd}; they share ${g.pairedOverlapMonths} of 12 months.`
+      : null,
     r?.revenue == null ? `No filed annual revenue for ${ticker}, so no ratio was computed.` : null,
   ].filter(Boolean);
   const lines = [
     `Government dependence (calculated): ${ticker}.`,
-    `Federal obligations, FY${g.latestFiscalYear}: ${usd(g.latestObligations)}${g.obligationGrowth != null ? ` (${pct(g.obligationGrowth)} vs FY${g.latestFiscalYear - 1})` : ''}.`,
-    g.revenue != null
-      ? `Filed annual revenue (fiscal year ending ${g.fiscalYearEnd}): ${usd(g.revenue)}. Obligations to revenue: ${pct(g.obligationsToRevenue)}.`
+    `Value of federal prime awards that started in FY${g.latestFiscalYear} (${fyRange(g.latestFiscalYear)}), obligated to date: ${usd(g.latestObligations)}${g.obligationGrowth != null ? ` (${pct(g.obligationGrowth)} vs the FY${g.latestFiscalYear - 1} vintage)` : ''}.`,
+    g.revenue != null && g.pairedFiscalYear != null
+      ? `Filed annual revenue, fiscal year ending ${g.fiscalYearEnd}: ${usd(g.revenue)}. Awards started in the overlapping FY${g.pairedFiscalYear}: ${usd(g.pairedValue)}, ${pct(g.obligationsToRevenue)} of that revenue (exposure indicator, not a revenue share).`
       : null,
-    `Top agencies FY${g.latestFiscalYear}: ${g.topAgencies.map((a) => `${a.agency} ${usd(a.total)} (${pct(a.share)})`).join('; ')}.`,
+    g.recognizedGovernmentShare != null
+      ? `Recognized government revenue (${g.recognizedLabel} segment, fiscal year ending ${g.fiscalYearEnd}): ${usd(g.recognizedGovernmentRevenue)}, ${pct(g.recognizedGovernmentShare)} of segment revenue.`
+      : 'Recognized government revenue share: not available for this fiscal year.',
+    `Top agencies, FY${g.latestFiscalYear} awards: ${g.topAgencies.map((a) => `${a.agency} ${usd(a.total)} (${pct(a.share)})`).join('; ')}.`,
     g.agencyConcentration != null
       ? `Agency concentration (HHI): ${g.agencyConcentration.toFixed(2)}.`
       : null,
     '',
-    '| Federal fiscal year | Obligations |',
+    '| Award start (federal FY) | Value of awards started, obligated to date |',
     '|---|---|',
     ...g.years.map((y) => `| FY${y.fiscal_year} | ${usd(y.total)} |`),
   ].filter((l) => l !== null);

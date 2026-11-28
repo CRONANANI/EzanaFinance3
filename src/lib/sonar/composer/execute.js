@@ -1196,8 +1196,14 @@ export async function runResearchComposition(
       }
     } catch (e) {
       failed.add(task.id);
+      /* Sonar 6.3: a failed analysis keeps its key and capability, so the fulfillment
+         contract and the report attribute the reason to the right step. */
+      const src = task.id.startsWith('analysis:')
+        ? ready.find((x) => `analysis:${x.key}` === task.id)
+        : null;
       results.push({
-        key: task.id,
+        key: src ? src.key : task.id,
+        capability: src?.capability,
         task: task.id,
         status: 'failed',
         timedOut: e?.name === 'TimeoutError',

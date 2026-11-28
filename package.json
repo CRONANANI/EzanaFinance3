@@ -222,7 +222,8 @@
     "test:sonar-semantic": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-semantic.mjs",
     "test:sonar-model-routing": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-model-routing.mjs scripts/check-sonar-model-bench-worker.mjs",
     "test:sonar-execution": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-execution.mjs",
-    "test:sonar-heldout": "node --no-warnings --import ./scripts/register-sonar-loader.mjs scripts/check-sonar-heldout.mjs"
+    "test:sonar-heldout": "node --no-warnings --import ./scripts/register-sonar-loader.mjs scripts/check-sonar-heldout.mjs",
+    "test:sonar-objectives": "node --no-warnings --import ./scripts/register-sonar-loader.mjs scripts/check-sonar-objectives.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

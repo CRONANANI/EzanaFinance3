@@ -93,15 +93,15 @@ const CONTRACTS = {
     return [
       {
         id: 'obligations',
-        label: 'Federal obligations by fiscal year',
+        label: 'Federal award value by start year',
         ok: (d.years || []).length > 0,
       },
       { id: 'agencies', label: 'Awarding agencies ranked', ok: (d.topAgencies || []).length > 0 },
       { id: 'revenue', label: 'Filed revenue denominator', ok: has(d.revenue) },
       {
         id: 'ratio',
-        label: 'Obligations-to-revenue indicator computed',
-        ok: has(d.obligationsToRevenue),
+        label: 'Award-value-to-revenue indicator, periods paired',
+        ok: has(d.obligationsToRevenue) && d.pairedFiscalYear != null,
       },
     ];
   },
@@ -125,7 +125,7 @@ export function conclusionRule(result) {
     case 'company-comparison':
       return '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when fiscal years do not line up.';
     case 'government-dependence':
-      return '- The executive conclusion must state the latest fiscal year’s federal obligations, their change, the top awarding agencies and the obligations-to-revenue indicator, and say plainly that obligations are not revenue.';
+      return '- The executive conclusion must state the value of federal prime awards that started in the latest fiscal year (obligated to date), its change, the top awarding agencies and the award-value-to-revenue indicator with both periods named, and say plainly that this is neither obligations made in the year nor recognized government revenue. Do not state a recognized government revenue share unless the evidence gives one.';
     default:
       return null;
   }

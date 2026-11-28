@@ -73,6 +73,10 @@ import { INTENT_EXEMPLARS, semanticMeasure } from '@/lib/sonar/semantic/intent-e
 import { nearestExemplars } from '@/lib/sonar/insight/semantic';
 import { OWNERSHIP_CAPABILITY } from '@/lib/sonar/composer/ownership';
 import { PUBLIC_ANALYTICS, analyticsDatasets } from '@/lib/sonar/composer/registry';
+import {
+  applyOwnershipAccess,
+  unentitledOwnershipMode,
+} from '@/lib/sonar/composer/ownership-preview';
 import { RUNNERS } from '@/lib/sonar/engine/sources';
 import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
 import { isUuid } from '@/lib/sonar/saved';
@@ -694,6 +698,16 @@ const POST_HANDLER = withApiGuard(
             }
             if (comp?.ok) {
               composition = comp.value;
+              /* Sonar 6.3: the 13F mode for readers whose plan lacks the dataset
+                 (ownership-preview.js). 'full' (the default) changes nothing. */
+              {
+                const gate = applyOwnershipAccess(composition, {
+                  entitlements: deepMode ? null : access.entitlements,
+                  mode: unentitledOwnershipMode(),
+                });
+                composition = gate.composition;
+                if (gate.notice) send('notice', { message: gate.notice });
+              }
               canonical = withResolution(canonical, composition.subject);
               const payload = clientComposition(composition, fulfillmentContract(composition));
               payload.intent = {

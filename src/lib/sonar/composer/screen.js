@@ -53,7 +53,7 @@ export const SCREEN_MEASURES = {
   debt: { label: 'Debt/equity', source: 'ratios', key: 'debt_to_equity', unit: 'x' },
   revenue: { label: 'Revenue', source: 'ratios', key: 'revenue', unit: 'usd' },
   gov_contract_value: {
-    label: 'Federal obligations (latest FY)',
+    label: 'New federal awards (latest FY)',
     source: 'contracts',
     key: 'contracts',
     unit: 'usd',
@@ -219,17 +219,62 @@ export function compareCompanies(rows, metrics) {
  * signed, recognised over years, and include pass-through); the ratio is an exposure
  * indicator, labelled as such.
  */
+/** Months two [start, end) month ranges share (months counted as y*12+m). */
+function overlapMonths(a0, a1, b0, b1) {
+  return Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+}
+
+/**
+ * The federal fiscal year (Oct 1 to Sep 30) that shares the most months with a company's
+ * fiscal year ending `fiscalYearEnd` (12 months). Ties go to the later federal year.
+ */
+export function federalFyForCompanyYear(fiscalYearEnd, candidates = []) {
+  const m = String(fiscalYearEnd || '').match(/^(\d{4})-(\d{2})/);
+  if (!m) return null;
+  const end = Number(m[1]) * 12 + Number(m[2]); // exclusive month index after the year end
+  const start = end - 12;
+  let best = null;
+  for (const fy of candidates) {
+    const f1 = fy * 12 + 9; // exclusive: the month after September of fy
+    const f0 = f1 - 12;
+    const months = overlapMonths(start, end, f0, f1);
+    if (!best || months > best.months || (months === best.months && fy > best.fy))
+      best = { fy, months };
+  }
+  return best && best.months > 0 ? best : null;
+}
+
+/**
+ * Sonar 6.3 (Nov 28 2026): government dependence, with its measure named exactly.
+ *
+ * The contract rows are USAspending prime awards, each counted once in the federal fiscal
+ * year its period of performance STARTS, at the amount obligated on it to date. So a year's
+ * figure is the value of the awards that began that year (a vintage), not the money
+ * obligated during that year; a recent vintage keeps growing as options are exercised.
+ *
+ * The revenue denominator is paired with the federal year that overlaps the company's
+ * latest filed fiscal year most, and both periods are returned. The ratio is an exposure
+ * indicator. Recognized government revenue (a segment disclosure) is a different figure;
+ * it is returned only when the caller has it, never derived from contracts.
+ */
 export function governmentDependence({
   byYear = [],
   agencies = [],
   revenue = null,
   fiscalYearEnd = null,
+  recognizedGovernmentRevenue = null,
+  recognizedSegmentTotal = null,
 }) {
   const years = [...byYear].sort((a, b) => a.fiscal_year - b.fiscal_year);
   const latest = years[years.length - 1] || null;
   const prior = years[years.length - 2] || null;
-  const ratio = latest && revenue ? latest.total / revenue : null;
   const growth = latest && prior && prior.total > 0 ? latest.total / prior.total - 1 : null;
+  const pair = federalFyForCompanyYear(
+    fiscalYearEnd,
+    years.map((y) => y.fiscal_year),
+  );
+  const paired = pair ? years.find((y) => y.fiscal_year === pair.fy) : null;
+  const ratio = paired && revenue ? paired.total / revenue : null;
   const total = agencies.reduce((t, a) => t + (a.total || 0), 0);
   const top = [...agencies]
     .sort((a, b) => b.total - a.total)
@@ -239,14 +284,30 @@ export function governmentDependence({
       share: total ? a.total / total : null,
     }));
   const hhi = total ? agencies.reduce((h, a) => h + (a.total / total) ** 2, 0) : null;
+  /* Share of the same disclosure's segment total when given (one source, one period);
+     otherwise of filed revenue for that year. */
+  const denom = Number.isFinite(recognizedSegmentTotal) ? recognizedSegmentTotal : revenue;
+  const recognized =
+    Number.isFinite(recognizedGovernmentRevenue) && denom
+      ? recognizedGovernmentRevenue / denom
+      : null;
   return {
+    measure: 'award_vintage_value',
+    measureLabel: 'Value of new federal prime awards (by start year, obligated to date)',
     latestFiscalYear: latest?.fiscal_year ?? null,
     latestObligations: latest?.total ?? null,
     priorObligations: prior?.total ?? null,
     obligationGrowth: growth,
     revenue,
     fiscalYearEnd,
+    pairedFiscalYear: paired?.fiscal_year ?? null,
+    pairedValue: paired?.total ?? null,
+    pairedOverlapMonths: pair?.months ?? null,
     obligationsToRevenue: ratio,
+    recognizedGovernmentRevenue: Number.isFinite(recognizedGovernmentRevenue)
+      ? recognizedGovernmentRevenue
+      : null,
+    recognizedGovernmentShare: recognized,
     topAgencies: top,
     agencyConcentration: hhi,
     years,

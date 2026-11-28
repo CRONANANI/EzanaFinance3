@@ -1,0 +1,336 @@
+{
+  "version": "heldout-objectives-v1",
+  "written": "2026-11-28",
+  "rule": "Independent held-out set. Never change routing, intent or executor code to make a case here pass. When a case is used for development, move it to the skill evaluation cases and write a replacement here.",
+  "fixtures": "scripts/lib/sonar-exec-fixtures.mjs (AAA, BBB, CCC, DDD in Energy; TTT in Information Technology)",
+  "cases": [
+    {
+      "id": "S01",
+      "kind": "execute",
+      "question": "List energy stocks with revenue growth above 20%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA", "CCC"]
+      }
+    },
+    {
+      "id": "S02",
+      "kind": "execute",
+      "question": "Which energy companies have operating margins over 15%?",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA", "BBB"]
+      }
+    },
+    {
+      "id": "S03",
+      "kind": "execute",
+      "question": "Rank energy companies by revenue growth",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["CCC", "AAA", "BBB"]
+      }
+    },
+    {
+      "id": "S04",
+      "kind": "execute",
+      "question": "Energy stocks with debt to equity below 0.6",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA", "BBB"]
+      }
+    },
+    {
+      "id": "S05",
+      "kind": "execute",
+      "question": "Top energy names by free cash flow",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["AAA", "BBB", "CCC"]
+      }
+    },
+    {
+      "id": "S06",
+      "kind": "execute",
+      "question": "Which energy stocks did insiders buy most in the past 90 days?",
+      "capability": "financial-screen",
+      "expect": {
+        "orderPrefix": ["BBB", "AAA"]
+      }
+    },
+    {
+      "id": "S07",
+      "kind": "execute",
+      "question": "Rank energy companies by federal contract awards",
+      "capability": "financial-screen",
+      "expect": {
+        "orderPrefix": ["AAA"]
+      }
+    },
+    {
+      "id": "S08",
+      "kind": "execute",
+      "question": "Which tech stocks grew revenue more than 20%?",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "S09",
+      "kind": "execute",
+      "question": "Semiconductor companies with operating margin above 25%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "S10",
+      "kind": "execute",
+      "question": "Energy companies with revenue growth above 20% and operating margins above 10%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA"]
+      }
+    },
+    {
+      "id": "C01",
+      "kind": "execute",
+      "question": "Compare AAA and BBB on operating margin",
+      "capability": "company-comparison",
+      "expect": {
+        "values": {
+          "AAA.operating_margin": 0.2,
+          "BBB.operating_margin": 0.16
+        },
+        "leaders": {
+          "operating_margin": "AAA"
+        }
+      }
+    },
+    {
+      "id": "C02",
+      "kind": "execute",
+      "question": "How does TTT compare with AAA on margins?",
+      "capability": "company-comparison",
+      "expect": {
+        "leaders": {
+          "operating_margin": "TTT"
+        }
+      }
+    },
+    {
+      "id": "C03",
+      "kind": "execute",
+      "question": "AAA versus CCC on debt",
+      "capability": "company-comparison",
+      "expect": {
+        "values": {
+          "AAA.debt_to_equity": 0.5,
+          "CCC.debt_to_equity": 1.8
+        },
+        "leaders": {
+          "debt_to_equity": "AAA"
+        }
+      }
+    },
+    {
+      "id": "C04",
+      "kind": "execute",
+      "question": "Compare the free cash flow of AAA, BBB and CCC",
+      "capability": "company-comparison",
+      "expect": {
+        "tickers": ["AAA", "BBB", "CCC"]
+      }
+    },
+    {
+      "id": "G01",
+      "kind": "execute",
+      "question": "How reliant is AAA on federal contracts?",
+      "capability": "government-dependence",
+      "expect": {
+        "dependence": {
+          "latestFiscalYear": 2026,
+          "latestObligations": 400,
+          "pairedFiscalYear": 2025,
+          "obligationsToRevenue": 0.16
+        }
+      }
+    },
+    {
+      "id": "G02",
+      "kind": "execute",
+      "question": "How dependent is BBB on government contracts?",
+      "capability": "government-dependence",
+      "expect": {
+        "honestFailure": "No federal contract history"
+      }
+    },
+    {
+      "id": "U01",
+      "kind": "unsupported",
+      "question": "Find utilities with a dividend yield above 4%",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U02",
+      "kind": "unsupported",
+      "question": "Which S&P 500 stocks have the lowest P/E?",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U03",
+      "kind": "unsupported",
+      "question": "Screen banks by price to book below 1",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U04",
+      "kind": "unsupported",
+      "question": "Energy stocks with EV/EBITDA under 8",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U05",
+      "kind": "unsupported",
+      "question": "Which retailers have the highest short interest?",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U06",
+      "kind": "unsupported",
+      "question": "Rank Nasdaq 100 companies by revenue growth",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U07",
+      "kind": "unsupported",
+      "question": "What percentage of Apple's shares do institutions own?",
+      "forbid": ["institutional-ownership"]
+    },
+    {
+      "id": "U08",
+      "kind": "unsupported",
+      "question": "Find healthcare stocks with ESG scores above 70",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U09",
+      "kind": "unsupported",
+      "question": "Which industrials have a beta below 0.8?",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "U11",
+      "kind": "unsupported",
+      "question": "Compare Coca-Cola and PepsiCo on dividend yield",
+      "forbid": ["company-comparison"]
+    },
+    {
+      "id": "E01",
+      "kind": "engine",
+      "question": "Will the Bank of Canada cut rates again before summer?",
+      "lead": "rates-strategist",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E02",
+      "kind": "engine",
+      "question": "Why has the Swiss franc strengthened so much this year?",
+      "lead": "fx-strategist",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E03",
+      "kind": "engine",
+      "question": "Is Egypt at risk of a sovereign debt crisis?",
+      "lead": "sovereign-risk",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E04",
+      "kind": "engine",
+      "question": "What is behind the recent drop in natural gas prices?",
+      "lead": "commodities-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E05",
+      "kind": "engine",
+      "question": "How exposed is India to a rice export ban?",
+      "lead": "food-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E06",
+      "kind": "engine",
+      "question": "Which companies are affected by the new OFAC sanctions on Iranian oil shipping?",
+      "lead": "sanctions-analyst",
+      "forbid": ["company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E07",
+      "kind": "engine",
+      "question": "What happens to European defense stocks if the war in Ukraine ends?",
+      "lead": "geopolitical-analyst",
+      "forbid": ["company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E08",
+      "kind": "engine",
+      "question": "What probability do prediction markets assign to a US recession in 2027?",
+      "lead": "prediction-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E09",
+      "kind": "engine",
+      "question": "Does buying stocks after a member of Congress buys them beat the market?",
+      "lead": "quant-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E10",
+      "kind": "engine",
+      "question": "Which stocks did Tommy Tuberville buy this year?",
+      "lead": "congress-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E11",
+      "kind": "engine",
+      "question": "How much has Meta spent lobbying Congress on AI regulation?",
+      "lead": "lobbying-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E12",
+      "kind": "engine",
+      "question": "What did Bridgewater buy and sell last quarter?",
+      "lead": "ownership-analyst",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E13",
+      "kind": "engine",
+      "question": "Is US inflation re-accelerating?",
+      "lead": "macroeconomist",
+      "forbid": ["financial-screen", "company-comparison", "government-dependence"]
+    },
+    {
+      "id": "E14",
+      "kind": "engine",
+      "question": "Who is winning the cloud market between AWS, Azure and Google Cloud?",
+      "lead": "industry-analyst",
+      "forbid": ["financial-screen", "government-dependence"]
+    }
+  ],
+  "retired": [
+    {
+      "id": "U10",
+      "question": "Compare Tesla and Ford on P/E",
+      "reason": "used to fix comparison metric substitution (Sonar 6.3); moved to scripts/check-sonar-execution.mjs"
+    }
+  ]
+}

@@ -609,6 +609,15 @@ export function holderCandidates(question) {
   return [...new Set(out)];
 }
 
+/* Measures the company comparison computes from filed figures (intents.js COMPARE_METRIC). */
+const COMPARABLE_MEASURES = new Set([
+  'revenue_growth',
+  'earnings_growth',
+  'margin',
+  'free_cash_flow',
+  'debt',
+]);
+
 /* Measures read from a company's own filed figures. */
 const COMPANY_MEASURES = new Set([
   'revenue_growth',
@@ -846,6 +855,19 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
       /* A cue family (open risk, strategy, Echo) or an overlap: the composition read no
          measure that defines it, so it is not material to the investigation. */
       composition = composition.unsupported.length ? composition : null;
+    }
+    /* Sonar 6.3: a comparison on a measure the filed figures cannot give (P/E needs a
+       price) is unsupported; it never falls back to a default set of metrics. */
+    if (family === 'company_comparison') {
+      const cannot = (composition.measures || []).filter((m) => !COMPARABLE_MEASURES.has(m));
+      if (cannot.length)
+        unsupported = cannot
+          .map(
+            (m) =>
+              SCREEN_UNSUPPORTED[m] || `Comparing on ${m.replace(/_/g, ' ')} is not available yet.`,
+          )
+          .join(' ')
+          .replace(/screening on it/gi, 'comparing on it');
     }
     if (family === 'multi_stage_screen') {
       const asked = [...composition.filters.map((f) => f.metric), ...composition.measures];

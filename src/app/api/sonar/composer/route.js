@@ -8,6 +8,12 @@ import {
   runResearchComposition,
   compositionText,
 } from '@/lib/sonar/composer/execute';
+import { resolveResearchAccess } from '@/lib/sonar/engine/access';
+import { PUBLIC_ANALYTICS, analyticsDatasets } from '@/lib/sonar/composer/registry';
+import {
+  applyOwnershipAccess,
+  unentitledOwnershipMode,
+} from '@/lib/sonar/composer/ownership-preview';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -69,8 +75,34 @@ export const POST = withApiGuard(
       if (!user?.id) {
         return NextResponse.json({ error: 'Sign in to run research analyses.' }, { status: 401 });
       }
+      /* Sonar 6.3: the same plan-dataset gate as the research route. An analytics
+         attachment whose datasets the plan lacks is reported, never run. */
+      const access = await resolveResearchAccess(request, admin);
+      const entitled = new Set(access.entitlements?.datasets || []);
+      const gated = (list) => {
+        const locked = list.filter(
+          (a) =>
+            PUBLIC_ANALYTICS.has(a?.capability) &&
+            analyticsDatasets(a).some((d) => !entitled.has(d)),
+        );
+        return {
+          kept: list.filter((a) => !locked.includes(a)),
+          locked: locked.map((a) => ({
+            key: a.key || a.capability,
+            capability: a.capability,
+            status: 'validation_error',
+            issues: [{ message: 'This analysis reads data your plan does not include.' }],
+          })),
+        };
+      };
+      const ownershipGate = (results) =>
+        applyOwnershipAccess(
+          { results },
+          { entitlements: access.entitlements, mode: unentitledOwnershipMode() },
+        ).composition.results;
       if (body.version === 4) {
-        const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 8) : [];
+        const g = gated(Array.isArray(body.attachments) ? body.attachments.slice(0, 8) : []);
+        const attachments = g.kept;
         const primary =
           body.primary && typeof body.primary.text === 'string'
             ? { text: body.primary.text.trim().slice(0, 80) }
@@ -84,10 +116,11 @@ export const POST = withApiGuard(
           },
           admin,
         );
-        return NextResponse.json({ results, plan, text: compositionText(results) });
+        const shown = [...ownershipGate(results), ...g.locked];
+        return NextResponse.json({ results: shown, plan, text: compositionText(shown) });
       }
-      const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 6) : [];
-      const results = await runComposition(attachments, admin);
+      const g = gated(Array.isArray(body.attachments) ? body.attachments.slice(0, 6) : []);
+      const results = [...ownershipGate(await runComposition(g.kept, admin)), ...g.locked];
       return NextResponse.json({ results, text: compositionText(results) });
     }
     return NextResponse.json({ error: 'Unknown action.' }, { status: 400 });

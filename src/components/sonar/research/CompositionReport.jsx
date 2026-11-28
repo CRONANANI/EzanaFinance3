@@ -140,23 +140,39 @@ function DependenceTiles({ d }) {
   return (
     <div className="scr5-tiles">
       <Tile
-        label={`Obligations, FY${d.latestFiscalYear ?? ''}`}
+        label={`Awards started, FY${d.latestFiscalYear ?? ''}`}
         value={usd(d.latestObligations)}
-        note={d.obligationGrowth != null ? `${fmt(d.obligationGrowth, 'pct')} vs prior year` : null}
-      />
-      <Tile label="Filed annual revenue" value={usd(d.revenue)} />
-      <Tile
-        label="Obligations to revenue"
-        value={d.obligationsToRevenue != null ? fmt(d.obligationsToRevenue, 'pct') : 'N/A'}
-        note="Exposure indicator, not a revenue share"
-      />
-      <Tile
-        label="Largest agency"
-        value={d.topAgencies?.[0]?.agency || 'N/A'}
         note={
-          d.topAgencies?.[0]?.share != null
-            ? `${fmt(d.topAgencies[0].share, 'pct')} of obligations`
-            : null
+          d.obligationGrowth != null
+            ? `Obligated to date; ${fmt(d.obligationGrowth, 'pct')} vs prior year's awards`
+            : 'Obligated to date'
+        }
+      />
+      <Tile
+        label="Filed annual revenue"
+        value={usd(d.revenue)}
+        note={d.fiscalYearEnd ? `Fiscal year ending ${d.fiscalYearEnd}` : null}
+      />
+      <Tile
+        label={`FY${d.pairedFiscalYear ?? ''} awards to revenue`}
+        value={d.obligationsToRevenue != null ? fmt(d.obligationsToRevenue, 'pct') : 'N/A'}
+        note={
+          d.pairedOverlapMonths != null
+            ? `Periods share ${d.pairedOverlapMonths} of 12 months. Exposure indicator, not a revenue share`
+            : 'Exposure indicator, not a revenue share'
+        }
+      />
+      <Tile
+        label="Recognized government revenue share"
+        value={
+          d.recognizedGovernmentShare != null
+            ? fmt(d.recognizedGovernmentShare, 'pct')
+            : 'Not available'
+        }
+        note={
+          d.recognizedGovernmentShare != null
+            ? `${d.recognizedLabel || 'Government'} segment, company-reported`
+            : 'Segment disclosures are not in the filed data'
         }
       />
     </div>
@@ -428,6 +444,19 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
           <div key={a.key} className="scr5-block">
             <h3 className="scr5-h3">{a.title || a.capability}</h3>
             <DependenceTiles d={a.dependence} />
+            {a.dependence?.topAgencies?.length ? (
+              <CalculatedTable
+                analysis={{
+                  title: `Awarding agencies, FY${a.dependence.latestFiscalYear} awards`,
+                  columns: [
+                    { key: 'agency', label: 'Awarding agency' },
+                    { key: 'total', label: 'Value obligated to date', unit: 'usd' },
+                    { key: 'share', label: 'Share', unit: 'pct' },
+                  ],
+                  table: a.dependence.topAgencies,
+                }}
+              />
+            ) : null}
             <Funnel steps={a.funnel} />
             {a.columns?.length ? (
               <CalculatedTable analysis={a} />
