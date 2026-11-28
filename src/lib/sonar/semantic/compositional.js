@@ -333,6 +333,20 @@ export const SECTORS = {
 const SECTOR_RES = Object.fromEntries(
   Object.entries(SECTORS).map(([id, w]) => [id, new RegExp(`\\b(?:${w})\\b`, 'i')]),
 );
+/**
+ * Sonar 6.4 hardening: the text with company measures removed ("revenue growth", "operating
+ * margin", "P/E"), so a reader of macro themes does not take a company's revenue growth for
+ * GDP growth. Typed by METRICS kind, not by individual words.
+ */
+export function withoutCompanyMeasures(text) {
+  let out = String(text || '');
+  for (const [id, m] of Object.entries(METRICS)) {
+    if (m.kind !== 'company') continue;
+    out = out.replace(new RegExp(METRIC_RES[id].source, 'gi'), ' ');
+  }
+  return out.replace(/\s+/g, ' ').trim();
+}
+
 /** True when the text names a sector (used to keep sector words out of holder names). */
 export function isSectorText(text) {
   return Object.values(SECTOR_RES).some((re) => re.test(String(text || '')));

@@ -145,14 +145,20 @@ export async function dispatchOne(job, { origin, secret, fetchImpl, ackMs, backo
         if (i < tries - 1) await sleep(backoffMs * (i + 1));
         continue;
       }
-      const state = res.status >= 400 ? 'rejected' : body?.skipped ? 'skipped' : 'completed';
+      /* `skipped` is a lock skip only when it is a string; some jobs report a skipped list. */
+      const state =
+        res.status >= 400
+          ? 'rejected'
+          : typeof body?.skipped === 'string'
+            ? 'skipped'
+            : 'completed';
       return {
         id: job.id,
         state,
         http: res.status,
         ms,
         attempts: attempts.length + 1,
-        detail: body?.skipped || body?.error || null,
+        detail: (typeof body?.skipped === 'string' ? body.skipped : null) || body?.error || null,
       };
     } catch (e) {
       clearTimeout(timer);

@@ -944,3 +944,21 @@ test('country universe: Canadian banks are the banks with a Canadian business ad
   /* Addresses not classified (before SQL_02 or the refresh): refused, never all banks. */
   await assert.rejects(runScreen(fakeSupabase(FIXTURES), att, { now: NOW }), /business address/);
 });
+
+test('typing: a company measure is never read as a macro theme', async () => {
+  const { macroSeriesParams } = await import('../src/lib/sonar/engine/planner.js');
+  /* Live 13:40 run: a comparison of AMD, Intel and Qualcomm on revenue growth was answered
+     with a world GDP growth ranking. */
+  assert.equal(
+    macroSeriesParams(
+      { rawQuery: 'Compare AMD, Intel and Qualcomm on revenue growth and operating margin' },
+      {},
+    ),
+    null,
+  );
+  assert.ok(
+    macroSeriesParams({ rawQuery: 'Is US GDP growth slowing?' }, {}).families.includes(
+      'gdp_growth',
+    ),
+  );
+});

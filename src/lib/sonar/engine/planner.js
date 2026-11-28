@@ -15,6 +15,7 @@ import { SOURCES, DEFAULT_CONFIG, weightOf } from './domains';
 import { topicForText } from '@/lib/lobbying/topics';
 import { routeMacro, findCountries, frameworksForRoute } from '@/lib/sonar/macro/route';
 import { FRAMEWORKS } from '@/lib/sonar/macro/playbook';
+import { withoutCompanyMeasures } from '@/lib/sonar/semantic/compositional';
 
 /* Dataset entitlement each gated source needs (entitlements.js ids). */
 export const SOURCE_DATASET = {
@@ -163,7 +164,9 @@ export function paramsFor(source, resolution, spec) {
  * names none of these, so the planner records the unmet need instead of running it.
  */
 export function macroSeriesParams(spec, resolution) {
-  const route = routeMacro(spec?.rawQuery || spec?.question || '');
+  /* Sonar 6.4 hardening: company measures are not macro themes (a live comparison of AMD,
+     Intel and Qualcomm on revenue growth read a world GDP growth ranking). */
+  const route = routeMacro(withoutCompanyMeasures(spec?.rawQuery || spec?.question || ''));
   const isos = [...route.countries];
   for (const c of resolution?.countries || []) {
     if (c?.iso3 && /^[A-Z]{3}$/.test(c.iso3) && !isos.includes(c.iso3)) isos.push(c.iso3);
