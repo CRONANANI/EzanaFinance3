@@ -34,6 +34,12 @@
  */
 
 import { extractParams, extractRelation, extractSubject, toNum, NUM } from '../composer/subject.js';
+import {
+  composeIntent,
+  compositionDatasets,
+  compositionOperations,
+  isSectorText,
+} from './compositional.js';
 
 export const CANONICAL_INTENT_VERSION = 1;
 /** Methodology of the institutional ownership calculation (bump when ownership.js changes). */
@@ -70,11 +76,108 @@ const CONGRESS_RE =
   /\b(?:(?:other\s+)?members?\s+of\s+congress|congress(?:men|women|people|ional\s+members)?|lawmakers?|senators?|representatives|politicians?|house\s+members)\b/g;
 const INSIDER_RE = /\b(?:corporate\s+)?(?:insiders?|executives?|officers\s+and\s+directors)\b/g;
 
+/* Domain words a typo is corrected towards (7 letters or more; one transposition,
+   insertion, deletion or substitution away). Names are never corrected. */
+const VOCAB = [
+  'institutional',
+  'institutions',
+  'institution',
+  'investment',
+  'investments',
+  'investors',
+  'government',
+  'governments',
+  'federal',
+  'semiconductor',
+  'semiconductors',
+  'inflation',
+  'dependent',
+  'dependence',
+  'dependency',
+  'reliant',
+  'margins',
+  'fundamental',
+  'fundamentals',
+  'prediction',
+  'predictions',
+  'portfolio',
+  'holdings',
+  'managers',
+  'contracts',
+  'contractors',
+  'lobbying',
+  'sanctions',
+  'currency',
+  'pressure',
+  'volatility',
+  'accelerating',
+  'disclosed',
+  'estimated',
+  'ownership',
+  'relationship',
+  'interest',
+  'utilities',
+  'utility',
+  'revenue',
+  'earnings',
+  'leverage',
+  'intrinsic',
+  'discounted',
+  'backtest',
+  'performed',
+  'purchases',
+  'congress',
+  'companies',
+  'securities',
+  'equities',
+  'reported',
+  'quarter',
+  'increase',
+  'decrease',
+  'financial',
+  'strategy',
+  'infrastructure',
+  'headwinds',
+  'threaten',
+  'exposure',
+  'weakening',
+  'greatest',
+  'broadest',
+  'popular',
+];
+const VOCAB_SET = new Set(VOCAB);
+function oneEditApart(a, b) {
+  if (Math.abs(a.length - b.length) > 1 || a === b) return false;
+  if (a.length === b.length) {
+    const diff = [];
+    for (let i = 0; i < a.length; i += 1) if (a[i] !== b[i]) diff.push(i);
+    if (diff.length === 1) return true;
+    return (
+      diff.length === 2 &&
+      diff[1] === diff[0] + 1 &&
+      a[diff[0]] === b[diff[1]] &&
+      a[diff[1]] === b[diff[0]]
+    );
+  }
+  const [s1, l1] = a.length < b.length ? [a, b] : [b, a];
+  let i = 0;
+  while (i < s1.length && s1[i] === l1[i]) i += 1;
+  return s1.slice(i) === l1.slice(i + 1);
+}
+/** Lower-case words of 7+ letters one edit from a domain word, corrected. */
+function fuzzyFix(text) {
+  return String(text).replace(/\b[a-z]{7,}\b/g, (w) => {
+    if (VOCAB_SET.has(w)) return w;
+    const hit = VOCAB.find((v) => oneEditApart(w, v));
+    return hit || w;
+  });
+}
+
 /** Typos fixed, case kept (for subject extraction). */
 function fixTypos(q) {
   let t = String(q || '');
   for (const [re, to] of TYPOS) t = t.replace(new RegExp(re.source, 'gi'), to);
-  return t;
+  return fuzzyFix(t);
 }
 
 /** Stage 1. Lower case, straight quotes, polite filler and typos gone, holder classes tokenized. */
@@ -86,6 +189,7 @@ export function normalizeQuestion(question) {
     .replace(/\s+/g, ' ')
     .trim();
   for (const [re, to] of TYPOS) t = t.replace(re, to);
+  t = fuzzyFix(t);
   for (const re of POLITE) t = t.replace(re, ' ');
   const raw = t.replace(/\s+/g, ' ').trim();
   const tokens = raw
@@ -113,7 +217,7 @@ const MEASURE_TESTS = [
   ],
   [
     'change',
-    /\b(?:gain(?:ed|ing|s)?|add(?:ed|ing|s)?|lost|los(?:e|ing)|shed(?:ding)?|increas(?:e|ed|ing)|decreas(?:e|ed|ing)|ris(?:e|ing|en)|fall(?:ing|en)?|fell|grew|grow(?:ing|th)|chang(?:e|ed|es|ing)|new (?:<inst>|holders|owners)|accumulat\w*|exit(?:ed|s)|dropp?(?:ed|ing)|fewer than (?:last|a) quarter|more than (?:last|a) quarter)\b/,
+    /\b(?:gain(?:ed|ing|s)?|add(?:ed|ing|s)?|lost|los(?:e|ing)|shed(?:ding)?|increas(?:e|ed|ing)|decreas(?:e|ed|ing)|ris(?:e|ing|en)|fall(?:ing|en)?|fell|grew|grow(?:ing|th)|chang(?:e|ed|es|ing)|new (?:<inst>|holders|owners)|accumulat\w*|exit(?:ed|s|ing)?|dropp?(?:ed|ing)|fewer than (?:last|a) quarter|more than (?:last|a) quarter)\b/,
   ],
   [
     'value',
@@ -220,6 +324,31 @@ const OTHER_FAMILIES = [
     ],
   },
 ];
+
+/* Families the compositional reading produces. */
+const COMPOSED_FAMILIES = new Set([
+  'multi_stage_screen',
+  'macro_relationship',
+  'dcf_valuation',
+  'garch_volatility',
+  'backtest',
+  'monte_carlo',
+]);
+const ASSESS_LEAD = {
+  government_contract_dependency: 'gov_revenue_share',
+  currency_pressure: 'fx_rate',
+  sanctions_exposure: 'sanctions_exposure',
+  lobbying_activity: 'lobbying_spend',
+  prediction_markets: 'event_probability',
+};
+const ASSESS_FAMILIES = new Set([
+  'fundamental_analysis',
+  'government_contract_dependency',
+  'currency_pressure',
+  'sanctions_exposure',
+  'lobbying_activity',
+  'prediction_markets',
+]);
 
 /* Operations, outputs and required datasets per family. Required tasks are what the plan
    may never drop; optional retrieval may vary. */
@@ -374,7 +503,85 @@ function looseSubject(question) {
   for (const m of q.matchAll(LOW_RE)) {
     if (!LOW_STOP.test(m[1])) return m[1];
   }
+  return lowerSubject(q);
+}
+
+/* Lower-case words that never name a subject. */
+const LOWER_NOT_SUBJECT = new Set(
+  'it what that there here today tomorrow everyone someone this who where how why when which the a an their its his her my our your one company stock market model portfolio question world country year week month'.split(
+    ' ',
+  ),
+);
+
+/**
+ * A lower-case subject (a question typed without capitals): the words before a possessive
+ * ("lockheed martin's contracts"), or a single word after of/on/for/to/does/is at the end
+ * or before a verb. Text only; resolution decides what it names.
+ */
+function lowerSubject(q) {
+  const t = String(q || '')
+    .toLowerCase()
+    .replace(/[‘’`]/g, "'");
+  const pos = t.match(
+    /(?:^|\b(?:are|is|was|were|of|on|for|to|in|about|did|does|do|how|what|why|has|have)\s+)((?:[a-z][a-z.&-]+\s+)?[a-z][a-z.&-]+)'s\b/,
+  );
+  if (pos) {
+    const words = pos[1].split(/\s+/).filter((w) => !LOWER_NOT_SUBJECT.has(w));
+    if (
+      words.length &&
+      !/^(?:how|what|who|it|that|there|here|today|let)$/.test(words[words.length - 1])
+    )
+      return words.join(' ');
+  }
+  const verb = t.match(
+    /\b(?:does|did|do|is|are)\s+([a-z][a-z.&-]+(?:\s+[a-z][a-z.&-]+)?)\s+(?:spend|have|make|earn|own|hold|lobby|rely|depend|seeing|get|use)\b/,
+  );
+  if (verb) {
+    const words = verb[1].split(/\s+/).filter((w) => !LOWER_NOT_SUBJECT.has(w));
+    if (words.length === verb[1].split(/\s+/).length) return words.join(' ');
+  }
+  const tail = t.match(
+    /\b(?:of|on|for|to|about)\s+([a-z][a-z.&-]{1,}(?:\s+[a-z][a-z.&-]+)?)\s*[?.!]?\s*$/,
+  );
+  if (tail) {
+    const words = tail[1].split(/\s+/).filter((w) => !LOWER_NOT_SUBJECT.has(w));
+    if (
+      words.length === tail[1].split(/\s+/).length &&
+      !words.some((w) => VOCAB_SET.has(w) || /(?:ing|tion|ment)$/.test(w))
+    )
+      return words.join(' ');
+  }
   return null;
+}
+
+/* Words that precede a holdings noun without naming a holder. */
+const NOT_A_HOLDER = new Set(
+  'the my our your their his her its these those this that which what top big largest biggest best worst most least all some other popular tech technology bank banking energy ai chip semiconductor dividend growth value small large mid cap defense defence oil retail consumer health healthcare blue chip meme penny us u.s. american foreign current recent new old public private reported disclosed estimated institutional congressional'.split(
+    ' ',
+  ),
+);
+
+/** Lower-case holder candidates before a holdings noun, as typed and with a final s removed. */
+export function holderCandidates(question) {
+  const t = fuzzyFix(String(question || '').toLowerCase())
+    .toLowerCase()
+    .replace(/[‘’`]/g, "'");
+  const out = [];
+  const re =
+    /\b(?:which|what|of|in|among|from|rank|list|show|are|do|does|for)\s+((?:[a-z][a-z.-]+\s+)?[a-z][a-z.-]+?)('s|s')?\s+(?:(?:estimated|disclosed|reported|current|top|largest)\s+)?(?:holdings|stocks|positions|portfolio|investments|equities|securities|shares)\b/g;
+  for (const m of t.matchAll(re)) {
+    const words = m[1].split(/\s+/);
+    if (
+      words.some((w) => NOT_A_HOLDER.has(w) || VOCAB_SET.has(w)) ||
+      isSectorText(`${m[1]} stocks`)
+    )
+      continue;
+    const name = words.join(' ');
+    if (name.length < 3) continue;
+    out.push(name);
+    if (!m[2] && /[a-z]{3,}s$/.test(name)) out.push(name.slice(0, -1));
+  }
+  return [...new Set(out)];
 }
 
 /* ── Stage 6: the intent ────────────────────────────────────────────── */
@@ -386,7 +593,7 @@ function looseSubject(question) {
  *   semanticMeasure: from semantic-equivalence.js, used only to fill an ownership measure the
  *   text left open (stage 4), never to override one the text states.
  */
-export function canonicalIntent(question, { semanticMeasure = null } = {}) {
+export function canonicalIntent(question, { semanticMeasure = null, measureOverride = null } = {}) {
   const original = String(question || '').slice(0, 600);
   const { text, tokens } = normalizeQuestion(original);
   const relation = extractRelation(original);
@@ -398,8 +605,26 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
 
   const hasInst = /<inst>/.test(tokens);
   const hasCongress = /<congress>/.test(tokens);
-  const subjectText =
+  let subjectText =
     relation?.left || extractSubject(original) || extractSubject(fixTypos(original));
+  /* Sonar 6.1: names the case-sensitive reader cannot see (a lower-case surname, "which
+     pelosi holdings"; a possessive without its apostrophe, "Pelosis holdings") become
+     candidates, tried in order by server resolution. A candidate is never an identity:
+     the route accepts a lower-case candidate only when it resolves to a member of
+     Congress, and drops the ranking when none resolves. */
+  let candidates = null;
+  if (!subjectText) {
+    const c = holderCandidates(original);
+    if (c.length) {
+      subjectText = c[0];
+      candidates = c;
+    }
+  } else if (
+    /^[A-Z][a-z]{2,}s$/.test(subjectText) &&
+    !new RegExp(`${subjectText}['’]`).test(original)
+  ) {
+    candidates = [subjectText, subjectText.slice(0, -1)];
+  }
   const ownershipCue =
     /\b(?:own(?:s|ed|ing|ership|ers?)?|hold(?:s|ing|ings|ers?)?|held|stakes?|positions?|portfolios?|popular|crowded|investments?|equities|securities|stocks?|shares)\b/.test(
       tokens,
@@ -412,13 +637,18 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
   let subjectUniverse = null;
   let direction = null;
   let unsupported = null;
+  let composition = null;
 
   /* Institutional ownership of a holder's securities: a named holder, an institution class
      to compare against, ownership language. A two-holder question is an overlap instead. */
   if (subjectText && hasInst && ownershipCue && !relation) {
     family = 'institutional_ownership';
     comparisonUniverse = { type: 'institutional_13f_positions' };
-    for (const [id, re] of MEASURE_TESTS) {
+    if (measureOverride && OWNERSHIP_MEASURE[measureOverride]) {
+      measure = measureOverride;
+      measureSource = 'follow_up';
+    }
+    for (const [id, re] of measure ? [] : MEASURE_TESTS) {
       if (re.test(tokens)) {
         measure = id;
         measureSource = 'text';
@@ -497,14 +727,49 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
     measureSource = 'text';
     direction = ASC_RE.test(tokens) ? 'ascending' : 'descending';
   } else {
+    /* Sonar 6.1: the compositional reading (universe, filters, measures, operation) decides
+       first; the cue families remain for questions it has no measure for (open risk,
+       strategy, Echo coverage). Two-holder questions stay overlaps or comparisons. */
     const ctx = { relation };
-    const hit = OTHER_FAMILIES.find((f) =>
-      f.test ? f.test(tokens, ctx) : f.all.every((re) => re.test(tokens)),
-    );
+    const rel = OTHER_FAMILIES.slice(0, 2).find((f) => f.test(tokens, ctx));
+    composition = composeIntent(tokens, {
+      subject: relation?.left || extractSubject(original) || looseSubject(original),
+      relation,
+    });
+    const hit =
+      rel ||
+      (composition.family ? { id: composition.family } : null) ||
+      OTHER_FAMILIES.slice(2).find((f) =>
+        f.test ? f.test(tokens, ctx) : f.all.every((re) => re.test(tokens)),
+      );
     family = hit ? hit.id : null;
+    if (ASSESS_FAMILIES.has(family)) {
+      /* An assessment is about its family's measure; how it is worded is not material
+         ("reliant on federal contracts" and "share of revenue from the government" both
+         measure government revenue dependence). */
+      composition = {
+        ...composition,
+        operation: 'assess',
+        direction: null,
+        measures:
+          family === 'prediction_markets'
+            ? composition.measures
+            : [ASSESS_LEAD[family] || composition.measures[0]].filter(Boolean),
+        filters: [],
+      };
+    } else if (!COMPOSED_FAMILIES.has(family)) {
+      /* A cue family (open risk, strategy, Echo) or an overlap: the composition read no
+         measure that defines it, so it is not material to the investigation. */
+      composition = composition.unsupported.length ? composition : null;
+    }
+    if (composition?.unsupported?.length)
+      unsupported = `Not available in Ezana's data yet: ${composition.unsupported.join(', ').replace(/_/g, ' ')}.`;
   }
 
   const meta = familyMeta(family);
+  /* A sector, an index or a ticker list is the universe; a capitalised word near it
+     ("Screen", "Among", "PE") is not a subject. */
+  const universeDefined = ['sector', 'index', 'tickers'].includes(composition?.universe?.type);
   const subjectRaw =
     family === 'institutional_ownership' || family === 'congressional_overlap'
       ? subjectText
@@ -536,9 +801,11 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
           ? ['resolve_holder', 'resolve_second_holder', 'retrieve_holdings', 'intersect_holdings']
           : family === 'portfolio_comparison'
             ? ['resolve_holder', 'resolve_second_holder', 'retrieve_holdings', 'compare_holdings']
-            : family
-              ? ['resolve_subject', `analyze_${family}`]
-              : ['retrieve_evidence'];
+            : composition && (COMPOSED_FAMILIES.has(family) || ASSESS_FAMILIES.has(family))
+              ? ['resolve_subject', ...compositionOperations(composition)]
+              : family
+                ? ['resolve_subject', `analyze_${family}`]
+                : ['retrieve_evidence'];
 
   const intent = {
     intent_version: CANONICAL_INTENT_VERSION,
@@ -547,19 +814,21 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
     family,
     report_family: meta.report,
     capability: meta.capability,
-    primary_entity: subjectRaw
-      ? {
-          text: subjectRaw,
-          key: nameKey(subjectRaw),
-          role:
-            family === 'institutional_ownership' || family === 'congressional_overlap'
-              ? 'holder'
-              : 'subject',
-          type: null,
-          id: null,
-          status: 'unresolved',
-        }
-      : null,
+    primary_entity:
+      subjectRaw && !universeDefined
+        ? {
+            text: subjectRaw,
+            key: nameKey(subjectRaw),
+            role:
+              family === 'institutional_ownership' || family === 'congressional_overlap'
+                ? 'holder'
+                : 'subject',
+            type: null,
+            id: null,
+            status: candidates ? 'candidate' : 'unresolved',
+            ...(candidates ? { alternates: candidates } : {}),
+          }
+        : null,
     secondary_entities: relation
       ? [{ text: relation.right, key: nameKey(relation.right), role: 'second_holder', id: null }]
       : [],
@@ -591,7 +860,23 @@ export function canonicalIntent(question, { semanticMeasure = null } = {}) {
     inferred_defaults: inferred,
     ambiguities,
     unsupported,
-    required_datasets: meta.datasets,
+    required_datasets: composition
+      ? [...new Set([...meta.datasets, ...compositionDatasets(composition)])].sort()
+      : meta.datasets,
+    composition: composition
+      ? {
+          operation: composition.operation,
+          direction: composition.direction,
+          universe: composition.universe
+            ? { type: composition.universe.type, id: composition.universe.id || null }
+            : null,
+          filters: composition.filters,
+          measures: composition.measures,
+          driver: composition.driver,
+          model: composition.model,
+          time: composition.time,
+        }
+      : null,
     required_outputs: meta.outputs,
     method_version: family === 'institutional_ownership' ? OWNERSHIP_METHOD_VERSION : null,
   };
@@ -690,6 +975,7 @@ export function materialFields(intent) {
     params: intent.explicit_parameters,
     method: intent.method_version,
     operations: intent.operations,
+    composition: intent.composition || null,
   };
 }
 
@@ -763,6 +1049,7 @@ export function compareIntents(a, b) {
     'time',
     'params',
     'operations',
+    'composition',
   ]) {
     if (k === 'second') {
       const sa = a.secondary_entities.map((s) => s.id || s.key).join('|');
@@ -830,4 +1117,70 @@ export function intentTelemetry(intent) {
     unsupported: intent.unsupported || null,
     ambiguities: intent.ambiguities.length,
   };
+}
+
+/* ── Follow-ups ─────────────────────────────────────────────────────── */
+
+const ENTITY_SWAP =
+  /^\s*(?:(?:ok(?:ay)?|and|now|then)[,\s]+)?(?:what|how)\s+about\s+(.+?)\s*\??$|^\s*(?:and|now)?\s*(?:do\s+)?(?:the\s+)?same\s+(?:for|with)\s+(.+?)\s*\??$|^\s*(?:now\s+)?(?:do|try|repeat(?:\s+(?:it|that))?\s+for|run\s+(?:it|that)\s+for)\s+(.+?)\s*\??$|^\s*and\s+(?:for\s+)?([A-Z][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,3})\s*\??$/i;
+
+const MEASURE_SWAP = [
+  [
+    'value',
+    /\b(?:by|use|using|rank(?:ed)?\s+by|sort(?:ed)?\s+by|in terms of|what about)\s+(?:the\s+)?(?:(?:reported|aggregate|total|13f)\s+)?(?:dollar\s+value|value|money|dollars|capital)\b/i,
+  ],
+  [
+    'change',
+    /\b(?:by|use|using|rank(?:ed)?\s+by|sort(?:ed)?\s+by|what about)\s+(?:the\s+)?(?:quarterly\s+)?(?:change|changes|gains?|growth|new managers|increase)\b/i,
+  ],
+  [
+    'breadth',
+    /\b(?:by|use|using|rank(?:ed)?\s+by|sort(?:ed)?\s+by|what about)\s+(?:the\s+)?(?:number of (?:managers|holders|owners|institutions)|manager count|breadth|how many (?:managers|funds))\b/i,
+  ],
+];
+
+/**
+ * A follow-up read against the question it follows. A complete question stands on its
+ * own; a short one that only swaps the entity ("what about Tuberville?") or the ranking
+ * method ("rank by dollar value instead") inherits everything else from the prior intent.
+ * @returns {{ intent: object, question: string, change: 'none'|'entity'|'measure' }}
+ *   `question` is the effective question (for the composer and the writer).
+ */
+export function followUpIntent(question, priorQuestion) {
+  const own = canonicalIntent(question);
+  if (!priorQuestion) return { intent: own, question, change: 'none' };
+  const prior = canonicalIntent(priorQuestion);
+  if (!prior.family) return { intent: own, question, change: 'none' };
+  const short =
+    String(question || '')
+      .trim()
+      .split(/\s+/).length <= 9;
+  if (short && prior.family === 'institutional_ownership') {
+    const hit = MEASURE_SWAP.find(([, re]) => re.test(String(question)));
+    if (hit && hit[0] !== prior.measure) {
+      const intent = canonicalIntent(priorQuestion, { measureOverride: hit[0] });
+      return {
+        intent: { ...intent, follow_up: { from: planSignature(prior).id, change: 'measure' } },
+        question: priorQuestion,
+        change: 'measure',
+      };
+    }
+  }
+  const m = short ? String(question).match(ENTITY_SWAP) : null;
+  const name = m ? (m[1] || m[2] || m[3] || m[4] || '').replace(/[?.!]+$/, '').trim() : null;
+  if (name && prior.primary_entity?.text && name.length >= 2) {
+    const rewritten = String(priorQuestion).split(prior.primary_entity.text).join(name);
+    if (rewritten !== priorQuestion) {
+      const intent = canonicalIntent(rewritten, {
+        measureOverride: prior.family === 'institutional_ownership' ? prior.measure : null,
+      });
+      if (intent.family === prior.family)
+        return {
+          intent: { ...intent, follow_up: { from: planSignature(prior).id, change: 'entity' } },
+          question: rewritten,
+          change: 'entity',
+        };
+    }
+  }
+  return { intent: own, question, change: 'none' };
 }

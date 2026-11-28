@@ -79,7 +79,10 @@ export function ownershipMetric(question) {
  * however many ways the question says it). Each carries origin 'auto', the subject text,
  * and the question's explicit parameters over the defaults.
  */
-export function inferComposition(question, { semanticMeasure = null } = {}) {
+export function inferComposition(
+  question,
+  { semanticMeasure = null, measureOverride = null } = {},
+) {
   const q = String(question || '');
   if (q.trim().length < 6) return { subject: null, attachments: [] };
   const relation = extractRelation(q);
@@ -89,7 +92,7 @@ export function inferComposition(question, { semanticMeasure = null } = {}) {
      investment firms" attach the same analysis with the same metric. A measure the
      analysis cannot compute (ownership percentage, lowest first, recent trades only) is
      never attached as a different ranking. */
-  const intent = canonicalIntent(q, { semanticMeasure });
+  const intent = canonicalIntent(q, { semanticMeasure, measureOverride });
   let caps = OPS.filter((o) => o.re.test(q)).map((o) => o.capability);
   if (intent.family === 'institutional_ownership') {
     if (intent.unsupported) caps = caps.filter((c) => c !== 'institutional-ownership');

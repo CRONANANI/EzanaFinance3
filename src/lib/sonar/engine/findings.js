@@ -112,21 +112,98 @@ Evidence:
 ${ev || '(none)'}
 
 Metrics:
-${ms || '(none)'}`;
+${ms || '(none)'}
+
+${LENGTH_BUDGET}`;
 }
+
+/* Nov 28 2026: the whole reply has to fit its token limit or it cannot be parsed. */
+export const LENGTH_BUDGET = `Length budget: the whole JSON stays under about 1,300 words. Executive conclusion at most 70 words; at most four key findings, each explanation at most 60 words and each of comparison, implication and caveat one short line or null; at most two analysis items of at most 70 words; summary one or two paragraphs of at most 90 words in total; three takeaways of at most 25 words. Write executiveConclusion and keyFindings first, in the order of the schema.`;
 
 /** Parse the model's JSON, tolerating code fences and leading prose. */
 export function parseResearchJson(text) {
   const s = String(text || '');
   const start = s.indexOf('{');
   const end = s.lastIndexOf('}');
-  if (start < 0 || end <= start) return null;
-  try {
-    return JSON.parse(s.slice(start, end + 1));
-  } catch {
-    return null;
+  if (start < 0) return null;
+  if (end > start) {
+    try {
+      return JSON.parse(s.slice(start, end + 1));
+    } catch {
+      /* fall through to the repair of a cut reply */
+    }
   }
+  return repairTruncatedJson(s.slice(start));
 }
+
+/**
+ * Nov 28 2026: recover a JSON object whose text was cut off (a reply stopped at its token
+ * limit). Walks the text once, remembers every point where a value had just finished,
+ * and closes the open arrays and objects at the latest such point that parses. Only
+ * complete values survive: a half-written string or finding is dropped, never patched.
+ * Returns the object with `_truncated: true`, or null when nothing complete remains.
+ */
+export function repairTruncatedJson(text) {
+  const s = String(text || '');
+  if (!s.startsWith('{')) return null;
+  const stack = [];
+  const cuts = [];
+  let inStr = false;
+  let esc = false;
+  for (let i = 0; i < s.length; i += 1) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    else if (c === '{' || c === '[') stack.push(c);
+    else if (c === '}' || c === ']') {
+      stack.pop();
+      /* A closed value counts only where a comma would: in an array or at the top level. */
+      if (stack.length === 1 || stack[stack.length - 1] === '[')
+        cuts.push({ at: i + 1, open: stack.join('') });
+    } else if (c === ',' && (stack.length === 1 || stack[stack.length - 1] === '['))
+      /* Only between array items or top-level keys: a cut inside an object would keep a
+         finding with some of its fields. */
+      cuts.push({ at: i, open: stack.join('') });
+  }
+  const close = (open) =>
+    open
+      .split('')
+      .reverse()
+      .map((b) => (b === '{' ? '}' : ']'))
+      .join('');
+  for (let k = cuts.length - 1; k >= 0 && k >= cuts.length - 40; k -= 1) {
+    const { at, open } = cuts[k];
+    const body = s.slice(0, at).replace(/,\s*$/, '');
+    /* A cut right after an object key ("key":) is not a finished value. */
+    if (/:\s*$/.test(body)) continue;
+    try {
+      const out = JSON.parse(body + close(open));
+      if (out && typeof out === 'object' && !Array.isArray(out)) return { ...out, _truncated: true };
+    } catch {
+      /* try an earlier cut */
+    }
+  }
+  return null;
+}
+
+/** Why the written analysis is missing, in the reader's words (deterministic reports). */
+export const WRITER_FAILURE = {
+  truncated:
+    'The written analysis exceeded its length limit and could not be read, so this report shows the records and calculated results directly.',
+  timeout:
+    'The written analysis did not finish within the time available, so this report shows the records and calculated results directly.',
+  provider:
+    'The analysis service did not answer, so this report shows the records and calculated results directly.',
+  invalid:
+    'The written analysis did not pass the evidence checks, so this report shows the records and calculated results directly.',
+  skipped:
+    'There was not enough time left for a written analysis, so this report shows the records and calculated results directly.',
+};
 
 const YEAR_RE = /\b(19[5-9]\d|20[0-4]\d)\b/g;
 const CAUSAL_RE =
@@ -403,7 +480,7 @@ export function validateResearch(parsed, { marked, metrics, question = '' }) {
  * removed. Findings quote the strongest records and metrics directly, so
  * the answer is partial but true.
  */
-export function deterministicResearch({ spec, marked, metrics }) {
+export function deterministicResearch({ spec, marked, metrics, writerFailure = null }) {
   const top = marked.slice(0, 5);
   const fmt = (m) =>
     m.unit === 'ratio'
@@ -449,7 +526,7 @@ export function deterministicResearch({ spec, marked, metrics }) {
     ],
     analysis: [],
     limitations: [
-      'This report quotes the records directly because the analysis step did not complete in time. It answers only what those records state.',
+      `${WRITER_FAILURE[writerFailure] || WRITER_FAILURE.timeout} It answers only what those records state.`,
     ],
     followOnResearch: [],
     confidence: 'low',

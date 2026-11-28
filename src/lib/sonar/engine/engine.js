@@ -76,6 +76,7 @@ import {
   validateClaim,
   ensureRankingAnswer,
   deterministicResearch,
+  WRITER_FAILURE,
   renderBrief,
 } from './findings';
 import {
@@ -111,7 +112,7 @@ import {
  * Sonar 5.0: the report computed from a composition's results alone (no model), in the
  * deterministic report's shape. Citations point at the composition's evidence items.
  */
-function composedDeterministic({ spec, marked, composition, fulfillment }) {
+function composedDeterministic({ spec, marked, composition, fulfillment, writerFailure = null }) {
   const byTitle = (re) => marked.find((e) => e.source === COMPOSER_SOURCE && re.test(e.title));
   const ev = {
     set: marked.find((e) => e.source === COMPOSER_SOURCE && e.data?.stats) || null,
@@ -126,7 +127,7 @@ function composedDeterministic({ spec, marked, composition, fulfillment }) {
     keyFindings: base.keyFindings,
     analysis: [],
     limitations: [
-      'The written analysis did not complete, so this report shows the calculated results directly. Run the research again for the written assessment.',
+      `${WRITER_FAILURE[writerFailure] || 'The written analysis did not complete, so this report shows the calculated results directly.'} Run the research again for the written assessment.`,
     ],
     followOnResearch: [],
     confidence: fulfillment?.state === 'complete' ? 'medium' : 'low',
@@ -171,10 +172,18 @@ export const DEPTH_PROFILES = {
   },
   standard: {
     model: process.env.SONAR_FAST_MODEL || HAIKU_MODEL,
-    tokens: 1600,
-    /* Nov 6: 40 s (was 28) so one parallel round of specialists fits before the director. */
-    budgetMs: 40_000,
-    synthMs: 9_000,
+    /* Nov 28 2026: 2,400 (was 1,600). Production logs showed every failed standard run
+       stopping at exactly 2,100 output tokens (1,600 + the desk fields): the JSON was cut,
+       could not be parsed, and the reader got the deterministic report labelled "did not
+       complete in time". With the length budget in the prompt the reply fits; a reply that
+       still runs long is repaired (repairTruncatedJson) instead of discarded. */
+    tokens: 2400,
+    /* 55 s (was 40) and 32 s reserved for the writer (was 9): Haiku writes about 100
+       tokens a second, so a full reply needs 25 to 30 s, and specialists may only use
+       the time before that reserve. */
+    budgetMs: 55_000,
+    synthMs: 32_000,
+    maxHopMs: 34_000,
     maxItems: 16,
     maxChars: 9000,
   },
@@ -813,7 +822,12 @@ export async function runResearch(query, opts = {}) {
   let parsedChallenge = null;
   let model = null;
   const memo = spec.format === 'investment_memo';
+  /* Nov 28 2026: why the written analysis is missing, when it is (WRITER_FAILURE). */
+  let writerFailure = marked.length && !aborted() ? 'skipped' : null;
+  let writerTruncated = false;
   if (marked.length && left() > 2_500 && !aborted()) {
+    writerFailure = null;
+    let synthError = null;
     const synth = await leg(
       'synthesize',
       () =>
@@ -855,14 +869,34 @@ export async function runResearch(query, opts = {}) {
           reserveMs: 0,
           /* One long call for a written assessment; the provider chain's
              own caps (25 s a hop, 50 s a chain) stay for every other run. */
-          ...(depth === 'deep' ? { maxHopMs: D.synthMs, chainMs: D.synthMs + 5_000 } : {}),
+          ...(depth === 'deep'
+            ? { maxHopMs: D.synthMs, chainMs: D.synthMs + 5_000 }
+            : D.maxHopMs
+              ? { maxHopMs: D.maxHopMs }
+              : {}),
         }),
-      (v) => (v?.answer ? 'answered' : v?.degraded || 'no answer'),
-    ).catch(() => null);
+      (v) =>
+        v?.answer
+          ? v.stopReason === 'max_tokens'
+            ? 'answered, cut at max_tokens'
+            : 'answered'
+          : v?.degraded || 'no answer',
+    ).catch((e) => {
+      synthError = e;
+      return null;
+    });
     providerErrors = synth?.providerErrors || [];
     model = synth?.model || D.model;
     const parsed = parseResearchJson(synth?.answer);
     parsedChallenge = parsed?.challenge || null;
+    writerTruncated = Boolean(parsed?._truncated) || synth?.stopReason === 'max_tokens';
+    if (!synth?.answer)
+      writerFailure =
+        synthError?.name === 'TimeoutError' ||
+        providerErrors.some((x) => /deadline|timed out|timeout/i.test(`${x.type} ${x.message}`))
+          ? 'timeout'
+          : 'provider';
+    else if (!parsed) writerFailure = synth?.stopReason === 'max_tokens' ? 'truncated' : 'invalid';
     if (parsed) {
       report = memo
         ? validateMemo(parsed, {
@@ -872,18 +906,36 @@ export async function runResearch(query, opts = {}) {
             mandate: layout.fundFit || null,
           })
         : validateResearch(parsed, { marked, metrics, question: spec.question });
-      if (!report.executiveConclusion && !report.keyFindings.length) report = null;
+      if (!report.executiveConclusion && !report.keyFindings.length) {
+        report = null;
+        writerFailure = 'invalid';
+      } else if (parsed._truncated) {
+        report.partialWriting = true;
+        report.limitations = [
+          ...(report.limitations || []),
+          'The written analysis reached its length limit, so its later sections are shorter or missing. Calculated results and citations are complete.',
+        ];
+      }
     }
   }
   if (!report && composition && !memo) {
     /* Sonar 5.0: the writer failed, so the answer is the computed results themselves, not a
        quote of whatever records were retrieved for the first named person. */
-    report = composedDeterministic({ spec, marked, metrics, composition, fulfillment });
+    report = composedDeterministic({
+      spec,
+      marked,
+      metrics,
+      composition,
+      fulfillment,
+      writerFailure,
+    });
   }
   if (!report)
     report = memo
       ? deterministicMemo({ spec, marked, metrics })
-      : deterministicResearch({ spec, marked, metrics });
+      : deterministicResearch({ spec, marked, metrics, writerFailure });
+  report.writerFailure = report.deterministic ? writerFailure || 'invalid' : null;
+  report.writerTruncated = writerTruncated;
   if (composition && !memo) {
     /* The completion check: a written answer that does not report the requested result
        (the overlap and its companies) leads with the computed answer instead, and keeps
@@ -1288,6 +1340,9 @@ export async function runResearch(query, opts = {}) {
     /* Sonar 6.0: the canonical research intent's summary (signature, family, measure). */
     run.canonicalIntent = runMeta.canonicalIntent || null;
   }
+  /* Nov 28 2026: why the written analysis is missing, if it is (telemetry and the UI). */
+  run.writerFailure = report.writerFailure || null;
+  run.writerTruncated = Boolean(report.writerTruncated);
   emit('report', run);
   return run;
 }

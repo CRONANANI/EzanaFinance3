@@ -119,6 +119,65 @@ function recentFilings(admin, today = new Date()) {
   });
 }
 
+/**
+ * Sonar 6.1 (Nov 28 2026): the data epoch of an ownership ranking, read live. It changes
+ * when a new disclosure for the holder arrives or when filings for a recent quarter-end
+ * are loaded or amended, which is exactly when a stored ranking stops being current.
+ * Count-only reads (head requests). Null on any error: no epoch, no reuse.
+ */
+export async function ownershipDataEpoch(admin, subject, today = new Date()) {
+  if (!admin || !subject?.id) return null;
+  try {
+    const periods = quarterEnds(today, 4);
+    const filerCounts = await Promise.all(
+      periods.map(async (p) => {
+        const { count, error } = await admin
+          .from('sec_13f_effective_filings')
+          .select('accession_no', { count: 'exact', head: true })
+          .eq('period', p);
+        if (error) throw error;
+        return [p, count ?? 0];
+      }),
+    );
+    let holder = null;
+    if (subject.kind === 'politician') {
+      const [{ count, error }, last] = await Promise.all([
+        admin
+          .from('congress_trades')
+          .select('bioguide_id', { count: 'exact', head: true })
+          .eq('bioguide_id', subject.id),
+        admin
+          .from('congress_trades')
+          .select('disclosure_date')
+          .eq('bioguide_id', subject.id)
+          .not('disclosure_date', 'is', null)
+          .order('disclosure_date', { ascending: false })
+          .limit(1),
+      ]);
+      if (error || last.error) throw error || last.error;
+      holder = {
+        trades: count ?? 0,
+        latest: last.data?.[0]?.disclosure_date
+          ? String(last.data[0].disclosure_date).slice(0, 10)
+          : null,
+      };
+    } else if (subject.kind === 'institution') {
+      const { count, error } = await admin
+        .from('ezq_13f_holdings')
+        .select('cusip', { count: 'exact', head: true })
+        .eq('filer_cik', subject.id)
+        .eq('is_current', true);
+      if (error) throw error;
+      holder = { rows: count ?? 0 };
+    } else {
+      return null;
+    }
+    return { kind: subject.kind, id: String(subject.id), holder, filers: Object.fromEntries(filerCounts) };
+  } catch {
+    return null;
+  }
+}
+
 /* ── holdings for a universe ────────────────────────────────────────── */
 
 let rpcAvailable = null; // null unknown, true, false

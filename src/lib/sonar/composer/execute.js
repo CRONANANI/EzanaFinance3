@@ -870,7 +870,14 @@ function runSetOp({ item, left, right, leftDs, rightDs, setDs }) {
  * what depends on it.
  */
 export async function runResearchComposition(
-  { question = '', primary: primaryIn = null, attachments = [], userId = null },
+  {
+    question = '',
+    primary: primaryIn = null,
+    attachments = [],
+    userId = null,
+    /* Sonar 6.1: a subject the route already resolved for the same text (no second read). */
+    resolvedPrimary = null,
+  },
   admin = getAdminClient(),
 ) {
   /* Sonar 5.0 (Nov 24 2026): the server reads the question itself, so a two-holder
@@ -884,7 +891,15 @@ export async function runResearchComposition(
       .replace(/^both\s+/i, '')
       .trim() ||
     null;
-  const primary = primaryText ? await resolveSubject(primaryText, admin).catch(() => null) : null;
+  const reuseResolved =
+    resolvedPrimary?.id &&
+    primaryText &&
+    String(resolvedPrimary.text || '').toLowerCase() === primaryText.toLowerCase();
+  const primary = reuseResolved
+    ? resolvedPrimary
+    : primaryText
+      ? await resolveSubject(primaryText, admin).catch(() => null)
+      : null;
   const items = attachments
     .slice(0, 8)
     .map((raw, i) => {

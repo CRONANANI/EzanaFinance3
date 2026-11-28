@@ -62,7 +62,18 @@ export async function recordRun(
     domains: run.researchScope?.domains || [],
     subject: run.researchScope?.subject || null,
     depth: run.researchScope?.depth || null,
-    plan: clip(run.methodology?.plan),
+    /* Nov 28 2026: the canonical intent summary (signature, family, measure; never the
+       query text) and why the written analysis is missing, kept with the plan so the
+       existing column carries them without a migration. */
+    plan: clip({
+      ...(run.methodology?.plan || {}),
+      canonicalIntent: run.canonicalIntent || null,
+      writer: {
+        failure: run.writerFailure || null,
+        truncated: Boolean(run.writerTruncated),
+        reused: run.reusedFrom || null,
+      },
+    }),
     evidence_decisions: clip(run.methodology?.evidence),
     report: clip({
       headline: run.headline || null,

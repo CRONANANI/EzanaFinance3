@@ -439,6 +439,8 @@ export function useResearchComposition(
     restore,
     autoCount: items.filter((a) => a.origin === 'auto').length,
     dismissedCount: dismissed.current.size,
+    /** Sonar 6.1: capabilities the reader removed, sent so the server never re-adds them. */
+    dismissedCapabilities: () => [...dismissed.current],
     setParam,
     setRelation,
     setSubject,

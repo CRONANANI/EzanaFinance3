@@ -345,9 +345,19 @@ async function anthropicSynthesize({
   const parsed = parseAnthropicContent(data?.content);
   if (!parsed.answer) throw new ProviderUnavailableError('anthropic: empty reply');
   /* Token counts ride along for callers that total a run's usage (adaptive telemetry). */
+  /* Nov 28 2026: stopReason rides along so a caller can tell a reply cut at max_tokens
+     (stop_reason "max_tokens") from a complete one; a cut JSON reply was being reported to
+     the reader as "did not complete in time". */
+  if (data?.stop_reason === 'max_tokens')
+    console.warn('[sonar] synthesis hit max_tokens', {
+      model: data?.model,
+      max_tokens: maxTokens,
+      output_tokens: data?.usage?.output_tokens,
+    });
   return data?.usage
     ? {
         ...parsed,
+        stopReason: data?.stop_reason || null,
         usage: {
           model: data.model || model,
           inputTokens: data.usage.input_tokens ?? null,
@@ -355,7 +365,7 @@ async function anthropicSynthesize({
           webSearches: data.usage.server_tool_use?.web_search_requests ?? 0,
         },
       }
-    : parsed;
+    : { ...parsed, stopReason: data?.stop_reason || null };
 }
 
 /**

@@ -349,6 +349,7 @@ export function SonarAnswerQueryBar({
         composition = {
           version: 5,
           primary: questionSubject(q) ? { text: questionSubject(q) } : null,
+          dismissed: composer.dismissedCapabilities?.() || [],
           attachments: ordered
             .filter((c) => c.kind === 'analysis' || c.kind === 'query')
             .map((c) =>

@@ -49,11 +49,21 @@ import {
   CONTEXT_SOURCES,
 } from '@/lib/sonar/research-controls';
 import { followUpContext, followUpPreamble, attachmentBlock } from '@/lib/sonar/workspace';
-import { runResearchComposition } from '@/lib/sonar/composer/execute';
+import { runResearchComposition, resolveSubject } from '@/lib/sonar/composer/execute';
+import { ownershipDataEpoch } from '@/lib/sonar/composer/ownership-server';
+import {
+  REUSE_TTL_SECONDS,
+  reuseEligibility,
+  reuseEntry,
+  reuseKey,
+  validEntry,
+} from '@/lib/sonar/semantic/result-reuse';
+import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
 import { clientComposition, fulfillmentContract } from '@/lib/sonar/composer/fulfillment';
 import { inferComposition } from '@/lib/sonar/composer/intents';
 import {
   canonicalIntent,
+  followUpIntent,
   intentFulfillment,
   intentTelemetry,
   planSignature,
@@ -474,8 +484,22 @@ const POST_HANDLER = withApiGuard(
         /* Sonar 6.0 (Nov 28 2026): the canonical research intent, read once here. Equivalent
            wordings get the same intent; the embedding stage only fills an ownership measure
            the question left unstated (bounded, and skipped for every other question). */
-        const intentQuery = String(runQuery || '').slice(0, 600);
-        let canonical = canonicalIntent(intentQuery);
+        /* Sonar 6.1: a short follow-up that only swaps the entity or the ranking method
+           inherits the rest of the parent question's intent (followUpIntent). */
+        const fuIntent = parentQuestion
+          ? followUpIntent(
+              String(runQuery || '').slice(0, 600),
+              String(parentQuestion).slice(0, 600),
+            )
+          : null;
+        const intentQuery =
+          fuIntent && fuIntent.change !== 'none'
+            ? fuIntent.question.slice(0, 600)
+            : String(runQuery || '').slice(0, 600);
+        let canonical =
+          fuIntent && fuIntent.change !== 'none' ? fuIntent.intent : canonicalIntent(intentQuery);
+        const measureOverride = canonical.measure_source === 'follow_up' ? canonical.measure : null;
+        let reusedFrom = null;
         let semMeasure = null;
         if (
           canonical.family === 'institutional_ownership' &&
@@ -489,15 +513,31 @@ const POST_HANDLER = withApiGuard(
             timeoutMs: 500,
           }).catch(() => null);
           semMeasure = semanticMeasure(cands);
-          if (semMeasure) canonical = canonicalIntent(intentQuery, { semanticMeasure: semMeasure });
+          if (semMeasure)
+            canonical = canonicalIntent(intentQuery, {
+              semanticMeasure: semMeasure,
+              measureOverride,
+            });
         }
         if (canonical.unsupported) send('notice', { message: canonical.unsupported });
-        if (!compAttachments.length) {
-          const inferred = inferComposition(intentQuery, { semanticMeasure: semMeasure });
+        /* Sonar 6.1: a supported ownership ranking is a required task. When the page sent
+           no composition, or one without the ranking (an older page), the server adds it,
+           unless the reader removed it in the composer. */
+        const dismissedCaps = Array.isArray(compIn?.dismissed) ? compIn.dismissed.map(String) : [];
+        const needsOwnership =
+          canonical.family === 'institutional_ownership' &&
+          !canonical.unsupported &&
+          !dismissedCaps.includes(OWNERSHIP_CAPABILITY) &&
+          !compAttachments.some((a) => a?.capability === OWNERSHIP_CAPABILITY);
+        if (!compAttachments.length || needsOwnership) {
+          const inferred = inferComposition(intentQuery, {
+            semanticMeasure: semMeasure,
+            measureOverride,
+          });
           const own = inferred.attachments.filter((a) => a.capability === OWNERSHIP_CAPABILITY);
           if (own.length && inferred.subject && !inferred.relation) {
-            compAttachments = own;
-            compPrimary = { text: String(inferred.subject).slice(0, 80) };
+            compAttachments = [...compAttachments, ...own];
+            compPrimary = compPrimary || { text: String(inferred.subject).slice(0, 80) };
           }
         }
         const publicOnly =
@@ -514,20 +554,101 @@ const POST_HANDLER = withApiGuard(
           } else {
             send('stage', { stage: 'composing' });
             const cap = deepMode ? 45_000 : 20_000;
-            const comp = await withTimeout(
-              runResearchComposition(
-                {
-                  question: String(runQuery || '').slice(0, 600),
-                  primary: compPrimary,
-                  attachments: compAttachments.slice(0, 8),
-                  userId: access.user?.id || null,
-                },
-                admin,
-              ),
-              cap,
-              'composition',
-            );
-            if (comp.ok) {
+            /* Sonar 6.1: safe reuse of a completed public computation (result-reuse.js).
+               The holder is resolved first, so the key carries a verified id; the data
+               epoch is read live, so a new disclosure or filing means a fresh compute. */
+            let reuse = null;
+            let resolvedHolder = null;
+            if (
+              canonical.family === 'institutional_ownership' &&
+              !canonical.unsupported &&
+              canonical.primary_entity?.text
+            ) {
+              /* Candidates (a lower-case surname, a possessive without its apostrophe) are
+                 tried in order; a lower-case one counts only as a member of Congress. */
+              const pe = canonical.primary_entity;
+              let resolved = { ok: false };
+              for (const text of (pe.alternates || [pe.text]).slice(0, 3)) {
+                const r = await withTimeout(resolveSubject(text, admin), 3_000, 'resolve');
+                const v = r.ok ? r.value : null;
+                if (
+                  v?.id &&
+                  v.kind !== 'unresolved' &&
+                  (pe.status !== 'candidate' || /[A-Z]/.test(text) || v.kind === 'politician')
+                ) {
+                  resolved = r;
+                  break;
+                }
+              }
+              if (!resolved.ok && pe.status === 'candidate') {
+                /* No verified holder: the ranking is not run on a guess. */
+                compAttachments = compAttachments.filter(
+                  (a) => !(a?.capability === OWNERSHIP_CAPABILITY && a?.origin !== 'manual'),
+                );
+                send('notice', {
+                  message: `Sonar could not identify "${pe.text}" as a member of Congress or a 13F filer, so the institutional ownership ranking did not run. Try the full name.`,
+                });
+              }
+              /* An institution name that matched several close filers is not a verified
+                 identity: no reuse (the composition still runs and reports the candidates). */
+              if (resolved.ok && resolved.value?.id && !resolved.value.candidates) {
+                resolvedHolder = resolved.value;
+                compPrimary = { text: resolved.value.text };
+                canonical = withResolution(canonical, resolved.value);
+                const elig = reuseEligibility({
+                  intent: canonical,
+                  attachments: compAttachments,
+                  orgId,
+                  question: intentQuery,
+                });
+                if (elig.ok) {
+                  const epoch = await withTimeout(
+                    ownershipDataEpoch(admin, resolved.value),
+                    2_500,
+                    'epoch',
+                  );
+                  if (epoch.ok && epoch.value) {
+                    if (!hasCacheClient()) setCacheClient(() => admin);
+                    const key = reuseKey({
+                      intent: canonical,
+                      attachments: compAttachments,
+                      epoch: epoch.value,
+                      access: access.user ? 'member' : 'guest',
+                    });
+                    const sig = planSignature(canonical).id;
+                    const hit = validEntry(await cacheGet(key).catch(() => undefined), {
+                      signature: sig,
+                    });
+                    reuse = { key, signature: sig, hit };
+                  }
+                }
+              }
+            }
+            const comp = !compAttachments.length
+              ? null
+              : reuse?.hit
+                ? { ok: true, value: reuse.hit.composition }
+                : await withTimeout(
+                    runResearchComposition(
+                      {
+                        question: String(runQuery || '').slice(0, 600),
+                        primary: compPrimary,
+                        attachments: compAttachments.slice(0, 8),
+                        userId: access.user?.id || null,
+                        resolvedPrimary: resolvedHolder,
+                      },
+                      admin,
+                    ),
+                    cap,
+                    'composition',
+                  );
+            if (reuse?.hit) {
+              reusedFrom = reuse.hit.computedAt;
+              send('notice', {
+                message: `Sonar reused the ownership calculation it completed at ${reuse.hit.computedAt.slice(11, 16)} UTC on the same data: no new disclosures or 13F filings have arrived since.`,
+              });
+            }
+            if (comp?.ok) {
               composition = comp.value;
               canonical = withResolution(canonical, composition.subject);
               const payload = clientComposition(composition, fulfillmentContract(composition));
@@ -540,7 +661,16 @@ const POST_HANDLER = withApiGuard(
                 defaults: canonical.inferred_defaults.map((d) => d.why),
                 ambiguities: canonical.ambiguities.map((d) => d.question),
               };
+              payload.intent.reusedFrom = reusedFrom;
               const met = intentFulfillment(canonical, payload);
+              if (reuse && !reuse.hit && met.met) {
+                const entry = reuseEntry({
+                  composition,
+                  fulfilled: met.met,
+                  signature: reuse.signature,
+                });
+                if (entry) cacheSet(reuse.key, entry, REUSE_TTL_SECONDS).catch(() => {});
+              }
               if (met.required && !met.met)
                 send('notice', {
                   message: `The requested ranking is incomplete: ${met.checks
@@ -550,7 +680,7 @@ const POST_HANDLER = withApiGuard(
                 });
               send('composition', payload);
               if (snap) snap = reduceEvent(snap, ['composition', payload]);
-            } else {
+            } else if (comp) {
               const payload = {
                 version: 5,
                 fulfillment: {
@@ -606,7 +736,7 @@ const POST_HANDLER = withApiGuard(
               followUpTo: parentQuestion,
               parentRunId,
               attachmentName: attachment ? attachName : null,
-              canonicalIntent: intentTelemetry(canonical),
+              canonicalIntent: { ...intentTelemetry(canonical), reusedFrom },
             },
             /* A standard run whose real plan leaves out evidence the question
                asked for says so right after the plan (never escalates). */
