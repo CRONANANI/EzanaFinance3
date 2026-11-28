@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { AssetList, AssetRow, Button, Dropdown, MenuItem, Modal } from '@/components/ds';
+import { isSampleResponse } from '@/lib/market-sample/state';
 import {
   POSITION_FILTERS,
   fmtPct,
@@ -382,7 +383,8 @@ export function MarketMoversCard({ onSelect }) {
   useEffect(() => {
     let cancelled = false;
     fetch('/api/fmp/movers?limit=5', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : { gainers: [], losers: [] }))
+      /* Demonstration movers are never offered as tradable picks on the trading page. */
+      .then((r) => (r.ok && !isSampleResponse(r) ? r.json() : { gainers: [], losers: [] }))
       .then((d) => {
         if (!cancelled) setState({ status: 'ready', ...normalizeMovers(d, 5) });
       })

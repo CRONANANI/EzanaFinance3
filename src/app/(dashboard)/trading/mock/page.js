@@ -78,6 +78,7 @@ import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 import '@/styles/home-canvas.css';
 import { markChecklistView } from '@/lib/onboarding/markView';
+import { isSampleResponse } from '@/lib/market-sample/state';
 
 /* ──────────────────────────────────────────
    CONSTANTS
@@ -784,7 +785,9 @@ function MockTradingPageInner() {
     for (const sym of wanted) {
       sectorsAsked.current.add(sym);
       fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(sym)}`)
-        .then((r) => (r.ok ? r.json() : null))
+        /* Sonar 6.4 integration: demonstration (sample) figures never feed a trade's thesis
+           fit, concentration or sector checks; they count as unknown. */
+        .then((r) => (r.ok && !isSampleResponse(r) ? r.json() : null))
         .then((d) => {
           setSectors((m) => ({ ...m, [sym]: d?.sector || null }));
           setMarketCaps((m) => ({ ...m, [sym]: d?.mcap || null }));

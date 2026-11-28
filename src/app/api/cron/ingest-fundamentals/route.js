@@ -43,6 +43,7 @@ async function run(request) {
   const errors = [];
   const perMetric = {};
   const conceptHits = {};
+  const predecessorRows = {};
 
   let tickers;
   try {
@@ -55,10 +56,14 @@ async function run(request) {
   }
 
   /* Sonar 6.4 final integration: verified predecessor registrants (Form 8-K12B successors),
-     used only when SEC_PREDECESSOR_MAPPING=1 (an approved backfill), and only for periods
-     ending before the succession (lib/sec/registrant-map.js). */
+     used only when SEC_PREDECESSOR_MAPPING=1 or, for one staged and approved run, when the
+     cron-authenticated request carries ?predecessors=1 (with ?metrics= to go one metric at
+     a time), and only for periods ending before the succession (lib/sec/registrant-map.js).
+     docs/SONAR_6_4_INTEGRATION_COMPATIBILITY.md has the procedure. */
   let successions = new Map();
-  if (process.env.SEC_PREDECESSOR_MAPPING === '1') {
+  const mapPredecessors =
+    process.env.SEC_PREDECESSOR_MAPPING === '1' || searchParams.get('predecessors') === '1';
+  if (mapPredecessors) {
     try {
       const { data } = await admin
         .from('sec_registrant_successions')
@@ -111,6 +116,7 @@ async function run(request) {
         if (!hit) continue;
         if (hit.via === 'predecessor' && direct.has(hit.ticker)) continue;
         const ticker = hit.ticker;
+        if (hit.via === 'predecessor') predecessorRows[ticker] = (predecessorRows[ticker] || 0) + 1;
         rows.push({
           cik: p.cik,
           concept: metric.key,
@@ -152,6 +158,9 @@ async function run(request) {
     periods: { durations, instants },
     rows_per_metric: perMetric,
     concept_points: conceptHits,
+    predecessor_mapping: mapPredecessors
+      ? { successions: successions.size, rows: predecessorRows }
+      : 'off',
     sec_requests: secRequestCount(),
     errors: errors.slice(0, 20),
   });

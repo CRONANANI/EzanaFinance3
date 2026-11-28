@@ -147,6 +147,10 @@ export async function serveQuiver({
       ms: now() - t0,
       caller: caller.split(':')[0],
     });
+    /* Sonar 6.4 integration: a failed first page (timeout, 5xx) with nothing read is the
+       provider being unavailable, not "no filings"; it is not cached or remembered, so the
+       next request tries again within the caller's quota. */
+    if (failed && !rows.length) return { unavailable: true, status: 502, transient: true };
     return { rows };
   })().finally(() => inflight.delete(key));
   inflight.set(key, p);

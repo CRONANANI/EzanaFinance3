@@ -96,3 +96,30 @@ test('organization and personal entitlements are resolved separately', async () 
   assert.ok(personalPro.datasets.includes('13f'));
   assert.equal(personalPro.userLookup, false);
 });
+
+test('a transient upstream failure is unavailable (not zero holdings), never cached, retried next time', async () => {
+  clearQuiverCache();
+  let calls = 0;
+  const fetchAll = async () => {
+    calls += 1;
+    return { rows: [], pages: 1, failed: true };
+  };
+  const base = {
+    route: 'sec13f',
+    caller: 'u:9',
+    dailyLimit: 10,
+    limiter: async () => ({ allowed: true }),
+    params: { ticker: 'XOM' },
+  };
+  const a = await serveQuiver({ ...base, fetchAll });
+  assert.equal(a.unavailable, true);
+  assert.equal(a.transient, true);
+  assert.equal(a.rows, undefined);
+  const b = await serveQuiver({ ...base, fetchAll });
+  assert.equal(b.unavailable, true);
+  assert.equal(calls, 2); // not remembered as a refusal, not cached
+  /* The quota still applies on misses. */
+  const c = await serveQuiver({ ...base, fetchAll, limiter: async () => ({ allowed: false }) });
+  assert.equal(c.quotaExceeded, true);
+  clearQuiverCache();
+});

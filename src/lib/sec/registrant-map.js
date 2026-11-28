@@ -86,3 +86,41 @@ export function tickerForFact(cik, periodEnd, current, successions) {
   }
   return null;
 }
+
+/* ── Sonar 6.4 integration compatibility (Nov 28 2026) ───────────────────────────────── */
+
+/** Every predecessor CIK in a verified index, for consumers that count CIKs per ticker. */
+export function predecessorCiks(successions) {
+  return new Set([...(successions?.keys?.() || [])]);
+}
+
+/**
+ * One fact per (ticker, concept, frame) after predecessor rows exist. The successor's own
+ * filing wins (its figure is the latest the company reported, restatements included); a
+ * predecessor row is kept only where the successor never reported that frame. Rows keep
+ * their filing CIK. Pure. Consumers reading sec_fundamentals by ticker should apply this
+ * (or the equivalent SQL in docs/sql/sonar-6-4-integration) once the backfill runs.
+ * @param {object[]} rows  { ticker, cik, concept, frame, ... }
+ * @param {Map} successions  indexSuccessions output
+ * @returns {{ rows: object[], dropped: object[] }}
+ */
+export function preferSuccessorFacts(rows = [], successions = new Map()) {
+  const preds = predecessorCiks(successions);
+  const isPred = (r) => preds.has(norm(r.cik));
+  const best = new Map();
+  const dropped = [];
+  for (const r of rows || []) {
+    const k = `${r.ticker}|${r.concept}|${r.frame}`;
+    const cur = best.get(k);
+    if (!cur) {
+      best.set(k, r);
+      continue;
+    }
+    /* successor beats predecessor; between two of the same kind keep the first seen */
+    if (isPred(cur) && !isPred(r)) {
+      dropped.push(cur);
+      best.set(k, r);
+    } else dropped.push(r);
+  }
+  return { rows: [...best.values()], dropped };
+}

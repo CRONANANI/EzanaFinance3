@@ -237,7 +237,8 @@
     "test:registrant-map": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-registrant-map.mjs",
     "test:revenue-growth": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-revenue-growth.mjs",
     "test:price-contract": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-price-contract.mjs",
-    "test:provider-isolation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-provider-isolation.mjs"
+    "test:provider-isolation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-provider-isolation.mjs",
+    "test:6-4-compat": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-6-4-compat.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

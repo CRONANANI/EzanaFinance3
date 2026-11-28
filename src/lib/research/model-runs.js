@@ -29,7 +29,18 @@ export function recordModelRun(symbol, model, result = {}) {
   if (typeof window === 'undefined' || !symbol || !model) return;
   const sym = String(symbol).toUpperCase();
   const all = readAll();
-  all[sym] = { ...(all[sym] || {}), [model]: { ...result, at: Date.now() } };
+  /* Sonar 6.4 integration: a run built on demonstration figures is marked as such, so the
+     Overview never shows it as a valuation of the real company. */
+  const sample = typeof document !== 'undefined' && document.body?.dataset?.marketData === 'sample';
+  const tagged = sample
+    ? {
+        ...result,
+        sample: true,
+        display: result.display ? `${result.display} (sample data)` : result.display,
+        note: result.note ? `${result.note} (sample data)` : 'Sample data',
+      }
+    : result;
+  all[sym] = { ...(all[sym] || {}), [model]: { ...tagged, at: Date.now() } };
   try {
     window.sessionStorage.setItem(KEY, JSON.stringify(all));
   } catch {

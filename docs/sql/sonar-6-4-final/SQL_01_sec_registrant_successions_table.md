@@ -35,5 +35,6 @@ create policy sec_registrant_successions_read on public.sec_registrant_successio
   for select to authenticated using (true);
 
 -- No insert/update/delete policies: only the service role (which bypasses RLS) writes.
-revoke insert, update, delete on public.sec_registrant_successions from anon, authenticated;
+revoke insert, update, delete, truncate, trigger, references on public.sec_registrant_successions from anon, authenticated;
+revoke select on public.sec_registrant_successions from anon;
 ```

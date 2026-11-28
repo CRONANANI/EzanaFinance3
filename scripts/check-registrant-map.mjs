@@ -104,6 +104,7 @@ test('row validation', () => {
 test('the ingest uses the table only behind SEC_PREDECESSOR_MAPPING and prefers the successor', () => {
   const src = readFileSync('src/app/api/cron/ingest-fundamentals/route.js', 'utf8');
   assert.match(src, /SEC_PREDECESSOR_MAPPING === '1'/);
+  assert.match(src, /searchParams\.get\('predecessors'\) === '1'/);
   assert.match(src, /\.eq\('verified', true\)/);
   assert.match(src, /hit\.via === 'predecessor' && direct\.has\(hit\.ticker\)/);
   /* The stored row keeps the CIK that filed it. */

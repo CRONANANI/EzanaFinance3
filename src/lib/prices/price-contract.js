@@ -144,20 +144,28 @@ export function fromAlpacaBar(security, bar, { asOf = today(), adjustment = 'raw
 
 /**
  * price_data_cache row ({ ticker, date, close, adj_close, volume }). The table records no
- * provider: rows with volume null come from the screen-price sync (an FMP quote stored as a
- * close, with adj_close copied from it), so their adjustment is unknown, not adjusted.
+ * provider, and its writers disagree on what `close` means (Sonar 6.4 integration audit):
+ *   - FMP end-of-day rows: close unadjusted, adj_close FMP's adjusted close
+ *   - Alpaca rows (sync-award-prices, adjustment=all): close IS the adjusted close, and
+ *     adj_close is a copy of it
+ *   - quant-universe rows: adj_close copied from close
+ *   - screen-price rows (volume null): an FMP quote stored as a close
+ * So `close` is called unadjusted only when adj_close differs from it (proof the row holds
+ * both); otherwise the adjustment is unknown. Never 'adjusted' unless the adjusted column
+ * was chosen and differs from close.
  */
 export function fromCacheRow(r, { asOf = today(), preferAdjusted = false } = {}) {
   const close = positive(r?.close);
   const adj = positive(r?.adj_close);
   const quoteRow = r?.volume == null;
-  const useAdj = preferAdjusted && adj != null && !quoteRow;
+  const both = close != null && adj != null && adj !== close;
+  const useAdj = preferAdjusted && both && !quoteRow;
   return point(
     {
       security: r?.ticker,
       price: useAdj ? adj : close,
       priceDate: dateOnly(r?.date),
-      adjustment: useAdj ? 'adjusted' : quoteRow ? 'unknown' : 'unadjusted',
+      adjustment: useAdj ? 'adjusted' : both && !quoteRow ? 'unadjusted' : 'unknown',
       provider: 'cache',
       via: quoteRow ? 'fmp' : null,
     },

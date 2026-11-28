@@ -123,3 +123,13 @@ test('the contract activates nothing', () => {
   /* SONAR_PRICE_SYNC still gates the screen-price sync. */
   assert.match(reg, /SONAR_PRICE_SYNC/);
 });
+
+test('an Alpaca-adjusted bar stored in the close column is not called unadjusted', () => {
+  /* sync-award-prices writes Alpaca adjustment=all closes into close and copies adj_close. */
+  const p = fromCacheRow(
+    { ticker: 'X', date: '2026-11-26', close: 99.5, adj_close: 99.5, volume: 12000 },
+    { asOf: ASOF, preferAdjusted: true },
+  );
+  assert.equal(p.adjustment, 'unknown');
+  assert.equal(p.price, 99.5);
+});
