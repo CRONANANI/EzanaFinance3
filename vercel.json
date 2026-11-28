@@ -4,9 +4,7 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "regions": [
-    "pdx1"
-  ],
+  "regions": ["pdx1"],
   "crons": [
     {
       "path": "/api/cron/sync-quant-universe",
@@ -385,27 +383,7 @@
       "schedule": "2-59/5 * * * *"
     },
     {
-      "path": "/api/cron/sonar-model-bench?lane=0",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/sonar-model-bench?lane=1",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/sonar-model-bench?lane=2",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/sonar-model-bench?lane=3",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/sonar-model-bench?lane=4",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/sonar-model-bench?lane=5",
+      "path": "/api/cron/dispatch",
       "schedule": "* * * * *"
     }
   ]
