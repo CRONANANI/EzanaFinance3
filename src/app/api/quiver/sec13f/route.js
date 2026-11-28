@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
+import { withApiGuard } from '@/lib/api-guard';
+import { quiverParams, serveQuiver } from '@/lib/quiver/proxy';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,40 +45,52 @@ async function fetchPage(page, params) {
   }
 }
 
-export async function GET(request) {
+/**
+ * Sonar 6.4 hardening: signed-in callers only (the only consumer, Inside the Capitol, is a
+ * signed-in page, so no user loses access), validated filters, a shared cache, a daily
+ * upstream quota per user and an upstream counter (lib/quiver/proxy.js).
+ */
+async function handler(request, user) {
   if (!QUIVER_KEY) {
     return NextResponse.json({ error: 'QUIVER_API_KEY not configured', data: [] }, { status: 503 });
   }
+  const v = quiverParams(new URL(request.url).searchParams, ['ticker', 'owner']);
+  if (v.error) return NextResponse.json({ error: `Invalid ${v.error}` }, { status: 400 });
+  const filterParams = v.params;
 
-  const { searchParams } = new URL(request.url);
-  const filterParams = {};
-
-  const ticker = (searchParams.get('ticker') || '').toUpperCase().trim();
-  if (ticker) filterParams.ticker = ticker;
-
-  const owner = (searchParams.get('owner') || '').trim();
-  if (owner) filterParams.owner = owner;
-
-  const all = [];
-  const seen = new Set();
-
-  for (let page = 0; page < MAX_PAGES; page += 1) {
-    const rows = await fetchPage(page, filterParams);
-    if (rows === null) {
-      if (page === 0) return NextResponse.json([], { status: 200 });
-      break;
-    }
-    if (rows.length === 0) break;
-
-    for (const r of rows) {
-      const key = `${r.Name || r.Fund}-${r.Ticker}-${r.Date}-${r.ReportPeriod}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      all.push(r);
-    }
-
-    if (rows.length < PAGE_SIZE) break;
+  const out = await serveQuiver({
+    route: 'sec13f',
+    params: filterParams,
+    caller: `u:${user.id}`,
+    dailyLimit: 200,
+    fetchAll: async () => {
+      const all = [];
+      const seen = new Set();
+      let pages = 0;
+      for (let page = 0; page < MAX_PAGES; page += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const rows = await fetchPage(page, filterParams);
+        pages += 1;
+        if (rows === null) return { rows: all, pages, failed: page === 0 };
+        if (rows.length === 0) break;
+        for (const r of rows) {
+          const key = `${r.Name || r.Fund}-${r.Ticker}-${r.Date}-${r.ReportPeriod}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          all.push(r);
+        }
+        if (rows.length < PAGE_SIZE) break;
+      }
+      return { rows: all, pages };
+    },
+  });
+  if (out.quotaExceeded) {
+    return NextResponse.json(
+      { error: 'Daily limit for this data reached. Please try again later.' },
+      { status: 429 },
+    );
   }
-
-  return NextResponse.json(all);
+  return NextResponse.json(out.rows);
 }
+
+export const GET = withApiGuard(handler, { requireAuth: true, strict: true });

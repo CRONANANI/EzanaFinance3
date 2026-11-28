@@ -225,7 +225,8 @@
     "test:sonar-heldout": "node --no-warnings --import ./scripts/register-sonar-loader.mjs scripts/check-sonar-heldout.mjs",
     "test:sonar-objectives": "node --no-warnings --import ./scripts/register-sonar-loader.mjs scripts/check-sonar-objectives.mjs",
     "test:sonar-remediation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-remediation.mjs",
-    "test:cron-dispatch": "node --no-warnings scripts/check-cron-dispatch.mjs"
+    "test:cron-dispatch": "node --no-warnings scripts/check-cron-dispatch.mjs",
+    "test:quiver-proxy": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-quiver-proxy.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
