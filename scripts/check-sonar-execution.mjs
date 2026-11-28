@@ -62,9 +62,9 @@ test('E2E screen: energy companies with operating margin above 15%, ranked by in
 });
 
 test('E2E screen: an unsupported measure is reported, never substituted', () => {
-  const { attachments, intent } = inferComposition('Find bank stocks with a P/E below 10.');
+  const { attachments, intent } = inferComposition('Find bank stocks with an EV/EBITDA below 10.');
   assert.equal(attachments.length, 0);
-  assert.match(intent.unsupported || '', /P\/E/);
+  assert.match(intent.unsupported || '', /EV\/EBITDA/);
 });
 
 test('E2E comparison: named companies on revenue growth and operating margin', async () => {
@@ -340,9 +340,9 @@ test('13F public preview exposes only allow-listed aggregate fields', async () =
 
 test('a comparison on a measure filed figures cannot give is unsupported, not defaulted', () => {
   /* Retired from the held-out set (U10) when this was fixed. */
-  const { attachments, intent } = inferComposition('Compare Tesla and Ford on P/E');
+  const { attachments, intent } = inferComposition('Compare Tesla and Ford on dividend yield');
   assert.equal(attachments.length, 0);
-  assert.match(intent.unsupported || '', /P\/E/);
+  assert.match(intent.unsupported || '', /dividend/i);
 });
 
 test('recognized government revenue comes from the segment disclosure for the same year', async () => {
@@ -416,4 +416,194 @@ test('the dependence writer rule fixes the one ratio and forbids "does not discl
   assert.match(rule, /22\.8%/);
   assert.match(rule, /do not compute or state any other award-to-revenue ratio/i);
   assert.match(rule, /do not say or imply that the company does not disclose it/);
+});
+
+/* ── Sonar 6.4 ───────────────────────────────────────────────────────────────── */
+
+test('TTM rolls the latest annual forward with later quarters, never filling a gap', async () => {
+  const { ttmFigure } = await import('../src/lib/sonar/composer/calc.js');
+  const A = [{ end: '2025-12-31', value: 150 }];
+  const Q = [
+    ['2025-03-31', 30],
+    ['2025-06-30', 35],
+    ['2025-09-30', 40],
+    ['2026-03-31', 40],
+    ['2026-06-30', 45],
+    ['2026-09-30', 50],
+  ].map(([end, value]) => ({ end, value }));
+  assert.deepEqual(ttmFigure(A, Q, { asOf: '2026-11-28' }).value, 180);
+  /* A quarter without its year-earlier counterpart: fall back to the annual, said so. */
+  const t = ttmFigure(
+    A,
+    Q.filter((x) => x.end !== '2025-06-30'),
+    { asOf: '2026-11-28' },
+  );
+  assert.equal(t.method, 'annual');
+  assert.equal(t.value, 150);
+  /* No look-ahead: periods after asOf are ignored. */
+  assert.equal(ttmFigure(A, Q, { asOf: '2026-05-01' }).through, '2026-03-31');
+  /* Stale: the latest period ended more than 270 days ago. */
+  assert.equal(
+    ttmFigure([{ end: '2025-06-30', value: 400 }], [], { asOf: '2026-11-28' }).stale,
+    true,
+  );
+});
+
+test('valuation: P/E, P/S, earnings yield, negative earnings and stale inputs', async () => {
+  const { valuationRatios } = await import('../src/lib/sonar/composer/calc.js');
+  const ok = (v) => ({ value: v, through: '2026-09-30', stale: false });
+  const base = {
+    shares: { end: '2026-10-20', value: 10 },
+    price: { price: 200, asOf: '2026-11-27' },
+    asOf: '2026-11-28',
+  };
+  const a = valuationRatios({ ...base, ni: ok(180), rev: ok(1370) });
+  assert.ok(Math.abs(a.pe - 2000 / 180) < 1e-9);
+  assert.ok(Math.abs(a.ps - 2000 / 1370) < 1e-9);
+  assert.ok(Math.abs(a.earningsYield - 0.09) < 1e-12);
+  const neg = valuationRatios({ ...base, ni: ok(-16), rev: ok(1315) });
+  assert.equal(neg.pe, null);
+  assert.equal(neg.peStatus, 'negative');
+  assert.ok(neg.earningsYield < 0);
+  const oldPrice = valuationRatios({
+    ...base,
+    price: { price: 200, asOf: '2026-11-01' },
+    ni: ok(180),
+    rev: ok(1370),
+  });
+  assert.equal(oldPrice.pe, null);
+  assert.match(oldPrice.stale.join(' '), /price from 2026-11-01/);
+  const oldShares = valuationRatios({
+    ...base,
+    shares: { end: '2025-08-01', value: 10 },
+    ni: ok(180),
+    rev: ok(1370),
+  });
+  assert.equal(oldShares.marketCap, null);
+});
+
+test('valuation screen keeps negative earnings visible and names every gap', async () => {
+  const { setQuoteProvider } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const { PRICES } = await import('./lib/sonar-exec-fixtures.mjs');
+  setQuoteProvider(async (ts) =>
+    Object.fromEntries(ts.filter((t) => PRICES[t]).map((t) => [t, PRICES[t]])),
+  );
+  const res = await runScreen(
+    fakeSupabase(FIXTURES),
+    {
+      capability: 'financial-screen',
+      params: { sector: 'energy', filters: [], rank_by: 'earnings_yield', direction: 'descending' },
+    },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    res.table.map((r) => r.ticker),
+    ['BBB', 'AAA', 'CCC'],
+  );
+  const ccc = res.table.find((r) => r.ticker === 'CCC');
+  assert.ok(Math.abs(ccc.earnings_yield - -16 / 200) < 1e-12);
+  assert.match(ccc.flags, /negative TTM earnings/);
+  assert.ok(res.columns.some((c) => c.key === 'market_cap'));
+  /* DDD has no filings: counted at the filings step, not dropped silently. */
+  assert.equal(res.funnel.find((f) => f.step === 'filings').count, 3);
+  assert.equal(res.funnel[0].count, 4);
+  assert.ok(res.limitations.some((l) => /negative trailing earnings.*CCC/.test(l)));
+  setQuoteProvider(null);
+});
+
+test('industry universes: SIC classification, no sector substitution, honest gaps', async () => {
+  const semis = await runScreen(
+    fakeSupabase(FIXTURES),
+    {
+      capability: 'financial-screen',
+      params: { sector: 'semiconductors', filters: [], rank_by: 'margin' },
+    },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    semis.table.map((r) => r.ticker),
+    ['TTT'],
+  );
+  assert.match(semis.funnel[0].label, /SIC 3674/);
+  /* The defense universe adds companies the contract data defines. */
+  const def = await runScreen(
+    fakeSupabase(FIXTURES),
+    {
+      capability: 'financial-screen',
+      params: { sector: 'defense', filters: [], rank_by: 'revenue_growth' },
+    },
+    { now: NOW },
+  );
+  assert.deepEqual(
+    def.table.map((r) => r.ticker),
+    ['DEF'],
+  );
+  /* Without a classification table the universe is not established (no GICS fallback). */
+  const noTable = { ...FIXTURES, company_industry: [] };
+  await assert.rejects(
+    runScreen(
+      fakeSupabase(noTable),
+      { capability: 'financial-screen', params: { sector: 'banks' } },
+      { now: NOW },
+    ),
+    /cannot be established; Sonar does not substitute a broader sector/,
+  );
+  const { universeFor } = await import('../src/lib/sonar/composer/industries.js');
+  assert.equal(universeFor('solar').kind, 'unsupported');
+  assert.equal(universeFor('energy').kind, 'gics');
+});
+
+test('macro: inflation trend, real policy rate and policy changes from the series', async () => {
+  const { CPI } = await import('./lib/sonar-exec-fixtures.mjs');
+  const { runMacro } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const res = await runMacro(
+    fakeSupabase(FIXTURES),
+    {
+      capability: 'macro-indicators',
+      params: {
+        countries: ['USA', 'CAN'],
+        measures: ['inflation', 'real_rate', 'policy_changes', 'policy_rate'],
+      },
+    },
+    { now: NOW },
+  );
+  const us = res.macro.byCountry.USA;
+  /* 2025-10 is missing, so the 2026-10 year-on-year rate cannot be computed. */
+  assert.equal(us.latestYoYPeriod, '2026-09');
+  assert.ok(Math.abs(us.latestYoY - (CPI.USA['2026-09'] / CPI.USA['2025-09'] - 1)) < 1e-12);
+  assert.ok(
+    Math.abs(us.annualized3m - ((CPI.USA['2026-09'] / CPI.USA['2026-06']) ** 4 - 1)) < 1e-12,
+  );
+  assert.equal(us.direction, 'accelerating');
+  assert.match(us.gapNote, /2025-10 is missing/);
+  const ca = res.macro.byCountry.CAN;
+  assert.equal(ca.realRatePeriod, '2026-09');
+  assert.ok(
+    Math.abs(ca.realRate - (2.25 - (CPI.CAN['2026-09'] / CPI.CAN['2025-09'] - 1) * 100)) < 1e-12,
+  );
+  assert.equal(ca.changesThisYear, 3);
+  assert.equal(ca.netChangeThisYear, -0.25);
+  assert.deepEqual(
+    ca.changes.map((c) => c.date),
+    ['2026-03', '2026-06', '2026-10'],
+  );
+  await assert.rejects(
+    runMacro(
+      fakeSupabase(FIXTURES),
+      { capability: 'macro-indicators', params: { countries: ['WAK'] } },
+      { now: NOW },
+    ),
+    /No inflation or policy rate series/,
+  );
+});
+
+test('macro: daily policy data gives effective dates when it covers the window', async () => {
+  const { policyChanges } = await import('../src/lib/sonar/composer/macro.js');
+  const daily = { '2025-12-15': 2.75, '2026-03-12': 2.75, '2026-03-13': 2.5, '2026-06-05': 2.25 };
+  const r = policyChanges({ daily, monthly: {} }, { from: '2026-01' });
+  assert.equal(r.basis, 'daily');
+  assert.deepEqual(
+    r.changes.map((c) => c.date),
+    ['2026-03-13', '2026-06-05'],
+  );
 });

@@ -480,6 +480,29 @@ export function clientComposition(c, f) {
       coverage: a.coverage || null,
       columns: a.columns || null,
       funnel: a.funnel || null,
+      macro: a.macro
+        ? {
+            measures: a.macro.measures,
+            from: a.macro.from,
+            byCountry: Object.fromEntries(
+              Object.entries(a.macro.byCountry || {}).map(([k, x]) => [
+                k,
+                {
+                  country: x.country,
+                  latestYoYPeriod: x.latestYoYPeriod,
+                  latestYoY: x.latestYoY,
+                  annualized3m: x.annualized3m,
+                  direction: x.direction,
+                  policyRate: x.policyRate,
+                  realRate: x.realRate,
+                  realRatePeriod: x.realRatePeriod,
+                  changesThisYear: x.changesThisYear,
+                  netChangeThisYear: x.netChangeThisYear,
+                },
+              ]),
+            ),
+          }
+        : null,
       leaders: a.leaders || null,
       aligned: typeof a.aligned === 'boolean' ? a.aligned : null,
       dependence: a.dependence

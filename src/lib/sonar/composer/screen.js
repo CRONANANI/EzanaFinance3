@@ -13,26 +13,11 @@
  * Pure, deterministic, no imports.
  */
 
-export const SCREEN_VERSION = 'screen-v1';
+export const SCREEN_VERSION = 'screen-v2';
 
-/**
- * Compositional sectors (compositional.js SECTORS) to the GICS-level sectors Ezana stores.
- * `exact: false` means the GICS sector is broader than what was asked (semiconductors are
- * one industry inside Information Technology); the answer says so.
- */
-export const GICS_FOR = {
-  semiconductors: { sector: 'Information Technology', exact: false },
-  software: { sector: 'Information Technology', exact: false },
-  technology: { sector: 'Information Technology', exact: true },
-  banks: { sector: 'Financials', exact: false },
-  energy: { sector: 'Energy', exact: true },
-  defense: { sector: 'Industrials', exact: false },
-  healthcare: { sector: 'Health Care', exact: true },
-  utilities: { sector: 'Utilities', exact: true },
-  real_estate: { sector: 'Real Estate', exact: true },
-  retail: { sector: 'Consumer Discretionary', exact: false },
-  airlines: { sector: 'Industrials', exact: false },
-};
+/* Sonar 6.4: universes come from industries.js (verified SIC industries, exact GICS
+   sectors, or unsupported); the broad-sector substitution table is gone. */
+export { universeFor, INDUSTRIES, GICS_EXACT } from './industries.js';
 
 /**
  * Measures a screen can filter or rank on, with where the value comes from.
@@ -52,6 +37,17 @@ export const SCREEN_MEASURES = {
   free_cash_flow: { label: 'Free cash flow', source: 'ratios', key: 'fcf', unit: 'usd' },
   debt: { label: 'Debt/equity', source: 'ratios', key: 'debt_to_equity', unit: 'x' },
   revenue: { label: 'Revenue', source: 'ratios', key: 'revenue', unit: 'usd' },
+  /* Sonar 6.4: valuation from TTM filed figures, the latest filed share count and an
+     authorized price (calc.js ttmFigure, valuationRatios). */
+  pe_ratio: { label: 'P/E (TTM)', source: 'valuation', key: 'pe', unit: 'x' },
+  ps_ratio: { label: 'P/S (TTM)', source: 'valuation', key: 'ps', unit: 'x' },
+  earnings_yield: {
+    label: 'Earnings yield (TTM)',
+    source: 'valuation',
+    key: 'earnings_yield',
+    unit: 'pct',
+  },
+  market_cap: { label: 'Market cap', source: 'valuation', key: 'market_cap', unit: 'usd' },
   gov_contract_value: {
     label: 'New federal awards (latest FY)',
     source: 'contracts',
@@ -81,10 +77,15 @@ export const SCREEN_MEASURES = {
 
 /** Measures the screen cannot compute yet (reported, never substituted). */
 export const SCREEN_UNSUPPORTED = {
-  pe_ratio:
-    'P/E needs a point-in-time share price for every company in the universe; screening on it is not available yet.',
-  short_interest: 'Short interest is not in Ezana’s data.',
-  esg_score: 'ESG scores are not in Ezana’s data.',
+  short_interest: 'Screening on short interest is not available: it is not in Ezana’s data.',
+  esg_score: 'Screening on ESG scores is not available: they are not in Ezana’s data.',
+  dividend_yield:
+    'Dividends paid are not in Ezana’s filed data yet, so dividend yield cannot be computed.',
+  ev_ebitda:
+    'EV/EBITDA needs total debt and EBITDA, which Ezana’s filed data does not hold for most companies yet.',
+  price_to_book:
+    'Price to book is not available yet: book value per share is not aligned to a price date in Ezana’s data.',
+  beta: 'Beta needs a price history for every company in the universe, which Ezana does not hold yet.',
 };
 
 /** The comparable number for a filter: percentages are stated in percent (20 means 20%). */
@@ -195,7 +196,8 @@ export function screenSources(filters = [], rankBy = null) {
 export function compareCompanies(rows, metrics) {
   const leaders = {};
   for (const m of metrics) {
-    const lowerIsBetter = m === 'debt_to_equity';
+    /* Lower is better for leverage; lower is cheaper for P/E and P/S. */
+    const lowerIsBetter = ['debt_to_equity', 'pe', 'ps'].includes(m);
     const vals = rows.filter((r) => r.ratios?.[m] != null);
     if (vals.length < 2) continue;
     const best = vals.reduce((a, b) =>

@@ -88,6 +88,41 @@ const CONTRACTS = {
     },
     { id: 'alignment', label: 'Fiscal-year alignment checked', ok: typeof r.aligned === 'boolean' },
   ],
+  'macro-indicators': (r) => {
+    const m = r.macro || {};
+    const xs = Object.values(m.byCountry || {});
+    const want = new Set(m.measures || []);
+    return [
+      { id: 'countries', label: 'Every named country with data', ok: xs.length > 0 },
+      ...(want.has('inflation')
+        ? [
+            {
+              id: 'inflation',
+              label: 'Year-on-year inflation with its month',
+              ok: xs.every((x) => x.latestYoY != null),
+            },
+          ]
+        : []),
+      ...(want.has('real_rate')
+        ? [
+            {
+              id: 'real_rate',
+              label: 'Real policy rate for a paired month',
+              ok: xs.every((x) => x.realRate != null),
+            },
+          ]
+        : []),
+      ...(want.has('policy_changes')
+        ? [
+            {
+              id: 'changes',
+              label: 'Policy changes in the window, dated',
+              ok: xs.every((x) => x.changesThisYear != null),
+            },
+          ]
+        : []),
+    ];
+  },
   'government-dependence': (r) => {
     const d = r.dependence || {};
     return [
@@ -124,6 +159,8 @@ export function conclusionRule(result) {
       return '- The executive conclusion must name the top companies of the screen with the ranking measure’s values, state the universe and how many companies passed each filter, and say which companies lacked the data. Do not add companies the screen did not return.';
     case 'company-comparison':
       return '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when fiscal years do not line up.';
+    case 'macro-indicators':
+      return '- The executive conclusion must give, for each country, year-on-year inflation with its month, the 3-month annualised rate and the trend as computed (accelerating, decelerating or mixed), the policy rate with its date and the real policy rate with its paired month, and any policy changes with their dates. Use only the computed figures; do not describe inflation expectations or forecasts as if computed.';
     case 'government-dependence': {
       const d = result.dependence || {};
       const pct = (v) => (Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : 'N/A');

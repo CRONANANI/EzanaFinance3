@@ -61,6 +61,56 @@ export const METRICS = {
     available: true,
     kind: 'company',
   },
+  /* Sonar 6.4: valuation measures from filed TTM figures and an authorized price. */
+  ps_ratio: {
+    words: String.raw`p\/s(?:\s+ratio)?|price[- ]to[- ]sales(?:\s+ratio)?|sales multiple`,
+    dataset: 'sec_fundamentals',
+    unit: 'x',
+    available: true,
+    kind: 'company',
+  },
+  earnings_yield: {
+    words: String.raw`earnings yields?`,
+    dataset: 'sec_fundamentals',
+    unit: 'pct',
+    available: true,
+    kind: 'company',
+  },
+  market_cap: {
+    words: String.raw`market cap(?:italization|italisation)?|market value`,
+    dataset: 'sec_fundamentals',
+    unit: 'usd',
+    available: true,
+    kind: 'company',
+  },
+  dividend_yield: {
+    words: String.raw`dividend yields?|dividend payers?|high[- ]dividend`,
+    dataset: null,
+    unit: 'pct',
+    available: false,
+    kind: 'company',
+  },
+  ev_ebitda: {
+    words: String.raw`ev\s*\/\s*ebitda|enterprise value(?:[- ]to[- ]ebitda)?`,
+    dataset: null,
+    unit: 'x',
+    available: false,
+    kind: 'company',
+  },
+  price_to_book: {
+    words: String.raw`price[- ]to[- ]book|p\/b(?:\s+ratio)?|book value multiple`,
+    dataset: null,
+    unit: 'x',
+    available: false,
+    kind: 'company',
+  },
+  beta: {
+    words: String.raw`beta`,
+    dataset: null,
+    unit: 'x',
+    available: false,
+    kind: 'market',
+  },
   debt: {
     words: String.raw`debt(?:[- ]to[- ](?:equity|ebitda))?|leverage|balance sheet`,
     dataset: 'sec_fundamentals',
@@ -227,6 +277,13 @@ const METRIC_ORDER = [
   'institutional_breadth',
   'short_interest',
   'esg_score',
+  'ev_ebitda',
+  'price_to_book',
+  'dividend_yield',
+  'earnings_yield',
+  'ps_ratio',
+  'market_cap',
+  'beta',
   'margin',
   'pe_ratio',
   'debt',
@@ -247,14 +304,27 @@ const METRIC_ORDER = [
 /* ── Universes ───────────────────────────────────────────────────────── */
 
 export const SECTORS = {
+  /* Sonar 6.4: industries first (the first match wins), so "oil refiners" is not read as
+     the whole energy sector. Industries without a verified classification (solar,
+     cybersecurity) are named here only so they are never read as a broader sector. */
+  refiners: String.raw`(?:oil |petroleum )?refiners?|refining (?:companies|stocks)`,
+  oilfield_services: String.raw`oil ?field services?|drillers|drilling (?:companies|contractors|stocks)`,
+  oil_producers: String.raw`oil (?:and gas )?(?:producers|exploration)|e&p (?:companies|stocks)|exploration and production`,
+  pharma: String.raw`pharma(?:ceutical)?s?(?: companies| stocks)?|drug ?makers`,
+  biotech: String.raw`biotech(?:nology)?s?(?: companies| stocks)?`,
+  insurers: String.raw`insurers|insurance (?:companies|stocks)`,
+  reits: String.raw`reits?`,
+  solar: String.raw`solar(?: energy)?(?: companies| stocks)?`,
+  cybersecurity: String.raw`cyber ?security(?: companies| stocks)?`,
+  ai: String.raw`(?:ai|artificial intelligence) (?:companies|stocks)`,
   semiconductors: String.raw`semiconductors?|semis|chip(?:maker)?s?|chip stocks`,
   software: String.raw`software|saas`,
   banks: String.raw`banks?|banking|lenders`,
   energy: String.raw`energy|oil (?:and gas )?(?:companies|stocks|producers)`,
   defense: String.raw`defen[cs]e (?:contractors|companies|stocks|names)|defen[cs]e|aerospace`,
-  healthcare: String.raw`health ?care|pharma(?:ceutical)?s?|biotechs?`,
+  healthcare: String.raw`health ?care`,
   utilities: String.raw`utilit(?:y|ies)`,
-  real_estate: String.raw`reits?|real estate`,
+  real_estate: String.raw`real estate`,
   retail: String.raw`retail(?:ers)?|consumer discretionary`,
   technology: String.raw`tech(?:nology)? (?:stocks|companies|names|sector)|big tech|megacaps?`,
   airlines: String.raw`airlines?|air carriers`,
@@ -397,6 +467,9 @@ const FUNDAMENTAL_MEASURES = new Set([
   'revenue_growth',
   'earnings_growth',
   'pe_ratio',
+  'ps_ratio',
+  'earnings_yield',
+  'market_cap',
   'debt',
   'free_cash_flow',
   'revenue',
@@ -434,7 +507,13 @@ export function composeIntent(tokens, { subject = null, relation = null } = {}) 
     )
       continue;
     if (id === 'price_return' && measures.length) continue;
-    if (id === 'interest_rate' && measures.includes('fx_rate')) continue;
+    if (
+      id === 'interest_rate' &&
+      (measures.includes('fx_rate') ||
+        measures.includes('earnings_yield') ||
+        measures.includes('dividend_yield'))
+    )
+      continue;
     measures.push(id);
   }
   const filters = readFilters(t);

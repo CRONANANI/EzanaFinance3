@@ -16,10 +16,15 @@
 import { makeAnalysis } from './registry.js';
 import { extractParams, extractSubject, extractRelation } from './subject.js';
 import { canonicalIntent, composerMetric } from '../semantic/canonical-intent.js';
-import { GICS_FOR, SCREEN_MEASURES } from './screen.js';
+import { SCREEN_MEASURES, universeFor } from './screen.js';
+import { macroCountries } from './macro.js';
 
 /* Composition measure → comparison metric (filed ratios only). */
 const COMPARE_METRIC = {
+  pe_ratio: 'pe',
+  ps_ratio: 'ps',
+  earnings_yield: 'earnings_yield',
+  market_cap: 'market_cap',
   revenue_growth: 'revenue_growth',
   earnings_growth: 'earnings_growth',
   margin: 'operating_margin',
@@ -28,6 +33,41 @@ const COMPARE_METRIC = {
 };
 
 const WINDOW_DAYS = { day: 1, week: 7, month: 30, quarter: 91, year: 365 };
+
+/* Sonar 6.4: macro questions (inflation trend, real policy rate, policy changes). */
+const MACRO_MEASURES = [
+  ['real_rate', /\breal\s+(?:policy\s+|interest\s+)?rates?\b/i],
+  [
+    'policy_changes',
+    /\b(?:cut|cuts|cutting|hike|hikes|hiking|rais(?:e|ed|ing)|lower(?:ed|ing)?|chang(?:e|ed|es))\b.{0,25}\brates?\b|\brate\s+(?:cuts?|hikes?|decisions?|changes?)\b/i,
+  ],
+  ['inflation', /\binflation\b|\bcpi\b|\bconsumer prices?\b/i],
+  [
+    'policy_rate',
+    /\b(?:policy|benchmark|interest|bank)\s+rates?\b|\bcentral bank\b|\bfed funds\b/i,
+  ],
+];
+
+/**
+ * The macro-indicators analysis a question asks for, or null. Needs a country Ezana can
+ * name and a measure the executor computes; an unknown place attaches nothing.
+ */
+export function macroAttachment(question, intent = null) {
+  const q = String(question || '');
+  if (intent?.family) return null;
+  const measures = MACRO_MEASURES.filter(([, re]) => re.test(q)).map(([id]) => id);
+  if (!measures.length) return null;
+  const countries = macroCountries(q);
+  if (!countries.length) return null;
+  if (measures.includes('real_rate') || measures.includes('policy_changes'))
+    measures.push('policy_rate');
+  if (measures.includes('real_rate')) measures.push('inflation');
+  return makeAnalysis('macro-indicators', {
+    origin: 'auto',
+    subject: null,
+    params: { countries: [...new Set(countries)].slice(0, 8), measures: [...new Set(measures)] },
+  });
+}
 
 /**
  * Sonar 6.2: the public-data analyses a canonical intent asks for (a screen, a company
@@ -39,7 +79,7 @@ export function analyticsAttachment(intent) {
   const comp = intent.composition;
   if (intent.family === 'multi_stage_screen' && comp?.universe?.type === 'sector') {
     const sector = comp.universe.id;
-    if (!GICS_FOR[sector]) return null;
+    if (universeFor(sector).kind === 'unsupported') return null;
     const filters = (comp.filters || [])
       .filter((f) => SCREEN_MEASURES[f.metric])
       .map((f) => ({ metric: f.metric, op: f.op, value: f.value, unit: f.unit || null }));
@@ -167,7 +207,7 @@ export function inferComposition(
   } else if (intent.family === 'congressional_overlap') {
     caps = caps.filter((c) => c !== 'institutional-ownership');
   }
-  const analytic = analyticsAttachment(intent);
+  const analytic = analyticsAttachment(intent) || macroAttachment(q, intent);
   if (analytic) {
     return {
       subject: analytic.subject?.text || null,

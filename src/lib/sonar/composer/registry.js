@@ -409,6 +409,17 @@ export const CAPABILITIES = {
     subjectless: true,
     output: 'calculated',
   },
+  'macro-indicators': {
+    key: 'macro-indicators',
+    label: 'Macro Indicators',
+    type: 'Analysis',
+    icon: 'bi-globe2',
+    summary:
+      'Inflation trend, real policy rate and policy-rate changes by country from IMF and BIS series.',
+    subjects: [],
+    subjectless: true,
+    output: 'calculated',
+  },
   'government-dependence': {
     key: 'government-dependence',
     label: 'Government Dependence',
@@ -518,15 +529,19 @@ export function validateAttachment(attachment) {
   if (cap.subjectless) {
     const p = a.params || {};
     const ready =
-      a.capability === 'company-comparison'
-        ? Math.max((p.tickers || []).length, (p.company_names || []).length) >= 2
-        : Boolean(p.sector) || (p.tickers || []).length > 0;
+      a.capability === 'macro-indicators'
+        ? (p.countries || []).length > 0
+        : a.capability === 'company-comparison'
+          ? Math.max((p.tickers || []).length, (p.company_names || []).length) >= 2
+          : Boolean(p.sector) || (p.tickers || []).length > 0;
     if (!ready) {
       a.issues.push({
         message:
           a.capability === 'company-comparison'
             ? 'Name at least two companies to compare.'
-            : 'Name a sector or the companies to screen.',
+            : a.capability === 'macro-indicators'
+              ? 'Name a country with data.'
+              : 'Name a sector or the companies to screen.',
       });
       return { ...a, status: 'conditional' };
     }
@@ -646,12 +661,14 @@ const SCREEN_SOURCE_DATASET = {
 };
 
 export const PUBLIC_ANALYTICS = new Set([
+  'macro-indicators',
   'financial-screen',
   'company-comparison',
   'government-dependence',
 ]);
 
 export function analyticsDatasets(att) {
+  if (att?.capability === 'macro-indicators') return ['macro'];
   if (att?.capability === 'company-comparison') return ['sec-filings'];
   if (att?.capability === 'government-dependence') return ['gov-contracts', 'sec-filings'];
   if (att?.capability !== 'financial-screen') return [];

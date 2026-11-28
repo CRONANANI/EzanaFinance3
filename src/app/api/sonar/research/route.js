@@ -60,7 +60,7 @@ import {
 } from '@/lib/sonar/semantic/result-reuse';
 import { cacheGet, cacheSet, hasCacheClient, setCacheClient } from '@/lib/sonar/engine/cache';
 import { clientComposition, fulfillmentContract } from '@/lib/sonar/composer/fulfillment';
-import { inferComposition } from '@/lib/sonar/composer/intents';
+import { inferComposition, macroAttachment } from '@/lib/sonar/composer/intents';
 import {
   canonicalIntent,
   followUpIntent,
@@ -541,7 +541,10 @@ const POST_HANDLER = withApiGuard(
           company_comparison: 'company-comparison',
           government_contract_dependency: 'government-dependence',
         };
-        const analyticCap = canonical.unsupported ? null : ANALYTIC_FAMILIES[canonical.family];
+        const analyticCap = canonical.unsupported
+          ? null
+          : ANALYTIC_FAMILIES[canonical.family] ||
+            (macroAttachment(intentQuery, canonical) ? 'macro-indicators' : null);
         const needsAnalytic =
           analyticCap &&
           !dismissedCaps.includes(analyticCap) &&

@@ -40,7 +40,7 @@ import {
   compositionOperations,
   isSectorText,
 } from './compositional.js';
-import { GICS_FOR, SCREEN_MEASURES, SCREEN_UNSUPPORTED } from '../composer/screen.js';
+import { SCREEN_MEASURES, SCREEN_UNSUPPORTED, universeFor } from '../composer/screen.js';
 
 export const CANONICAL_INTENT_VERSION = 1;
 /** Methodology of the institutional ownership calculation (bump when ownership.js changes). */
@@ -611,6 +611,10 @@ export function holderCandidates(question) {
 
 /* Measures the company comparison computes from filed figures (intents.js COMPARE_METRIC). */
 const COMPARABLE_MEASURES = new Set([
+  'pe_ratio',
+  'ps_ratio',
+  'earnings_yield',
+  'market_cap',
   'revenue_growth',
   'earnings_growth',
   'margin',
@@ -624,6 +628,9 @@ const COMPANY_MEASURES = new Set([
   'earnings_growth',
   'margin',
   'pe_ratio',
+  'ps_ratio',
+  'earnings_yield',
+  'market_cap',
   'debt',
   'free_cash_flow',
   'revenue',
@@ -883,10 +890,10 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
       else if (composition.universe?.type === 'index')
         unsupported =
           'Index membership is not in Ezana\u2019s data, so an index cannot be screened yet; name a sector instead.';
-      else if (sector && !GICS_FOR[sector])
-        unsupported = `The ${sector.replace(/_/g, ' ')} sector is not mapped to Ezana\u2019s sector data yet.`;
+      else if (sector && universeFor(sector).kind === 'unsupported')
+        unsupported = universeFor(sector).reason;
     }
-    if (composition?.unsupported?.length)
+    if (composition?.unsupported?.length && !unsupported)
       unsupported = `Not available in Ezana's data yet: ${composition.unsupported.join(', ').replace(/_/g, ' ')}.`;
   }
 

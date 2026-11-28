@@ -17,7 +17,10 @@
  * only; nothing here touches a user's or an organization's data.
  */
 
-import { companyRatios } from './calc.js';
+import { companyRatios, ttmFigure, valuationRatios } from './calc.js';
+import { universeFor, dodDefined, industryMembers } from './industries.js';
+import { MACRO_VERSION, inflationTrend, policyChanges, realPolicyRate } from './macro.js';
+import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { fetchRevenueMix } from '@/lib/sonar/revenue-mix';
 import { normalizeUniverse } from './ownership.js';
 import {
@@ -26,7 +29,6 @@ import {
   securityMaster,
 } from './ownership-server.js';
 import {
-  GICS_FOR,
   SCREEN_MEASURES,
   SCREEN_VERSION,
   applyScreen,
@@ -130,6 +132,213 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
   for (const t of Object.values(out))
     for (const list of Object.values(t.annual)) list.sort((a, b) => (a.end < b.end ? 1 : -1));
   return out;
+}
+
+/* ── Sonar 6.4: authorized prices and valuation ──────────────────────────── */
+
+const FMP_STABLE = 'https://financialmodelingprep.com/stable';
+const MAX_VALUED = 300;
+
+/** FMP batch quotes with the quote time kept: { TICKER: { price, asOf } }. */
+async function fmpQuotes(tickers) {
+  const key = process.env.FMP_API_KEY || '';
+  const out = {};
+  if (!key || !tickers.length) return out;
+  for (const group of chunk([...new Set(tickers)], 100)) {
+    try {
+      const res = await fetchWithTimeout(
+        `${FMP_STABLE}/batch-quote?symbols=${encodeURIComponent(group.map((t) => t.replace(/\./g, '-')).join(','))}&apikey=${encodeURIComponent(key)}`,
+        { cache: 'no-store' },
+        8000,
+      );
+      if (!res.ok) {
+        console.warn('[sonar] valuation quotes unavailable', { status: res.status });
+        continue;
+      }
+      const rows = await res.json();
+      for (const q of Array.isArray(rows) ? rows : []) {
+        const price = Number(q?.price);
+        if (!q?.symbol || !Number.isFinite(price) || price <= 0) continue;
+        const ts = Number(q.timestamp);
+        out[String(q.symbol).toUpperCase().replace(/-/g, '.')] = {
+          price,
+          asOf: Number.isFinite(ts)
+            ? new Date(ts * 1000).toISOString().slice(0, 10)
+            : new Date().toISOString().slice(0, 10),
+        };
+      }
+    } catch {
+      /* a failed group leaves its tickers without a price (counted, never guessed) */
+    }
+  }
+  return out;
+}
+
+let quoteProvider = fmpQuotes;
+/** Tests and evaluations supply their own authorized prices. */
+export function setQuoteProvider(fn) {
+  quoteProvider = typeof fn === 'function' ? fn : fmpQuotes;
+}
+
+/**
+ * TTM net income and revenue, the latest filed share count and a price for each ticker,
+ * then P/E, P/S, earnings yield and market cap (calc.js). Filed periods after the price
+ * date are never used.
+ * @returns {{ values: Record<string, object>, priceSource: string }}
+ */
+export async function valuationFor(admin, tickers, figs, now = new Date()) {
+  const asOf = now.toISOString().slice(0, 10);
+  const since = new Date(now.getTime() - 2.5 * 365 * 86400000).toISOString().slice(0, 10);
+  const quarters = {};
+  const shares = {};
+  for (const batch of chunk(tickers, 200)) {
+    const [q, sh] = await Promise.all([
+      pageAll(() =>
+        admin
+          .from('sec_fundamentals')
+          .select('ticker, concept, period_end, value')
+          .in('ticker', batch)
+          .in('concept', ['net_income', 'revenue'])
+          .eq('period_type', 'quarter')
+          .gte('period_end', since)
+          .order('ticker', { ascending: true })
+          .order('period_end', { ascending: false }),
+      ),
+      pageAll(() =>
+        admin
+          .from('sec_fundamentals')
+          .select('ticker, period_end, value')
+          .in('ticker', batch)
+          .eq('concept', 'shares_outstanding')
+          .eq('period_type', 'instant')
+          .gte('period_end', since)
+          .order('ticker', { ascending: true })
+          .order('period_end', { ascending: false }),
+      ),
+    ]);
+    for (const r of q) {
+      const v = Number(r.value);
+      if (!Number.isFinite(v)) continue;
+      ((quarters[r.ticker] ||= {})[r.concept] ||= []).push({ end: r.period_end, value: v });
+    }
+    for (const r of sh) {
+      const v = Number(r.value);
+      if (!Number.isFinite(v) || r.period_end > asOf) continue;
+      if (!shares[r.ticker] || r.period_end > shares[r.ticker].end)
+        shares[r.ticker] = { end: r.period_end, value: v };
+    }
+  }
+  const prices = (await Promise.resolve(quoteProvider(tickers)).catch(() => ({}))) || {};
+  const values = {};
+  for (const t of tickers) {
+    const f = figs[t] || { annual: {} };
+    const ni = ttmFigure(f.annual?.net_income || [], quarters[t]?.net_income || [], { asOf });
+    const rev = ttmFigure(f.annual?.revenue || [], quarters[t]?.revenue || [], { asOf });
+    const v = valuationRatios({ ni, rev, shares: shares[t], price: prices[t], asOf });
+    values[t] = {
+      pe: v.pe,
+      ps: v.ps,
+      earnings_yield: v.earningsYield,
+      market_cap: v.marketCap,
+      peStatus: v.peStatus,
+      valuationStale: v.stale,
+      valuationMissing: v.missing,
+      ttmThrough: ni.through,
+      ttmMethod: ni.method,
+      ttmNetIncome: ni.value,
+      ttmRevenue: rev.value,
+      priceAsOf: prices[t]?.asOf || null,
+      price: prices[t]?.price ?? null,
+      sharesAsOf: shares[t]?.end || null,
+    };
+  }
+  return { values };
+}
+
+/** Why a company has no valuation, in words (for the limitations). */
+function valuationGaps(tickers, values) {
+  const neg = [];
+  const stale = [];
+  const missing = [];
+  for (const t of tickers) {
+    const v = values[t] || {};
+    if (v.peStatus === 'negative') neg.push(t);
+    if (v.valuationStale?.length) stale.push(`${t} (${v.valuationStale.join(', ')})`);
+    if (v.valuationMissing?.length) missing.push(`${t} (no ${v.valuationMissing.join(', ')})`);
+  }
+  return [
+    neg.length
+      ? `P/E is not meaningful for zero or negative trailing earnings, so these companies are left out of any P/E filter or ranking and shown with their (negative) earnings yield instead: ${neg.join(', ')}.`
+      : null,
+    stale.length
+      ? `Valuation withheld on stale inputs (filed figures more than 270 days old, a share count more than 200 days old or a price more than 7 days old): ${stale.slice(0, 12).join('; ')}${stale.length > 12 ? `; and ${stale.length - 12} more` : ''}.`
+      : null,
+    missing.length
+      ? `No valuation where an input is missing: ${missing.slice(0, 12).join('; ')}${missing.length > 12 ? `; and ${missing.length - 12} more` : ''}.`
+      : null,
+  ].filter(Boolean);
+}
+
+/* ── Sonar 6.4: verified universes ─────────────────────────────────────── */
+
+/**
+ * The tickers a universe id names, from verified data only.
+ * @returns {{ tickers: string[], label: string, notes: string[] }}
+ */
+async function resolveUniverse(admin, id, now) {
+  const u = universeFor(id);
+  if (u.kind === 'unsupported') throw new Error(u.reason);
+  if (u.kind === 'gics') {
+    const rows = await pageAll(() =>
+      admin
+        .from('ticker_sectors')
+        .select('ticker')
+        .eq('sector', u.sector)
+        .order('ticker', { ascending: true }),
+    );
+    return { tickers: rows.map((r) => r.ticker), label: `GICS sector ${u.sector}`, notes: [] };
+  }
+  const notes = [];
+  let classified = [];
+  let classificationOk = true;
+  try {
+    const rows = await pageAll(() =>
+      admin
+        .from('company_industry')
+        .select('ticker, sic')
+        .in('sic', u.def.sic)
+        .order('ticker', { ascending: true }),
+    );
+    classified = industryMembers(u.def, rows);
+  } catch {
+    classificationOk = false;
+  }
+  let defined = [];
+  if (u.def.data === 'dod_awards') {
+    const fy = completeFederalFy(now);
+    const rows = await pageAll(() =>
+      admin
+        .from('company_contract_history')
+        .select('ticker, awarding_agency, total_amount')
+        .eq('fiscal_year', fy)
+        .order('ticker', { ascending: true }),
+    ).catch(() => []);
+    defined = dodDefined(rows);
+    notes.push(u.def.note);
+  }
+  const tickers = [...new Set([...classified, ...defined])].sort();
+  if (!tickers.length) {
+    throw new Error(
+      classificationOk
+        ? `No companies are classified as ${u.def.label} in Ezana's data yet, so that universe cannot be established; Sonar does not substitute a broader sector.`
+        : `Industry classification is not loaded yet, so the ${u.def.label} universe cannot be established; Sonar does not substitute a broader sector.`,
+    );
+  }
+  if (!classificationOk)
+    notes.push(
+      'SEC industry codes are not loaded yet; the universe is the companies the contract data defines only.',
+    );
+  return { tickers, label: u.def.label, notes };
 }
 
 /* ── event and money sources, for a set of tickers ─────────────────────── */
@@ -264,26 +473,20 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   const windowDays = Math.min(730, Math.max(7, Number(p.window_days) || 90));
   const since = new Date(now.getTime() - windowDays * 86400000).toISOString().slice(0, 10);
 
-  /* Universe. */
+  /* Universe: named tickers, an exact GICS sector, or a verified industry (6.4). */
   let universe = [];
   let universeLabel = '';
-  let gics = null;
+  const universeNotes = [];
   if (Array.isArray(p.tickers) && p.tickers.length) {
     universe = p.tickers.slice(0, 60).map((t) => ({ ticker: String(t).toUpperCase() }));
     universeLabel = `${universe.length} named companies`;
-  } else if (p.sector && GICS_FOR[p.sector]) {
-    gics = GICS_FOR[p.sector];
-    const rows = await pageAll(() =>
-      admin
-        .from('ticker_sectors')
-        .select('ticker')
-        .eq('sector', gics.sector)
-        .order('ticker', { ascending: true }),
-    );
-    universe = rows.map((r) => ({ ticker: r.ticker }));
-    universeLabel = `GICS sector ${gics.sector}`;
+  } else if (p.sector) {
+    const u = await resolveUniverse(admin, p.sector, now);
+    universe = u.tickers.map((t) => ({ ticker: t }));
+    universeLabel = u.label;
+    universeNotes.push(...u.notes);
   } else {
-    throw new Error('The screen has no universe: name a sector or companies.');
+    throw new Error('The screen has no universe: name a sector, an industry or companies.');
   }
   const fullUniverse = universe.length;
   if (universe.length > MAX_UNIVERSE) universe = universe.slice(0, MAX_UNIVERSE);
@@ -326,6 +529,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   let survivors = stage1.rows.map((r) => ({ ticker: r.ticker }));
   const sources = screenSources(otherFilters, rankBy).filter((s) => s !== 'ratios');
   const notes = [];
+  const valuationNotes = [];
   let lobbyYear = null;
   let period13f = null;
   for (const src of sources) {
@@ -337,6 +541,20 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       notes.push(
         `Federal contracts: value of prime awards that started in federal fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30), obligated to date, for every company. This is not revenue.`,
       );
+    } else if (src === 'valuation') {
+      const valued = tick.slice(0, MAX_VALUED);
+      if (tick.length > MAX_VALUED)
+        notes.push(
+          `Valuation was computed for the first ${MAX_VALUED} of ${tick.length} remaining companies (alphabetical).`,
+        );
+      const v = await valuationFor(admin, valued, figs, now);
+      for (const t of tick) Object.assign(values[t], v.values[t] || {});
+      valuationNotes.push(...valuationGaps(valued, v.values));
+      const dates = [...new Set(valued.map((t) => v.values[t]?.priceAsOf).filter(Boolean))].sort();
+      if (dates.length)
+        notes.push(
+          `Prices as of ${dates[dates.length - 1]}${dates.length > 1 ? ` (earliest ${dates[0]})` : ''}; earnings and revenue are trailing twelve months from filed 10-K and 10-Q figures; share counts are the latest filed cover-page counts.`,
+        );
     } else if (src === 'insider') {
       const v = await insiderPurchases(admin, tick, since);
       for (const t of tick) values[t].insider = v[t] ?? 0;
@@ -381,6 +599,23 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   const shown = [
     ...new Set([...filters.map((f) => f.metric), rankBy].filter((m) => SCREEN_MEASURES[m])),
   ];
+  /* Sonar 6.4 quality context, never a filter: company size (market cap when priced,
+     otherwise filed revenue), the fiscal year end each figure comes from, and flags for
+     growth on a small base, revenue that more than doubled and figures that are stale. */
+  const sizeKey = sources.includes('valuation') ? 'market_cap' : 'revenue';
+  const shownKeys = new Set(shown.map((m) => SCREEN_MEASURES[m].key));
+  const flagsFor = (t) => {
+    const v = values[t] || {};
+    const out = [];
+    if (v.revenue_growth != null && v.revenue_prior != null && v.revenue_prior < 25e6)
+      out.push('small base');
+    if (v.revenue_growth != null && v.revenue_growth > 1)
+      out.push('revenue more than doubled (check for acquisitions)');
+    if (v.fiscalYearEnd && (now - Date.parse(v.fiscalYearEnd)) / 86400000 > 456)
+      out.push(`stale filing (FY ended ${v.fiscalYearEnd})`);
+    if (v.peStatus === 'negative') out.push('negative TTM earnings');
+    return out;
+  };
   const columns = [
     { key: 'rank', label: '#' },
     { key: 'ticker', label: 'Ticker' },
@@ -389,6 +624,20 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       label: SCREEN_MEASURES[m].label,
       unit: SCREEN_MEASURES[m].unit,
     })),
+    ...(shownKeys.has(sizeKey)
+      ? []
+      : [
+          {
+            key: sizeKey,
+            label: sizeKey === 'market_cap' ? 'Market cap' : 'Revenue (latest FY)',
+            unit: 'usd',
+          },
+        ]),
+    ...(sources.includes('valuation') && !shownKeys.has('earnings_yield')
+      ? [{ key: 'earnings_yield', label: 'Earnings yield (TTM)', unit: 'pct' }]
+      : []),
+    { key: 'fiscalYearEnd', label: 'FY end' },
+    { key: 'flags', label: 'Notes' },
   ];
   const table = final.rows.map((r) => ({
     rank: r.rank,
@@ -396,6 +645,10 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     ...Object.fromEntries(
       shown.map((m) => [SCREEN_MEASURES[m].key, r.values[SCREEN_MEASURES[m].key] ?? null]),
     ),
+    [sizeKey]: values[r.ticker]?.[sizeKey] ?? null,
+    earnings_yield: values[r.ticker]?.earnings_yield ?? null,
+    fiscalYearEnd: values[r.ticker]?.fiscalYearEnd ?? null,
+    flags: flagsFor(r.ticker).join('; ') || null,
   }));
   /* Sonar 6.3: flag growth computed from a tiny prior year (a production screen ranked
      a company first on +2,944% after it bought producing assets). */
@@ -411,11 +664,15 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         })
         .map((r) => r.ticker)
     : [];
+  const ends = [
+    ...new Set(final.rows.map((r) => values[r.ticker]?.fiscalYearEnd).filter(Boolean)),
+  ].sort();
   const limitations = [
-    gics && !gics.exact
-      ? `Ezana classifies companies at the GICS sector level only, so "${p.sector.replace(/_/g, ' ')}" was screened as the whole ${gics.sector} sector; companies outside that industry are included.`
-      : null,
-    'Filed figures are the latest fiscal year each company reported; fiscal years end on different dates.',
+    ...universeNotes,
+    ends.length > 1
+      ? `Filed figures are each company's latest fiscal year, which end between ${ends[0]} and ${ends[ends.length - 1]}; the periods are not the same for every company.`
+      : 'Filed figures are the latest fiscal year each company reported.',
+    ...valuationNotes,
     sources.includes('contracts')
       ? 'Federal contract figures are the value of prime awards that started in the fiscal year, obligated to date; they are not revenue.'
       : null,
@@ -443,7 +700,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     `| ${columns.map((c) => c.label).join(' | ')} |`,
     `|${columns.map(() => '---').join('|')}|`,
     ...table.map(
-      (r) => `| ${columns.map((c) => (c.unit ? fmt(c.unit, r[c.key]) : r[c.key])).join(' | ')} |`,
+      (r) =>
+        `| ${columns.map((c) => (c.unit ? fmt(c.unit, r[c.key]) : (r[c.key] ?? ''))).join(' | ')} |`,
     ),
   ];
   return {
@@ -472,7 +730,13 @@ const COMPARE_LABEL = {
   fcf_margin: 'FCF margin',
   roe: 'ROE',
   debt_to_equity: 'Debt/equity',
+  pe: 'P/E (TTM)',
+  ps: 'P/S (TTM)',
+  earnings_yield: 'Earnings yield (TTM)',
+  market_cap: 'Market cap',
 };
+const VALUATION_METRICS = new Set(['pe', 'ps', 'earnings_yield', 'market_cap']);
+const COMPARE_UNIT = { debt_to_equity: 'x', pe: 'x', ps: 'x', market_cap: 'usd' };
 
 export async function runComparison(admin, att, { now = new Date() } = {}) {
   const tickers = [
@@ -486,10 +750,24 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
   ).filter((m) => COMPARE_LABEL[m]);
   const figs = await filedFiguresPaged(admin, tickers, now);
   const names = att.params?.names || {};
+  /* Sonar 6.4: valuation metrics from TTM figures and an authorized price. */
+  const wantsValuation = metrics.some((m) => VALUATION_METRICS.has(m));
+  const val = wantsValuation ? await valuationFor(admin, tickers, figs, now) : { values: {} };
   const rows = tickers.map((t) => ({
     ticker: t,
     name: names[t] || t,
-    ratios: companyRatios(figs[t]),
+    ratios: (() => {
+      const r = companyRatios(figs[t]);
+      const v = val.values[t];
+      return r || v
+        ? {
+            ...(r || {}),
+            ...(v
+              ? { pe: v.pe, ps: v.ps, earnings_yield: v.earnings_yield, market_cap: v.market_cap }
+              : {}),
+          }
+        : null;
+    })(),
   }));
   const cmp = compareCompanies(rows, metrics);
   const columns = [
@@ -498,7 +776,7 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
     ...metrics.map((m) => ({
       key: m,
       label: COMPARE_LABEL[m],
-      unit: m === 'debt_to_equity' ? 'x' : 'pct',
+      unit: COMPARE_UNIT[m] || 'pct',
     })),
   ];
   const table = rows.map((r) => ({
@@ -514,6 +792,12 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
       ? `Missing filed figures for some metrics: ${cmp.missing.join(', ')}.`
       : null,
     'Margin and leverage ratios are not comparable for banks and insurers.',
+    ...(wantsValuation ? valuationGaps(tickers, val.values) : []),
+    ...(wantsValuation
+      ? [
+          `Valuation uses prices as of ${[...new Set(tickers.map((t) => val.values[t]?.priceAsOf).filter(Boolean))].join(', ') || 'N/A'} and trailing twelve months of filed earnings and revenue through ${[...new Set(tickers.map((t) => val.values[t]?.ttmThrough).filter(Boolean))].join(', ') || 'N/A'}.`,
+        ]
+      : []),
     att.params?.unresolved?.length
       ? `Not matched to a company with SEC filings, so left out: ${att.params.unresolved.join(', ')}.`
       : null,
@@ -522,7 +806,7 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
     `Company comparison (calculated from filed SEC annual figures): ${tickers.join(', ')}.`,
     ...Object.entries(cmp.leaders).map(
       ([m, t]) =>
-        `Leader on ${COMPARE_LABEL[m]}: ${t}${m === 'debt_to_equity' ? ' (lowest)' : ''}.`,
+        `Leader on ${COMPARE_LABEL[m]}: ${t}${['debt_to_equity', 'pe', 'ps'].includes(m) ? ' (lowest)' : ''}.`,
     ),
     '',
     `| ${columns.map((c) => c.label).join(' | ')} |`,
@@ -647,6 +931,198 @@ export async function runGovDependence(
     columns,
     table: g.years,
     dependence: g,
+    limitations,
+    text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`)].join('\n'),
+  };
+}
+
+/* ── macro-indicators (Sonar 6.4) ──────────────────────────────────────── */
+
+const COUNTRY_NAME = {
+  USA: 'United States',
+  CAN: 'Canada',
+  GBR: 'United Kingdom',
+  JPN: 'Japan',
+  DEU: 'Germany',
+  FRA: 'France',
+  ITA: 'Italy',
+  CHN: 'China',
+  IND: 'India',
+  BRA: 'Brazil',
+  MEX: 'Mexico',
+  AUS: 'Australia',
+  TUR: 'Turkey',
+  ZAF: 'South Africa',
+  KOR: 'South Korea',
+  CHE: 'Switzerland',
+};
+
+export async function runMacro(admin, att, { now = new Date() } = {}) {
+  const p = att.params || {};
+  const countries = [...new Set((p.countries || []).map((c) => String(c).toUpperCase()))]
+    .filter((c) => /^[A-Z]{3}$/.test(c))
+    .slice(0, 8);
+  if (!countries.length) throw new Error('Name at least one country with data.');
+  const measures = new Set(p.measures?.length ? p.measures : ['inflation']);
+  const from = /^\d{4}-\d{2}$/.test(p.from || '') ? p.from : `${now.getUTCFullYear()}-01`;
+  const sinceMonth = `${now.getUTCFullYear() - 3}-01`;
+  const [cpiRows, polRows, dayRows] = await Promise.all([
+    pageAll(() =>
+      admin
+        .from('macro_series_values')
+        .select('country_iso3, period, value')
+        .eq('source', 'imf')
+        .eq('series_name', 'Consumer price index')
+        .eq('frequency', 'M')
+        .in('country_iso3', countries)
+        .gte('period', sinceMonth)
+        .order('country_iso3', { ascending: true })
+        .order('period', { ascending: true }),
+    ),
+    pageAll(() =>
+      admin
+        .from('macro_series_values')
+        .select('country_iso3, period, value')
+        .eq('source', 'bis')
+        .eq('series_name', 'Central bank policy rates')
+        .eq('frequency', 'M')
+        .in('country_iso3', countries)
+        .gte('period', sinceMonth)
+        .order('country_iso3', { ascending: true })
+        .order('period', { ascending: true }),
+    ),
+    measures.has('policy_changes')
+      ? pageAll(() =>
+          admin
+            .from('macro_series_values')
+            .select('country_iso3, period, value')
+            .eq('source', 'bis')
+            .eq('series_name', 'Central bank policy rates')
+            .eq('frequency', 'D')
+            .in('country_iso3', countries)
+            .gte('period', `${now.getUTCFullYear() - 1}-01-01`)
+            .order('country_iso3', { ascending: true })
+            .order('period', { ascending: true }),
+        )
+      : Promise.resolve([]),
+  ]);
+  const group = (rows) => {
+    const out = {};
+    for (const r of rows) {
+      const v = Number(r.value);
+      if (Number.isFinite(v)) (out[r.country_iso3] ||= {})[String(r.period)] = v;
+    }
+    return out;
+  };
+  const cpi = group(cpiRows);
+  const pol = group(polRows);
+  const day = group(dayRows);
+  const byCountry = {};
+  const missing = [];
+  for (const c of countries) {
+    if (!cpi[c] && !pol[c]) {
+      missing.push(c);
+      continue;
+    }
+    const t = cpi[c] ? inflationTrend(cpi[c]) : null;
+    const r = cpi[c] && pol[c] ? realPolicyRate(pol[c], cpi[c]) : null;
+    const ch =
+      pol[c] || day[c] ? policyChanges({ daily: day[c], monthly: pol[c] }, { from }) : null;
+    byCountry[c] = {
+      country: COUNTRY_NAME[c] || c,
+      latestYoYPeriod: t?.latestYoYPeriod ?? null,
+      latestYoY: t?.latestYoY ?? null,
+      annualized3m: t?.annualized3m ?? null,
+      yoySixMonthsEarlier: t?.yoySixMonthsEarlier ?? null,
+      direction: t?.direction ?? null,
+      accelerating: t ? t.accelerating : null,
+      gapNote: t?.gapNote ?? null,
+      policyRate: ch?.latest?.value ?? null,
+      policyRateDate: ch?.latest?.date ?? null,
+      realRate: r?.realRate ?? null,
+      realRatePeriod: r?.realRatePeriod ?? null,
+      changesThisYear: ch ? ch.count : null,
+      netChangeThisYear: ch ? ch.net : null,
+      changes: ch?.changes || [],
+      changeBasis: ch?.basis || null,
+    };
+  }
+  if (!Object.keys(byCountry).length)
+    throw new Error(
+      `No inflation or policy rate series are in Ezana's data for ${countries.join(', ')}.`,
+    );
+  const pct = (v) => (v == null ? 'N/A' : `${(v * 100).toFixed(1)}%`);
+  const pp = (v) => (v == null ? 'N/A' : `${v.toFixed(2)}%`);
+  const columns = [
+    { key: 'country', label: 'Country' },
+    { key: 'latestYoYPeriod', label: 'CPI month' },
+    { key: 'latestYoY', label: 'Inflation, y/y', unit: 'pct' },
+    { key: 'annualized3m', label: '3-month annualised', unit: 'pct' },
+    { key: 'yoySixMonthsEarlier', label: 'y/y six months earlier', unit: 'pct' },
+    { key: 'direction', label: 'Trend' },
+    { key: 'policyRateLabel', label: 'Policy rate' },
+    { key: 'realRateLabel', label: 'Real policy rate' },
+    ...(measures.has('policy_changes')
+      ? [{ key: 'changesLabel', label: `Changes since ${from}` }]
+      : []),
+  ];
+  const table = Object.entries(byCountry).map(([iso, x]) => ({
+    iso3: iso,
+    country: x.country,
+    latestYoYPeriod: x.latestYoYPeriod,
+    latestYoY: x.latestYoY,
+    annualized3m: x.annualized3m,
+    yoySixMonthsEarlier: x.yoySixMonthsEarlier,
+    direction: x.direction,
+    policyRateLabel: x.policyRate != null ? `${pp(x.policyRate)} (${x.policyRateDate})` : 'N/A',
+    realRateLabel: x.realRate != null ? `${pp(x.realRate)} (${x.realRatePeriod})` : 'N/A',
+    changesLabel:
+      x.changesThisYear != null
+        ? x.changes.length
+          ? x.changes
+              .map((c) => `${c.date} ${c.change > 0 ? '+' : ''}${c.change.toFixed(2)}`)
+              .join(', ')
+          : 'none'
+        : 'N/A',
+  }));
+  const limitations = [
+    'Inflation is the year-on-year change of the IMF consumer price index (not seasonally adjusted); the 3-month annualised rate on an unadjusted index is noisy and can move with seasonal patterns.',
+    'The real policy rate subtracts year-on-year inflation for the same month as the policy rate; it is backward-looking (not inflation expectations).',
+    ...Object.values(byCountry)
+      .map((x) => x.gapNote && `${x.country}: ${x.gapNote}`)
+      .filter(Boolean),
+    measures.has('policy_changes')
+      ? `Policy changes are read from BIS ${Object.values(byCountry).every((x) => x.changeBasis === 'daily') ? 'daily data (effective dates)' : 'monthly data where daily data does not cover the window (the month each change took effect)'}.`
+      : null,
+    missing.length ? `No series in Ezana's data for: ${missing.join(', ')}.` : null,
+  ].filter(Boolean);
+  const lines = [
+    `Macro indicators (${MACRO_VERSION}, calculated from IMF and BIS series): ${Object.values(
+      byCountry,
+    )
+      .map((x) => x.country)
+      .join(', ')}.`,
+    ...Object.values(byCountry).map(
+      (x) =>
+        `${x.country}: inflation ${pct(x.latestYoY)} year on year in ${x.latestYoYPeriod || 'N/A'}; 3-month annualised ${pct(x.annualized3m)}; ${pct(x.yoySixMonthsEarlier)} six months earlier; trend ${x.direction || 'not determined'}. Policy rate ${x.policyRate != null ? `${pp(x.policyRate)} (${x.policyRateDate})` : 'N/A'}; real policy rate ${x.realRate != null ? `${pp(x.realRate)} in ${x.realRatePeriod}` : 'N/A'}.${
+          measures.has('policy_changes') && x.changesThisYear != null
+            ? ` Policy changes since ${from}: ${x.changesThisYear}${x.changes.length ? ` (${x.changes.map((c) => `${c.date} ${c.change > 0 ? '+' : ''}${c.change.toFixed(2)} points`).join(', ')})` : ''}, net ${x.netChangeThisYear > 0 ? '+' : ''}${x.netChangeThisYear.toFixed(2)} points.`
+            : ''
+        }`,
+    ),
+  ];
+  return {
+    output: 'calculated',
+    title: 'Macro Indicators',
+    version: MACRO_VERSION,
+    coverage: {
+      selected: countries.length,
+      withData: Object.keys(byCountry).length,
+      complete: Object.values(byCountry).filter((x) => x.latestYoY != null).length,
+    },
+    columns,
+    table,
+    macro: { byCountry, measures: [...measures], from },
     limitations,
     text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`)].join('\n'),
   };

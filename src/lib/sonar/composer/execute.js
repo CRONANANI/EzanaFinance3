@@ -24,7 +24,7 @@
  * Every number is computed here from stored data. Nothing is estimated by a language model.
  */
 
-import { runComparison, runGovDependence, runScreen } from './analytics-server.js';
+import { runComparison, runGovDependence, runMacro, runScreen } from './analytics-server.js';
 import { getAdminClient } from '@/lib/supabase';
 import { resolvePolitician } from '@/lib/sonar/landing-politician';
 import { getDailyBars } from '@/lib/prices/daily-bars';
@@ -1292,6 +1292,7 @@ const EXECUTORS = {
   'financial-screen': runScreen,
   'company-comparison': runComparison,
   'government-dependence': runGovDependence,
+  'macro-indicators': runMacro,
   [OWNERSHIP_CAPABILITY]: runOwnership,
 };
 

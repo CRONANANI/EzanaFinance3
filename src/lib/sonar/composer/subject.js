@@ -197,7 +197,8 @@ function pairedNames(q) {
  */
 const COMPANY_MEASURE_RE =
   /\b(?:revenue|sales|margins?|growth|earnings|net income|profit(?:ability)?|free cash flow|cash flow|debt|leverage|p\/?e|valuation|eps|return on equity|roe)\b/i;
-const HOLDINGS_RE = /\b(?:holdings?|portfolios?|positions|owns?|holds?|bought|sold|trades?|stakes?)\b/i;
+const HOLDINGS_RE =
+  /\b(?:holdings?|portfolios?|positions|owns?|holds?|bought|sold|trades?|stakes?)\b/i;
 
 export function extractRelation(question) {
   const q = String(question || '');

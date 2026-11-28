@@ -22,6 +22,7 @@ import { embedViaSupabase } from '@/lib/embeddings-gte';
 import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
 import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
+import { macroAttachment } from '@/lib/sonar/composer/intents';
 import { SCENARIO_BY_ID } from '@/lib/sonar/adaptive/profiles';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
 import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
@@ -337,11 +338,13 @@ async function handlePing(request, body, emit, preAuthUser = null) {
        adaptive brief, which answered for AMD alone. */
     let computedFamily = null;
     try {
-      const fam = canonicalIntent(query).family;
+      const ci = canonicalIntent(query);
+      const fam = ci.family;
       if (
         ['multi_stage_screen', 'company_comparison', 'government_contract_dependency'].includes(fam)
       )
         computedFamily = fam;
+      else if (macroAttachment(query, ci)) computedFamily = 'macro_indicators';
     } catch {
       computedFamily = null;
     }
