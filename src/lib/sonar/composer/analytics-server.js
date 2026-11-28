@@ -133,7 +133,14 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
 
 /* ── event and money sources, for a set of tickers ─────────────────────── */
 
-async function contractsByTicker(admin, tickers) {
+/* The latest complete federal fiscal year (it ends September 30): a year still in
+   progress is never compared with a full one. */
+export function completeFederalFy(now = new Date()) {
+  return now.getUTCMonth() >= 9 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+}
+
+async function contractsByTicker(admin, tickers, now = new Date()) {
+  const fyWanted = completeFederalFy(now);
   const out = {};
   for (const batch of chunk(tickers, 200)) {
     const rows = await pageAll(() =>
@@ -144,13 +151,9 @@ async function contractsByTicker(admin, tickers) {
         .order('ticker', { ascending: true })
         .order('fiscal_year', { ascending: false }),
     );
-    const latest = {};
+    /* One fiscal year for every company, so the ranking compares like with like. */
     for (const r of rows) {
-      const fy = Number(r.fiscal_year);
-      if (latest[r.ticker] == null || fy > latest[r.ticker]) latest[r.ticker] = fy;
-    }
-    for (const r of rows) {
-      if (Number(r.fiscal_year) !== latest[r.ticker]) continue;
+      if (Number(r.fiscal_year) !== fyWanted) continue;
       out[r.ticker] = (out[r.ticker] || 0) + (Number(r.total_amount) || 0);
     }
   }
@@ -327,8 +330,11 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     const tick = survivors.map((s) => s.ticker);
     if (!tick.length) break;
     if (src === 'contracts') {
-      const v = await contractsByTicker(admin, tick);
+      const v = await contractsByTicker(admin, tick, now);
       for (const t of tick) values[t].contracts = v[t] ?? null;
+      notes.push(
+        `Federal obligations are for fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30) for every company.`,
+      );
     } else if (src === 'insider') {
       const v = await insiderPurchases(admin, tick, since);
       for (const t of tick) values[t].insider = v[t] ?? 0;
@@ -540,15 +546,18 @@ export async function runGovDependence(admin, att, { now = new Date() } = {}) {
     filedFiguresPaged(admin, [ticker], now),
   ]);
   if (!rows.length) throw new Error(`No federal contract history is on record for ${ticker}.`);
+  const lastFy = completeFederalFy(now);
   const byYearMap = {};
-  for (const r of rows)
+  for (const r of rows.filter((x) => Number(x.fiscal_year) <= lastFy))
     byYearMap[r.fiscal_year] = (byYearMap[r.fiscal_year] || 0) + (Number(r.total_amount) || 0);
   const byYear = Object.entries(byYearMap)
     .map(([fy, total]) => ({ fiscal_year: Number(fy), total }))
     .slice(-6);
+  if (!byYear.length)
+    throw new Error(`No complete federal fiscal year of contract history for ${ticker} yet.`);
   const latestFy = Math.max(...byYear.map((y) => y.fiscal_year));
   const agencies = rows
-    .filter((r) => Number(r.fiscal_year) === latestFy)
+    .filter((r) => Number(r.fiscal_year) === latestFy && latestFy <= lastFy)
     .map((r) => ({
       agency: r.awarding_agency,
       total: Number(r.total_amount) || 0,

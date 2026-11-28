@@ -223,8 +223,9 @@ export async function resolveCompany(text, admin = getAdminClient()) {
     .from('sec_fundamentals')
     .select('ticker, entity_name')
     .ilike('entity_name', `%${clean}%`)
+    .eq('concept', 'revenue')
     .not('ticker', 'is', null)
-    .limit(200);
+    .limit(1000);
   const seen = new Map();
   for (const r of data || []) if (r.ticker && !seen.has(r.ticker)) seen.set(r.ticker, r);
   const low = clean.toLowerCase();
@@ -232,8 +233,15 @@ export async function resolveCompany(text, admin = getAdminClient()) {
     .map((r) => {
       const n = String(r.entity_name || '').toLowerCase();
       const start = n.startsWith(low) && !/[a-z0-9]/.test(n.charAt(low.length) || ' ');
-      return { r, score: (start ? 0 : n.startsWith(low) ? 1 : 2) * 1000 + n.length };
+      /* A name inside another word ("AMD" in "AMDOCS", "Intel" in "Intellicheck") is not
+         a match unless the name starts the filer's name. */
+      const word = new RegExp(
+        `(^|[^a-z0-9])${low.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`,
+      ).test(n);
+      const tier = start ? 0 : word ? 1 : null;
+      return tier == null ? null : { r, score: tier * 1000 + n.length };
     })
+    .filter(Boolean)
     .sort((a, b) => a.score - b.score);
   const best = ranked[0]?.r;
   if (!best) return { text: t, kind: 'unresolved' };

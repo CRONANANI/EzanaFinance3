@@ -175,24 +175,32 @@ const FIXTURES = {
   company_contract_history: [
     {
       ticker: 'AAA',
-      fiscal_year: 2025,
+      fiscal_year: 2026,
       awarding_agency: 'Department of Defense',
       award_count: 3,
       total_amount: 300,
     },
     {
       ticker: 'AAA',
-      fiscal_year: 2025,
+      fiscal_year: 2026,
       awarding_agency: 'Department of Energy',
       award_count: 1,
       total_amount: 100,
     },
     {
       ticker: 'AAA',
-      fiscal_year: 2024,
+      fiscal_year: 2025,
       awarding_agency: 'Department of Defense',
       award_count: 2,
       total_amount: 200,
+    },
+    /* FY2027 is in progress on NOW (Nov 2026): never compared with a full year. */
+    {
+      ticker: 'AAA',
+      fiscal_year: 2027,
+      awarding_agency: 'Department of Defense',
+      award_count: 1,
+      total_amount: 999,
     },
   ],
   congress_trades: [],
@@ -282,7 +290,7 @@ test('E2E government dependence: obligations, growth, ratio to revenue and agenc
     { now: NOW },
   );
   const d = res.dependence;
-  assert.equal(d.latestFiscalYear, 2025);
+  assert.equal(d.latestFiscalYear, 2026);
   assert.equal(d.latestObligations, 400);
   assert.ok(Math.abs(d.obligationGrowth - 1.0) < 1e-9); // 400 vs 200
   assert.ok(Math.abs(d.obligationsToRevenue - 400 / 1250) < 1e-9);
@@ -374,4 +382,19 @@ test('without a deadline the same composition completes on the fixtures', async 
   const a = (out.results || []).find((r) => r.capability === 'financial-screen');
   assert.equal(a?.status, 'done');
   assert.deepEqual(a.table.map((r) => r.ticker).slice(0, 2), ['BBB', 'AAA']);
+});
+
+test('company names resolve to whole-word filer names only', async () => {
+  const { resolveCompany } = await import('../src/lib/sonar/composer/execute.js');
+  const rows = [
+    ['INTEL CORPORATION', 'INTC'],
+    ['Intellicheck, Inc.', 'IDN'],
+    ['AMDOCS LIMITED', 'DOX'],
+    ['QUALCOMM INC/DE', 'QCOM'],
+  ].map(([entity_name, ticker]) => ({ entity_name, ticker, concept: 'revenue' }));
+  const db = fakeSupabase({ sec_fundamentals: rows });
+  assert.equal((await resolveCompany('Intel', db)).id, 'INTC');
+  assert.equal((await resolveCompany('Qualcomm', db)).id, 'QCOM');
+  /* "AMD" is not AMDOCS: unresolved, and the comparison says so. */
+  assert.equal((await resolveCompany('AMD', db)).kind, 'unresolved');
 });
