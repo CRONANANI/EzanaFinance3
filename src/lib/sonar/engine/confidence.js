@@ -43,6 +43,7 @@ export function auditConfidence({
   evidenceCount = 0,
   audit = null,
   fulfillmentState = null,
+  rewritten = 0,
 } = {}) {
   const R = CONFIDENCE_RULES;
   const start = ORDER[claimed] != null ? claimed : 'medium';
@@ -68,6 +69,8 @@ export function auditConfidence({
     lower(0, 'Validation removed or downgraded most of the written claims.');
   else if (claimSupportRate != null && claimSupportRate < R.highMinClaimSupport)
     lower(1, 'Validation removed or downgraded unsupported claims.');
+  if (rewritten > 0)
+    lower(1, 'Verification removed sentences from the written analysis before it was shown.');
   if (evidenceCount < R.highMinEvidence)
     lower(1, 'Too little evidence was selected for high confidence.');
   if (audit?.total && audit.passed / audit.total < R.highMinAuditPass)

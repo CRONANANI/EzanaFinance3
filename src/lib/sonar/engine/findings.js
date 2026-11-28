@@ -24,6 +24,7 @@
  * Pure apart from the synthesis call. Validation is unit-tested.
  */
 import { numbersOf } from './evidence';
+import { repairClaim, contradictions } from './claim-check.js';
 import { answerExtras } from '@/lib/sonar/answer-extras';
 import { findUnsupportedNegatives, stripCoverageNotes } from '@/lib/sonar/groundingGuard';
 
@@ -183,7 +184,8 @@ export function repairTruncatedJson(text) {
     if (/:\s*$/.test(body)) continue;
     try {
       const out = JSON.parse(body + close(open));
-      if (out && typeof out === 'object' && !Array.isArray(out)) return { ...out, _truncated: true };
+      if (out && typeof out === 'object' && !Array.isArray(out))
+        return { ...out, _truncated: true };
     } catch {
       /* try an earlier cut */
     }
@@ -264,8 +266,9 @@ export function numberSupported(n, allowed) {
  * Validate one claim.
  * @returns {{ action: 'kept'|'downgraded'|'removed', classification: string, problems: string[], evidenceIds: string[] }}
  */
-export function validateClaim(claim, { byMarker, metricsById }) {
-  const text = [
+export function validateClaim(claimIn, { byMarker, metricsById }) {
+  let claim = claimIn;
+  let text = [
     claim.title,
     claim.explanation,
     claim.text,
@@ -325,6 +328,49 @@ export function validateClaim(claim, { byMarker, metricsById }) {
             .map((n) => ({ value: n.value * k }));
     }),
   ];
+  /* Sonar 6.4: sentence-level verification. A sentence with an unsupported or
+     mislabeled number, or an unverified claim that something is not disclosed, is
+     removed; the rest of the claim stands (rewritten). A failing title removes it. */
+  const sources = [
+    ...cited.map((e) => `${e.title}. ${e.text}`),
+    ...mets.map(
+      (m) =>
+        `${m.label || m.id}: ${m.unit === 'ratio' ? `${(m.value * 100).toFixed(2)}%` : m.value}`,
+    ),
+  ];
+  const repair = repairClaim(claim, {
+    sources,
+    supported: (n) => numberSupported(n, allowed),
+  });
+  const rewritten = repair.removed.map((r) => r.problem);
+  const remaining = ['explanation', 'text', 'comparison', 'implication']
+    .map((f) => repair.claim[f])
+    .filter((x) => typeof x === 'string' && x.trim()).length;
+  const hadBody = ['explanation', 'text', 'comparison', 'implication'].some(
+    (f) => typeof claim[f] === 'string' && claim[f].trim(),
+  );
+  if (repair.titleFailed || (hadBody && !remaining && repair.removed.length)) {
+    return {
+      action: 'removed',
+      classification: cls,
+      problems: [...problems, ...rewritten],
+      evidenceIds: cited.map((e) => e.id),
+    };
+  }
+  if (repair.removed.length) {
+    claim = repair.claim;
+    text = [
+      claim.title,
+      claim.explanation,
+      claim.text,
+      claim.comparison,
+      claim.implication,
+      claim.caveat,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    problems.push(...rewritten.map((p) => `rewritten:${p}`));
+  }
   const claimNums = numbersOf(text.replace(/\[S\d+\]/g, '')).filter(
     (n) => !/^[-+]?\d$/.test(n.text),
   );
@@ -371,7 +417,7 @@ export function validateClaim(claim, { byMarker, metricsById }) {
   if (causal) problems.push('causal_language');
 
   const fatal = problems.some((p) =>
-    /^(unsupported_numbers|unsupported_dates|entity_mismatch|unsupported_negative|conduct_language)/.test(
+    /^(unsupported_numbers|unsupported_dates|entity_mismatch|unsupported_negative|conduct_language|mislabeled_number|unverified_negative)/.test(
       p,
     ),
   );
@@ -382,8 +428,10 @@ export function validateClaim(claim, { byMarker, metricsById }) {
       problems,
       evidenceIds: cited.map((e) => e.id),
     };
+  const repaired = repair.removed.length ? claim : null;
   if (causal && (cls === 'verified_fact' || cls === 'calculated_result')) {
     return {
+      repaired,
       action: 'downgraded',
       classification: 'analytical_interpretation',
       problems,
@@ -391,9 +439,21 @@ export function validateClaim(claim, { byMarker, metricsById }) {
     };
   }
   if (cls === 'verified_fact' && !cited.length && mets.length) {
-    return { action: 'downgraded', classification: 'calculated_result', problems, evidenceIds: [] };
+    return {
+      repaired,
+      action: 'downgraded',
+      classification: 'calculated_result',
+      problems,
+      evidenceIds: [],
+    };
   }
-  return { action: 'kept', classification: cls, problems, evidenceIds: cited.map((e) => e.id) };
+  return {
+    repaired,
+    action: repaired ? 'rewritten' : 'kept',
+    classification: cls,
+    problems,
+    evidenceIds: cited.map((e) => e.id),
+  };
 }
 
 /**
@@ -416,7 +476,7 @@ export function validateResearch(parsed, { marked, metrics, question = '' }) {
     });
     if (v.action === 'removed') return null;
     return {
-      ...claim,
+      ...(v.repaired || claim),
       id: `${kind}_${i + 1}`,
       classification: v.classification,
       evidenceIds: v.evidenceIds,
@@ -434,14 +494,58 @@ export function validateResearch(parsed, { marked, metrics, question = '' }) {
     .map((f, i) => check(f, 'finding', i))
     .filter(Boolean);
   const analysis = (parsed?.analysis || []).map((a, i) => check(a, 'analysis', i)).filter(Boolean);
-  const claims = log.length;
-  const kept = log.filter((l) => l.action !== 'removed').length;
+  /* Sonar 6.4: a figure stated with two values where only one matches its source label
+     is removed from the claim holding the unsupported side. */
+  const allSources = [
+    ...marked.map((e) => `${e.title}. ${e.text}`),
+    ...metrics.map(
+      (m) =>
+        `${m.label || m.id}: ${m.unit === 'ratio' ? `${(m.value * 100).toFixed(2)}%` : m.value}`,
+    ),
+  ];
+  const surviving = [
+    ...(conclusion ? [{ id: 'conclusion', c: conclusion }] : []),
+    ...keyFindings.map((c) => ({ id: c.id, c })),
+    ...analysis.map((c) => ({ id: c.id, c })),
+  ];
+  const conflicts = contradictions(
+    surviving.map((x) => ({
+      id: x.id,
+      text: [x.c.title, x.c.explanation, x.c.text].filter(Boolean).join(' '),
+    })),
+    allSources,
+  );
+  for (const k of conflicts) {
+    const hit = surviving.find((x) => x.id === k.id);
+    if (!hit) continue;
+    for (const f of ['explanation', 'text']) {
+      if (typeof hit.c[f] !== 'string') continue;
+      hit.c[f] = hit.c[f]
+        .split(/(?<=[.!?])\s+(?=[A-Z"“(\[])/)
+        .filter((sentence) => !sentence.includes(k.text))
+        .join(' ');
+    }
+    hit.c.validation = {
+      ...(hit.c.validation || {}),
+      action: 'rewritten',
+      problems: [...(hit.c.validation?.problems || []), `contradiction:${k.text}`],
+    };
+    log.push({
+      kind: 'contradiction',
+      index: -1,
+      action: 'rewritten',
+      problems: [`contradiction:${k.text}`],
+    });
+  }
+  const claims = log.filter((l) => l.kind !== 'contradiction').length;
+  const kept = log.filter((l) => l.kind !== 'contradiction' && l.action !== 'removed').length;
   const cited = [...(conclusion ? [conclusion] : []), ...keyFindings, ...analysis];
   const stats = {
     claims,
     kept,
     removed: claims - kept,
     downgraded: log.filter((l) => l.action === 'downgraded').length,
+    rewritten: log.filter((l) => l.action === 'rewritten').length,
     claimSupportRate: claims ? kept / claims : 0,
     citationCoverage: cited.length
       ? cited.filter((c) => c.evidenceIds.length || c.metrics.length).length / cited.length

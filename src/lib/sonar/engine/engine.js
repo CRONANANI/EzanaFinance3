@@ -1184,6 +1184,7 @@ export async function runResearch(query, opts = {}) {
       evidenceCount: marked.length,
       audit,
       fulfillmentState: fulfillment?.state || null,
+      rewritten: stats?.rewritten || 0,
     });
     report.confidence = conf.level;
     report.confidenceAudit = conf;

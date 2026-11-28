@@ -187,6 +187,23 @@ async function latestSnapshot(admin, caseId, suite) {
   return { id: data.id, ...data.metrics };
 }
 
+/**
+ * Sonar 6.4: terms the frozen evidence itself names, for objectives that must be judged
+ * against the evidence (a member of Congress is named as the disclosure names them,
+ * "Kevin Hern", never with a "Rep." title the evidence does not carry).
+ */
+export function evidenceTerms(snap) {
+  const members = new Set();
+  for (const call of snap?.calls || []) {
+    for (const item of call?.output?.items || []) {
+      const d = item?.data || {};
+      for (const m of d.summary?.byMember || d.byMember || []) if (m?.name) members.add(m.name);
+      for (const t of d.summary?.latest || d.latest || []) if (t?.member) members.add(t.member);
+    }
+  }
+  return { members: [...members] };
+}
+
 /* Replay one cell on the frozen evidence; score it; store it. */
 export async function runCell(
   admin,
@@ -227,7 +244,7 @@ export async function runCell(
   );
   const wallMs = Date.now() - startedAt;
   const runForScore = run || { failed, researchMetadata: { durationMs: wallMs, partial: true } };
-  const score = scoreRun(runForScore, c);
+  const score = scoreRun(runForScore, { ...c, evidenceTerms: evidenceTerms(snap) });
   if (score.durationMs == null) score.durationMs = wallMs;
   const usage = summarizeUsage(calls);
   const metrics = {

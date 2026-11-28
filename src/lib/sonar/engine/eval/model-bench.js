@@ -65,6 +65,10 @@ export const MODEL_BENCH_CASES = [
         id: 'members',
         label: 'Names members of Congress',
         any: ['\\b(Rep\\.|Sen\\.|Representative|Senator)'],
+        /* Sonar 6.4: the disclosures name members without titles, and every model named
+           them that way (20 of 20 runs), so the title-only pattern failed every model.
+           A member named in the frozen evidence also meets the objective. */
+        fromEvidence: 'members',
       },
       {
         id: 'direction',
@@ -450,7 +454,12 @@ export function scoreRun(run, c) {
   const objectivesMissing = [];
   let met = 0;
   for (const o of c.objectives || []) {
-    if (o.any.some((p) => re(p).test(text))) met += 1;
+    const fromEvidence = o.fromEvidence ? c.evidenceTerms?.[o.fromEvidence] || [] : [];
+    if (
+      o.any.some((p) => re(p).test(text)) ||
+      fromEvidence.some((term) => term && text.includes(term))
+    )
+      met += 1;
     else objectivesMissing.push(o.id);
   }
   const caveatsMet = (c.caveats || []).filter((p) => re(p).test(lower)).length;

@@ -176,6 +176,8 @@ test('confidence audit: high needs coverage, validation and complete calculation
   /* Production runs on Nov 28 stated high with 2 and 3 of 7 claims surviving validation. */
   assert.equal(auditConfidence({ ...good, claimSupportRate: 2 / 7 }).level, 'low');
   assert.equal(auditConfidence({ ...good, claimSupportRate: 0.7 }).level, 'medium');
+  /* Sonar 6.4: a report the verifier had to rewrite is not high. */
+  assert.equal(auditConfidence({ ...good, rewritten: 1 }).level, 'medium');
   /* Never raised. */
   assert.equal(auditConfidence({ ...good, claimed: 'low' }).level, 'low');
   assert.ok(auditConfidence({ ...good, writerTruncated: true }).reasons.length);
@@ -606,4 +608,114 @@ test('macro: daily policy data gives effective dates when it covers the window',
     r.changes.map((c) => c.date),
     ['2026-03-13', '2026-06-05'],
   );
+});
+
+test('claim check: the live Palantir errors are removed, the rest of the claim stays', async () => {
+  const { validateResearch } = await import('../src/lib/sonar/engine/findings.js');
+  const ev = {
+    marker: 'S1',
+    id: 'e1',
+    title: 'Government Dependence (calculated)',
+    text: 'Value of federal prime awards that started in FY2026, obligated to date: $1.34B (+31.3% vs the FY2025 vintage). Awards started in the overlapping FY2025: $1.02B, 22.8% of that revenue (exposure indicator, not a revenue share). Ezana could not retrieve a government segment disclosure for this company.',
+    numbers: [],
+    entities: ['Palantir'],
+    date: '2026-11-28',
+  };
+  ev.numbers = (await import('../src/lib/sonar/engine/evidence.js')).numbersOf(ev.text);
+  const parsed = {
+    executiveConclusion: {
+      text: 'Federal prime awards that started in FY2026 total $1.34B, up 31.3% from the FY2025 vintage [S1]. The award-value-to-revenue exposure indicator is 31.3% when FY2026 awards are set against revenue [S1]. The paired indicator is 22.8% [S1]. The company does not disclose recognized government revenue share in its filings [S1].',
+      evidence: ['S1'],
+      classification: 'calculated_result',
+    },
+    keyFindings: [],
+    analysis: [],
+    confidence: 'high',
+  };
+  const out = validateResearch(parsed, {
+    marked: [ev],
+    metrics: [],
+    question: 'How dependent is Palantir?',
+  });
+  const t = out.executiveConclusion.text;
+  assert.match(t, /up 31\.3% from the FY2025 vintage/); // correctly labeled growth stays
+  assert.match(t, /paired indicator is 22\.8%/);
+  assert.doesNotMatch(t, /indicator is 31\.3%/); // mislabeled ratio removed
+  assert.doesNotMatch(t, /does not disclose/); // unverified negative removed
+  assert.equal(out.validation.stats.rewritten, 1);
+  const log = out.validation.log.find((l) => l.kind === 'conclusion');
+  assert.ok(log.problems.some((p) => /mislabeled_number:31\.3%/.test(p)));
+  assert.ok(log.problems.some((p) => /unverified_negative/.test(p)));
+});
+
+test('claim check: a supported negative stays; a coverage note never supports one', async () => {
+  const { unverifiedNegative, mislabeledNumbers } =
+    await import('../src/lib/sonar/engine/claim-check.js');
+  assert.equal(
+    unverifiedNegative('The company does not disclose segment revenue.', [
+      'The company does not disclose segment revenue separately in its 10-K.',
+    ]),
+    false,
+  );
+  assert.equal(
+    unverifiedNegative('The company does not disclose segment revenue.', [
+      'Ezana could not retrieve the segment revenue disclosure.',
+    ]),
+    true,
+  );
+  /* Labels that agree are not flagged; a margin stated as growth is. */
+  assert.deepEqual(
+    mislabeledNumbers('Operating margin was 20.0%.', ['Operating margin: 20.0%']),
+    [],
+  );
+  assert.deepEqual(mislabeledNumbers('Revenue grew 20.0%.', ['Operating margin: 20.0%']), [
+    '20.0%',
+  ]);
+});
+
+test('claim check: a contradicting value for the same label is removed', async () => {
+  const { contradictions } = await import('../src/lib/sonar/engine/claim-check.js');
+  const out = contradictions(
+    [
+      { id: 'conclusion', text: 'Operating margin was 20.0% [S1].' },
+      { id: 'finding_1', text: 'Operating margin reached 25.0% last year.' },
+    ],
+    ['Operating margin: 20.0%. Revenue growth: 25.0%.'],
+  );
+  assert.deepEqual(out, [{ id: 'finding_1', text: '25.0%' }]);
+});
+
+test('bench integrity: members named as the evidence names them meet the objective', async () => {
+  const { scoreRun, caseById } = await import('../src/lib/sonar/engine/eval/model-bench.js');
+  const { evidenceTerms } = await import('../src/lib/sonar/engine/eval/model-bench-runner.js');
+  const c = caseById('multi_dataset_screen');
+  const snap = {
+    calls: [
+      {
+        source: 'congress_sector',
+        output: {
+          items: [
+            {
+              data: {
+                summary: {
+                  byMember: [{ name: 'Kevin Hern' }],
+                  latest: [{ member: 'Lisa C. McClain' }],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ],
+  };
+  const run = {
+    executiveConclusion:
+      'Kevin Hern sold LMT three times while 27 members bought defense names; purchases were 60.8% of trades.',
+    keyFindings: [],
+    evidence: [],
+  };
+  const withTerms = scoreRun(run, { ...c, evidenceTerms: evidenceTerms(snap) });
+  assert.equal(withTerms.objectives.missing.includes('members'), false);
+  const without = scoreRun(run, c);
+  assert.equal(without.objectives.missing.includes('members'), true);
 });
