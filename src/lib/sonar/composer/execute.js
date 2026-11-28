@@ -222,6 +222,19 @@ export async function resolveSubject(text, admin = getAdminClient()) {
 export async function resolveCompany(text, admin = getAdminClient()) {
   const t = String(text || '').trim();
   if (!t) return null;
+  /* Sonar 6.4 hardening: a canonical issuer resolves to its own symbol; a central bank is
+     never a company. (A live comparison of Bank of America and Goldman Sachs failed on the
+     name search.) */
+  const canon = canonicalFor(t);
+  if (canon?.type === 'central_bank') return { text: t, kind: 'unresolved' };
+  if (canon?.type === 'company') {
+    const { data } = await admin
+      .from('sec_fundamentals')
+      .select('ticker, entity_name')
+      .eq('ticker', canon.id)
+      .limit(1);
+    return { text: t, kind: 'company', id: canon.id, name: data?.[0]?.entity_name || canon.label };
+  }
   const tick = t.match(TICKER_RE);
   if (tick) {
     const { data } = await admin

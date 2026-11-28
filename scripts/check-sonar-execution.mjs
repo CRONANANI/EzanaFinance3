@@ -1084,3 +1084,11 @@ test('evidence packing survives a non-finite component', async () => {
   const packed = packEvidence([{ evidence: e, score: NaN, components: {} }], { minScore: 0 });
   assert.ok(Array.isArray(packed.selected));
 });
+
+test('composer: canonical issuers resolve to their symbols in a comparison', async () => {
+  const { resolveCompany } = await import('../src/lib/sonar/composer/execute.js');
+  const admin = fakeSupabase({ sec_fundamentals: [] });
+  assert.equal((await resolveCompany('Bank of America', admin)).id, 'BAC');
+  assert.equal((await resolveCompany('Goldman Sachs', admin)).id, 'GS');
+  assert.equal((await resolveCompany('Bank of Canada', admin)).kind, 'unresolved');
+});
