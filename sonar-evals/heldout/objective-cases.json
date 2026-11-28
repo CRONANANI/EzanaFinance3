@@ -1,5 +1,5 @@
 {
-  "version": "heldout-objectives-v1",
+  "version": "heldout-objectives-v2",
   "written": "2026-11-28",
   "rule": "Independent held-out set. Never change routing, intent or executor code to make a case here pass. When a case is used for development, move it to the skill evaluation cases and write a replacement here.",
   "fixtures": "scripts/lib/sonar-exec-fixtures.mjs (AAA, BBB, CCC, DDD in Energy; TTT in Information Technology)",
@@ -324,6 +324,146 @@
       "question": "Who is winning the cloud market between AWS, Azure and Google Cloud?",
       "lead": "industry-analyst",
       "forbid": ["financial-screen", "government-dependence"]
+    },
+    {
+      "id": "V01",
+      "kind": "execute",
+      "question": "Which energy stocks have a P/E below 10?",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["BBB"]
+      }
+    },
+    {
+      "id": "V02",
+      "kind": "execute",
+      "question": "Rank energy companies by P/E, lowest first",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["BBB", "AAA"]
+      }
+    },
+    {
+      "id": "V03",
+      "kind": "execute",
+      "question": "Energy stocks with a price to sales ratio under 1",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["BBB", "CCC"]
+      }
+    },
+    {
+      "id": "V04",
+      "kind": "execute",
+      "question": "Which energy companies have the highest earnings yield?",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["BBB", "AAA", "CCC"]
+      }
+    },
+    {
+      "id": "V05",
+      "kind": "execute",
+      "question": "Compare AAA and BBB on P/E",
+      "capability": "company-comparison",
+      "expect": {
+        "values": {
+          "AAA.pe": 11.1111111,
+          "BBB.pe": 8.8235294
+        }
+      }
+    },
+    {
+      "id": "I01",
+      "kind": "execute",
+      "question": "Which semiconductor companies have operating margins above 25%?",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "I02",
+      "kind": "execute",
+      "question": "Rank bank stocks by revenue growth",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["BNK"]
+      }
+    },
+    {
+      "id": "I03",
+      "kind": "execute",
+      "question": "Which defense contractors grew revenue the fastest?",
+      "capability": "financial-screen",
+      "expect": {
+        "orderPrefix": ["DEF"]
+      }
+    },
+    {
+      "id": "I04",
+      "kind": "execute",
+      "question": "Which oil refiners have the highest operating margin?",
+      "capability": "financial-screen",
+      "expect": {
+        "order": ["BBB"]
+      }
+    },
+    {
+      "id": "I05",
+      "kind": "unsupported",
+      "question": "Find solar companies with revenue growth above 20%",
+      "forbid": ["financial-screen"]
+    },
+    {
+      "id": "M01",
+      "kind": "execute",
+      "question": "Is US inflation re-accelerating?",
+      "capability": "macro-indicators",
+      "expect": {
+        "macro": {
+          "USA.latestYoYPeriod": "2026-09",
+          "USA.accelerating": true
+        }
+      }
+    },
+    {
+      "id": "M02",
+      "kind": "execute",
+      "question": "Compare inflation in Canada, the UK and the US",
+      "capability": "macro-indicators",
+      "expect": {
+        "macroCountries": ["CAN", "GBR", "USA"]
+      }
+    },
+    {
+      "id": "M03",
+      "kind": "execute",
+      "question": "What is the real policy rate in Canada?",
+      "capability": "macro-indicators",
+      "expect": {
+        "macro": {
+          "CAN.realRatePeriod": "2026-09"
+        }
+      }
+    },
+    {
+      "id": "M04",
+      "kind": "execute",
+      "question": "Has the Bank of Canada cut rates this year?",
+      "capability": "macro-indicators",
+      "expect": {
+        "macro": {
+          "CAN.changesThisYear": 3,
+          "CAN.netChangeThisYear": -0.25
+        }
+      }
+    },
+    {
+      "id": "M05",
+      "kind": "unsupported",
+      "question": "Is inflation in Wakanda rising?",
+      "forbid": ["macro-indicators"]
     }
   ],
   "retired": [
@@ -332,5 +472,6 @@
       "question": "Compare Tesla and Ford on P/E",
       "reason": "used to fix comparison metric substitution (Sonar 6.3); moved to scripts/check-sonar-execution.mjs"
     }
-  ]
+  ],
+  "v2_written": "2026-11-28, before any Sonar 6.4 code"
 }

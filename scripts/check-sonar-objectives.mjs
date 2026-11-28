@@ -16,7 +16,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { fakeSupabase } from './lib/fake-supabase.mjs';
-import { FIXTURES } from './lib/sonar-exec-fixtures.mjs';
+import { FIXTURES, PRICES } from './lib/sonar-exec-fixtures.mjs';
 import { planCase } from './lib/sonar-eval-cases.mjs';
 import { inferComposition } from '../src/lib/sonar/composer/intents.js';
 import { runResearchComposition } from '../src/lib/sonar/composer/execute.js';
@@ -48,6 +48,15 @@ function checkResult(r, expect) {
   }
   for (const [m, t] of Object.entries(expect.leaders || {}))
     if (r.leaders?.[m] !== t) why.push(`leader ${m}=${r.leaders?.[m] ?? 'none'}`);
+  for (const [k, v] of Object.entries(expect.macro || {})) {
+    const [iso, field] = k.split('.');
+    const got = r.macro?.byCountry?.[iso]?.[field];
+    if (typeof v === 'number' ? !close(got, v) : got !== v) why.push(`${k}=${got ?? 'missing'}`);
+  }
+  if (expect.macroCountries) {
+    const got = Object.keys(r.macro?.byCountry || {}).sort();
+    if (!sameSet(got, expect.macroCountries)) why.push(`countries ${got.join(',') || 'none'}`);
+  }
   for (const [k, v] of Object.entries(expect.dependence || {})) {
     const got = r.dependence?.[k];
     if (typeof v === 'number' ? !close(got, v) : got !== v) why.push(`${k}=${got ?? 'missing'}`);
@@ -123,7 +132,18 @@ async function runCase(c) {
   return out;
 }
 
+/* An authorized quote provider stands in for live prices (Sonar 6.4 valuation). Older
+   code without the hook simply has no prices. */
+async function installPrices() {
+  const mod = await import('../src/lib/sonar/composer/analytics-server.js');
+  if (typeof mod.setQuoteProvider === 'function')
+    mod.setQuoteProvider(async (tickers) =>
+      Object.fromEntries(tickers.filter((t) => PRICES[t]).map((t) => [t, PRICES[t]])),
+    );
+}
+
 export async function scoreObjectives() {
+  await installPrices();
   const rows = [];
   for (const c of DATA.cases) rows.push(await runCase(c));
   const rate = (k, f = () => true) => {
