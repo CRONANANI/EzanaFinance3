@@ -137,40 +137,78 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
 /* ── Sonar 6.4: authorized prices and valuation ──────────────────────────── */
 
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
-const MAX_VALUED = 300;
+/* One quote per company when the bulk endpoint is refused: keep the count bounded. */
+const MAX_VALUED = 150;
 
-/** FMP batch quotes with the quote time kept: { TICKER: { price, asOf } }. */
+const quoteRow = (q) => {
+  const price = Number(q?.price);
+  if (!q?.symbol || !Number.isFinite(price) || price <= 0) return null;
+  const ts = Number(q.timestamp);
+  return [
+    String(q.symbol).toUpperCase().replace(/-/g, '.'),
+    {
+      price,
+      asOf: Number.isFinite(ts)
+        ? new Date(ts * 1000).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+    },
+  ];
+};
+
+/**
+ * Authorized prices from FMP with the quote time kept: { TICKER: { price, asOf } }.
+ * The bulk endpoint answers 402 on Ezana's current FMP plan (sector-detail.js, Oct 30),
+ * so a refusal falls back to one /quote per symbol, 8 in flight.
+ */
 async function fmpQuotes(tickers) {
   const key = process.env.FMP_API_KEY || '';
   const out = {};
-  if (!key || !tickers.length) return out;
-  for (const group of chunk([...new Set(tickers)], 100)) {
+  const list = [...new Set(tickers)];
+  if (!key || !list.length) return out;
+  const sym = (t) => t.replace(/\./g, '-');
+  let refused = false;
+  for (const group of chunk(list, 100)) {
     try {
       const res = await fetchWithTimeout(
-        `${FMP_STABLE}/batch-quote?symbols=${encodeURIComponent(group.map((t) => t.replace(/\./g, '-')).join(','))}&apikey=${encodeURIComponent(key)}`,
+        `${FMP_STABLE}/batch-quote?symbols=${encodeURIComponent(group.map(sym).join(','))}&apikey=${encodeURIComponent(key)}`,
         { cache: 'no-store' },
         8000,
       );
-      if (!res.ok) {
-        console.warn('[sonar] valuation quotes unavailable', { status: res.status });
-        continue;
+      if (res.status === 402 || res.status === 403) {
+        refused = true;
+        break;
       }
+      if (!res.ok) continue;
       const rows = await res.json();
       for (const q of Array.isArray(rows) ? rows : []) {
-        const price = Number(q?.price);
-        if (!q?.symbol || !Number.isFinite(price) || price <= 0) continue;
-        const ts = Number(q.timestamp);
-        out[String(q.symbol).toUpperCase().replace(/-/g, '.')] = {
-          price,
-          asOf: Number.isFinite(ts)
-            ? new Date(ts * 1000).toISOString().slice(0, 10)
-            : new Date().toISOString().slice(0, 10),
-        };
+        const r = quoteRow(q);
+        if (r) out[r[0]] = r[1];
       }
     } catch {
       /* a failed group leaves its tickers without a price (counted, never guessed) */
     }
   }
+  if (!refused) return out;
+  const queue = [...list];
+  const worker = async () => {
+    while (queue.length) {
+      const t = queue.shift();
+      try {
+        const res = await fetchWithTimeout(
+          `${FMP_STABLE}/quote?symbol=${encodeURIComponent(sym(t))}&apikey=${encodeURIComponent(key)}`,
+          { cache: 'no-store' },
+          6000,
+        );
+        if (!res.ok) continue;
+        const rows = await res.json();
+        const r = quoteRow(Array.isArray(rows) ? rows[0] : rows);
+        if (r) out[t] = r[1];
+      } catch {
+        /* no price for this ticker */
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(8, list.length) }, worker));
   return out;
 }
 
@@ -542,10 +580,16 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         `Federal contracts: value of prime awards that started in federal fiscal year ${completeFederalFy(now)} (the latest complete year, ending September 30), obligated to date, for every company. This is not revenue.`,
       );
     } else if (src === 'valuation') {
-      const valued = tick.slice(0, MAX_VALUED);
+      /* Over the cap, the largest companies by filed revenue are valued (said so). */
+      const valued =
+        tick.length > MAX_VALUED
+          ? [...tick]
+              .sort((x, y) => (values[y]?.revenue ?? -1) - (values[x]?.revenue ?? -1))
+              .slice(0, MAX_VALUED)
+          : tick;
       if (tick.length > MAX_VALUED)
         notes.push(
-          `Valuation was computed for the first ${MAX_VALUED} of ${tick.length} remaining companies (alphabetical).`,
+          `Valuation was computed for the ${MAX_VALUED} largest of ${tick.length} remaining companies by filed revenue; the others have no valuation in this screen.`,
         );
       const v = await valuationFor(admin, valued, figs, now);
       for (const t of tick) Object.assign(values[t], v.values[t] || {});
