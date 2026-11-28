@@ -1,0 +1,753 @@
+{
+  "version": "heldout-objectives-v3",
+  "rows": [
+    {
+      "id": "S01",
+      "kind": "execute",
+      "question": "List energy stocks with revenue growth above 20%",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S02",
+      "kind": "execute",
+      "question": "Which energy companies have operating margins over 15%?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S03",
+      "kind": "execute",
+      "question": "Rank energy companies by revenue growth",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S05",
+      "kind": "execute",
+      "question": "Top energy names by free cash flow",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S06",
+      "kind": "execute",
+      "question": "Which energy stocks did insiders buy most in the past 90 days?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S07",
+      "kind": "execute",
+      "question": "Rank energy companies by federal contract awards",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "S10",
+      "kind": "execute",
+      "question": "Energy companies with revenue growth above 20% and operating margins above 10%",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "C01",
+      "kind": "execute",
+      "question": "Compare AAA and BBB on operating margin",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "C02",
+      "kind": "execute",
+      "question": "How does TTT compare with AAA on margins?",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no company-comparison (family fundamental_analysis)"
+      ]
+    },
+    {
+      "id": "C03",
+      "kind": "execute",
+      "question": "AAA versus CCC on debt",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "C04",
+      "kind": "execute",
+      "question": "Compare the free cash flow of AAA, BBB and CCC",
+      "planned": true,
+      "executed": true,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "companies BBB,CCC"
+      ],
+      "limited": false
+    },
+    {
+      "id": "G01",
+      "kind": "execute",
+      "question": "How reliant is AAA on federal contracts?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "G02",
+      "kind": "execute",
+      "question": "How dependent is BBB on government contracts?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": []
+    },
+    {
+      "id": "U01",
+      "kind": "unsupported",
+      "question": "Find utilities with a dividend yield above 4%",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U02",
+      "kind": "unsupported",
+      "question": "Which S&P 500 stocks have the lowest P/E?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U03",
+      "kind": "unsupported",
+      "question": "Screen banks by price to book below 1",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U04",
+      "kind": "unsupported",
+      "question": "Energy stocks with EV/EBITDA under 8",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U05",
+      "kind": "unsupported",
+      "question": "Which retailers have the highest short interest?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U06",
+      "kind": "unsupported",
+      "question": "Rank Nasdaq 100 companies by revenue growth",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U07",
+      "kind": "unsupported",
+      "question": "What percentage of Apple's shares do institutions own?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U08",
+      "kind": "unsupported",
+      "question": "Find healthcare stocks with ESG scores above 70",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U09",
+      "kind": "unsupported",
+      "question": "Which industrials have a beta below 0.8?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "U11",
+      "kind": "unsupported",
+      "question": "Compare Coca-Cola and PepsiCo on dividend yield",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "E01",
+      "kind": "engine",
+      "question": "Will the Bank of Canada cut rates again before summer?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E02",
+      "kind": "engine",
+      "question": "Why has the Swiss franc strengthened so much this year?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E03",
+      "kind": "engine",
+      "question": "Is Egypt at risk of a sovereign debt crisis?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E04",
+      "kind": "engine",
+      "question": "What is behind the recent drop in natural gas prices?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E05",
+      "kind": "engine",
+      "question": "How exposed is India to a rice export ban?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E06",
+      "kind": "engine",
+      "question": "Which companies are affected by the new OFAC sanctions on Iranian oil shipping?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E07",
+      "kind": "engine",
+      "question": "What happens to European defense stocks if the war in Ukraine ends?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E08",
+      "kind": "engine",
+      "question": "What probability do prediction markets assign to a US recession in 2027?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E09",
+      "kind": "engine",
+      "question": "Does buying stocks after a member of Congress buys them beat the market?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E10",
+      "kind": "engine",
+      "question": "Which stocks did Tommy Tuberville buy this year?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E11",
+      "kind": "engine",
+      "question": "How much has Meta spent lobbying Congress on AI regulation?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E12",
+      "kind": "engine",
+      "question": "What did Bridgewater buy and sell last quarter?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": false,
+      "notes": [
+        "lead null"
+      ]
+    },
+    {
+      "id": "E13",
+      "kind": "engine",
+      "question": "Is US inflation re-accelerating?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": true,
+      "notes": []
+    },
+    {
+      "id": "E14",
+      "kind": "engine",
+      "question": "Who is winning the cloud market between AWS, Azure and Google Cloud?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": false,
+      "notes": [
+        "lead equity-research"
+      ]
+    },
+    {
+      "id": "V01",
+      "kind": "execute",
+      "question": "Which energy stocks have a P/E below 10?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "V02",
+      "kind": "execute",
+      "question": "Rank energy companies by P/E, lowest first",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "V04",
+      "kind": "execute",
+      "question": "Which energy companies have the highest earnings yield?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [
+        "status done/limited (3 of 4 companies with filed financials)"
+      ],
+      "limited": true
+    },
+    {
+      "id": "V05",
+      "kind": "execute",
+      "question": "Compare AAA and BBB on P/E",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "I01",
+      "kind": "execute",
+      "question": "Which semiconductor companies have operating margins above 25%?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "I02",
+      "kind": "execute",
+      "question": "Rank bank stocks by revenue growth",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "I04",
+      "kind": "execute",
+      "question": "Which oil refiners have the highest operating margin?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "I05",
+      "kind": "unsupported",
+      "question": "Find solar companies with revenue growth above 20%",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": [
+        "unsupported notice given"
+      ]
+    },
+    {
+      "id": "M01",
+      "kind": "execute",
+      "question": "Is US inflation re-accelerating?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "M02",
+      "kind": "execute",
+      "question": "Compare inflation in Canada, the UK and the US",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "M03",
+      "kind": "execute",
+      "question": "What is the real policy rate in Canada?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "M04",
+      "kind": "execute",
+      "question": "Has the Bank of Canada cut rates this year?",
+      "planned": true,
+      "executed": true,
+      "correct": true,
+      "routed": null,
+      "notes": [],
+      "limited": false
+    },
+    {
+      "id": "M05",
+      "kind": "unsupported",
+      "question": "Is inflation in Wakanda rising?",
+      "planned": true,
+      "executed": null,
+      "correct": null,
+      "routed": null,
+      "notes": []
+    },
+    {
+      "id": "H1",
+      "kind": "execute",
+      "question": "Energy names carrying debt to equity under 0.6",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "H2",
+      "kind": "execute",
+      "question": "Chipmakers with operating margins over 25%",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "H3",
+      "kind": "execute",
+      "question": "Energy stocks trading below 1x sales",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "H4",
+      "kind": "execute",
+      "question": "Which tech names saw revenue rise by more than 20%?",
+      "planned": true,
+      "executed": true,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "got SFT,TTT"
+      ],
+      "limited": false
+    },
+    {
+      "id": "H5",
+      "kind": "execute",
+      "question": "Defense contractors sorted by revenue growth",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "H6",
+      "kind": "execute",
+      "question": "Energy companies with revenue growth above 20% and P/E below 12",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "H7",
+      "kind": "execute",
+      "question": "Energy companies with margins above 15% but P/E under 10",
+      "planned": false,
+      "executed": false,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "no financial-screen (family none)"
+      ]
+    },
+    {
+      "id": "N1",
+      "kind": "entity",
+      "question": "What is the Bank of England's policy rate?",
+      "planned": false,
+      "executed": null,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "entities country:GB"
+      ]
+    },
+    {
+      "id": "N2",
+      "kind": "entity",
+      "question": "Bank of America revenue growth over the last two years",
+      "planned": false,
+      "executed": null,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "entities industry:banks,country:US",
+        "unexpected industry"
+      ]
+    },
+    {
+      "id": "N3",
+      "kind": "entity",
+      "question": "Goldman Sachs versus Morgan Stanley on operating margin",
+      "planned": true,
+      "executed": null,
+      "correct": true,
+      "routed": null,
+      "notes": []
+    },
+    {
+      "id": "N4",
+      "kind": "entity",
+      "question": "Which Canadian banks grew revenue the most?",
+      "planned": false,
+      "executed": null,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "universe country none"
+      ]
+    },
+    {
+      "id": "N5",
+      "kind": "entity",
+      "question": "Has the Fed cut rates this year?",
+      "planned": false,
+      "executed": null,
+      "correct": false,
+      "routed": null,
+      "notes": [
+        "entities none"
+      ]
+    },
+    {
+      "id": "N6",
+      "kind": "entity",
+      "question": "Semiconductor companies ranked by P/E",
+      "planned": true,
+      "executed": null,
+      "correct": true,
+      "routed": null,
+      "notes": []
+    }
+  ],
+  "summary": {
+    "planned": {
+      "pass": 51,
+      "total": 63
+    },
+    "executed": {
+      "pass": 23,
+      "total": 31
+    },
+    "correct": {
+      "pass": 23,
+      "total": 37
+    },
+    "routed": {
+      "pass": 12,
+      "total": 14
+    },
+    "limited": 9,
+    "objectiveMet": {
+      "pass": 47,
+      "total": 63
+    }
+  }
+}

@@ -64,6 +64,56 @@ function checkResult(r, expect) {
   return why;
 }
 
+/* v3: typed entity resolution and intent shape, judged without execution. */
+async function runEntityCase(c, out) {
+  const { understandDeterministic } = await import('../src/lib/sonar/understand/index.js');
+  const { canonicalIntent } = await import('../src/lib/sonar/semantic/canonical-intent.js');
+  const u = understandDeterministic(c.question);
+  const intent = canonicalIntent(c.question);
+  const inf = inferComposition(c.question);
+  const e = c.expect;
+  const why = [];
+  const ents = u.entities || [];
+  if (e.entity) {
+    const hit = ents.some(
+      (x) =>
+        x.kind === e.entity.kind &&
+        (!e.entity.id || x.id === e.entity.id) &&
+        (!e.entity.country || x.country === e.entity.country || x.id === e.entity.country),
+    );
+    if (!hit) why.push(`entities ${ents.map((x) => `${x.kind}:${x.id}`).join(',') || 'none'}`);
+  }
+  if (e.notEntity && ents.some((x) => x.kind === e.notEntity.kind))
+    why.push(`unexpected ${e.notEntity.kind}`);
+  if (e.family && intent.family !== e.family) why.push(`family ${intent.family}`);
+  if (e.companies) {
+    const names = [
+      intent.primary_entity?.text,
+      ...(intent.secondary_entities || []).map((x) => x.text),
+    ].filter(Boolean);
+    if (!sameSet(names, e.companies)) why.push(`companies ${names.join(',') || 'none'}`);
+  }
+  const att = inf.attachments[0];
+  if (e.macroCountries) {
+    const got = (
+      inf.attachments.find((a) => a.capability === 'macro-indicators')?.params?.countries || []
+    )
+      .slice()
+      .sort();
+    if (!sameSet(got, e.macroCountries)) why.push(`macro ${got.join(',') || 'none'}`);
+  }
+  if (e.universe && intent.composition?.universe?.id !== e.universe)
+    why.push(`universe ${intent.composition?.universe?.id || 'none'}`);
+  if (e.universeCountry && intent.composition?.universe?.country !== e.universeCountry)
+    why.push(`universe country ${intent.composition?.universe?.country || 'none'}`);
+  if (e.rankBy && att?.params?.rank_by !== e.rankBy)
+    why.push(`rank ${att?.params?.rank_by || 'none'}`);
+  out.planned = why.length === 0;
+  out.correct = why.length === 0;
+  out.notes.push(...why);
+  return out;
+}
+
 async function runCase(c) {
   const out = {
     id: c.id,
@@ -75,6 +125,7 @@ async function runCase(c) {
     routed: null,
     notes: [],
   };
+  if (c.kind === 'entity') return runEntityCase(c, out);
   const inf = inferComposition(c.question);
   const caps = inf.attachments.map((a) => a.capability);
   if (c.kind === 'unsupported' || c.kind === 'engine') {
@@ -162,7 +213,10 @@ export async function scoreObjectives() {
       objectiveMet: {
         pass:
           rows.filter((r) => r.kind === 'execute' && r.planned && r.executed && r.correct).length +
-          rows.filter((r) => r.kind !== 'execute' && r.planned && r.routed !== false).length,
+          rows.filter((r) => r.kind === 'entity' && r.correct).length +
+          rows.filter(
+            (r) => !['execute', 'entity'].includes(r.kind) && r.planned && r.routed !== false,
+          ).length,
         total: rows.length,
       },
     },

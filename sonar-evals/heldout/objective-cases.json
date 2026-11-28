@@ -1,5 +1,5 @@
 {
-  "version": "heldout-objectives-v2",
+  "version": "heldout-objectives-v3",
   "written": "2026-11-28",
   "rule": "Independent held-out set. Never change routing, intent or executor code to make a case here pass. When a case is used for development, move it to the skill evaluation cases and write a replacement here.",
   "fixtures": "scripts/lib/sonar-exec-fixtures.mjs (AAA, BBB, CCC, DDD in Energy; TTT in Information Technology)",
@@ -32,15 +32,6 @@
       }
     },
     {
-      "id": "S04",
-      "kind": "execute",
-      "question": "Energy stocks with debt to equity below 0.6",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["AAA", "BBB"]
-      }
-    },
-    {
       "id": "S05",
       "kind": "execute",
       "question": "Top energy names by free cash flow",
@@ -65,24 +56,6 @@
       "capability": "financial-screen",
       "expect": {
         "orderPrefix": ["AAA"]
-      }
-    },
-    {
-      "id": "S08",
-      "kind": "execute",
-      "question": "Which tech stocks grew revenue more than 20%?",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["TTT"]
-      }
-    },
-    {
-      "id": "S09",
-      "kind": "execute",
-      "question": "Semiconductor companies with operating margin above 25%",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["TTT"]
       }
     },
     {
@@ -344,15 +317,6 @@
       }
     },
     {
-      "id": "V03",
-      "kind": "execute",
-      "question": "Energy stocks with a price to sales ratio under 1",
-      "capability": "financial-screen",
-      "expect": {
-        "set": ["BBB", "CCC"]
-      }
-    },
-    {
       "id": "V04",
       "kind": "execute",
       "question": "Which energy companies have the highest earnings yield?",
@@ -389,15 +353,6 @@
       "capability": "financial-screen",
       "expect": {
         "order": ["BNK"]
-      }
-    },
-    {
-      "id": "I03",
-      "kind": "execute",
-      "question": "Which defense contractors grew revenue the fastest?",
-      "capability": "financial-screen",
-      "expect": {
-        "orderPrefix": ["DEF"]
       }
     },
     {
@@ -464,6 +419,134 @@
       "kind": "unsupported",
       "question": "Is inflation in Wakanda rising?",
       "forbid": ["macro-indicators"]
+    },
+    {
+      "id": "H1",
+      "kind": "execute",
+      "question": "Energy names carrying debt to equity under 0.6",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA", "BBB"]
+      }
+    },
+    {
+      "id": "H2",
+      "kind": "execute",
+      "question": "Chipmakers with operating margins over 25%",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "H3",
+      "kind": "execute",
+      "question": "Energy stocks trading below 1x sales",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["BBB", "CCC"]
+      }
+    },
+    {
+      "id": "H4",
+      "kind": "execute",
+      "question": "Which tech names saw revenue rise by more than 20%?",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["TTT"]
+      }
+    },
+    {
+      "id": "H5",
+      "kind": "execute",
+      "question": "Defense contractors sorted by revenue growth",
+      "capability": "financial-screen",
+      "expect": {
+        "orderPrefix": ["DEF"]
+      }
+    },
+    {
+      "id": "H6",
+      "kind": "execute",
+      "question": "Energy companies with revenue growth above 20% and P/E below 12",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["AAA"]
+      }
+    },
+    {
+      "id": "H7",
+      "kind": "execute",
+      "question": "Energy companies with margins above 15% but P/E under 10",
+      "capability": "financial-screen",
+      "expect": {
+        "set": ["BBB"]
+      }
+    },
+    {
+      "id": "N1",
+      "kind": "entity",
+      "question": "What is the Bank of England's policy rate?",
+      "expect": {
+        "entity": {
+          "kind": "central_bank",
+          "country": "GB"
+        },
+        "macroCountries": ["GBR"]
+      }
+    },
+    {
+      "id": "N2",
+      "kind": "entity",
+      "question": "Bank of America revenue growth over the last two years",
+      "expect": {
+        "entity": {
+          "kind": "company",
+          "id": "BAC"
+        },
+        "notEntity": {
+          "kind": "industry"
+        }
+      }
+    },
+    {
+      "id": "N3",
+      "kind": "entity",
+      "question": "Goldman Sachs versus Morgan Stanley on operating margin",
+      "expect": {
+        "family": "company_comparison",
+        "companies": ["Goldman Sachs", "Morgan Stanley"]
+      }
+    },
+    {
+      "id": "N4",
+      "kind": "entity",
+      "question": "Which Canadian banks grew revenue the most?",
+      "expect": {
+        "universe": "banks",
+        "universeCountry": "CA"
+      }
+    },
+    {
+      "id": "N5",
+      "kind": "entity",
+      "question": "Has the Fed cut rates this year?",
+      "expect": {
+        "entity": {
+          "kind": "central_bank",
+          "country": "US"
+        },
+        "macroCountries": ["USA"]
+      }
+    },
+    {
+      "id": "N6",
+      "kind": "entity",
+      "question": "Semiconductor companies ranked by P/E",
+      "expect": {
+        "universe": "semiconductors",
+        "rankBy": "pe_ratio"
+      }
     }
   ],
   "retired": [
@@ -471,7 +554,33 @@
       "id": "U10",
       "question": "Compare Tesla and Ford on P/E",
       "reason": "used to fix comparison metric substitution (Sonar 6.3); moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "S04",
+      "question": "Energy stocks with debt to equity below 0.6",
+      "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "S08",
+      "question": "Which tech stocks grew revenue more than 20%?",
+      "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "S09",
+      "question": "Semiconductor companies with operating margin above 25%",
+      "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "V03",
+      "question": "Energy stocks with a price to sales ratio under 1",
+      "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
+    },
+    {
+      "id": "I03",
+      "question": "Which defense contractors grew revenue the fastest?",
+      "reason": "named as a required example in the Sonar 6.4 hardening brief (grammar), so used for development; moved to scripts/check-sonar-execution.mjs"
     }
   ],
-  "v2_written": "2026-11-28, before any Sonar 6.4 code"
+  "v2_written": "2026-11-28, before any Sonar 6.4 code",
+  "v3_written": "2026-11-28, before any 6.4 hardening code"
 }
