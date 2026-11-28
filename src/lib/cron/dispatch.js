@@ -227,7 +227,12 @@ export async function dispatchDue(jobs, opts) {
 
 export function summarize(results) {
   const by = {};
-  for (const r of results) by[r.state] = (by[r.state] || 0) + 1;
+  /* "skipped" is reported as lockSkipped: a top-level `skipped` key marks the whole run as
+     skipped in ingest_runs (cron/outcome.js). */
+  for (const r of results) {
+    const k = r.state === 'skipped' ? 'lockSkipped' : r.state;
+    by[k] = (by[k] || 0) + 1;
+  }
   const failed = results.filter((r) => r.state === 'failed' || r.state === 'rejected');
   return {
     dispatched: results.length,
