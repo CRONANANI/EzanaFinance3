@@ -21,6 +21,7 @@ import { withTimeout } from '@/lib/with-timeout';
 import { embedViaSupabase } from '@/lib/embeddings-gte';
 import { findExemplaryBrief, publicBrief } from '@/lib/sonar/exemplary';
 import { planAdaptive } from '@/lib/sonar/adaptive/router';
+import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
 import { SCENARIO_BY_ID } from '@/lib/sonar/adaptive/profiles';
 import { runAdaptive } from '@/lib/sonar/adaptive/orchestrator';
 import { adaptiveDataDeps } from '@/lib/sonar/adaptive/data-deps';
@@ -330,7 +331,21 @@ async function handlePing(request, body, emit, preAuthUser = null) {
         console.warn('[sonar/landing] adaptive plan failed', e?.name);
       }
     }
-    const runsAdaptive = Boolean(adaptivePlan?.executable);
+    /* Sonar 6.3: a question that asks for a computed analysis (a screen, a company
+       comparison, a government-dependence read) belongs to research, where the Composer
+       executes it. A live run sent "Compare AMD, Intel and Qualcomm" to the single-company
+       adaptive brief, which answered for AMD alone. */
+    let computedFamily = null;
+    try {
+      const fam = canonicalIntent(query).family;
+      if (
+        ['multi_stage_screen', 'company_comparison', 'government_contract_dependency'].includes(fam)
+      )
+        computedFamily = fam;
+    } catch {
+      computedFamily = null;
+    }
+    const runsAdaptive = Boolean(adaptivePlan?.executable) && !computedFamily;
     if (adaptivePlan) {
       console.log('[sonar/landing] adaptive plan', {
         scenario: adaptivePlan.primaryScenario,

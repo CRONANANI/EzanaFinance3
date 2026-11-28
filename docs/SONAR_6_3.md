@@ -3,26 +3,33 @@
 Nov 28 2026. Builds on Sonar 6.2 (`ee8afd13`, `6930cdb4`). Routing and semantic intent are
 unchanged except one rule (section 4).
 
-## 1. Live validation
+## 1. Live validation (authorized tier-2 account, Nov 28 2026, 13:38 to 13:47 UTC)
 
-**Status: not yet run on an authorized account.** The four benchmark questions need a
-signed-in tier-1+ session (the free plan does not include SEC fundamentals, and the
-analyses are gated on it). The built-in browser has no Ezana session, passwords are never
-entered on the user's behalf, and no entitlement or guest limit was bypassed. The section
-below is filled in once a signed-in run is done; until then the results are verified two
-other ways:
+Run in the account holder's own signed-in browser session (plan tier 2, regular), through
+the same `/api/sonar/research` endpoint and standard mode the page uses. Every run counted
+against that account's quota; nothing was bypassed. A deep run of question 1 was not made
+(the session's permission check declined it); it can be started from the page.
 
-- **Frozen-fixture execution** (`npm run test:sonar-execution`, 16 tests): every number is
-  worked out by hand from `scripts/lib/sonar-exec-fixtures.mjs`.
-- **Production data, read-only SQL**: the same tables the executors read, recomputed by
-  hand (section 2 for Palantir).
+| # | Question | Result | Verified against source records |
+|---|---|---|---|
+| 1 | Energy, operating margin > 15%, ranked by insider buying, 90 days | **Correctly gated.** Notice: "The financial screen reads data your plan does not include, so it did not run." Form 4 insider purchases (`insider-buys`) are not in any plan tier, only deep mode. The written answer said it could not rank without that data; confidence low, audit stored. No ranking was invented | Entitlements (`entitlements.js`): tier 2 has no `insider-buys` |
+| 1b | Same screen ranked by revenue growth (entitled data) | Ran. Funnel 212 Energy tickers, then 132 with filed annual revenue, 42 above 15% margin (16 without the data), 42 ranked; state **limited** (80 universe members have no filings), with every requirement met | PROP +2,944% ($7.9M to $241.6M) and WHK +615% ($9.45M to $67.6M) match their 10-K figures exactly. Correct arithmetic, misleading rank (acquisitions on a tiny base). **Fixed:** small-base growth is now flagged by name |
+| 2 | Compare AMD, Intel, Qualcomm on revenue growth and operating margin | Comparison ran. AMD +34.3% / 10.7%; INTC -0.5% / -4.2%; QCOM -2.6% / 20.1%. Leaders AMD (growth), QCOM (margin). Year ends 2025-12-27 vs 2026-09-27 flagged | All six figures match `sec_fundamentals` to the last digit (AMD 34,639/25,785 and 3,694; INTC 52,853/53,101 and -2,214; QCOM 43,120/44,284 and 8,658, in $M) |
+| 2 | (same run) | **Bug:** "Intel" was also read as a 13F filer (Intellectus Partners); its holdings query ran and the set operation crashed on a null, so fulfillment showed **partial** and confidence was capped to low. **Fixed:** a comparison on company measures is never a two-holder question; a missing side is a named failure | |
+| 2 | (from the page's question bar) | **Bug:** the page sent it to the single-company adaptive brief, which answered for AMD only. **Fixed:** screens, comparisons and dependence questions skip the adaptive brief and run as research | |
+| 3 | How dependent is Palantir on government revenue? | Ran, fulfillment **complete**. Award vintages FY2026 $1.340B, FY2025 $1.021B (+31.3%); paired indicator 22.8% (FY2025, 9 of 12 months); DoD 73.0%. Recognized share "not available" | All match section 2. FMP returned **402** for segment revenue, so the recognized share could not be fetched (not invented) |
+| 3 | (written answer, confidence medium) | **Two writer errors:** it stated "31.3% when FY2026 awards are set against revenue" (31.3% is the growth rate; that ratio would be 29.9% and is not the paired one), and "the company does not disclose recognized government revenue share" (false; the 10-K discloses 53.7%). **Fixed:** the writer rule now gives the only permitted ratio with its value, forbids other ratios, and forbids saying the company does not disclose; the limitation says Ezana could not retrieve it | |
+| 4 | Bank stocks with P/E below 10 | Notice: P/E not available yet; no screen; answer says it cannot be answered; confidence low | Correct |
 
-| Question | Expected on production | Verified so far |
-|---|---|---|
-| Energy, operating margin > 15%, ranked by insider buying (90 days) | Funnel from 212 Energy tickers (132 with filed annual revenue in the window); ranked by Form 4 code P purchases | Fixture E2E; universe counts by SQL |
-| Compare AMD, Intel, Qualcomm on revenue growth and operating margin | AMD, INTC, QCOM resolved from filed names (whole word); filed annual ratios; latest filed years end 2025-12-27 (AMD, INTC) and 2026-09-27 (QCOM), so the periods overlap only in part, stated | Fixture E2E; name resolution and year ends checked by SQL |
-| How dependent is Palantir on government revenue? | Corrected output in section 2 | SQL + 10-K |
-| Bank stocks with P/E below 10 | Unsupported notice, no screen | Intent check |
+**Layout.** The desk summary, notice line, key takeaways and sources rendered correctly for
+question 1 in the signed-in page (screenshot taken during the run).
+
+**Model bench (admin page, run by the account holder).** `multi_dataset_screen` ("Which
+defense stocks are members of Congress trading?") missed the "members" objective for every
+model and both routing profiles. An identical miss across all models points at the frozen
+evidence or the scorer (which requires "Rep." or "Senator" in the text), not at model
+quality; check that before reading it as a model result. Haiku 5.5 alone missed
+"institutional" on the congress-ownership case.
 
 ## 2. Palantir government dependence: audit and corrected metrics
 
@@ -39,7 +46,7 @@ options are exercised.
 The 6.2 ratio also divided the FY2026 vintage (Oct 2025 to Sep 2026) by revenue for the
 year ending Dec 2025, which share only 3 months.
 
-### Corrected figures (production data, recomputed Nov 28 2026)
+### Corrected figures (production data, recomputed Nov 28 2026; confirmed by the live run)
 
 | Metric | Value | Source and period |
 |---|---|---|
@@ -62,8 +69,10 @@ non-US governments are not prime US contract awards matched by recipient name.
   returns both periods and the overlap.
 - `analytics-server.js runGovDependence`: labels, text and limitations describe the vintage
   measure exactly; recognized government revenue comes only from the company's segment
-  disclosure (FMP revenue segmentation of the 10-K, already used by the engine) **for the
-  same fiscal year as the filed revenue**; another year is never paired.
+  disclosure (FMP revenue segmentation of the 10-K) **for the same fiscal year as the filed
+  revenue**; another year is never paired. **In production FMP returns 402 for segment
+  revenue on the current plan**, so the share is reported as not available until segments
+  are ingested another way (SEC XBRL segment facts are the roadmap item).
 - Report tiles: "Awards started, FY2026 (obligated to date)", "FY2025 awards to revenue
   (periods share 9 of 12 months)", "Recognized government revenue share".
 - Writer rule: say plainly that the figure is neither obligations made in the year nor
@@ -176,24 +185,25 @@ yet, so partial-result recovery is verified by tests only.
 |---|---|---|---|---|---|
 | P/E, earnings yield, P/S, EV-based ratios | `shares_outstanding` (5,323 tickers), quarterly net income (5,260), annual revenue (4,558), cash and debt; prices from FMP live (daily bars) and `price_data_cache` (372 tickers) | Batch price per universe; TTM sums; EV needs total debt (long-term debt only, 2,907) | High: FMP batch quote + filed figures; P/E and P/S first, EV later | High (most asked unsupported screen) | **1** |
 | Sub-industry screening (semiconductors, banks, defense) | `ticker_sectors`: 11 GICS sectors only | Industry classification | Medium: SEC submissions give SIC codes per filer (public), or FMP profile industry | High (removes the "broader GICS sector" caveat) | **2** |
-| Recognized government revenue share | FMP segment revenue (live, already used by the engine); 6.3 uses it for the same fiscal year | US-only government revenue is a separate disclosure (not in segments) | Done for segment share; US share needs text extraction | High for contractors | Done (verify live) |
+| Recognized government revenue share | Code done (same-year segment pairing); FMP segment endpoint returns **402** on the current plan, so nothing is fetched in production | Segment data source | Medium: SEC XBRL segment facts (public), or an FMP plan that includes segments | High for contractors | **1** |
 | Award value by year (true obligations) | Award-level vintages only | Transaction-level obligations by action date | Medium: USAspending transactions or the BigQuery corpus if it has transactions | Medium | 3 |
 | Macro analysis (inflation trend, real rates, policy path) | IMF monthly CPI (210 countries, to Oct 2026), BIS policy rates (daily), WEO, OECD, Eurostat, ECB, BoE and others; no FRED/BLS/BEA | US-specific series beyond IMF | High for cross-country inflation and real-rate executors from existing data | Medium-high | **3** |
 | Index universes (S&P 500, Nasdaq 100) | None | Constituent lists | Low to medium: licensing; FMP constituent endpoints depend on plan | Medium | 5 |
 | Ownership as % of shares outstanding | 13F shares + filed `shares_outstanding` | Same-date alignment | Medium | Medium | 4 |
 | Short interest, ESG, beta | None (beta derivable from prices for cached tickers only) | Sources | Low | Low-medium | 6 |
 
-## 8. Sonar 6.3 roadmap (evidence-based order)
+## 8. Sonar 6.4 roadmap (evidence-based order)
 
-1. **Live validation** of the four benchmark questions on a tier-1+ account; fill section 1.
-2. **Valuation ratios** (P/E, P/S, earnings yield) in screens and comparisons from FMP batch
+1. **Segment revenue from SEC XBRL** (dimensional facts), since the FMP plan returns 402: recognized government share for contractors, and the engine's revenue-mix evidence.
+2. **Claim-to-metric validation**: the Palantir write-up passed validation while attaching a growth rate to a ratio label; a number must match the metric it is attributed to, not just any metric.
+3. **Valuation ratios** (P/E, P/S, earnings yield) in screens and comparisons from FMP batch
    prices + filed shares and TTM figures, with price date and filing date shown.
-3. **Sub-industry** from SEC SIC codes; retire the inexact-sector mapping.
-4. **Held-out failures as development work** (then replace the cases): screen recognition for
+4. **Sub-industry** from SEC SIC codes; retire the inexact-sector mapping.
+5. **Held-out failures as development work** (then replace the cases): screen recognition for
    debt to equity and multi-filter phrasing, "compare X with Y" and "compare the M of A, B
    and C", and the two engine questions with no lead.
-5. **Macro executors** on IMF CPI and BIS rates: inflation trend (YoY, 3-month annualised),
+6. **Macro executors** on IMF CPI and BIS rates: inflation trend (YoY, 3-month annualised),
    real policy rate, and cross-country comparison.
-6. **13F decision** (section 3) and, if chosen, set `SONAR_13F_UNENTITLED`.
-7. **Synthesis latency**: synthesis is 33 s on average; per-component writers for computed
+7. **13F decision** (section 3) and, if chosen, set `SONAR_13F_UNENTITLED`.
+8. **Synthesis latency**: synthesis is 33 s on average; per-component writers for computed
    sections, with the measured usage from the model-routing capture.

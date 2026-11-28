@@ -306,6 +306,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
           fcf: r.fcf,
           debt_to_equity: r.debt_to_equity,
           revenue: r.revenue,
+          revenue_prior: r.revenue_prior,
           fiscalYearEnd: r.fiscalYearEnd,
         }
       : {};
@@ -396,13 +397,30 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       shown.map((m) => [SCREEN_MEASURES[m].key, r.values[SCREEN_MEASURES[m].key] ?? null]),
     ),
   }));
+  /* Sonar 6.3: flag growth computed from a tiny prior year (a production screen ranked
+     a company first on +2,944% after it bought producing assets). */
+  const growthShown = shown.includes('revenue_growth');
+  const smallBase = growthShown
+    ? final.rows
+        .filter((r) => {
+          const v = values[r.ticker] || {};
+          return (
+            v.revenue_growth != null &&
+            ((v.revenue_prior != null && v.revenue_prior < 25e6) || v.revenue_growth > 3)
+          );
+        })
+        .map((r) => r.ticker)
+    : [];
   const limitations = [
     gics && !gics.exact
       ? `Ezana classifies companies at the GICS sector level only, so "${p.sector.replace(/_/g, ' ')}" was screened as the whole ${gics.sector} sector; companies outside that industry are included.`
       : null,
     'Filed figures are the latest fiscal year each company reported; fiscal years end on different dates.',
     sources.includes('contracts')
-      ? 'Federal obligations are commitments by fiscal year, not revenue.'
+      ? 'Federal contract figures are the value of prime awards that started in the fiscal year, obligated to date; they are not revenue.'
+      : null,
+    smallBase.length
+      ? `Growth from a small base (prior-year revenue under $25M, or growth above 300%), often after an acquisition or a change of business: ${smallBase.join(', ')}. The arithmetic is correct; the rate says little about the ongoing business.`
       : null,
     sources.includes('insider') || sources.includes('congress')
       ? `Purchases are counted over the last ${windowDays} days.`
@@ -594,7 +612,7 @@ export async function runGovDependence(
       ? `Recognized government revenue is the company’s ${g.recognizedLabel} segment for the fiscal year ending ${g.fiscalYearEnd}, as reported; the share is of total segment revenue. It covers every government customer the segment includes, not only US federal agencies.`
       : mix?.annual?.length
         ? `The company’s segment disclosure does not cover the fiscal year ending ${g.fiscalYearEnd}, so no recognized government revenue share is given.`
-        : 'No government segment disclosure is available for this company, so no recognized government revenue share is given.',
+        : 'Ezana could not retrieve a government segment disclosure for this company, so no recognized government revenue share is given here. That does not mean the company does not disclose one; check the segment note of its annual report.',
     g.pairedFiscalYear != null
       ? `The ratio pairs federal FY${g.pairedFiscalYear} (${fyRange(g.pairedFiscalYear)}) with the company’s fiscal year ending ${g.fiscalYearEnd}; they share ${g.pairedOverlapMonths} of 12 months.`
       : null,

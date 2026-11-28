@@ -124,8 +124,21 @@ export function conclusionRule(result) {
       return '- The executive conclusion must name the top companies of the screen with the ranking measure’s values, state the universe and how many companies passed each filter, and say which companies lacked the data. Do not add companies the screen did not return.';
     case 'company-comparison':
       return '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when fiscal years do not line up.';
-    case 'government-dependence':
-      return '- The executive conclusion must state the value of federal prime awards that started in the latest fiscal year (obligated to date), its change, the top awarding agencies and the award-value-to-revenue indicator with both periods named, and say plainly that this is neither obligations made in the year nor recognized government revenue. Do not state a recognized government revenue share unless the evidence gives one.';
+    case 'government-dependence': {
+      const d = result.dependence || {};
+      const pct = (v) => (Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : 'N/A');
+      return [
+        '- The executive conclusion must state the value of federal prime awards that started in the latest fiscal year (obligated to date), its change, the top awarding agencies and the award-value-to-revenue indicator with both periods named, and say plainly that this is neither obligations made in the year nor recognized government revenue.',
+        d.pairedFiscalYear != null
+          ? `- The only award-value-to-revenue figure is ${pct(d.obligationsToRevenue)} (FY${d.pairedFiscalYear} awards against revenue for the fiscal year ending ${d.fiscalYearEnd}). Do not compute or state any other award-to-revenue ratio, and do not reuse a growth rate as a ratio.`
+          : null,
+        Number.isFinite(d.recognizedGovernmentShare)
+          ? `- Recognized government revenue share: ${pct(d.recognizedGovernmentShare)} (${d.recognizedLabel || 'Government'} segment, fiscal year ending ${d.fiscalYearEnd}). Report it beside the award indicator; never combine them.`
+          : '- No recognized government revenue share is available in this research. Say it is not available here; do not say or imply that the company does not disclose it.',
+      ]
+        .filter(Boolean)
+        .join('\n');
+    }
     default:
       return null;
   }

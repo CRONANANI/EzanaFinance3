@@ -387,3 +387,33 @@ test('fiscal years in the same month of different years are not aligned', async 
     false,
   );
 });
+
+test('a company comparison is never read as two holders (live run, Nov 28)', async () => {
+  const { extractRelation } = await import('../src/lib/sonar/composer/subject.js');
+  assert.equal(
+    extractRelation('Compare AMD, Intel and Qualcomm on revenue growth and operating margin'),
+    null,
+  );
+  assert.equal(extractRelation('Compare Nancy Pelosi and BlackRock holdings')?.op, 'compare');
+  assert.equal(
+    extractRelation('Which stocks do Nancy Pelosi and BlackRock both own?')?.op,
+    'intersect',
+  );
+});
+
+test('the dependence writer rule fixes the one ratio and forbids "does not disclose"', async () => {
+  const { conclusionRule } = await import('../src/lib/sonar/composer/required-outputs.js');
+  const rule = conclusionRule({
+    status: 'done',
+    capability: 'government-dependence',
+    dependence: {
+      pairedFiscalYear: 2025,
+      obligationsToRevenue: 0.228,
+      fiscalYearEnd: '2025-12-31',
+      recognizedGovernmentShare: null,
+    },
+  });
+  assert.match(rule, /22\.8%/);
+  assert.match(rule, /do not compute or state any other award-to-revenue ratio/i);
+  assert.match(rule, /do not say or imply that the company does not disclose it/);
+});

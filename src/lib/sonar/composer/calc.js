@@ -20,6 +20,7 @@ export function companyRatios(f) {
   return {
     fiscalYearEnd: f.annual?.revenue?.[0]?.end || null,
     revenue: rev,
+    revenue_prior: revPrev,
     revenue_growth: rev != null && revPrev ? rev / revPrev - 1 : null,
     /* Sonar 6.2: net income growth, only between two positive years (a swing from a loss
        has no meaningful growth rate). */

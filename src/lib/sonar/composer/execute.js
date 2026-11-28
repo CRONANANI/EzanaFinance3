@@ -1166,6 +1166,16 @@ export async function runResearchComposition(
                   : 'as returned by its query',
                 unmapped: [],
               };
+        /* Sonar 6.3: a side with no holdings (a company subject, a query that did not
+           run) is a named failure, not a null dereference. */
+        if (!left?.rows || !done[`query:${key}`])
+          throw new Error(
+            `Portfolio operations need holdings on both sides; ${
+              !left?.rows
+                ? `${primary?.name || 'the subject'} has no holdings`
+                : 'the other query returned none'
+            }.`,
+          );
         const res = runSetOp({ item, left, right: done[`query:${key}`], leftDs, rightDs, setDs });
         if (setDs && res.set) sets[setDs.id] = res.set;
         results.push({ key, kind: 'query', status: 'done', ...res, set: undefined });

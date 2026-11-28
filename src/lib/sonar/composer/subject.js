@@ -195,11 +195,19 @@ function pairedNames(q) {
  * "its" referring back to the latest name), so "BlackRock's top 10" never becomes the
  * analysis's own count.
  */
+const COMPANY_MEASURE_RE =
+  /\b(?:revenue|sales|margins?|growth|earnings|net income|profit(?:ability)?|free cash flow|cash flow|debt|leverage|p\/?e|valuation|eps|return on equity|roe)\b/i;
+const HOLDINGS_RE = /\b(?:holdings?|portfolios?|positions|owns?|holds?|bought|sold|trades?|stakes?)\b/i;
+
 export function extractRelation(question) {
   const q = String(question || '');
   const overlap = OVERLAP_RE.test(q);
   const compare = !overlap && COMPARE_RE.test(q);
   if (!overlap && !compare) return null;
+  /* Sonar 6.3: comparing companies on their own filed measures ("Compare AMD, Intel and
+     Qualcomm on revenue growth") is a company comparison, not two holders' books: a
+     production run resolved "Intel" to a 13F filer and ran its holdings. */
+  if (compare && COMPANY_MEASURE_RE.test(q) && !HOLDINGS_RE.test(q)) return null;
   let names = namesIn(q);
   /* Typed in lower case ("nancy pelosi and blackrock"), the names are read from the
      phrase that pairs them instead of from capitals. */
