@@ -248,8 +248,8 @@ test('G  embedding candidates only fill an unstated measure, gated by score and 
     measure,
     score,
   });
-  assert.equal(ex.semanticMeasure([cand('value', 0.8)]), null, 'below threshold');
-  assert.equal(ex.semanticMeasure([cand('value', 0.9), cand('breadth', 0.88)]), null, 'no margin');
+  assert.equal(ex.semanticMeasure([cand('value', 0.89)]), null, 'below the calibrated 0.90');
+  assert.equal(ex.semanticMeasure([cand('value', 0.91), cand('breadth', 0.9)]), null, 'margin under 0.02');
   assert.equal(ex.semanticMeasure([cand('value', 0.92), cand('breadth', 0.85)]).measure, 'value');
   /* A stated measure wins over any candidate. */
   const sm = { measure: 'value', score: 0.95, exemplarId: 'own-value-1' };

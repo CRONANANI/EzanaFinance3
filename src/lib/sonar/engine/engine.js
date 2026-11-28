@@ -1343,6 +1343,7 @@ export async function runResearch(query, opts = {}) {
   /* Nov 28 2026: why the written analysis is missing, if it is (telemetry and the UI). */
   run.writerFailure = report.writerFailure || null;
   run.writerTruncated = Boolean(report.writerTruncated);
+  run.reusedFrom = runMeta?.canonicalIntent?.reusedFrom || null;
   emit('report', run);
   return run;
 }

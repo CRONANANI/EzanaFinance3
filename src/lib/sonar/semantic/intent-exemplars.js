@@ -87,12 +87,15 @@ export const INTENT_EXEMPLARS = [
   { id: 'risk-1', family: 'growth_risk', text: 'What could slow this company’s growth?' },
 ];
 
-/* Provisional (not yet calibrated against production embeddings): a candidate may fill an
-   unstated ownership measure only above this similarity and this margin over the best
-   candidate of another measure. Calibrate with scripts/check-sonar-semantic.mjs fixtures
-   against the live embedder before lowering either. */
-export const MEASURE_MIN_SCORE = 0.86;
-export const MEASURE_MIN_MARGIN = 0.04;
+/* Calibrated Nov 28 2026 against the production embedder (gte-small through the Supabase
+   embed function; GET /api/sonar/semantic-calibration, sem-bench-v2, intent-ex-v1): on the
+   35 ownership questions with a known measure, 0.90 with a 0.02 margin answered 25.7% of
+   them, all correctly; the provisional 0.86 / 0.04 answered 17.1%, all correctly; no
+   setting below 0.90 was fully accurate (0.86 / 0.02: 48.6% coverage, 94.1% accuracy).
+   The margin is kept above zero as a guard on a small sample. Re-run the calibration
+   whenever the exemplars or the benchmark change. */
+export const MEASURE_MIN_SCORE = 0.9;
+export const MEASURE_MIN_MARGIN = 0.02;
 
 /**
  * The ownership measure the candidates support, or null. Never consulted when the
