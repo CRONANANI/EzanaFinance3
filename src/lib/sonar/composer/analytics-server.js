@@ -433,6 +433,7 @@ async function resolveUniverse(admin, id, now, country = null) {
         `Country from each registrant's EDGAR business address; ${base.tickers.length - classified.length} of ${base.tickers.length} industry members have no classified address and are not included.`,
       ],
       unclassifiedCountry: base.tickers.length - classified.length,
+      unclassified: base.unclassified || 0,
     };
   }
   if (u.kind === 'gics') {
@@ -485,7 +486,27 @@ async function resolveUniverse(admin, id, now, country = null) {
     notes.push(
       'SEC industry codes are not loaded yet; the universe is the companies the contract data defines only.',
     );
-  return { tickers, label: u.def.label, notes };
+  /* Sonar 6.4 hardening: while the SEC classification backfill is in progress, companies
+     not yet classified could belong to the industry; they are unchecked, so the screen is
+     bounded, never presented as complete. */
+  let unclassified = 0;
+  if (classificationOk) {
+    try {
+      const [all, done] = await Promise.all([
+        admin.from('ticker_sectors').select('ticker', { count: 'exact', head: true }),
+        admin.from('company_industry').select('ticker', { count: 'exact', head: true }),
+      ]);
+      if (Number.isFinite(all?.count) && Number.isFinite(done?.count))
+        unclassified = Math.max(0, all.count - done.count);
+    } catch {
+      unclassified = 0;
+    }
+    if (unclassified)
+      notes.push(
+        `SEC industry classification is still loading: ${unclassified} listed companies are not classified yet, so members of ${u.def.label} among them are not in this universe.`,
+      );
+  }
+  return { tickers, label: u.def.label, notes, unclassified };
 }
 
 /* ── event and money sources, for a set of tickers ─────────────────────── */
@@ -627,6 +648,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   /* Universe: named tickers, an exact GICS sector, or a verified industry (6.4). */
   let universe = [];
   let universeLabel = '';
+  let unclassified = 0;
   const universeNotes = [];
   if (Array.isArray(p.tickers) && p.tickers.length) {
     universe = p.tickers.slice(0, 60).map((t) => ({ ticker: String(t).toUpperCase() }));
@@ -636,6 +658,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     universe = u.tickers.map((t) => ({ ticker: t }));
     universeLabel = u.label;
     universeNotes.push(...u.notes);
+    unclassified = u.unclassified || 0;
   } else {
     throw new Error('The screen has no universe: name a sector, an industry or companies.');
   }
@@ -871,6 +894,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     priceCoverage,
     capped13f,
     funnel,
+    unclassified,
   });
   if (coverage.status === 'bounded')
     limitations.unshift(
@@ -919,6 +943,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
  *   bounded                     some eligible companies were not checked (never exhaustive)
  */
 export function screenCoverage({
+  unclassified = 0,
   eligible,
   evaluated,
   withData,
@@ -929,6 +954,12 @@ export function screenCoverage({
 }) {
   const excluded = [];
   const sampling = [];
+  if (unclassified)
+    excluded.push({
+      kind: 'unchecked',
+      reason: 'listed companies not yet classified by SEC industry code (classification loading)',
+      count: unclassified,
+    });
   if (eligible > evaluated) {
     excluded.push({
       kind: 'unchecked',

@@ -1092,3 +1092,17 @@ test('composer: canonical issuers resolve to their symbols in a comparison', asy
   assert.equal((await resolveCompany('Goldman Sachs', admin)).id, 'GS');
   assert.equal((await resolveCompany('Bank of Canada', admin)).kind, 'unresolved');
 });
+
+test('coverage: an industry screen while classification loads is bounded', async () => {
+  const { screenCoverage } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const c = screenCoverage({
+    eligible: 40,
+    evaluated: 40,
+    withData: 40,
+    shown: 10,
+    unclassified: 5300,
+  });
+  assert.equal(c.status, 'bounded');
+  assert.equal(c.exhaustive, false);
+  assert.match(c.excluded[0].reason, /not yet classified/);
+});
