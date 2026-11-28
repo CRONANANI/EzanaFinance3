@@ -127,3 +127,468 @@
     transition: none;
   }
 }
+
+/* ── Nov 28 2026 redesign: header, library and run insight cards ── */
+
+.qlo-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.qlo-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.qlo-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: 44rem;
+}
+
+.qlo-h1 {
+  margin: 0;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
+  line-height: var(--type-page-title-leading);
+  color: var(--text-primary);
+}
+
+.qlo-header-actions {
+  justify-content: flex-end;
+}
+
+.qlo-kpis {
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+}
+
+.qlo-kpis .qlx-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Library */
+
+.qlo-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  max-width: 40rem;
+}
+
+.qlo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16.5rem, 100%), 1fr));
+  gap: 14px;
+}
+
+.qlo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--ez-rule);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease;
+}
+
+.qlo-card:hover,
+.qlo-card:focus-within {
+  border-color: var(--ql-ink-rule);
+}
+
+.qlo-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.qlo-card-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 15px;
+}
+
+.qlo-card-title {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.qlo-card-method {
+  margin: 0;
+  font-size: 0.78125rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.qlo-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--ez-rule-subtle);
+}
+
+.qlo-flow li {
+  display: grid;
+  grid-template-columns: 16px 3rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.qlo-flow i {
+  color: var(--emerald-text);
+}
+
+.qlo-flow-label {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qlo-flow-text {
+  color: var(--text-primary);
+}
+
+.qlo-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.qlo-card-meta div {
+  display: flex;
+  gap: 6px;
+}
+
+.qlo-card-meta dt {
+  color: var(--text-muted);
+}
+
+.qlo-card-meta dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.qlo-card-perf {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--ez-rule-subtle);
+  font-size: 0.78125rem;
+}
+
+.qlo-card-rules {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.qlo-card-rules li + li {
+  margin-top: 4px;
+}
+
+.qlo-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: auto;
+}
+
+.qlo-planned-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.qlo-planned-list ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qlo-planned-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 0.78125rem;
+}
+
+/* Featured panel */
+
+.qlo-first {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 15rem;
+  justify-content: center;
+  padding: 24px;
+  border: 1px dashed var(--ql-ink-rule);
+  border-radius: var(--radius-md);
+}
+
+.qlo-first > i {
+  font-size: 22px;
+  color: var(--emerald-text);
+}
+
+.qlo-first .qlx-sub {
+  max-width: 34rem;
+}
+
+.qlo-runfacts {
+  gap: 4px 18px;
+  padding-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Signal flow */
+
+.qlo-flowbars {
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 11rem;
+  border-bottom: 0;
+  background: linear-gradient(var(--ez-rule), var(--ez-rule)) center / 100% 1px no-repeat;
+}
+
+.qlo-flowbar {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 4px;
+}
+
+.qlo-flowbar-up,
+.qlo-flowbar-down {
+  display: block;
+  width: 100%;
+}
+
+.qlo-flowbar-up {
+  margin-top: auto;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--positive);
+}
+
+.qlo-flowbar-down {
+  margin-bottom: auto;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--negative);
+}
+
+.qlo-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-sm);
+}
+
+.qlo-key--up {
+  background: var(--positive);
+}
+
+.qlo-key--down {
+  background: var(--negative);
+}
+
+/* Tables */
+
+.qlo-cols-rank {
+  grid-template-columns: minmax(0, 1fr) 4rem 3rem 3.75rem 8.75rem 5.5rem 1.625rem;
+  min-width: 36rem;
+}
+
+.qlo-cols-matrix {
+  grid-template-columns: 4rem 4.5rem 4.5rem 4.5rem minmax(5.5rem, 1fr);
+  min-width: 24rem;
+}
+
+.qlo-cols-trades {
+  grid-template-columns: 4rem 6rem 6rem 3.5rem 4.25rem minmax(6rem, 1fr);
+  min-width: 34rem;
+}
+
+.qlo-cellchip {
+  display: inline-block;
+  min-width: 3rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.qlo-cellchip.is-up {
+  background: var(--positive-bg);
+  color: var(--positive);
+}
+
+.qlo-cellchip.is-down {
+  background: var(--negative-bg);
+  color: var(--negative);
+}
+
+/* Decision trace */
+
+.qlo-trace {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qlo-trace-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12px 5.75rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  font-size: 0.78125rem;
+}
+
+.qlo-trace-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.qlo-trace-item.is-entry .qlo-trace-dot {
+  background: var(--positive);
+}
+
+.qlo-trace-item.is-exit .qlo-trace-dot {
+  background: var(--negative);
+}
+
+.qlo-trace-item.is-signal .qlo-trace-dot {
+  background: transparent;
+  border: 1.5px solid var(--emerald-text);
+}
+
+.qlo-trace-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Market state */
+
+.qlo-regime {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.qlo-regime > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Correlation */
+
+.qlo-corr {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.qlo-corr th,
+.qlo-corr td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ez-rule-subtle);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.qlo-corr thead th {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.qlo-corr tbody th {
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qlo-corr td.is-high {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.qlo-corr td.is-neg {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+@media (max-width: 640px) {
+  .qlo-header-actions {
+    justify-content: flex-start;
+  }
+
+  .qlo-regime {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qlo-card {
+    transition: none;
+  }
+}

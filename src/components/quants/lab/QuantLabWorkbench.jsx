@@ -242,10 +242,16 @@ function NumField({ label, value, onChange, suffix, ...rest }) {
  *        run history, the report and validation live in the Backtesting
  *        workspace.
  * @param {string|null} [initialStrategyId]  open this saved strategy on load
+ * @param {string|null} [initialTemplateId]  start a new draft from this prebuilt template
  * @param {(run: object, strategyId: string) => void} [onRunComplete]  called
  *        after a successful backtest, instead of showing the report here
  */
-export function QuantLabWorkbench({ mode = 'full', initialStrategyId = null, onRunComplete }) {
+export function QuantLabWorkbench({
+  mode = 'full',
+  initialStrategyId = null,
+  initialTemplateId = null,
+  onRunComplete,
+}) {
   const buildOnly = mode === 'build';
   const openedInitial = useRef(false);
   const [strategies, setStrategies] = useState([]);
@@ -328,6 +334,20 @@ export function QuantLabWorkbench({ mode = 'full', initialStrategyId = null, onR
     setError(null);
     setNotice('');
   };
+
+  /* Start from the prebuilt template named in the link, once: a new unsaved
+     draft the user reviews; nothing is saved or run automatically. */
+  const openedTemplate = useRef(false);
+  useEffect(() => {
+    if (openedTemplate.current || !initialTemplateId || initialStrategyId) return;
+    const t = LAB_TEMPLATES.find((x) => x.id === initialTemplateId);
+    if (!t) return;
+    openedTemplate.current = true;
+    startNew(t);
+    setNotice(`Started from the ${t.name} template. Review the rules, then save to backtest.`);
+    // startNew only sets state; listing it would re-run this on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTemplateId, initialStrategyId]);
 
   /** Saves the draft and returns the strategy id (null when it failed). */
   const save = async () => {

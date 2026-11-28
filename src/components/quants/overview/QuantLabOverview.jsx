@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useOrg } from '@/contexts/OrgContext';
 import { computeRunMetrics, drawdownStats } from '@/lib/quants/metrics';
 import { NA, fmtPct, fmtRatio, fmtSignedPct, linePaths, areaPath, tone } from '../lab/lab-format';
@@ -12,6 +13,15 @@ import { useCouncilQuant } from '../council/useCouncilQuant';
 import { QuantCouncil, CouncilSampleSwitch } from '../council/QuantCouncil';
 import './quant-overview.css';
 import { RunDiagnostics } from './RunDiagnostics';
+import { PrebuiltStrategyLibrary } from './PrebuiltStrategyLibrary';
+import {
+  DecisionTraceCard,
+  HistoricalTradesCard,
+  MarketRegimeCard,
+  SignalFlowCard,
+  StrategyCorrelationCard,
+  TickerMatrixCard,
+} from './RunInsights';
 import {
   PERIODS,
   activityFeed,
@@ -30,6 +40,8 @@ const BASE = '/for-the-quants';
 const W = 600;
 const H = 240;
 const PAGE_SIZE = 6;
+const LIBRARY_ID = 'qlo-prebuilt';
+const MAX_CORRELATED = 5;
 
 const STATUS_TAG = {
   Draft: '',
@@ -128,10 +140,11 @@ function PerformancePanel({ strategy, summary, run, state }) {
   const benchmark = run?.results?.benchmark || strategy?.version?.spec?.benchmark || 'Benchmark';
 
   return (
-    <section className="qlx-col" style={{ flex: '52 1 440px' }}>
+    <section className="qlx-col" style={{ flex: '62 1 520px' }}>
       <div className="qlx-head">
         <div className="qlx-row">
-          <h2 className="qlx-title">Strategy performance</h2>
+          <h2 className="qlx-title">{strategy && runId ? strategy.name : 'Featured strategy'}</h2>
+          {view && <span className="qlx-tag">Historical simulation</span>}
           {view && (
             <span className="qlx-sub qlx-num">
               Run {String(runId).slice(0, 6)} · {view.from} to {view.to}
@@ -161,17 +174,40 @@ function PerformancePanel({ strategy, summary, run, state }) {
               Drawdown
             </button>
             <Link
-              className="qlx-btn qlx-btn--icon qlx-btn--sm"
-              href={`${BASE}/backtesting?strategy=${strategy.id}&run=${runId}`}
-              aria-label="Open full results"
+              className="qlx-btn qlx-btn--sm"
+              href={`${BASE}/strategy-lab?strategy=${strategy.id}`}
             >
-              <i className="bi bi-arrows-angle-expand" aria-hidden />
+              Edit strategy
+            </Link>
+            <Link
+              className="qlx-btn qlx-btn--sm"
+              href={`${BASE}/backtesting?strategy=${strategy.id}&run=${runId}`}
+              title="Open full results"
+            >
+              Open backtest
             </Link>
           </div>
         )}
       </div>
 
-      {!strategy && <p className="qlx-empty">Create a strategy to see its performance here.</p>}
+      {!strategy && (
+        <div className="qlo-first">
+          <i className="bi bi-graph-up" aria-hidden />
+          <h3 className="qlx-h4">Your first backtest starts here</h3>
+          <p className="qlx-sub">
+            Pick a prebuilt strategy above, review its rules in the Strategy Lab, save it and run a
+            backtest. Its equity curve against the benchmark, drawdown and trades fill this page.
+          </p>
+          <div className="qlx-row">
+            <a className="qlx-btn qlx-btn--primary qlx-btn--sm" href={`#${LIBRARY_ID}`}>
+              Choose a template
+            </a>
+            <Link className="qlx-btn qlx-btn--sm" href={`${BASE}/strategy-lab?new=1`}>
+              Start from scratch
+            </Link>
+          </div>
+        </div>
+      )}
       {strategy && !runId && (
         <p className="qlx-empty">
           {strategy.name} has no completed backtest yet.{' '}
@@ -255,7 +291,26 @@ function PerformancePanel({ strategy, summary, run, state }) {
                 <span className="qlx-num qlx-ink">{fmtSignedPct(view.benchReturn, 1)}</span>
               </span>
             )}
-            <span className="qlx-sub">Curve and metrics read the same stored run.</span>
+            <span className="qlx-sub">Curve and the four figures read the same window.</span>
+          </div>
+          <div className="qlx-row qlo-runfacts">
+            <span>
+              Volatility{' '}
+              <span className="qlx-num qlx-ink">{fmtPct(run.metrics?.volatility, 1)}</span>
+            </span>
+            <span>
+              Win rate <span className="qlx-num qlx-ink">{fmtPct(run.metrics?.winRate, 0)}</span>
+            </span>
+            <span>
+              Trades{' '}
+              <span className="qlx-num qlx-ink">
+                {Array.isArray(run.results?.trades) ? run.results.trades.length : NA}
+              </span>
+            </span>
+            <span className="qlx-sub">
+              Whole run, {run.config?.startDate} to {run.config?.endDate}. Fills at the next open,
+              costs included.
+            </span>
           </div>
         </>
       )}
@@ -299,9 +354,9 @@ function StrategiesPanel({ rows }) {
   const shown = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
-    <section className="qlx-col" style={{ flex: '48 1 400px' }}>
+    <section className="qlx-col" style={{ flex: '1.4 1 460px' }}>
       <div className="qlx-head">
-        <h2 className="qlx-title">My strategies</h2>
+        <h2 className="qlx-title">Strategy ranking</h2>
         <Link className="qlx-link" href={`${BASE}/strategy-lab`}>
           View all
         </Link>
@@ -315,7 +370,7 @@ function StrategiesPanel({ rows }) {
         </p>
       ) : (
         <>
-          <div className="qlx-th qlx-cols-strategies">
+          <div className="qlx-th qlo-cols-rank">
             <span>Strategy, version, type</span>
             <button
               type="button"
@@ -331,11 +386,12 @@ function StrategiesPanel({ rows }) {
             </button>
             <span className="qlx-r">Sharpe</span>
             <span className="qlx-r">Max DD</span>
+            <span>Window</span>
             <span>Status</span>
             <span />
           </div>
           {shown.map((r) => (
-            <div key={r.id} className="qlx-tr qlx-cols-strategies">
+            <div key={r.id} className="qlx-tr qlo-cols-rank">
               <Link className="qlx-name" href={`${BASE}/strategy-lab?strategy=${r.id}`}>
                 <span>{r.name}</span>
                 <span className="qlx-sub">
@@ -354,6 +410,7 @@ function StrategiesPanel({ rows }) {
               >
                 {fmtPct(r.dd, 1)}
               </span>
+              <span className="qlx-num qlx-muted">{r.window || 'No runs'}</span>
               <span>
                 <span className={`qlx-tag ${STATUS_TAG[r.status]}`}>{r.status}</span>
               </span>
@@ -387,6 +444,12 @@ function StrategiesPanel({ rows }) {
               </div>
             </div>
           ))}
+          {new Set(rows.map((r) => r.window).filter(Boolean)).size > 1 && (
+            <p className="qlx-note" style={{ paddingTop: '0.5rem' }}>
+              Latest completed run of each strategy. The windows differ, so compare these figures
+              with care or rerun them over the same dates.
+            </p>
+          )}
           <div className="qlx-row qlx-row--between" style={{ paddingTop: '0.625rem' }}>
             <span className="qlx-sub qlx-num">
               {page * PAGE_SIZE + 1} to {Math.min((page + 1) * PAGE_SIZE, sorted.length)} of{' '}
@@ -518,6 +581,9 @@ export function QuantLabOverview() {
           ret: m?.totalReturn ?? null,
           sharpe: m?.sharpe ?? null,
           dd: m?.maxDrawdown ?? null,
+          window: latest[s.id]?.config?.startDate
+            ? `${String(latest[s.id].config.startDate).slice(0, 7)} to ${String(latest[s.id].config.endDate || '').slice(0, 7)}`
+            : null,
           status: strategyStatus(s, Boolean(latest[s.id])),
           validated: validated.has(s.id),
         };
@@ -546,48 +612,78 @@ export function QuantLabOverview() {
   const feed = useMemo(() => activityFeed(runs, validations, names), [runs, validations, names]);
 
   const active = strategies.filter((s) => s.status !== 'archived').length;
-  const running =
-    runs.filter((r) => r.status === 'running').length +
-    validations.filter((v) => v.status === 'running').length;
-  const dayAgo = now - 86400000;
-  const doneToday = [...runs, ...validations].filter(
-    (x) => x.status === 'completed' && Date.parse(x.created_at) >= dayAgo,
-  ).length;
+  const completedRuns = runs.filter((r) => r.status === 'completed');
+  const runningRuns = runs.filter((r) => r.status === 'running').length;
+  const runningVals = validations.filter((v) => v.status === 'running').length;
+  const lastDone = [...completedRuns, ...validations.filter((v) => v.status === 'completed')]
+    .filter((x) => x.created_at)
+    .sort((x, y) => (x.created_at < y.created_at ? 1 : -1))[0];
 
   const kpis =
     state === 'ready'
       ? [
           {
-            label: 'Strategies',
+            label: 'Saved strategies',
             value: String(strategies.length),
             sub: strategies.length
               ? `${active} active · ${strategies.length - active} archived`
-              : 'None saved yet',
+              : 'Start from a prebuilt template',
           },
           {
-            label: 'Active research',
-            value: String(running),
-            sub: `running · ${doneToday} completed in the last day`,
+            label: 'Completed backtests',
+            value: String(completedRuns.length),
+            sub: runningRuns ? `${runningRuns} running now` : 'None running',
           },
-          { label: 'Paper trading', value: NA, sub: 'Not available yet', cls: 'qlx-muted' },
           {
-            label: 'Sharpe (best)',
+            label: 'Best Sharpe',
             value: best ? fmtRatio(best.sharpe) : NA,
             sub: best
-              ? `${best.strategy.name} v${best.strategy.latest_version} · ${best.run.config?.startDate} to ${best.run.config?.endDate}`
+              ? `${best.strategy.name} · ${best.run.config?.startDate} to ${best.run.config?.endDate}`
               : 'No completed backtest yet',
           },
           {
             label: 'Max drawdown',
             value: fmtPct(metrics?.maxDrawdown, 1),
             sub:
-              strategy && metrics
-                ? `${strategy.name} · run window`
-                : 'No completed backtest selected',
+              strategy && metrics ? `${strategy.name} · latest run` : 'Selected strategy, once run',
             cls: metrics?.maxDrawdown < 0 ? 'qlx-down' : '',
+          },
+          {
+            label: 'Validations running',
+            value: String(runningVals),
+            sub: `${validations.filter((v) => v.status === 'completed').length} completed on file`,
+          },
+          {
+            label: 'Latest result',
+            value: lastDone ? relativeTime(lastDone.created_at, now) : NA,
+            sub: lastDone
+              ? `${lastDone.summary ? 'Validation' : 'Backtest'} · ${names[lastDone.strategy_id] || 'Deleted strategy'}`
+              : 'Nothing completed yet',
           },
         ]
       : [];
+
+  /* Correlation candidates: the latest completed run of each live strategy. */
+  const correlated = useMemo(
+    () =>
+      strategies
+        .filter((s) => latest[s.id] && s.status !== 'archived')
+        .map((s) => ({ name: s.name, run: latest[s.id] }))
+        .sort((x, y) => (x.run.created_at < y.run.created_at ? 1 : -1))
+        .slice(0, MAX_CORRELATED),
+    [strategies, latest],
+  );
+
+  const plan = usePlanAccess();
+  const accessLabel = !plan
+    ? null
+    : plan.features?.['quant-lab'] === false
+      ? null
+      : plan.scope && plan.scope !== 'retail'
+        ? 'Included with your organization access'
+        : `Included with ${plan.plan || 'your plan'}`;
+  const spec = strategy?.version?.spec || null;
+  const benchmarkName = storedRun.run?.results?.benchmark || spec?.benchmark || 'the benchmark';
 
   const research =
     state === 'loading' ? (
@@ -612,10 +708,25 @@ export function QuantLabOverview() {
             run={storedRun.run}
             state={storedRun.state}
           />
+          <SignalFlowCard run={storedRun.run} />
+        </div>
+
+        <div className="qlx-band">
           <StrategiesPanel rows={rows} />
+          <TickerMatrixCard run={storedRun.run} spec={spec} />
+        </div>
+
+        <div className="qlx-band">
+          <HistoricalTradesCard run={storedRun.run} strategyId={strategy?.id} />
+          <DecisionTraceCard run={storedRun.run} />
         </div>
 
         <RunDiagnostics strategy={strategy} run={storedRun.run} state={storedRun.state} />
+
+        <div className="qlx-band">
+          <MarketRegimeCard run={storedRun.run} benchmark={benchmarkName} />
+          <StrategyCorrelationCard candidates={correlated} />
+        </div>
 
         <div className="qlx-band">
           <section className="qlx-col" style={{ flex: '1 1 300px' }}>
@@ -779,8 +890,8 @@ export function QuantLabOverview() {
                 ],
                 [
                   'Run backtest',
-                  'Test on historical bars',
-                  `${BASE}/backtesting`,
+                  strategy ? `Test ${strategy.name}` : 'Test on historical bars',
+                  strategy ? `${BASE}/backtesting?strategy=${strategy.id}` : `${BASE}/backtesting`,
                   'bi-play-circle',
                 ],
                 [
@@ -794,6 +905,12 @@ export function QuantLabOverview() {
                   'Exposure and concentration',
                   `${BASE}/risk-portfolio`,
                   'bi-shield',
+                ],
+                [
+                  'Explore datasets',
+                  'Disclosure and market data',
+                  `${BASE}/datasets-research`,
+                  'bi-database',
                 ],
               ].map(([label, sub, href, icon]) => (
                 <Link key={label} className="qlx-action" href={href}>
@@ -809,41 +926,49 @@ export function QuantLabOverview() {
                 <span className="qlx-ink" style={{ fontWeight: 600 }}>
                   Paper deploy
                 </span>
-                <span className="qlx-sub">Not available yet</span>
+                <span className="qlx-sub">Planned</span>
               </div>
             </div>
           </section>
         </div>
 
         <p className="qlo-planned">
-          <i className="bi bi-hourglass-split" aria-hidden="true" /> Planned, not built yet: factor
-          exposure of a run, performance by market regime, and hypotheses handed over from Sonar
-          (until then, test a disclosure signal in{' '}
-          <Link className="qlx-link" href={`${BASE}/datasets-research`}>
-            Datasets &amp; Research
-          </Link>
-          ).
+          <i className="bi bi-hourglass-split" aria-hidden="true" /> Planned, not built yet: paper
+          deployment of a strategy, factor exposure of a run, and hypotheses handed over from Sonar.
+          Everything on this page is a historical simulation, not a forecast.
         </p>
       </>
     );
 
   return (
     <>
-      {state === 'ready' && (
-        <>
-          <div className="qlx-toolbar" role="group" aria-label="Workspace controls">
+      <header className="qlo-header">
+        <div className="qlo-header-text">
+          <div className="qlx-row">
+            <h1 className="qlo-h1">Quant Lab</h1>
+            {accessLabel && (
+              <span className="qlx-tag qlx-tag--ok">
+                <i className="bi bi-check2-circle" aria-hidden /> {accessLabel}
+              </span>
+            )}
+          </div>
+          <p className="qlx-sub">
+            Build, backtest and evaluate systematic investment strategies using Ezana&apos;s
+            quantitative research tools.
+          </p>
+        </div>
+        <div className="qlx-row qlo-header-actions">
+          {state === 'ready' && strategies.length > 0 && (
             <label className="qlx-row">
               <span className="qlx-label">Strategy</span>
               <select
                 className="qlx-select"
                 value={selected}
-                disabled={!strategies.length}
                 onChange={(e) => {
                   setSelected(e.target.value);
                   context.setContext({ strategy: e.target.value });
                 }}
               >
-                {!strategies.length && <option value="">No strategies yet</option>}
                 {strategies.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} · v{s.latest_version}
@@ -851,23 +976,30 @@ export function QuantLabOverview() {
                 ))}
               </select>
             </label>
-            <Link className="qlx-btn qlx-btn--primary" href={`${BASE}/strategy-lab?new=1`}>
-              <i className="bi bi-plus-lg" aria-hidden />
-              <span>Create strategy</span>
-            </Link>
-          </div>
+          )}
+          <a className="qlx-btn" href={`#${LIBRARY_ID}`}>
+            Browse strategies
+          </a>
+          <Link className="qlx-btn qlx-btn--primary" href={`${BASE}/strategy-lab?new=1`}>
+            <i className="bi bi-plus-lg" aria-hidden />
+            <span>Create strategy</span>
+          </Link>
+        </div>
+      </header>
 
-          <section aria-label="Summary" className="qlx-strip">
-            {kpis.map((k) => (
-              <div key={k.label} className="qlx-cell">
-                <span className="qlx-eyebrow">{k.label}</span>
-                <span className={`qlx-val ${k.cls || ''}`}>{k.value}</span>
-                <span className="qlx-sub">{k.sub}</span>
-              </div>
-            ))}
-          </section>
-        </>
+      {state === 'ready' && (
+        <section aria-label="Summary" className="qlx-strip qlo-kpis">
+          {kpis.map((k) => (
+            <div key={k.label} className="qlx-cell">
+              <span className="qlx-eyebrow">{k.label}</span>
+              <span className={`qlx-val ${k.cls || ''}`}>{k.value}</span>
+              <span className="qlx-sub">{k.sub}</span>
+            </div>
+          ))}
+        </section>
       )}
+
+      <PrebuiltStrategyLibrary id={LIBRARY_ID} strategies={strategies} latest={latest} />
 
       {councilReady ? (
         <>
