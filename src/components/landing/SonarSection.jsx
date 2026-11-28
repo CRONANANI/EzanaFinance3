@@ -2764,6 +2764,20 @@ export function SonarSection({
       /* Answered, gated or "no coverage" all end the loading screen; only a
          failed request turns it into its error state. */
       settle = { settled: true, ok: Boolean(resOk || data?.gate) };
+      /* Nov 28 2026: a failed ping carries its reason to the loading screen, which used to
+         show only "Sonar couldn't finish this ping" (a used-up daily quota looked like a
+         crash). The server's own message, never a guess. */
+      if (!settle.ok) {
+        settle.status = resStatus;
+        settle.reason = data?.reason || null;
+        settle.message =
+          data?.error ||
+          (resStatus === 503
+            ? 'Sonar is busy right now. Nothing was spent; try again in a minute.'
+            : resStatus === 429
+              ? 'Too many pings too fast. Wait a minute and try again.'
+              : 'That ping did not land. Try again.');
+      }
       if (data?.exemplary && typeof onExemplary === 'function') {
         /* A hand-reviewed brief for this exact question. Nothing was spent; the host draws
            it, and the band keeps what it showed before. */
@@ -2872,9 +2886,9 @@ export function SonarSection({
             : 'No dataset coverage for that ping yet.',
         );
       } else if (resStatus === 429) {
-        /* The strict per-IP limiter, not a broken ping. Naming it stops a
-           visitor retrying into the same wall. */
-        setPingError('Too many pings too fast. Wait a minute and try again.');
+        /* A 429 is either the strict per-IP limiter or a used-up daily quota (the server
+           says which in its message). Naming it stops a visitor retrying into the same wall. */
+        setPingError(data?.error || 'Too many pings too fast. Wait a minute and try again.');
       } else if (resStatus === 503) {
         /* Our side is overloaded (the database or a limiter could not answer
            in time). Nothing was spent; say so in Sonar's voice rather than
@@ -2895,6 +2909,11 @@ export function SonarSection({
         setQueryValue(q);
       } else {
         setPingError('That ping did not land. Try again.');
+        settle = {
+          settled: true,
+          ok: false,
+          message: 'The connection to Sonar dropped. Try again.',
+        };
       }
     } finally {
       if (pingAbortRef.current === controller) pingAbortRef.current = null;

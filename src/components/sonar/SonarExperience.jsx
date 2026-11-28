@@ -267,7 +267,12 @@ export function SonarExperience({
     /* A ping that never reports back shows the error state, not a sweep
        that runs forever. */
     const id = setTimeout(
-      () => setLoader((l) => (l && l.phase === 'sweeping' ? { ...l, phase: 'error' } : l)),
+      () =>
+        setLoader((l) =>
+          l && l.phase === 'sweeping'
+            ? { ...l, phase: 'error', detail: 'Sonar took too long to answer. Try again.' }
+            : l,
+        ),
       70_000,
     );
     return () => clearTimeout(id);
@@ -285,7 +290,17 @@ export function SonarExperience({
       if (meta.ok === false) {
         /* A failed ping: the screen stays up in its error state, with Try
            again and Back. */
-        setLoader((l) => (l ? { ...l, phase: 'error', leaving: false } : l));
+        setLoader((l) =>
+          l
+            ? {
+                ...l,
+                phase: 'error',
+                leaving: false,
+                detail: meta.message || null,
+                reason: meta.reason || null,
+              }
+            : l,
+        );
         return;
       }
       /* Settled without a briefing (gated, or nothing found): the screen
@@ -1105,8 +1120,14 @@ export function SonarExperience({
                 entityLabel={pingEntityLabel(loader.query)}
                 phase={loader.phase}
                 leaving={loader.leaving}
+                errorDetail={loader.detail}
                 onCancel={cancelPing}
-                onRetry={() => bandControlRef.current?.retry()}
+                /* A used-up daily or overall cap cannot be retried into an answer. */
+                onRetry={
+                  loader.reason === 'quota' || loader.reason === 'global'
+                    ? null
+                    : () => bandControlRef.current?.retry()
+                }
                 onBack={leavePing}
               />
             ) : (

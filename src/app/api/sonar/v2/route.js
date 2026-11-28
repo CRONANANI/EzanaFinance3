@@ -18,7 +18,7 @@ import { getTemplate } from '@/lib/sonar/templates';
 import { runSweeps } from '@/lib/sonar/sweeps';
 import { getExemplars } from '@/lib/sonar/exemplars';
 import { composeBriefing } from '@/lib/sonar/composer';
-import { reservePing, completePing, failPing } from '@/lib/sonar/quota';
+import { reservePing, completePing, failPing, isQuotaExempt } from '@/lib/sonar/quota';
 
 import { withNoEmDash } from '@/lib/text/no-em-dash-response';
 /**
@@ -161,6 +161,8 @@ async function handlePing(request, user, ping) {
     const reservation = await reservePing(admin, {
       userId: user.id,
       limit: entitlements.dailyQueries,
+      /* Staff and admin accounts: no daily cap (isQuotaExempt). */
+      exempt: isQuotaExempt(user),
       query,
       version,
       planTier,
@@ -332,11 +334,13 @@ async function handlePing(request, user, ping) {
         process.env.NODE_ENV !== 'production' && composed.errors.length
           ? composed.errors
           : undefined,
-      quota: {
-        limit: entitlements.dailyQueries,
-        used: used + 1,
-        remaining: Math.max(0, entitlements.dailyQueries - used - 1),
-      },
+      quota: isQuotaExempt(user)
+        ? { limit: null, used: used + 1, remaining: null, exempt: true }
+        : {
+            limit: entitlements.dailyQueries,
+            used: used + 1,
+            remaining: Math.max(0, entitlements.dailyQueries - used - 1),
+          },
       locked,
       disclaimer: DISCLAIMER,
     });

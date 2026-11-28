@@ -6,6 +6,7 @@ import { isActivePartner } from '@/lib/partner-access';
 import { getActivePlan, getPlanTier } from '@/lib/subscription';
 import { getReferralPlanOverride } from '@/lib/referrals-server';
 import { getSonarEntitlements, describeDatasetAccess } from '@/lib/sonar/entitlements';
+import { isQuotaExempt } from '@/lib/sonar/quota';
 
 /**
  * GET /api/sonar/entitlements — the current user's Sonar capabilities and today's
@@ -60,10 +61,13 @@ export const GET = withApiGuard(async (request, user) => {
     userLookup: entitlements.userLookup,
     available,
     locked,
-    quota: {
-      limit: entitlements.dailyQueries,
-      used,
-      remaining: Math.max(0, entitlements.dailyQueries - used),
-    },
+    /* Staff and admin accounts are never refused by the daily cap (isQuotaExempt). */
+    quota: isQuotaExempt(user)
+      ? { limit: null, used, remaining: null, exempt: true }
+      : {
+          limit: entitlements.dailyQueries,
+          used,
+          remaining: Math.max(0, entitlements.dailyQueries - used),
+        },
   });
 });

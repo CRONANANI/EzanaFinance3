@@ -14,6 +14,7 @@ import {
   failPing,
   annotatePing,
   settlementFor,
+  isQuotaExempt,
 } from '@/lib/sonar/quota';
 import { guestIpDailyCap, landingRunMode, memberDailyPingCap } from '@/lib/sonar/estimate';
 import { getClientIp } from '@/lib/client-ip';
@@ -182,7 +183,14 @@ const POST_HANDLER = withApiGuard(
       const user = auth.ok ? auth.value || null : null;
       if (user) return streamPing(request, body, user);
     }
-    return handlePing(request, body, null);
+    const startedAt = Date.now();
+    const res = await handlePing(request, body, null);
+    try {
+      logPingExit(res.status, await res.clone().json(), { startedAt, streamed: false });
+    } catch {
+      logPingExit(res.status, null, { startedAt, streamed: false });
+    }
+    return res;
   },
   /* The limiter's database call is bounded by the ping profile
      (PROFILE.rateLimitMs); a miss falls back to the per-instance count
@@ -191,6 +199,34 @@ const POST_HANDLER = withApiGuard(
 );
 
 const streamEnabled = () => process.env.SONAR_ADAPTIVE_STREAM !== 'off';
+
+/**
+ * Nov 28 2026: one log line for every way a ping ends, so a failure is never silent. A quota
+ * refusal, a cancelled request or a hand-off used to leave only the "adaptive plan" line, and
+ * diagnosing a failed ping took an investigation. No query text and no user id are logged.
+ */
+function exitKind(body) {
+  if (!body) return 'no_body';
+  if (body.cancelled) return 'cancelled';
+  if (body.reason) return `refused:${body.reason}`;
+  if (body.gate) return 'gate';
+  if (body.deepSuggested) return 'deep_offer';
+  if (body.researchMode) return `handoff:${body.researchMode}`;
+  if (body.exemplary) return 'exemplary';
+  if (body.adaptive) return 'adaptive';
+  if (body.answer) return 'answer';
+  if (body.error) return 'error';
+  return 'other';
+}
+function logPingExit(status, body, { startedAt, streamed }) {
+  console.log('[sonar/landing] exit', {
+    status,
+    kind: exitKind(body),
+    streamed,
+    ms: Date.now() - startedAt,
+    ...(body?.error ? { error: String(body.error).slice(0, 140) } : {}),
+  });
+}
 
 /**
  * Run the ping and stream its progress. Events (each `data: {json}`):
@@ -224,6 +260,7 @@ function streamPing(request, body, user) {
     }
   };
   emit({ t: 'ack', at: new Date().toISOString() });
+  const startedAt = Date.now();
   (async () => {
     let res;
     try {
@@ -238,6 +275,7 @@ function streamPing(request, body, user) {
     } catch {
       payload = null;
     }
+    logPingExit(res.status, payload, { startedAt, streamed: true });
     emit({ t: 'done', status: res.status, body: payload });
     open = false;
     try {
@@ -540,6 +578,8 @@ async function handlePing(request, body, emit, preAuthUser = null) {
     const reservationP = reservePing(admin, {
       userId: member?.id || null,
       limit: member ? memberCap : null,
+      /* Staff and admin accounts: no daily cap (isQuotaExempt). */
+      exempt: isQuotaExempt(member),
       ipHash: member ? null : ipHash,
       ipLimit: member ? null : guestIpDailyCap(GUEST_LIMIT),
       isGuest: !member,
@@ -560,10 +600,13 @@ async function handlePing(request, body, emit, preAuthUser = null) {
     if (!reservation.ok) {
       return NextResponse.json(
         {
+          reason: reservation.reason || 'error',
           error:
             reservation.reason === 'quota'
-              ? 'You have used today\u2019s pings. They reset at midnight UTC.'
-              : 'That ping did not land. Try again in a moment.',
+              ? `You have used today\u2019s ${member ? memberCap : 'free'} pings. They reset at midnight UTC.`
+              : reservation.reason === 'global'
+                ? 'Sonar has reached its overall limit for today. It resets at midnight UTC.'
+                : 'That ping did not land. Try again in a moment.',
         },
         { status: reservation.reason === 'error' ? 503 : 429 },
       );

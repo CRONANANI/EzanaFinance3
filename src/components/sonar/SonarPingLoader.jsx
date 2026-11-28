@@ -22,6 +22,7 @@
  *   leaving      fades the whole screen out (300ms) before it unmounts
  *   onCancel     Cancel (and Escape) while sweeping; no button without it
  *   onRetry      "Try again" on error
+ *   errorDetail  on error, why the ping failed (the server's message, e.g. a used-up quota)
  *   onBack       "Back" on error (and Escape)
  *
  * While mounted it sets body.sonar-ping-active, which turns the in-app nav
@@ -48,6 +49,7 @@ export function SonarPingLoader({
   onCancel = null,
   onRetry = null,
   onBack = null,
+  errorDetail = null,
 }) {
   const [step, setStep] = useState(0);
   const [slow, setSlow] = useState(false);
@@ -123,6 +125,11 @@ export function SonarPingLoader({
         </span>
         {slow && sweeping ? (
           <span className="snrp-slow">Still sweeping. Deep pings can take up to a minute.</span>
+        ) : null}
+        {phase === 'error' && errorDetail ? (
+          <span className="snrp-detail" role="alert">
+            {errorDetail}
+          </span>
         ) : null}
       </div>
 

@@ -17,6 +17,8 @@
  * count-then-log behaviour, so deploying the code first changes nothing.
  */
 
+import { isAdminUser } from '@/lib/admin-helpers';
+
 /* Every row in sonar_queries counts (reserved or completed); a failed ping's
    reservation is deleted. */
 const MISSING_FN = new Set(['PGRST202', '42883']);
@@ -93,21 +95,44 @@ export async function countDeepToday(admin, userId) {
  *   reason 'deep_quota' once the cap is reached.
  * @returns {Promise<{ ok: boolean, id?: string|null, reason?: 'quota'|'global'|'deep_quota'|'error', used: number, legacy?: boolean, row?: object }>}
  */
+/**
+ * Nov 28 2026: staff and admin accounts are never refused by a daily cap, so testing cannot
+ * lock the team out of Sonar (it did: test pings used a founder's 25-ping day). Admins are
+ * ADMIN_EMAILS (isAdminUser); SONAR_STAFF_EMAILS adds staff who are not admins. Exempt
+ * pings are still reserved and written to the ledger, so usage stays visible; only the
+ * per-user, deep, per-IP and global caps are lifted.
+ */
+export function isQuotaExempt(user, env = process.env) {
+  if (!user?.email) return false;
+  if (isAdminUser(user)) return true;
+  const staff = String(env?.SONAR_STAFF_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return staff.includes(String(user.email).toLowerCase());
+}
+
 export async function reservePing(
   admin,
   {
     userId = null,
-    limit = null,
-    globalLimit = globalDailyCap(),
+    limit: limitIn = null,
+    globalLimit: globalIn = globalDailyCap(),
     ipHash = null,
-    ipLimit = null,
+    ipLimit: ipLimitIn = null,
     query,
     version,
     planTier = 0,
     isGuest = false,
-    deepLimit = null,
+    deepLimit: deepIn = null,
+    /* isQuotaExempt(user): every cap lifted, the ledger row still written. */
+    exempt = false,
   },
 ) {
+  const limit = exempt ? null : limitIn;
+  const globalLimit = exempt ? null : globalIn;
+  const ipLimit = exempt ? null : ipLimitIn;
+  const deepLimit = exempt ? null : deepIn;
   const args = {
     p_user: userId,
     p_limit: limit,

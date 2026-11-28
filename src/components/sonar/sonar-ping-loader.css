@@ -114,6 +114,13 @@
   color: var(--sonar-ping-muted);
 }
 
+.snrp-detail {
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sonar-ping-muted);
+}
+
 .snrp-dots {
   display: flex;
   gap: 10px;

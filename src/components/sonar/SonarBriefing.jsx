@@ -452,7 +452,7 @@ export default function SonarBriefing({ result, onFollowup, busy = false }) {
           {busy ? (
             <SonarLoader size="sm" sublabel="Sweeping filings, trades and contracts" />
           ) : null}
-          {result.quota ? (
+          {result.quota && !result.quota.exempt && typeof result.quota.remaining === 'number' ? (
             <p className="snb-panel-foot snb-mono">
               {result.quota.remaining} of {result.quota.limit} pings left today
             </p>

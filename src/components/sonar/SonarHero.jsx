@@ -29,7 +29,11 @@ export function SonarHero({
 }) {
   const [showAll, setShowAll] = useState(false);
   const visibleRecent = showAll ? recent : recent?.slice(0, 3);
-  const quotaReached = Boolean(quota && quota.remaining <= 0);
+  /* An exempt (staff or admin) quota has no limit: remaining is null, never "reached"
+     (null <= 0 is true in JavaScript). */
+  const quotaReached = Boolean(
+    quota && !quota.exempt && typeof quota.remaining === 'number' && quota.remaining <= 0,
+  );
   return (
     <div className={`sonar-hero${bare ? ' sonar-hero--bare' : ''}`}>
       {bare ? (
@@ -134,11 +138,13 @@ export function SonarHero({
       {quota &&
         (quotaReached ? (
           <div className="sonar-quota sonar-quota--out">
-            You are out of pings for today. Resets at midnight ET.
+            You are out of pings for today. Resets at midnight UTC.
           </div>
         ) : (
           <div className="sonar-quota">
-            {quota.remaining} of {quota.limit} pings left today
+            {quota.exempt
+              ? 'Staff account: no daily ping limit'
+              : `${quota.remaining} of ${quota.limit} pings left today`}
             {version && version !== 'regular' ? ` · ${version} scope` : ''}
           </div>
         ))}

@@ -28,7 +28,13 @@ import {
 } from '@/lib/sonar/answer-cache';
 import { removeEmDashes } from '@/lib/text/em-dash';
 import { logZeroResult } from '@/lib/rag/zero-results';
-import { reservePing, completePing, failPing, annotatePing } from '@/lib/sonar/quota';
+import {
+  reservePing,
+  completePing,
+  failPing,
+  annotatePing,
+  isQuotaExempt,
+} from '@/lib/sonar/quota';
 import { createRequestTimer } from '@/lib/rag/request-timer';
 import { routingForRun } from '@/lib/sonar/model-routing';
 
@@ -163,6 +169,8 @@ async function handlePing(request, user, ping) {
     const reservation = await reservePing(admin, {
       userId: user.id,
       limit: entitlements.dailyQueries,
+      /* Staff and admin accounts: no daily cap (isQuotaExempt). */
+      exempt: isQuotaExempt(user),
       query,
       version,
       planTier,
@@ -203,11 +211,13 @@ async function handlePing(request, user, ping) {
       Boolean(entitlements.webSearch?.enabled) && process.env.SONAR_WEB_SEARCH === 'true';
     /* Synthesis must end inside maxDuration (60 s): request start + 55 s. */
     const deadlineAt = Date.now() - timer.elapsed() + 55_000;
-    const quota = {
-      limit: entitlements.dailyQueries,
-      used: used + 1,
-      remaining: Math.max(0, entitlements.dailyQueries - used - 1),
-    };
+    const quota = isQuotaExempt(user)
+      ? { limit: null, used: used + 1, remaining: null, exempt: true }
+      : {
+          limit: entitlements.dailyQueries,
+          used: used + 1,
+          remaining: Math.max(0, entitlements.dailyQueries - used - 1),
+        };
 
     timer.set('gate', timer.elapsed());
 

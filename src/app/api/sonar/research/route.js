@@ -15,6 +15,7 @@ import {
   failPing,
   annotatePing,
   releaseSupersededPing,
+  isQuotaExempt,
 } from '@/lib/sonar/quota';
 import { defaultOrgPool, budgetMessage } from '@/lib/org-sonar/budget';
 import { isFundFitQuestion } from '@/lib/org-sonar/fund-fit';
@@ -252,7 +253,9 @@ const POST_HANDLER = withApiGuard(
 
     /* Sonar for organizations (Nov 2026): an org member's deep run draws on
        the org's pooled monthly budget (lib/org-sonar/budget.js). */
-    const orgDeep = deepMode && !isGuest && Boolean(access.scope?.orgId);
+    const quotaExempt = isQuotaExempt(access.user);
+    /* An exempt account's deep run never draws on an organization's pooled budget. */
+    const orgDeep = deepMode && !isGuest && Boolean(access.scope?.orgId) && !quotaExempt;
     const memberReserve = () =>
       reservePing(admin, {
         userId: access.user?.id || null,
@@ -267,6 +270,8 @@ const POST_HANDLER = withApiGuard(
         planTier: access.planTier,
         /* A member's daily cap on deep research runs (reserve_sonar_ping_deep). */
         deepLimit: deepMode && !isGuest ? access.entitlements.deepRunsPerDay : null,
+        /* Staff and admin accounts: no daily caps (isQuotaExempt). */
+        exempt: quotaExempt,
       });
     const reservation = await withTimeout(
       orgDeep
