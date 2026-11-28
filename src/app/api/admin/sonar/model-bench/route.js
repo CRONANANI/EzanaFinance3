@@ -19,7 +19,11 @@ import {
   suiteState,
   humanQueue,
   saveHumanVerdict,
+  cancelSuite,
+  globalEvalSpend,
+  humanReviewSet,
 } from '@/lib/sonar/engine/eval/model-bench-runner';
+import { estimateStepUsd, paidStepGate } from '@/lib/sonar/engine/eval/bench-budget';
 import { ACTIVE_MODEL_BENCH, MODEL_BENCH_SUITES } from '@/lib/sonar/engine/eval/model-bench-active';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +37,7 @@ export const maxDuration = 300;
  *
  *   GET  ?action=plan                     cases, cells, pairs, proposed cases, suite progress
  *   GET  ?action=results&suite=ID[&text=1] aggregates, pairs, and (text=1) the answers
+ *   GET  ?action=human-set                 the prepared ten-pair blind review set
  *   POST { action:'availability' | 'capture' | 'run' | 'judge' | 'pair', ... }
  */
 async function gate(request) {
@@ -94,6 +99,9 @@ export async function GET(request) {
         })),
       });
     }
+    /* Nov 28 2026: the prepared ten-pair review set (no model calls). */
+    if (action === 'human-set')
+      return NextResponse.json(await humanReviewSet(admin, { reviewer: g.user?.email || null }));
     if (action === 'human-queue') {
       const suite = url.searchParams.get('suite') || ACTIVE_MODEL_BENCH.suite;
       return NextResponse.json(
@@ -135,6 +143,42 @@ export async function POST(request) {
       return NextResponse.json(
         await saveHumanVerdict(admin, { ...body, suite, reviewer: g.user?.email || 'admin' }),
       );
+    /* Nov 28 2026: manual cancellation. The worker refuses every later step of the suite. */
+    if (body.action === 'cancel') {
+      if (!body.suite) return NextResponse.json({ error: 'suite required' }, { status: 400 });
+      return NextResponse.json(await cancelSuite(admin, body.suite, g.user?.email || 'admin'));
+    }
+    /* Every other action makes paid model calls: deployment authorization, an explicit
+       confirmation in the request, the manual cap and the global cap (bench-budget.js). */
+    if (['availability', 'capture', 'run', 'judge', 'pair'].includes(body.action)) {
+      const nowIso = new Date().toISOString();
+      const st = await suiteState(admin, manualSuite);
+      const glob = await globalEvalSpend(admin);
+      const manualCap = Number(process.env.SONAR_BENCH_MANUAL_CAP_USD) || 0;
+      const gate =
+        body.confirmPaid === true
+          ? paidStepGate({
+              env: process.env,
+              suite: {
+                suite: manualSuite,
+                maxUsd: manualCap,
+                authorization: { by: g.user?.email || 'admin', at: nowIso, maxUsd: manualCap },
+                maxConcurrent: 1,
+              },
+              state: {
+                suiteSpentUsd: st.spentUsd,
+                suiteReservedUsd: st.reservedUsd,
+                globalSpentUsd: glob.spentUsd,
+                globalReservedUsd: glob.reservedUsd,
+                inFlight: st.inFlight,
+                cancelled: st.cancelled,
+              },
+              estimateUsd: estimateStepUsd({ kind: body.action, depth: body.depth }),
+            })
+          : { ok: false, reason: 'paid step needs confirmPaid: true in the request' };
+      if (!gate.ok)
+        return NextResponse.json({ error: gate.reason, refused: true }, { status: 403 });
+    }
     if (body.action === 'availability')
       return NextResponse.json(await availability(admin, { suite: manualSuite }));
     if (body.action === 'capture')

@@ -141,7 +141,7 @@ export function scopeEvidence(marked, capabilities, { fallback = 8 } = {}) {
 
 /** The standard contract every specialist returns (its skill adds fields). */
 export const STANDARD_CONTRACT = `Return ONLY one JSON object, no prose around it:
-{"analyst":"<id>","question":"<restated>","conclusion":"1 to 3 sentences answering your assignment","confidence":"high | moderate | low","confidenceReason":"...","findings":[{"claim":"...","label":"fact | calculation | interpretation | hypothesis","refs":["S3","M:metric_id"],"period":"2026-09"}],"counterevidence":["..."],"dataGaps":["..."],"handoffs":[{"analyst":"<id>","why":"..."}]}
+{"conclusion":"the answer to your assignment","confidence":"high | moderate | low","findings":[{"claim":"...","label":"fact | calculation | interpretation | hypothesis","refs":["S3","M:metric_id"],"period":"2026-09"}],"counterevidence":["..."],"dataGaps":["..."],"handoffs":[{"analyst":"<id>","why":"..."}]}
 Return only these fields: Sonar reads nothing else, so leave out any extra fields your skill's output contract lists (fiscal calendars, period tables, segment notes); apply their checks inside your findings instead. Every number must come from a cited record [S#] or a computed metric [M:id], with its period. Never write a number neither supplies.`;
 
 const MACRO_DOMAINS = new Set([
@@ -523,7 +523,11 @@ export async function runSpecialists({
       const parsed = parseResearchJson(out?.answer);
       const v = validateSpecialist(parsed, { analyst: p.profile, marked: fresh, metrics });
       const status = v.ok ? 'done' : 'failed';
-      const outcome = classifyOutcome({ out, parsedOk: Boolean(parsed) && v.ok });
+      const outcome = classifyOutcome({
+        out,
+        parsedOk: Boolean(parsed) && v.ok,
+        repaired: Boolean(parsed?._truncated),
+      });
       emit('analyst', { id: p.analyst, title: titleOf(p.analyst), role: p.role, status });
       return {
         id: p.analyst,
@@ -724,6 +728,8 @@ export function parseRedTeam(text) {
     verdict: ['holds', 'weakened', 'refuted', 'unclear'].includes(j.verdict)
       ? j.verdict
       : 'unclear',
+    /* Recovered from a cut reply: complete points only (repairTruncatedJson). */
+    repaired: Boolean(j._truncated),
     points: j.points
       .filter((p) => p && typeof p.text === 'string' && p.text.trim())
       .slice(0, 6)

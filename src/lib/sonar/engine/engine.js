@@ -320,12 +320,15 @@ export async function runResearch(query, opts = {}) {
   /* Nov 28 2026: every model role call's outcome (ok, truncated, invalid_output, timeout,
      skipped_deadline, provider_error), requested and served model, and any fallback. */
   const roleOutcomes = [];
-  const noteRole = (role, { requested, out = null, error = null, parsedOk = null, startedAt }) =>
+  const noteRole = (
+    role,
+    { requested, out = null, error = null, parsedOk = null, repaired = false, startedAt },
+  ) =>
     roleOutcomes.push({
       role,
       requested: requested || null,
       served: out?.usage?.model || null,
-      outcome: classifyOutcome({ out, error, parsedOk }),
+      outcome: classifyOutcome({ out, error, parsedOk, repaired }),
       outputTokens: out?.usage?.outputTokens ?? null,
       ms: startedAt ? Date.now() - startedAt : null,
       fellBackFrom: out?.fellBackFrom || null,
@@ -1019,6 +1022,7 @@ export async function runResearch(query, opts = {}) {
       out: synth,
       error: synth ? null : synthError,
       parsedOk: Boolean(parsed),
+      repaired: Boolean(parsed?._truncated),
       startedAt: writerStartedAt,
     });
     if (parsed) {
@@ -1186,6 +1190,7 @@ export async function runResearch(query, opts = {}) {
       out: rt,
       error: rt ? null : rtError,
       parsedOk: Boolean(redTeam),
+      repaired: Boolean(redTeam?.repaired),
       startedAt: rtStartedAt,
     });
     emit('analyst', {

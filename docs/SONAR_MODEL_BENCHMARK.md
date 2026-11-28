@@ -183,3 +183,5 @@ The first run (Nov 28 2026) and its recommendation: `docs/SONAR_MODEL_BENCHMARK_
 
 Remediation, Profile D validation and the staff-canary plan: `docs/SONAR_PROFILE_D_REMEDIATION_2026-11-28.md`.
 **Nov 28 2026: benchmarks are stopped (API credits exhausted). Do not schedule suites or run model-graded evals until the account is funded.**
+
+Post-benchmark hardening (no API calls: chaining, DCF, D-efficient, budget controls, stored re-analysis, human review set): `docs/SONAR_POST_BENCHMARK_HARDENING_2026-11-28.md`. Paid evaluation now needs explicit authorization (`src/lib/sonar/engine/eval/bench-budget.js`).

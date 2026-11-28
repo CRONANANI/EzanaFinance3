@@ -691,9 +691,13 @@ export function scoreRun(run, c) {
     const end = text.indexOf('\n', n.at);
     untracedSentences.add(text.slice(start, end < 0 ? undefined : end).slice(0, 160));
   }
+  /* Nov 28 2026: the same marker match as the validity count above (brackets stripped).
+     Before, "[S1]" counted as a valid citation but its finding as unsupported, which
+     overstated unsupported findings for writers that bracket their citations (Sonnet 5.5;
+     docs/sql/SQL_sonar_d4_deterministic_reanalysis.md recomputes the stored counts). */
+  const isMarker = (m) => markers.has(String(m)) || markers.has(String(m).replace(/^\[|\]$/g, ''));
   const unsupportedFindings =
-    findings.length -
-    findings.filter((f) => (f.evidence || []).some((m) => markers.has(String(m)))).length;
+    findings.length - findings.filter((f) => (f.evidence || []).some(isMarker)).length;
 
   const relationships = relationshipScore(run);
   const fp = fingerprint(run);
@@ -1095,6 +1099,8 @@ export function suitePlan({ deepTrials = 3, env = {}, variant = null } = {}) {
           cellId: cell.id,
           trial: t,
           variant,
+          /* For the budget reservation (bench-budget.js estimateStepUsd). */
+          depth: c.depth,
         });
   for (const c of cases)
     for (let t = 1; t <= trialsOf(c); t += 1) {
@@ -1570,3 +1576,61 @@ export const MODEL_BENCH_PROPOSED_CASES = [
     forbidden: [],
   },
 ];
+
+/* ---------------------------------------------------------------- human review ---- */
+
+/**
+ * Nov 28 2026: the blind human review rubric. Each criterion is answered A, B or tie;
+ * overall is required. Earlier verdicts used overall, correctness, usefulness and
+ * relationships, which saveHumanVerdict still accepts.
+ */
+export const HUMAN_CRITERIA = [
+  ['overall', 'Overall: which would a portfolio manager rather receive?'],
+  [
+    'correctness',
+    'Factual correctness: which states only facts the evidence supports, without errors?',
+  ],
+  ['objectives', 'Research objective completion: which answers every part of the question?'],
+  ['insight', 'Analytical insight: which explains what the evidence means, not only what it says?'],
+  [
+    'financial',
+    'Financial reasoning: which handles periods, units, valuation and causality soundly?',
+  ],
+  ['evidence', 'Evidence support: which ties each claim to the records it cites?'],
+  ['unsupported', 'Unsupported conclusions: which makes fewer claims the evidence cannot carry?'],
+];
+
+/**
+ * The ten stored pairs prepared for the first human review (suite d4): five standard and
+ * five deep, each pair from one frozen snapshot. Chosen where the model judges and the
+ * deterministic metrics disagree or the decision is open:
+ *   standard current vs D: macro contradiction (D cites less), valuation with incomplete
+ *     evidence, the multi-dataset screen (current had more valid cross-dataset insights)
+ *   standard D vs D-h55spec (the budget decision): company fundamentals, stale filings
+ *   deep current vs D: export controls, deep research, DCF sensitivity
+ *   deep D vs D with a Sonnet writer (the Opus writer decision): deep valuation, deep research
+ */
+export const HUMAN_REVIEW_SET = {
+  id: 'review-2026-11-28',
+  suite: 'model-bench-2026-11-28-profile-d4',
+  items: [
+    { caseId: 'contradiction_macro_vs_market', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'valuation', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'multi_dataset_screen', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'company_fundamentals', trial: 1, left: 'D-h55spec', right: 'D' },
+    { caseId: 'partial_stale_filings', trial: 1, left: 'D-h55spec', right: 'D' },
+    { caseId: 'causal_export_controls_revenue', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'deep_research', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'model_dcf_sensitivity', trial: 1, left: 'current', right: 'D' },
+    { caseId: 'deep_valuation', trial: 1, left: 'D-sonnet-writer', right: 'D' },
+    { caseId: 'deep_research', trial: 2, left: 'D-sonnet-writer', right: 'D' },
+  ],
+};
+
+/** Strip model and configuration names from an answer shown to a blind reviewer. */
+export function anonymizeAnswer(text) {
+  return String(text || '')
+    .replace(/claude-[a-z0-9.-]+/gi, '[model]')
+    .replace(/\b(?:Claude\s+)?(?:Haiku|Sonnet|Opus|Mythos|Fable)\s*\d(?:\.\d)?\b/gi, '[model]')
+    .replace(/\bProfile\s+D(?:-efficient)?\b/g, '[configuration]');
+}

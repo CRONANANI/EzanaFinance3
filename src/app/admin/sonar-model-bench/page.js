@@ -260,9 +260,12 @@ export default function ModelBenchAdmin() {
     }
   };
 
-  const loadQueue = async () => {
+  const loadQueue = async (which = 'queue') => {
     try {
-      const q = await call('GET', null, `?action=human-queue&suite=${encodeURIComponent(suite)}`);
+      const q =
+        which === 'set'
+          ? await call('GET', null, '?action=human-set')
+          : await call('GET', null, `?action=human-queue&suite=${encodeURIComponent(suite)}`);
       setQueue(q);
       setQi(
         Math.max(
@@ -283,7 +286,7 @@ export default function ModelBenchAdmin() {
     try {
       await call('POST', {
         action: 'human',
-        suite,
+        suite: queue.suite || suite,
         itemKey: item.itemKey,
         verdicts: hv,
         note: hnote,
@@ -580,8 +583,11 @@ export default function ModelBenchAdmin() {
         random order. You never see which configuration wrote which. Judge substance, not length.
       </p>
       <div className="smb-row">
-        <button type="button" onClick={loadQueue} disabled={!suite}>
-          Load review queue
+        <button type="button" className="smb-primary" onClick={() => loadQueue('set')}>
+          Load the 10-pair review set
+        </button>
+        <button type="button" onClick={() => loadQueue('queue')} disabled={!suite}>
+          Load the full queue
         </button>
         {queue ? (
           <span>
@@ -598,6 +604,25 @@ export default function ModelBenchAdmin() {
               : ''}
             : {queue.items[qi].question}
           </p>
+          {queue.items[qi].evidence ? (
+            <details className="smb-sub">
+              <summary>
+                Evidence both answers were written from ({queue.items[qi].evidence.length} records
+                {queue.items[qi].sameEvidence
+                  ? ', identical for A and B'
+                  : ', NOT verified identical'}
+                )
+              </summary>
+              <ol>
+                {queue.items[qi].evidence.map((e) => (
+                  <li key={e.marker || e.title}>
+                    <strong>{e.marker}</strong> {e.title}
+                    {e.date ? ` (${e.date})` : ''}: {e.text}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          ) : null}
           <div className="smb-pair">
             <div className="smb-col">
               <h3 className="smb-h3">Answer A</h3>
@@ -608,12 +633,14 @@ export default function ModelBenchAdmin() {
               <div className="smb-answer">{queue.items[qi].b.text}</div>
             </div>
           </div>
-          {[
-            ['overall', 'Which would a portfolio manager rather receive?'],
-            ['correctness', 'Which is more factually correct and better supported?'],
-            ['usefulness', 'Which is more analytically useful?'],
-            ['relationships', 'Which relates datasets more validly?'],
-          ].map(([k, label]) => (
+          {(
+            queue.criteria || [
+              ['overall', 'Which would a portfolio manager rather receive?'],
+              ['correctness', 'Which is more factually correct and better supported?'],
+              ['usefulness', 'Which is more analytically useful?'],
+              ['relationships', 'Which relates datasets more validly?'],
+            ]
+          ).map(([k, label]) => (
             <div className="smb-row" key={k}>
               <span>{label}</span>
               {['a', 'tie', 'b'].map((v) => (

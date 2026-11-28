@@ -39,7 +39,11 @@ import {
   pairPrompt,
   parsePair,
   suitePlan,
+  HUMAN_CRITERIA,
+  HUMAN_REVIEW_SET,
+  anonymizeAnswer,
 } from './model-bench.js';
+import { BENCH_LIMITS, estimateStepUsd, paidStepGate, suiteLedger } from './bench-budget.js';
 
 /* A replayed run gets the production research route's ceiling (300 s function, 12 s
    reserved for scoring and the write). */
@@ -602,15 +606,17 @@ const RESULT_ENGINES = new Set([
 ]);
 
 /** What is done, attempted and spent in a suite (one light query). */
-export async function suiteState(admin, suite) {
+export async function suiteState(admin, suite, { now = Date.now() } = {}) {
   const { data, error } = await admin
     .from('sonar_research_evaluations')
     .select(
-      'engine, created_at, key:metrics->>stepKey, runUsd:metrics->usage->total->usd, usd:metrics->usd',
+      'engine, created_at, key:metrics->>stepKey, runUsd:metrics->usage->total->usd, usd:metrics->usd, reservedUsd:metrics->reservedUsd',
     )
     .eq('suite_run', suite)
     .limit(5000);
   if (error) throw new Error(error.message);
+  /* Nov 28 2026: reservations in flight and cancellation (bench-budget.js). */
+  const ledger = suiteLedger(data || [], { now });
   const done = new Set();
   const attempts = new Map();
   let spentUsd = 0;
@@ -625,7 +631,45 @@ export async function suiteState(admin, suite) {
       attempts.set(r.key, a);
     }
   }
-  return { done, attempts, spentUsd };
+  return {
+    done,
+    attempts,
+    spentUsd,
+    reservedUsd: ledger.reservedUsd,
+    inFlight: ledger.inFlight,
+    cancelled: ledger.cancelled,
+  };
+}
+
+/** Manual cancellation: the worker refuses every later step of the suite. */
+export async function cancelSuite(admin, suite, by = 'admin') {
+  if (!suite) throw new Error('suite required');
+  await insertRow(admin, {
+    suite_run: suite,
+    engine: 'model-bench-cancel',
+    benchmark_id: 'cancel',
+    metrics: { by, at: new Date().toISOString() },
+  });
+  return { ok: true, cancelled: suite };
+}
+
+/**
+ * Overall evaluation spend and reservations in the rolling window, across every
+ * model-bench suite (manual ones included), for the global cap.
+ */
+export async function globalEvalSpend(admin, { now = Date.now() } = {}) {
+  const since = new Date(now - BENCH_LIMITS.windowDays * 86400000).toISOString();
+  const { data, error } = await admin
+    .from('sonar_research_evaluations')
+    .select(
+      'engine, created_at, key:metrics->>stepKey, runUsd:metrics->usage->total->usd, usd:metrics->usd, reservedUsd:metrics->reservedUsd',
+    )
+    .like('engine', 'model-bench%')
+    .gte('created_at', since)
+    .limit(50000);
+  if (error) throw new Error(error.message);
+  const l = suiteLedger(data || [], { now });
+  return { spentUsd: l.spentUsd, reservedUsd: l.reservedUsd };
 }
 
 function exhausted(a, now) {
@@ -705,10 +749,18 @@ export async function workerTick(
     variant = null,
     /* Reuse another suite's frozen evidence (identical inputs, no capture phase). */
     snapshotsFrom = null,
+    /* Nov 28 2026: the suite's explicit authorization record and concurrency limit
+       (bench-budget.js). A suite without authorization never makes a paid call. */
+    authorization = null,
+    maxConcurrent = null,
   },
 ) {
   const t0 = Date.now();
   if (until && t0 > new Date(until).getTime()) return { idle: 'expired' };
+  const suiteDef = { suite, until, maxUsd, authorization, maxConcurrent };
+  /* Cheap refusal first: without deployment and suite authorization nothing is read. */
+  const pre = paidStepGate({ env, suite: suiteDef, state: {}, estimateUsd: 0, now: t0 });
+  if (!pre.ok && !/spend cap|concurrency/.test(pre.reason)) return { idle: pre.reason };
   const plan = suitePlan({ deepTrials, env, variant }).filter(
     (st) => !snapshotsFrom || st.kind !== 'capture',
   );
@@ -716,8 +768,6 @@ export async function workerTick(
   for (;;) {
     // eslint-disable-next-line no-await-in-loop
     const state = await suiteState(admin, suite);
-    if (maxUsd && state.spentUsd >= maxUsd)
-      return { idle: 'spend cap', spentUsd: state.spentUsd, ran };
     const { open, steps } = eligibleSteps(plan, state, { lane, lanes });
     const step = steps[0];
     if (!step)
@@ -725,12 +775,31 @@ export async function workerTick(
     const long = step.kind === 'run' || step.kind === 'capture';
     const elapsed = Date.now() - t0;
     if ((long && elapsed > 5_000) || (!long && elapsed > budgetMs)) return { ran, phase: open };
+    /* Every step: re-check authorization, expiry, cancellation, both caps (with what is
+       already reserved in flight) and concurrency, then reserve this step's estimate. */
+    const estimateUsd = estimateStepUsd(step);
+    // eslint-disable-next-line no-await-in-loop
+    const global = await globalEvalSpend(admin);
+    const gate = paidStepGate({
+      env,
+      suite: suiteDef,
+      state: {
+        suiteSpentUsd: state.spentUsd,
+        suiteReservedUsd: state.reservedUsd,
+        globalSpentUsd: global.spentUsd,
+        globalReservedUsd: global.reservedUsd,
+        inFlight: state.inFlight,
+        cancelled: state.cancelled,
+      },
+      estimateUsd,
+    });
+    if (!gate.ok) return { idle: gate.reason, spentUsd: state.spentUsd, ran };
     // eslint-disable-next-line no-await-in-loop
     await insertRow(admin, {
       suite_run: suite,
       engine: 'model-bench-attempt',
       benchmark_id: step.caseId || step.kind,
-      metrics: { stepKey: step.key, lane },
+      metrics: { stepKey: step.key, lane, reservedUsd: estimateUsd },
     });
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -867,6 +936,85 @@ function flipOf(key) {
  * comparison (default current vs D), the two answers as A and B in a stable random order,
  * never the model or the cell. Items this reviewer already judged are marked.
  */
+/**
+ * Nov 28 2026: the prepared review set (HUMAN_REVIEW_SET), mixed pairings, with the shared
+ * evidence each pair was written from and a check that both answers saw the same evidence
+ * (the deterministic fingerprint). No model is called.
+ */
+export async function humanReviewSet(admin, { set = HUMAN_REVIEW_SET, reviewer = null } = {}) {
+  const cells = [...new Set(set.items.flatMap((i) => [i.left, i.right]))];
+  const cases = [...new Set(set.items.map((i) => i.caseId))];
+  const { data, error } = await admin
+    .from('sonar_research_evaluations')
+    .select(
+      'id, benchmark_id, config_version, trial:metrics->trial, output:metrics->output, fp:metrics->score->>fingerprint',
+    )
+    .eq('suite_run', set.suite)
+    .eq('engine', 'model-bench')
+    .in('config_version', cells)
+    .in('benchmark_id', cases)
+    .limit(500);
+  if (error) throw new Error(error.message);
+  const { data: done } = await admin
+    .from('sonar_research_evaluations')
+    .select('itemKey:metrics->>itemKey, reviewer:metrics->>reviewer')
+    .eq('suite_run', set.suite)
+    .eq('engine', 'model-bench-human')
+    .limit(2000);
+  const judged = new Set(
+    (done || []).filter((d) => !reviewer || d.reviewer === reviewer).map((d) => d.itemKey),
+  );
+  const find = (caseId, trial, cell) =>
+    (data || []).find(
+      (r) =>
+        r.benchmark_id === caseId && Number(r.trial) === Number(trial) && r.config_version === cell,
+    );
+  const items = [];
+  const missing = [];
+  for (const it of set.items) {
+    const L = find(it.caseId, it.trial, it.left);
+    const R = find(it.caseId, it.trial, it.right);
+    if (!L || !R) {
+      missing.push(it);
+      continue;
+    }
+    const itemKey = `${it.caseId}|${it.trial}|${it.left}|${it.right}`;
+    const flip = flipOf(itemKey);
+    const [a, b] = flip ? [R, L] : [L, R];
+    const c = caseOf(it.caseId);
+    items.push({
+      itemKey,
+      caseId: it.caseId,
+      trial: it.trial,
+      depth: c?.depth || null,
+      category: c?.category || it.caseId,
+      evidenceClass: c?.evidenceClass || 'complete',
+      question: c?.query || '',
+      sameEvidence: Boolean(L.fp) && L.fp === R.fp,
+      evidence: (L.output?.evidence || []).slice(0, 40).map((e) => ({
+        marker: e.marker || e.id || null,
+        title: String(e.title || '').slice(0, 160),
+        text: String(e.text || e.snippet || '').slice(0, 400),
+        date: e.date || null,
+      })),
+      a: { text: anonymizeAnswer(a.output?.text || '') },
+      b: { text: anonymizeAnswer(b.output?.text || '') },
+      judged: judged.has(itemKey),
+    });
+  }
+  return {
+    set: set.id,
+    suite: set.suite,
+    criteria: HUMAN_CRITERIA,
+    counts: {
+      standard: items.filter((i) => i.depth === 'standard').length,
+      deep: items.filter((i) => i.depth === 'deep').length,
+    },
+    items,
+    missing,
+  };
+}
+
 export async function humanQueue(admin, { suite, left = 'current', right = 'D', reviewer = null }) {
   const { data, error } = await admin
     .from('sonar_research_evaluations')
@@ -920,7 +1068,8 @@ export async function saveHumanVerdict(
   if (!caseId || !left || !right) throw new Error('itemKey required');
   const flip = flipOf(itemKey);
   const map = (w) => (w === 'tie' ? 'tie' : (w === 'a') !== flip ? 'left' : 'right');
-  const keys = ['overall', 'correctness', 'usefulness', 'relationships'];
+  /* The rubric (HUMAN_CRITERIA) plus the earlier keys, so older verdicts stay readable. */
+  const keys = [...new Set([...HUMAN_CRITERIA.map(([k]) => k), 'usefulness', 'relationships'])];
   const verdict = {};
   for (const k of keys)
     if (['a', 'b', 'tie'].includes(verdicts[k])) verdict[k] = { winner: map(verdicts[k]) };

@@ -1,8 +1,11 @@
 /**
- * The model benchmark suites the cron worker runs unattended, in order (Nov 28 2026).
- * A suite is skipped once complete, past `until`, or at its `maxUsd` spend cap (runs
- * plus judging, at list price). To stop everything, move `until` into the past or
- * remove the cron entries in vercel.json.
+ * The model benchmark suites (Nov 28 2026). A record here schedules nothing and spends
+ * nothing on its own (bench-budget.js). A paid step runs only when the deployment sets
+ * SONAR_BENCH_PAID_CALLS=authorized and a non-zero SONAR_BENCH_GLOBAL_CAP_USD, the suite
+ * carries `authorization: { by, at, maxUsd, expiresAt }`, it is not expired or cancelled,
+ * both caps hold with in-flight reservations counted, and a worker lane is scheduled (none
+ * is: the lanes were removed from the cron dispatcher when the API credit ran out).
+ * No suite below has an authorization, so none can run again as written.
  *
  *   model-bench-2026-11-28         the seven cases (complete)
  *   model-bench-2026-11-28-deep2   deep only, output caps x1.75 (benchmark only), three

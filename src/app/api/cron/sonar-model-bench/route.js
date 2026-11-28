@@ -20,6 +20,13 @@ async function run(request) {
     0,
     Math.min(MODEL_BENCH_LANES - 1, Number(new URL(request.url).searchParams.get('lane')) || 0),
   );
+  /* Nov 28 2026: paid evaluation calls need explicit deployment authorization
+     (bench-budget.js); without it the worker reads nothing and spends nothing. */
+  if (
+    process.env.SONAR_BENCH_PAID_CALLS !== 'authorized' ||
+    process.env.SONAR_BENCH_DISABLED === '1'
+  )
+    return NextResponse.json({ ok: true, lane, idle: 'paid evaluation calls are not authorized' });
   const admin = getAdminClient();
   const skipped = [];
   for (const s of MODEL_BENCH_SUITES) {
@@ -29,7 +36,9 @@ async function run(request) {
     }
     // eslint-disable-next-line no-await-in-loop
     const out = await workerTick(admin, { ...s, lane, lanes: MODEL_BENCH_LANES, env: process.env });
-    if (out.idle === 'suite complete' || out.idle === 'spend cap' || out.idle === 'expired') {
+    /* Any refusal (complete, expired, unauthorized, cancelled, a cap, concurrency) moves
+       on to the next suite; only real work or "nothing for this lane" stops here. */
+    if (out.idle && out.idle !== 'nothing for this lane') {
       skipped.push({ suite: s.suite, idle: out.idle });
       continue;
     }

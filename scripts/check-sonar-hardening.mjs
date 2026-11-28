@@ -721,3 +721,584 @@ test('no price is no comparison: the conclusion still states the DCF, never a ma
   assert.ok(c.some((x) => /No current share price was available/.test(x.text)));
   assert.ok(!c.some((x) => /against a price/.test(x.text)));
 });
+
+/* ── 4. Output contracts: parsing, truncation, partial preservation, saved runs ── */
+
+const OC = await import('../src/lib/sonar/engine/output-contracts.js');
+const ORC = await import('../src/lib/sonar/analysts/orchestrator.js');
+const FND = await import('../src/lib/sonar/engine/findings.js');
+
+const EV = await import('../src/lib/sonar/engine/evidence.js');
+/* Evidence in its marked form (toEvidence + withMarkers), as the specialists receive it. */
+const MARKED = EV.withMarkers(
+  [
+    {
+      title: 'MSFT 10-K FY2026',
+      text: 'Revenue was $331.8 billion in fiscal 2026.',
+      date: '2026-07-30',
+    },
+    {
+      title: 'MSFT capex FY2026',
+      text: 'Capital expenditure was $115.9 billion.',
+      date: '2026-07-30',
+    },
+  ].map((raw) => ({
+    evidence: EV.toEvidence(raw, {
+      source: 'company_financials',
+      retrievedAt: '2026-11-28T00:00:00Z',
+    }),
+    score: 1,
+    why: [],
+  })),
+);
+const METRICS = [{ id: 'capex_to_revenue', label: 'Capex / revenue', value: 0.349, unit: 'ratio' }];
+
+test('specialist schema: template, length contracts and validator agree on the fields', () => {
+  const tpl = JSON.parse(ORC.STANDARD_CONTRACT.split('\n')[1]);
+  assert.deepEqual(Object.keys(tpl), OC.SPECIALIST_FIELDS, 'template fields = read fields');
+  assert.deepEqual(Object.keys(tpl.findings[0]), OC.SPECIALIST_FINDING_FIELDS);
+  for (const mode of ['standard', 'deep']) {
+    const c = OC.specialistContract(mode);
+    for (const f of [...OC.SPECIALIST_FIELDS, ...OC.SPECIALIST_FINDING_FIELDS])
+      assert.ok(c.includes(f), `${mode} contract names ${f}`);
+    assert.match(c, /No other fields/);
+  }
+  /* Every field the validator outputs is one the contract asks for. */
+  const v = ORC.validateSpecialist(
+    {
+      conclusion: 'Capex reached 34.9% of revenue [M:capex_to_revenue].',
+      confidence: 'moderate',
+      findings: [],
+    },
+    { analyst: { id: 'equity-research' }, marked: MARKED, metrics: METRICS },
+  );
+  assert.deepEqual(Object.keys(v.output).sort(), [...OC.SPECIALIST_FIELDS].sort());
+});
+
+test('budgets: every role target fits under 60% of its cap; caps exist for every role', () => {
+  for (const [role, c] of Object.entries(OC.OUTPUT_CONTRACTS)) {
+    assert.ok(c.capTokens > 0 && c.targetWords > 0, role);
+    assert.ok(c.targetWords * 1.6 <= 0.6 * c.capTokens, role);
+  }
+  assert.deepEqual(Object.keys(OC.ROLE_THINKING).sort(), [
+    'deep_writer',
+    'quick_writer',
+    'reviewer',
+    'specialist',
+    'standard_writer',
+  ]);
+  for (const d of ['quick', 'standard', 'deep']) assert.ok(OC.ROLE_THINKING[OC.writerRole(d)]);
+  const b = OC.ROLE_BUDGETS.deep;
+  assert.ok(b.specialistHopMs < b.specialistsWindowMs, 'a hop fits its window');
+});
+
+test('completion statuses: the full matrix, including a repaired cut without a stop reason', () => {
+  const ok = { answer: '{}', stopReason: 'end_turn' };
+  assert.equal(OC.classifyOutcome({ out: ok, parsedOk: true }), 'ok');
+  assert.equal(
+    OC.classifyOutcome({ out: { ...ok, stopReason: 'max_tokens' }, parsedOk: true }),
+    'truncated',
+  );
+  assert.equal(
+    OC.classifyOutcome({ out: { answer: '{}' }, parsedOk: true, repaired: true }),
+    'truncated',
+  );
+  assert.equal(OC.classifyOutcome({ out: ok, parsedOk: false }), 'invalid_output');
+  assert.equal(OC.classifyOutcome({ error: new Error('anthropic: timed out') }), 'timeout');
+  assert.equal(
+    OC.classifyOutcome({ error: new Error('no time before the deadline') }),
+    'skipped_deadline',
+  );
+  assert.equal(
+    OC.classifyOutcome({ error: new Error('anthropic: cut at max_tokens before any text') }),
+    'truncated',
+  );
+  assert.equal(
+    OC.classifyOutcome({ error: new Error('anthropic 529 overloaded') }),
+    'provider_error',
+  );
+  const sum = OC.outcomeSummary([
+    { outcome: 'ok' },
+    { outcome: 'truncated', fellBackFrom: { model: 'x' } },
+  ]);
+  assert.deepEqual([sum.calls, sum.ok, sum.truncated, sum.fallbacks], [2, 1, 1, 1]);
+});
+
+test('truncation: a cut specialist reply keeps only complete findings, flagged repaired', () => {
+  const full = JSON.stringify({
+    conclusion: 'Capex is 34.9% of revenue [M:capex_to_revenue].',
+    confidence: 'moderate',
+    findings: [
+      {
+        claim: 'Revenue was $331.8 billion in fiscal 2026.',
+        label: 'fact',
+        refs: ['S1'],
+        period: 'FY2026',
+      },
+      {
+        claim: 'Capital expenditure was $115.9 billion.',
+        label: 'fact',
+        refs: ['S2'],
+        period: 'FY2026',
+      },
+      {
+        claim: 'Capex intensity is 34.9%.',
+        label: 'calculation',
+        refs: ['M:capex_to_revenue'],
+        period: 'FY2026',
+      },
+    ],
+    counterevidence: [],
+    dataGaps: [],
+    handoffs: [],
+  });
+  const cut = full.slice(0, full.indexOf('Capex intensity') + 8);
+  const parsed = FND.parseResearchJson(cut);
+  assert.equal(parsed._truncated, true);
+  assert.equal(parsed.findings.length, 2, 'the half-written third finding is dropped, not patched');
+  const v = ORC.validateSpecialist(parsed, {
+    analyst: { id: 'equity-research' },
+    marked: MARKED,
+    metrics: METRICS,
+  });
+  assert.equal(v.ok, true);
+  assert.equal(v.output.findings.length, 2);
+  assert.equal(
+    OC.classifyOutcome({ out: { answer: cut }, parsedOk: v.ok, repaired: true }),
+    'truncated',
+  );
+  /* Nothing complete: null, never a guess. */
+  assert.equal(FND.parseResearchJson('{"conclusion": "Capex is'), null);
+});
+
+test('structured evidence refs: unknown markers and metrics are removed, brackets stripped', () => {
+  const v = ORC.validateSpecialist(
+    {
+      conclusion: 'Revenue was $331.8 billion [S1].',
+      confidence: 'high',
+      findings: [
+        {
+          claim: 'Revenue was $331.8 billion in fiscal 2026.',
+          label: 'fact',
+          refs: ['[S1]'],
+          period: 'FY2026',
+        },
+        { claim: 'Margins were 52.0% last year.', label: 'fact', refs: ['S9'], period: 'FY2025' },
+        { claim: 'Capex intensity was 34.9%.', label: 'calculation', refs: ['M:not_a_metric'] },
+      ],
+      question: 'ignored',
+      confidenceReason: 'ignored',
+    },
+    { analyst: { id: 'equity-research' }, marked: MARKED, metrics: METRICS },
+  );
+  assert.deepEqual(v.output.findings[0].refs, ['S1']);
+  assert.ok(
+    v.output.findings.every((f) => !f.refs.includes('S9')),
+    'S9 is not in the evidence',
+  );
+  assert.ok(v.log.length >= 1, 'removals are logged');
+  assert.equal(v.output.question, undefined);
+});
+
+test('red team: parsed, capped, refs filtered; a cut reply keeps complete points, flagged', () => {
+  const rt = ORC.parseRedTeam(
+    JSON.stringify({
+      verdict: 'weakened',
+      points: [
+        {
+          kind: 'fragility',
+          target: 'capex stays at 39%',
+          text: 'Holding peak capex flat is fragile.',
+          refs: ['M:capex_to_revenue', 'bogus'],
+        },
+        { kind: 'nonsense', text: 'Base rates are missing.', refs: [] },
+      ],
+    }),
+  );
+  assert.equal(rt.verdict, 'weakened');
+  assert.deepEqual(rt.points[0].refs, ['M:capex_to_revenue']);
+  assert.equal(rt.points[1].kind, 'alternative');
+  assert.equal(rt.repaired, false);
+  const cut =
+    '{"verdict":"holds","points":[{"kind":"falsifier","text":"A capex cut would show it.","refs":["S2"]},{"kind":"base_rate","text":"Most hyper';
+  const r2 = ORC.parseRedTeam(cut);
+  assert.equal(r2.points.length, 1);
+  assert.equal(r2.repaired, true);
+  assert.equal(ORC.parseRedTeam('not json'), null);
+});
+
+test('saved runs: stored d4 role outcomes re-summarize to the stored counts', () => {
+  /* company_fundamentals, cell D (suite model-bench-2026-11-28-profile-d4), as stored. */
+  const stored = [
+    {
+      role: 'specialist:equity-research',
+      outcome: 'truncated',
+      repaired: true,
+      fellBackFrom: null,
+    },
+    { role: 'specialist:valuation', outcome: 'truncated', repaired: true, fellBackFrom: null },
+    { role: 'writer', outcome: 'ok', fellBackFrom: null },
+  ];
+  const s = OC.outcomeSummary(stored);
+  assert.deepEqual(
+    { ok: s.ok, calls: s.calls, truncated: s.truncated, fallbacks: s.fallbacks },
+    { ok: 1, calls: 3, truncated: 2, fallbacks: 0 },
+  );
+  /* A saved specialist entry (before Nov 28 it could carry analyst and question) still
+     validates: extra fields are ignored, the read fields are unchanged. */
+  const legacy = {
+    analyst: 'equity-research',
+    question: 'How capital intensive is Microsoft?',
+    conclusion: 'Capex reached 34.9% of revenue [M:capex_to_revenue].',
+    confidence: 'moderate',
+    confidenceReason: 'one year of data',
+    findings: [
+      {
+        claim: 'Capital expenditure was $115.9 billion.',
+        label: 'fact',
+        refs: ['S2'],
+        period: 'FY2026',
+      },
+    ],
+    counterevidence: [],
+    dataGaps: [],
+    handoffs: [],
+  };
+  const v = ORC.validateSpecialist(legacy, {
+    analyst: { id: 'equity-research' },
+    marked: MARKED,
+    metrics: METRICS,
+  });
+  assert.equal(v.ok, true);
+  assert.equal(v.output.findings.length, 1);
+});
+
+/* ── 5. Stored re-analysis (deterministic) ──────────────────────────── */
+
+const SA = await import('../src/lib/sonar/engine/eval/stored-analysis.js');
+const MB = await import('../src/lib/sonar/engine/eval/model-bench.js');
+
+test('stored analysis: exact sign test and a reproducible case bootstrap', () => {
+  /* Hand values: 4 up, 0 down -> p = 2 x (1/16) = 0.125; 6 up, 1 down -> 2 x 8/128. */
+  assert.equal(SA.signTest([1, 2, 3, 4]).p, 0.125);
+  assert.ok(Math.abs(SA.signTest([1, 1, 1, 1, 1, 1, -1, 0]).p - 0.125) < 1e-12);
+  assert.deepEqual((({ up, down, ties }) => ({ up, down, ties }))(SA.signTest([1, 0, -1])), {
+    up: 1,
+    down: 1,
+    ties: 1,
+  });
+  assert.equal(SA.signTest([0, 0]).p, 1);
+  const a = SA.bootstrapMean([1, 2, 3, 4, 5], { iters: 2000, seed: 7 });
+  const b = SA.bootstrapMean([1, 2, 3, 4, 5], { iters: 2000, seed: 7 });
+  assert.deepEqual(a, b, 'seeded: identical on every run');
+  assert.equal(a.mean, 3);
+  assert.ok(a.lo < 3 && a.hi > 3 && a.lo >= 1 && a.hi <= 5);
+});
+
+test('stored analysis: the d4 fixture pairs every case; the headline differences hold', async () => {
+  const fs = await import('node:fs');
+  const data = JSON.parse(
+    fs.readFileSync(new URL('../sonar-evals/d4-per-case-2026-11-28.json', import.meta.url), 'utf8'),
+  );
+  const names = ['objective_rate', 'untraced_numbers', 'valid_cross_insights'];
+  const std = SA.parsePacked(data.standard, names);
+  const deep = SA.parsePacked(data.deep, names);
+  assert.equal(std.length, 39, '13 cases x 3 cells');
+  assert.equal(deep.length, 8, '4 cases x 2 cells');
+  const c = SA.compareCells(std, 'current', 'D', names);
+  assert.equal(c.untraced_numbers.cases, 13);
+  assert.ok(c.untraced_numbers.meanDiff.hi < 0, 'D writes fewer untraced numbers');
+  assert.ok(c.valid_cross_insights.meanDiff.hi < 0, 'but fewer valid cross insights than current');
+  const d = SA.compareCells(deep, 'current', 'D', names);
+  assert.equal(d.valid_cross_insights.sign.up, 4);
+  assert.equal(d.valid_cross_insights.sign.p, 0.125, 'four cases cannot reach p < 0.05');
+});
+
+test('scorer: a bracketed citation counts as supported in both counts (bug fix)', () => {
+  const run = {
+    evidence: [{ marker: 'S1', title: 'x', text: 'Revenue was $10.0 billion.' }],
+    keyFindings: [{ title: 'Revenue', evidence: ['[S1]'] }],
+    sections: [],
+  };
+  const s = MB.scoreRun(run, { id: 't', objectives: [] });
+  assert.equal(s.citations.valid, 1);
+  assert.equal(s.unsupported.findingsWithoutValidCitation, 0);
+});
+
+/* ── 6. Benchmark budget controls (mocked usage, no paid call possible) ─ */
+
+const BB = await import('../src/lib/sonar/engine/eval/bench-budget.js');
+const RUN = await import('../src/lib/sonar/engine/eval/model-bench-runner.js');
+const ACTIVE = await import('../src/lib/sonar/engine/eval/model-bench-active.js');
+
+const ENV_OK = { SONAR_BENCH_PAID_CALLS: 'authorized', SONAR_BENCH_GLOBAL_CAP_USD: '10' };
+const AUTH_SUITE = {
+  suite: 'test-suite',
+  until: '2026-11-29T00:00:00Z',
+  maxUsd: 1,
+  authorization: { by: 'noah', at: '2026-11-28T15:00:00Z', maxUsd: 1 },
+  maxConcurrent: 2,
+};
+const T = Date.parse('2026-11-28T16:00:00Z');
+
+test('gate: blocked by default; every condition is required', () => {
+  const gate = (over = {}) =>
+    BB.paidStepGate({
+      env: ENV_OK,
+      suite: AUTH_SUITE,
+      state: {},
+      estimateUsd: 0.1,
+      now: T,
+      ...over,
+    });
+  assert.equal(gate().ok, true);
+  assert.match(gate({ env: {} }).reason, /not authorized on this deployment/);
+  assert.match(gate({ env: { ...ENV_OK, SONAR_BENCH_DISABLED: '1' } }).reason, /disabled/);
+  assert.match(
+    gate({ suite: { ...AUTH_SUITE, authorization: null } }).reason,
+    /no explicit authorization/,
+  );
+  assert.match(
+    gate({ suite: { ...AUTH_SUITE, authorization: { by: 'x', at: 'y', maxUsd: 0 } } }).reason,
+    /no explicit authorization/,
+  );
+  assert.equal(gate({ now: Date.parse('2026-11-30T00:00:00Z') }).reason, 'expired');
+  assert.equal(
+    gate({
+      suite: {
+        ...AUTH_SUITE,
+        authorization: { ...AUTH_SUITE.authorization, expiresAt: '2026-11-28T15:30:00Z' },
+      },
+    }).reason,
+    'authorization expired',
+  );
+  assert.equal(gate({ state: { cancelled: true } }).reason, 'cancelled');
+  /* Per-suite cap counts what is already reserved in flight. */
+  assert.equal(gate({ state: { suiteSpentUsd: 0.8, suiteReservedUsd: 0.15 } }).reason, 'spend cap');
+  assert.equal(gate({ state: { suiteSpentUsd: 0.8 } }).ok, true);
+  /* Global cap: default 0 blocks; spend across suites counts. */
+  assert.match(
+    gate({ env: { SONAR_BENCH_PAID_CALLS: 'authorized' } }).reason,
+    /global evaluation cap is 0/,
+  );
+  assert.equal(gate({ state: { globalSpentUsd: 9.95 } }).reason, 'global evaluation spend cap');
+  assert.equal(gate({ state: { inFlight: 2 } }).reason, 'concurrency limit');
+  /* The authorization's own cap binds when lower than the suite's. */
+  assert.equal(
+    gate({ suite: { ...AUTH_SUITE, maxUsd: 50 }, state: { suiteSpentUsd: 0.95 } }).reason,
+    'spend cap',
+  );
+});
+
+test('ledger: a reservation counts until its result exists or it goes stale', () => {
+  const rows = [
+    { engine: 'model-bench', key: 'run|a', runUsd: 0.3, created_at: '2026-11-28T15:55:00Z' },
+    {
+      engine: 'model-bench-attempt',
+      key: 'run|a',
+      reservedUsd: 0.6,
+      created_at: '2026-11-28T15:54:00Z',
+    },
+    {
+      engine: 'model-bench-attempt',
+      key: 'run|b',
+      reservedUsd: 0.6,
+      created_at: '2026-11-28T15:58:00Z',
+    },
+    {
+      engine: 'model-bench-attempt',
+      key: 'run|c',
+      reservedUsd: 0.6,
+      created_at: '2026-11-28T15:00:00Z',
+    },
+    { engine: 'model-bench-judge', key: 'judge|a', usd: 0.04, created_at: '2026-11-28T15:56:00Z' },
+  ];
+  const l = BB.suiteLedger(rows, { now: T });
+  assert.ok(Math.abs(l.spentUsd - 0.34) < 1e-12, 'results only, never reservations');
+  assert.equal(l.reservedUsd, 0.6, 'b in flight; a settled; c stale');
+  assert.equal(l.inFlight, 1);
+  assert.equal(l.cancelled, false);
+  assert.equal(
+    BB.suiteLedger([...rows, { engine: 'model-bench-cancel', created_at: 'x' }], { now: T })
+      .cancelled,
+    true,
+  );
+  assert.equal(BB.estimateStepUsd({ kind: 'run', depth: 'deep' }), 0.6);
+  assert.equal(BB.estimateStepUsd({ kind: 'judge' }), 0.04);
+  assert.equal(BB.estimateStepUsd(null), 0.6, 'unknown steps reserve the most');
+});
+
+test('no defined suite can spend: none carries an authorization', () => {
+  assert.ok(ACTIVE.MODEL_BENCH_SUITES.length > 0);
+  for (const s of ACTIVE.MODEL_BENCH_SUITES) {
+    assert.equal(s.authorization, undefined, s.suite);
+    assert.equal(
+      BB.paidStepGate({
+        env: ENV_OK,
+        suite: s,
+        state: {},
+        estimateUsd: 0,
+        now: Date.parse('2026-11-28T12:00:00Z'),
+      }).ok,
+      false,
+      s.suite,
+    );
+  }
+});
+
+test('worker: unauthorized suites read and write nothing', async () => {
+  const db = { sonar_research_evaluations: [] };
+  const admin = fakeSupabase(db);
+  for (const env of [{}, { SONAR_BENCH_PAID_CALLS: 'yes' }, ENV_OK]) {
+    const out = await RUN.workerTick(admin, { ...AUTH_SUITE, authorization: null, env });
+    assert.ok(out.idle, JSON.stringify(out));
+  }
+  assert.equal(db.sonar_research_evaluations.length, 0);
+  assert.equal(admin.calls.length, 0, 'refused before any read');
+  const cron = (await import('node:fs')).readFileSync(
+    new URL('../src/app/api/cron/sonar-model-bench/route.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(cron, /process\.env\.SONAR_BENCH_PAID_CALLS !== 'authorized'/);
+});
+
+test('worker: an authorized step reserves first; cancellation and caps stop the next one', async () => {
+  const db = { sonar_research_evaluations: [] };
+  const admin = fakeSupabase(db);
+  const prevKey = process.env.ANTHROPIC_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY; // any model call fails before a request
+  try {
+    const out = await RUN.workerTick(admin, {
+      ...AUTH_SUITE,
+      until: '2099-01-01T00:00:00Z',
+      env: ENV_OK,
+    });
+    assert.ok(out.ran?.length >= 1, JSON.stringify(out));
+    const att = db.sonar_research_evaluations.filter((r) => r.engine === 'model-bench-attempt');
+    assert.ok(att.length >= 1);
+    assert.ok(att[0].metrics.reservedUsd > 0, 'reserved before the step ran');
+    assert.equal(
+      llmRequests.length,
+      1,
+      'still only the earlier mocked request: no new LLM traffic',
+    );
+    /* Cancel: the next tick refuses. */
+    await RUN.cancelSuite(admin, AUTH_SUITE.suite, 'test');
+    const after = await RUN.workerTick(admin, {
+      ...AUTH_SUITE,
+      until: '2099-01-01T00:00:00Z',
+      env: ENV_OK,
+    });
+    assert.equal(after.idle, 'cancelled');
+    /* Spend cap: a suite whose results already reach the cap refuses. */
+    const db2 = {
+      sonar_research_evaluations: [
+        {
+          suite_run: 'capped',
+          engine: 'model-bench',
+          metrics: { stepKey: 'run|x', usage: { total: { usd: 1 } } },
+          created_at: new Date().toISOString(),
+        },
+      ],
+    };
+    const capped = await RUN.workerTick(fakeSupabase(db2), {
+      ...AUTH_SUITE,
+      suite: 'capped',
+      until: '2099-01-01T00:00:00Z',
+      env: ENV_OK,
+    });
+    assert.equal(capped.idle, 'spend cap');
+    assert.equal(db2.sonar_research_evaluations.length, 1, 'no reservation written past the cap');
+  } finally {
+    if (prevKey !== undefined) process.env.ANTHROPIC_API_KEY = prevKey;
+  }
+});
+
+test('scheduling is off: no benchmark lane in the dispatcher or vercel.json', async () => {
+  const { DISPATCH_JOBS } = await import('../src/lib/cron/dispatch-registry.js');
+  assert.equal(DISPATCH_JOBS.filter((j) => j.path.includes('sonar-model-bench')).length, 0);
+  const v = JSON.parse(
+    (await import('node:fs')).readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'),
+  );
+  assert.equal(v.crons.filter((c) => c.path.includes('sonar-model-bench')).length, 0);
+});
+
+test('admin route: paid steps need confirmPaid and the gate; cancel is available', async () => {
+  const src = (await import('node:fs')).readFileSync(
+    new URL('../src/app/api/admin/sonar/model-bench/route.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /body\.confirmPaid === true/);
+  assert.match(src, /paidStepGate\(/);
+  assert.match(src, /SONAR_BENCH_MANUAL_CAP_USD/);
+  assert.match(src, /body\.action === 'cancel'/);
+});
+
+/* ── 7. Human review preparation (no AI judge) ──────────────────────── */
+
+test('review set: ten pairs, five standard and five deep, every rubric criterion', () => {
+  const set = MB.HUMAN_REVIEW_SET;
+  assert.equal(set.items.length, 10);
+  const depth = (id) => MB.caseById(id)?.depth;
+  assert.equal(set.items.filter((i) => depth(i.caseId) === 'standard').length, 5);
+  assert.equal(set.items.filter((i) => depth(i.caseId) === 'deep').length, 5);
+  assert.deepEqual(
+    MB.HUMAN_CRITERIA.map(([k]) => k),
+    ['overall', 'correctness', 'objectives', 'insight', 'financial', 'evidence', 'unsupported'],
+  );
+  assert.equal(
+    MB.anonymizeAnswer(
+      'Written by claude-sonnet-5-5 (Sonnet 5.5) under Profile D; Opus 5.5 reviewed.',
+    ),
+    'Written by [model] ([model]) under [configuration]; [model] reviewed.',
+  );
+});
+
+test('review set loader: blind order, shared evidence, identity hidden, verdicts mapped back', async () => {
+  const out = (cell, fp, text) => ({
+    suite_run: MB.HUMAN_REVIEW_SET.suite,
+    engine: 'model-bench',
+    benchmark_id: 'valuation',
+    config_version: cell,
+    metrics: {
+      trial: 1,
+      score: { fingerprint: fp },
+      output: { text, evidence: [{ marker: 'S1', title: 'MSFT 10-K', text: 'Revenue $331.8B.' }] },
+    },
+  });
+  const db = {
+    sonar_research_evaluations: [
+      out('current', 'f1', 'Answer from claude-haiku-4-5.'),
+      out('D', 'f1', 'Answer from Sonnet 5.5.'),
+    ],
+  };
+  const admin = fakeSupabase(db);
+  const set = {
+    ...MB.HUMAN_REVIEW_SET,
+    items: [
+      { caseId: 'valuation', trial: 1, left: 'current', right: 'D' },
+      { caseId: 'nope', trial: 1, left: 'current', right: 'D' },
+    ],
+  };
+  const q = await RUN.humanReviewSet(admin, { set });
+  assert.equal(q.items.length, 1);
+  assert.equal(q.missing.length, 1, 'a pair not in the store is reported, not invented');
+  const it = q.items[0];
+  assert.equal(it.sameEvidence, true);
+  assert.equal(it.evidence[0].marker, 'S1');
+  assert.ok(!/claude|sonnet|haiku/i.test(it.a.text + it.b.text), 'identity hidden');
+  assert.equal(q.criteria.length, 7);
+  /* Saving maps A/B back through the same flip, with the new criteria. */
+  await RUN.saveHumanVerdict(admin, {
+    suite: set.suite,
+    itemKey: it.itemKey,
+    verdicts: { overall: 'a', financial: 'b', unsupported: 'tie' },
+    reviewer: 'noah',
+  });
+  const saved = db.sonar_research_evaluations.find((r) => r.engine === 'model-bench-human');
+  /* A and B pick different cells, so overall (A) and financial (B) map to different sides. */
+  assert.ok(['left', 'right'].includes(saved.metrics.verdict.overall.winner));
+  assert.notEqual(saved.metrics.verdict.overall.winner, saved.metrics.verdict.financial.winner);
+  assert.equal(saved.metrics.verdict.unsupported.winner, 'tie');
+  assert.equal(llmRequests.length, 1, 'no model call');
+});

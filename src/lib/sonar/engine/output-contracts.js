@@ -91,9 +91,27 @@ export function memoContract(memoKind) {
 
 /* ── Specialist contracts ──────────────────────────────────────────────────────── */
 
-const STANDARD_SPECIALIST = `Length budget: the whole JSON stays under about 240 words. conclusion: at most two sentences (40 words) answering your assignment. At most four findings, each claim at most 30 words with its refs and period; findings are evidence statements, not commentary. Cite every computed metric that bears on your assignment as M:id in refs (those are the required metrics). counterevidence and dataGaps: at most two each, at most 15 words. handoffs: at most one. No other fields.`;
+/**
+ * The fields Sonar reads from a specialist (validateSpecialist), the single source for the
+ * JSON template (orchestrator STANDARD_CONTRACT) and the length contracts below. Nov 28
+ * 2026: the length contracts said "No other fields" without naming confidence or a
+ * finding's label, which the validator reads, while the template asked for question and
+ * confidenceReason, which nothing reads. Tested in scripts/check-sonar-hardening.mjs.
+ */
+export const SPECIALIST_FIELDS = [
+  'conclusion',
+  'confidence',
+  'findings',
+  'counterevidence',
+  'dataGaps',
+  'handoffs',
+];
+export const SPECIALIST_FINDING_FIELDS = ['claim', 'label', 'refs', 'period'];
+const FIELD_LINE = `Fields: ${SPECIALIST_FIELDS.join(', ')}; each finding has ${SPECIALIST_FINDING_FIELDS.join(', ')}. No other fields.`;
 
-const DEEP_SPECIALIST = `Length budget: the whole JSON stays under about 550 words. conclusion: at most three sentences (60 words). At most six findings, most material first; each claim at most 40 words and carries refs ([S#] records or M:id metrics) and its period; a finding without a ref is labelled hypothesis. counterevidence and dataGaps: at most three each, at most 20 words. handoffs: at most two. No other fields.`;
+const STANDARD_SPECIALIST = `Length budget: the whole JSON stays under about 240 words. conclusion: at most two sentences (40 words) answering your assignment. At most four findings, each claim at most 30 words with its label, refs and period; findings are evidence statements, not commentary. Cite every computed metric that bears on your assignment as M:id in refs (those are the required metrics). counterevidence and dataGaps: at most two each, at most 15 words. handoffs: at most one. ${FIELD_LINE}`;
+
+const DEEP_SPECIALIST = `Length budget: the whole JSON stays under about 550 words. conclusion: at most three sentences (60 words). At most six findings, most material first; each claim at most 40 words and carries its label, refs ([S#] records or M:id metrics) and period; a finding without a ref is labelled hypothesis. counterevidence and dataGaps: at most three each, at most 20 words. handoffs: at most two. ${FIELD_LINE}`;
 
 /** The specialist's length contract for a mode. */
 export function specialistContract(mode) {
@@ -121,7 +139,12 @@ export const RESOLVE_CONTRACT = `Length budget: one resolution per point, each n
  *   skipped_deadline not started: too little time left
  *   provider_error   the provider failed (5xx, 4xx, network, empty)
  */
-export function classifyOutcome({ out = null, error = null, parsedOk = null } = {}) {
+export function classifyOutcome({
+  out = null,
+  error = null,
+  parsedOk = null,
+  repaired = false,
+} = {}) {
   /* "timed out" is an aborted call; "deadline" (guardHop, the chain's own check) is a call
      never started because too little time was left. */
   const fromText = (s) =>
@@ -139,7 +162,9 @@ export function classifyOutcome({ out = null, error = null, parsedOk = null } = 
     return fromText(
       (out?.providerErrors || []).map((e) => `${e.type || ''} ${e.message || ''}`).join(' '),
     );
-  if (out.stopReason === 'max_tokens') return 'truncated';
+  /* A reply recovered from a cut (repairTruncatedJson) was truncated even when the
+     provider reported no stop reason (the fallback providers do not). */
+  if (out.stopReason === 'max_tokens' || repaired) return 'truncated';
   if (parsedOk === false) return 'invalid_output';
   return 'ok';
 }
