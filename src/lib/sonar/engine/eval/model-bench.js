@@ -203,6 +203,24 @@ export const MODEL_BENCH_CASES = [
   },
 ];
 
+/* Deep-only follow-up (suite 2): two of the seven questions asked at deep depth, so the
+   Opus-versus-Sonnet deep comparison rests on three questions instead of one. */
+const byId = (id) => MODEL_BENCH_CASES.find((c) => c.id === id);
+const MODEL_BENCH_DEEP_EXTRA_CASES = [
+  {
+    ...byId('multi_dataset_screen'),
+    id: 'deep_screen',
+    category: 'Multi-dataset screening (deep)',
+    depth: 'deep',
+  },
+  { ...byId('valuation'), id: 'deep_valuation', category: 'Valuation (deep)', depth: 'deep' },
+];
+
+/** Any benchmark case by id (the seven and the deep follow-ups). */
+export function caseById(id) {
+  return byId(id) || MODEL_BENCH_DEEP_EXTRA_CASES.find((c) => c.id === id) || null;
+}
+
 /* ---------------------------------------------------------------- cells ---------- */
 
 /* Pin every role to one model: the per-model comparison at a fixed depth. */
@@ -283,6 +301,61 @@ export function cellsFor(c, env = {}) {
     );
   }
   return cells;
+}
+
+/* Suite 2, "deep-uncapped": the deep comparison with every output cap raised 1.75x
+   (benchmark only), because in suite 1 every deep writer, specialist, red-team and audit
+   call stopped at its cap. One variable changes per pair:
+     S               Sonnet 5.5 everywhere
+     O-dir           Opus 5.5 writes the report; Sonnet 5.5 reviews
+     S-dir+O-review  Sonnet 5.5 writes; Opus 5.5 red team and audit
+     O-dir+O-review  Opus 5.5 writes and reviews
+   Cross-domain escalation is off in every cell so the director model is what the cell says. */
+export const DEEP_OUTPUT_SCALE = 1.75;
+function deepCells() {
+  const A = resolveModelRouting({ profile: 'A' });
+  const cell = (id, label, o) => ({
+    id,
+    label,
+    depth: 'deep',
+    outputScale: DEEP_OUTPUT_SCALE,
+    routing: { ...A, profile: id, cross_domain_director: null, ...o },
+  });
+  return [
+    cell('S', 'Sonnet 5.5 writes and reviews', {}),
+    cell('O-dir', 'Opus 5.5 writes, Sonnet 5.5 reviews', {
+      deep_director: MODELS.opus55,
+      deep_resolve: MODELS.opus55,
+    }),
+    cell('S-dir+O-review', 'Sonnet 5.5 writes, Opus 5.5 reviews', {
+      deep_red_team: MODELS.opus55,
+      deep_auditor: MODELS.opus55,
+    }),
+    cell('O-dir+O-review', 'Opus 5.5 writes and reviews', {
+      deep_director: MODELS.opus55,
+      deep_resolve: MODELS.opus55,
+      deep_red_team: MODELS.opus55,
+      deep_auditor: MODELS.opus55,
+    }),
+  ];
+}
+
+const VARIANTS = {
+  'deep-uncapped': {
+    cases: () => [byId('deep_research'), ...MODEL_BENCH_DEEP_EXTRA_CASES],
+    cells: () => deepCells(),
+    pairs: () => [
+      ['S', 'O-dir', 'Writer: Sonnet 5.5 vs Opus 5.5 (Sonnet reviews)'],
+      ['S-dir+O-review', 'O-dir+O-review', 'Writer: Sonnet 5.5 vs Opus 5.5 (Opus reviews)'],
+      ['S', 'S-dir+O-review', 'Review: Sonnet 5.5 vs Opus 5.5 (Sonnet writes)'],
+      ['O-dir', 'O-dir+O-review', 'Review: Sonnet 5.5 vs Opus 5.5 (Opus writes)'],
+    ],
+  },
+};
+
+/** Cells for a case under a suite variant (none = the seven-case suite). */
+export function cellsForVariant(c, variant, env = {}) {
+  return variant && VARIANTS[variant] ? VARIANTS[variant].cells() : cellsFor(c, env);
 }
 
 /* ---------------------------------------------------------------- scoring -------- */
@@ -675,21 +748,27 @@ JSON: {${CRITERIA.map(([k]) => `"${k}":n`).join(',')},"unsupported":["..."],"not
 }
 
 export function parseJudge(answer) {
+  const text = String(answer || '');
+  const keys = CRITERIA.map(([k]) => k);
+  let j = null;
   try {
-    const m = String(answer || '').match(/\{[\s\S]*\}/);
-    const j = JSON.parse(m ? m[0] : answer);
-    const keys = CRITERIA.map(([k]) => k);
-    const vals = keys.map((k) => Number(j[k]));
-    if (!vals.every((v) => v >= 1 && v <= 5)) return null;
-    return {
-      ...Object.fromEntries(keys.map((k, i) => [k, vals[i]])),
-      overall: round(vals.reduce((a, b) => a + b, 0) / vals.length, 2),
-      unsupported: Array.isArray(j.unsupported) ? j.unsupported.slice(0, 3).map(String) : [],
-      note: String(j.note || '').slice(0, 300),
-    };
+    const m = text.match(/\{[\s\S]*\}/);
+    j = JSON.parse(m ? m[0] : text);
   } catch {
-    return null;
+    /* A reply cut off after the scores (a long "unsupported" list) still carries them. */
+    j = Object.fromEntries(
+      keys.map((k) => [k, Number((text.match(new RegExp(`"${k}"\\s*:\\s*(\\d)`)) || [])[1])]),
+    );
   }
+  const vals = keys.map((k) => Number(j?.[k]));
+  const present = vals.filter((v) => v >= 1 && v <= 5);
+  if (present.length < keys.length - 1) return null;
+  return {
+    ...Object.fromEntries(keys.map((k, i) => [k, vals[i] >= 1 && vals[i] <= 5 ? vals[i] : null])),
+    overall: round(present.reduce((a, b) => a + b, 0) / present.length, 2),
+    unsupported: Array.isArray(j?.unsupported) ? j.unsupported.slice(0, 3).map(String) : [],
+    note: String(j?.note || '').slice(0, 300),
+  };
 }
 
 /**
@@ -745,7 +824,8 @@ export function parsePair(answer, { xIs }) {
 /* ---------------------------------------------------------------- pairs ---------- */
 
 /** The head-to-head comparisons for a case (left vs right). */
-export function pairsFor(c) {
+export function pairsFor(c, variant = null) {
+  if (variant && VARIANTS[variant]) return VARIANTS[variant].pairs();
   if (c.depth === 'deep')
     return [
       ['C', 'B', 'Sonnet 5.5 director (C) vs Opus 5.5 director (B)'],
@@ -771,14 +851,15 @@ export function pairsFor(c) {
  * phase 2 runs every cell, phase 3 judges. Each step has a stable key, which is how the
  * worker knows what is done.
  */
-export function suitePlan({ deepTrials = 3, env = {} } = {}) {
+export function suitePlan({ deepTrials = 3, env = {}, variant = null } = {}) {
+  const cases = variant && VARIANTS[variant] ? VARIANTS[variant].cases() : MODEL_BENCH_CASES;
+  const trialsOf = (c) => (c.depth === 'deep' ? deepTrials : 1);
   const steps = [{ key: 'availability', phase: 1, kind: 'availability' }];
-  for (const c of MODEL_BENCH_CASES)
+  for (const c of cases)
     steps.push({ key: `capture|${c.id}`, phase: 1, kind: 'capture', caseId: c.id });
-  for (const c of MODEL_BENCH_CASES) {
-    const trials = c.depth === 'deep' ? deepTrials : 1;
-    for (let t = 1; t <= trials; t += 1)
-      for (const cell of cellsFor(c, env))
+  for (const c of cases)
+    for (let t = 1; t <= trialsOf(c); t += 1)
+      for (const cell of cellsForVariant(c, variant, env))
         steps.push({
           key: `run|${c.id}|${cell.id}|t${t}`,
           phase: 2,
@@ -786,12 +867,11 @@ export function suitePlan({ deepTrials = 3, env = {} } = {}) {
           caseId: c.id,
           cellId: cell.id,
           trial: t,
+          variant,
         });
-  }
-  for (const c of MODEL_BENCH_CASES) {
-    const trials = c.depth === 'deep' ? deepTrials : 1;
-    for (let t = 1; t <= trials; t += 1) {
-      for (const [left, right] of pairsFor(c))
+  for (const c of cases)
+    for (let t = 1; t <= trialsOf(c); t += 1) {
+      for (const [left, right] of pairsFor(c, variant))
         for (const judge of JUDGES)
           for (const xIs of ['left', 'right'])
             steps.push({
@@ -804,8 +884,9 @@ export function suitePlan({ deepTrials = 3, env = {} } = {}) {
               trial: t,
               judge,
               xIs,
+              variant,
             });
-      for (const cell of cellsFor(c, env))
+      for (const cell of cellsForVariant(c, variant, env))
         for (const judge of JUDGES)
           steps.push({
             key: `judge|${c.id}|${cell.id}|t${t}|${judge}`,
@@ -815,9 +896,9 @@ export function suitePlan({ deepTrials = 3, env = {} } = {}) {
             cellId: cell.id,
             trial: t,
             judge,
+            variant,
           });
     }
-  }
   return steps;
 }
 

@@ -18,7 +18,7 @@ import {
   loadResults,
   suiteState,
 } from '@/lib/sonar/engine/eval/model-bench-runner';
-import { ACTIVE_MODEL_BENCH } from '@/lib/sonar/engine/eval/model-bench-active';
+import { ACTIVE_MODEL_BENCH, MODEL_BENCH_SUITES } from '@/lib/sonar/engine/eval/model-bench-active';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -54,7 +54,12 @@ export async function GET(request) {
   try {
     if (action === 'plan') {
       const suite = url.searchParams.get('suite') || ACTIVE_MODEL_BENCH.suite;
-      const plan = suitePlan({ deepTrials: ACTIVE_MODEL_BENCH.deepTrials, env: process.env });
+      const conf = MODEL_BENCH_SUITES.find((x) => x.suite === suite) || ACTIVE_MODEL_BENCH;
+      const plan = suitePlan({
+        deepTrials: conf.deepTrials,
+        env: process.env,
+        variant: conf.variant,
+      });
       const state = await suiteState(admin, suite);
       const byPhase = {};
       for (const s of plan) {

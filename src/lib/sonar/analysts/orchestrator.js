@@ -450,6 +450,10 @@ export async function runSpecialists({
   models,
   today,
   minHopMs = 2_000,
+  /* Benchmark only (model-bench): output cap multiplier and a per-call hop limit. The
+     defaults leave production exactly as it was. */
+  tokenScale = 1,
+  maxHopMs = null,
 }) {
   const tier = (a) => (a.tier?.[mode] === 'strong' ? models.strong : models.fast);
   const fresh = marked;
@@ -458,7 +462,7 @@ export async function runSpecialists({
     const items = scopeEvidence(fresh, asg.capabilities);
     const system = specialistSystem({ analyst, mode, spec });
     const user = specialistUser({ assignment: asg, spec, items, metrics, today, methodology });
-    const maxTokens = analyst.maxOutputTokens?.[mode] || 700;
+    const maxTokens = Math.round((analyst.maxOutputTokens?.[mode] || 700) * tokenScale);
     return {
       ...asg,
       analyst: asg.analyst,
@@ -495,6 +499,7 @@ export async function runSpecialists({
         deadlineAt,
         minHopMs,
         reserveMs: 0,
+        ...(maxHopMs ? { maxHopMs } : {}),
       });
       const parsed = parseResearchJson(out?.answer);
       const v = validateSpecialist(parsed, { analyst: p.profile, marked: fresh, metrics });
@@ -559,7 +564,7 @@ export async function runSpecialists({
         items,
         system: specialistSystem({ analyst, mode, spec }),
         user: specialistUser({ assignment: asg, spec, items, metrics, today, methodology }),
-        maxTokens: analyst.maxOutputTokens?.[mode] || 700,
+        maxTokens: Math.round((analyst.maxOutputTokens?.[mode] || 700) * tokenScale),
         model: tier(analyst),
       };
       const extra = await runOne(p);

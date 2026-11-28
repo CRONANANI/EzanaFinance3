@@ -253,6 +253,9 @@ export async function runResearch(query, opts = {}) {
        one; otherwise the feature-flagged routing for this user applies, and its default
        profile ("current") is exactly the earlier behaviour. */
     modelRouting = null,
+    /* Benchmark only (model-bench): multiplies every model output cap and lets
+       specialists use a longer hop. 1 (the default) is production behaviour. */
+    outputScale = 1,
     force = null,
     now = new Date(),
     /* Sonar for organizations (Nov 2026), set by the research route only:
@@ -809,6 +812,7 @@ export async function runResearch(query, opts = {}) {
             methodology,
             synth: synthesizeWithFallback,
             models: { fast: models.standard_specialist, strong: models.deep_specialist },
+            ...(outputScale !== 1 ? { tokenScale: outputScale, maxHopMs: 75_000 } : {}),
             today: todayLine(now),
           }),
         (v) =>
@@ -870,12 +874,15 @@ export async function runResearch(query, opts = {}) {
             methodologyBlock(methodology) +
             (memo ? '' : intentBlock(intent)),
           /* A positioning memo writes sections per angle as well as risks. */
-          maxTokens: memo
-            ? spec.memoKind === 'positioning'
-              ? Math.max(D.memoTokens || D.tokens, 8000)
-              : D.memoTokens || D.tokens
-            : /* Nov 13: room for the Desk Summary fields at the end of the JSON. */
-              D.tokens + DESK_JSON_TOKENS,
+          maxTokens: Math.round(
+            outputScale *
+              (memo
+                ? spec.memoKind === 'positioning'
+                  ? Math.max(D.memoTokens || D.tokens, 8000)
+                  : D.memoTokens || D.tokens
+                : /* Nov 13: room for the Desk Summary fields at the end of the JSON. */
+                  D.tokens + DESK_JSON_TOKENS),
+          ),
           model: directorModel,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
@@ -1054,7 +1061,8 @@ export async function runResearch(query, opts = {}) {
       synthesizeWithFallback({
         system: redTeamSystem(),
         user: `Draft report:\n${draft}\n\nEvidence:\n${evidenceLines(markedF)}`,
-        maxTokens: ANALYSTS['red-team'].maxOutputTokens?.deep || 1200,
+        maxTokens: Math.round(outputScale * (ANALYSTS['red-team'].maxOutputTokens?.deep || 1200)),
+        ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
         model: strong,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
@@ -1077,7 +1085,8 @@ export async function runResearch(query, opts = {}) {
           user: `Draft report:\n${draft}\n\nRed-team points:\n${redTeam.points
             .map((p, i) => `${i}. (${p.kind}) ${p.text} ${p.refs.map((r) => `[${r}]`).join('')}`)
             .join('\n')}\n\nEvidence:\n${evidenceLines(markedF)}`,
-          maxTokens: 900,
+          maxTokens: Math.round(outputScale * 900),
+          ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
           model: models.deep_resolve,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
@@ -1147,7 +1156,10 @@ export async function runResearch(query, opts = {}) {
         user: `Report:\n${memo ? renderMemoBrief(report) : renderBrief(report)}\n\nDeterministic checks:\n${audit.checks
           .map((c) => `${c.pass ? 'PASS' : 'FAIL'} ${c.id}: ${c.detail || ''}`)
           .join('\n')}\n\nEvidence:\n${evidenceLines(markedF)}`,
-        maxTokens: ANALYSTS['methodology-auditor'].maxOutputTokens?.deep || 900,
+        maxTokens: Math.round(
+          outputScale * (ANALYSTS['methodology-auditor'].maxOutputTokens?.deep || 900),
+        ),
+        ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
         model: models.deep_auditor,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },

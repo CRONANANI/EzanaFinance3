@@ -17,8 +17,8 @@ import { MODELS } from '@/lib/sonar/model-routing';
 import { plain, recordingRunners, replayRunners, blockedAdmin } from './replay.js';
 import {
   MODEL_BENCH_VERSION,
-  MODEL_BENCH_CASES,
-  cellsFor,
+  caseById,
+  cellsForVariant,
   pairsFor,
   scoreRun,
   summarizeUsage,
@@ -38,7 +38,7 @@ import {
    reserved for scoring and the write). */
 const RUN_BUDGET_MS = 288_000;
 
-const caseOf = (id) => MODEL_BENCH_CASES.find((c) => c.id === id);
+const caseOf = (id) => caseById(id);
 
 async function insertRow(admin, row) {
   const { data, error } = await admin
@@ -190,11 +190,11 @@ async function latestSnapshot(admin, caseId, suite) {
 /* Replay one cell on the frozen evidence; score it; store it. */
 export async function runCell(
   admin,
-  { caseId, cellId, suite, trial = 1, stepKey = null, suiteSnapshots = false },
+  { caseId, cellId, suite, trial = 1, stepKey = null, suiteSnapshots = false, variant = null },
 ) {
   const c = caseOf(caseId);
   if (!c) throw new Error(`unknown case ${caseId}`);
-  const cell = cellsFor(c, process.env).find((x) => x.id === cellId);
+  const cell = cellsForVariant(c, variant, process.env).find((x) => x.id === cellId);
   if (!cell) throw new Error(`unknown cell ${cellId} for ${caseId}`);
   if (!suite) throw new Error('suite required');
   const snap = await latestSnapshot(admin, caseId, suiteSnapshots ? suite : null);
@@ -211,6 +211,7 @@ export async function runCell(
       config: snap.config || undefined,
       scope: { userId: null, orgId: null },
       modelRouting: cell.routing,
+      outputScale: cell.outputScale || 1,
       /* The production function's own ceiling, as the research route sets it. */
       deadlineAt: startedAt + RUN_BUDGET_MS,
       emit: () => {},
@@ -235,6 +236,8 @@ export async function runCell(
     depth: cell.depth || c.depth,
     trial,
     routing: cell.routing,
+    variant,
+    outputScale: cell.outputScale || 1,
     snapshotId: snap.id,
     servedModel: run?.researchMetadata?.model || null,
     crossDomain: run?.researchMetadata?.crossDomain ?? null,
@@ -366,7 +369,17 @@ export async function judgeRow(
 /** Paired comparison of two cells' runs by one judge in one order. */
 export async function pairJudge(
   admin,
-  { suite, caseId, left, right, trial = 1, judge = MODELS.opus55, xIs = 'left', stepKey = null },
+  {
+    suite,
+    caseId,
+    left,
+    right,
+    trial = 1,
+    judge = MODELS.opus55,
+    xIs = 'left',
+    stepKey = null,
+    variant = null,
+  },
 ) {
   const c = caseOf(caseId);
   const L = await loadRun(admin, { suite, caseId, cellId: left, trial });
@@ -375,7 +388,8 @@ export async function pairJudge(
   const ask = await askJudge(judge, pairPrompt(c, x, y), 1400);
   const verdict = parsePair(ask.answer, { xIs });
   const label =
-    (pairsFor(c).find((p) => p[0] === left && p[1] === right) || [])[2] || `${left} vs ${right}`;
+    (pairsFor(c, variant).find((p) => p[0] === left && p[1] === right) || [])[2] ||
+    `${left} vs ${right}`;
   await insertRow(admin, {
     suite_run: suite,
     engine: 'model-bench-pair',
@@ -471,6 +485,7 @@ async function executeStep(admin, suite, step) {
       cellId: step.cellId,
       trial: step.trial,
       suiteSnapshots: true,
+      variant: step.variant || null,
     });
   if (step.kind === 'judge')
     return judgeRow(admin, {
@@ -489,6 +504,7 @@ async function executeStep(admin, suite, step) {
       trial: step.trial,
       judge: step.judge,
       xIs: step.xIs,
+      variant: step.variant || null,
     });
   throw new Error(`unknown step kind ${step.kind}`);
 }
@@ -500,11 +516,21 @@ async function executeStep(admin, suite, step) {
  */
 export async function workerTick(
   admin,
-  { suite, lane = 0, lanes = 1, until, maxUsd, deepTrials = 3, budgetMs = 170_000, env = {} },
+  {
+    suite,
+    lane = 0,
+    lanes = 1,
+    until,
+    maxUsd,
+    deepTrials = 3,
+    budgetMs = 170_000,
+    env = {},
+    variant = null,
+  },
 ) {
   const t0 = Date.now();
   if (until && t0 > new Date(until).getTime()) return { idle: 'expired' };
-  const plan = suitePlan({ deepTrials, env });
+  const plan = suitePlan({ deepTrials, env, variant });
   const ran = [];
   for (;;) {
     // eslint-disable-next-line no-await-in-loop

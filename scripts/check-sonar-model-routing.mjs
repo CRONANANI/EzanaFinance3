@@ -414,3 +414,39 @@ test('quality score is research quality only and zero for an incomplete run', ()
     'latency never moves quality',
   );
 });
+
+test('deep follow-up suite: three deep questions, single-variable cells, raised caps', () => {
+  const plan = B.suitePlan({ deepTrials: 2, variant: 'deep-uncapped' });
+  const runs = plan.filter((s) => s.kind === 'run');
+  assert.deepEqual(
+    [...new Set(runs.map((s) => s.caseId))],
+    ['deep_research', 'deep_screen', 'deep_valuation'],
+  );
+  assert.equal(runs.length, 3 * 4 * 2);
+  const cells = B.cellsForVariant(B.caseById('deep_screen'), 'deep-uncapped');
+  const by = Object.fromEntries(cells.map((c) => [c.id, c.routing]));
+  assert.equal(by.S.deep_director, R.MODELS.sonnet55);
+  assert.equal(by['O-dir'].deep_director, R.MODELS.opus55);
+  assert.equal(by['O-dir'].deep_red_team, R.MODELS.sonnet55);
+  assert.equal(by['S-dir+O-review'].deep_director, R.MODELS.sonnet55);
+  assert.equal(by['S-dir+O-review'].deep_red_team, R.MODELS.opus55);
+  for (const c of cells) {
+    assert.equal(c.routing.cross_domain_director, null, 'no escalation: the cell names the writer');
+    assert.equal(c.outputScale, B.DEEP_OUTPUT_SCALE);
+  }
+  assert.equal(B.caseById('deep_screen').depth, 'deep');
+  assert.equal(B.caseById('multi_dataset_screen').depth, 'standard');
+});
+
+test('judge parser recovers scores from a reply cut off after them', () => {
+  const cut =
+    '{"objective":2,"financial":3,"insight":3,"evidence":2,"correctness":2,"relationships":4,"unsupported":["The top three contract recipients hold 68.2% of';
+  const j = B.parseJudge(cut);
+  assert.equal(j.relationships, 4);
+  assert.equal(j.overall, 2.67);
+  const missingOne = B.parseJudge(
+    '{"objective":2,"financial":4,"insight":3,"evidence":3,"correctness":3,"unsupported":[]}',
+  );
+  assert.equal(missingOne.relationships, null);
+  assert.equal(missingOne.overall, 3);
+});
