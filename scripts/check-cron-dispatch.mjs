@@ -30,10 +30,10 @@ await t('cron matching', () => {
   assert.throws(() => cronMatches('61 * * * *', d));
 });
 
-await t('registry is valid and preserves bench frequency', () => {
+await t('registry is valid; benchmark lanes are unscheduled (credits exhausted)', () => {
   assert.deepEqual(validateRegistry(DISPATCH_JOBS), []);
   const due = dueJobs(DISPATCH_JOBS, new Date('2026-11-28T14:07:00Z'));
-  assert.equal(due.filter((j) => j.id.startsWith('sonar-model-bench')).length, 6);
+  assert.equal(DISPATCH_JOBS.filter((j) => j.path.includes('sonar-model-bench')).length, 0);
   assert.ok(!due.some((j) => j.id === 'sync-company-industry'));
   assert.ok(
     dueJobs(DISPATCH_JOBS, new Date('2026-11-28T15:00:00Z')).some(

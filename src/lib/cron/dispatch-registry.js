@@ -19,17 +19,11 @@
  * groupLimit (shared upstream concurrency), retries (fast failures only), ackMs (how long
  * the dispatcher waits before reporting a running job as started), until (optional end).
  */
-const benchLanes = Array.from({ length: 6 }, (_, lane) => ({
-  id: `sonar-model-bench-${lane}`,
-  path: `/api/cron/sonar-model-bench?lane=${lane}`,
-  schedule: '* * * * *',
-  group: 'sonar-model-bench',
-  groupLimit: 6,
-  retries: 0,
-}));
+/* Nov 28 2026: the sonar-model-bench lanes are unscheduled. The Anthropic API credits are
+   exhausted, so no benchmark that calls a model runs. The route still exists for a manual,
+   owner-approved run; re-add the lanes here only with a funded budget. */
 
 export const DISPATCH_JOBS = [
-  ...benchLanes,
   {
     id: 'sync-company-industry',
     path: '/api/cron/sync-company-industry?max=1200',

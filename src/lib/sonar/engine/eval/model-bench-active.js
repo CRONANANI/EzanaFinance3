@@ -86,11 +86,11 @@ export const MODEL_BENCH_SUITES = [
     variant: 'profile-d-dcf',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },
-  /* Confirmation: the two DCF cases, current vs D, after the valuation model reaches the writer. */
+  /* Cancelled before it ran (API credits exhausted); kept so no lane can start it. */
   {
     suite: 'model-bench-2026-11-28-profile-d-dcf2',
-    until: '2026-11-28T22:00:00Z',
-    maxUsd: 6,
+    until: '2026-11-28T16:45:00Z',
+    maxUsd: 0,
     deepTrials: 2,
     variant: 'profile-d-dcf',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
