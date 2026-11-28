@@ -1013,8 +1013,8 @@ test('evidence contract: verified figures, allowed and unsupported conclusions, 
     period: 'TTM through 2026-09-30',
   });
   assert.ok(s.unknowns.some((u) => /BBB: P\/E \(TTM\): missing \(not zero\)/.test(u)));
-  assert.ok(s.unsupported.some((u) => /130 of 400/.test(u)));
-  assert.ok(/among the 270 companies checked/.test(s.allowed[0]));
+  assert.ok(s.unsupported.some((u) => /130 companies were not checked/.test(u)));
+  assert.ok(/among the companies checked/.test(s.allowed[0]));
   assert.equal(f.verified.length, 0);
   assert.match(evidenceContractBlock(c), /EVIDENCE CONTRACT/);
 });

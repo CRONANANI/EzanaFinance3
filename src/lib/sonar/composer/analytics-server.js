@@ -898,7 +898,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   });
   if (coverage.status === 'bounded')
     limitations.unshift(
-      `Bounded screen: ${coverage.unchecked} of ${coverage.eligibleUniverse} eligible companies were not checked against every condition (${coverage.excluded
+      `Bounded screen: ${coverage.unchecked} companies were not checked against every condition (${coverage.excluded
         .filter((e) => e.kind === 'unchecked')
         .map((e) => `${e.count} ${e.reason}`)
         .join('; ')}). The ranking covers the companies checked, not the whole universe.`,

@@ -69,7 +69,7 @@ function screenRules(r) {
     const top = r.table[0];
     allowed.push(
       cov.status === 'bounded'
-        ? `${entityOf(top)} ranks first among the ${cov.evaluatedCount - (cov.unchecked || 0)} companies checked.`
+        ? `${entityOf(top)} ranks first among the companies checked.`
         : `${entityOf(top)} ranks first in the screened universe.`,
     );
   } else {
@@ -77,7 +77,7 @@ function screenRules(r) {
   }
   if (cov.status === 'bounded') {
     unsupported.push(
-      `Calling any company the highest, lowest, cheapest or best in the whole universe: ${cov.unchecked} of ${cov.eligibleUniverse} eligible companies were not checked.`,
+      `Calling any company the highest, lowest, cheapest or best in the whole universe: ${cov.unchecked} companies were not checked.`,
     );
     unknowns.push(
       ...(cov.excluded || [])

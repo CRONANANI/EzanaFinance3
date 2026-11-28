@@ -260,7 +260,14 @@ export function fulfillmentContract(c) {
             : r.capability === 'macro-indicators'
               ? `${r.coverage.withData} of ${r.coverage.selected} countries with data`
               : r.coverage.status === 'bounded'
-                ? `bounded: ${r.coverage.unchecked} of ${r.coverage.eligibleUniverse} companies not checked; ${r.coverage.withData} with filed financials`
+                ? `bounded: ${r.coverage.unchecked} companies not checked (${(
+                    r.coverage.excluded || []
+                  )
+                    .filter((e) => e.kind === 'unchecked')
+                    .map((e) => e.reason)
+                    .join(
+                      '; ',
+                    )}); ${r.coverage.withData} of ${r.coverage.eligibleUniverse} checked companies with filed financials`
                 : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
           : r?.failed || null,
       );
