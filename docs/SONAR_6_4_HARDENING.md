@@ -18,7 +18,9 @@ rebuilt. Commits 5cbb475f..cd7fec84 on main.
   ADBE 7372; AIG 6331; ...). Known SIC limits: Abbott files under 2834 (pharma), Amazon under
   5961 (catalog retail).
 - While the backfill runs, an industry screen counts the unclassified companies as unchecked:
-  its coverage is `bounded` and it says so.
+  its coverage is `bounded` and it says so. Live check (16:20 UTC), "Semiconductor companies
+  with operating margins above 25%": 22 classified SIC 3674 members, 19 with filed revenue,
+  AVGO 39.9%, ADI 38.6%, AMAT 29.2%, status bounded with 5,361 listings not yet classified.
 - SQL_02 (`supabase/migrations/20261130100000_company_industry_country.sql`) adds the EDGAR
   business address and incorporation codes. Not applied yet; until it is, country universes are
   refused with a notice. The sync detects the columns and refreshes older rows first once they
@@ -76,7 +78,10 @@ reports them as checked with data unavailable.
 Production fixes found during verification: the Bank of Canada run crashed (country entity was
 labelled "Bank of Canada", country resolution lost its ISO3, and `packEvidence` had no guard
 for a non-finite score); the Bank of America vs Goldman Sachs comparison failed (canonical
-lookup was only in `resolveSubject`). Both fixed and re-verified.
+lookup was only in `resolveSubject`). Both fixed and re-verified: Bank of Canada answers "No,
+one 0.25 point hike on 2026-10-29" with no company tasks; BAC and GS now resolve (operating
+margin is not available for either: banks file no operating income line, and GS has no mapped
+revenue concept, so both show as missing, not zero).
 
 ## 4. Screen completeness
 
@@ -124,8 +129,8 @@ verified figures (entity, label, value, unit, period), allowed conclusions, unsu
 conclusions, unknowns (missing, not zero; unchecked companies; missing CPI months). Telemetry
 keeps the counts.
 
-Production: Bank of Canada 2/7 claims kept before, 4/6 after, no company tasks; Fed 6/6;
-energy screens 7/7.
+Production: Bank of Canada 2/7 claims kept before, 4/6 after, no company tasks; Fed 6/6 (the
+2026-09-17 +0.25 move to 3.875% verified against the BIS daily series); energy screens 7/7.
 
 Writer candidate: model bench suite `model-bench-2026-11-28-contract` (current Haiku 4.5
 writer vs Sonnet 5.5 standard writer, each with and without the contract, on profile-d3's frozen
