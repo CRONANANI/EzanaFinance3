@@ -48,6 +48,17 @@ export function filed(
       period_type: 'instant',
       entity_name: `${ticker} Corp`,
     });
+  /* Sonar 6.4 final hardening: the v2 total long-term debt component (LongTermDebt), which
+     total debt and debt to equity are computed from; the v1 key stays for older readers. */
+  if (debt != null)
+    rows.push({
+      ticker,
+      concept: 'debt_long_term_total',
+      value: debt,
+      period_end: end,
+      period_type: 'instant',
+      entity_name: `${ticker} Corp`,
+    });
   if (debt != null)
     rows.push({
       ticker,

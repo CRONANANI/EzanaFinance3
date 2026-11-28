@@ -6,6 +6,182 @@
 
 const ratio = (a, b) => (Number.isFinite(a) && Number.isFinite(b) && b !== 0 ? a / b : null);
 
+/**
+ * Total debt from filed balance-sheet components (Sonar 6.4 final hardening). Pure.
+ *
+ * Components are lib/sec/concept-map.js debt metrics, each one XBRL concept. Only components
+ * dated the same balance-sheet date as `asOf` (the equity date) are used. Total debt is
+ * noncurrent debt plus current debt, built so nothing is counted twice:
+ *   noncurrent  LongTermDebtNoncurrent; else LongTermDebt minus LongTermDebtCurrent when both
+ *               are tagged; else LongTermDebtAndCapitalLeaseObligations (includes finance
+ *               leases, flagged)
+ *   current     DebtCurrent (all current debt) when tagged; else LongTermDebtCurrent plus
+ *               short-term borrowings (ShortTermBorrowings, else CommercialPaper)
+ *   LongTermDebt alone (no current tags, no noncurrent tag) is long-term debt including its
+ *               current portion by definition; short-term borrowings are added when tagged
+ * Status:
+ *   complete      both parts known (an explicit 0 is a known 0)
+ *   partial       a part is missing (noncurrent debt with no current-debt tag, a revolver tag
+ *                 alone, or LongTermDebt beside DebtCurrent with no current portion to separate
+ *                 them); the total is a lower bound and is not used as a ratio
+ *   unavailable   no debt component for the date
+ * A missing component never becomes 0.
+ */
+export function totalDebt(instant = {}, asOf = null) {
+  const at = (k) => {
+    const x = instant?.[k];
+    if (!x || x.value == null || !Number.isFinite(x.value)) return null;
+    if (asOf && x.end && x.end !== asOf) return null;
+    return x.value;
+  };
+  const N = at('debt_noncurrent');
+  const T = at('debt_long_term_total');
+  const Cp = at('debt_current_portion');
+  const Dc = at('debt_current');
+  const S = at('short_term_borrowings');
+  const CPp = at('commercial_paper');
+  const NL = at('debt_and_leases_noncurrent');
+  const L = at('line_of_credit');
+  const flags = [];
+  let noncurrent = null;
+  let ncMethod = null;
+  if (N != null) {
+    noncurrent = N;
+    ncMethod = 'LongTermDebtNoncurrent';
+  } else if (T != null && Cp != null) {
+    noncurrent = T - Cp;
+    ncMethod = 'LongTermDebt minus LongTermDebtCurrent';
+  } else if (NL != null) {
+    noncurrent = NL;
+    ncMethod = 'LongTermDebtAndCapitalLeaseObligations';
+    flags.push('includes finance lease obligations');
+  }
+  let current = null;
+  let cMethod = null;
+  const stb = S != null ? S : CPp;
+  if (Dc != null) {
+    current = Dc;
+    cMethod = 'DebtCurrent';
+  } else if (Cp != null) {
+    current = Cp + (stb ?? 0);
+    cMethod =
+      stb != null ? 'LongTermDebtCurrent plus short-term borrowings' : 'LongTermDebtCurrent';
+  } else if (stb != null && noncurrent != null) {
+    current = stb;
+    cMethod = 'short-term borrowings';
+    flags.push('current portion of long-term debt not tagged');
+  }
+  if (noncurrent != null && current != null)
+    return {
+      value: noncurrent + current,
+      status: current === stb && Cp == null && Dc == null ? 'partial' : 'complete',
+      method: `${ncMethod} + ${cMethod}`,
+      components: { noncurrent, current },
+      flags,
+    };
+  if (noncurrent == null && current == null && T != null) {
+    if (Dc != null)
+      return {
+        value: T,
+        status: 'partial',
+        method: 'LongTermDebt beside DebtCurrent without a current portion to separate them',
+        components: { longTermTotal: T, debtCurrent: Dc },
+        flags: ['overlap between LongTermDebt and DebtCurrent cannot be resolved'],
+      };
+    return {
+      value: T + (stb ?? 0),
+      status: 'complete',
+      method:
+        stb != null
+          ? 'LongTermDebt + short-term borrowings'
+          : 'LongTermDebt (current and noncurrent)',
+      components: { longTermTotal: T, shortTerm: stb },
+      flags,
+    };
+  }
+  if (noncurrent == null && current != null && T != null)
+    return {
+      value: T,
+      status: 'partial',
+      method: 'LongTermDebt beside DebtCurrent without a current portion to separate them',
+      components: { longTermTotal: T, current },
+      flags: ['overlap between LongTermDebt and DebtCurrent cannot be resolved'],
+    };
+  if (noncurrent != null)
+    return {
+      value: noncurrent,
+      status: 'partial',
+      method: `${ncMethod} only`,
+      components: { noncurrent },
+      flags: [...flags, 'current debt not tagged for this date'],
+    };
+  if (current != null)
+    return {
+      value: current,
+      status: 'partial',
+      method: `${cMethod} only`,
+      components: { current },
+      flags: [...flags, 'noncurrent debt not tagged for this date'],
+    };
+  if (L != null)
+    return {
+      value: L,
+      status: 'partial',
+      method: 'LineOfCredit only',
+      components: { lineOfCredit: L },
+      flags: ['only a credit facility balance is tagged'],
+    };
+  return { value: null, status: 'unavailable', method: null, components: {}, flags };
+}
+
+/* SIC ranges whose balance sheets are funded by deposits, policy reserves or customer
+   balances, where debt to equity is not a leverage measure (REITs, 6798, are excluded). */
+export function isFinancialInstitution(sic) {
+  const n = Number(sic);
+  return Number.isFinite(n) && n >= 6000 && n <= 6799 && n !== 6798;
+}
+
+/**
+ * Debt to equity with its status (Sonar 6.4 final hardening). Pure.
+ * @returns {{ value: number|null, status: string, reason: string|null, debt: object }}
+ */
+export function debtToEquity(f, { sic = f?.sic ?? null } = {}) {
+  const eq = f?.instant?.equity;
+  const equity = eq?.value != null && Number.isFinite(eq.value) ? eq.value : null;
+  const debt = totalDebt(f?.instant || {}, eq?.end || null);
+  if (isFinancialInstitution(sic))
+    return {
+      value: null,
+      status: 'not_meaningful',
+      reason: 'financial institution (deposits and reserves fund the balance sheet)',
+      debt,
+    };
+  if (equity == null)
+    return { value: null, status: 'unavailable', reason: 'shareholders’ equity not filed', debt };
+  if (equity <= 0)
+    return {
+      value: null,
+      status: 'not_meaningful',
+      reason: 'zero or negative shareholders’ equity',
+      debt,
+    };
+  if (debt.status === 'unavailable')
+    return {
+      value: null,
+      status: 'unavailable',
+      reason: 'no debt figures filed for the balance-sheet date',
+      debt,
+    };
+  if (debt.status === 'partial')
+    return {
+      value: null,
+      status: 'qualified',
+      reason: debt.flags.join('; ') || 'total debt incomplete',
+      debt,
+    };
+  return { value: debt.value / equity, status: 'complete', reason: null, debt };
+}
+
 /** Ratios from one company's filed figures. Pure. */
 export function companyRatios(f) {
   if (!f) return null;
@@ -16,7 +192,9 @@ export function companyRatios(f) {
   const capex = a('capex');
   const fcf = ocf != null && capex != null ? ocf - Math.abs(capex) : null;
   const equity = f.instant?.equity?.value ?? null;
-  const debt = f.instant?.long_term_debt?.value ?? null;
+  /* Sonar 6.4 final hardening: total debt from its components; the ratio only when the
+     total is complete (never 0.00x because a component is missing). */
+  const de = debtToEquity(f, { sic: f.sic ?? null });
   return {
     fiscalYearEnd: f.annual?.revenue?.[0]?.end || null,
     revenue: rev,
@@ -34,7 +212,11 @@ export function companyRatios(f) {
     fcf,
     fcf_margin: ratio(fcf, rev),
     roe: equity && equity > 0 ? ratio(a('net_income'), equity) : null,
-    debt_to_equity: equity && equity > 0 && debt != null ? debt / equity : null,
+    debt_to_equity: de.value,
+    debt_to_equity_status: de.status,
+    debt_to_equity_reason: de.reason,
+    total_debt: de.debt.status === 'complete' ? de.debt.value : null,
+    total_debt_method: de.debt.method,
   };
 }
 
@@ -47,6 +229,12 @@ export function dcfValue({ fcf, growth, wacc, terminal, years, cash = 0, debt = 
     };
   if (!(wacc > terminal))
     return { ok: false, reason: 'The discount rate must exceed terminal growth.' };
+  /* A missing debt figure is not zero debt (Sonar 6.4 final hardening). */
+  if (!Number.isFinite(debt))
+    return {
+      ok: false,
+      reason: 'No debt figure is filed, so equity value cannot be derived from enterprise value.',
+    };
   let pv = 0;
   let cf = fcf;
   for (let t = 1; t <= years; t += 1) {

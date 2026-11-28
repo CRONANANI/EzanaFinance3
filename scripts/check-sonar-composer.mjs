@@ -164,7 +164,10 @@ test('ratios are computed from filed figures', () => {
   assert.ok(close(r.gross_margin, 153463 / 215938));
   assert.ok(close(r.operating_margin, 130387 / 215938));
   assert.equal(r.fcf, 102718e6 - 6042e6);
-  assert.ok(close(r.debt_to_equity, 32366 / 228984));
+  /* Sonar 6.4 final hardening: the v1 long_term_debt key mixes noncurrent and total debt, so
+     it no longer yields a ratio; total debt comes from the v2 components (check-debt-equity). */
+  assert.equal(r.debt_to_equity, null);
+  assert.equal(r.debt_to_equity_status, 'unavailable');
   assert.equal(companyRatios(null), null);
 });
 

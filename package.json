@@ -228,7 +228,8 @@
     "test:sonar-remediation": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-sonar-remediation.mjs",
     "test:cron-dispatch": "node --no-warnings scripts/check-cron-dispatch.mjs",
     "test:quiver-proxy": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-quiver-proxy.mjs",
-    "test:market-sample": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-market-sample.mjs"
+    "test:market-sample": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-market-sample.mjs",
+    "test:debt-equity": "node --no-warnings --import ./scripts/register-sonar-loader.mjs --test scripts/check-debt-equity.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

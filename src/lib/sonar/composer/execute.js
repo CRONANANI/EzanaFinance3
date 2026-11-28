@@ -34,6 +34,7 @@ import { validateSpec, normalizeConfig } from '@/lib/quants/strategy-spec';
 import { loadRunBars } from '@/lib/quants/lab-server';
 import { validateAttachment, relationText, CAPABILITIES, onSet } from './registry.js';
 import { companyRatios, dcfValue } from './calc.js';
+import { DEBT_COMPONENTS } from '../../sec/concept-map.js';
 import { querySchema } from './schema.js';
 import {
   buildContext,
@@ -293,6 +294,7 @@ const CONCEPTS = [
   'long_term_debt',
   'cash',
   'shares_outstanding',
+  ...DEBT_COMPONENTS,
 ];
 
 /** { [ticker]: { annual: {concept: [{end, value}] newest first}, instant: {concept: {end, value}} } } */
@@ -492,9 +494,17 @@ async function runDcf(admin, att, env) {
       terminal,
       years,
       cash: f?.instant?.cash?.value,
-      debt: f?.instant?.long_term_debt?.value,
+      /* Sonar 6.4 final hardening: total debt when it can be reconstructed; otherwise the
+         filed long-term debt figure, said so in the limitations; never a silent 0. */
+      debt: ratios?.total_debt ?? f?.instant?.long_term_debt?.value ?? Number.NaN,
       shares: f?.instant?.shares_outstanding?.value,
     });
+    const debtBasis =
+      ratios?.total_debt != null
+        ? `total debt (${ratios.total_debt_method})`
+        : f?.instant?.long_term_debt?.value != null
+          ? 'long-term debt only (total debt could not be reconstructed)'
+          : 'no debt figure filed';
     const px = res.ok ? await latestClose(ticker) : null;
     out.push({
       ticker,
@@ -504,6 +514,7 @@ async function runDcf(admin, att, env) {
         userGrowth !== null && userGrowth !== undefined && userGrowth !== '' ? 'reader' : 'history',
       fcf: ratios?.fcf ?? null,
       ...res,
+      debtBasis,
       price: px?.close ?? null,
       priceDate: px?.date ?? null,
       upside: res.ok && res.perShare && px?.close ? res.perShare / px.close - 1 : null,
@@ -526,7 +537,7 @@ async function runDcf(admin, att, env) {
   const limitations = [
     'A DCF is highly sensitive to growth, discount rate and terminal growth; small changes move the value a lot.',
     'Free cash flow is one filed year; cyclical or one-off items are not normalised.',
-    'Debt is long-term debt only; leases, minority interests and other claims are not deducted.',
+    `Debt deducted: ${[...new Set(out.map((o) => `${o.ticker} ${o.debtBasis}`))].join('; ')}. Leases (unless included in the filed total), minority interests and other claims are not deducted.`,
   ];
   return {
     output: 'estimated',

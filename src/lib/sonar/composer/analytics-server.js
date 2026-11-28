@@ -19,6 +19,7 @@
 
 import { companyRatios, ttmFigure, valuationRatios } from './calc.js';
 import { universeFor, dodDefined, industryMembers } from './industries.js';
+import { DEBT_COMPONENTS } from '../../sec/concept-map.js';
 import {
   MACRO_VERSION,
   inflationTrend,
@@ -51,7 +52,8 @@ const RATIO_CONCEPTS = [
   'operating_cash_flow',
   'capex',
 ];
-const INSTANT_CONCEPTS = ['equity', 'long_term_debt'];
+/* Sonar 6.4 final hardening: debt components for total debt (calc.js totalDebt). */
+const INSTANT_CONCEPTS = ['equity', 'long_term_debt', ...DEBT_COMPONENTS];
 const MAX_UNIVERSE = 1200;
 const MAX_RANKED_13F = 150;
 const chunk = (xs, n) => {
@@ -141,6 +143,18 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
   }
   for (const t of Object.values(out))
     for (const list of Object.values(t.annual)) list.sort((a, b) => (a.end < b.end ? 1 : -1));
+  /* SIC codes where classified, so leverage ratios skip financial institutions (calc.js). */
+  for (const batch of chunk(Object.keys(out), 500)) {
+    try {
+      const { data } = await admin
+        .from('company_industry')
+        .select('ticker, sic')
+        .in('ticker', batch);
+      for (const r of data || []) if (out[r.ticker] && r.sic) out[r.ticker].sic = r.sic;
+    } catch {
+      /* classification unavailable: no SIC */
+    }
+  }
   return out;
 }
 
@@ -682,6 +696,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
           operating_margin: r.operating_margin,
           fcf: r.fcf,
           debt_to_equity: r.debt_to_equity,
+          debt_to_equity_status: r.debt_to_equity_status,
+          debt_to_equity_reason: r.debt_to_equity_reason,
           revenue: r.revenue,
           revenue_prior: r.revenue_prior,
           fiscalYearEnd: r.fiscalYearEnd,
@@ -804,6 +820,14 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     if (v.fiscalYearEnd && (now - Date.parse(v.fiscalYearEnd)) / 86400000 > 456)
       out.push(`stale filing (FY ended ${v.fiscalYearEnd})`);
     if (v.peStatus === 'negative') out.push('negative TTM earnings');
+    if (
+      shownKeys.has('debt_to_equity') &&
+      v.debt_to_equity_status &&
+      v.debt_to_equity_status !== 'complete'
+    )
+      out.push(
+        `debt/equity ${v.debt_to_equity_status.replace('_', ' ')}: ${v.debt_to_equity_reason}`,
+      );
     return out;
   };
   const columns = [
@@ -867,6 +891,9 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       ? `Filed figures are each company's latest fiscal year, which end between ${ends[0]} and ${ends[ends.length - 1]}; the periods are not the same for every company.`
       : 'Filed figures are the latest fiscal year each company reported.',
     ...valuationNotes,
+    shown.includes('debt')
+      ? debtNote(universe.map((u) => values[u.ticker]).filter((v) => v?.revenue != null))
+      : null,
     sources.includes('contracts')
       ? 'Federal contract figures are the value of prime awards that started in the fiscal year, obligated to date; they are not revenue.'
       : null,
@@ -1023,6 +1050,18 @@ export function screenCoverage({
     withData,
     complete: shown,
   };
+}
+
+/** Why debt to equity is missing for some companies (Sonar 6.4 final hardening). */
+function debtNote(vals) {
+  const by = {};
+  for (const v of vals) {
+    const st = v.debt_to_equity_status || 'unavailable';
+    if (st === 'complete') continue;
+    by[st] = (by[st] || 0) + 1;
+  }
+  const parts = Object.entries(by).map(([k, n]) => `${n} ${k.replace('_', ' ')}`);
+  return `Debt to equity is total debt (noncurrent plus current debt, short-term borrowings included, reconstructed from filed XBRL components without double counting) over shareholders' equity at the same balance-sheet date.${parts.length ? ` Not computed for ${parts.join(', ')} companies: a missing debt component is never read as zero, negative equity makes the ratio meaningless, and banks and insurers are excluded.` : ''}`;
 }
 
 /* ── company-comparison ────────────────────────────────────────────────── */
