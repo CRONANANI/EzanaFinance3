@@ -479,3 +479,62 @@ test('provider sends the shaped request (fetch stub)', async () => {
     else process.env.ANTHROPIC_API_KEY = realKey;
   }
 });
+
+test('valuation results reach the writer as computed metrics', async () => {
+  const { valuationMetrics } = await import('../src/lib/sonar/valuation/metrics.js');
+  const v = {
+    version: 'valuation-model-v1',
+    asOf: '2026-11-28',
+    dcf: {
+      ok: true,
+      inputs: {
+        capexPct: 0.3923,
+        margin: 0.471,
+        startGrowth: 0.142,
+        beta: 1.045,
+        riskFree: 0.0494,
+        terminalGrowth: 0.025,
+        price: null,
+        growthSource: 'market',
+      },
+      result: { wacc: 0.0987438, perShare: 80.0208, terminalShare: 0.71 },
+    },
+    scenarios: [
+      { id: 'bear', label: 'Bear', perShare: 53.31, assumptions: { waccPct: 10.87 } },
+      { id: 'bull', label: 'Bull', perShare: 108.19, assumptions: { waccPct: 9.37 } },
+      { id: 'broken', error: 'x' },
+    ],
+    sensitivity: {
+      waccGrowth: {
+        cells: [
+          [81.39, 70.1],
+          [95.2, 60.0],
+        ],
+      },
+    },
+  };
+  const m = Object.fromEntries(valuationMetrics(v).map((x) => [x.id, x]));
+  assert.equal(m.dcf_value_per_share.value, 80.02);
+  assert.equal(m.dcf_wacc.value, 0.0987);
+  assert.equal(m.dcf_wacc.unit, 'ratio');
+  assert.equal(m.dcf_bear_per_share.value, 53.31);
+  assert.equal(m.dcf_sensitivity_low.value, 60);
+  assert.equal(m.dcf_vs_price, undefined, 'no price, no gap');
+  assert.equal(m.dcf_broken_per_share, undefined);
+  assert.equal(m.dcf_value_per_share.classification, 'calculated_result');
+  assert.deepEqual(valuationMetrics(null), []);
+  assert.deepEqual(valuationMetrics({ dcf: { ok: false } }), []);
+  assert.match(
+    read('src/lib/sonar/engine/engine.js'),
+    /for \(const m of valuationMetrics\(valuation\)\)/,
+  );
+  assert.equal(
+    B.calcCheck({ requiredCalcs: ['valuation'] }, { valuation: { dcf: { ok: true, result: {} } } })
+      .ok,
+    true,
+  );
+  assert.equal(
+    B.calcCheck({ requiredCalcs: ['valuation'] }, { valuation: { dcf: { ok: false } } }).ok,
+    false,
+  );
+});

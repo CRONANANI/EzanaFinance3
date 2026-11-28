@@ -205,6 +205,9 @@ export const WRITER_FAILURE = {
     'The written analysis did not pass the evidence checks, so this report shows the records and calculated results directly.',
   skipped:
     'There was not enough time left for a written analysis, so this report shows the records and calculated results directly.',
+  /* Nov 28 2026: retrieval found nothing to write from (it was reported as a timeout). */
+  no_evidence:
+    "Sonar's datasets returned no records for this question, so there is no written analysis. The sources searched are listed with the method.",
 };
 
 const YEAR_RE = /\b(19[5-9]\d|20[0-4]\d)\b/g;

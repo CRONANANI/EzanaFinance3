@@ -877,7 +877,10 @@ export function calcCheck(c, run) {
   const need = c?.requiredCalcs || [];
   const have = {
     metrics: (run?.quantitativeMetrics || []).length > 0,
-    valuation: Boolean(run?.valuation),
+    /* A valuation counts only if its DCF produced a value (an empty model is not a calculation). */
+    valuation: Boolean(
+      run?.valuation?.dcf?.ok && run.valuation.dcf.result && !run.valuation.dcf.result.error,
+    ),
     composition:
       Boolean(run?.researchMetadata?.fulfillment) &&
       run.researchMetadata.fulfillment.state !== 'failed',

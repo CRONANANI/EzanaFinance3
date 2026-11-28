@@ -76,6 +76,15 @@ export const MODEL_BENCH_SUITES = [
     variant: 'contract',
     snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },
+  /* Confirmation: deep DCF cases after the valuation model reaches the writer. */
+  {
+    suite: 'model-bench-2026-11-28-profile-d-dcf',
+    until: '2026-11-30T05:00:00Z',
+    maxUsd: 8,
+    deepTrials: 1,
+    variant: 'profile-d-dcf',
+    snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
+  },
 ];
 export const MODEL_BENCH_LANES = 6;
 /* The admin page's default suite. */

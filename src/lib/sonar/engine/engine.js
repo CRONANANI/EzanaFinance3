@@ -19,6 +19,7 @@
  * SERVER ONLY. Domain logic lives in the modules it calls; this file only
  * orchestrates.
  */
+import { valuationMetrics } from '@/lib/sonar/valuation/metrics';
 import {
   ROLE_BUDGETS,
   ROLE_THINKING,
@@ -790,6 +791,12 @@ export async function runResearch(query, opts = {}) {
     const have = new Set(metrics.map((m) => m.id));
     for (const m of teamMetrics(marked, quant)) if (!have.has(m.id)) metrics.push(m);
   }
+  /* Nov 28 2026: the valuation model's results reach the specialists and the writer as
+     computed metrics (before, only the reader's panel had them). */
+  if (valuation) {
+    const have = new Set(metrics.map((m) => m.id));
+    for (const m of valuationMetrics(valuation)) if (!have.has(m.id)) metrics.push(m);
+  }
   emit('analysis', { metrics, visualizations });
   const relationships = discoverRelationships(all, layout);
   const rootId = resolution.subject
@@ -877,7 +884,7 @@ export async function runResearch(query, opts = {}) {
   let model = null;
   const memo = spec.format === 'investment_memo';
   /* Nov 28 2026: why the written analysis is missing, when it is (WRITER_FAILURE). */
-  let writerFailure = marked.length && !aborted() ? 'skipped' : null;
+  let writerFailure = !marked.length ? 'no_evidence' : !aborted() ? 'skipped' : null;
   let writerTruncated = false;
   /* Profile C: a deep run whose routed team spans two or more analyst groups gets the
      cross-domain director model (Opus 5.5); every other run keeps the depth's model. */
