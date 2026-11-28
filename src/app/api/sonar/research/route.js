@@ -838,7 +838,18 @@ const POST_HANDLER = withApiGuard(
           if (run?.researchMetadata)
             run.researchMetadata.modelUsage = compactUsage(collected.calls);
         } catch (e) {
-          console.error('[sonar/research] run failed', e?.name);
+          /* Sonar 6.4: the message and the first frame, so a failure can be located (a
+             TypeError on rate questions recurred since Nov 8 with nothing to go on). */
+          console.error(
+            '[sonar/research] run failed',
+            e?.name,
+            String(e?.message || '').slice(0, 200),
+            String(e?.stack || '')
+              .split('\n')
+              .slice(1, 3)
+              .join(' | ')
+              .slice(0, 300),
+          );
         }
 
         const answered = Boolean(run && (run.executiveConclusion || run.keyFindings?.length));

@@ -64,6 +64,25 @@ export function tokenize(text) {
   return normalise(text).match(/"[^"]*"|\$?[A-Za-z0-9][\w.&'-]*/g) || [];
 }
 
+const CENTRAL_BANKS = [
+  ['bank of canada', 'CA', 'Canada'],
+  ['bank of england', 'GB', 'United Kingdom'],
+  ['bank of japan', 'JP', 'Japan'],
+  ['bank of korea', 'KR', 'South Korea'],
+  ['bank of mexico', 'MX', 'Mexico'],
+  ['bank of israel', 'IL', 'Israel'],
+  ['bank of thailand', 'TH', 'Thailand'],
+  ['federal reserve', 'US', 'United States'],
+  ['reserve bank of australia', 'AU', 'Australia'],
+  ['reserve bank of new zealand', 'NZ', 'New Zealand'],
+  ['reserve bank of india', 'IN', 'India'],
+  ['south african reserve bank', 'ZA', 'South Africa'],
+  ["people's bank of china", 'CN', 'China'],
+  ['swiss national bank', 'CH', 'Switzerland'],
+  ['central bank of brazil', 'BR', 'Brazil'],
+  ['central bank of turkey', 'TR', 'Turkey'],
+];
+
 /* ── phrase pass: multi-word entities consume their tokens ─────────── */
 
 function phraseEntities(tokens) {
@@ -86,6 +105,21 @@ function phraseEntities(tokens) {
     }
     return false;
   };
+  /* Sonar 6.4: a central bank names its country's monetary authority, never the banking
+     industry or a bank company (a live "Has the Bank of Canada cut rates" resolved to the
+     banking industry and Bank of the James, then failed). Claimed first, as a country. */
+  for (const [phrase, iso2, label] of CENTRAL_BANKS) {
+    if (
+      claim(phrase.split(' '), {
+        kind: 'country',
+        id: iso2,
+        label,
+        confidence: 0.95,
+        centralBank: true,
+      })
+    )
+      break;
+  }
   for (const s of SECTORS) {
     for (const re of s.phrases) {
       const m = re.exec(text);
