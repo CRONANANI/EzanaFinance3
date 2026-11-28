@@ -40,6 +40,7 @@ import {
   compositionOperations,
   isSectorText,
 } from './compositional.js';
+import { GICS_FOR, SCREEN_MEASURES, SCREEN_UNSUPPORTED } from '../composer/screen.js';
 
 export const CANONICAL_INTENT_VERSION = 1;
 /** Methodology of the institutional ownership calculation (bump when ownership.js changes). */
@@ -327,6 +328,7 @@ const OTHER_FAMILIES = [
 
 /* Families the compositional reading produces. */
 const COMPOSED_FAMILIES = new Set([
+  'company_comparison',
   'multi_stage_screen',
   'macro_relationship',
   'dcf_valuation',
@@ -364,6 +366,29 @@ const FAMILY = {
       'ranked_ownership_table',
       'manager_participation_chart',
       'findings',
+      'methodology_and_citations',
+    ],
+  },
+  company_comparison: {
+    report: 'company_comparison',
+    capability: 'company-comparison',
+    datasets: ['sec_fundamentals'],
+    outputs: ['direct_answer', 'comparison_table', 'leaders', 'methodology_and_citations'],
+  },
+  multi_stage_screen: {
+    report: 'financial_screen',
+    capability: 'financial-screen',
+    datasets: ['ticker_sectors', 'sec_fundamentals'],
+    outputs: ['direct_answer', 'screen_funnel', 'ranked_table', 'methodology_and_citations'],
+  },
+  government_contract_dependency: {
+    report: 'government_dependence',
+    capability: 'government-dependence',
+    datasets: ['usaspending_contract_awards', 'sec_fundamentals'],
+    outputs: [
+      'direct_answer',
+      'obligations_by_year',
+      'agency_breakdown',
       'methodology_and_citations',
     ],
   },
@@ -584,6 +609,46 @@ export function holderCandidates(question) {
   return [...new Set(out)];
 }
 
+/* Measures read from a company's own filed figures. */
+const COMPANY_MEASURES = new Set([
+  'revenue_growth',
+  'earnings_growth',
+  'margin',
+  'pe_ratio',
+  'debt',
+  'free_cash_flow',
+  'revenue',
+]);
+
+/**
+ * Named companies in a comparison: the list after "compare" (or before "compare", as in
+ * "How do Microsoft and Alphabet compare"), split on commas, "and", "vs". Only items that
+ * look like names (a capital letter or a $ticker) are kept; resolution decides what they
+ * name.
+ */
+export function companyList(question) {
+  const q = String(question || '');
+  const after = q.match(
+    /\b(?:compare|comparing)\s+(.+?)(?=\s+(?:on|in terms of|by|for|across|over)\b|[?.!]|$)/i,
+  );
+  const before = q.match(/^(?:how|where)\s+(?:do|does|did)\s+(.+?)\s+(?:compare|stack up)\b/i);
+  const vs = q.match(
+    /([A-Z$][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,2})\s+(?:vs\.?|versus)\s+([A-Z$][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,2})/,
+  );
+  const afterSeg = after?.[1] && !/^(?:on|in|by|for|across|over)\b/i.test(after[1]) ? after[1] : '';
+  const seg = afterSeg || before?.[1] || (vs ? `${vs[1]}, ${vs[2]}` : '');
+  return seg
+    .split(/,|\band\b|\bvs\.?\b|\bversus\b|\bwith\b/i)
+    .map((x) =>
+      x
+        .replace(/['\u2019]s\b/g, '')
+        .replace(/^\s*(?:the|both)\s+/i, '')
+        .trim(),
+    )
+    .filter((x) => /^(?:\$?[A-Z])/.test(x) && x.length >= 2 && x.length <= 40)
+    .slice(0, 8);
+}
+
 /* ── Stage 6: the intent ────────────────────────────────────────────── */
 
 /**
@@ -638,6 +703,7 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
   let direction = null;
   let unsupported = null;
   let composition = null;
+  let comparedCompanies = null;
 
   /* Institutional ownership of a holder's securities: a named holder, an institution class
      to compare against, ownership language. A two-holder question is an overlap instead. */
@@ -731,12 +797,31 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
        first; the cue families remain for questions it has no measure for (open risk,
        strategy, Echo coverage). Two-holder questions stay overlaps or comparisons. */
     const ctx = { relation };
-    const rel = OTHER_FAMILIES.slice(0, 2).find((f) => f.test(tokens, ctx));
     composition = composeIntent(tokens, {
       subject: relation?.left || extractSubject(original) || looseSubject(original),
       relation,
     });
+    /* Sonar 6.2: two or more named companies compared on filed measures is a company
+       comparison, not a comparison of two holders' portfolios. */
+    const companies = companyList(original);
+    const companyCompare =
+      companies.length >= 2 &&
+      /\b(?:compare|comparison|versus|vs\.?|against|relative to|stack up)\b/i.test(original) &&
+      composition.measures.some((m) => COMPANY_MEASURES.has(m)) &&
+      !/\b(?:holdings|portfolios?|positions|owns?|own|holds?)\b/i.test(original);
+    if (companyCompare) {
+      composition = {
+        ...composition,
+        operation: 'compare',
+        direction: null,
+        universe: { type: 'tickers', id: null },
+        filters: [],
+      };
+      comparedCompanies = companies;
+    }
+    const rel = companyCompare ? null : OTHER_FAMILIES.slice(0, 2).find((f) => f.test(tokens, ctx));
     const hit =
+      (companyCompare ? { id: 'company_comparison' } : null) ||
       rel ||
       (composition.family ? { id: composition.family } : null) ||
       OTHER_FAMILIES.slice(2).find((f) =>
@@ -762,6 +847,23 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
          measure that defines it, so it is not material to the investigation. */
       composition = composition.unsupported.length ? composition : null;
     }
+    if (family === 'multi_stage_screen') {
+      const asked = [...composition.filters.map((f) => f.metric), ...composition.measures];
+      const cannot = asked.filter((m) => !SCREEN_MEASURES[m]);
+      const sector = composition.universe?.type === 'sector' ? composition.universe.id : null;
+      if (cannot.length)
+        unsupported = cannot
+          .map(
+            (m) =>
+              SCREEN_UNSUPPORTED[m] || `Screening on ${m.replace(/_/g, ' ')} is not available yet.`,
+          )
+          .join(' ');
+      else if (composition.universe?.type === 'index')
+        unsupported =
+          'Index membership is not in Ezana\u2019s data, so an index cannot be screened yet; name a sector instead.';
+      else if (sector && !GICS_FOR[sector])
+        unsupported = `The ${sector.replace(/_/g, ' ')} sector is not mapped to Ezana\u2019s sector data yet.`;
+    }
     if (composition?.unsupported?.length)
       unsupported = `Not available in Ezana's data yet: ${composition.unsupported.join(', ').replace(/_/g, ' ')}.`;
   }
@@ -769,9 +871,12 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
   const meta = familyMeta(family);
   /* A sector, an index or a ticker list is the universe; a capitalised word near it
      ("Screen", "Among", "PE") is not a subject. */
-  const universeDefined = ['sector', 'index', 'tickers'].includes(composition?.universe?.type);
-  const subjectRaw =
-    family === 'institutional_ownership' || family === 'congressional_overlap'
+  const universeDefined =
+    ['sector', 'index'].includes(composition?.universe?.type) ||
+    (composition?.universe?.type === 'tickers' && !comparedCompanies);
+  const subjectRaw = comparedCompanies
+    ? comparedCompanies[0]
+    : family === 'institutional_ownership' || family === 'congressional_overlap'
       ? subjectText
       : relation?.left || extractSubject(original) || looseSubject(original);
   const time = timeScope(tokens);
@@ -829,9 +934,13 @@ export function canonicalIntent(question, { semanticMeasure = null, measureOverr
             ...(candidates ? { alternates: candidates } : {}),
           }
         : null,
-    secondary_entities: relation
-      ? [{ text: relation.right, key: nameKey(relation.right), role: 'second_holder', id: null }]
-      : [],
+    secondary_entities: comparedCompanies
+      ? comparedCompanies
+          .slice(1)
+          .map((t) => ({ text: t, key: nameKey(t), role: 'compared_company', id: null }))
+      : relation
+        ? [{ text: relation.right, key: nameKey(relation.right), role: 'second_holder', id: null }]
+        : [],
     subject_universe: subjectUniverse,
     comparison_universe: comparisonUniverse,
     measure,

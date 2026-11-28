@@ -69,6 +69,100 @@ function short(label) {
     .trim();
 }
 
+/* Sonar 6.2: a calculated column as the server labelled it (pct is a fraction). */
+function cell(v, unit) {
+  if (v == null || v === '') return 'N/A';
+  if (unit === 'usd') return usd(v);
+  if (unit === 'pct') return fmt(v, 'pct');
+  if (unit === 'x') return fmt(v, 'x');
+  if (unit === 'count') return Number.isFinite(Number(v)) ? Number(v).toLocaleString() : 'N/A';
+  return String(v);
+}
+
+/** Any analysis that names its columns (screen, comparison, dependence). */
+function CalculatedTable({ analysis }) {
+  const cols = analysis.columns || [];
+  if (!cols.length || !analysis.table?.length) return null;
+  return (
+    <div className="scr5-table-wrap">
+      <table className="scr5-table">
+        <caption className="scr5-sr">{analysis.title || analysis.capability}</caption>
+        <thead>
+          <tr>
+            {cols.map((c) => (
+              <th key={c.key} scope="col" className={c.unit ? 'is-num' : undefined}>
+                {c.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {analysis.table.map((r, i) => (
+            <tr key={`${r.ticker || r.fiscal_year || i}`}>
+              {cols.map((c) => (
+                <td
+                  key={c.key}
+                  className={
+                    c.unit ? 'is-num scr5-mono' : c.key === 'ticker' ? 'scr5-mono' : undefined
+                  }
+                >
+                  {cell(r[c.key], c.unit)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Funnel({ steps }) {
+  if (!steps?.length) return null;
+  return (
+    <ol className="scr5-pipe" aria-label="Screening steps">
+      {steps.map((s, i) => (
+        <li key={s.step || s.label} className="scr5-pipe-step">
+          <span className="scr5-pipe-n">{i + 1}</span>
+          <span className="scr5-pipe-t">{s.label}</span>
+          <span className="scr5-pipe-d">
+            {Number(s.count || 0).toLocaleString()} companies
+            {s.noData ? `, ${s.noData} without the data` : ''}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function DependenceTiles({ d }) {
+  if (!d) return null;
+  return (
+    <div className="scr5-tiles">
+      <Tile
+        label={`Obligations, FY${d.latestFiscalYear ?? ''}`}
+        value={usd(d.latestObligations)}
+        note={d.obligationGrowth != null ? `${fmt(d.obligationGrowth, 'pct')} vs prior year` : null}
+      />
+      <Tile label="Filed annual revenue" value={usd(d.revenue)} />
+      <Tile
+        label="Obligations to revenue"
+        value={d.obligationsToRevenue != null ? fmt(d.obligationsToRevenue, 'pct') : 'N/A'}
+        note="Exposure indicator, not a revenue share"
+      />
+      <Tile
+        label="Largest agency"
+        value={d.topAgencies?.[0]?.agency || 'N/A'}
+        note={
+          d.topAgencies?.[0]?.share != null
+            ? `${fmt(d.topAgencies[0].share, 'pct')} of obligations`
+            : null
+        }
+      />
+    </div>
+  );
+}
+
 function Tile({ label, value, note }) {
   return (
     <div className="scr5-tile">
@@ -330,12 +424,24 @@ export default function CompositionReport({ composition: comp, onFollowUp = null
       ) : null}
 
       {others.map((a) =>
-        a.status === 'done' && a.table?.length ? (
+        a.status === 'done' && (a.table?.length || a.dependence) ? (
           <div key={a.key} className="scr5-block">
             <h3 className="scr5-h3">{a.title || a.capability}</h3>
-            <p className="scr5-note">
-              {a.table.length} companies computed. The figures are cited in the findings below.
-            </p>
+            <DependenceTiles d={a.dependence} />
+            <Funnel steps={a.funnel} />
+            {a.columns?.length ? (
+              <CalculatedTable analysis={a} />
+            ) : (
+              <p className="scr5-note">
+                {a.table.length} companies computed. The figures are cited in the findings below.
+              </p>
+            )}
+            {a.aligned === false ? (
+              <p className="scr5-note">
+                These companies close their fiscal years in different months, so the periods overlap
+                only in part.
+              </p>
+            ) : null}
           </div>
         ) : null,
       )}

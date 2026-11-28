@@ -67,7 +67,7 @@ async function mapLimit(items, limit, fn) {
 }
 
 /** Every row of a query, in pages, ordered by a unique key. */
-async function pageAll(build, max = 40) {
+export async function pageAll(build, max = 40) {
   const rows = [];
   for (let p = 0; p < max; p++) {
     const { data, error } = await build().range(p * PAGE, p * PAGE + PAGE - 1);
@@ -125,6 +125,9 @@ function recentFilings(admin, today = new Date()) {
  * are loaded or amended, which is exactly when a stored ranking stops being current.
  * Count-only reads (head requests). Null on any error: no epoch, no reuse.
  */
+/* Bump when the ownership ranking's calculation or its data rules change. */
+export const OWNERSHIP_METHOD_VERSION = 'own-6.2';
+
 export async function ownershipDataEpoch(admin, subject, today = new Date()) {
   if (!admin || !subject?.id) return null;
   try {
@@ -139,9 +142,42 @@ export async function ownershipDataEpoch(admin, subject, today = new Date()) {
         return [p, count ?? 0];
       }),
     );
+    /* Sonar 6.2: counts and latest dates miss a corrected or amended filing that replaces
+       a row one for one. For the two newest periods the epoch also carries the newest
+       refresh and filing times and the count of amendment add-ons, so a restatement or
+       an amendment changes the key even when the count does not. */
+    const newest = async (p, col) => {
+      const { data, error } = await admin
+        .from('sec_13f_effective_filings')
+        .select(col)
+        .eq('period', p)
+        .not(col, 'is', null)
+        .order(col, { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0]?.[col] ? String(data[0][col]) : null;
+    };
+    const amendments = await Promise.all(
+      periods.slice(0, 2).map(async (p) => {
+        const [refreshed, filed, addons] = await Promise.all([
+          newest(p, 'refreshed_at'),
+          newest(p, 'filed_at'),
+          admin
+            .from('sec_13f_effective_filings')
+            .select('accession_no', { count: 'exact', head: true })
+            .eq('period', p)
+            .eq('is_addon', true)
+            .then(({ count, error }) => {
+              if (error) throw error;
+              return count ?? 0;
+            }),
+        ]);
+        return [p, { refreshed, filed, addons }];
+      }),
+    );
     let holder = null;
     if (subject.kind === 'politician') {
-      const [{ count, error }, last] = await Promise.all([
+      const [{ count, error }, last, ingested] = await Promise.all([
         admin
           .from('congress_trades')
           .select('bioguide_id', { count: 'exact', head: true })
@@ -153,26 +189,56 @@ export async function ownershipDataEpoch(admin, subject, today = new Date()) {
           .not('disclosure_date', 'is', null)
           .order('disclosure_date', { ascending: false })
           .limit(1),
+        /* A corrected or re-ingested disclosure keeps its dates but gets a new row. */
+        admin
+          .from('congress_trades')
+          .select('created_at')
+          .eq('bioguide_id', subject.id)
+          .order('created_at', { ascending: false })
+          .limit(1),
       ]);
-      if (error || last.error) throw error || last.error;
+      if (error || last.error || ingested.error) throw error || last.error || ingested.error;
       holder = {
         trades: count ?? 0,
         latest: last.data?.[0]?.disclosure_date
           ? String(last.data[0].disclosure_date).slice(0, 10)
           : null,
+        ingested: ingested.data?.[0]?.created_at ? String(ingested.data[0].created_at) : null,
       };
     } else if (subject.kind === 'institution') {
-      const { count, error } = await admin
-        .from('ezq_13f_holdings')
-        .select('cusip', { count: 'exact', head: true })
-        .eq('filer_cik', subject.id)
-        .eq('is_current', true);
-      if (error) throw error;
-      holder = { rows: count ?? 0 };
+      const [{ count, error }, cur] = await Promise.all([
+        admin
+          .from('ezq_13f_holdings')
+          .select('cusip', { count: 'exact', head: true })
+          .eq('filer_cik', subject.id)
+          .eq('is_current', true),
+        /* The filing the current rows come from: an amendment replaces it. */
+        admin
+          .from('ezq_13f_holdings')
+          .select('accession_no, filed_at')
+          .eq('filer_cik', subject.id)
+          .eq('is_current', true)
+          .order('filed_at', { ascending: false })
+          .limit(1),
+      ]);
+      if (error || cur.error) throw error || cur.error;
+      holder = {
+        rows: count ?? 0,
+        accession: cur.data?.[0]?.accession_no || null,
+        filed: cur.data?.[0]?.filed_at ? String(cur.data[0].filed_at) : null,
+      };
     } else {
       return null;
     }
-    return { kind: subject.kind, id: String(subject.id), holder, filers: Object.fromEntries(filerCounts) };
+    return {
+      kind: subject.kind,
+      id: String(subject.id),
+      holder,
+      filers: Object.fromEntries(filerCounts),
+      amendments: Object.fromEntries(amendments),
+      /* A change to the ranking method or the 13F effective-filing rules is a new epoch. */
+      method: OWNERSHIP_METHOD_VERSION,
+    };
   } catch {
     return null;
   }
@@ -270,7 +336,7 @@ async function ownershipFor(admin, filings, cusips, period, prior, top = 5) {
 /* ── universe ───────────────────────────────────────────────────────── */
 
 /** Security-master candidates per ticker (OpenFIGI map), one read. */
-async function securityMaster(admin, tickers) {
+export async function securityMaster(admin, tickers) {
   const list = [...new Set(tickers.map(cleanTicker).filter(Boolean))];
   const want = [...new Set([...list, ...list.map((t) => TICKER_ALIASES[t]).filter(Boolean)])];
   if (!want.length) return {};

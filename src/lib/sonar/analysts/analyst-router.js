@@ -20,6 +20,8 @@
  * Pure. Unit-tested in scripts/check-sonar-analysts.mjs.
  */
 import { ANALYSTS, SPECIALIST_IDS } from './registry.js';
+import { evidenceDemand, primaryConcept } from './evidence-demand.js';
+import { PARTNERS } from './partners.js';
 
 const W = { domain: 0.4, theme: 0.25, objective: 0.15, operation: 0.12, subject: 0.08 };
 const SUPPORT_MIN = 0.3;
@@ -122,11 +124,47 @@ export function routeAnalysts({ spec = {}, classification = {}, route = {}, ctx 
     }
     if (s.score > 0) scored.push({ ...s, missing: fit.missing });
   }
+  /* Sonar 6.2: evidence demand (evidence-demand.js). The analyst who owns the evidence the
+     question asks for first leads; owners of the evidence it asks for next support. */
+  const demand = evidenceDemand(`${spec.rawQuery || ''}`.trim() || spec.question || '').filter(
+    (d) => d.id !== 'portfolio_book' || ctx.orgId,
+  );
+  const primary = primaryConcept(demand, ctx);
+  if (primary) (demand.splice(demand.indexOf(primary), 1), demand.unshift(primary));
+  const eligible = new Set(scored.map((s) => s.id));
+  const demandOwners = [];
+  for (const d of demand)
+    if (!demandOwners.includes(d.owner) && SPECIALIST_IDS.includes(d.owner))
+      demandOwners.push(d.owner);
+  for (const id of demandOwners) {
+    if (eligible.has(id)) continue;
+    const a = ANALYSTS[id];
+    if (!a || (a.tenantOnly && !ctx.orgId) || skipped.some((x) => x.id === id)) continue;
+    /* An owner the spec signals missed still enters, scored on its evidence alone. */
+    scored.push({ id, score: 0, reasons: [], missing: [] });
+    eligible.add(id);
+  }
+  for (const s of scored) {
+    const rank = demandOwners.indexOf(s.id);
+    if (rank === 0) {
+      s.score += 0.6;
+      s.reasons = [...s.reasons, 'demand primary'];
+    } else if (rank > 0) {
+      s.score += 0.3;
+      s.reasons = [...s.reasons, 'demand secondary'];
+    }
+  }
+  const demandCaps = (id) => [
+    ...new Set(demand.filter((d) => d.owner === id).flatMap((d) => d.caps)),
+  ];
   scored.sort((x, y) => y.score - x.score || x.id.localeCompare(y.id));
   /* Owned objectives: the valuation analyst leads "what is it worth"; the portfolio analyst
      leads questions about the organization's own fund. */
   for (const [objective, owner] of Object.entries(OBJECTIVE_OWNERS)) {
     if (!routeWithObj.objectives.includes(objective)) continue;
+    /* A question that states its evidence first ("Is NVIDIA crowded among hedge funds, and
+       how big is it in our book?") is led by that evidence's owner. */
+    if (demandOwners[0] && demandOwners[0] !== owner && eligible.has(demandOwners[0])) continue;
     const i = scored.findIndex((s) => s.id === owner);
     if (i > 0) scored.unshift(...scored.splice(i, 1));
   }
@@ -137,8 +175,13 @@ export function routeAnalysts({ spec = {}, classification = {}, route = {}, ctx 
     .map(([, owner]) => owner);
   const topical = (x) =>
     owners.includes(x.id) ||
-    (x.reasons || []).some((r) => /^(domain|theme|related theme|operations) /.test(r));
-  const lead = scored.find(topical) || null;
+    (x.reasons || []).some((r) => /^(domain|theme|related theme|operations|demand) /.test(r)) ||
+    (x.reasons || []).some((r) => /^demand /.test(r));
+  /* The owner of the question's primary evidence leads when it can run. */
+  const lead =
+    (demandOwners[0] && scored.find((x) => x.id === demandOwners[0])) ||
+    scored.find(topical) ||
+    null;
   if (lead && scored[0] !== lead) scored.unshift(...scored.splice(scored.indexOf(lead), 1));
   if (!lead)
     return {
@@ -151,18 +194,30 @@ export function routeAnalysts({ spec = {}, classification = {}, route = {}, ctx 
     };
 
   const maxSupport = mode === 'deep' ? 3 : mode === 'standard' ? 2 : 0;
-  const covered = new Set(ANALYSTS[lead.id].required);
+  const covered = new Set([...ANALYSTS[lead.id].required, ...demandCaps(lead.id)]);
   const supporting = [];
-  for (const s of scored.slice(1)) {
+  const rest = scored.slice(1);
+  /* After the evidence the question demands, the lead's documented partners (the skills'
+     "Support when" sections) rank ahead of other candidates of similar fit. */
+  const partners = new Set(PARTNERS[lead.id] || []);
+  const fit = (s) => s.score + (partners.has(s.id) ? 0.2 : 0);
+  const byDemand = [
+    ...demandOwners.map((id) => rest.find((s) => s.id === id)).filter(Boolean),
+    ...rest.filter((s) => !demandOwners.includes(s.id)).sort((x, y) => fit(y) - fit(x)),
+  ];
+  for (const s of byDemand) {
+    const demanded = demandOwners.includes(s.id);
     if (supporting.length >= maxSupport) break;
-    if (s.score < SUPPORT_MIN) continue;
-    const adds = ANALYSTS[s.id].required.filter((c) => !covered.has(c));
+    if (!demanded && fit(s) < SUPPORT_MIN) continue;
+    const adds = [...new Set([...ANALYSTS[s.id].required, ...demandCaps(s.id)])].filter(
+      (c) => !covered.has(c),
+    );
     if (!adds.length) {
       skipped.push({ id: s.id, reason: 'adds no distinct evidence beyond the lead' });
       continue;
     }
     /* Beyond the first supporting analyst, only strong fits join (score >= 0.5). */
-    if (supporting.length >= 1 && s.score < 0.5) continue;
+    if (!demanded && supporting.length >= 1 && fit(s) < 0.5) continue;
     supporting.push({ ...s, adds });
     adds.forEach((c) => covered.add(c));
   }
@@ -172,7 +227,13 @@ export function routeAnalysts({ spec = {}, classification = {}, route = {}, ctx 
       analyst: lead.id,
       role: 'lead',
       task: leadTask(lead.id, spec),
-      capabilities: [...ANALYSTS[lead.id].required, ...ANALYSTS[lead.id].preferred],
+      capabilities: [
+        ...new Set([
+          ...ANALYSTS[lead.id].required,
+          ...ANALYSTS[lead.id].preferred,
+          ...demandCaps(lead.id),
+        ]),
+      ],
     },
     ...supporting.map((s) => ({
       analyst: s.id,
@@ -183,7 +244,15 @@ export function routeAnalysts({ spec = {}, classification = {}, route = {}, ctx 
       ),
     })),
   ];
-  return { mode, lead, supporting, controls: controlsFor(mode), skipped, assignments };
+  return {
+    mode,
+    lead,
+    supporting,
+    controls: controlsFor(mode),
+    skipped,
+    assignments,
+    demand: demand.map((d) => d.id),
+  };
 }
 
 /* The red team runs in deep mode only (cost). Investment-decision questions in standard mode

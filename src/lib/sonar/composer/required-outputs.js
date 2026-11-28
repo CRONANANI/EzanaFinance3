@@ -1,0 +1,132 @@
+/**
+ * Sonar 6.2 (Nov 28 2026): research operation contracts.
+ *
+ * For each analytical capability: the calculations, tables and disclosures a completed
+ * result must contain, checked against the result itself (never against the fact that the
+ * step returned). The fulfillment contract (fulfillment.js) marks an analysis 'limited'
+ * when a requirement is unmet, the confidence audit reads the same checks, and the writer
+ * is told what its conclusion must state.
+ *
+ * requiredOutputs(result) -> [{ id, label, ok, detail }]
+ * conclusionRule(result)  -> one instruction for the writer, or null
+ *
+ * Pure.
+ */
+
+const has = (x) => x != null && !(Array.isArray(x) && !x.length);
+
+const CONTRACTS = {
+  'institutional-ownership': (r) => {
+    const o = r.ownership || {};
+    const rows = o.rows || [];
+    return [
+      {
+        id: 'universe',
+        label: 'Eligible holdings established',
+        ok: has(o.universe) || rows.length > 0,
+      },
+      { id: 'period', label: '13F reporting quarter identified', ok: has(o.period) },
+      {
+        id: 'ranking',
+        label: 'Ranked by the requested metric',
+        ok: rows.some((x) => x.rank != null),
+      },
+      { id: 'coverage', label: 'Filer coverage disclosed', ok: has(o.coverage?.filers) },
+    ];
+  },
+  'fundamental-analysis': (r) => [
+    {
+      id: 'companies',
+      label: 'Companies with filed financials',
+      ok: (r.coverage?.withData || 0) > 0,
+    },
+    {
+      id: 'metrics',
+      label: 'Requested metrics computed',
+      /* Older results carry no `complete` count: any computed ratio counts. */
+      ok:
+        r.coverage?.complete != null
+          ? r.coverage.complete > 0
+          : (r.table || []).some(
+              (t) => t.ratios && Object.values(t.ratios).some((v) => Number.isFinite(v)),
+            ),
+    },
+  ],
+  'financial-screen': (r) => {
+    const f = r.funnel || [];
+    return [
+      {
+        id: 'universe',
+        label: 'Universe resolved',
+        ok: (f[0]?.count || 0) > 0,
+        detail: f[0]?.label || null,
+      },
+      {
+        id: 'filters',
+        label: 'Every filter applied with its count',
+        ok: f.filter((x) => x.step.startsWith('filter:')).every((x) => Number.isFinite(x.count)),
+      },
+      {
+        id: 'ranking',
+        label: r.rankBy ? 'Ranked by the requested measure' : 'Result listed',
+        ok: Array.isArray(r.table),
+        detail: `${(r.table || []).length} shown`,
+      },
+      { id: 'coverage', label: 'Companies without the data counted', ok: f.length >= 2 },
+    ];
+  },
+  'company-comparison': (r) => [
+    {
+      id: 'companies',
+      label: 'At least two companies with filed figures',
+      ok: (r.coverage?.withData || 0) >= 2,
+    },
+    {
+      id: 'leaders',
+      label: 'Leader identified per metric',
+      ok: Object.keys(r.leaders || {}).length > 0,
+    },
+    { id: 'alignment', label: 'Fiscal-year alignment checked', ok: typeof r.aligned === 'boolean' },
+  ],
+  'government-dependence': (r) => {
+    const d = r.dependence || {};
+    return [
+      {
+        id: 'obligations',
+        label: 'Federal obligations by fiscal year',
+        ok: (d.years || []).length > 0,
+      },
+      { id: 'agencies', label: 'Awarding agencies ranked', ok: (d.topAgencies || []).length > 0 },
+      { id: 'revenue', label: 'Filed revenue denominator', ok: has(d.revenue) },
+      {
+        id: 'ratio',
+        label: 'Obligations-to-revenue indicator computed',
+        ok: has(d.obligationsToRevenue),
+      },
+    ];
+  },
+  'dcf-valuation': (r) => [
+    { id: 'valued', label: 'At least one company valued', ok: (r.table || []).some((t) => t.ok) },
+  ],
+};
+
+export function requiredOutputs(result) {
+  const fn = CONTRACTS[result?.capability];
+  if (!fn || result.status !== 'done') return [];
+  return fn(result);
+}
+
+/** What the writer's conclusion must state for this result (null when nothing specific). */
+export function conclusionRule(result) {
+  if (result?.status !== 'done') return null;
+  switch (result.capability) {
+    case 'financial-screen':
+      return '- The executive conclusion must name the top companies of the screen with the ranking measure’s values, state the universe and how many companies passed each filter, and say which companies lacked the data. Do not add companies the screen did not return.';
+    case 'company-comparison':
+      return '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when fiscal years do not line up.';
+    case 'government-dependence':
+      return '- The executive conclusion must state the latest fiscal year’s federal obligations, their change, the top awarding agencies and the obligations-to-revenue indicator, and say plainly that obligations are not revenue.';
+    default:
+      return null;
+  }
+}

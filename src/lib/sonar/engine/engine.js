@@ -108,6 +108,7 @@ import {
   deterministicAnswer,
   answerCovers,
 } from '@/lib/sonar/composer/fulfillment';
+import { auditConfidence } from './confidence.js';
 
 /**
  * Sonar 5.0: the report computed from a composition's results alone (no model), in the
@@ -1158,6 +1159,23 @@ export async function runResearch(query, opts = {}) {
     audit = mergeModelAudit(audit, parseModelAudit(review?.answer));
   }
   report = applyAuditFixes(report, audit.fixes);
+  /* Sonar 6.2: the stated confidence is audited against coverage and calculation
+     validation (confidence.js); it can only be lowered. */
+  {
+    const stats = report.validation?.stats || null;
+    const conf = auditConfidence({
+      claimed: report.confidence,
+      deterministic: Boolean(report.deterministic),
+      writerTruncated: Boolean(report.writerTruncated),
+      citationCoverage: stats ? stats.citationCoverage : null,
+      claimSupportRate: stats && stats.claims ? stats.claimSupportRate : null,
+      evidenceCount: marked.length,
+      audit,
+      fulfillmentState: fulfillment?.state || null,
+    });
+    report.confidence = conf.level;
+    report.confidenceAudit = conf;
+  }
   emit('analyst', {
     id: 'methodology-auditor',
     title: ANALYSTS['methodology-auditor'].title,
@@ -1282,6 +1300,7 @@ export async function runResearch(query, opts = {}) {
     team: report.team || null,
     followOnResearch: report.followOnResearch,
     confidence: report.confidence,
+    confidenceAudit: report.confidenceAudit || null,
     /* Nov 13: the Desk Summary's fields (empty for a memo or a deterministic report). */
     headline: report.headline || null,
     summary: report.summary || null,

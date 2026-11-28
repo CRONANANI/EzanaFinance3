@@ -28,6 +28,8 @@
  * never shown as runnable.
  */
 
+import { SCREEN_MEASURES } from './screen.js';
+
 /* ── parameters ─────────────────────────────────────────────────────── */
 
 /** Typed parameter schema. `max` may be a function of the attachment (data-dependent). */
@@ -384,6 +386,42 @@ export const CAPABILITIES = {
         'Institutional ownership ranks a set of holdings. Name a member of Congress or a fund manager whose holdings to rank.',
     },
   },
+  /* Sonar 6.2 (Nov 28 2026): executors that read validated public data
+     (analytics-server.js). A subjectless capability takes its universe from params. */
+  'financial-screen': {
+    key: 'financial-screen',
+    label: 'Financial Screen',
+    type: 'Analysis',
+    icon: 'bi-funnel',
+    summary:
+      'Filters a sector or a list of companies on filed financials, contracts, insider and congressional purchases or lobbying, then ranks them.',
+    subjects: [],
+    subjectless: true,
+    output: 'calculated',
+  },
+  'company-comparison': {
+    key: 'company-comparison',
+    label: 'Company Comparison',
+    type: 'Analysis',
+    icon: 'bi-bar-chart-steps',
+    summary: 'Compares named companies on filed annual growth, margins, cash flow and leverage.',
+    subjects: [],
+    subjectless: true,
+    output: 'calculated',
+  },
+  'government-dependence': {
+    key: 'government-dependence',
+    label: 'Government Dependence',
+    type: 'Analysis',
+    icon: 'bi-building',
+    summary: 'Federal contract obligations by fiscal year and agency against filed annual revenue.',
+    subjects: ['company'],
+    output: 'calculated',
+    unsupportedFor: {
+      politician: 'Government dependence is measured for a company with federal contracts.',
+      institution: 'Government dependence is measured for a company with federal contracts.',
+    },
+  },
 };
 
 export const ANALYSES = Object.values(CAPABILITIES);
@@ -476,6 +514,24 @@ export function validateAttachment(attachment) {
     return { ...a, status: 'conditional' };
   }
   if (onSet(a)) return validateParams(a);
+  /* Sonar 6.2: a screen or a comparison names its universe in params, not a subject. */
+  if (cap.subjectless) {
+    const p = a.params || {};
+    const ready =
+      a.capability === 'company-comparison'
+        ? Math.max((p.tickers || []).length, (p.company_names || []).length) >= 2
+        : Boolean(p.sector) || (p.tickers || []).length > 0;
+    if (!ready) {
+      a.issues.push({
+        message:
+          a.capability === 'company-comparison'
+            ? 'Name at least two companies to compare.'
+            : 'Name a sector or the companies to screen.',
+      });
+      return { ...a, status: 'conditional' };
+    }
+    return { ...a, status: 'supported' };
+  }
   const kind = a.subject?.kind || null;
   if (!a.subject?.text && !a.subject?.name) {
     a.issues.push({ message: 'Name the company, fund manager or member of Congress to analyse.' });
@@ -576,4 +632,35 @@ export function deepQualification(attachments = []) {
     count += 1;
   }
   return { count, qualifies: count >= 3 };
+}
+
+/* Sonar 6.2: the plan datasets (entitlements.js ids) a public analytics attachment reads.
+   An attachment runs only when every one is entitled, as the engine's sources do. */
+const SCREEN_SOURCE_DATASET = {
+  ratios: 'sec-filings',
+  contracts: 'gov-contracts',
+  insider: 'insider-buys',
+  congress: 'congress',
+  lobbying: 'lobbying',
+  holders13f: '13f',
+};
+
+export const PUBLIC_ANALYTICS = new Set([
+  'financial-screen',
+  'company-comparison',
+  'government-dependence',
+]);
+
+export function analyticsDatasets(att) {
+  if (att?.capability === 'company-comparison') return ['sec-filings'];
+  if (att?.capability === 'government-dependence') return ['gov-contracts', 'sec-filings'];
+  if (att?.capability !== 'financial-screen') return [];
+  const p = att.params || {};
+  const measures = [...(p.filters || []).map((f) => f.metric), p.rank_by].filter(Boolean);
+  const out = new Set(
+    measures.map((m) => SCREEN_SOURCE_DATASET[SCREEN_MEASURES[m]?.source]).filter(Boolean),
+  );
+  /* The screen always reads filed figures for its table. */
+  out.add('sec-filings');
+  return [...out];
 }

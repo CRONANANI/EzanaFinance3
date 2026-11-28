@@ -72,6 +72,7 @@ import {
 import { INTENT_EXEMPLARS, semanticMeasure } from '@/lib/sonar/semantic/intent-exemplars';
 import { nearestExemplars } from '@/lib/sonar/insight/semantic';
 import { OWNERSHIP_CAPABILITY } from '@/lib/sonar/composer/ownership';
+import { PUBLIC_ANALYTICS, analyticsDatasets } from '@/lib/sonar/composer/registry';
 import { RUNNERS } from '@/lib/sonar/engine/sources';
 import { SOURCE_DATASET } from '@/lib/sonar/engine/planner';
 import { isUuid } from '@/lib/sonar/saved';
@@ -529,21 +530,61 @@ const POST_HANDLER = withApiGuard(
           !canonical.unsupported &&
           !dismissedCaps.includes(OWNERSHIP_CAPABILITY) &&
           !compAttachments.some((a) => a?.capability === OWNERSHIP_CAPABILITY);
-        if (!compAttachments.length || needsOwnership) {
+        /* Sonar 6.2: a screen, a company comparison or a government-dependence question
+           runs its calculation (registry.js PUBLIC_ANALYTICS) unless the reader removed it. */
+        const ANALYTIC_FAMILIES = {
+          multi_stage_screen: 'financial-screen',
+          company_comparison: 'company-comparison',
+          government_contract_dependency: 'government-dependence',
+        };
+        const analyticCap = canonical.unsupported ? null : ANALYTIC_FAMILIES[canonical.family];
+        const needsAnalytic =
+          analyticCap &&
+          !dismissedCaps.includes(analyticCap) &&
+          !compAttachments.some((a) => a?.capability === analyticCap);
+        if (!compAttachments.length || needsOwnership || needsAnalytic) {
           const inferred = inferComposition(intentQuery, {
             semanticMeasure: semMeasure,
             measureOverride,
           });
+          if (needsAnalytic) {
+            const extra = inferred.attachments.filter((a) => a.capability === analyticCap);
+            if (extra.length) {
+              compAttachments = [...compAttachments, ...extra];
+              if (extra[0].subject?.text)
+                compPrimary = compPrimary || { text: String(extra[0].subject.text).slice(0, 80) };
+            }
+          }
           const own = inferred.attachments.filter((a) => a.capability === OWNERSHIP_CAPABILITY);
           if (own.length && inferred.subject && !inferred.relation) {
             compAttachments = [...compAttachments, ...own];
             compPrimary = compPrimary || { text: String(inferred.subject).slice(0, 80) };
           }
         }
+        /* Plan datasets: an analytics attachment reads only what the plan includes (deep
+           mode reads every dataset, as the engine does). Never run past an entitlement. */
+        const entitled = deepMode ? null : new Set(access.entitlements.datasets || []);
+        if (entitled) {
+          const locked = compAttachments.filter(
+            (a) =>
+              PUBLIC_ANALYTICS.has(a?.capability) &&
+              analyticsDatasets(a).some((d) => !entitled.has(d)),
+          );
+          if (locked.length) {
+            compAttachments = compAttachments.filter((a) => !locked.includes(a));
+            send('notice', {
+              message: `The ${locked
+                .map((a) => String(a.capability).replace(/-/g, ' '))
+                .join(' and ')} reads data your plan does not include, so it did not run.`,
+            });
+          }
+        }
         const publicOnly =
           compAttachments.length > 0 &&
           compAttachments.every(
-            (a) => a?.kind === 'analysis' && a.capability === OWNERSHIP_CAPABILITY,
+            (a) =>
+              a?.kind === 'analysis' &&
+              (a.capability === OWNERSHIP_CAPABILITY || PUBLIC_ANALYTICS.has(a.capability)),
           );
         if (compAttachments.length) {
           if (!access.user && !publicOnly) {
@@ -636,6 +677,9 @@ const POST_HANDLER = withApiGuard(
                         attachments: compAttachments.slice(0, 8),
                         userId: access.user?.id || null,
                         resolvedPrimary: resolvedHolder,
+                        /* Sonar 6.2: steps still running at the deadline are cut and the
+                           finished ones kept, inside the outer cap. */
+                        deadlineAt: Date.now() + cap - 1_500,
                       },
                       admin,
                     ),

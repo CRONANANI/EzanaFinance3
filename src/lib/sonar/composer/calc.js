@@ -21,6 +21,12 @@ export function companyRatios(f) {
     fiscalYearEnd: f.annual?.revenue?.[0]?.end || null,
     revenue: rev,
     revenue_growth: rev != null && revPrev ? rev / revPrev - 1 : null,
+    /* Sonar 6.2: net income growth, only between two positive years (a swing from a loss
+       has no meaningful growth rate). */
+    earnings_growth:
+      a('net_income') != null && a('net_income', 1) > 0 && a('net_income') > 0
+        ? a('net_income') / a('net_income', 1) - 1
+        : null,
     gross_margin: ratio(a('gross_profit'), rev),
     operating_margin: ratio(a('operating_income'), rev),
     net_margin: ratio(a('net_income'), rev),

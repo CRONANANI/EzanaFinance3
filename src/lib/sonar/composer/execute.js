@@ -24,6 +24,7 @@
  * Every number is computed here from stored data. Nothing is estimated by a language model.
  */
 
+import { runComparison, runGovDependence, runScreen } from './analytics-server.js';
 import { getAdminClient } from '@/lib/supabase';
 import { resolvePolitician } from '@/lib/sonar/landing-politician';
 import { getDailyBars } from '@/lib/prices/daily-bars';
@@ -192,6 +193,51 @@ export async function resolveSubject(text, admin = getAdminClient()) {
     return { text: t, kind: 'company', id: row.ticker, name: row.entity_name || row.ticker };
   }
   return { text: t, kind: 'unresolved' };
+}
+
+/**
+ * Sonar 6.2: a company named in a comparison or a dependence question, resolved to its
+ * ticker from filed SEC data only (never to a filer or a member of Congress). A name
+ * matches the filer whose name starts with it; ties go to the shortest name.
+ */
+export async function resolveCompany(text, admin = getAdminClient()) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const tick = t.match(TICKER_RE);
+  if (tick) {
+    const { data } = await admin
+      .from('sec_fundamentals')
+      .select('ticker, entity_name')
+      .eq('ticker', tick[1])
+      .limit(1);
+    if (data?.[0]?.ticker)
+      return {
+        text: t,
+        kind: 'company',
+        id: data[0].ticker,
+        name: data[0].entity_name || data[0].ticker,
+      };
+  }
+  const clean = t.replace(/[%_]/g, '').replace(/\s+(?:inc|corp|corporation|co|ltd|plc)\.?$/i, '');
+  const { data } = await admin
+    .from('sec_fundamentals')
+    .select('ticker, entity_name')
+    .ilike('entity_name', `%${clean}%`)
+    .not('ticker', 'is', null)
+    .limit(200);
+  const seen = new Map();
+  for (const r of data || []) if (r.ticker && !seen.has(r.ticker)) seen.set(r.ticker, r);
+  const low = clean.toLowerCase();
+  const ranked = [...seen.values()]
+    .map((r) => {
+      const n = String(r.entity_name || '').toLowerCase();
+      const start = n.startsWith(low) && !/[a-z0-9]/.test(n.charAt(low.length) || ' ');
+      return { r, score: (start ? 0 : n.startsWith(low) ? 1 : 2) * 1000 + n.length };
+    })
+    .sort((a, b) => a.score - b.score);
+  const best = ranked[0]?.r;
+  if (!best) return { text: t, kind: 'unresolved' };
+  return { text: t, kind: 'company', id: best.ticker, name: best.entity_name || best.ticker };
 }
 
 /* ── filed figures ──────────────────────────────────────────────────── */
@@ -877,6 +923,9 @@ export async function runResearchComposition(
     userId = null,
     /* Sonar 6.1: a subject the route already resolved for the same text (no second read). */
     resolvedPrimary = null,
+    /* Sonar 6.2: a task that would start after this time is reported as not run, and a
+       running task is cut at it; completed tasks are kept (partial-result recovery). */
+    deadlineAt = null,
   },
   admin = getAdminClient(),
 ) {
@@ -931,8 +980,9 @@ export async function runResearchComposition(
           ...raw,
           /* The server's own resolution of the question's subject stands in for a subject
              the client sent only as text (a guest, or a question Sonar inferred itself). */
-          subject:
-            raw.subject?.kind && raw.subject?.id
+          subject: CAPABILITIES[raw.capability]?.subjectless
+            ? null
+            : raw.subject?.kind && raw.subject?.id
               ? raw.subject
               : primary?.kind && primary.kind !== 'unresolved'
                 ? primary
@@ -952,6 +1002,26 @@ export async function runResearchComposition(
       return null;
     })
     .filter(Boolean);
+  /* Sonar 6.2: companies named in a comparison resolve here (server side); a dependence
+     question's subject must be a company, whatever the general resolver chose. */
+  for (const it of items) {
+    if (it.capability === 'company-comparison' && !it.params?.tickers?.length) {
+      const names = (it.params?.company_names || []).slice(0, 8);
+      const found = await Promise.all(names.map((n) => resolveCompany(n, admin).catch(() => null)));
+      const ok = found.filter((f) => f?.kind === 'company');
+      it.params = {
+        ...(it.params || {}),
+        tickers: [...new Set(ok.map((f) => f.id))],
+        names: Object.fromEntries(ok.map((f) => [f.id, f.name])),
+        unresolved: names.filter((n, i) => found[i]?.kind !== 'company'),
+      };
+    }
+    if (it.capability === 'government-dependence' && it.subject?.kind !== 'company') {
+      const text = it.subject?.text || primaryText;
+      const co = text ? await resolveCompany(text, admin).catch(() => null) : null;
+      it.subject = co?.kind === 'company' ? co : it.subject;
+    }
+  }
   if (relation?.right && !items.some((it) => queryCovers(it, relation.right))) {
     const right = await resolveSubject(relation.right, admin).catch(() => null);
     const topN =
@@ -998,9 +1068,35 @@ export async function runResearchComposition(
   let subjectRows = null;
   const timings = {};
   const runStarted = Date.now();
+  const left = () => (deadlineAt ? deadlineAt - Date.now() : Infinity);
+  const timeoutErr = () =>
+    Object.assign(new Error('It did not finish within the time limit.'), { name: 'TimeoutError' });
+  const bounded = (p) =>
+    deadlineAt
+      ? Promise.race([
+          p,
+          new Promise((_, rej) => setTimeout(() => rej(timeoutErr()), Math.max(0, left()))),
+        ])
+      : p;
   for (const task of order) {
     if (task.deps.some((d) => failed.has(d))) {
       failed.add(task.id);
+      continue;
+    }
+    if (left() < 250) {
+      failed.add(task.id);
+      const src = task.id.startsWith('analysis:')
+        ? ready.find((x) => `analysis:${x.key}` === task.id)
+        : null;
+      results.push({
+        key: src ? src.key : task.id,
+        capability: src?.capability,
+        task: task.id,
+        status: 'failed',
+        timedOut: true,
+        title: task.label,
+        failed: 'Not run: the time limit was reached before this step started.',
+      });
       continue;
     }
     const t0 = Date.now();
@@ -1009,10 +1105,10 @@ export async function runResearchComposition(
         if (!primary?.kind || !['politician', 'institution'].includes(primary.kind))
           throw new Error('The subject did not resolve to holdings.');
       } else if (task.id === 'subject:holdings') {
-        subjectRows = await subjectSecurities(admin, primary);
+        subjectRows = await bounded(subjectSecurities(admin, primary));
       } else if (task.id.startsWith('query:')) {
         const item = ready.find((x) => `query:${x.key}` === task.id);
-        const res = await runQueryAttachment(admin, item, userId);
+        const res = await bounded(runQueryAttachment(admin, item, userId));
         done[task.id] = res;
         /* A query's own securities are a set an analysis can target (out:<key>). */
         if (res.securities?.length)
@@ -1080,7 +1176,7 @@ export async function runResearchComposition(
           });
           continue;
         }
-        const res = await EXECUTORS[att.capability](admin, att, { sets });
+        const res = await bounded(EXECUTORS[att.capability](admin, att, { sets }));
         results.push({
           key: att.key,
           capability: att.capability,
@@ -1096,6 +1192,7 @@ export async function runResearchComposition(
         key: task.id,
         task: task.id,
         status: 'failed',
+        timedOut: e?.name === 'TimeoutError',
         title: task.label,
         failed: String(e?.message || 'This step could not run.'),
       });
@@ -1168,6 +1265,9 @@ const EXECUTORS = {
   'fundamental-analysis': runFundamentals,
   'dcf-valuation': runDcf,
   backtesting: runMemberBacktest,
+  'financial-screen': runScreen,
+  'company-comparison': runComparison,
+  'government-dependence': runGovDependence,
   [OWNERSHIP_CAPABILITY]: runOwnership,
 };
 

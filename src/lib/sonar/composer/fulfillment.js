@@ -20,6 +20,7 @@
  *   clientComposition(c, f)  the compact typed payload the report renders
  */
 
+import { conclusionRule, requiredOutputs } from './required-outputs.js';
 import {
   OWNERSHIP_CAPABILITY,
   ownershipAnswer,
@@ -243,16 +244,29 @@ export function fulfillmentContract(c) {
                 : r.status === 'failed'
                   ? 'failed'
                   : 'needs_input';
+      /* Sonar 6.2: a step that returned without its required outputs is limited, and the
+         unmet requirements are named (required-outputs.js). */
+      const reqs = r ? requiredOutputs(r) : [];
+      const unmet = reqs.filter((q) => !q.ok);
+      const st2 = st === 'done' && unmet.length ? 'limited' : st;
       add(
         t.id,
         r?.title || (r?.capability ? r.capability.replace(/-/g, ' ') : t.label),
-        st,
+        st2,
         r?.coverage
           ? r.capability === OWNERSHIP_CAPABILITY
             ? `${r.coverage.withData} of ${r.coverage.selected} holdings reported by 13F managers${r.ownership?.period ? `, ${quarterLabel(r.ownership.period)}` : ''}`
             : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
           : r?.failed || null,
       );
+      if (reqs.length) objectives[objectives.length - 1].requirements = reqs;
+      if (unmet.length)
+        objectives[objectives.length - 1].detail = [
+          objectives[objectives.length - 1].detail,
+          `missing: ${unmet.map((q) => q.label.toLowerCase()).join('; ')}`,
+        ]
+          .filter(Boolean)
+          .join('; ');
     }
   }
   const sts = objectives.map((o) => o.status);
@@ -278,6 +292,9 @@ export function fulfillmentBlock(f, c) {
     analysisResults(c, OWNERSHIP_CAPABILITY).some((a) => a.status === 'done')
       ? '- The executive conclusion must answer directly: name the holdings most widely held by 13F reporting managers with their manager counts and the reporting quarter, citing the computed ownership items. Do not lead with a profile of the person, their trading history or other members. A manager count measures breadth of ownership, not conviction; a change in reported value is not a purchase; 13F dates and disclosure dates differ.'
       : null,
+    ...analysisResults(c)
+      .map((a) => conclusionRule(a))
+      .filter(Boolean),
     f.state !== 'complete'
       ? `- Completion: ${f.label}. Say plainly which required output is missing or limited and why; never fill it with an estimate.`
       : null,
@@ -461,16 +478,35 @@ export function clientComposition(c, f) {
       status: a.status,
       relation: a.relation || null,
       coverage: a.coverage || null,
-      table: (a.table || []).slice(0, 30).map((t) => ({
-        ticker: t.ticker,
-        issuer: t.issuer,
-        value: t.value ?? null,
-        ratios: t.ratios || null,
-        ok: t.ok,
-        perShare: t.perShare ?? null,
-        close: t.close ?? null,
-        reason: t.reason ?? null,
-      })),
+      columns: a.columns || null,
+      funnel: a.funnel || null,
+      leaders: a.leaders || null,
+      aligned: typeof a.aligned === 'boolean' ? a.aligned : null,
+      dependence: a.dependence
+        ? {
+            latestFiscalYear: a.dependence.latestFiscalYear,
+            latestObligations: a.dependence.latestObligations,
+            obligationGrowth: a.dependence.obligationGrowth,
+            revenue: a.dependence.revenue,
+            obligationsToRevenue: a.dependence.obligationsToRevenue,
+            topAgencies: a.dependence.topAgencies,
+            agencyConcentration: a.dependence.agencyConcentration,
+          }
+        : null,
+      table: (a.table || []).slice(0, 30).map((t) =>
+        a.columns
+          ? Object.fromEntries(a.columns.map((c) => [c.key, t[c.key] ?? null]))
+          : {
+              ticker: t.ticker,
+              issuer: t.issuer,
+              value: t.value ?? null,
+              ratios: t.ratios || null,
+              ok: t.ok,
+              perShare: t.perShare ?? null,
+              close: t.close ?? null,
+              reason: t.reason ?? null,
+            },
+      ),
       metrics: a.metrics || null,
       ownership: a.ownership ? compactOwnership(a.ownership) : null,
       limitations: a.limitations || [],

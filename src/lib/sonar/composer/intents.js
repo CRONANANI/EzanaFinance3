@@ -16,6 +16,73 @@
 import { makeAnalysis } from './registry.js';
 import { extractParams, extractSubject, extractRelation } from './subject.js';
 import { canonicalIntent, composerMetric } from '../semantic/canonical-intent.js';
+import { GICS_FOR, SCREEN_MEASURES } from './screen.js';
+
+/* Composition measure → comparison metric (filed ratios only). */
+const COMPARE_METRIC = {
+  revenue_growth: 'revenue_growth',
+  earnings_growth: 'earnings_growth',
+  margin: 'operating_margin',
+  free_cash_flow: 'fcf_margin',
+  debt: 'debt_to_equity',
+};
+
+const WINDOW_DAYS = { day: 1, week: 7, month: 30, quarter: 91, year: 365 };
+
+/**
+ * Sonar 6.2: the public-data analyses a canonical intent asks for (a screen, a company
+ * comparison, a government-dependence read). Only an intent the executor can compute is
+ * attached; an unsupported measure or universe stays unsupported, never substituted.
+ */
+export function analyticsAttachment(intent) {
+  if (!intent || intent.unsupported) return null;
+  const comp = intent.composition;
+  if (intent.family === 'multi_stage_screen' && comp?.universe?.type === 'sector') {
+    const sector = comp.universe.id;
+    if (!GICS_FOR[sector]) return null;
+    const filters = (comp.filters || [])
+      .filter((f) => SCREEN_MEASURES[f.metric])
+      .map((f) => ({ metric: f.metric, op: f.op, value: f.value, unit: f.unit || null }));
+    const rank = (comp.measures || []).find((m) => SCREEN_MEASURES[m]) || null;
+    const t = comp.time;
+    const windowDays =
+      t?.kind === 'window' && WINDOW_DAYS[t.unit] ? Math.round(t.n * WINDOW_DAYS[t.unit]) : null;
+    return makeAnalysis('financial-screen', {
+      origin: 'auto',
+      subject: null,
+      params: {
+        sector,
+        filters,
+        rank_by: rank,
+        direction: comp.direction === 'ascending' ? 'ascending' : 'descending',
+        ...(windowDays ? { window_days: windowDays } : {}),
+      },
+    });
+  }
+  if (intent.family === 'company_comparison') {
+    const names = [
+      intent.primary_entity?.text,
+      ...(intent.secondary_entities || []).map((e) => e.text),
+    ].filter(Boolean);
+    if (names.length < 2) return null;
+    const metrics = [
+      ...new Set((comp?.measures || []).map((m) => COMPARE_METRIC[m]).filter(Boolean)),
+    ];
+    return makeAnalysis('company-comparison', {
+      origin: 'auto',
+      subject: null,
+      params: { company_names: names, ...(metrics.length ? { metrics } : {}) },
+    });
+  }
+  if (intent.family === 'government_contract_dependency' && intent.primary_entity?.text) {
+    return makeAnalysis('government-dependence', {
+      origin: 'auto',
+      subject: { text: intent.primary_entity.text },
+      params: {},
+    });
+  }
+  return null;
+}
 
 export { extractParams, extractSubject, extractRelation };
 
@@ -99,6 +166,15 @@ export function inferComposition(
     else if (!caps.includes('institutional-ownership')) caps.push('institutional-ownership');
   } else if (intent.family === 'congressional_overlap') {
     caps = caps.filter((c) => c !== 'institutional-ownership');
+  }
+  const analytic = analyticsAttachment(intent);
+  if (analytic) {
+    return {
+      subject: analytic.subject?.text || null,
+      attachments: [analytic],
+      relation: null,
+      intent,
+    };
   }
   if (!caps.length) return { subject: relation?.left || null, attachments: [], relation, intent };
   /* A two-holder question's subject is its first holder; its "top N" scopes a holdings
