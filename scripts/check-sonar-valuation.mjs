@@ -331,7 +331,7 @@ test('Valuation is a deep section only for an answer about one listed company', 
   assert.equal(A.isEquityAnswer({ ticker: null, kind: 'country' }), false);
   assert.equal(A.isEquityAnswer({ ticker: 'X', kind: 'country' }), false);
   const frame = read('src/components/sonar/SonarAnswerFrame.jsx');
-  assert.match(frame, /answerNav\(present, \{ unlocked, equity \}\)/);
+  assert.match(frame, /answerNav\(present, \{ unlocked, equity(, open)? \}\)/);
   assert.match(frame, /\{locked\.length\} more section/);
 });
 

@@ -43,7 +43,12 @@ import {
   boardFindings,
 } from '@/lib/sonar/research-board';
 import { placeRanking, dotMapGeometry, WORLD_COLS, WORLD_ROWS } from '@/lib/sonar/dot-map';
-import { planVisualizations } from '@/lib/sonar/insight/viz-plan';
+import { planPresentation } from '@/lib/sonar/presentation/planner';
+import {
+  SonarAdaptiveVisual,
+  SonarUnavailableAnalyses,
+} from '@/components/sonar/layout/SonarAdaptiveVisual';
+import { SonarSelectionProvider } from '@/components/sonar/layout/SonarSelectionContext';
 import { sendFeedback } from './useResearchStream';
 import { SonarAnswerFrame } from '@/components/sonar/SonarAnswerFrame';
 import { SonarDeskSummary, SonarRelatedQuestions } from '@/components/sonar/SonarDeskSummary';
@@ -716,11 +721,20 @@ function RankingModule({ vis, takeaway = null }) {
 }
 
 /* The planned charts (viz-plan.js): each says what it shows, none repeats another. */
-function Charts({ items: planned, Fallback }) {
+function Charts({ items: planned, unavailable = [], Fallback, onAsk = null }) {
   const id = useId();
   const items = planned
-    .map(({ id: key, vis: v, spec }) => {
+    .map((item) => {
+      const { id: key, vis: v, spec } = item;
       const takeaway = spec?.takeaway || null;
+      /* Nov 28: a result the component registry matched (presentation/planner.js) draws with
+         its library component; the board's mature line chart and ranking module keep theirs. */
+      if (item.componentId)
+        return {
+          id: key,
+          wide: (item.span?.wide || 0) >= 12,
+          node: <SonarAdaptiveVisual item={item} onAsk={onAsk} />,
+        };
       if (v.type === 'line') return { id: key, node: <LineChart vis={v} takeaway={takeaway} /> };
       if (v.type === 'bars' || v.type === 'leaderboard')
         return { id: key, node: <RankingModule vis={v} takeaway={takeaway} /> };
@@ -736,20 +750,27 @@ function Charts({ items: planned, Fallback }) {
         : null;
     })
     .filter(Boolean);
-  if (!items.length) return null;
+  if (!items.length && !unavailable.length) return null;
   return (
     <section id="srr-charts-h" className="srb-section" aria-labelledby={id}>
       <Eyebrow id={id}>Key data visualizations</Eyebrow>
-      <div
-        className={`srb-charts${items.length % 2 ? ' is-odd' : ''}`}
-        style={{ '--srb-charts': Math.min(items.length, 2) }}
-      >
-        {items.map((c) => (
-          <div key={c.id} className="srb-chart-cell">
-            {c.node}
-          </div>
-        ))}
-      </div>
+      {items.length ? (
+        <div
+          className={`srb-charts${items.length % 2 ? ' is-odd' : ''}`}
+          style={{ '--srb-charts': Math.min(items.length, 2) }}
+        >
+          {items.map((c) => (
+            <div
+              key={c.id}
+              className="srb-chart-cell"
+              style={c.wide ? { gridColumn: '1 / -1' } : undefined}
+            >
+              {c.node}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      <SonarUnavailableAnalyses items={unavailable} />
     </section>
   );
 }
@@ -884,6 +905,9 @@ export default function ResearchBoard({
      institutional ownership ranking, the memory note). It sits inside the frame, beside the
      contents menu, instead of above the whole frame where it pushed the menu down. */
   lead = null,
+  /* Nov 28: a composed analysis (Research Composer, institutional ownership ranking). It is
+     the direct composite result, so it sits right under the Desk Summary, never above it. */
+  composition = null,
   /* Nov 13: Save, Share and More (a live run only; a saved or org copy passes false). */
   saveable = false,
   /* Nov 13: the follow-up composer under the board, and the session thread's restore. */
@@ -902,10 +926,15 @@ export default function ResearchBoard({
   const rank = rankingOf(vis);
   /* Nov 2026: the charts are planned (what each answers, no two alike); the plan reads the
      run's intent and the key findings, so a saved or cached run plans the same way. */
-  const vizPlan = planVisualizations(vis, {
+  /* Nov 28: the presentation planner extends the visualization plan: the same dedupe, caps
+     and ordering, then each result is matched to an approved registry component, checked for
+     data sufficiency and ordered by the report family's template. */
+  const vizPlan = planPresentation(vis, {
     intent: state.analysis?.intent || run?.intent || null,
     findings: report?.keyFindings || [],
     depth: state.plan?.spec?.depth || 'standard',
+    spec: state.plan?.spec || null,
+    composition: Boolean(state.composition),
   });
   const kpis = boardKpis({
     metrics,
@@ -1056,13 +1085,20 @@ export default function ResearchBoard({
       min: 5,
       node: <TeamAndMethod team={team} run={run} lines={lines} />,
     },
-    vizPlan.items.length
+    vizPlan.items.length || vizPlan.unavailable.length
       ? {
           id: 'charts',
           section: 'charts',
           span: 12,
           min: 12,
-          node: <Charts items={vizPlan.items} Fallback={ChartFallback} />,
+          node: (
+            <Charts
+              items={vizPlan.items}
+              unavailable={vizPlan.unavailable}
+              Fallback={ChartFallback}
+              onAsk={onRun}
+            />
+          ),
         }
       : null,
     valuationModel
@@ -1105,7 +1141,7 @@ export default function ResearchBoard({
       : null,
   ].filter(Boolean);
   const replaced = new Set(['exec', 'snapshot', 'kpis', 'charts']);
-  const cells = (
+  const baseCells = (
     activity
       ? [
           ...congressActivityCells(activity, { deepAction }),
@@ -1132,6 +1168,26 @@ export default function ResearchBoard({
         ]
       : generic
   ).filter((c) => canRender(c.section, unlocked));
+  /* Nov 28: the Desk Summary always opens the answer, directly under the composer and the
+     suggested follow-ups. Notes (memory, a challenge) and a composed result follow it. */
+  const leadCells = [
+    lead
+      ? {
+          id: 'lead',
+          section: 'answer',
+          span: 12,
+          min: 12,
+          node: <div className="srb-lead">{lead}</div>,
+        }
+      : null,
+    composition
+      ? { id: 'composition', section: 'charts', span: 12, min: 12, node: composition }
+      : null,
+  ].filter(Boolean);
+  const firstAnswer = baseCells.findIndex((c) => c.section === 'answer');
+  const cells = leadCells.length
+    ? [...baseCells.slice(0, firstAnswer + 1), ...leadCells, ...baseCells.slice(firstAnswer + 1)]
+    : baseCells;
   const spans = boardSpans(cells);
   const anchors = anchorCells(cells);
   const blocks = unlocked ? (deepBlocks || []).filter((b) => b && b.node) : [];
@@ -1183,55 +1239,56 @@ export default function ResearchBoard({
       queryBar={queryBar}
       followUps={<SonarRelatedQuestions questions={relatedQs} onAsk={onRun} />}
     >
-      <div className="srb" role="region" aria-label="Research answer">
-        {lead ? <div className="srb-lead">{lead}</div> : null}
-        <div className="srb-grid">
-          {cells.map((c) => (
-            <div
-              key={c.id}
-              id={anchors.get(c.id)}
-              className={`srb-cell srb-cell--${c.id}`}
-              style={{
-                '--srb-span': spans.get(c.id)?.wide,
-                '--srb-span-mid': spans.get(c.id)?.mid,
-              }}
-            >
-              {c.node}
-            </div>
-          ))}
+      <SonarSelectionProvider>
+        <div className="srb" role="region" aria-label="Research answer">
+          <div className="srb-grid">
+            {cells.map((c) => (
+              <div
+                key={c.id}
+                id={anchors.get(c.id)}
+                className={`srb-cell srb-cell--${c.id}`}
+                style={{
+                  '--srb-span': spans.get(c.id)?.wide,
+                  '--srb-span-mid': spans.get(c.id)?.mid,
+                }}
+              >
+                {c.node}
+              </div>
+            ))}
+          </div>
+          {onAskFollowUp && run ? (
+            <SonarFollowUp
+              context={followUpContext({
+                question: runQuestion,
+                headline: run?.headline || report?.headline || boardHeadline(report, rank) || '',
+                summary: run?.summary || report?.summary || boardSummary(report, rank) || '',
+                subject: state.plan?.spec?.subject?.label || '',
+                ticker:
+                  state.plan?.spec?.subject?.kind === 'company'
+                    ? state.plan?.spec?.subject?.id || ''
+                    : '',
+              })}
+              parentRunId={runId || null}
+              onAsk={onAskFollowUp}
+              onRestore={onRestore}
+              currentId={runId ? `research:${runId}` : null}
+            />
+          ) : null}
+          {blocks.map((b, i) => {
+            const first = b.key && !seenKeys.has(b.key);
+            if (b.key) seenKeys.add(b.key);
+            return (
+              <div
+                key={b.key || `block-${i}`}
+                id={first ? `sa-${b.key}` : undefined}
+                className="srb-block"
+              >
+                {b.node}
+              </div>
+            );
+          })}
         </div>
-        {onAskFollowUp && run ? (
-          <SonarFollowUp
-            context={followUpContext({
-              question: runQuestion,
-              headline: run?.headline || report?.headline || boardHeadline(report, rank) || '',
-              summary: run?.summary || report?.summary || boardSummary(report, rank) || '',
-              subject: state.plan?.spec?.subject?.label || '',
-              ticker:
-                state.plan?.spec?.subject?.kind === 'company'
-                  ? state.plan?.spec?.subject?.id || ''
-                  : '',
-            })}
-            parentRunId={runId || null}
-            onAsk={onAskFollowUp}
-            onRestore={onRestore}
-            currentId={runId ? `research:${runId}` : null}
-          />
-        ) : null}
-        {blocks.map((b, i) => {
-          const first = b.key && !seenKeys.has(b.key);
-          if (b.key) seenKeys.add(b.key);
-          return (
-            <div
-              key={b.key || `block-${i}`}
-              id={first ? `sa-${b.key}` : undefined}
-              className="srb-block"
-            >
-              {b.node}
-            </div>
-          );
-        })}
-      </div>
+      </SonarSelectionProvider>
     </SonarAnswerFrame>
   );
 }

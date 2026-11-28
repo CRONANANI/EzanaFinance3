@@ -689,7 +689,7 @@ test('the boards: one ranking module, planned charts, finding kinds, country key
   assert.doesNotMatch(rb, /id: 'table'/);
   assert.match(rb, /function RankingModule/);
   assert.match(rb, /aria-pressed=\{view === v\}/);
-  assert.match(rb, /planVisualizations\(vis, \{/);
+  assert.match(rb, /planPresentation\(vis, \{/);
   assert.match(rb, /f\.kind\.label/);
   assert.match(rb, /Why it matters/);
   assert.match(rb, /Not established: /);

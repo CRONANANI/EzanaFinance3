@@ -302,6 +302,22 @@
   background: var(--sds-card);
 }
 
+/* Nov 28: the status line of a report that is running, partial, failed or unsupported
+   (ReportDeskSummary). Icon and words, never colour alone. */
+.sds .sds-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+  color: var(--sds-muted);
+}
+.sds .sds-notice .bi {
+  margin-top: 2px;
+  color: var(--warning);
+}
+
 /* ── Explore related questions ──────────────────────────────────────── */
 .sds-related {
   min-width: 0;

@@ -32,6 +32,16 @@ const TYPE_OBJECTIVE = {
   donut: 'composition',
   stacked: 'composition',
   scatter: 'relationship',
+  /* Nov 28: the Sonar research component library (presentation/registry.js). */
+  race: 'ranking',
+  ranking_snapshots: 'ranking',
+  composition: 'composition',
+  heatmap: 'composition',
+  treemap: 'composition',
+  matrix: 'trend',
+  activity: 'trend',
+  annotated_series: 'trend',
+  events: 'trend',
 };
 const TRANSFORM = {
   ranking: 'rank',

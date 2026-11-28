@@ -20,8 +20,14 @@
   --san-rule: color-mix(in srgb, var(--san-emerald) 14%, transparent);
   --san-mono: var(--snr-font-mono, var(--font-mono));
   --san-sans: var(--snr-font-sans, var(--font-sans));
-  --san-nav-w: 188px;
-  --san-nav-gap: 28px;
+  /* Nov 28: the persistent research menu, 212px at a 1440px viewport, with a 24px gutter
+     to the answer; the same width, place and order on every Sonar Ping. */
+  --san-nav-w: 212px;
+  --san-nav-gap: 24px;
+  /* Vertical rhythm at the top of every answer (Nov 28 spacing standard): composer to
+     follow-ups 12px, follow-ups to the Desk Summary 18px. */
+  --san-lead-gap: 12px;
+  --san-summary-gap: 18px;
   width: 100%;
   min-width: 0;
   container: san / inline-size;
@@ -59,9 +65,14 @@
 .san .san-lead {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--san-lead-gap);
   min-width: 0;
-  margin-bottom: 16px;
+  margin-bottom: var(--san-summary-gap);
+}
+/* The follow-ups row carries no margin of its own inside the lead, so the gap to the Desk
+   Summary is the lead's alone (it was 30px of stacked margins plus the card's padding). */
+.san .san-lead > .sds-related {
+  margin: 0;
 }
 
 /* Nov 21: the skeleton's top line. Stacked on a narrow column; side by side once there is

@@ -61,15 +61,18 @@ export function SonarAnswerFrame({
   top = null,
   /* Nov 21: a deep research run is in flight for this question. */
   deepRunning = false,
+  /* Nov 28: deep sections this page already shows to every reader (answerNav `open`). */
+  open = [],
   children,
   className = '',
 }) {
   const unlocked = Boolean(access?.unlocked);
   const key = [...present].join('|');
+  const openKey = [...open].join('|');
   const nav = useMemo(
-    () => answerNav(present, { unlocked, equity }),
+    () => answerNav(present, { unlocked, equity, open }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [key, unlocked, equity],
+    [key, unlocked, equity, openKey],
   );
   const [active, setActive] = useState(null);
   /* After a nav click the clicked section stays current while the smooth scroll runs, so the
@@ -119,8 +122,11 @@ export function SonarAnswerFrame({
       window.dispatchEvent(new CustomEvent(OPEN_TOOL_EVENT, { detail: { key: 'sources' } }));
   }, []);
 
-  const free = nav.filter((s) => !s.locked && s.tier === 'free');
-  const deepOpen = nav.filter((s) => !s.locked && s.tier === 'deep');
+  /* Nov 28: a deep section the page shows to everyone (an investment memo's methodology)
+     sits in Current report, so it is never presented as a completed deep run. */
+  const inReport = (s) => s.tier === 'free' || (!unlocked && open.includes(s.key));
+  const free = nav.filter((s) => !s.locked && inReport(s));
+  const deepOpen = nav.filter((s) => !s.locked && s.tier === 'deep' && !inReport(s));
   const locked = nav.filter((s) => s.locked);
   const cta = !unlocked ? access?.cta || null : null;
   /* Nov 21: the deep research state, told apart honestly. Locked: the plan does not include

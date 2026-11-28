@@ -128,14 +128,20 @@ export function sectionAccess({
  * The navigation for one answer: the free sections the page has, then the deep sections
  * (open and present when unlocked; every one of them, locked, when not).
  * present: iterable of section keys the page renders.
+ * open: Nov 28, deep section keys this page already shows to every reader (an investment
+ *   memo's methodology, a report's evidence explorer). They ran, so they are listed open
+ *   when present; nothing locked is ever listed as if it ran.
  * -> [{ key, label, tier, id, locked }]
  */
-export function answerNav(present, { unlocked = false, equity = false } = {}) {
+export function answerNav(present, { unlocked = false, equity = false, open = [] } = {}) {
   const have = new Set(present || []);
+  const shown = new Set(open || []);
   const out = [];
   for (const s of sectionsFor({ equity })) {
     if (s.tier === 'free') {
       if (have.has(s.key)) out.push({ ...s, id: sectionId(s.key), locked: false });
+    } else if (shown.has(s.key) && have.has(s.key)) {
+      out.push({ ...s, id: sectionId(s.key), locked: false });
     } else if (unlocked) {
       if (have.has(s.key)) out.push({ ...s, id: sectionId(s.key), locked: false });
     } else {
