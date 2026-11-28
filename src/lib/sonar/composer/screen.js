@@ -34,6 +34,13 @@ export const SCREEN_MEASURES = {
     unit: 'pct',
   },
   margin: { label: 'Operating margin', source: 'ratios', key: 'operating_margin', unit: 'pct' },
+  /* Sonar 6.5: latest fiscal year against the prior one, consecutive comparable years only. */
+  margin_change: {
+    label: 'Change in operating margin (pts, latest FY vs prior)',
+    source: 'ratios',
+    key: 'margin_change',
+    unit: 'pct',
+  },
   free_cash_flow: { label: 'Free cash flow', source: 'ratios', key: 'fcf', unit: 'usd' },
   debt: { label: 'Debt/equity', source: 'ratios', key: 'debt_to_equity', unit: 'x' },
   revenue: { label: 'Revenue', source: 'ratios', key: 'revenue', unit: 'usd' },

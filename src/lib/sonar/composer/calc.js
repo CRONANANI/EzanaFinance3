@@ -243,6 +243,15 @@ export function companyRatios(f) {
         : null,
     gross_margin: ratio(a('gross_profit'), rev),
     operating_margin: ratio(a('operating_income'), rev),
+    /* Sonar 6.5: the prior fiscal year's margin, only when the two years are consecutive and
+       comparable (the same test as revenue growth); the change is in fraction points. */
+    operating_margin_prior: growth.reason == null ? ratio(a('operating_income', 1), revPrev) : null,
+    margin_change:
+      growth.reason == null &&
+      ratio(a('operating_income'), rev) != null &&
+      ratio(a('operating_income', 1), revPrev) != null
+        ? ratio(a('operating_income'), rev) - ratio(a('operating_income', 1), revPrev)
+        : null,
     net_margin: ratio(a('net_income'), rev),
     fcf,
     fcf_margin: ratio(fcf, rev),

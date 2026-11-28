@@ -272,15 +272,31 @@ export function planSeed(filters = [], measures = {}) {
 export function universeFromComposition(composition, { max = 12 } = {}) {
   for (const r of composition?.results || []) {
     if (r?.capability !== 'financial-screen' || r.status !== 'done' || !r.table?.length) continue;
-    const tickers = r.table
-      .map((t) => clean(t.ticker))
-      .filter(Boolean)
-      .slice(0, max);
+    const all = r.table.map((t) => clean(t.ticker)).filter(Boolean);
+    const tickers = all.slice(0, max);
     if (!tickers.length) continue;
+    /* Sonar 6.5: the full result set keeps its identity. Only the downstream research reads
+       are limited to `max` companies (each one costs dataset reads), in the screen's own
+       ranked order, and the limit is stated: the companies beyond it still passed the screen
+       and stay in its table; they are simply not researched further here. */
+    const limited = all.length > tickers.length;
     return {
       tickers,
+      allTickers: all,
+      total: all.length,
+      limit: limited
+        ? {
+            applied: true,
+            kept: tickers.length,
+            total: all.length,
+            order: r.rankBy ? `ranked by ${r.rankBy}` : 'screen order',
+            reason: `downstream research reads are limited to ${max} companies`,
+          }
+        : { applied: false, kept: tickers.length, total: all.length },
       names: {},
-      label: `the ${tickers.length} companies that passed the screen`,
+      label: limited
+        ? `the first ${tickers.length} of the ${all.length} companies that passed the screen (${r.rankBy ? `ranked by ${r.rankBy}` : 'screen order'}; the other ${all.length - tickers.length} are in the screen table, not researched further)`
+        : `the ${tickers.length} companies that passed the screen`,
       basis: 'screen',
       lineage: (r.stages || []).map((s) => `${s.stage}:${s.status}`),
     };

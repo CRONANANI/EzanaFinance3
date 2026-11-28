@@ -524,10 +524,22 @@ test('Nov 28 2026: capex history and price provenance reach the DCF', () => {
   assert.equal(h.current.price, 210);
   assert.equal(h.current.priceSource, 'stored_close');
   assert.equal(h.current.priceAsOf, '2026-11-27');
-  const m = M.buildValuationModel({ history: h, market: { beta: 1.1, riskFree: 0.042 } });
+  /* Sonar 6.5: by default capex is held flat and the fade is a separately labelled scenario
+     (pending methodology approval); asking for the scenario applies it. */
+  const d = M.buildValuationModel({ history: h, market: { beta: 1.1, riskFree: 0.042 } });
+  const defRow = d.dcf.assumptions.find((a) => a.label === 'Capital expenditure');
+  assert.match(defRow.note, /held flat \(default/);
+  assert.match(d.capexFadeScenario.label, /pending methodology approval/);
+  assert.equal(d.capexFadeScenario.approved, false);
+  const m = M.buildValuationModel({
+    history: h,
+    market: { beta: 1.1, riskFree: 0.042 },
+    capexScenario: 'capex_fade',
+  });
   const capexRow = m.dcf.assumptions.find((a) => a.label === 'Capital expenditure');
   assert.equal(capexRow.editable, 'capexTerminalPct');
   assert.match(capexRow.note, /median of \d fiscal-year trailing windows/);
+  assert.equal(m.dcf.inputs.capexSource, 'scenario');
   const priceRow = m.dcf.assumptions.find((a) => a.label === 'Share price');
   assert.match(priceRow.note, /stored close as of 2026-11-27/);
   assert.ok(m.sensitivity.capex.length >= 1);

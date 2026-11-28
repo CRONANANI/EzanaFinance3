@@ -18,6 +18,7 @@ import { extractParams, extractSubject, extractRelation } from './subject.js';
 import { canonicalIntent, composerMetric } from '../semantic/canonical-intent.js';
 import { SCREEN_MEASURES, universeFor } from './screen.js';
 import { planSeed } from './stages.js';
+import { extractRequirements, screenFilters } from '../execution/requirements.js';
 import { macroCountries } from './macro.js';
 
 /* Composition measure → comparison metric (filed ratios only). */
@@ -222,6 +223,87 @@ export function ownershipMetric(question) {
 }
 
 /**
+ * Sonar 6.5: the question's own requirements (execution/requirements.js) complete the screen
+ * the canonical intent produced, or produce one when the intent produced none. A condition
+ * the intent dropped ("traded by members of Congress", "growing institutional
+ * participation", "declining operating margins") becomes a filter; a condition no executor
+ * computes stays in params.requirements, so the fulfillment check reports it instead of it
+ * vanishing. An explicit screen condition is never turned into a ranking.
+ */
+export function requirementsScreen(question, analytic, intent = null) {
+  const reqs = extractRequirements(question);
+  const computable = screenFilters(reqs.conditions);
+  const screenable = analytic?.capability === 'financial-screen';
+  if (analytic && !screenable) return analytic;
+  if (
+    !screenable &&
+    computable.length < 2 &&
+    !(computable.length === 1 && reqs.conditions.length >= 2)
+  )
+    return analytic;
+  if (!reqs.conditions.length) return analytic;
+  const base = screenable ? analytic : null;
+  const filters = [...(base?.params.filters || [])];
+  for (const f of computable)
+    if (
+      !filters.some(
+        (x) =>
+          x.metric === f.metric ||
+          (x.metric.startsWith('gov_contract_value') && f.metric.startsWith('gov_contract_value')),
+      )
+    )
+      filters.push(f);
+  const params = { ...(base?.params || {}), filters, requirements: reqs.requirements };
+  /* "Department of Defense contracts" names an awarding agency, not a defense-sector
+     universe. When the question names no sector, the screen is seeded from its own
+     conditions instead (the agency requirement stays visible as unsupported). */
+  if (base && params.sector === 'defense' && reqs.universe.kind === 'unspecified') {
+    const { seed } = planSeed(filters, SCREEN_MEASURES);
+    if (seed) {
+      delete params.sector;
+      params.universe_from = seed.source;
+      if (!params.window_days) params.window_days = 365;
+    }
+  }
+  if (!base) {
+    if (reqs.universe.kind === 'sector' && universeFor(reqs.universe.id).kind !== 'unsupported')
+      params.sector = reqs.universe.id;
+    else if (reqs.universe.kind !== 'org_holdings') {
+      const { seed } = planSeed(filters, SCREEN_MEASURES);
+      /* No sector and no condition that can list companies: the screen is still planned, so
+         the reader is asked for a universe instead of the conditions disappearing. */
+      if (seed) params.universe_from = seed.source;
+    } else return analytic;
+    const dated = filters.some((f) =>
+      ['congress', 'insider', 'contracts_window'].includes(SCREEN_MEASURES[f.metric]?.source),
+    );
+    if (dated && !params.window_days) params.window_days = 365;
+    params.rank_by =
+      reqs.ranking?.measure && SCREEN_MEASURES[reqs.ranking.measure]
+        ? reqs.ranking.measure
+        : [...filters].reverse().find((f) => f.op !== 'exists')?.metric ||
+          filters[0]?.metric ||
+          null;
+    params.direction = 'descending';
+  }
+  /* The seeding condition is evaluated first (it lists the companies the others read). */
+  if (params.universe_from) {
+    const i = filters.findIndex((f) => SCREEN_MEASURES[f.metric]?.source === params.universe_from);
+    if (i > 0) filters.unshift(...filters.splice(i, 1));
+  }
+  /* "Traded by Congress" asked as a condition is a filter, not a ranking. */
+  if (
+    params.rank_by === 'congress_holders' &&
+    filters.some((f) => f.metric === 'congress_holders') &&
+    !reqs.ranking
+  )
+    params.rank_by =
+      [...filters].reverse().find((f) => f.metric !== 'congress_holders' && f.op !== 'exists')
+        ?.metric || params.rank_by;
+  return makeAnalysis('financial-screen', { origin: 'auto', subject: null, params });
+}
+
+/**
  * Attachments the question asks for, deduplicated by capability (one Fundamental Analysis
  * however many ways the question says it). Each carries origin 'auto', the subject text,
  * and the question's explicit parameters over the defaults.
@@ -247,7 +329,8 @@ export function inferComposition(
   } else if (intent.family === 'congressional_overlap') {
     caps = caps.filter((c) => c !== 'institutional-ownership');
   }
-  const analytic = analyticsAttachment(intent) || macroAttachment(q, intent);
+  const analytic =
+    requirementsScreen(q, analyticsAttachment(intent), intent) || macroAttachment(q, intent);
   if (analytic) {
     return {
       subject: analytic.subject?.text || null,

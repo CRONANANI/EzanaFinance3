@@ -272,6 +272,23 @@ export function fulfillmentContract(c) {
           : r?.failed || null,
       );
       if (reqs.length) objectives[objectives.length - 1].requirements = reqs;
+      /* Sonar 6.5: every condition the question asked for has its own status
+         (execution/requirements.js). One that did not execute, or ran on a proxy or with
+         unknown companies, keeps the analysis limited and is named, so a fluent answer cannot
+         present it as done. */
+      if (r?.objective?.requirements?.length) {
+        const last = objectives[objectives.length - 1];
+        last.objective = r.objective;
+        const open = r.objective.requirements.filter((q) => q.status !== 'satisfied');
+        if (open.length && last.status === 'done') last.status = 'limited';
+        for (const q of open)
+          add(
+            `${t.id}:${q.id}`,
+            q.label,
+            q.status === 'failed' || q.status === 'not_executed' ? 'failed' : 'limited',
+            `${q.status.replace(/_/g, ' ')}${q.reason ? `: ${q.reason}` : ''}`,
+          );
+      }
       if (unmet.length)
         objectives[objectives.length - 1].detail = [
           objectives[objectives.length - 1].detail,

@@ -51,6 +51,12 @@ import {
   stageResult,
   stageRow,
 } from './stages.js';
+import { evaluate as evaluateCondition, screenEntities } from '../execution/conditions.js';
+import { stepResult, entity as stepEntity } from '../execution/envelope.js';
+import { evaluateObjective } from '../execution/requirements.js';
+import { writerInput, telemetry as executionTelemetry } from '../execution/synthesis.js';
+import { PERIOD_SEMANTICS } from '../execution/temporal.js';
+import { analyzeStep } from '../execution/gaps.js';
 
 const RATIO_CONCEPTS = [
   'revenue',
@@ -824,7 +830,20 @@ async function contractsInWindow(admin, tickers, since, until) {
       if (d && (!asOf || d > asOf)) asOf = d;
     }
   }
-  return { values, asOf };
+  /* Sonar 6.5: records dated after the screen's end are excluded and counted, never summed.
+     An award action date is the date the obligation was recorded, so one after today is an
+     invalid action date (a data error), not a valid future contract; a future period of
+     performance is a different field this view does not carry. */
+  let futureDated = 0;
+  for (const batch of chunk(tickers, 200)) {
+    const { count } = await admin
+      .from('contract_awards_resolved')
+      .select('generated_award_id', { count: 'exact', head: true })
+      .in('ticker', batch)
+      .gt('action_date', until);
+    futureDated += Number(count) || 0;
+  }
+  return { values, asOf, futureDated };
 }
 
 /** Net change in comparable 13F managers per ticker (latest covered quarter vs prior). */
@@ -953,6 +972,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
           revenue_growth: r.revenue_growth,
           earnings_growth: r.earnings_growth,
           operating_margin: r.operating_margin,
+          operating_margin_prior: r.operating_margin_prior ?? null,
+          margin_change: r.margin_change ?? null,
           fcf: r.fcf,
           debt_to_equity: r.debt_to_equity,
           debt_to_equity_status: r.debt_to_equity_status,
@@ -1000,6 +1021,11 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
   let prior13f = null;
   const read = new Set(seedRead ? [seedRead] : []);
   const lineage = {};
+  /* Sonar 6.5: per-source execution status, companies left unchecked by a cap, and the
+     companies that pass every condition so far (kept apart from those still unknown). */
+  const sourceStatus = {};
+  const uncheckedTickers = new Set();
+  let passing = new Set(stage1.rows.map((r) => r.ticker));
 
   async function readSource(src, tick) {
     if (!tick.length || read.has(src)) return;
@@ -1021,7 +1047,12 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         table: 'contract_awards_resolved',
         filter: `action_date ${since} to ${until}`,
         asOf: v.asOf,
+        futureDatedExcluded: v.futureDated || 0,
       };
+      if (v.futureDated)
+        notes.push(
+          `${v.futureDated} award records for these companies carry an action date after ${until}; an action date records when an obligation was made, so these are treated as invalid dates and excluded, not counted as future contracts.`,
+        );
       notes.push(
         `New federal contracts: prime awards with an action date from ${since} to ${until} (future-dated records excluded), by resolved ticker. A company with no award in the window counts as none.`,
       );
@@ -1074,6 +1105,8 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       /* 13F is the costliest read: only after every other filter, and capped. */
       const ranked = tick.slice(0, MAX_RANKED_13F);
       capped13f = Math.max(capped13f, tick.length - MAX_RANKED_13F);
+      /* Sonar 6.5: beyond the cap a company is unchecked (not evaluated), never failed. */
+      for (const t of tick.slice(MAX_RANKED_13F)) uncheckedTickers.add(t);
       if (tick.length > MAX_RANKED_13F)
         notes.push(
           `13F was computed for the first ${MAX_RANKED_13F} of ${tick.length} remaining companies (alphabetical).`,
@@ -1116,12 +1149,37 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     /* The seed stage is this condition when it only asks for a record; a threshold
        ("more than two members") still runs on the seed's values. */
     if (m && seedRead && m.source === seedRead && f.op === 'exists') continue;
-    // eslint-disable-next-line no-await-in-loop
-    if (m)
-      await readSource(
-        m.source,
-        survivors.map((x) => x.ticker),
+    /* Sonar 6.5: a failed read is that condition's failure, not the screen's: the condition
+       is unknown for every company, its step says why, and the other conditions still run. */
+    if (m && !sourceStatus[m.source]) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await readSource(
+          m.source,
+          survivors.map((x) => x.ticker),
+        );
+        sourceStatus[m.source] = { status: 'complete' };
+      } catch (e) {
+        const msg = String(e?.message || e).slice(0, 200);
+        sourceStatus[m.source] = {
+          status: /\b403\b|permission|not entitled/i.test(msg)
+            ? 'permission_denied'
+            : 'provider_error',
+          reason: msg,
+        };
+      }
+    }
+    if (m && sourceStatus[m.source]?.status !== 'complete') {
+      stages.push(
+        failedStage(
+          `filter:${f.metric}`,
+          m.source,
+          `${sourceStatus[m.source].status}: ${sourceStatus[m.source].reason}`,
+        ),
       );
+      passing = new Set();
+      continue;
+    }
     const r = applyScreen({
       universe: survivors,
       values,
@@ -1146,7 +1204,23 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
       lineage: [{ source: m.source, ...(lineage[m.source] || {}) }],
     });
     stages.push(stage);
-    survivors = r.rows.map((x) => ({ ticker: x.ticker }));
+    /* Sonar 6.5: a company without the data is unknown on this condition, not failed: it
+       stays in the set the next source reads, and in the final report as unknown. */
+    const passed = new Set(r.rows.map((x) => x.ticker));
+    const unknownHere = survivors.filter(
+      (x) =>
+        !passed.has(x.ticker) &&
+        !uncheckedTickers.has(x.ticker) &&
+        evaluateCondition(
+          { ...f, value: f.value != null && m.unit === 'pct' ? f.value / 100 : f.value },
+          values[x.ticker]?.[m.key] ?? null,
+        ) === 'unknown',
+    );
+    passing = new Set([...passing].filter((t) => passed.has(t)));
+    survivors = [
+      ...r.rows.map((x) => ({ ticker: x.ticker })),
+      ...unknownHere.map((x) => ({ ticker: x.ticker })),
+    ];
     if (!survivors.length) stopped = stage;
   }
   const rankSrc = rankBy ? SCREEN_MEASURES[rankBy]?.source : null;
@@ -1157,7 +1231,7 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     );
   const sources = [...read];
   const final = applyScreen({
-    universe: survivors,
+    universe: survivors.filter((x) => passing.has(x.ticker)),
     values,
     filters: [],
     rankBy,
@@ -1326,7 +1400,123 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
         `| ${columns.map((c) => (c.unit ? fmt(c.unit, r[c.key]) : (r[c.key] ?? ''))).join(' | ')} |`,
     ),
   ];
+  /* Sonar 6.5: the three-valued condition report over every company the screen evaluated,
+     the per-source step envelopes, the objective against the question's requirements and
+     the structured writer input. All additive: earlier fields are unchanged. */
+  const conds = filters
+    .filter((f) => SCREEN_MEASURES[f.metric])
+    .map((f) => {
+      const m = SCREEN_MEASURES[f.metric];
+      return {
+        id: f.metric,
+        metric: f.metric,
+        label: m.label,
+        source: m.source === seedRead && f.op === 'exists' ? seedRead : m.source,
+        op: f.op,
+        value: f.value != null && m.unit === 'pct' ? Number(f.value) / 100 : (f.value ?? null),
+        /* Dated sources over a complete window: no record is a confirmed zero. */
+        zeroIsConfirmed: ['congress', 'insider', 'contracts_window'].includes(m.source),
+      };
+    });
+  const evalUniverse = needsFilings ? withFilings : universe;
+  const condValues = {};
+  for (const u of evalUniverse) {
+    condValues[u.ticker] = {};
+    for (const c of conds)
+      condValues[u.ticker][c.id] = values[u.ticker]?.[SCREEN_MEASURES[c.metric].key] ?? null;
+  }
+  const report = screenEntities({
+    universe: evalUniverse,
+    conditions: conds,
+    values: condValues,
+    sources: sourceStatus,
+    unchecked: [...uncheckedTickers],
+  });
+  const steps = [
+    ...Object.entries(sourceStatus).map(([src, st]) =>
+      st.status === 'complete'
+        ? stepResult({
+            stepId: `read:${src}`,
+            operation: 'read_measure',
+            status: 'complete',
+            sources: [{ source: src, ...(lineage[src] || {}) }],
+            reportingPeriod: { ...(PERIOD_SEMANTICS[src] || {}), from: since, to: until },
+          })
+        : stepResult({
+            stepId: `read:${src}`,
+            operation: 'read_measure',
+            status: st.status,
+            reason: st.reason,
+          }),
+    ),
+  ].map((st) => ({ ...st, source: st.stepId.slice(5) }));
+  const reqs = Array.isArray(p.requirements) ? { requirements: p.requirements } : null;
+  const draft = {
+    coverage,
+    rankBy,
+    steps,
+    conditionReport: {
+      conditions: report.conditions.map((c, i) => ({ ...c, metric: conds[i].metric })),
+      matrix: report.matrix,
+    },
+  };
+  const objective = reqs ? evaluateObjective(reqs, draft) : null;
+  const synthesis = writerInput({
+    screen: {
+      ...draft,
+      conditionReport: {
+        ...draft.conditionReport,
+        passing: report.passing,
+        failing: report.failing,
+        unknown: report.unknown,
+      },
+    },
+    objective,
+  });
+  const failedSteps = steps.filter((st) => st.status !== 'complete');
+  if (failedSteps.length)
+    limitations.unshift(
+      `Not executed: ${failedSteps.map((st) => `${st.source} (${st.status}: ${st.reason})`).join('; ')}. Conditions on these sources are unknown for every company; no company is reported as passing them.`,
+    );
+  if (report.unknown.length)
+    limitations.push(
+      `${report.unknown.length} companies could not be evaluated on every condition and are listed as unknown, not as failing: ${report.unknown
+        .slice(0, 12)
+        .map((x) => x.ticker)
+        .join(
+          ', ',
+        )}${report.unknown.length > 12 ? ` and ${report.unknown.length - 12} more` : ''}.`,
+    );
+  if (uncheckedTickers.size)
+    limitations.push(
+      `The ranking covers the companies checked, not the universe: ${uncheckedTickers.size} were not checked on 13F (alphabetical cap of ${MAX_RANKED_13F}), so their absence from the table says nothing about their ownership.`,
+    );
   return {
+    conditionReport: {
+      conditions: draft.conditionReport.conditions,
+      matrix: report.matrix.slice(0, 400),
+      matrixTruncated: report.matrix.length > 400,
+      outcome: report.outcome,
+      exhaustive: report.exhaustive && coverage.status !== 'bounded',
+    },
+    outcome: report.outcome,
+    unknownTickers: report.unknown.map((x) => x.ticker),
+    steps,
+    /* Gap analysis per step (6.5). Recovery is bounded to one attempt and never substitutes a
+       dataset; here the gaps are reported, not retried. */
+    gaps: steps.flatMap((st) => analyzeStep(st)),
+    objective,
+    synthesis: synthesis.block,
+    rankingScope:
+      uncheckedTickers.size || coverage.status === 'bounded'
+        ? 'checked_companies_only'
+        : 'eligible_universe',
+    telemetry: executionTelemetry({
+      planType: 'financial_screen',
+      required: conds.map((c) => c.source),
+      steps,
+      objective,
+    }),
     output: 'calculated',
     title: 'Financial Screen',
     version: SCREEN_VERSION,
@@ -1339,7 +1529,9 @@ export async function runScreen(admin, att, { now = new Date() } = {}) {
     limitations,
     /* Nov 28 2026: the typed stage chain (stages.js) behind the funnel. */
     stages,
-    text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`)].join('\n'),
+    text: [...lines, '', ...limitations.map((l) => `Limitation: ${l}`), '', synthesis.block].join(
+      '\n',
+    ),
   };
 }
 

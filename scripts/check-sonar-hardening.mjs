@@ -597,11 +597,28 @@ test('DCF: WACC by hand, the equity-only fallback is disclosed, spread guard hol
 
 test('capex plan: override, history median floored at D&A, flat without history', () => {
   const hist = [0.39, 0.23, 0.18, 0.13, 0.12, 0.12].map((capexPct) => ({ capexPct }));
-  const p = V.capexPlan({ capexPct: 0.39, daPct: 0.12, capexHistory: hist });
+  /* Sonar 6.5: the fade is a labelled scenario until methodology approval; the default holds
+     the trailing intensity flat and carries the fade beside it. */
+  const def = V.capexPlan({ capexPct: 0.39, daPct: 0.12, capexHistory: hist });
+  assert.equal(def.terminalPct, 0.39, 'default: held flat');
+  assert.match(def.note, /held flat \(default/);
+  assert.ok(Math.abs(def.fadeScenario.terminalPct - 0.155) < 1e-12);
+  assert.match(def.fadeScenario.label, /pending methodology approval/);
+  const p = V.capexPlan({
+    capexPct: 0.39,
+    daPct: 0.12,
+    capexHistory: hist,
+    scenario: 'capex_fade',
+  });
   assert.ok(Math.abs(p.terminalPct - 0.155) < 1e-12, 'median of six');
-  assert.equal(p.source, 'reported');
+  assert.equal(p.source, 'scenario');
   assert.match(p.note, /median of 6 fiscal-year trailing windows/);
-  const floored = V.capexPlan({ capexPct: 0.3, daPct: 0.2, capexHistory: hist });
+  const floored = V.capexPlan({
+    capexPct: 0.3,
+    daPct: 0.2,
+    capexHistory: hist,
+    scenario: 'capex_fade',
+  });
   assert.equal(floored.terminalPct, 0.2);
   assert.match(floored.note, /floored at D&A/);
   const over = V.capexPlan({ capexPct: 0.39, daPct: 0.12, capexHistory: hist, override: 0.25 });

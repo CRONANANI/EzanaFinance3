@@ -64,7 +64,23 @@ const median = (xs) => {
  * The terminal capex intensity and where it came from (see the header). Never invented:
  * an override is the reader's, a history median is reported data, a flat ratio is the TTM.
  */
-export function capexPlan({ capexPct, daPct, capexHistory = [], override = null }) {
+/* Sonar 6.5 (Nov 28 2026): the capex fade toward the history median stays a labelled
+   scenario until the default receives financial-methodology approval. The default holds the
+   trailing intensity flat (the 6.4 assumption) and reports the fade beside it; the fade is the
+   default only when SONAR_DCF_CAPEX_FADE_DEFAULT=1 is set after that approval, or when a
+   caller asks for the scenario explicitly. */
+export const CAPEX_FADE_LABEL =
+  'Scenario: capex intensity fades to the history median (pending methodology approval)';
+const fadeIsDefault = () =>
+  typeof process !== 'undefined' && process.env?.SONAR_DCF_CAPEX_FADE_DEFAULT === '1';
+
+export function capexPlan({
+  capexPct,
+  daPct,
+  capexHistory = [],
+  override = null,
+  scenario = null,
+}) {
   const hist = (capexHistory || []).map((h) => num(h?.capexPct)).filter((v) => v != null && v >= 0);
   if (num(override) != null && override >= 0)
     return {
@@ -72,15 +88,27 @@ export function capexPlan({ capexPct, daPct, capexHistory = [], override = null 
       source: 'override',
       note: "the reader's terminal capex intensity",
       history: hist,
+      fadeScenario: null,
     };
   if (hist.length >= 3) {
     const med = median(hist);
     const floored = Math.max(med, daPct);
+    const fadeNote = `fades from the trailing ${pct(capexPct)}% to ${pct(floored)}% by year 5: the median of ${hist.length} fiscal-year trailing windows (${hist.map((v) => `${pct(v)}%`).join(', ')})${floored > med ? `, floored at D&A (${pct(daPct)}%)` : ''}`;
+    const fadeScenario = { label: CAPEX_FADE_LABEL, terminalPct: floored, note: fadeNote };
+    if (scenario === 'capex_fade' || fadeIsDefault())
+      return {
+        terminalPct: floored,
+        source: scenario === 'capex_fade' ? 'scenario' : 'reported',
+        note: scenario === 'capex_fade' ? `${CAPEX_FADE_LABEL}: ${fadeNote}` : fadeNote,
+        history: hist,
+        fadeScenario,
+      };
     return {
-      terminalPct: floored,
+      terminalPct: capexPct,
       source: 'reported',
-      note: `fades from the trailing ${pct(capexPct)}% to ${pct(floored)}% by year 5: the median of ${hist.length} fiscal-year trailing windows (${hist.map((v) => `${pct(v)}%`).join(', ')})${floored > med ? `, floored at D&A (${pct(daPct)}%)` : ''}`,
+      note: `trailing four quarters, held flat (default; ${CAPEX_FADE_LABEL.toLowerCase()} is shown separately)`,
       history: hist,
+      fadeScenario,
     };
   }
   return {
@@ -88,6 +116,7 @@ export function capexPlan({ capexPct, daPct, capexHistory = [], override = null 
     source: 'reported',
     note: 'trailing four quarters, held flat (fewer than three years of capex history)',
     history: hist,
+    fadeScenario: null,
   };
 }
 
@@ -99,7 +128,13 @@ export function capexPctAt(i, t) {
 
 export function dcfInputs(
   history,
-  { beta = null, riskFree = null, consensusGrowth = null, capexTerminalPct = null } = {},
+  {
+    beta = null,
+    riskFree = null,
+    consensusGrowth = null,
+    capexTerminalPct = null,
+    capexScenario = null,
+  } = {},
 ) {
   const t = history?.ttm || {};
   const c = history?.current || {};
@@ -148,6 +183,7 @@ export function dcfInputs(
     daPct,
     capexHistory: history.capexHistory,
     override: capexTerminalPct,
+    scenario: capexScenario,
   });
   return {
     ok: true,
@@ -163,6 +199,7 @@ export function dcfInputs(
       capexSource: plan.source,
       capexNote: plan.note,
       capexHistory: plan.history,
+      capexFadeScenario: plan.fadeScenario,
       /* Working capital: the trailing change against the trailing change in revenue is noisy,
          so the model holds it at 2% of the change in revenue, a stated convention. */
       wcPct: 0.02,
@@ -492,6 +529,7 @@ export function buildValuationModel({
   peerLogic = null,
   subject = null,
   capexTerminalPct = null,
+  capexScenario = null,
 }) {
   if (!history) return null;
   const di = dcfInputs(history, {
@@ -499,6 +537,7 @@ export function buildValuationModel({
     riskFree: market.riskFree,
     consensusGrowth,
     capexTerminalPct,
+    capexScenario,
   });
   const dcf = di.ok ? runDcf(di.inputs) : { missing: di.missing };
   const scen = di.ok && !dcf.error ? scenarios(di.inputs) : [];
@@ -596,7 +635,24 @@ export function buildValuationModel({
         },
       ]
     : [];
+  /* Sonar 6.5: the capex fade, valued as a separately labelled scenario beside the default. */
+  const fade = di.ok && !dcf.error ? di.inputs.capexFadeScenario : null;
+  const fadeRun =
+    fade && Math.abs(fade.terminalPct - di.inputs.capexTerminalPct) > 1e-9
+      ? runDcf(di.inputs, { capexTerminalPct: fade.terminalPct })
+      : null;
+  const capexFadeScenario =
+    fade && fadeRun && !fadeRun.error
+      ? {
+          label: fade.label,
+          terminalCapexPct: pct(fade.terminalPct),
+          perShare: fadeRun.perShare,
+          note: fade.note,
+          approved: false,
+        }
+      : null;
   return {
+    capexFadeScenario,
     version: MODEL_VERSION,
     asOf: history.asOf,
     history: {
