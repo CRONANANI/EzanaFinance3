@@ -172,20 +172,34 @@ export function repairClaim(claim, { sources = [], supported = () => true } = {}
  */
 export function contradictions(claims = [], sources = []) {
   const srcPct = sources.flatMap((t) => labeledPercents(t));
-  const stated = claims.flatMap((c) => labeledPercents(c.text).map((n) => ({ ...n, id: c.id })));
+  const srcAll = sources.flatMap((t) => numbersOf(t).filter((n) => n.pct));
+  /* A live run removed an unemployment rate (4.4%, sourced) because it shared the label
+     kind "rate" with the policy rate. A contradiction now needs the same label kind AND
+     the same subject word next to both numbers, and the other value must be in no source. */
+  const subjectOf = (sentence) =>
+    new Set(
+      (sentence.match(/\b[A-Z][A-Za-z.&-]{1,}\b/g) || []).filter(
+        (w) =>
+          !/^(?:The|A|An|In|On|At|Its|Their|This|That|These|Those|For|From|With|And|But|Over|Under|By|As|Of)$/.test(
+            w,
+          ),
+      ),
+    );
+  const stated = claims.flatMap((c) =>
+    labeledPercents(c.text).map((n) => ({ ...n, id: c.id, subject: subjectOf(n.sentence) })),
+  );
   const out = [];
   for (const a of stated) {
     for (const b of stated) {
       if (a === b || close(a.value, b.value)) continue;
       const shared = [...a.classes].filter((k) => b.classes.has(k));
       if (!shared.length) continue;
+      if (![...a.subject].some((w) => b.subject.has(w))) continue;
       const aOk = srcPct.some(
         (x) => close(x.value, a.value) && shared.some((k) => x.classes.has(k)),
       );
-      const bOk = srcPct.some(
-        (x) => close(x.value, b.value) && shared.some((k) => x.classes.has(k)),
-      );
-      if (aOk && !bOk && !out.some((o) => o.id === b.id && o.text === b.text))
+      const bAnywhere = srcAll.some((x) => close(x.value, b.value));
+      if (aOk && !bAnywhere && !out.some((o) => o.id === b.id && o.text === b.text))
         out.push({ id: b.id, text: b.text });
     }
   }

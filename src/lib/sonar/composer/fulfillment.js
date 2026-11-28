@@ -256,7 +256,9 @@ export function fulfillmentContract(c) {
         r?.coverage
           ? r.capability === OWNERSHIP_CAPABILITY
             ? `${r.coverage.withData} of ${r.coverage.selected} holdings reported by 13F managers${r.ownership?.period ? `, ${quarterLabel(r.ownership.period)}` : ''}`
-            : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
+            : r.capability === 'macro-indicators'
+              ? `${r.coverage.withData} of ${r.coverage.selected} countries with data`
+              : `${r.coverage.withData} of ${r.coverage.selected} companies with filed financials`
           : r?.failed || null,
       );
       if (reqs.length) objectives[objectives.length - 1].requirements = reqs;

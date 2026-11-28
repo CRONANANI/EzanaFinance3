@@ -157,8 +157,19 @@ export function conclusionRule(result) {
   switch (result.capability) {
     case 'financial-screen':
       return '- The executive conclusion must name the top companies of the screen with the ranking measure’s values, state the universe and how many companies passed each filter, and say which companies lacked the data. Do not add companies the screen did not return.';
-    case 'company-comparison':
-      return '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when fiscal years do not line up.';
+    case 'company-comparison': {
+      const valuation = (result.columns || []).some((c) =>
+        ['pe', 'ps', 'earnings_yield', 'market_cap'].includes(c.key),
+      );
+      return [
+        '- The executive conclusion must compare the named companies metric by metric using the computed figures, name the leader on each, and say when periods do not line up.',
+        valuation
+          ? '- P/E, P/S and earnings yield are trailing twelve months through the date in the TTM column at the price date shown; never attribute them to a fiscal year end. Where P/E is empty because trailing earnings are negative, say P/E is not meaningful for that reason and give its earnings yield.'
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n');
+    }
     case 'macro-indicators':
       return '- The executive conclusion must give, for each country, year-on-year inflation with its month, the 3-month annualised rate and the trend as computed (accelerating, decelerating or mixed), the policy rate with its date and the real policy rate with its paired month, and any policy changes with their dates. Use only the computed figures; do not describe inflation expectations or forecasts as if computed.';
     case 'government-dependence': {

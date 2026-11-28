@@ -255,11 +255,13 @@ export async function valuationFor(admin, tickers, figs, now = new Date()) {
       ),
     ]);
     for (const r of q) {
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (!Number.isFinite(v)) continue;
       ((quarters[r.ticker] ||= {})[r.concept] ||= []).push({ end: r.period_end, value: v });
     }
     for (const r of sh) {
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (!Number.isFinite(v) || r.period_end > asOf) continue;
       if (!shares[r.ticker] || r.period_end > shares[r.ticker].end)
@@ -792,6 +794,9 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
       ? att.params.metrics
       : ['revenue_growth', 'operating_margin', 'net_margin', 'fcf_margin', 'debt_to_equity']
   ).filter((m) => COMPARE_LABEL[m]);
+  /* P/E is undefined for losses: earnings yield is shown beside it, so a loss-maker is
+     never just a blank (Sonar 6.4 live validation). */
+  if (metrics.includes('pe') && !metrics.includes('earnings_yield')) metrics.push('earnings_yield');
   const figs = await filedFiguresPaged(admin, tickers, now);
   const names = att.params?.names || {};
   /* Sonar 6.4: valuation metrics from TTM figures and an authorized price. */
@@ -814,9 +819,26 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
     })(),
   }));
   const cmp = compareCompanies(rows, metrics);
+  /* Valuation is trailing twelve months to the latest filed quarter, not the fiscal year:
+     the live run attributed a TTM P/E to a fiscal year end ten months earlier. A
+     valuation-only comparison is aligned on the TTM end dates. */
+  const valuationOnly = wantsValuation && metrics.every((m) => VALUATION_METRICS.has(m));
+  if (valuationOnly) {
+    const ends = tickers.map((t) => val.values[t]?.ttmThrough).filter(Boolean);
+    const times = ends.map((e) => Date.parse(e));
+    cmp.fiscalYearEnds = [...new Set(ends)];
+    cmp.aligned = times.length ? (Math.max(...times) - Math.min(...times)) / 86400000 <= 45 : true;
+  }
+  /* A metric that is undefined by definition (P/E of a loss-maker) is not missing data. */
+  cmp.missing = cmp.missing.filter(
+    (t) => !(val.values[t]?.peStatus === 'negative' && valuationOnly),
+  );
   const columns = [
     { key: 'ticker', label: 'Ticker' },
-    { key: 'fiscalYearEnd', label: 'Fiscal year end' },
+    valuationOnly
+      ? { key: 'ttmThrough', label: 'TTM through' }
+      : { key: 'fiscalYearEnd', label: 'Fiscal year end' },
+    ...(wantsValuation ? [{ key: 'priceAsOf', label: 'Price date' }] : []),
     ...metrics.map((m) => ({
       key: m,
       label: COMPARE_LABEL[m],
@@ -826,12 +848,16 @@ export async function runComparison(admin, att, { now = new Date() } = {}) {
   const table = rows.map((r) => ({
     ticker: r.ticker,
     fiscalYearEnd: r.ratios?.fiscalYearEnd || null,
+    ttmThrough: val.values[r.ticker]?.ttmThrough || null,
+    priceAsOf: val.values[r.ticker]?.priceAsOf || null,
     ...Object.fromEntries(metrics.map((m) => [m, r.ratios?.[m] ?? null])),
   }));
   const limitations = [
     cmp.aligned
       ? null
-      : `The latest fiscal years end on different dates (${cmp.fiscalYearEnds.join(', ')}), so the periods overlap only in part or not at all.`,
+      : valuationOnly
+        ? `The trailing twelve months end on different dates (${cmp.fiscalYearEnds.join(', ')}), so the periods overlap only in part.`
+        : `The latest fiscal years end on different dates (${cmp.fiscalYearEnds.join(', ')}), so the periods overlap only in part or not at all.`,
     cmp.missing.length
       ? `Missing filed figures for some metrics: ${cmp.missing.join(', ')}.`
       : null,
@@ -1053,6 +1079,10 @@ export async function runMacro(admin, att, { now = new Date() } = {}) {
   const group = (rows) => {
     const out = {};
     for (const r of rows) {
+      /* A missing observation is null (BIS daily series carry nulls on weekends);
+         Number(null) is 0, which read as a policy cut and back every weekend in a live
+         run. Missing stays missing. */
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (Number.isFinite(v)) (out[r.country_iso3] ||= {})[String(r.period)] = v;
     }
@@ -1132,6 +1162,9 @@ export async function runMacro(admin, att, { now = new Date() } = {}) {
   const limitations = [
     'Inflation is the year-on-year change of the IMF consumer price index (not seasonally adjusted); the 3-month annualised rate on an unadjusted index is noisy and can move with seasonal patterns.',
     'The real policy rate subtracts year-on-year inflation for the same month as the policy rate; it is backward-looking (not inflation expectations).',
+    byCountry.USA
+      ? 'For the United States, BIS reports the midpoint of the Federal Reserve target range as the policy rate.'
+      : null,
     ...Object.values(byCountry)
       .map((x) => x.gapNote && `${x.country}: ${x.gapNote}`)
       .filter(Boolean),

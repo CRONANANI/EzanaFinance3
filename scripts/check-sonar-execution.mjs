@@ -677,10 +677,10 @@ test('claim check: a contradicting value for the same label is removed', async (
   const { contradictions } = await import('../src/lib/sonar/engine/claim-check.js');
   const out = contradictions(
     [
-      { id: 'conclusion', text: 'Operating margin was 20.0% [S1].' },
-      { id: 'finding_1', text: 'Operating margin reached 25.0% last year.' },
+      { id: 'conclusion', text: 'AMD operating margin was 20.0% [S1].' },
+      { id: 'finding_1', text: 'AMD operating margin reached 25.0% last year.' },
     ],
-    ['Operating margin: 20.0%. Revenue growth: 25.0%.'],
+    ['AMD operating margin: 20.0%. AMD revenue: $34.6B.'],
   );
   assert.deepEqual(out, [{ id: 'finding_1', text: '25.0%' }]);
 });
@@ -718,4 +718,63 @@ test('bench integrity: members named as the evidence names them meet the objecti
   assert.equal(withTerms.objectives.missing.includes('members'), false);
   const without = scoreRun(run, c);
   assert.equal(without.objectives.missing.includes('members'), true);
+});
+
+test('macro: null observations (BIS weekends) are missing, never zero', async () => {
+  const { runMacro } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const daily = [];
+  for (const [d, v] of [
+    ['2025-12-30', 2.75],
+    ['2026-01-02', 2.75],
+    ['2026-01-03', null],
+    ['2026-01-04', null],
+    ['2026-01-05', 2.75],
+    ['2026-03-12', 2.75],
+    ['2026-03-13', 2.5],
+    ['2026-03-14', null],
+    ['2026-03-16', 2.5],
+  ])
+    daily.push({
+      source: 'bis',
+      series_key: 'WS_CBPOL:D.CA',
+      country_iso3: 'CAN',
+      period: d,
+      value: v,
+      series_name: 'Central bank policy rates',
+      frequency: 'D',
+    });
+  const tables = { ...FIXTURES, macro_series_values: [...FIXTURES.macro_series_values, ...daily] };
+  const res = await runMacro(
+    fakeSupabase(tables),
+    {
+      capability: 'macro-indicators',
+      params: { countries: ['CAN'], measures: ['policy_changes', 'policy_rate'] },
+    },
+    { now: NOW },
+  );
+  const ca = res.macro.byCountry.CAN;
+  assert.equal(ca.changeBasis, 'daily');
+  assert.deepEqual(
+    ca.changes.map((c) => [c.date, c.change]),
+    [['2026-03-13', -0.25]],
+  );
+});
+
+test('claim check: a sourced number with a different metric of the same kind is not a contradiction', async () => {
+  const { contradictions } = await import('../src/lib/sonar/engine/claim-check.js');
+  /* Live run: the unemployment rate (4.4%, sourced) was removed for sharing "rate" with the
+     policy rate. */
+  assert.deepEqual(
+    contradictions(
+      [
+        { id: 'conclusion', text: 'The US policy rate is 3.88% [S1].' },
+        { id: 'finding_1', text: 'The US unemployment rate is 4.4% [S2].' },
+      ],
+      [
+        'United States policy rate 3.88% (2026-10).',
+        'United States unemployment 4.4% in September.',
+      ],
+    ),
+    [],
+  );
 });

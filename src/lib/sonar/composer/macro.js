@@ -110,7 +110,7 @@ export function policyChanges({ daily = {}, monthly = {} } = {}, { from }) {
   let prev = null;
   for (const k of keys) {
     const v = series[k];
-    if (!Number.isFinite(v)) continue;
+    if (v == null || !Number.isFinite(v)) continue;
     if (prev != null && v !== prev.v && k.slice(0, 7) >= from)
       changes.push({
         date: k,
