@@ -102,11 +102,14 @@ function phraseEntities(tokens) {
         country: m.country,
         confidence: 0.97,
       });
-      if (m.country && m.country !== 'EU')
+      const place = COUNTRIES.find(([iso2]) => iso2 === m.country);
+      if (place)
         out.push({
           kind: 'country',
           id: m.country,
-          label: m.label,
+          /* The country's own name (resolvers look countries up by name). */
+          label: place[2],
+          ...(place[4] ? { takesThe: true } : {}),
           confidence: 0.95,
           via: 'central_bank',
           surface: m.surface,

@@ -199,7 +199,13 @@ export function scoreEvidence(
     relationship,
   };
   let score = 0;
-  for (const [k, w] of Object.entries(weights)) score += w * (components[k] ?? 0);
+  /* A component that is not a finite number (an unparseable date gives NaN) counts as 0,
+     so one malformed record cannot make every score NaN (Sonar 6.4 hardening: a live run
+     crashed in packEvidence when no candidate compared greater than -Infinity). */
+  for (const [k, w] of Object.entries(weights)) {
+    const v = components[k];
+    score += w * (Number.isFinite(v) ? v : 0);
+  }
   /* Historical evidence (research memory) never outranks fresh evidence of
      the same strength: it is a candidate, discounted. */
   if (e.historical) score *= 0.85;
@@ -247,6 +253,7 @@ export function packEvidence(
         best = { c, red };
       }
     }
+    if (!best) break;
     remaining.delete(best.c);
     const len = best.c.evidence.text.length + best.c.evidence.title.length;
     if (best.c.score < minScore) {

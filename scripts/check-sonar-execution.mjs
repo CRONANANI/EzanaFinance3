@@ -1062,3 +1062,25 @@ test('macro provenance: observed vs derived, missing months listed, nothing inte
   assert.ok(p.missingMonths.includes('2025-10'));
   assert.match(p.derived.latestYoY, /both months observed/);
 });
+
+test('evidence packing survives a non-finite component', async () => {
+  const { packEvidence, scoreEvidence } = await import('../src/lib/sonar/engine/evidence.js');
+  const e = {
+    title: 'Canada policy rate',
+    text: 'Canada policy rate 2.50%',
+    entities: [],
+    numbers: [2.5],
+    reliability: 0.9,
+    date: 'not a date',
+    source: 'macro_series',
+    kind: 'record',
+  };
+  const s = scoreEvidence(
+    e,
+    { rawQuery: 'Has the Bank of Canada cut rates?', timeHorizon: {} },
+    {},
+  );
+  assert.ok(Number.isFinite(s.score));
+  const packed = packEvidence([{ evidence: e, score: NaN, components: {} }], { minScore: 0 });
+  assert.ok(Array.isArray(packed.selected));
+});
