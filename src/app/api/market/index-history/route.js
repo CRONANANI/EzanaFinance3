@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withFmpSample } from '@/lib/market-sample';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
@@ -283,99 +284,101 @@ async function fallbackIndexWeek(request) {
   });
 }
 
-export const GET = withApiGuard(
-  async (request) => {
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || '7D';
-    const daily = searchParams.get('granularity') === 'daily' && period !== '1D';
-    const avKey = getAlphaVantageApiKey();
-    const fmpKey = getFmpKey();
+export const GET = withFmpSample(
+  withApiGuard(
+    async (request) => {
+      const { searchParams } = new URL(request.url);
+      const period = searchParams.get('period') || '7D';
+      const daily = searchParams.get('granularity') === 'daily' && period !== '1D';
+      const avKey = getAlphaVantageApiKey();
+      const fmpKey = getFmpKey();
 
-    if (!avKey && !fmpKey) {
-      if (period === '7D') {
+      if (!avKey && !fmpKey) {
+        if (period === '7D') {
+          try {
+            return await fallbackIndexWeek(request);
+          } catch {
+            /* fall through */
+          }
+        }
+        return NextResponse.json(
+          { ok: false, error: 'no_key', indices: {}, period },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
+      }
+
+      const startDate = getStartDate(period);
+      // Daily mode needs the close before the window opens, so reach back far
+      // enough to clear a weekend plus a holiday.
+      const fetchFrom = daily
+        ? toYmd(new Date(new Date(`${startDate}T12:00:00Z`).getTime() - 10 * 86400000))
+        : startDate;
+      const indices = {};
+      let anySuccess = false;
+
+      const results = await Promise.allSettled(
+        INDEX_KEYS.map(async (key) => {
+          const config = INDEX_CONFIGS[key];
+
+          if (avKey) {
+            const avData = await fetchAvSeries(config);
+            if (avData) {
+              const points = parseAvResponse(avData, config);
+              if (points.length > 0) {
+                return { key, points, source: 'av' };
+              }
+            }
+          }
+
+          if (fmpKey && config.fmpSymbol) {
+            const fmpPoints = await fetchFmpDaily(config.fmpSymbol, fetchFrom);
+            if (fmpPoints && fmpPoints.length > 0) {
+              return { key, points: fmpPoints, source: 'fmp' };
+            }
+          }
+
+          return { key, points: [], source: 'none' };
+        }),
+      );
+
+      for (const result of results) {
+        if (result.status !== 'fulfilled') continue;
+        const { key, points } = result.value;
+        const config = INDEX_CONFIGS[key];
+        const { series, currentPrice } = daily
+          ? buildDailySeries(points, period)
+          : buildSeries(points, period);
+
+        if (series.length > 0) anySuccess = true;
+
+        indices[key] = { key, name: config.name, series, currentPrice };
+      }
+
+      for (const key of INDEX_KEYS) {
+        if (!indices[key]) {
+          indices[key] = { key, name: INDEX_CONFIGS[key].name, series: [], currentPrice: null };
+        }
+      }
+
+      if (!anySuccess && period === '7D') {
         try {
           return await fallbackIndexWeek(request);
         } catch {
           /* fall through */
         }
       }
+
+      const cacheTtl = period === '1D' ? 60 : period === '7D' ? 120 : 300;
+
       return NextResponse.json(
-        { ok: false, error: 'no_key', indices: {}, period },
-        { headers: { 'Cache-Control': 'no-store' } },
-      );
-    }
-
-    const startDate = getStartDate(period);
-    // Daily mode needs the close before the window opens, so reach back far
-    // enough to clear a weekend plus a holiday.
-    const fetchFrom = daily
-      ? toYmd(new Date(new Date(`${startDate}T12:00:00Z`).getTime() - 10 * 86400000))
-      : startDate;
-    const indices = {};
-    let anySuccess = false;
-
-    const results = await Promise.allSettled(
-      INDEX_KEYS.map(async (key) => {
-        const config = INDEX_CONFIGS[key];
-
-        if (avKey) {
-          const avData = await fetchAvSeries(config);
-          if (avData) {
-            const points = parseAvResponse(avData, config);
-            if (points.length > 0) {
-              return { key, points, source: 'av' };
-            }
-          }
-        }
-
-        if (fmpKey && config.fmpSymbol) {
-          const fmpPoints = await fetchFmpDaily(config.fmpSymbol, fetchFrom);
-          if (fmpPoints && fmpPoints.length > 0) {
-            return { key, points: fmpPoints, source: 'fmp' };
-          }
-        }
-
-        return { key, points: [], source: 'none' };
-      }),
-    );
-
-    for (const result of results) {
-      if (result.status !== 'fulfilled') continue;
-      const { key, points } = result.value;
-      const config = INDEX_CONFIGS[key];
-      const { series, currentPrice } = daily
-        ? buildDailySeries(points, period)
-        : buildSeries(points, period);
-
-      if (series.length > 0) anySuccess = true;
-
-      indices[key] = { key, name: config.name, series, currentPrice };
-    }
-
-    for (const key of INDEX_KEYS) {
-      if (!indices[key]) {
-        indices[key] = { key, name: INDEX_CONFIGS[key].name, series: [], currentPrice: null };
-      }
-    }
-
-    if (!anySuccess && period === '7D') {
-      try {
-        return await fallbackIndexWeek(request);
-      } catch {
-        /* fall through */
-      }
-    }
-
-    const cacheTtl = period === '1D' ? 60 : period === '7D' ? 120 : 300;
-
-    return NextResponse.json(
-      { ok: anySuccess, indices, period, granularity: daily ? 'daily' : 'aggregated' },
-      {
-        headers: {
-          'Cache-Control': `public, s-maxage=${cacheTtl}, stale-while-revalidate=${cacheTtl * 2}`,
+        { ok: anySuccess, indices, period, granularity: daily ? 'daily' : 'aggregated' },
+        {
+          headers: {
+            'Cache-Control': `public, s-maxage=${cacheTtl}, stale-while-revalidate=${cacheTtl * 2}`,
+          },
         },
-      },
-    );
-  },
-  { requireAuth: false },
+      );
+    },
+    { requireAuth: false },
+  ),
 );

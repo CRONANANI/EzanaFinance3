@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TutorialWalkthrough } from '@/components/TutorialWalkthrough';
 import { BetaLockGate } from '@/components/beta/BetaLockGate';
 import { useWatchlistPriceAlerts } from '@/hooks/useWatchlistPriceAlerts';
+import { MarketSampleBanner } from '@/components/market-sample/MarketSampleBanner';
 /* Moved down from the root layout: these six have no consumers outside this
    segment, so hoisting them here keeps marketing and auth routes from paying
    for dashboard state. Order matters only in that SettingsProvider reads
@@ -175,6 +176,8 @@ function DashboardShell({
           className={`dashboard-container${isPartnerExperience ? ' dashboard-container--partner-inset' : ''}`}
         >
           <DashboardTrialShell>
+            {/* Temporary (Nov 28 2026): sample-data notice while FMP refuses the key. */}
+            <MarketSampleBanner />
             <BetaLockGate>{children}</BetaLockGate>
           </DashboardTrialShell>
         </div>

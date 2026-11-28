@@ -1,0 +1,18 @@
+.market-sample-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--amber);
+  border-radius: var(--radius-md);
+  background: var(--amber-bg);
+  color: var(--text-primary);
+  font-size: var(--type-caption, 13px);
+  line-height: 1.45;
+}
+
+.market-sample-banner .bi {
+  color: var(--amber);
+  margin-top: 2px;
+}

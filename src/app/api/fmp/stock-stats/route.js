@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withFmpSample } from '@/lib/market-sample';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 
@@ -54,171 +55,178 @@ async function fmpFirstObject(url) {
   return raw && typeof raw === 'object' ? raw : null;
 }
 
-export const GET = withApiGuard(
-  async (request) => {
-    const FMP_KEY = getFmpKey();
-    if (!FMP_KEY) {
-      return NextResponse.json(
-        { error: 'FMP_API_KEY not configured' },
-        {
-          status: 503,
-          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-        },
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const symbol = (searchParams.get('symbol') || '').toUpperCase().trim();
-
-    if (!symbol) {
-      return NextResponse.json({ error: 'symbol required' }, { status: 400 });
-    }
-
-    const key = encodeURIComponent(FMP_KEY);
-    const sym = encodeURIComponent(symbol);
-
-    try {
-      const quoteUrl = `${BASE}/quote?symbol=${sym}&apikey=${key}`;
-      const profileUrl = `${BASE}/profile?symbol=${sym}&apikey=${key}`;
-      const ratiosTtmUrl = `${BASE}/ratios-ttm?symbol=${sym}&apikey=${key}`;
-      /** FY ratios — P/E for the stock chart uses `priceToEarningsRatio` from this response */
-      const ratiosFyUrl = `${BASE}/ratios?symbol=${sym}&apikey=${key}`;
-
-      const [quoteRes, profileRes, ratiosTtmRes, ratiosFyRes] = await Promise.all([
-        fetchWithRetry(quoteUrl),
-        fetchWithRetry(profileUrl),
-        fetchWithRetry(ratiosTtmUrl),
-        fetchWithRetry(ratiosFyUrl),
-      ]);
-
-      if (
-        quoteRes.status === 429 &&
-        profileRes.status === 429 &&
-        ratiosTtmRes.status === 429 &&
-        ratiosFyRes.status === 429
-      ) {
+export const GET = withFmpSample(
+  withApiGuard(
+    async (request) => {
+      const FMP_KEY = getFmpKey();
+      if (!FMP_KEY) {
         return NextResponse.json(
+          { error: 'FMP_API_KEY not configured' },
           {
-            error: 'Rate limit reached. Please wait a moment.',
-            rateLimited: true,
-            mcap: '--',
-            pe: '--',
-            divYield: '--',
-            eps: '--',
-            capType: '--',
-            price: null,
+            status: 503,
+            headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
           },
-          { status: 200 },
         );
       }
 
-      const parse = async (res) => {
-        if (!res.ok) return null;
-        const raw = await res.json();
-        if (Array.isArray(raw)) return raw[0] ?? null;
-        return raw && typeof raw === 'object' ? raw : null;
-      };
+      const { searchParams } = new URL(request.url);
+      const symbol = (searchParams.get('symbol') || '').toUpperCase().trim();
 
-      /** `parse` uses first array element — matches latest FY row from `/ratios` */
-      const [q, prof, ratiosTtm, ratiosFy] = await Promise.all([
-        parse(quoteRes),
-        parse(profileRes),
-        parse(ratiosTtmRes),
-        parse(ratiosFyRes),
-      ]);
-
-      const mcapNum = q?.marketCap ?? q?.market_cap ?? prof?.mktCap ?? prof?.marketCap ?? null;
-
-      const price = q?.price ?? prof?.price ?? null;
-
-      const pe =
-        ratiosFy?.priceToEarningsRatio ??
-        q?.pe ??
-        q?.peRatio ??
-        ratiosTtm?.peRatioTTM ??
-        ratiosTtm?.priceEarningsRatioTTM ??
-        ratiosTtm?.peRatio ??
-        null;
-
-      const eps =
-        q?.eps ?? ratiosTtm?.netIncomePerShareTTM ?? ratiosTtm?.epsTTM ?? ratiosTtm?.eps ?? null;
-
-      let divYieldStr = '--';
-      const divRaw =
-        ratiosTtm?.dividendYieldTTM ??
-        ratiosTtm?.dividendYield ??
-        prof?.dividendYield ??
-        prof?.lastDivYield ??
-        null;
-
-      if (divRaw != null && !Number.isNaN(Number(divRaw))) {
-        divYieldStr = fmtDivYield(divRaw);
-      } else if (prof?.lastDiv != null && price != null && Number(price) > 0) {
-        const y = (Number(prof.lastDiv) / Number(price)) * 100;
-        if (!Number.isNaN(y)) divYieldStr = `${y.toFixed(2)}%`;
+      if (!symbol) {
+        return NextResponse.json({ error: 'symbol required' }, { status: 400 });
       }
 
-      return NextResponse.json({
-        mcap: fmtMarketCap(mcapNum),
-        capType: capType(mcapNum),
-        pe: pe != null && !Number.isNaN(Number(pe)) ? Number(pe).toFixed(2) : '--',
-        eps: eps != null && !Number.isNaN(Number(eps)) ? Number(eps).toFixed(2) : '--',
-        divYield: divYieldStr,
-        price: price != null ? Number(price) : null,
-        priceFormatted:
-          price != null
-            ? `$${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-            : null,
-        symbol,
-        // Identity + day change for the Research company header (additive).
-        name: prof?.companyName ?? q?.name ?? null,
-        exchange: prof?.exchange ?? prof?.exchangeShortName ?? q?.exchange ?? null,
-        sector: prof?.sector || null,
-        industry: prof?.industry || null,
-        logo:
-          typeof prof?.image === 'string' && prof.image.startsWith('https://') ? prof.image : null,
-        change: q?.change != null && Number.isFinite(Number(q.change)) ? Number(q.change) : null,
-        changePct: (() => {
-          const raw = q?.changePercentage ?? q?.changesPercentage ?? null;
-          return raw != null && Number.isFinite(Number(raw)) ? Number(raw) : null;
-        })(),
-        asOf:
-          q?.timestamp != null && Number.isFinite(Number(q.timestamp)) ? Number(q.timestamp) : null,
-        /* Company Profile band (Nov 19th, 2026, additive): FMP profile fields
+      const key = encodeURIComponent(FMP_KEY);
+      const sym = encodeURIComponent(symbol);
+
+      try {
+        const quoteUrl = `${BASE}/quote?symbol=${sym}&apikey=${key}`;
+        const profileUrl = `${BASE}/profile?symbol=${sym}&apikey=${key}`;
+        const ratiosTtmUrl = `${BASE}/ratios-ttm?symbol=${sym}&apikey=${key}`;
+        /** FY ratios — P/E for the stock chart uses `priceToEarningsRatio` from this response */
+        const ratiosFyUrl = `${BASE}/ratios?symbol=${sym}&apikey=${key}`;
+
+        const [quoteRes, profileRes, ratiosTtmRes, ratiosFyRes] = await Promise.all([
+          fetchWithRetry(quoteUrl),
+          fetchWithRetry(profileUrl),
+          fetchWithRetry(ratiosTtmUrl),
+          fetchWithRetry(ratiosFyUrl),
+        ]);
+
+        if (
+          quoteRes.status === 429 &&
+          profileRes.status === 429 &&
+          ratiosTtmRes.status === 429 &&
+          ratiosFyRes.status === 429
+        ) {
+          return NextResponse.json(
+            {
+              error: 'Rate limit reached. Please wait a moment.',
+              rateLimited: true,
+              mcap: '--',
+              pe: '--',
+              divYield: '--',
+              eps: '--',
+              capType: '--',
+              price: null,
+            },
+            { status: 200 },
+          );
+        }
+
+        const parse = async (res) => {
+          if (!res.ok) return null;
+          const raw = await res.json();
+          if (Array.isArray(raw)) return raw[0] ?? null;
+          return raw && typeof raw === 'object' ? raw : null;
+        };
+
+        /** `parse` uses first array element — matches latest FY row from `/ratios` */
+        const [q, prof, ratiosTtm, ratiosFy] = await Promise.all([
+          parse(quoteRes),
+          parse(profileRes),
+          parse(ratiosTtmRes),
+          parse(ratiosFyRes),
+        ]);
+
+        const mcapNum = q?.marketCap ?? q?.market_cap ?? prof?.mktCap ?? prof?.marketCap ?? null;
+
+        const price = q?.price ?? prof?.price ?? null;
+
+        const pe =
+          ratiosFy?.priceToEarningsRatio ??
+          q?.pe ??
+          q?.peRatio ??
+          ratiosTtm?.peRatioTTM ??
+          ratiosTtm?.priceEarningsRatioTTM ??
+          ratiosTtm?.peRatio ??
+          null;
+
+        const eps =
+          q?.eps ?? ratiosTtm?.netIncomePerShareTTM ?? ratiosTtm?.epsTTM ?? ratiosTtm?.eps ?? null;
+
+        let divYieldStr = '--';
+        const divRaw =
+          ratiosTtm?.dividendYieldTTM ??
+          ratiosTtm?.dividendYield ??
+          prof?.dividendYield ??
+          prof?.lastDivYield ??
+          null;
+
+        if (divRaw != null && !Number.isNaN(Number(divRaw))) {
+          divYieldStr = fmtDivYield(divRaw);
+        } else if (prof?.lastDiv != null && price != null && Number(price) > 0) {
+          const y = (Number(prof.lastDiv) / Number(price)) * 100;
+          if (!Number.isNaN(y)) divYieldStr = `${y.toFixed(2)}%`;
+        }
+
+        return NextResponse.json({
+          mcap: fmtMarketCap(mcapNum),
+          capType: capType(mcapNum),
+          pe: pe != null && !Number.isNaN(Number(pe)) ? Number(pe).toFixed(2) : '--',
+          eps: eps != null && !Number.isNaN(Number(eps)) ? Number(eps).toFixed(2) : '--',
+          divYield: divYieldStr,
+          price: price != null ? Number(price) : null,
+          priceFormatted:
+            price != null
+              ? `$${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : null,
+          symbol,
+          // Identity + day change for the Research company header (additive).
+          name: prof?.companyName ?? q?.name ?? null,
+          exchange: prof?.exchange ?? prof?.exchangeShortName ?? q?.exchange ?? null,
+          sector: prof?.sector || null,
+          industry: prof?.industry || null,
+          logo:
+            typeof prof?.image === 'string' && prof.image.startsWith('https://')
+              ? prof.image
+              : null,
+          change: q?.change != null && Number.isFinite(Number(q.change)) ? Number(q.change) : null,
+          changePct: (() => {
+            const raw = q?.changePercentage ?? q?.changesPercentage ?? null;
+            return raw != null && Number.isFinite(Number(raw)) ? Number(raw) : null;
+          })(),
+          asOf:
+            q?.timestamp != null && Number.isFinite(Number(q.timestamp))
+              ? Number(q.timestamp)
+              : null,
+          /* Company Profile band (Nov 19th, 2026, additive): FMP profile fields
            only, null when FMP has none. No founding year exists in this
            source, so the band shows the IPO date and labels it as such. */
-        profile: {
-          description:
-            typeof prof?.description === 'string' && prof.description.trim()
-              ? prof.description.trim()
-              : null,
-          website:
-            typeof prof?.website === 'string' && /^https?:\/\//.test(prof.website)
-              ? prof.website
-              : null,
-          ceo: prof?.ceo || null,
-          employees: (() => {
-            const n = Number(prof?.fullTimeEmployees);
-            return Number.isFinite(n) && n > 0 ? n : null;
-          })(),
-          city: prof?.city || null,
-          state: prof?.state || null,
-          country: prof?.country || null,
-          ipoDate: prof?.ipoDate || null,
-          beta: prof?.beta != null && Number.isFinite(Number(prof.beta)) ? Number(prof.beta) : null,
-          marketCap: mcapNum != null && Number.isFinite(Number(mcapNum)) ? Number(mcapNum) : null,
-        },
-      });
-    } catch (err) {
-      console.error('[fmp/stock-stats]', err);
-      return NextResponse.json(
-        { error: err.message, mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' },
-        {
-          status: 200,
-          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-        },
-      );
-    }
-  },
-  { requireAuth: false },
+          profile: {
+            description:
+              typeof prof?.description === 'string' && prof.description.trim()
+                ? prof.description.trim()
+                : null,
+            website:
+              typeof prof?.website === 'string' && /^https?:\/\//.test(prof.website)
+                ? prof.website
+                : null,
+            ceo: prof?.ceo || null,
+            employees: (() => {
+              const n = Number(prof?.fullTimeEmployees);
+              return Number.isFinite(n) && n > 0 ? n : null;
+            })(),
+            city: prof?.city || null,
+            state: prof?.state || null,
+            country: prof?.country || null,
+            ipoDate: prof?.ipoDate || null,
+            beta:
+              prof?.beta != null && Number.isFinite(Number(prof.beta)) ? Number(prof.beta) : null,
+            marketCap: mcapNum != null && Number.isFinite(Number(mcapNum)) ? Number(mcapNum) : null,
+          },
+        });
+      } catch (err) {
+        console.error('[fmp/stock-stats]', err);
+        return NextResponse.json(
+          { error: err.message, mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' },
+          {
+            status: 200,
+            headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+          },
+        );
+      }
+    },
+    { requireAuth: false },
+  ),
 );

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withFmpSample } from '@/lib/market-sample';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { getAdminClient } from '@/lib/supabase';
@@ -360,32 +361,35 @@ async function filings(sym) {
 
 const PARTS = { financials, ownership, filings };
 
-export const GET = withApiGuard(
-  async (request, user, context) => {
-    const sym = String(context?.params?.symbol || '')
-      .toUpperCase()
-      .trim();
-    if (!SYMBOL_RE.test(sym)) {
-      return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
-    }
-    const part = new URL(request.url).searchParams.get('part') || '';
-    const fn = PARTS[part];
-    if (!fn) {
-      return NextResponse.json(
-        { error: 'part must be financials, ownership or filings' },
-        { status: 400 },
-      );
-    }
-    try {
-      const out = await fn(sym);
-      if (out?.error) return NextResponse.json({ error: out.error }, { status: out.status || 500 });
-      return NextResponse.json(out, {
-        headers: { 'Cache-Control': 'private, max-age=300' },
-      });
-    } catch (err) {
-      console.error(`[research/company] ${part} ${sym}`, err?.message || err);
-      return NextResponse.json({ error: 'Could not load this section.' }, { status: 500 });
-    }
-  },
-  { requireAuth: true },
+export const GET = withFmpSample(
+  withApiGuard(
+    async (request, user, context) => {
+      const sym = String(context?.params?.symbol || '')
+        .toUpperCase()
+        .trim();
+      if (!SYMBOL_RE.test(sym)) {
+        return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
+      }
+      const part = new URL(request.url).searchParams.get('part') || '';
+      const fn = PARTS[part];
+      if (!fn) {
+        return NextResponse.json(
+          { error: 'part must be financials, ownership or filings' },
+          { status: 400 },
+        );
+      }
+      try {
+        const out = await fn(sym);
+        if (out?.error)
+          return NextResponse.json({ error: out.error }, { status: out.status || 500 });
+        return NextResponse.json(out, {
+          headers: { 'Cache-Control': 'private, max-age=300' },
+        });
+      } catch (err) {
+        console.error(`[research/company] ${part} ${sym}`, err?.message || err);
+        return NextResponse.json({ error: 'Could not load this section.' }, { status: 500 });
+      }
+    },
+    { requireAuth: true },
+  ),
 );

@@ -10,6 +10,7 @@
  * FMP_API_KEY is server-only — never prefix with NEXT_PUBLIC_.
  */
 import { NextResponse } from 'next/server';
+import { withFmpSample } from '@/lib/market-sample';
 import { withApiGuard } from '@/lib/api-guard';
 import { FmpError, getSectorPerformance } from '@/lib/fmp/sector-performance';
 
@@ -58,47 +59,49 @@ function classify(err) {
   return { status: 500, userMessage: "Couldn't load sector performance right now." };
 }
 
-export const GET = withApiGuard(
-  async (request) => {
-    const { searchParams } = new URL(request.url);
-    const rangeParam = (searchParams.get('range') || '1D').toUpperCase();
-    const range = VALID_RANGES.has(rangeParam) ? rangeParam : '1D';
-    const exchange = searchParams.get('exchange') || undefined;
+export const GET = withFmpSample(
+  withApiGuard(
+    async (request) => {
+      const { searchParams } = new URL(request.url);
+      const rangeParam = (searchParams.get('range') || '1D').toUpperCase();
+      const range = VALID_RANGES.has(rangeParam) ? rangeParam : '1D';
+      const exchange = searchParams.get('exchange') || undefined;
 
-    try {
-      const { data, asOf, degraded } = await getSectorPerformance(range, exchange);
-      return NextResponse.json({
-        range,
-        asOf,
-        sectors: data,
-        ...(degraded ? { degraded } : {}),
-      });
-    } catch (err) {
-      // Log the real story server-side. This is where the "Failed to fetch"
-      // investigation starts — the client only sees the sanitized userMessage.
-      // eslint-disable-next-line no-console
-      console.error('[GET /api/fmp/sector-performance] failed:', {
-        range,
-        exchange,
-        name: err?.name,
-        status: err instanceof FmpError ? err.status : undefined,
-        message: err?.message,
-        stack: err?.stack,
-      });
-
-      const { status, userMessage } = classify(err);
-      const isDev = process.env.NODE_ENV !== 'production';
-
-      return NextResponse.json(
-        {
+      try {
+        const { data, asOf, degraded } = await getSectorPerformance(range, exchange);
+        return NextResponse.json({
           range,
-          sectors: [],
-          error: userMessage,
-          detail: isDev ? String(err?.message || err) : undefined,
-        },
-        { status },
-      );
-    }
-  },
-  { requireAuth: false },
+          asOf,
+          sectors: data,
+          ...(degraded ? { degraded } : {}),
+        });
+      } catch (err) {
+        // Log the real story server-side. This is where the "Failed to fetch"
+        // investigation starts — the client only sees the sanitized userMessage.
+        // eslint-disable-next-line no-console
+        console.error('[GET /api/fmp/sector-performance] failed:', {
+          range,
+          exchange,
+          name: err?.name,
+          status: err instanceof FmpError ? err.status : undefined,
+          message: err?.message,
+          stack: err?.stack,
+        });
+
+        const { status, userMessage } = classify(err);
+        const isDev = process.env.NODE_ENV !== 'production';
+
+        return NextResponse.json(
+          {
+            range,
+            sectors: [],
+            error: userMessage,
+            detail: isDev ? String(err?.message || err) : undefined,
+          },
+          { status },
+        );
+      }
+    },
+    { requireAuth: false },
+  ),
 );
