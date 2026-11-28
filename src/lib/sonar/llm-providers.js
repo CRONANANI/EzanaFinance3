@@ -21,6 +21,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────
  */
 
+import { requestShape } from './model-routing.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { removeEmDashes } from '@/lib/text/em-dash';
 
@@ -290,6 +291,11 @@ async function anthropicSynthesize({
   minHopMs,
   reserveMs,
   maxHopMs = null,
+  /* Nov 28 2026: thinking and effort per role (see requestShape in model-routing.js). A
+     caller that passes neither keeps the model's default. */
+  think = null,
+  effort = null,
+  reserveTokens = 0,
 }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   /* A long written report (deep research, Nov 2026) needs one call of a
@@ -313,12 +319,19 @@ async function anthropicSynthesize({
     return new ProviderUnavailableError('anthropic: timed out');
   };
 
-  const baseBody = {
-    model,
-    max_tokens: maxTokens,
-    system,
-    messages: [{ role: 'user', content: user }],
+  /* The request for a model: its thinking and effort fields, and max_tokens scaled for its
+     tokenizer plus room for thinking where thinking runs. A fallback model gets its own. */
+  const bodyFor = (m) => {
+    const shape = requestShape(m, { maxTokens, think, effort, reserveTokens });
+    return {
+      model: m,
+      max_tokens: think || effort ? shape.maxTokens : maxTokens,
+      system,
+      messages: [{ role: 'user', content: user }],
+      ...shape.fields,
+    };
   };
+  const baseBody = bodyFor(model);
 
   // Web search is ADDITIVE, never a hard dependency: only when the plan entitles it
   // AND SONAR_WEB_SEARCH=true for this deployment. NOTE (SOC 2 / Law 25): the ping
@@ -370,7 +383,7 @@ async function anthropicSynthesize({
     fellBackFrom = { model, status: 400, detail: String(detail || '').slice(0, 300) };
     try {
       res = await callAnthropic(
-        { ...baseBody, model: safeFallback },
+        bodyFor(safeFallback),
         apiKey,
         guardHop(longHop || 20_000, deadlineAt, hop),
       );
@@ -422,7 +435,14 @@ async function anthropicSynthesize({
     });
   }
   const parsed = parseAnthropicContent(data?.content);
-  if (!parsed.answer) throw new ProviderUnavailableError('anthropic: empty reply');
+  /* A 5.x model can reach max_tokens while still thinking: no text at all. That is a cut
+     reply (reported as truncated), not an empty one. */
+  if (!parsed.answer)
+    throw new ProviderUnavailableError(
+      data?.stop_reason === 'max_tokens'
+        ? 'anthropic: cut at max_tokens before any text'
+        : 'anthropic: empty reply',
+    );
   /* Token counts ride along for callers that total a run's usage (adaptive telemetry). */
   /* Nov 28 2026: stopReason rides along so a caller can tell a reply cut at max_tokens
      (stop_reason "max_tokens") from a complete one; a cut JSON reply was being reported to

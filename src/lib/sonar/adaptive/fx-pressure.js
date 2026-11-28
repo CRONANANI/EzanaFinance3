@@ -114,7 +114,9 @@ function lastMonths(points, months) {
   if (!points?.length) return [];
   const last = periodEnd(points[points.length - 1].x);
   if (!last) return points;
-  const from = new Date(Date.UTC(last.getUTCFullYear(), last.getUTCMonth() - months, last.getUTCDate()));
+  const from = new Date(
+    Date.UTC(last.getUTCFullYear(), last.getUTCMonth() - months, last.getUTCDate()),
+  );
   return points.filter((p) => {
     const e = periodEnd(p.x);
     return e && e >= from;
@@ -137,15 +139,20 @@ const PRESSURE =
   /\b(pressure|under (strain|stress|attack)|weak(en|ening|ness)?|depreciat\w*|devalu\w*|slid(e|ing)|slump\w*|plung\w*|fall(ing)?|collaps\w*|crisis|crash\w*|stable|stabili[sz]\w*|outlook|doing|health|strong|resilien\w*|vulnerab\w*|at risk|in trouble|safe)\b/i;
 const RESERVES =
   /\b(reserves?|external (buffers?|financing|position|liquidity|debt)|buffers?|import cover)\b/i;
-const RESILIENCE = /\b(resilien\w*|adequa\w*|enough|strong|how (big|large|much)|cover|vulnerab\w*|safe|healthy)\b/i;
+const RESILIENCE =
+  /\b(resilien\w*|adequa\w*|enough|strong|how (big|large|much)|cover|vulnerab\w*|safe|healthy)\b/i;
 /* A same-day move asks why the price moved, not whether the currency is under pressure. */
 const MOVEMENT =
   /\b(today|this morning|tonight|yesterday|intraday|this week|right now)\b|\bwhy (did|has|is)\b.{0,40}\b(fall|fell|drop|dropp|slid|plung|jump|surg|spik)\w*/i;
 /* A comparison is a different answer (several currencies on one axis). */
-const COMPARE = /\b(compare|comparison|versus|vs\.?|relative to|against (other|emerging|peers?|its peers)|peers)\b/i;
+const COMPARE =
+  /\b(compare|comparison|versus|vs\.?|relative to|against (other|emerging|peers?|its peers)|peers)\b/i;
 
 const FOCUS = [
-  ['stabilize', /\b(stabili[sz]\w*|recover\w*|turn (it )?around|what (could|would|might) (help|support|save|fix))\b/i],
+  [
+    'stabilize',
+    /\b(stabili[sz]\w*|recover\w*|turn (it )?around|what (could|would|might) (help|support|save|fix))\b/i,
+  ],
   ['reserves', RESERVES],
   ['crisis', /\b(crisis|collapse|crash|default|devaluation|break(down)?|disorderly)\b/i],
   ['inflation', /\b(inflation|policy|interest rates?|central bank|real rate)\b/i],
@@ -162,7 +169,8 @@ function codeIn(text) {
   if (t === t.toUpperCase()) return null; // a question in capitals is not a code
   const m = /\b(?:USD\/?)?([A-Z]{3})(?:\/USD)?\b/g;
   let hit;
-  while ((hit = m.exec(t))) if (CODE_TO_ISO3[hit[1]] && hit[1] !== 'USD') return CODE_TO_ISO3[hit[1]];
+  while ((hit = m.exec(t)))
+    if (CODE_TO_ISO3[hit[1]] && hit[1] !== 'USD') return CODE_TO_ISO3[hit[1]];
   return null;
 }
 
@@ -178,8 +186,7 @@ export function fxIntent(text, { thread = null, hasCompany = false } = {}) {
   const cur = findCurrency(q, country ? [country.iso3] : []);
   const code = codeIn(q);
   /* A currency the question names (lira, rand, TRY), or the named country's currency. */
-  const curIso3 =
-    (cur && !cur.ambiguous && cur.iso3 !== 'USA' ? cur.iso3 : null) || code || null;
+  const curIso3 = (cur && !cur.ambiguous && cur.iso3 !== 'USA' ? cur.iso3 : null) || code || null;
   /* Two different currencies named is a comparison. */
   if (curIso3 && country && curIso3 !== country.iso3 && !(curIso3 === 'EUR')) return null;
   const currencyWord = Boolean(curIso3) || /\b(currency|exchange rate|fx)\b/i.test(q);
@@ -195,22 +202,86 @@ export function fxIntent(text, { thread = null, hasCompany = false } = {}) {
   /* A follow-up asked inside a currency thread about inflation, policy or stabilizing. */
   if (inherited && focus !== 'overall') return { iso3, focus };
   /* A follow-up chip from a currency answer ("What should we monitor next?"). */
-  if (inherited && /\b(monitor|watch|signals?|ease|easing|exposed|external|financing|devaluation|trigger)\b/i.test(q))
+  if (
+    inherited &&
+    /\b(monitor|watch|signals?|ease|easing|exposed|external|financing|devaluation|trigger)\b/i.test(
+      q,
+    )
+  )
     return { iso3, focus: 'overall' };
   return null;
 }
-
 
 /* ------------------------------------------------------------------ the view model */
 
 /* Brief first (lead, overview, findings), then the detailed analysis. A focus moves the
    blocks that answer it forward; nothing is removed. */
 const ORDER = {
-  overall: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
-  reserves: ['fx_overview', 'fx_charts', 'fx_findings', 'fx_risk_scope', 'fx_drivers', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
-  inflation: ['fx_overview', 'fx_findings', 'fx_charts', 'fx_drivers', 'fx_risk_scope', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
-  crisis: ['fx_overview', 'fx_risk_scope', 'fx_drivers', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
-  stabilize: ['fx_overview', 'fx_outlook', 'fx_monitor', 'fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'fx_drivers', 'fx_risk_scope', 'fx_evidence'],
+  overall: [
+    'fx_overview',
+    'fx_findings',
+    'fx_charts',
+    'fx_flow',
+    'fx_anchor',
+    'fx_indicators',
+    'fx_drivers',
+    'fx_risk_scope',
+    'fx_monitor',
+    'fx_outlook',
+    'fx_evidence',
+  ],
+  reserves: [
+    'fx_overview',
+    'fx_charts',
+    'fx_findings',
+    'fx_risk_scope',
+    'fx_drivers',
+    'fx_flow',
+    'fx_anchor',
+    'fx_indicators',
+    'fx_monitor',
+    'fx_outlook',
+    'fx_evidence',
+  ],
+  inflation: [
+    'fx_overview',
+    'fx_findings',
+    'fx_charts',
+    'fx_drivers',
+    'fx_risk_scope',
+    'fx_flow',
+    'fx_anchor',
+    'fx_indicators',
+    'fx_monitor',
+    'fx_outlook',
+    'fx_evidence',
+  ],
+  crisis: [
+    'fx_overview',
+    'fx_risk_scope',
+    'fx_drivers',
+    'fx_findings',
+    'fx_charts',
+    'fx_flow',
+    'fx_anchor',
+    'fx_indicators',
+    'fx_monitor',
+    'fx_outlook',
+    'fx_evidence',
+  ],
+  stabilize: [
+    'fx_overview',
+    'fx_outlook',
+    'fx_monitor',
+    'fx_findings',
+    'fx_charts',
+    'fx_flow',
+    'fx_anchor',
+    'fx_indicators',
+    'fx_drivers',
+    'fx_risk_scope',
+    'fx_evidence',
+  ],
 };
 /* Which chart and finding lead for a focus. */
 const PANEL_ORDER = {
@@ -253,7 +324,11 @@ function money(v) {
   return `$${Math.round(a).toLocaleString('en-US')}`;
 }
 const rate = (v) =>
-  num(v) == null ? null : Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(2);
+  num(v) == null
+    ? null
+    : Math.abs(v) >= 1000
+      ? Math.round(v).toLocaleString('en-US')
+      : v.toFixed(2);
 
 /** Month-end points of a daily series ('YYYY-MM' labelled), for rolling changes. */
 function monthEnds(points) {
@@ -279,7 +354,8 @@ function rolling12m(series) {
 function thin(points, n = 24) {
   if (points.length <= n) return points.map((p) => p.y);
   const out = [];
-  for (let i = 0; i < n; i += 1) out.push(points[Math.round((i * (points.length - 1)) / (n - 1))].y);
+  for (let i = 0; i < n; i += 1)
+    out.push(points[Math.round((i * (points.length - 1)) / (n - 1))].y);
   return out;
 }
 
@@ -311,7 +387,10 @@ function anchorStory(s, projectionFrom) {
         ? {
             label: `${s.normYears}Y median`,
             value: fmt(s.median),
-            note: num(s.z) != null ? `${Math.abs(s.z).toFixed(1)} sd ${s.z >= 0 ? 'above' : 'below'}` : null,
+            note:
+              num(s.z) != null
+                ? `${Math.abs(s.z).toFixed(1)} sd ${s.z >= 0 ? 'above' : 'below'}`
+                : null,
           }
         : null,
       s.peak ? { label: 'Peak', value: fmt(s.peak.value), note: label(s.peak) } : null,
@@ -329,7 +408,11 @@ function anchorStory(s, projectionFrom) {
  * @param {{ focus?: string, now?: Date, plan?: object }} o
  * @returns {null | { built, sources, thread, model }}  null when no exchange-rate history
  */
-export function buildFxPressure(intel, dossier = null, { focus = 'overall', now = new Date(), plan = null } = {}) {
+export function buildFxPressure(
+  intel,
+  dossier = null,
+  { focus = 'overall', now = new Date(), plan = null } = {},
+) {
   if (!intel || intel.empty || !intel.picture) return null;
   const m = intel.picture.metrics || {};
   const fx = m.fx;
@@ -338,7 +421,8 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
   const charts = intel.charts || {};
   const assessment = intel.picture.assessment || { components: [], overall: null, missing: [] };
   const comp = (id) => assessment.components.find((c) => c.id === id) || null;
-  const currency = intel.currency || currencyOf(intel.iso3) || { code: '', name: 'currency', short: 'currency' };
+  const currency = intel.currency ||
+    currencyOf(intel.iso3) || { code: '', name: 'currency', short: 'currency' };
   const code = currency.code || 'local currency';
   const shortName = currency.short || currency.name || 'currency';
   const place = DISPLAY_NAME[intel.iso3] || countryByIso3(intel.iso3)?.name || intel.place;
@@ -371,8 +455,12 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
           sources.add({
             key: `fx:dossier:${intel.iso3}`,
             title: `${place}: Key chart and Key indicators`,
-            publisher: [...new Set((dossier.keyIndicators || []).map((r) => r.source).filter(Boolean))].join(', ') || 'OECD Economic Outlook',
-            detail: 'Latest observed values per headline indicator, with the long-run series behind the Key chart. Estimates and projections are labelled.',
+            publisher:
+              [...new Set((dossier.keyIndicators || []).map((r) => r.source).filter(Boolean))].join(
+                ', ',
+              ) || 'OECD Economic Outlook',
+            detail:
+              'Latest observed values per headline indicator, with the long-run series behind the Key chart. Estimates and projections are labelled.',
             kind: 'dataset',
           }),
         ]
@@ -390,7 +478,8 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
   const pol = m.policy;
   const res = m.reserves;
   const reer = charts.reer ? m.reer : null;
-  const spread = pol && infl ? exPostRateMinusInflationPp(pol.level.value, infl.annual.value) : null;
+  const spread =
+    pol && infl ? exPostRateMinusInflationPp(pol.level.value, infl.annual.value) : null;
   const resUnit = charts.reserves?.unit || '';
   const resNow = res ? reservesUsd(res.level.value, resUnit) : null;
   const depLevel = comp('depreciation')?.level || null;
@@ -460,9 +549,10 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       : null,
     {
       id: 'external',
-      text: ca && num(ca.value) != null
-        ? `The current account is ${minus(fmtNum(ca.value))}% of GDP (${periodLabel(ca.period)}); short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, cannot be assessed here.`
-        : 'Short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, are not in Ezana’s data.',
+      text:
+        ca && num(ca.value) != null
+          ? `The current account is ${minus(fmtNum(ca.value))}% of GDP (${periodLabel(ca.period)}); short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, cannot be assessed here.`
+          : 'Short-term external debt, rollover needs and CDS spreads, which decide whether pressure turns disorderly, are not in Ezana’s data.',
       basis: 'cannot_conclude',
     },
   ].filter(Boolean);
@@ -533,7 +623,8 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       delta: infl.annualYearAgo
         ? `${infl.trend === 'falling' ? 'Falling' : infl.trend === 'rising' ? 'Rising' : 'Unchanged'} from ${pct(infl.annualYearAgo.value)}`
         : null,
-      tone: infl.trend === 'falling' ? 'positive' : infl.trend === 'rising' ? 'negative' : 'neutral',
+      tone:
+        infl.trend === 'falling' ? 'positive' : infl.trend === 'rising' ? 'negative' : 'neutral',
       period: `${periodLabel(infl.annual.period)} · year over year${infl.computedFromIndex ? ', from the CPI index' : ''}`,
       freshness: freshnessOf(infl.annual.period, 'monthly', now),
       spark: thin(lastMonths(cleanPoints(charts.inflation?.points), 12)),
@@ -562,14 +653,19 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       label: 'Gross official reserves',
       value: money(resNow) || fmtNum(res.level.value, { money: true }),
       delta:
-        res.change3mPct != null ? `${res.change3mPct >= 0 ? '+' : '−'}${pct(res.change3mPct)} in 3 months` : null,
+        res.change3mPct != null
+          ? `${res.change3mPct >= 0 ? '+' : '−'}${pct(res.change3mPct)} in 3 months`
+          : null,
       tone: res.change3mPct > 0 ? 'positive' : res.change3mPct < 0 ? 'negative' : 'neutral',
       period: `${periodLabel(res.level.period)}${num(res.importMonths) != null ? ` · ${res.importMonths.toFixed(1)} months of imports` : ''}`,
       freshness: freshnessOf(res.level.period, 'monthly', now),
       spark: thin(lastMonths(cleanPoints(charts.reserves?.points), 12)),
       cites: resCites,
     });
-  const metricOrder = { reserves: ['reserves', 'fx', 'policy', 'inflation'], inflation: ['inflation', 'policy', 'fx', 'reserves'] }[focus];
+  const metricOrder = {
+    reserves: ['reserves', 'fx', 'policy', 'inflation'],
+    inflation: ['inflation', 'policy', 'fx', 'reserves'],
+  }[focus];
   if (metricOrder) tiles.sort((a, b) => metricOrder.indexOf(a.id) - metricOrder.indexOf(b.id));
   built.fx_overview = {
     eyebrow: 'Country intelligence / FX risk',
@@ -577,7 +673,9 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     iso2: (intel.iso3 && countries.alpha3ToAlpha2(intel.iso3)) || null,
     currency: `${currency.name || shortName}${currency.code ? ` (${currency.code})` : ''}`,
     level: overall,
-    levelLabel: intel.assessmentLabel || (overall ? `${overall[0].toUpperCase()}${overall.slice(1)} pressure` : null),
+    levelLabel:
+      intel.assessmentLabel ||
+      (overall ? `${overall[0].toUpperCase()}${overall.slice(1)} pressure` : null),
     asOf: `As of ${periodLabel(fx.latest.period)}`,
     items: tiles,
     footnote:
@@ -592,7 +690,8 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
           reading: r.evidence && typeof r.evidence === 'object' ? null : r.evidence || null,
         }))
       : [],
-    breakdownNote: 'Qualitative assessment against Ezana’s thresholds, not a calibrated risk score.',
+    breakdownNote:
+      'Qualitative assessment against Ezana’s thresholds, not a calibrated risk score.',
   };
 
   /* ================================================================ key findings */
@@ -603,9 +702,22 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     place,
     missing,
   });
-  const findingCites = { fx: fxCites, policy: [...polCites, ...inflCites], reer: reerCites, reserves: resCites };
+  const findingCites = {
+    fx: fxCites,
+    policy: [...polCites, ...inflCites],
+    reer: reerCites,
+    reserves: resCites,
+  };
   let findings = raw.map((f) => ({
-    key: /policy/i.test(f.title) ? 'policy' : /real/i.test(f.title) ? 'real' : /establish|scope/i.test(f.title) ? 'crisis' : /depreciation|pace/i.test(f.title) ? 'pace' : ID_OF[raw.indexOf(f)],
+    key: /policy/i.test(f.title)
+      ? 'policy'
+      : /real/i.test(f.title)
+        ? 'real'
+        : /establish|scope/i.test(f.title)
+          ? 'crisis'
+          : /depreciation|pace/i.test(f.title)
+            ? 'pace'
+            : ID_OF[raw.indexOf(f)],
     title: f.title,
     status: f.status,
     headline: minus(f.headline),
@@ -623,17 +735,17 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
   /* ================================================================ evidence and coverage */
   const datasets = dossier
     ? datasetEvidence({ dossier }).map((r) => ({
-          id: r.id,
-          chip: r.chip,
-          dataset: r.dataset,
-          title: r.title,
-          summary: r.summary || null,
-          bullets: (r.bullets || []).map(minus),
-          href: r.href && !/^https?:/i.test(r.href) ? r.href : null,
-          /* Prediction markets: crowd odds on open questions naming the country, shown as
+        id: r.id,
+        chip: r.chip,
+        dataset: r.dataset,
+        title: r.title,
+        summary: r.summary || null,
+        bullets: (r.bullets || []).map(minus),
+        href: r.href && !/^https?:/i.test(r.href) ? r.href : null,
+        /* Prediction markets: crowd odds on open questions naming the country, shown as
              evidence with their platform; never Ezana's forecast and never in the verdict. */
-          kind: r.id === 'prediction-markets' ? 'markets' : 'dataset',
-        }))
+        kind: r.id === 'prediction-markets' ? 'markets' : 'dataset',
+      }))
     : [];
   const marketCount = Array.isArray(dossier?.matches?.markets) ? dossier.matches.markets.length : 0;
   const macroSources = (intel.sources || []).filter(Boolean);
@@ -660,7 +772,10 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
         count: evidenceCount,
         items: datasets.slice(0, 3).map((d) => ({
           id: d.id,
-          badge: String(d.chip || d.dataset || '?').trim().charAt(0).toUpperCase(),
+          badge: String(d.chip || d.dataset || '?')
+            .trim()
+            .charAt(0)
+            .toUpperCase(),
           title: d.dataset,
           sub: d.kind === 'markets' ? 'Market odds, not Ezana forecasts' : 'Ezana dataset',
         })),
@@ -670,7 +785,10 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
           count: evidenceCount,
           items: sources.list.slice(0, 3).map((x, k) => ({
             id: `s${k}`,
-            badge: String(x.publisher || x.title || '?').trim().charAt(0).toUpperCase(),
+            badge: String(x.publisher || x.title || '?')
+              .trim()
+              .charAt(0)
+              .toUpperCase(),
             title: x.publisher || x.title,
             sub: 'Official series',
           })),
@@ -693,9 +811,20 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       ranges: ['3M', '1Y', '3Y', '5Y'],
       defaultRange: '1Y',
       views: [
-        { id: 'level', label: 'Level', unit: 'rate', series: [{ name: `${code} per USD`, tone: 'primary', points: fxBase }] },
+        {
+          id: 'level',
+          label: 'Level',
+          unit: 'rate',
+          series: [{ name: `${code} per USD`, tone: 'primary', points: fxBase }],
+        },
         chg.length >= 2
-          ? { id: 'change', label: '12M change', unit: '%', zero: true, series: [{ name: 'Dollar price, 12-month change', tone: 'primary', points: chg }] }
+          ? {
+              id: 'change',
+              label: '12M change',
+              unit: '%',
+              zero: true,
+              series: [{ name: 'Dollar price, 12-month change', tone: 'primary', points: chg }],
+            }
           : null,
       ].filter(Boolean),
       latest: `${periodLabel(last.x)} · ${rate(last.y)}`,
@@ -707,7 +836,11 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
   const polPts = cleanPoints(charts.policy?.points);
   if (inflPts.length >= 2) {
     const months = lastMonths(inflPts, 36);
-    const aligned = months.map((p) => ({ x: p.x, inflation: p.y, policy: polPts.length ? valueAt(polPts, p.x)?.y ?? null : null }));
+    const aligned = months.map((p) => ({
+      x: p.x,
+      inflation: p.y,
+      policy: polPts.length ? (valueAt(polPts, p.x)?.y ?? null) : null,
+    }));
     const withPolicy = aligned.filter((r) => r.policy != null).length >= 2;
     const realPts = aligned
       .filter((r) => r.policy != null)
@@ -721,12 +854,34 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
           label: 'Rates',
           unit: '%',
           series: [
-            { name: 'Inflation', tone: 'primary', points: aligned.map((r) => ({ x: r.x, y: r.inflation })) },
-            withPolicy ? { name: 'Policy rate', tone: 'reference', points: aligned.map((r) => ({ x: r.x, y: r.policy })) } : null,
+            {
+              name: 'Inflation',
+              tone: 'primary',
+              points: aligned.map((r) => ({ x: r.x, y: r.inflation })),
+            },
+            withPolicy
+              ? {
+                  name: 'Policy rate',
+                  tone: 'reference',
+                  points: aligned.map((r) => ({ x: r.x, y: r.policy })),
+                }
+              : null,
           ].filter(Boolean),
         },
         realPts.length >= 2
-          ? { id: 'real', label: 'Real rate', unit: 'pp', zero: true, series: [{ name: 'Ex-post real rate (policy minus inflation)', tone: 'primary', points: realPts }] }
+          ? {
+              id: 'real',
+              label: 'Real rate',
+              unit: 'pp',
+              zero: true,
+              series: [
+                {
+                  name: 'Ex-post real rate (policy minus inflation)',
+                  tone: 'primary',
+                  points: realPts,
+                },
+              ],
+            }
           : null,
       ].filter(Boolean),
       latest:
@@ -761,12 +916,22 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       cites: reerCites,
     });
   }
-  const resPts = cleanPoints(charts.reserves?.points).map((p) => ({ x: p.x, y: reservesUsd(p.y, resUnit) }));
+  const resPts = cleanPoints(charts.reserves?.points).map((p) => ({
+    x: p.x,
+    y: reservesUsd(p.y, resUnit),
+  }));
   if (resPts.length >= 2) {
     panels.push({
       id: 'reserves',
       title: 'Official reserves',
-      views: [{ id: 'level', label: 'Gross', unit: 'usd', series: [{ name: 'Gross official reserves', tone: 'primary', points: resPts }] }],
+      views: [
+        {
+          id: 'level',
+          label: 'Gross',
+          unit: 'usd',
+          series: [{ name: 'Gross official reserves', tone: 'primary', points: resPts }],
+        },
+      ],
       latest: `${periodLabel(resPts[resPts.length - 1].x)} · ${money(resPts[resPts.length - 1].y)}`,
       freshness: res ? freshnessOf(res.level.period, 'monthly', now) : null,
       caption: `Unit: US dollars, gross. ${charts.reserves.period}. Source: ${charts.reserves.source}. Gross reserves are not the same as usable (net) liquidity${num(res?.importMonths) != null ? `; the latest level covers about ${res.importMonths.toFixed(1)} months of goods imports` : ''}.`,
@@ -802,7 +967,9 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
         layer: layer[n.id] || 0,
         kind: !outgoing.has(n.id) ? 'effect' : n.supported ? 'supported' : 'conceptual',
         supported: Boolean(n.supported),
-        feeds: edges.filter(([a]) => a === n.id).map(([, b]) => tm.nodes.find((x) => x.id === b)?.label),
+        feeds: edges
+          .filter(([a]) => a === n.id)
+          .map(([, b]) => tm.nodes.find((x) => x.id === b)?.label),
       })),
       edges: edges.map(([from, to]) => ({ from, to })),
       caption: `${tm.caption || 'Conceptual channels, not a fitted causal model.'} “Supported by data” means the stored series show that link’s starting condition today.`,
@@ -903,8 +1070,12 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
       'Capital flows',
       'Inflation expectations',
     ],
-    alsoMissing: missing.filter((x) => !/cds|inflation expectations|net usable|short-term external|capital flow/i.test(x)),
-    thresholdsNote: overall ? `Pressure level by Ezana’s thresholds: ${overall}. A level, not a probability.` : null,
+    alsoMissing: missing.filter(
+      (x) => !/cds|inflation expectations|net usable|short-term external|capital flow/i.test(x),
+    ),
+    thresholdsNote: overall
+      ? `Pressure level by Ezana’s thresholds: ${overall}. A level, not a probability.`
+      : null,
   };
 
   /* ---- monitoring checklist: what to watch, and whether Sonar holds it */
@@ -913,7 +1084,8 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     eyebrow: 'Monitoring checklist',
     items: [
       {
-        signal: fx.frequency === 'daily' ? 'Daily FX and volatility' : 'Exchange rate and volatility',
+        signal:
+          fx.frequency === 'daily' ? 'Daily FX and volatility' : 'Exchange rate and volatility',
         why: `${code} per USD moves and rapid changes in realized volatility.`,
         availability: fx.frequency === 'daily' && fxFresh !== 'stale' ? 'in_data' : 'partial',
         reading:
@@ -921,7 +1093,11 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
             ? `3-month volatility of daily moves ${fx.volatility3m.toFixed(2)}%, ${fx.volatility3m < fx.volatility5yMedian ? 'below' : 'above'} its 5-year median of ${fx.volatility5yMedian.toFixed(2)}%`
             : null,
       },
-      { signal: 'Inflation expectations', why: 'Whether expected inflation is falling alongside observed inflation.', availability: 'gap' },
+      {
+        signal: 'Inflation expectations',
+        why: 'Whether expected inflation is falling alongside observed inflation.',
+        availability: 'gap',
+      },
       {
         signal: 'Monetary decisions',
         why: 'The policy path and its credibility against incoming inflation, not only the ex-post spread.',
@@ -931,9 +1107,15 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
         signal: 'Reserve adequacy',
         why: 'Net usable reserves against short-term obligations; gross reserves alone overstate the buffer.',
         availability: res ? 'partial' : 'gap',
-        reading: res ? `Gross only, ${periodLabel(res.level.period)}${resFresh === 'fresh' ? '' : `, ${resFresh}`}` : null,
+        reading: res
+          ? `Gross only, ${periodLabel(res.level.period)}${resFresh === 'fresh' ? '' : `, ${resFresh}`}`
+          : null,
       },
-      { signal: 'Funding market stress', why: 'CDS spreads, external refinancing and capital flows could change the risk assessment.', availability: 'gap' },
+      {
+        signal: 'Funding market stress',
+        why: 'CDS spreads, external refinancing and capital flows could change the risk assessment.',
+        availability: 'gap',
+      },
     ],
   };
 
@@ -945,8 +1127,16 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
         tone: 'calm',
         text: `The ${shortName}’s monthly depreciation slows, inflation keeps falling${spread != null ? ' with the policy rate above it' : ''}, and external buffers hold or rise.`,
       },
-      { name: 'Continued pressure', tone: 'mid', text: 'Disinflation is slow while depreciation persists and financing remains costly.' },
-      { name: 'Stress escalation', tone: 'high', text: 'Reserves fall, rollover conditions tighten, or exchange-rate volatility shifts abruptly.' },
+      {
+        name: 'Continued pressure',
+        tone: 'mid',
+        text: 'Disinflation is slow while depreciation persists and financing remains costly.',
+      },
+      {
+        name: 'Stress escalation',
+        tone: 'high',
+        text: 'Reserves fall, rollover conditions tighten, or exchange-rate volatility shifts abruptly.',
+      },
     ],
   };
 
@@ -961,7 +1151,9 @@ export function buildFxPressure(intel, dossier = null, { focus = 'overall', now 
     items: [
       'Every figure is a stored official observation with its own date; daily, monthly and annual series are labelled and never mixed into one line.',
       'Pressure levels use Ezana’s published thresholds. They are a diagnosis, not a probability or a forecast.',
-      fx.frequency === 'monthly' ? 'The exchange rate is a monthly average, so moves within the latest month are not captured.' : null,
+      fx.frequency === 'monthly'
+        ? 'The exchange rate is a monthly average, so moves within the latest month are not captured.'
+        : null,
       missing.length ? `Not in Ezana’s data for ${place}: ${missing.join('; ')}.` : null,
     ].filter(Boolean),
   };
@@ -1008,9 +1200,13 @@ export async function runFxPressure(plan, deps, now, telemetry) {
   const iso3 = plan.fx?.iso3;
   if (!iso3 || !deps.countryIntel) return null;
   const [intel, dossier] = await Promise.all([
-    step(telemetry, 'macro_series', 10000, () => deps.countryIntel(iso3, { now })).catch(() => null),
+    step(telemetry, 'macro_series', 10000, () => deps.countryIntel(iso3, { now })).catch(
+      () => null,
+    ),
     deps.countryDossier
-      ? step(telemetry, 'country_dossier', 9000, () => deps.countryDossier(iso3, { query: plan.resolvedQuestion || plan.question || '' })).catch(() => null)
+      ? step(telemetry, 'country_dossier', 9000, () =>
+          deps.countryDossier(iso3, { query: plan.resolvedQuestion || plan.question || '' }),
+        ).catch(() => null)
       : null,
   ]);
   const out = buildFxPressure(intel, dossier, { focus: plan.fx.focus, now, plan });

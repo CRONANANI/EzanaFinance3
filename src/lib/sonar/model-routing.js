@@ -217,6 +217,67 @@ export function deepDirectorFor(routing, { crossDomain = false } = {}) {
     : routing.deep_director;
 }
 
+/* ── Request traits per model (Nov 28 2026, from Anthropic's model migration guides) ──
+   The 5.x models think by default and max_tokens covers thinking plus text, so a request
+   that does not set thinking and effort spends part of its cap thinking (Sonnet 5.5 at
+   high effort, Opus 5.5 and Haiku 5.5 at medium). The benchmark found Sonnet 5.5
+   specialists and reviewers cut at their caps before writing any text.
+     Opus 5.5    thinking always on (disabled is a 400); effort is the only control
+     Sonnet 5.5  thinking on; the lowest setting is thinking {type: "between_tools"}
+                 (no up-front thinking without tools), accepted at effort high or below
+     Haiku 5.5   thinking on; thinking {type: "disabled"} allowed at effort high or below
+     Sonnet 5    thinking on; disabled allowed
+     4.x models  no thinking unless asked; no effort parameter sent
+   The 5.x tokenizer uses about 30% more tokens for the same text, so caps written for
+   4.x models are scaled by 1.3 on 5.x models. */
+const TRAITS = [
+  [/opus-5-5/, { thinks: true, off: null, effort: true, tokenFactor: 1.3 }],
+  [/sonnet-5-5/, { thinks: true, off: { type: 'between_tools' }, effort: true, tokenFactor: 1.3 }],
+  [/haiku-5-5/, { thinks: true, off: { type: 'disabled' }, effort: true, tokenFactor: 1.3 }],
+  [
+    /(?:sonnet|opus)-5(?:$|-\d{8}$)/,
+    { thinks: true, off: { type: 'disabled' }, effort: true, tokenFactor: 1.3 },
+  ],
+];
+const NO_THINK = { thinks: false, off: null, effort: false, tokenFactor: 1 };
+
+export function modelTraits(model) {
+  const row = TRAITS.find(([re]) => re.test(String(model || '')));
+  return row ? row[1] : NO_THINK;
+}
+
+/**
+ * The request fields for one call of a role on a model:
+ *   think: 'off' (no up-front thinking where the model allows it), 'adaptive', or null
+ *          (the model's default, which older callers keep)
+ *   effort: low | medium | high (sent only to models that take it)
+ *   reserveTokens: extra output room when thinking runs (thinking is billed as output)
+ * Returns { fields, maxTokens, thinking } with maxTokens = the text cap scaled for the
+ * model's tokenizer plus the reserve when the model will think.
+ */
+export function requestShape(
+  model,
+  { maxTokens, think = null, effort = null, reserveTokens = 0 } = {},
+) {
+  const t = modelTraits(model);
+  const fields = {};
+  let thinking = t.thinks;
+  if (think === 'off' && t.off) {
+    fields.thinking = t.off;
+    thinking = false;
+  } else if (think === 'adaptive' && t.thinks) fields.thinking = { type: 'adaptive' };
+  if (t.effort && effort) fields.output_config = { effort };
+  const text = Math.round((Number(maxTokens) || 0) * t.tokenFactor);
+  /* A model that cannot stop thinking (Opus 5.5) asked for no thinking still gets a small
+     reserve; at low effort it thinks little. */
+  const reserve = !thinking
+    ? 0
+    : think === 'off'
+      ? Math.min(reserveTokens || 1500, 1500)
+      : reserveTokens || 0;
+  return { fields, maxTokens: text + reserve, thinking };
+}
+
 /* ── Pricing (USD per million tokens), from Anthropic's pricing page on 2026-11-28 ── */
 
 const PRICING = [

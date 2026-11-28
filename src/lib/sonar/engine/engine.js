@@ -19,7 +19,13 @@
  * SERVER ONLY. Domain logic lives in the modules it calls; this file only
  * orchestrates.
  */
-import { ROLE_BUDGETS, classifyOutcome, outcomeSummary } from './output-contracts.js';
+import {
+  ROLE_BUDGETS,
+  ROLE_THINKING,
+  writerRole,
+  classifyOutcome,
+  outcomeSummary,
+} from './output-contracts.js';
 import { understandQuery } from '@/lib/sonar/understand';
 import { synthesizeWithFallback, HAIKU_MODEL, withUsageLabel } from '@/lib/sonar/llm-providers';
 import { routingForRun, isCrossDomain, deepDirectorFor } from '@/lib/sonar/model-routing';
@@ -912,6 +918,7 @@ export async function runResearch(query, opts = {}) {
           model: directorModel,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
+          ...ROLE_THINKING[writerRole(depth)],
           deadlineAt: deadline - 400,
           minHopMs: 2_000,
           reserveMs: 0,
@@ -1102,6 +1109,7 @@ export async function runResearch(query, opts = {}) {
         model: strong,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
+        ...ROLE_THINKING.reviewer,
         deadlineAt: Math.min(deadline - 15_000, Date.now() + rtHop),
         minHopMs: 2_000,
         reserveMs: 0,
@@ -1138,6 +1146,7 @@ export async function runResearch(query, opts = {}) {
           model: models.deep_resolve,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
+          ...ROLE_THINKING.reviewer,
           deadlineAt: Math.min(deadline - 8_000, Date.now() + finHop),
           minHopMs: 2_000,
           reserveMs: 0,
@@ -1220,6 +1229,7 @@ export async function runResearch(query, opts = {}) {
         model: models.deep_auditor,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
+        ...ROLE_THINKING.reviewer,
         deadlineAt: Math.min(deadline - 4_000, Date.now() + auditHop),
         minHopMs: 2_000,
         reserveMs: 0,

@@ -46,6 +46,15 @@ export const MODEL_BENCH_SUITES = [
     deepTrials: 2,
     variant: 'profile-d',
   },
+  /* Suite 3 as run: current vs Profile D with role budgets, bounded contracts, the
+     production composition and valuation frozen, and thinking/effort set per role. */
+  {
+    suite: 'model-bench-2026-11-28-profile-d3',
+    until: '2026-11-30T05:00:00Z',
+    maxUsd: 45,
+    deepTrials: 2,
+    variant: 'profile-d',
+  },
 ];
 export const MODEL_BENCH_LANES = 6;
 /* The admin page's default suite. */

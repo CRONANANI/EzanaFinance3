@@ -377,3 +377,105 @@ test('Profile D suite: 18 cases, current vs D, cheaper alternatives, deep writer
     assert.ok(c.requiredDatasets?.length, `${c.id} names its datasets`);
   assert.equal(new Set(plan.map((s) => s.key)).size, plan.length);
 });
+
+test('request shapes per model: thinking and effort fields, tokenizer scaling, reserves', () => {
+  const s55 = R.requestShape('claude-sonnet-5-5', { maxTokens: 1000, think: 'off', effort: 'low' });
+  assert.deepEqual(s55.fields, {
+    thinking: { type: 'between_tools' },
+    output_config: { effort: 'low' },
+  });
+  assert.equal(s55.maxTokens, 1300);
+  const h55 = R.requestShape('claude-haiku-5-5', { maxTokens: 700, think: 'off', effort: 'low' });
+  assert.deepEqual(h55.fields.thinking, { type: 'disabled' });
+  const o55 = R.requestShape('claude-opus-5-5', { maxTokens: 900, think: 'off', effort: 'low' });
+  assert.equal(o55.fields.thinking, undefined, 'Opus 5.5 cannot turn thinking off');
+  assert.equal(o55.maxTokens, Math.round(900 * 1.3) + 1500, 'so it gets a small reserve');
+  const deep = R.requestShape('claude-opus-5-5', {
+    maxTokens: 6000,
+    think: 'adaptive',
+    effort: 'medium',
+    reserveTokens: 6000,
+  });
+  assert.deepEqual(deep.fields, {
+    thinking: { type: 'adaptive' },
+    output_config: { effort: 'medium' },
+  });
+  assert.equal(deep.maxTokens, 7800 + 6000);
+  const h45 = R.requestShape('claude-haiku-4-5-20251001', {
+    maxTokens: 700,
+    think: 'off',
+    effort: 'low',
+  });
+  assert.deepEqual(h45.fields, {}, '4.x models get no thinking or effort fields');
+  assert.equal(h45.maxTokens, 700);
+  assert.deepEqual(
+    R.requestShape('claude-sonnet-5', { maxTokens: 10, think: 'off' }).fields.thinking,
+    { type: 'disabled' },
+  );
+  assert.equal(
+    C.classifyOutcome({
+      out: {
+        answer: null,
+        providerErrors: [{ message: 'anthropic: cut at max_tokens before any text' }],
+      },
+    }),
+    'truncated',
+  );
+  assert.equal(C.ROLE_THINKING.specialist.think, 'off');
+  assert.equal(C.writerRole('deep'), 'deep_writer');
+  const src = read('src/lib/sonar/llm-providers.js');
+  assert.match(src, /bodyFor\(safeFallback\)/);
+  assert.match(read('src/lib/sonar/analysts/orchestrator.js'), /\.\.\.ROLE_THINKING\.specialist/);
+  assert.match(
+    read('src/lib/sonar/engine/engine.js'),
+    /\.\.\.ROLE_THINKING\[writerRole\(depth\)\]/,
+  );
+});
+
+test('provider sends the shaped request (fetch stub)', async () => {
+  const realFetch = globalThis.fetch;
+  const realKey = process.env.ANTHROPIC_API_KEY;
+  process.env.ANTHROPIC_API_KEY = 'test';
+  let sent = null;
+  globalThis.fetch = async (_url, init) => {
+    sent = JSON.parse(init.body);
+    return new Response(
+      JSON.stringify({
+        model: 'claude-sonnet-5-5',
+        content: [
+          { type: 'thinking', thinking: '' },
+          { type: 'text', text: '{"ok":1}' },
+        ],
+        usage: { input_tokens: 5, output_tokens: 5 },
+        stop_reason: 'end_turn',
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    );
+  };
+  try {
+    const out = await P.synthesizeWithFallback({
+      system: 's',
+      user: 'u',
+      maxTokens: 700,
+      model: 'claude-sonnet-5-5',
+      think: 'off',
+      effort: 'low',
+    });
+    assert.equal(out.answer, '{"ok":1}', 'thinking blocks are skipped, text is read');
+    assert.deepEqual(sent.thinking, { type: 'between_tools' });
+    assert.deepEqual(sent.output_config, { effort: 'low' });
+    assert.equal(sent.max_tokens, 910);
+    await P.synthesizeWithFallback({
+      system: 's',
+      user: 'u',
+      maxTokens: 700,
+      model: 'claude-haiku-4-5-20251001',
+    });
+    assert.equal(sent.thinking, undefined);
+    assert.equal(sent.max_tokens, 700, 'callers that set nothing keep the old request');
+  } finally {
+    globalThis.fetch = realFetch;
+    if (realKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = realKey;
+  }
+});

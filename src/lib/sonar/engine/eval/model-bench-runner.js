@@ -479,6 +479,10 @@ async function askJudge(model, { system, user }, maxTokens) {
       model,
       fallbackModel: model,
       chainMs: 150_000,
+      /* Same request shape for both judges: no up-front thinking where the model allows
+         it, medium effort (suites before Nov 28 15:00 UTC used each model's default). */
+      think: 'off',
+      effort: 'medium',
     }),
   );
   const usage = summarizeUsage(calls);

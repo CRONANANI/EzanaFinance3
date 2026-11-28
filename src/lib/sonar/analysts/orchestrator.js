@@ -35,6 +35,7 @@ import {
   classifyOutcome,
   RED_TEAM_CONTRACT,
   RESOLVE_CONTRACT,
+  ROLE_THINKING,
 } from '../engine/output-contracts.js';
 import { MACRO_LENS } from '../macro/playbook.js';
 import { validateClaim, parseResearchJson } from '../engine/findings.js';
@@ -515,6 +516,9 @@ export async function runSpecialists({
         minHopMs,
         reserveMs: 0,
         ...(hopMs ? { maxHopMs: hopMs } : {}),
+        /* No up-front thinking, low effort: a bounded evidence task (5.x models think by
+           default and spent the cap on it). */
+        ...ROLE_THINKING.specialist,
       });
       const parsed = parseResearchJson(out?.answer);
       const v = validateSpecialist(parsed, { analyst: p.profile, marked: fresh, metrics });

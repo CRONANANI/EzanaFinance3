@@ -36,9 +36,17 @@ export function buildExplainer(entryId) {
       asOf: `Methodology entry ${e.version}, reviewed ${e.reviewed.at}`,
     },
     ex_definitions: { title: 'Definitions', note: 'Plain-language research', items: e.definitions },
-    ex_equations: { title: 'Equations', note: 'No numerical example without real observations', items: e.equations },
+    ex_equations: {
+      title: 'Equations',
+      note: 'No numerical example without real observations',
+      items: e.equations,
+    },
     ex_measures: { title: 'Choosing the right measure', items: e.measures },
-    ex_diagram: { title: 'Interpretation diagram', nodes: e.diagram.nodes, caption: e.diagram.caption },
+    ex_diagram: {
+      title: 'Interpretation diagram',
+      nodes: e.diagram.nodes,
+      caption: e.diagram.caption,
+    },
     ex_method: { title: 'Research methodology', items: e.method },
     ex_sources: { title: 'Sources to verify', items: e.verify },
     limitations: {
@@ -47,8 +55,21 @@ export function buildExplainer(entryId) {
         'Ask about a named country or company to see its own dated figures.',
       ],
     },
-    followups: { placeholder: 'Ask about a country, a company or another concept', related: e.followups.slice(0, 3) },
-    _order: ['lead', 'ex_definitions', 'ex_equations', 'ex_measures', 'ex_diagram', 'ex_method', 'ex_sources', 'limitations', 'followups'],
+    followups: {
+      placeholder: 'Ask about a country, a company or another concept',
+      related: e.followups.slice(0, 3),
+    },
+    _order: [
+      'lead',
+      'ex_definitions',
+      'ex_equations',
+      'ex_measures',
+      'ex_diagram',
+      'ex_method',
+      'ex_sources',
+      'limitations',
+      'followups',
+    ],
   };
   return {
     built,

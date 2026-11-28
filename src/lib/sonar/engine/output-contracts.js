@@ -36,6 +36,24 @@ export const ROLE_BUDGETS = {
   },
 };
 
+/**
+ * Thinking and effort per role (requestShape in model-routing.js turns these into the
+ * request fields each model accepts). Structured, bounded roles run without up-front
+ * thinking at low effort; the deep writer may think, with output room reserved for it.
+ */
+export const ROLE_THINKING = {
+  quick_writer: { think: 'off', effort: 'low' },
+  standard_writer: { think: 'off', effort: 'medium' },
+  deep_writer: { think: 'adaptive', effort: 'medium', reserveTokens: 6000 },
+  specialist: { think: 'off', effort: 'low' },
+  reviewer: { think: 'off', effort: 'low' },
+};
+
+/** The writer's role key for a depth. */
+export function writerRole(depth) {
+  return depth === 'quick' ? 'quick_writer' : depth === 'deep' ? 'deep_writer' : 'standard_writer';
+}
+
 /** Token caps and the target each prompt asks for. */
 export const OUTPUT_CONTRACTS = {
   quick_writer: { capTokens: 1500, targetWords: 350 },
@@ -96,7 +114,8 @@ export const RESOLVE_CONTRACT = `Length budget: one resolution per point, each n
  * The outcome of one model role call, kept apart so a cut reply is never counted as a
  * timeout or a provider failure, and an unparseable reply is never counted as success:
  *   ok               complete, valid structured output
- *   truncated        reached its token cap (the output may still have been repaired)
+ *   truncated        reached its token cap (the output may still have been repaired), or
+ *                    was cut while thinking, before any text
  *   invalid_output   complete reply that did not parse or failed the contract
  *   timeout          the call ran out of time
  *   skipped_deadline not started: too little time left
@@ -106,13 +125,15 @@ export function classifyOutcome({ out = null, error = null, parsedOk = null } = 
   /* "timed out" is an aborted call; "deadline" (guardHop, the chain's own check) is a call
      never started because too little time was left. */
   const fromText = (s) =>
-    /timed out/i.test(s)
-      ? 'timeout'
-      : /\bdeadline\b/i.test(s)
-        ? 'skipped_deadline'
-        : /timeout|abort/i.test(s)
-          ? 'timeout'
-          : 'provider_error';
+    /max_tokens/i.test(s)
+      ? 'truncated'
+      : /timed out/i.test(s)
+        ? 'timeout'
+        : /\bdeadline\b/i.test(s)
+          ? 'skipped_deadline'
+          : /timeout|abort/i.test(s)
+            ? 'timeout'
+            : 'provider_error';
   if (error) return fromText(`${error.name || ''} ${error.message || ''}`);
   if (!out?.answer)
     return fromText(

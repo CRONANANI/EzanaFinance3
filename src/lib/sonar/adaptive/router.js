@@ -283,7 +283,12 @@ export function planAdaptive(question, opts = {}) {
     executable = false;
     missing.push('no member, company or chamber named');
   }
-  if (['C01', 'C04', 'C05'].includes(primary?.id) && !countryOf(text) && !(primary?.id === 'C01' && fx) && !(explainer && primary?.id === explainer.scenario)) {
+  if (
+    ['C01', 'C04', 'C05'].includes(primary?.id) &&
+    !countryOf(text) &&
+    !(primary?.id === 'C01' && fx) &&
+    !(explainer && primary?.id === explainer.scenario)
+  ) {
     executable = false;
     missing.push('no country named: this pipeline reads one country’s series');
   }

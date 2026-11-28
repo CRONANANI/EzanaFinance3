@@ -41,14 +41,37 @@ export const FAMILIES = [
     label: 'Country and macro intelligence',
     kicker: { fx: 'Currency intelligence', default: 'Country intelligence' },
     firstZone: ['fx_overview', 'series_chart', 'macro_timeseries'],
-    priority: ['fx_findings', 'fx_charts', 'fx_flow', 'fx_anchor', 'fx_indicators', 'series_chart', 'macro_timeseries', 'ranking', 'fx_drivers', 'fx_risk_scope', 'fx_monitor', 'fx_outlook', 'fx_evidence'],
+    priority: [
+      'fx_findings',
+      'fx_charts',
+      'fx_flow',
+      'fx_anchor',
+      'fx_indicators',
+      'series_chart',
+      'macro_timeseries',
+      'ranking',
+      'fx_drivers',
+      'fx_risk_scope',
+      'fx_monitor',
+      'fx_outlook',
+      'fx_evidence',
+    ],
     scenarios: { primary: ['C01', 'C04', 'C05'], supporting: ['C09'] },
-    requiredData: ['dated official country series (at least two observations per chart)', 'quote convention for FX'],
+    requiredData: [
+      'dated official country series (at least two observations per chart)',
+      'quote convention for FX',
+    ],
     followups: ['policy', 'reserves', 'peers'],
     subtypes: [
-      { id: 'currency_pressure', test: (p) => Boolean(p?.fx) && !['reserves', 'inflation'].includes(p.fx.focus) },
+      {
+        id: 'currency_pressure',
+        test: (p) => Boolean(p?.fx) && !['reserves', 'inflation'].includes(p.fx.focus),
+      },
       { id: 'external_liquidity', test: (p) => p?.fx?.focus === 'reserves' },
-      { id: 'policy_rates', test: (p) => p?.fx?.focus === 'inflation' || p?.primaryScenario === 'C04' },
+      {
+        id: 'policy_rates',
+        test: (p) => p?.fx?.focus === 'inflation' || p?.primaryScenario === 'C04',
+      },
       { id: 'country_overview', test: () => true },
     ],
   },
@@ -56,10 +79,33 @@ export const FAMILIES = [
     id: 'company_equity',
     n: 2,
     label: 'Company research',
-    firstZone: ['fundamentals', 'metric_table', 'valuation', 'ranking', 'series_chart', 'data_table'],
-    priority: ['key_findings', 'valuation', 'ranking', 'data_table', 'sector_exposure', 'policy_tracker', 'risk', 'watchpoints'],
-    scenarios: { primary: ['B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08'], supporting: ['B01', 'A04'] },
-    requiredData: ['company identity resolved to one issuer', 'statements or obligations with fiscal period', 'never divide obligations by revenue'],
+    firstZone: [
+      'fundamentals',
+      'metric_table',
+      'valuation',
+      'ranking',
+      'series_chart',
+      'data_table',
+    ],
+    priority: [
+      'key_findings',
+      'valuation',
+      'ranking',
+      'data_table',
+      'sector_exposure',
+      'policy_tracker',
+      'risk',
+      'watchpoints',
+    ],
+    scenarios: {
+      primary: ['B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08'],
+      supporting: ['B01', 'A04'],
+    },
+    requiredData: [
+      'company identity resolved to one issuer',
+      'statements or obligations with fiscal period',
+      'never divide obligations by revenue',
+    ],
     followups: ['peers', 'ownership', 'government'],
     subtypes: [
       { id: 'government_dependence', test: (p) => ['B04', 'B08'].includes(p?.primaryScenario) },
@@ -73,9 +119,21 @@ export const FAMILIES = [
     n: 3,
     label: 'Event-driven intelligence',
     firstZone: ['kpi_strip', 'verified_event_status', 'event_timeline', 'market_comparison'],
-    priority: ['market_comparison', 'hormuz_flows', 'economic_transmission', 'us_impact', 'gold_markets', 'scenario_table', 'policy_tracker', 'news_timeline'],
+    priority: [
+      'market_comparison',
+      'hormuz_flows',
+      'economic_transmission',
+      'us_impact',
+      'gold_markets',
+      'scenario_table',
+      'policy_tracker',
+      'news_timeline',
+    ],
     scenarios: { primary: ['A08', 'A01', 'A07', 'C06'], supporting: ['C03', 'C10'] },
-    requiredData: ['event existence verified before effects are reported', 'dated market series for any chart'],
+    requiredData: [
+      'event existence verified before effects are reported',
+      'dated market series for any chart',
+    ],
     followups: ['duration', 'markets', 'exposure'],
     subtypes: [
       { id: 'energy_shock', test: (p) => Boolean(p?.geo) },
@@ -90,7 +148,10 @@ export const FAMILIES = [
     firstZone: ['ranking', 'metric_table'],
     priority: ['series_chart', 'macro_timeseries', 'heatmap', 'data_table'],
     scenarios: { primary: ['C02', 'C09'], supporting: ['B09'] },
-    requiredData: ['one unit and one period basis per ranking, or the period mix labelled', 'no padded rows'],
+    requiredData: [
+      'one unit and one period basis per ranking, or the period mix labelled',
+      'no padded rows',
+    ],
     followups: ['period', 'per_capita', 'peers'],
     subtypes: [
       { id: 'country_ranking', test: (p) => p?.primaryScenario === 'C02' },
@@ -104,7 +165,10 @@ export const FAMILIES = [
     firstZone: ['portfolio_attribution', 'price_comparison', 'metric_table'],
     priority: ['key_findings', 'policy_tracker', 'series_chart', 'catalyst_calendar'],
     scenarios: { primary: ['B10', 'D03', 'D01'], supporting: ['B09', 'D02', 'D04'] },
-    requiredData: ['organization records resolved from signed-in membership on the server', 'cost basis and market value kept apart'],
+    requiredData: [
+      'organization records resolved from signed-in membership on the server',
+      'cost basis and market value kept apart',
+    ],
     followups: ['concentration', 'ips', 'overlap'],
     subtypes: [
       { id: 'fund_risk', test: (p) => p?.primaryScenario === 'D03' },
@@ -119,7 +183,10 @@ export const FAMILIES = [
     firstZone: ['forecast_market', 'candidate_table', 'verified_event_status'],
     priority: ['candidate_table', 'key_findings', 'news_timeline', 'watchpoints'],
     scenarios: { primary: ['C08', 'A02'], supporting: ['A06', 'A09'] },
-    requiredData: ['a strictly matched contract, or no market chart', 'candidates only with verified sources'],
+    requiredData: [
+      'a strictly matched contract, or no market chart',
+      'candidates only with verified sources',
+    ],
     followups: ['verification', 'contract_terms', 'history'],
     subtypes: [
       { id: 'succession', test: (p) => p?.primaryScenario === 'A02' },
@@ -158,7 +225,12 @@ const FAMILY_IDS = new Set(FAMILIES.map((f) => f.id));
 
 /* Scenarios not listed as a family's primary present in the family that lists them as
    supporting; anything left falls back by its letter. */
-const LETTER_DEFAULT = { A: 'news_evidence', B: 'company_equity', C: 'sovereign_macro', D: 'portfolio_quant' };
+const LETTER_DEFAULT = {
+  A: 'news_evidence',
+  B: 'company_equity',
+  C: 'sovereign_macro',
+  D: 'portfolio_quant',
+};
 
 /** The family a plan proposes, before execution. */
 export function proposeFamily(plan) {
@@ -262,22 +334,23 @@ export function cleanPresentation(p) {
     presentationFamily: p.presentationFamily,
     familyLabel: str(p.familyLabel),
     analyticalSubtype: str(p.analyticalSubtype, 40),
-    supportingFamilies: (Array.isArray(p.supportingFamilies) ? p.supportingFamilies : []).filter((f) =>
-      FAMILY_IDS.has(f),
+    supportingFamilies: (Array.isArray(p.supportingFamilies) ? p.supportingFamilies : []).filter(
+      (f) => FAMILY_IDS.has(f),
     ),
     firstZone: str(p.firstZone, 40),
     composedSections: (Array.isArray(p.composedSections) ? p.composedSections : [])
       .filter((t) => typeof t === 'string')
       .slice(0, 40),
-    sourceCoverage: p.sourceCoverage && typeof p.sourceCoverage === 'object'
-      ? {
-          dataBlocks: Number(p.sourceCoverage.dataBlocks) || 0,
-          sourcedBlocks: Number(p.sourceCoverage.sourcedBlocks) || 0,
-          gaps: (Array.isArray(p.sourceCoverage.gaps) ? p.sourceCoverage.gaps : [])
-            .filter((g) => typeof g === 'string')
-            .map((g) => g.slice(0, 80))
-            .slice(0, 16),
-        }
-      : null,
+    sourceCoverage:
+      p.sourceCoverage && typeof p.sourceCoverage === 'object'
+        ? {
+            dataBlocks: Number(p.sourceCoverage.dataBlocks) || 0,
+            sourcedBlocks: Number(p.sourceCoverage.sourcedBlocks) || 0,
+            gaps: (Array.isArray(p.sourceCoverage.gaps) ? p.sourceCoverage.gaps : [])
+              .filter((g) => typeof g === 'string')
+              .map((g) => g.slice(0, 80))
+              .slice(0, 16),
+          }
+        : null,
   };
 }
