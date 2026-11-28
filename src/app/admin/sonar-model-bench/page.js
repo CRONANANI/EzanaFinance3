@@ -52,7 +52,11 @@ const COLUMNS = [
   ['citationValidity', 'Cite valid', (r) => pct(r.citationValidity)],
   ['numericFidelity', 'Numbers traced', (r) => pct(r.numericFidelity)],
   ['unsupportedPerRun', 'Unsupported/run', (r) => r.unsupportedPerRun],
-  ['crossFindingShare', 'Cross findings', (r) => pct(r.crossFindingShare)],
+  ['validCrossPerRun', 'Valid cross insights/run', (r) => r.validCrossPerRun ?? ''],
+  ['retrievalComplete', 'Data retrieved', (r) => pct(r.retrievalComplete)],
+  ['calcsOk', 'Calcs ran', (r) => pct(r.calcsOk)],
+  ['truncatedPerRun', 'Truncated calls/run', (r) => r.truncatedPerRun ?? ''],
+  ['specialistsDone', 'Specialists done', (r) => pct(r.specialistsDone)],
   ['completionRate', 'Completed', (r) => pct(r.completionRate)],
   ['timeoutRate', 'Timeouts', (r) => pct(r.timeoutRate)],
   ['latencyP50Ms', 'p50', (r) => sec(r.latencyP50Ms)],
@@ -216,6 +220,10 @@ export default function ModelBenchAdmin() {
   const stop = useRef(false);
   const [textData, setTextData] = useState(null);
   const [sel, setSel] = useState({ caseId: '', pair: 0 });
+  const [queue, setQueue] = useState(null);
+  const [qi, setQi] = useState(0);
+  const [hv, setHv] = useState({});
+  const [hnote, setHnote] = useState('');
 
   const note = (s) => setLog((l) => [...l, `${new Date().toLocaleTimeString()}  ${s}`]);
 
@@ -247,6 +255,45 @@ export default function ModelBenchAdmin() {
       setTextData(
         await call('GET', null, `?action=results&text=1&suite=${encodeURIComponent(suite)}`),
       );
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const loadQueue = async () => {
+    try {
+      const q = await call('GET', null, `?action=human-queue&suite=${encodeURIComponent(suite)}`);
+      setQueue(q);
+      setQi(
+        Math.max(
+          0,
+          q.items.findIndex((x) => !x.judged),
+        ),
+      );
+      setHv({});
+      setHnote('');
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const saveVerdict = async () => {
+    const item = queue?.items?.[qi];
+    if (!item || !hv.overall) return;
+    try {
+      await call('POST', {
+        action: 'human',
+        suite,
+        itemKey: item.itemKey,
+        verdicts: hv,
+        note: hnote,
+      });
+      const items = queue.items.map((x, i) => (i === qi ? { ...x, judged: true } : x));
+      setQueue({ ...queue, items });
+      const next = items.findIndex((x, i) => i > qi && !x.judged);
+      setQi(next >= 0 ? next : qi);
+      setHv({});
+      setHnote('');
     } catch (e) {
       setError(e.message);
     }
@@ -293,7 +340,14 @@ export default function ModelBenchAdmin() {
           if (stop.current) break;
           // eslint-disable-next-line no-await-in-loop
           await step(`run ${c.id} × ${cell.id} (trial ${t})`, () =>
-            call('POST', { action: 'run', caseId: c.id, cellId: cell.id, suite: id, trial: t }),
+            call('POST', {
+              action: 'run',
+              caseId: c.id,
+              cellId: cell.id,
+              /* Manual runs never write into the worker's suite. */
+              suite: `manual:${id}`,
+              trial: t,
+            }),
           );
         }
       }
@@ -518,6 +572,85 @@ export default function ModelBenchAdmin() {
             </>
           ) : null}
         </>
+      ) : null}
+
+      <h2 className="smb-h2">Blind human review</h2>
+      <p className="smb-sub">
+        Two answers to the same question from the same frozen evidence, shown as A and B in a fixed
+        random order. You never see which configuration wrote which. Judge substance, not length.
+      </p>
+      <div className="smb-row">
+        <button type="button" onClick={loadQueue} disabled={!suite}>
+          Load review queue
+        </button>
+        {queue ? (
+          <span>
+            {queue.items.filter((x) => x.judged).length} of {queue.items.length} reviewed
+          </span>
+        ) : null}
+      </div>
+      {queue?.items?.[qi] ? (
+        <div>
+          <p className="smb-sub">
+            <strong>{queue.items[qi].category}</strong>
+            {queue.items[qi].evidenceClass !== 'complete'
+              ? ' (intentionally incomplete evidence)'
+              : ''}
+            : {queue.items[qi].question}
+          </p>
+          <div className="smb-pair">
+            <div className="smb-col">
+              <h3 className="smb-h3">Answer A</h3>
+              <div className="smb-answer">{queue.items[qi].a.text}</div>
+            </div>
+            <div className="smb-col">
+              <h3 className="smb-h3">Answer B</h3>
+              <div className="smb-answer">{queue.items[qi].b.text}</div>
+            </div>
+          </div>
+          {[
+            ['overall', 'Which would a portfolio manager rather receive?'],
+            ['correctness', 'Which is more factually correct and better supported?'],
+            ['usefulness', 'Which is more analytically useful?'],
+            ['relationships', 'Which relates datasets more validly?'],
+          ].map(([k, label]) => (
+            <div className="smb-row" key={k}>
+              <span>{label}</span>
+              {['a', 'tie', 'b'].map((v) => (
+                <button
+                  type="button"
+                  key={v}
+                  className={hv[k] === v ? 'smb-primary' : ''}
+                  onClick={() => setHv((x) => ({ ...x, [k]: v }))}
+                >
+                  {v === 'tie' ? 'Tie' : v.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="smb-row">
+            <input
+              placeholder="Note (optional): the specific difference"
+              value={hnote}
+              onChange={(e) => setHnote(e.target.value)}
+              style={{ minWidth: 420 }}
+            />
+            <button
+              type="button"
+              className="smb-primary"
+              onClick={saveVerdict}
+              disabled={!hv.overall}
+            >
+              Save and next
+            </button>
+            <button
+              type="button"
+              onClick={() => setQi((i) => Math.min(queue.items.length - 1, i + 1))}
+            >
+              Skip
+            </button>
+          </div>
+        </div>
       ) : null}
 
       <h2 className="smb-h2">Log</h2>

@@ -73,6 +73,15 @@ export async function recordRun(
         truncated: Boolean(run.writerTruncated),
         reused: run.reusedFrom || null,
       },
+      /* Nov 28 2026: model routing telemetry for the Profile D canary (per role outcome,
+         served model, fallbacks, cost). */
+      models: {
+        profile: m.modelProfile || null,
+        crossDomain: m.crossDomain ?? null,
+        outcomes: m.outcomes || null,
+        roles: (m.roleOutcomes || []).slice(0, 16),
+        usage: m.modelUsage || null,
+      },
     }),
     evidence_decisions: clip(run.methodology?.evidence),
     report: clip({

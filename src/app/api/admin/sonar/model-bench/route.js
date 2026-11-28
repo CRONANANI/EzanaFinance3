@@ -3,9 +3,9 @@ import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import {
   MODEL_BENCH_VERSION,
-  MODEL_BENCH_CASES,
   MODEL_BENCH_PROPOSED_CASES,
-  cellsFor,
+  cellsForVariant,
+  casesForVariant,
   pairsFor,
   suitePlan,
 } from '@/lib/sonar/engine/eval/model-bench';
@@ -17,6 +17,8 @@ import {
   pairJudge,
   loadResults,
   suiteState,
+  humanQueue,
+  saveHumanVerdict,
 } from '@/lib/sonar/engine/eval/model-bench-runner';
 import { ACTIVE_MODEL_BENCH, MODEL_BENCH_SUITES } from '@/lib/sonar/engine/eval/model-bench-active';
 
@@ -71,17 +73,18 @@ export async function GET(request) {
         version: MODEL_BENCH_VERSION,
         active: ACTIVE_MODEL_BENCH,
         progress: { suite, byPhase, spentUsd: Math.round(state.spentUsd * 100) / 100 },
-        cases: MODEL_BENCH_CASES.map((c) => ({
+        cases: casesForVariant(conf.variant).map((c) => ({
           id: c.id,
           category: c.category,
           depth: c.depth,
           query: c.query,
-          cells: cellsFor(c, process.env).map((x) => ({
+          evidenceClass: c.evidenceClass || 'complete',
+          cells: cellsForVariant(c, conf.variant, process.env).map((x) => ({
             id: x.id,
             label: x.label,
             depth: x.depth || c.depth,
           })),
-          pairs: pairsFor(c).map(([left, right, label]) => ({ left, right, label })),
+          pairs: pairsFor(c, conf.variant).map(([left, right, label]) => ({ left, right, label })),
         })),
         proposed: MODEL_BENCH_PROPOSED_CASES.map(({ id, category, depth, query }) => ({
           id,
@@ -90,6 +93,17 @@ export async function GET(request) {
           query,
         })),
       });
+    }
+    if (action === 'human-queue') {
+      const suite = url.searchParams.get('suite') || ACTIVE_MODEL_BENCH.suite;
+      return NextResponse.json(
+        await humanQueue(admin, {
+          suite,
+          left: url.searchParams.get('left') || 'current',
+          right: url.searchParams.get('right') || 'D',
+          reviewer: g.user?.email || null,
+        }),
+      );
     }
     if (action === 'results') {
       const suite = url.searchParams.get('suite') || ACTIVE_MODEL_BENCH.suite;
@@ -114,17 +128,25 @@ export async function POST(request) {
   }
   const admin = getAdminClient();
   const suite = body.suite || ACTIVE_MODEL_BENCH.suite;
+  /* Manual steps write to their own suite id so they never mix with the worker's plan. */
+  const manualSuite = body.suite || `manual:${ACTIVE_MODEL_BENCH.suite}`;
   try {
+    if (body.action === 'human')
+      return NextResponse.json(
+        await saveHumanVerdict(admin, { ...body, suite, reviewer: g.user?.email || 'admin' }),
+      );
     if (body.action === 'availability')
-      return NextResponse.json(await availability(admin, { suite }));
+      return NextResponse.json(await availability(admin, { suite: manualSuite }));
     if (body.action === 'capture')
-      return NextResponse.json(await capture(admin, { suite, caseId: body.caseId }));
+      return NextResponse.json(await capture(admin, { suite: manualSuite, caseId: body.caseId }));
     if (body.action === 'run')
-      return NextResponse.json(await runCell(admin, { ...body, suite, suiteSnapshots: true }));
+      return NextResponse.json(
+        await runCell(admin, { ...body, suite: manualSuite, suiteSnapshots: true }),
+      );
     if (body.action === 'judge')
-      return NextResponse.json(await judgeRow(admin, { ...body, suite }));
+      return NextResponse.json(await judgeRow(admin, { ...body, suite: manualSuite }));
     if (body.action === 'pair')
-      return NextResponse.json(await pairJudge(admin, { ...body, suite }));
+      return NextResponse.json(await pairJudge(admin, { ...body, suite: manualSuite }));
   } catch (e) {
     return NextResponse.json({ error: e?.message || 'model bench step failed' }, { status: 500 });
   }

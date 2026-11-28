@@ -54,6 +54,9 @@ export function scoreDomains(text, understood = {}) {
   for (const [id, d] of Object.entries(DOMAINS)) {
     if (d.cues.some((re) => re.test(t))) add(id, 0.75, `cue:${id}`);
   }
+  /* Nov 28 2026: a question about a company's dependence on government customers is a
+     contracts question first (its second cue), not one cue among many. */
+  if (DOMAINS.contracts.cues[1]?.test(t)) add('contracts', 0.95, 'government_dependence');
   /* A country named with a tension word, about companies or markets, is a
      geopolitical exposure question first, not a country profile. */
   const nCountries = (understood.entities || []).filter((e) => e.kind === 'country').length;

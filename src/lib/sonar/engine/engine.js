@@ -19,6 +19,7 @@
  * SERVER ONLY. Domain logic lives in the modules it calls; this file only
  * orchestrates.
  */
+import { ROLE_BUDGETS, classifyOutcome, outcomeSummary } from './output-contracts.js';
 import { understandQuery } from '@/lib/sonar/understand';
 import { synthesizeWithFallback, HAIKU_MODEL, withUsageLabel } from '@/lib/sonar/llm-providers';
 import { routingForRun, isCrossDomain, deepDirectorFor } from '@/lib/sonar/model-routing';
@@ -298,6 +299,19 @@ export async function runResearch(query, opts = {}) {
   const left = () => deadline - Date.now();
   const aborted = () => Boolean(signal?.aborted);
   const trace = [];
+  /* Nov 28 2026: every model role call's outcome (ok, truncated, invalid_output, timeout,
+     skipped_deadline, provider_error), requested and served model, and any fallback. */
+  const roleOutcomes = [];
+  const noteRole = (role, { requested, out = null, error = null, parsedOk = null, startedAt }) =>
+    roleOutcomes.push({
+      role,
+      requested: requested || null,
+      served: out?.usage?.model || null,
+      outcome: classifyOutcome({ out, error, parsedOk }),
+      outputTokens: out?.usage?.outputTokens ?? null,
+      ms: startedAt ? Date.now() - startedAt : null,
+      fellBackFrom: out?.fellBackFrom || null,
+    });
   const leg = async (name, fn, note) => {
     const t0 = Date.now();
     try {
@@ -359,8 +373,12 @@ export async function runResearch(query, opts = {}) {
   const equityTicker = isEquityAnswer({ ticker: resolution?.company?.ticker || null })
     ? resolution.company.ticker
     : null;
-  const valuationP =
-    equityTicker && depth === 'deep' && !evidenceOverride
+  /* Nov 28 2026: a frozen-evidence replay carries the valuation model captured with its
+     evidence (before this a replayed deep run never had one, so a DCF question could not be
+     answered in an evaluation). */
+  const valuationP = evidenceOverride
+    ? Promise.resolve(depth === 'deep' && equityTicker ? evidenceOverride.valuation || null : null)
+    : equityTicker && depth === 'deep'
       ? fetchDeepValuation(equityTicker, { ms: 6000, now }).catch(() => null)
       : Promise.resolve(null);
   /* Nov 6: the active organization's research methodology (defaults for everyone else). Its
@@ -794,7 +812,8 @@ export async function runResearch(query, opts = {}) {
       team = recheck;
       if (changed) teamEvent(team.routing);
     }
-    const capMs = teamMode === 'deep' ? 70_000 : 14_000;
+    const capMs =
+      ROLE_BUDGETS[teamMode]?.specialistsWindowMs || (teamMode === 'deep' ? 70_000 : 14_000);
     const until = Math.min(deadline - D.synthMs, Date.now() + capMs);
     if (until - Date.now() > 4_000) {
       emit('stage', { stage: 'specialists' });
@@ -819,6 +838,12 @@ export async function runResearch(query, opts = {}) {
           `done=${v.specialists.filter((x) => x.status === 'done').length}/${v.specialists.length}`,
       ).catch(() => ({ specialists: [], dropped: [], estimatedUsd: 0 }));
       specialists = teamRun.specialists || [];
+      for (const sp of specialists)
+        if (sp.call)
+          roleOutcomes.push({
+            role: `specialist:${sp.id}`,
+            ...sp.call,
+          });
     }
   }
   const withTeam = specialists.some((x) => x.status === 'done');
@@ -847,6 +872,7 @@ export async function runResearch(query, opts = {}) {
   if (marked.length && left() > 2_500 && !aborted()) {
     writerFailure = null;
     let synthError = null;
+    const writerStartedAt = Date.now();
     const synth = await leg(
       'synthesize',
       () =>
@@ -919,6 +945,13 @@ export async function runResearch(query, opts = {}) {
           ? 'timeout'
           : 'provider';
     else if (!parsed) writerFailure = synth?.stopReason === 'max_tokens' ? 'truncated' : 'invalid';
+    noteRole('writer', {
+      requested: directorModel,
+      out: synth,
+      error: synth ? null : synthError,
+      parsedOk: Boolean(parsed),
+      startedAt: writerStartedAt,
+    });
     if (parsed) {
       report = memo
         ? validateMemo(parsed, {
@@ -1057,21 +1090,34 @@ export async function runResearch(query, opts = {}) {
     });
     const strong = models.deep_red_team;
     const draft = memo ? renderMemoBrief(report) : renderBrief(report);
+    const rtStartedAt = Date.now();
+    let rtError = null;
+    const rtHop = ROLE_BUDGETS.deep.redTeamHopMs;
     const rt = await leg('red-team', () =>
       synthesizeWithFallback({
         system: redTeamSystem(),
         user: `Draft report:\n${draft}\n\nEvidence:\n${evidenceLines(markedF)}`,
         maxTokens: Math.round(outputScale * (ANALYSTS['red-team'].maxOutputTokens?.deep || 1200)),
-        ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
+        maxHopMs: rtHop,
         model: strong,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
-        deadlineAt: Math.min(deadline - 15_000, Date.now() + 45_000),
+        deadlineAt: Math.min(deadline - 15_000, Date.now() + rtHop),
         minHopMs: 2_000,
         reserveMs: 0,
       }),
-    ).catch(() => null);
+    ).catch((e) => {
+      rtError = e;
+      return null;
+    });
     redTeam = parseRedTeam(rt?.answer);
+    noteRole('red_team', {
+      requested: strong,
+      out: rt,
+      error: rt ? null : rtError,
+      parsedOk: Boolean(redTeam),
+      startedAt: rtStartedAt,
+    });
     emit('analyst', {
       id: 'red-team',
       title: ANALYSTS['red-team'].title,
@@ -1079,6 +1125,8 @@ export async function runResearch(query, opts = {}) {
       status: redTeam ? 'done' : 'failed',
     });
     if (redTeam?.points.length) {
+      const finStartedAt = Date.now();
+      const finHop = ROLE_BUDGETS.deep.resolveHopMs;
       const fin = await leg('director-final', () =>
         synthesizeWithFallback({
           system: resolutionSystem(),
@@ -1086,16 +1134,23 @@ export async function runResearch(query, opts = {}) {
             .map((p, i) => `${i}. (${p.kind}) ${p.text} ${p.refs.map((r) => `[${r}]`).join('')}`)
             .join('\n')}\n\nEvidence:\n${evidenceLines(markedF)}`,
           maxTokens: Math.round(outputScale * 900),
-          ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
+          maxHopMs: finHop,
           model: models.deep_resolve,
           fallbackModel: HAIKU_MODEL,
           webSearch: { enabled: false },
-          deadlineAt: Math.min(deadline - 8_000, Date.now() + 30_000),
+          deadlineAt: Math.min(deadline - 8_000, Date.now() + finHop),
           minHopMs: 2_000,
           reserveMs: 0,
         }),
       ).catch(() => null);
-      redTeam = applyResolutions(redTeam, parseResearchJson(fin?.answer));
+      const finParsed = parseResearchJson(fin?.answer);
+      noteRole('director_final', {
+        requested: models.deep_resolve,
+        out: fin,
+        parsedOk: Array.isArray(finParsed?.resolutions),
+        startedAt: finStartedAt,
+      });
+      redTeam = applyResolutions(redTeam, finParsed);
       /* Incorporated points join the analysis, through the same claim validator; the rest
          become stated limitations. */
       const byMarker = new Map(marked.map((e) => [e.marker, e]));
@@ -1150,6 +1205,8 @@ export async function runResearch(query, opts = {}) {
     brief: memo ? renderMemoBrief(report) : renderBrief(report),
   });
   if (teamMode === 'deep' && !report.deterministic && left() > 15_000 && !aborted()) {
+    const auditStartedAt = Date.now();
+    const auditHop = ROLE_BUDGETS.deep.auditHopMs;
     const review = await leg('audit-review', () =>
       synthesizeWithFallback({
         system: auditSystem(),
@@ -1159,16 +1216,23 @@ export async function runResearch(query, opts = {}) {
         maxTokens: Math.round(
           outputScale * (ANALYSTS['methodology-auditor'].maxOutputTokens?.deep || 900),
         ),
-        ...(outputScale !== 1 ? { maxHopMs: 45_000 } : {}),
+        maxHopMs: auditHop,
         model: models.deep_auditor,
         fallbackModel: HAIKU_MODEL,
         webSearch: { enabled: false },
-        deadlineAt: Math.min(deadline - 4_000, Date.now() + 30_000),
+        deadlineAt: Math.min(deadline - 4_000, Date.now() + auditHop),
         minHopMs: 2_000,
         reserveMs: 0,
       }),
     ).catch(() => null);
-    audit = mergeModelAudit(audit, parseModelAudit(review?.answer));
+    const auditParsed = parseModelAudit(review?.answer);
+    noteRole('auditor', {
+      requested: models.deep_auditor,
+      out: review,
+      parsedOk: Boolean(auditParsed),
+      startedAt: auditStartedAt,
+    });
+    audit = mergeModelAudit(audit, auditParsed);
   }
   report = applyAuditFixes(report, audit.fixes);
   /* Sonar 6.2: the stated confidence is audited against coverage and calculation
@@ -1330,6 +1394,8 @@ export async function runResearch(query, opts = {}) {
       model,
       modelProfile: models.profile,
       crossDomain,
+      roleOutcomes,
+      outcomes: outcomeSummary(roleOutcomes),
       providerErrors,
       validation: report.validation?.stats || null,
       validationLog: report.validation?.log || [],

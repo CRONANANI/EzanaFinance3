@@ -324,8 +324,8 @@ test('relationships: cross-dataset findings vs single-source summaries', () => {
     ],
     keyFindings: [
       {
-        title: 'Purchases preceded awards',
-        explanation: 'Buying came ahead of the $2B award.',
+        title: 'LMT purchases preceded awards',
+        explanation: 'Buying of LMT came ahead of the $2B LMT award.',
         evidence: ['1', '2'],
       },
       { title: 'Holders rose', explanation: 'More funds hold LMT.', evidence: ['3'] },

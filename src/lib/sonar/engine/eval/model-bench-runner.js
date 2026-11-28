@@ -12,6 +12,11 @@ import { understandQuery } from '@/lib/sonar/understand';
 import { scoreDomains } from '@/lib/sonar/engine/research-spec';
 import { resolveResearch } from '@/lib/sonar/engine/resolution';
 import { loadActiveConfig } from '@/lib/sonar/engine/config-store';
+import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
+import { runResearchComposition, resolveSubject } from '@/lib/sonar/composer/execute';
+import { inferComposition } from '@/lib/sonar/composer/intents';
+import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
+import { OWNERSHIP_CAPABILITY } from '@/lib/sonar/composer/ownership';
 import { synthesizeWithFallback, collectUsage } from '@/lib/sonar/llm-providers';
 import { MODELS } from '@/lib/sonar/model-routing';
 import { plain, recordingRunners, replayRunners, blockedAdmin } from './replay.js';
@@ -21,6 +26,8 @@ import {
   cellsForVariant,
   pairsFor,
   scoreRun,
+  retrievalCheck,
+  calcCheck,
   summarizeUsage,
   aggregate,
   aggregatePairs,
@@ -99,6 +106,81 @@ export async function availability(admin, { suite, stepKey } = {}) {
 
 /* Freeze a case: run understanding, resolution and retrieval against production data,
    record every runner call, and stop at the 'evidence' event before any synthesis. */
+
+/**
+ * The composition production runs before the engine for an ownership ranking, a screen, a
+ * company comparison or a government-dependence question (api/sonar/research, Sonar 6.1 to
+ * 6.3): same intent, same inferred attachments, same holder resolution, run once at capture
+ * and frozen. Not reproduced: the reader's manual attachments, result reuse (a cache), and
+ * the semantic measure refinement (an embedding call; the lexical measure is used).
+ * Before Nov 28 2026 the benchmark skipped this step, so those questions were judged
+ * without the computed results production readers get.
+ */
+async function benchComposition(question, admin, { deep }) {
+  const canonical = canonicalIntent(question);
+  if (canonical.unsupported) return { composition: null, note: 'unsupported intent' };
+  const ANALYTIC_FAMILIES = {
+    multi_stage_screen: 'financial-screen',
+    company_comparison: 'company-comparison',
+    government_contract_dependency: 'government-dependence',
+  };
+  const inferred = inferComposition(question, {});
+  let attachments = [];
+  let primary = null;
+  const analyticCap = ANALYTIC_FAMILIES[canonical.family];
+  if (analyticCap) {
+    const extra = inferred.attachments.filter((a) => a.capability === analyticCap);
+    attachments = [...attachments, ...extra];
+    if (extra[0]?.subject?.text) primary = { text: String(extra[0].subject.text).slice(0, 80) };
+  }
+  if (canonical.family === 'institutional_ownership') {
+    const own = inferred.attachments.filter((a) => a.capability === OWNERSHIP_CAPABILITY);
+    if (own.length && inferred.subject && !inferred.relation) {
+      attachments = [...attachments, ...own];
+      primary = primary || { text: String(inferred.subject).slice(0, 80) };
+    }
+  }
+  if (!attachments.length)
+    return { composition: null, note: `no composition (${canonical.family})` };
+  let resolvedPrimary = null;
+  if (canonical.family === 'institutional_ownership' && canonical.primary_entity?.text) {
+    const pe = canonical.primary_entity;
+    for (const text of (pe.alternates || [pe.text]).slice(0, 3)) {
+      // eslint-disable-next-line no-await-in-loop
+      const v = await resolveSubject(text, admin).catch(() => null);
+      if (
+        v?.id &&
+        v.kind !== 'unresolved' &&
+        (pe.status !== 'candidate' || /[A-Z]/.test(text) || v.kind === 'politician')
+      ) {
+        resolvedPrimary = v;
+        primary = { text: v.text };
+        break;
+      }
+    }
+    if (!resolvedPrimary && pe.status === 'candidate')
+      return { composition: null, note: 'holder not resolved' };
+  }
+  const cap = deep ? 45_000 : 20_000;
+  const comp = await runResearchComposition(
+    {
+      question: String(question).slice(0, 600),
+      primary,
+      attachments: attachments.slice(0, 8),
+      userId: null,
+      resolvedPrimary,
+      deadlineAt: Date.now() + cap - 1_500,
+    },
+    admin,
+  ).catch((e) => ({ ok: false, error: e?.message }));
+  return comp?.ok
+    ? {
+        composition: comp.value,
+        note: `${canonical.family}: ${attachments.map((a) => a.capability).join(', ')}`,
+      }
+    : { composition: null, note: `composition failed: ${comp?.error || 'error'}` };
+}
+
 export async function capture(admin, { suite, caseId, stepKey }) {
   const c = caseOf(caseId);
   if (!c) throw new Error(`unknown case ${caseId}`);
@@ -117,6 +199,7 @@ export async function capture(admin, { suite, caseId, stepKey }) {
     notes: ['resolution_failed'],
   }));
   const config = await loadActiveConfig(admin).catch(() => null);
+  const composed = await benchComposition(c.query, admin, { deep: c.depth === 'deep' });
   const calls = [];
   const controller = new AbortController();
   let planEvent = null;
@@ -129,6 +212,7 @@ export async function capture(admin, { suite, caseId, stepKey }) {
     config: config || undefined,
     scope: { userId: null, orgId: null },
     signal: controller.signal,
+    composition: composed.composition || undefined,
     emit: (type, data) => {
       if (type === 'plan') planEvent = plain(data);
       if (type === 'evidence') controller.abort();
@@ -141,6 +225,13 @@ export async function capture(admin, { suite, caseId, stepKey }) {
   }).catch(() => null);
   if ((planEvent?.plan?.tasks?.length || 0) && !calls.length)
     throw new Error('capture recorded no runner call; evidenceOverride was ignored');
+  /* A deep company question freezes its valuation model too (DCF, multiples, peers), which
+     a replay cannot rebuild from the runners. */
+  const ticker = resolved?.company?.ticker || null;
+  const valuation =
+    c.depth === 'deep' && ticker
+      ? await fetchDeepValuation(ticker, { ms: 8000, now }).catch(() => null)
+      : null;
   const snapshot = {
     caseId: c.id,
     query: c.query,
@@ -150,6 +241,20 @@ export async function capture(admin, { suite, caseId, stepKey }) {
     resolution: plain(resolved),
     config: plain(config),
     retrievalMs: Date.now() - t0,
+    /* For the retrieval audit: what was planned and what was left out, and why. */
+    plan: planEvent?.plan
+      ? {
+          tasks: (planEvent.plan.tasks || []).map((t) => ({
+            source: t.source,
+            priority: t.priority,
+            reason: t.reason,
+          })),
+          excluded: (planEvent.plan.excluded || []).slice(0, 60),
+        }
+      : null,
+    valuation: plain(valuation),
+    composition: plain(composed.composition),
+    compositionNote: composed.note,
     calls,
   };
   const { data, error } = await admin
@@ -229,6 +334,7 @@ export async function runCell(
       scope: { userId: null, orgId: null },
       modelRouting: cell.routing,
       outputScale: cell.outputScale || 1,
+      composition: snap.composition || undefined,
       /* The production function's own ceiling, as the research route sets it. */
       deadlineAt: startedAt + RUN_BUDGET_MS,
       emit: () => {},
@@ -236,6 +342,7 @@ export async function runCell(
         resolution: snap.resolution,
         runners: replayRunners(snap, replayLog),
         memory: [],
+        valuation: snap.valuation || null,
       },
     }).catch((e) => {
       failed = e?.message || 'threw';
@@ -246,6 +353,22 @@ export async function runCell(
   const runForScore = run || { failed, researchMetadata: { durationMs: wallMs, partial: true } };
   const score = scoreRun(runForScore, { ...c, evidenceTerms: evidenceTerms(snap) });
   if (score.durationMs == null) score.durationMs = wallMs;
+  /* Retrieval is a property of the frozen snapshot (identical across cells); calculations
+     and role outcomes are properties of this run. */
+  score.retrieval = retrievalCheck(c, snap);
+  score.calcs = calcCheck(c, run);
+  score.roles = run?.researchMetadata?.outcomes || null;
+  score.specialists = {
+    planned:
+      (run?.team?.specialists || run?.researchMetadata?.team?.supporting || []).length || null,
+    done: (run?.researchMetadata?.roleOutcomes || []).filter(
+      (r) => r.role.startsWith('specialist:') && (r.outcome === 'ok' || r.outcome === 'truncated'),
+    ).length,
+    calls: (run?.researchMetadata?.roleOutcomes || []).filter((r) =>
+      r.role.startsWith('specialist:'),
+    ).length,
+  };
+  score.evidenceClass = c.evidenceClass || 'complete';
   const usage = summarizeUsage(calls);
   const metrics = {
     stepKey,
@@ -257,6 +380,8 @@ export async function runCell(
     outputScale: cell.outputScale || 1,
     snapshotId: snap.id,
     servedModel: run?.researchMetadata?.model || null,
+    roleOutcomes: run?.researchMetadata?.roleOutcomes || [],
+    compositionNote: snap.compositionNote || null,
     crossDomain: run?.researchMetadata?.crossDomain ?? null,
     failed,
     wallMs,
@@ -280,6 +405,8 @@ export async function runCell(
         text: String(e.text || '').slice(0, 300),
         source: e.source || null,
         category: e.category || null,
+        period: e.period?.label || e.period || null,
+        date: e.date || null,
       })),
       limitations: run?.limitations || [],
     },
@@ -585,7 +712,7 @@ export async function workerTick(
 export async function loadResults(admin, suite, { withText = false } = {}) {
   const cols = withText
     ? 'id, engine, benchmark_id, config_version, metrics, created_at'
-    : 'id, engine, benchmark_id, config_version, created_at, metrics->score, metrics->usage, metrics->cellLabel, metrics->trial, metrics->judge, metrics->scores, metrics->verdict, metrics->xIs, metrics->left, metrics->right, metrics->label, metrics->models, metrics->wallMs, metrics->failed, metrics->replay, metrics->servedModel, metrics->crossDomain, metrics->usd';
+    : 'id, engine, benchmark_id, config_version, created_at, metrics->score, metrics->usage, metrics->cellLabel, metrics->trial, metrics->judge, metrics->scores, metrics->verdict, metrics->xIs, metrics->left, metrics->right, metrics->label, metrics->models, metrics->wallMs, metrics->failed, metrics->replay, metrics->servedModel, metrics->crossDomain, metrics->usd, metrics->reviewer, metrics->stepKey';
   const { data, error } = await admin
     .from('sonar_research_evaluations')
     .select(cols)
@@ -598,6 +725,7 @@ export async function loadResults(admin, suite, { withText = false } = {}) {
   const get = (r, k) => (withText ? r.metrics?.[k] : r[k]);
   const judges = {};
   const pairs = [];
+  const human = [];
   let availabilityResult = null;
   let judgeUsd = 0;
   for (const r of data || []) {
@@ -618,9 +746,19 @@ export async function loadResults(admin, suite, { withText = false } = {}) {
       });
       judgeUsd += Number(get(r, 'usd')) || 0;
     } else if (r.engine === 'model-bench-availability') availabilityResult = get(r, 'models');
+    else if (r.engine === 'model-bench-human')
+      human.push({
+        caseId: r.benchmark_id,
+        left: get(r, 'left'),
+        right: get(r, 'right'),
+        verdict: get(r, 'verdict'),
+        reviewer: get(r, 'reviewer'),
+      });
   }
+  /* Worker rows only: a row without a step key came from a manual admin-page run and is
+     not part of the suite's plan. */
   const rows = (data || [])
-    .filter((r) => r.engine === 'model-bench')
+    .filter((r) => r.engine === 'model-bench' && (withText ? r.metrics?.stepKey : r.stepKey))
     .map((r) => {
       const judge = meanJudge(
         judges[`${r.benchmark_id}|${r.config_version}|${get(r, 'trial')}`] || [],
@@ -654,9 +792,116 @@ export async function loadResults(admin, suite, { withText = false } = {}) {
       Object.entries(pairsByCase).map(([k, v]) => [k, aggregatePairs(v)]),
     ),
     pairVerdicts: pairs,
+    human: {
+      verdicts: human.length,
+      reviewers: [...new Set(human.map((h) => h.reviewer).filter(Boolean))].length,
+      byPair: Object.values(
+        human.reduce((acc, h) => {
+          const k = `${h.left}|${h.right}`;
+          const b = (acc[k] ||= { left: h.left, right: h.right, right_w: 0, left_w: 0, tie: 0 });
+          const w = h.verdict?.overall?.winner;
+          b[w === 'right' ? 'right_w' : w === 'left' ? 'left_w' : 'tie'] += 1;
+          return acc;
+        }, {}),
+      ),
+    },
     spend: {
       runsUsd: rows.reduce((a, r) => a + (r.usage?.total?.usd || 0), 0),
       judgingUsd: judgeUsd,
     },
   };
+}
+
+/* ---------------------------------------------------------------- human review --- */
+
+/* Which side shows first for a pair: a stable hash, so a reviewer's queue is the same on
+   reload and the order is not the plan's left/right. */
+function flipOf(key) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i += 1) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h % 2 === 1;
+}
+
+/**
+ * The blind human-review queue for a suite: one item per case and trial for the given
+ * comparison (default current vs D), the two answers as A and B in a stable random order,
+ * never the model or the cell. Items this reviewer already judged are marked.
+ */
+export async function humanQueue(admin, { suite, left = 'current', right = 'D', reviewer = null }) {
+  const { data, error } = await admin
+    .from('sonar_research_evaluations')
+    .select('id, benchmark_id, config_version, metrics->trial, metrics->output')
+    .eq('suite_run', suite)
+    .eq('engine', 'model-bench')
+    .in('config_version', [left, right])
+    .not('metrics->>stepKey', 'is', null)
+    .limit(500);
+  if (error) throw new Error(error.message);
+  const { data: done } = await admin
+    .from('sonar_research_evaluations')
+    .select('metrics->itemKey, metrics->reviewer')
+    .eq('suite_run', suite)
+    .eq('engine', 'model-bench-human')
+    .limit(2000);
+  const judged = new Set(
+    (done || []).filter((d) => !reviewer || d.reviewer === reviewer).map((d) => d.itemKey),
+  );
+  const by = {};
+  for (const r of data || []) (by[`${r.benchmark_id}|${r.trial}`] ||= {})[r.config_version] = r;
+  const items = [];
+  for (const [k, v] of Object.entries(by)) {
+    if (!v[left] || !v[right]) continue;
+    const [caseId, trial] = k.split('|');
+    const c = caseOf(caseId);
+    const itemKey = `${caseId}|${trial}|${left}|${right}`;
+    const flip = flipOf(itemKey);
+    const [a, b] = flip ? [v[right], v[left]] : [v[left], v[right]];
+    items.push({
+      itemKey,
+      caseId,
+      trial: Number(trial),
+      category: c?.category || caseId,
+      evidenceClass: c?.evidenceClass || 'complete',
+      question: c?.query || '',
+      a: { text: a.output?.text || '' },
+      b: { text: b.output?.text || '' },
+      judged: judged.has(itemKey),
+    });
+  }
+  return { suite, left, right, items: items.sort((x, y) => x.itemKey.localeCompare(y.itemKey)) };
+}
+
+/** Store one reviewer's blind verdict ("a" | "b" | "tie" per criterion), mapped back to cells. */
+export async function saveHumanVerdict(
+  admin,
+  { suite, itemKey, verdicts = {}, note = '', reviewer },
+) {
+  const [caseId, trial, left, right] = String(itemKey || '').split('|');
+  if (!caseId || !left || !right) throw new Error('itemKey required');
+  const flip = flipOf(itemKey);
+  const map = (w) => (w === 'tie' ? 'tie' : (w === 'a') !== flip ? 'left' : 'right');
+  const keys = ['overall', 'correctness', 'usefulness', 'relationships'];
+  const verdict = {};
+  for (const k of keys)
+    if (['a', 'b', 'tie'].includes(verdicts[k])) verdict[k] = { winner: map(verdicts[k]) };
+  if (!verdict.overall) throw new Error('an overall verdict is required');
+  await insertRow(admin, {
+    suite_run: suite,
+    engine: 'model-bench-human',
+    config_version: `${left}|${right}`,
+    benchmark_id: caseId,
+    metrics: {
+      itemKey,
+      trial: Number(trial),
+      left,
+      right,
+      reviewer,
+      verdict,
+      note: String(note || '').slice(0, 1000),
+    },
+  });
+  return { ok: true, itemKey, verdict };
 }

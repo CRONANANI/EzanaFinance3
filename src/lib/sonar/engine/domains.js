@@ -47,12 +47,18 @@ export const DOMAINS = {
     label: 'Government contracts',
     cues: [
       /\b(contracts?|contractors?|awards?|awarded|pentagon|dod|procurement|federal spending|government spending)\b/i,
+      /* Nov 28 2026: "How dependent is Palantir on government revenue?" never planned the
+         contract sources: no cue matched, and at standard depth the task cap cut them. */
+      /\b(?:government|federal|public[- ]sector)\s+(?:revenue|business|customers?|clients?|sales|dependen\w*|exposure|work|agencies)\b|\bdependen\w* on (?:the )?(?:u\.?s\.? )?(?:government|pentagon|federal)\b/i,
     ],
   },
   institutional: {
     label: 'Institutional ownership',
     cues: [
       /\b(institutional|institutions|13f|hedge funds?|asset managers?|holders?|holdings|ownership|accumulat\w*|positions in)\b/i,
+      /* Nov 28 2026: "stocks Pelosi owns that are most owned by investment firms" planned the
+         politician's dossier only, never the 13F holdings the ranking needs. */
+      /\b(investment (?:firms?|managers?|companies)|fund managers?|money managers?|(?:most |widely )?owned by (?:funds|firms|institutions|investors|managers))\b/i,
     ],
   },
   geopolitics: {
@@ -65,6 +71,9 @@ export const DOMAINS = {
     label: 'Company financials and exposure',
     cues: [
       /\b(revenue|sales|earnings|margins?|financially|exposed|exposure|dependence|dependent|guidance|capex|spending)\b/i,
+      /* Nov 28 2026: "Give me a fundamental analysis of Apple" and "Run a DCF on Microsoft"
+         planned only news and editorial: none of their words cued the financial sources. */
+      /\b(fundamentals?|fundamental analysis|financial (?:health|position|strength|statements?|condition)|balance sheet|cash flows?|free cash flow|profitab\w*|valuation|dcf|discounted cash flow|intrinsic value|fair value|p\/e|price[- ]to[- ]earnings)\b/i,
     ],
   },
   market_performance: {
@@ -77,6 +86,8 @@ export const DOMAINS = {
     label: 'Analyst expectations',
     cues: [
       /\b(analysts?|price targets?|ratings?|upgrades?|downgrades?|consensus|expectations?)\b/i,
+      /* A valuation reads consensus estimates (the DCF's forecast inputs). */
+      /\b(valuation|dcf|discounted cash flow|intrinsic value|fair value|undervalued|overvalued)\b/i,
     ],
   },
   commodity: {

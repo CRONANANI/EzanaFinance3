@@ -441,7 +441,8 @@ test('wiring: the ping board, the brief, the dossier, the engine and the researc
   assert.match(lp, /landing:v8:/);
   assert.match(lp, /valuationEvidence\(resolved\.ticker/);
   const eng = read('src/lib/sonar/engine/engine.js');
-  assert.match(eng, /equityTicker && depth === 'deep' && !evidenceOverride/);
+  assert.match(eng, /evidenceOverride.valuation/);
+  assert.match(eng, /equityTicker && depth === 'deep'/);
   assert.match(eng, /emit\('panel', \{ source: 'valuation', layout: \{ valuation \} \}\)/);
   const rb = read('src/components/sonar/research/ResearchBoard.jsx');
   assert.match(rb, /section: 'valuation'/);

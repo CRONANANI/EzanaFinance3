@@ -227,6 +227,7 @@ const MEMO_REPLACED = {
   contracts_history: 'contracts_profile',
   lobbying_company: 'lobbying_profile',
 };
+const MEMO_REPLACES = Object.fromEntries(Object.entries(MEMO_REPLACED).map(([a, b]) => [b, a]));
 
 const SHORT_NAME = (s) =>
   String(s || '')
@@ -310,7 +311,12 @@ export function planResearch(
     let priority = 0;
     const drivers = [];
     for (const d of spec.domains || []) {
-      const w = weightOf(config, d.id, source);
+      /* A memo's replacement source (contracts_profile for contracts_history) carries the
+         weights of the source it replaces; it had none, so a contracts question could not
+         raise it above the memo baseline. */
+      const w =
+        weightOf(config, d.id, source) ||
+        (memo && MEMO_REPLACES[source] ? weightOf(config, d.id, MEMO_REPLACES[source]) : 0);
       const s = d.score * w;
       if (s > 0) drivers.push({ domain: d.id, contribution: Number(s.toFixed(3)) });
       if (s > priority) priority = s;

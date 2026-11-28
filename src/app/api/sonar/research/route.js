@@ -1,4 +1,8 @@
 import crypto from 'crypto';
+import { isAdminUser } from '@/lib/admin-helpers';
+import { collectUsage } from '@/lib/sonar/llm-providers';
+import { routingForRun } from '@/lib/sonar/model-routing';
+import { summarizeUsage } from '@/lib/sonar/model-usage';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
@@ -776,50 +780,63 @@ const POST_HANDLER = withApiGuard(
           if (snap) snap = reduceEvent(snap, ['notice', { message: controlsNotice }]);
         }
         try {
-          run = await runResearch(runQuery, {
-            admin,
-            runId,
-            depth,
-            /* A composed run starts the engine's budget after the composition, so its
-               writer is not left the remainder (still inside the function's cap). */
-            deadlineAt: Math.min(
-              (composition ? Date.now() : startedAt) + DEPTH_PROFILES[depth].budgetMs,
-              startedAt + (maxDuration - 6) * 1000,
-            ),
-            /* Deep mode reads every dataset, as a quick ping does for anyone. */
-            entitledDatasets: deepMode ? null : access.entitlements.datasets,
-            /* Nov 13: Research Controls and a follow-up's background (see above). */
-            allowedSources,
-            directive,
-            preamble,
-            runMeta: {
-              controls: isDefaultControls(controls) ? null : controls,
-              followUpTo: parentQuestion,
-              parentRunId,
-              attachmentName: attachment ? attachName : null,
-              canonicalIntent: { ...intentTelemetry(canonical), reusedFrom },
-            },
-            /* A standard run whose real plan leaves out evidence the question
-               asked for says so right after the plan (never escalates). */
-            emit: (event, data) => {
-              send(event, data);
-              if (snap) snap = reduceEvent(snap, [event, data]);
-              if (event === 'plan' && standardMode && mode?.requestedFamilies?.length) {
-                const cov = coverageFromPlan(data?.plan, mode.requestedFamilies);
-                if (cov.incomplete) {
-                  send('coverage', { ...cov, goDeeper: 'deep' });
-                  if (snap) snap = reduceEvent(snap, ['coverage', { ...cov, goDeeper: 'deep' }]);
-                }
-              }
-            },
-            signal: abort.signal,
-            scope: access.scope,
-            noCorrect: body?.noCorrect === true,
-            force,
-            fund,
-            challenge,
-            composition,
+          /* Nov 28 2026: the model routing is chosen here (staff canary needs the user), and
+             every model call is collected for per-role cost and outcome telemetry. */
+          const modelRouting = routingForRun({
+            userId: access.user?.id || null,
+            isStaff: Boolean(access.user && isAdminUser(access.user)),
+            env: process.env,
           });
+          const collected = await collectUsage(() =>
+            runResearch(runQuery, {
+              admin,
+              runId,
+              depth,
+              modelRouting,
+              /* A composed run starts the engine's budget after the composition, so its
+               writer is not left the remainder (still inside the function's cap). */
+              deadlineAt: Math.min(
+                (composition ? Date.now() : startedAt) + DEPTH_PROFILES[depth].budgetMs,
+                startedAt + (maxDuration - 6) * 1000,
+              ),
+              /* Deep mode reads every dataset, as a quick ping does for anyone. */
+              entitledDatasets: deepMode ? null : access.entitlements.datasets,
+              /* Nov 13: Research Controls and a follow-up's background (see above). */
+              allowedSources,
+              directive,
+              preamble,
+              runMeta: {
+                controls: isDefaultControls(controls) ? null : controls,
+                followUpTo: parentQuestion,
+                parentRunId,
+                attachmentName: attachment ? attachName : null,
+                canonicalIntent: { ...intentTelemetry(canonical), reusedFrom },
+              },
+              /* A standard run whose real plan leaves out evidence the question
+               asked for says so right after the plan (never escalates). */
+              emit: (event, data) => {
+                send(event, data);
+                if (snap) snap = reduceEvent(snap, [event, data]);
+                if (event === 'plan' && standardMode && mode?.requestedFamilies?.length) {
+                  const cov = coverageFromPlan(data?.plan, mode.requestedFamilies);
+                  if (cov.incomplete) {
+                    send('coverage', { ...cov, goDeeper: 'deep' });
+                    if (snap) snap = reduceEvent(snap, ['coverage', { ...cov, goDeeper: 'deep' }]);
+                  }
+                }
+              },
+              signal: abort.signal,
+              scope: access.scope,
+              noCorrect: body?.noCorrect === true,
+              force,
+              fund,
+              challenge,
+              composition,
+            }),
+          );
+          run = collected.result;
+          if (run?.researchMetadata)
+            run.researchMetadata.modelUsage = compactUsage(collected.calls);
         } catch (e) {
           console.error('[sonar/research] run failed', e?.name);
         }
@@ -961,3 +978,27 @@ async function loadChallengeTarget(admin, reportId, userId, orgId) {
 
 /* No em dashes in anything this route returns (src/lib/text/em-dash.js). */
 export const POST = withNoEmDash(POST_HANDLER);
+
+/* Per-run model telemetry kept with the run (sonar_research_runs.plan.models): cost and
+   tokens by role and model, timeouts, failures and served-model mismatches. */
+function compactUsage(calls) {
+  const u = summarizeUsage(calls || []);
+  return {
+    usd: u.total.usd,
+    inputTokens: u.total.inputTokens,
+    outputTokens: u.total.outputTokens,
+    calls: u.total.calls,
+    byRole: Object.fromEntries(
+      Object.entries(u.byLeg).map(([k, v]) => [
+        k,
+        { calls: v.calls, usd: v.usd, outputTokens: v.outputTokens, ms: v.ms },
+      ]),
+    ),
+    byModel: Object.fromEntries(
+      Object.entries(u.byModel).map(([k, v]) => [k, { calls: v.calls, usd: v.usd }]),
+    ),
+    failures: u.failures,
+    timeouts: u.timeouts,
+    modelMismatches: u.modelMismatches,
+  };
+}

@@ -35,7 +35,9 @@ const labelStore = new AsyncLocalStorage();
 
 export async function collectUsage(fn) {
   const calls = [];
-  const result = await usageStore.run({ calls }, fn);
+  /* Collectors nest: a production run's telemetry collector inside a benchmark's both see
+     every call. */
+  const result = await usageStore.run({ calls, parent: usageStore.getStore() || null }, fn);
   return { result, calls };
 }
 
@@ -44,8 +46,17 @@ export function withUsageLabel(label, fn) {
 }
 
 function recordUsage(entry) {
-  const store = usageStore.getStore();
-  if (store) store.calls.push({ label: labelStore.getStore() || null, ...entry });
+  const row = { label: labelStore.getStore() || null, ...entry };
+  for (let store = usageStore.getStore(); store; store = store.parent) store.calls.push(row);
+}
+
+/* Explicit fallback state (Nov 28 2026). By default a model the account cannot use (a 400)
+   is retried once on Haiku, and the substitution is recorded: the usage row and the reply
+   carry fellBackFrom, and the engine lists it in researchMetadata.roleOutcomes. With
+   SONAR_MODEL_STRICT=1 nothing is substituted: the call fails and is reported as a provider
+   error, and the provider chain does not move on to another vendor. */
+export function modelStrict(env = process.env) {
+  return env.SONAR_MODEL_STRICT === '1' || env.SONAR_MODEL_STRICT === 'true';
 }
 // ── Typed errors so the chain can distinguish "provider unavailable" (fall through
 //    quietly) from "we sent a bad request" (fall through, but log loudly so a code
@@ -351,8 +362,9 @@ async function anthropicSynthesize({
     }
   }
 
-  // A deep-tier model the account can't access 400s — retry once on the safe Haiku.
-  if (res.status === 400 && model !== safeFallback) {
+  // A deep-tier model the account can't access 400s — retry once on the safe Haiku,
+  // unless strict mode forbids substitution.
+  if (res.status === 400 && model !== safeFallback && !modelStrict()) {
     const detail = await readBody(res);
     console.warn('[sonar] model 400, retrying on Haiku', { model, detail });
     fellBackFrom = { model, status: 400, detail: String(detail || '').slice(0, 300) };
@@ -425,6 +437,8 @@ async function anthropicSynthesize({
     ? {
         ...parsed,
         stopReason: data?.stop_reason || null,
+        requestedModel: model,
+        fellBackFrom,
         usage: {
           model: data.model || model,
           inputTokens: data.usage.input_tokens ?? null,
@@ -432,7 +446,7 @@ async function anthropicSynthesize({
           webSearches: data.usage.server_tool_use?.web_search_requests ?? 0,
         },
       }
-    : { ...parsed, stopReason: data?.stop_reason || null };
+    : { ...parsed, stopReason: data?.stop_reason || null, requestedModel: model, fellBackFrom };
 }
 
 /**
@@ -532,7 +546,8 @@ async function synthesizeWithFallbackRaw(args) {
     fallbackKimi: process.env.SONAR_FALLBACK_KIMI === 'true',
     fallbackDeepseek: process.env.SONAR_FALLBACK_DEEPSEEK === 'true',
   });
-  const active = PROVIDERS.filter((p) => p.enabled());
+  /* Strict mode: the requested vendor only, so no other model answers unannounced. */
+  const active = PROVIDERS.filter((p) => p.enabled()).filter((p, i) => !modelStrict() || i === 0);
   const providerErrors = [];
   /* Whole-chain deadline. Per-call timeouts bound each hop, but a chain of
      bounded hops can still overrun: 38s Anthropic + 12s Kimi + 12s DeepSeek

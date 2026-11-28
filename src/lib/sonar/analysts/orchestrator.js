@@ -29,6 +29,13 @@ import {
 } from './dataset-capabilities.js';
 import { loadSkill } from './skills.js';
 import { priceOf as priceOfModel } from '../model-routing.js';
+import {
+  ROLE_BUDGETS,
+  specialistContract,
+  classifyOutcome,
+  RED_TEAM_CONTRACT,
+  RESOLVE_CONTRACT,
+} from '../engine/output-contracts.js';
 import { MACRO_LENS } from '../macro/playbook.js';
 import { validateClaim, parseResearchJson } from '../engine/findings.js';
 
@@ -226,6 +233,8 @@ export function specialistSystem({ analyst, mode, spec }) {
       ? `Rules the auditor checks:\n${analyst.rules.map((r) => `- ${r}`).join('\n')}`
       : null,
     STANDARD_CONTRACT,
+    /* Nov 28 2026: a bounded reply. Without it every specialist ran to its token cap. */
+    specialistContract(mode),
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -455,6 +464,11 @@ export async function runSpecialists({
   tokenScale = 1,
   maxHopMs = null,
 }) {
+  /* Nov 28 2026: each specialist call may use its role budget (55 s deep, 13 s standard),
+     still clipped to the specialists' window by deadlineAt. Before this the provider's
+     default 25 s hop applied: every Sonnet 4.5 deep specialist was aborted at 25 s, with
+     45 s of its window unused, and returned nothing. */
+  const hopMs = maxHopMs || ROLE_BUDGETS[mode]?.specialistHopMs || null;
   const tier = (a) => (a.tier?.[mode] === 'strong' ? models.strong : models.fast);
   const fresh = marked;
   const prepared = (routing.assignments || []).map((asg) => {
@@ -487,6 +501,7 @@ export async function runSpecialists({
   });
 
   const runOne = async (p) => {
+    const startedAt = Date.now();
     emit('analyst', { id: p.analyst, title: titleOf(p.analyst), role: p.role, status: 'started' });
     try {
       const out = await synth({
@@ -499,11 +514,12 @@ export async function runSpecialists({
         deadlineAt,
         minHopMs,
         reserveMs: 0,
-        ...(maxHopMs ? { maxHopMs } : {}),
+        ...(hopMs ? { maxHopMs: hopMs } : {}),
       });
       const parsed = parseResearchJson(out?.answer);
       const v = validateSpecialist(parsed, { analyst: p.profile, marked: fresh, metrics });
       const status = v.ok ? 'done' : 'failed';
+      const outcome = classifyOutcome({ out, parsedOk: Boolean(parsed) && v.ok });
       emit('analyst', { id: p.analyst, title: titleOf(p.analyst), role: p.role, status });
       return {
         id: p.analyst,
@@ -521,9 +537,19 @@ export async function runSpecialists({
         }),
         evidenceMarkers: p.items.map((e) => e.marker),
         log: v.log,
-        model: out?.model || p.model,
+        model: out?.usage?.model || out?.model || p.model,
+        /* Telemetry: kept apart so a cut reply is not a timeout and a bad one not a pass. */
+        call: {
+          requested: p.model,
+          served: out?.usage?.model || null,
+          outcome,
+          repaired: Boolean(parsed?._truncated),
+          outputTokens: out?.usage?.outputTokens ?? null,
+          ms: Date.now() - startedAt,
+          fellBackFrom: out?.fellBackFrom || null,
+        },
       };
-    } catch {
+    } catch (error) {
       emit('analyst', { id: p.analyst, title: titleOf(p.analyst), role: p.role, status: 'failed' });
       return {
         id: p.analyst,
@@ -539,6 +565,15 @@ export async function runSpecialists({
         handoffs: [],
         evidenceMarkers: p.items.map((e) => e.marker),
         log: [{ problem: 'call_failed' }],
+        call: {
+          requested: p.model,
+          served: null,
+          outcome: classifyOutcome({ error }),
+          repaired: false,
+          outputTokens: null,
+          ms: Date.now() - startedAt,
+          fellBackFrom: null,
+        },
       };
     }
   };
@@ -674,7 +709,8 @@ export function redTeamSystem() {
 
 ${loadSkill('red-team-review', { mode: 'standard' })}
 
-Return ONLY JSON: {"verdict":"holds | weakened | refuted | unclear","points":[{"kind":"alternative | missing_evidence | base_rate | fragility | falsifier | downgrade","text":"...","refs":["S3"]}]}. At most 6 points.`;
+Return ONLY JSON: {"verdict":"holds | weakened | refuted | unclear","points":[{"kind":"alternative | missing_evidence | base_rate | fragility | falsifier | downgrade","target":"the claim challenged, quoted in at most 12 words","text":"...","refs":["S3"]}]}.
+${RED_TEAM_CONTRACT}`;
 }
 
 export function parseRedTeam(text) {
@@ -689,6 +725,7 @@ export function parseRedTeam(text) {
       .slice(0, 6)
       .map((p) => ({
         kind: RED_TEAM_KINDS.includes(p.kind) ? p.kind : 'alternative',
+        target: typeof p.target === 'string' ? p.target.slice(0, 160) : null,
         text: p.text.replace(/\s*\u2014\s*/g, ', ').slice(0, 500),
         refs: (Array.isArray(p.refs) ? p.refs : [])
           .map(String)
@@ -700,7 +737,8 @@ export function parseRedTeam(text) {
 /** The director's final pass: each red-team point rebutted, incorporated or a limitation. */
 export function resolutionSystem() {
   return `You are the Chief Research Director answering the red team's challenge to your draft. For EACH point, choose: "rebutted" (cite the evidence that answers it), "incorporated" (one sentence the report adds, cited), or "limitation" (one sentence for the limitations). Never introduce a number no record or metric supplied. No em dashes.
-Return ONLY JSON: {"resolutions":[{"point":0,"resolution":"rebutted | incorporated | limitation","note":"...","refs":["S3"]}]}`;
+Return ONLY JSON: {"resolutions":[{"point":0,"resolution":"rebutted | incorporated | limitation","note":"...","refs":["S3"]}]}
+${RESOLVE_CONTRACT}`;
 }
 
 export function applyResolutions(redTeam, parsed) {

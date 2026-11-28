@@ -22,6 +22,7 @@
  * Pure apart from the synthesis call. Unit-tested in
  * scripts/check-sonar-deep.mjs.
  */
+import { memoContract } from './output-contracts.js';
 import { numbersOf } from './evidence';
 import { CLASSIFICATIONS, numberSupported, validateClaim } from './findings';
 import { stripCoverageNotes } from '@/lib/sonar/groundingGuard';
@@ -56,7 +57,7 @@ export const MEMO_SYSTEM = `You are Ezana Sonar acting as a senior equity resear
 How to think:
 - Do not explain what the company does or that its market is growing; the reader knows. Answer the central question: what could make growth, earnings power or valuation disappoint materially over the horizon asked.
 - Separate a risk to the market's demand from a risk to the company's ability to capture that demand.
-- Three to six risks, most material first. Each risk: the investment question it raises, an assessment, two to four pieces of dated evidence, the implication for revenue, margins or valuation, and two or three developments that would change the view.
+- Three to five risks, most material first. Each risk: the investment question it raises, an assessment, two or three pieces of dated evidence, the implication for revenue, margins or valuation, and two developments that would change the view.
 - Cover every angle the reader asked for (listed below). If the records cannot support an angle, say what is missing in dataGaps instead of guessing.
 - Scenarios: bull, base and bear, each a short list of qualitative assumptions (direction and driver, e.g. "hyperscaler capital spending keeps rising") and an outcome classified hypothesis. They are illustrations for testing the thesis, not forecasts or price targets.
 - chain: the transmission mechanism from a leading indicator to the company's results (for example customer capital spending to orders to revenue to margins), three to five links. Cite a record for a link only if the record supports it.
@@ -250,7 +251,9 @@ Evidence:
 ${ev || '(none)'}
 
 Metrics:
-${ms || '(none)'}`;
+${ms || '(none)'}
+
+${memoContract(spec.memoKind)}`;
 }
 
 /** Numbers in a free-text line (an assumption or a trigger) that no record states. */

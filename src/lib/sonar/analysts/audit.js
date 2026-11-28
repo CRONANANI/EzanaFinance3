@@ -8,6 +8,7 @@
  *
  * Pure except modelAudit (which takes the synthesis function from the caller).
  */
+import { AUDIT_CONTRACT } from '../engine/output-contracts.js';
 import { ANALYSTS } from './registry.js';
 import { ruleChecksFor } from './orchestrator.js';
 import { loadSkill } from './skills.js';
@@ -318,7 +319,8 @@ export function auditSystem() {
 
 ${loadSkill('methodology-audit', { mode: 'standard' })}
 
-Return ONLY JSON: {"checks":[{"id":"short_id","label":"what was checked","pass":true,"detail":"...","fix":"remove | relabel | add_limitation | none","target":"finding id or empty","limitation":"sentence when fix is add_limitation"}]}. At most 8 checks.`;
+Return ONLY JSON: {"checks":[{"id":"short_id","label":"what was checked","pass":true,"detail":"...","fix":"remove | relabel | add_limitation | none","target":"finding id or empty","limitation":"sentence when fix is add_limitation"}]}.
+${AUDIT_CONTRACT}`;
 }
 
 export function parseModelAudit(text) {

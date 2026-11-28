@@ -6,7 +6,8 @@
  *
  *   model-bench-2026-11-28         the seven cases (complete)
  *   model-bench-2026-11-28-deep2   deep only, output caps x1.75 (benchmark only), three
- *                                  deep questions, four single-variable cells, 2 trials
+ *                                  deep questions, four single-variable cells, 2 trials (complete)
+ *   model-bench-2026-11-28-profile-d   current vs D after the fixes, 17 cases
  */
 export const MODEL_BENCH_SUITES = [
   {
@@ -23,7 +24,19 @@ export const MODEL_BENCH_SUITES = [
     deepTrials: 2,
     variant: 'deep-uncapped',
   },
+  /* Suite 3: current vs Profile D after the specialist budget and output-contract fixes;
+     17 cases (the seven, the deep valuation, the ten proposed), deep in two trials. */
+  {
+    suite: 'model-bench-2026-11-28-profile-d',
+    until: '2026-11-30T05:00:00Z',
+    maxUsd: 45,
+    deepTrials: 2,
+    variant: 'profile-d',
+  },
 ];
 export const MODEL_BENCH_LANES = 6;
 /* The admin page's default suite. */
-export const ACTIVE_MODEL_BENCH = { ...MODEL_BENCH_SUITES[0], lanes: MODEL_BENCH_LANES };
+export const ACTIVE_MODEL_BENCH = {
+  ...MODEL_BENCH_SUITES[MODEL_BENCH_SUITES.length - 1],
+  lanes: MODEL_BENCH_LANES,
+};

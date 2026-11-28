@@ -172,12 +172,16 @@ function bucketOf(id) {
 }
 
 /** Which profile a run gets under the flag settings. Anonymous runs get the base. */
-export function profileForUser({ userId = null, env = {} } = {}) {
+export function profileForUser({ userId = null, isStaff = false, env = {} } = {}) {
   const base = PROFILES.includes(env.SONAR_MODEL_PROFILE) ? env.SONAR_MODEL_PROFILE : 'current';
   const canary = PROFILES.includes(env.SONAR_MODEL_CANARY_PROFILE)
     ? env.SONAR_MODEL_CANARY_PROFILE
     : null;
   if (!canary || !userId) return base;
+  /* Nov 28 2026: SONAR_MODEL_CANARY_STAFF=1 sends every admin (isAdminUser) to the canary:
+     a staff-only canary without listing user ids. */
+  const staffOn = env.SONAR_MODEL_CANARY_STAFF === '1' || env.SONAR_MODEL_CANARY_STAFF === 'true';
+  if (staffOn && isStaff) return canary;
   const users = String(env.SONAR_MODEL_CANARY_USERS || '')
     .split(',')
     .map((s) => s.trim())
@@ -188,8 +192,8 @@ export function profileForUser({ userId = null, env = {} } = {}) {
 }
 
 /** The routing for one run (what the engine and routes call). */
-export function routingForRun({ userId = null, env = {}, overrides = null } = {}) {
-  return resolveModelRouting({ profile: profileForUser({ userId, env }), env, overrides });
+export function routingForRun({ userId = null, isStaff = false, env = {}, overrides = null } = {}) {
+  return resolveModelRouting({ profile: profileForUser({ userId, isStaff, env }), env, overrides });
 }
 
 /**

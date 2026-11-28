@@ -9,7 +9,7 @@
  * run plus the usage the provider recorded and return numbers. Nothing here calls a
  * model; /api/admin/sonar/model-bench does the running.
  */
-import { MODELS, resolveModelRouting, callCostUsd } from '@/lib/sonar/model-routing';
+import { MODELS, resolveModelRouting } from '@/lib/sonar/model-routing';
 
 export const MODEL_BENCH_VERSION = 'model-bench-v1';
 
@@ -24,6 +24,12 @@ const CONDUCT =
 export const MODEL_BENCH_CASES = [
   {
     id: 'congress_institutional_ownership',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['politician_dossier', 'congress_company', 'congress_activity'],
+      ['institutional_13f', 'holder_positioning', 'composition'],
+    ],
+    requiredCalcs: ['composition'],
     category: 'Congressional institutional ownership',
     source: 'semantic/pelosi-own-breadth',
     depth: 'standard',
@@ -51,6 +57,12 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'multi_dataset_screen',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['congress_sector', 'congress_company', 'congress_activity'],
+      ['industry_registry'],
+    ],
+    requiredCalcs: [],
     category: 'Multi-dataset screening',
     source: 'bench-v1/defense_congress',
     depth: 'standard',
@@ -81,6 +93,9 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'company_fundamentals',
+    evidenceClass: 'complete',
+    requiredDatasets: [['company_financials'], ['market_snapshot', 'analysts', 'estimates']],
+    requiredCalcs: ['metrics'],
     category: 'Company fundamental analysis',
     source: 'semantic/aapl-fundamentals',
     depth: 'standard',
@@ -112,6 +127,14 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'government_contract_exposure',
+    evidenceClass: 'incomplete_evidence',
+    evidenceNote:
+      "The government/commercial revenue split is not in Ezana's data (the segment source returns no Palantir rows). Contract obligations are available and are not revenue. A good answer uses them, says the share cannot be stated, and invents nothing.",
+    requiredDatasets: [
+      ['company_financials'],
+      ['contracts_profile', 'contracts_history', 'composition'],
+    ],
+    requiredCalcs: ['composition'],
     category: 'Government contract exposure',
     source: 'semantic/palantir-gov-dependence',
     depth: 'standard',
@@ -135,6 +158,9 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'macro_research',
+    evidenceClass: 'complete',
+    requiredDatasets: [['macro_series', 'macro_country']],
+    requiredCalcs: [],
     category: 'Macroeconomic research',
     source: 'bench-v1/brazil_outlook',
     depth: 'standard',
@@ -154,6 +180,16 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'valuation',
+    evidenceClass: 'incomplete_evidence',
+    evidenceNote:
+      'The valuation model (DCF, multiples, peers) runs only in deep research; a standard answer has the inputs (cash flow, capex, estimates, price) but no model, and should say so.',
+    requiredDatasets: [
+      ['company_financials'],
+      ['capex_monetization'],
+      ['estimates'],
+      ['market_snapshot'],
+    ],
+    requiredCalcs: ['metrics'],
     category: 'Valuation',
     source: 'semantic/msft-dcf',
     depth: 'standard',
@@ -173,6 +209,15 @@ export const MODEL_BENCH_CASES = [
   },
   {
     id: 'deep_research',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['company_financials'],
+      ['holder_positioning', 'institutional_13f'],
+      ['contracts_profile', 'contracts_history'],
+      ['competitive_products', 'peer_financials'],
+      ['customer_capex', 'hyperscaler_capex', 'capex_monetization'],
+    ],
+    requiredCalcs: ['metrics'],
     category: 'Deep Research',
     source: 'bench-v1/nvidia_three_year_risks',
     depth: 'deep',
@@ -217,12 +262,25 @@ const MODEL_BENCH_DEEP_EXTRA_CASES = [
     category: 'Multi-dataset screening (deep)',
     depth: 'deep',
   },
-  { ...byId('valuation'), id: 'deep_valuation', category: 'Valuation (deep)', depth: 'deep' },
+  {
+    ...byId('valuation'),
+    id: 'deep_valuation',
+    category: 'Valuation (deep)',
+    depth: 'deep',
+    /* Deep runs build the valuation model (DCF, multiples, peers), frozen with the evidence. */
+    evidenceClass: 'complete',
+    requiredCalcs: ['valuation'],
+  },
 ];
 
 /** Any benchmark case by id (the seven and the deep follow-ups). */
 export function caseById(id) {
-  return byId(id) || MODEL_BENCH_DEEP_EXTRA_CASES.find((c) => c.id === id) || null;
+  return (
+    byId(id) ||
+    MODEL_BENCH_DEEP_EXTRA_CASES.find((c) => c.id === id) ||
+    MODEL_BENCH_PROPOSED_CASES.find((c) => c.id === id) ||
+    null
+  );
 }
 
 /* ---------------------------------------------------------------- cells ---------- */
@@ -344,7 +402,78 @@ function deepCells() {
   ];
 }
 
+/* Suite 3, "profile-d" (Nov 28 2026): current against Profile D after the specialist
+   time-budget and output-contract fixes, on the seven cases, the deep valuation and the ten
+   proposed cases. Two cheaper standard alternatives (Sonnet writer with Haiku specialists)
+   and one deep ablation (D with a Sonnet writer) separate model effects from the fixes. */
+function profileDCells(c, env) {
+  const D = resolveModelRouting({ profile: 'D' });
+  const current = {
+    id: 'current',
+    label: 'Current production',
+    routing: resolveModelRouting({ profile: 'current', env }),
+  };
+  const d = { id: 'D', label: 'Profile D', routing: D };
+  if (c.depth === 'deep')
+    return [
+      current,
+      d,
+      {
+        id: 'D-sonnet-writer',
+        label: 'D with a Sonnet 5.5 deep writer',
+        routing: {
+          ...D,
+          profile: 'D-sonnet-writer',
+          deep_director: MODELS.sonnet55,
+          deep_resolve: MODELS.sonnet55,
+          legacy_deep: MODELS.sonnet55,
+        },
+      },
+    ];
+  const cells = [
+    current,
+    d,
+    {
+      id: 'D-h45spec',
+      label: 'D with Haiku 4.5 specialists',
+      routing: { ...D, profile: 'D-h45spec', standard_specialist: MODELS.haiku45 },
+    },
+    {
+      id: 'D-h55spec',
+      label: 'D with Haiku 5.5 specialists',
+      routing: { ...D, profile: 'D-h55spec', standard_specialist: MODELS.haiku55 },
+    },
+  ];
+  if (c.id === 'congress_institutional_ownership' || c.id === 'macro_research')
+    cells.push({
+      id: 'quick:current',
+      label: 'Quick (current = D)',
+      depth: 'quick',
+      routing: current.routing,
+    });
+  return cells;
+}
+
 const VARIANTS = {
+  'profile-d': {
+    cases: () => [
+      ...MODEL_BENCH_CASES,
+      MODEL_BENCH_DEEP_EXTRA_CASES.find((c) => c.id === 'deep_valuation'),
+      ...MODEL_BENCH_PROPOSED_CASES,
+    ],
+    cells: (c, env) => profileDCells(c, env),
+    pairs: (c) =>
+      c.depth === 'deep'
+        ? [
+            ['current', 'D', 'Current vs Profile D'],
+            ['D-sonnet-writer', 'D', 'Deep writer: Sonnet 5.5 vs Opus 5.5 (rest of D)'],
+          ]
+        : [
+            ['current', 'D', 'Current vs Profile D'],
+            ['D-h45spec', 'D', 'Specialists: Haiku 4.5 vs Sonnet 5.5 (Sonnet writes)'],
+            ['D-h55spec', 'D', 'Specialists: Haiku 5.5 vs Sonnet 5.5 (Sonnet writes)'],
+          ],
+  },
   'deep-uncapped': {
     cases: () => [byId('deep_research'), ...MODEL_BENCH_DEEP_EXTRA_CASES],
     cells: () => deepCells(),
@@ -357,9 +486,14 @@ const VARIANTS = {
   },
 };
 
+/** The cases of a suite variant (none = the seven-case suite). */
+export function casesForVariant(variant) {
+  return variant && VARIANTS[variant] ? VARIANTS[variant].cases() : MODEL_BENCH_CASES;
+}
+
 /** Cells for a case under a suite variant (none = the seven-case suite). */
 export function cellsForVariant(c, variant, env = {}) {
-  return variant && VARIANTS[variant] ? VARIANTS[variant].cells() : cellsFor(c, env);
+  return variant && VARIANTS[variant] ? VARIANTS[variant].cells(c, env) : cellsFor(c, env);
 }
 
 /* ---------------------------------------------------------------- scoring -------- */
@@ -560,32 +694,79 @@ function datasetOf(e) {
   return String(e?.source || e?.category || 'unknown').split(/[:/]/)[0];
 }
 
+/* Entity tokens for a join check: tickers and capitalized names (not sentence words). */
+const NOT_ENTITY = new Set(
+  'The This That These Those Their There When While Which What Where After Before Since During Over Under Between Among Despite Although However Government Federal Congress Members Member Institutional Revenue Fiscal Quarter Year Data Records Record Evidence'.split(
+    ' ',
+  ),
+);
+function entityTokens(text) {
+  const t = String(text || '');
+  const out = new Set();
+  for (const m of t.matchAll(/\b[A-Z]{2,5}\b/g)) out.add(m[0]);
+  for (const m of t.matchAll(/\b[A-Z][a-z]{3,}\b/g)) if (!NOT_ENTITY.has(m[0])) out.add(m[0]);
+  return out;
+}
+function yearsOf(e) {
+  const t = `${e?.period?.label || e?.period || ''} ${e?.date || ''} ${e?.title || ''}`;
+  return [...t.matchAll(/\b(20[1-3]\d)\b/g)].map((m) => Number(m[1]));
+}
+const TEMPORAL =
+  /\b(before|after|ahead of|since|from \d{4}|to \d{4}|versus|vs\.?|compared|preced\w*|followed|year[- ]over[- ]year|grew|growth|declin\w*|rose|fell|trend)\b/i;
+
 /**
- * Whether the answer relates datasets to each other rather than summarizing records:
- *   datasetsInEvidence  distinct datasets the frozen evidence came from
- *   datasetsCited       distinct datasets the findings cite
- *   crossFindings       findings citing 2+ datasets with relational language
- *   crossFindingShare   crossFindings / findings
- *   pairsLinked         distinct dataset pairs joined by a cross finding
- *   pairCoverage        pairsLinked / the pairs the evidence made possible (capped at 1)
+ * Whether the answer relates datasets to each other rather than summarizing records. A
+ * finding counts as a VALID cross-dataset insight only if all of these hold:
+ *   - it cites records from two or more datasets and uses relating language
+ *   - join: the cited records share an entity (ticker or name), so the datasets are joined
+ *     on the same company, member or country
+ *   - periods: the cited records' years are within a year of each other, unless the
+ *     finding is explicitly a comparison over time
+ *   - support: every number in the finding traces to the evidence or computed metrics
+ * Citing several datasets in one paragraph without a valid relationship earns nothing.
  */
 export function relationshipScore(run) {
-  const bySource = new Map();
-  for (const e of run?.evidence || []) bySource.set(String(e.marker ?? e.id), datasetOf(e));
-  const inEvidence = new Set(bySource.values());
+  const evidence = run?.evidence || [];
+  const byMarker = new Map(evidence.map((e) => [String(e.marker ?? e.id), e]));
+  const inEvidence = new Set(evidence.map(datasetOf));
+  const pool = evidencePool(run);
   const cited = new Set();
   const pairs = new Set();
   let cross = 0;
+  let valid = 0;
+  const failures = { join: 0, period: 0, unsupported: 0 };
+  const examples = [];
   const findings = run?.keyFindings || [];
   for (const f of findings) {
-    const ds = new Set((f.evidence || []).map((m) => bySource.get(String(m))).filter(Boolean));
+    const recs = (f.evidence || []).map((m) => byMarker.get(String(m))).filter(Boolean);
+    const ds = new Set(recs.map(datasetOf));
     ds.forEach((d) => cited.add(d));
     const words = [f.title, f.explanation, f.comparison, f.implication].filter(Boolean).join(' ');
-    if (ds.size >= 2 && RELATIONAL.test(words)) {
-      cross += 1;
+    if (ds.size < 2 || !RELATIONAL.test(words)) continue;
+    cross += 1;
+    /* The join key: an entity every cited record shares (records with no entity, such as
+       a macro series, do not vote). LMT trades next to RTX contracts is not a join. */
+    const sets = recs
+      .map((r) => entityTokens(`${r.title || ''} ${r.text || ''}`))
+      .filter((x) => x.size);
+    const joinOk = sets.length < 2 || [...sets[0]].some((x) => sets.every((set) => set.has(x)));
+    const ys = recs.flatMap(yearsOf);
+    const periodOk = TEMPORAL.test(words) || !ys.length || Math.max(...ys) - Math.min(...ys) <= 1;
+    const nums = [...words.matchAll(NUM)].map((m) => parseNum(m[0])).filter((v) => v != null);
+    const supportOk = nums.every((v) => traced(v, pool));
+    if (!joinOk) failures.join += 1;
+    if (!periodOk) failures.period += 1;
+    if (!supportOk) failures.unsupported += 1;
+    if (joinOk && periodOk && supportOk) {
+      valid += 1;
       const list = [...ds].sort();
       for (let i = 0; i < list.length; i += 1)
         for (let j = i + 1; j < list.length; j += 1) pairs.add(`${list[i]}+${list[j]}`);
+    } else if (examples.length < 3) {
+      examples.push({
+        finding: String(f.title || words).slice(0, 120),
+        failed: [!joinOk && 'join', !periodOk && 'period', !supportOk && 'support'].filter(Boolean),
+      });
     }
   }
   const possible = (inEvidence.size * (inEvidence.size - 1)) / 2;
@@ -593,11 +774,57 @@ export function relationshipScore(run) {
     datasetsInEvidence: inEvidence.size,
     datasetsCited: cited.size,
     crossFindings: cross,
-    crossFindingShare: findings.length ? round(cross / findings.length) : 0,
+    validCrossInsights: valid,
+    crossFindingShare: findings.length ? round(valid / findings.length) : 0,
+    failures,
     pairsLinked: pairs.size,
     pairCoverage: possible ? round(Math.min(1, pairs.size / Math.min(possible, 6))) : null,
     pairs: [...pairs].slice(0, 12),
+    examples,
   };
+}
+
+/**
+ * Whether the datasets a case needs were retrieved (from the frozen snapshot, so it is the
+ * same for every cell and never a model effect). Each required group is satisfied by any
+ * one source in it ("composition" = the production composition step ran). Status:
+ * retrieved, empty_at_source (called, nothing returned), not_planned[:reason].
+ */
+export function retrievalCheck(c, snap) {
+  const items = new Map();
+  for (const call of snap?.calls || [])
+    items.set(call.source, (items.get(call.source) || 0) + (call.output?.items?.length || 0));
+  const excluded = new Map((snap?.plan?.excluded || []).map((e) => [e.source, e.reason]));
+  const groups = (c?.requiredDatasets || []).map((g) => {
+    const hit = g.find((src) =>
+      src === 'composition' ? Boolean(snap?.composition) : (items.get(src) || 0) > 0,
+    );
+    if (hit) return { group: g, status: 'retrieved', source: hit };
+    const empty = g.find((src) => items.has(src));
+    if (empty) return { group: g, status: 'empty_at_source', source: empty };
+    const why = g.map((src) => excluded.get(src)).find(Boolean);
+    return { group: g, status: why ? `not_planned:${why}` : 'not_planned' };
+  });
+  return {
+    groups,
+    retrieved: groups.filter((x) => x.status === 'retrieved').length,
+    total: groups.length,
+    complete: groups.every((x) => x.status === 'retrieved'),
+  };
+}
+
+/** Whether the calculations a case needs ran: computed metrics, the valuation model, the composition. */
+export function calcCheck(c, run) {
+  const need = c?.requiredCalcs || [];
+  const have = {
+    metrics: (run?.quantitativeMetrics || []).length > 0,
+    valuation: Boolean(run?.valuation),
+    composition:
+      Boolean(run?.researchMetadata?.fulfillment) &&
+      run.researchMetadata.fulfillment.state !== 'failed',
+  };
+  const missing = need.filter((k) => !have[k]);
+  return { required: need, missing, ok: missing.length === 0 };
 }
 
 /* FNV-1a over evidence ids and computed metrics: same value means same deterministic half. */
@@ -615,88 +842,8 @@ export function fingerprint(run) {
   return h.toString(16);
 }
 
-/* ---------------------------------------------------------------- usage / cost --- */
-
-/* Legs that belong to the deterministic half: their model calls (query understanding)
-   are not what is being compared and are reported apart. */
-const DETERMINISTIC_LEGS = new Set(['understand', 'resolve']);
-
-/**
- * Sums recorded provider calls into cost and token totals, split into the synthesis
- * (the part under test) and the deterministic half, with per-role and per-model rows.
- * Flags any call whose served model differs from the requested one (the silent Haiku
- * fallback), so a mislabelled cell cannot pass.
- */
-export function summarizeUsage(calls = []) {
-  const zero = () => ({
-    calls: 0,
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
-    cacheWriteTokens: 0,
-    webSearches: 0,
-    usd: 0,
-    ms: 0,
-  });
-  const total = zero();
-  const synthesis = zero();
-  const deterministic = zero();
-  const byLeg = {};
-  const byModel = {};
-  const mismatches = [];
-  let failures = 0;
-  let timeouts = 0;
-  let unpriced = 0;
-  for (const c of calls) {
-    if (!c.ok) {
-      failures += 1;
-      if (c.status === 'timeout') timeouts += 1;
-    }
-    const served = c.served || c.requested;
-    const usd = callCostUsd({ ...c, model: served });
-    if (usd == null && c.ok) unpriced += 1;
-    if (c.ok && c.requested && served && !sameModel(c.requested, served))
-      mismatches.push({
-        leg: c.label || null,
-        requested: c.requested,
-        served,
-        fellBackFrom: c.fellBackFrom || null,
-      });
-    const leg = c.label || 'unlabelled';
-    const add = (b) => {
-      b.calls += 1;
-      b.inputTokens += c.inputTokens || 0;
-      b.outputTokens += c.outputTokens || 0;
-      b.cacheReadTokens += c.cacheReadTokens || 0;
-      b.cacheWriteTokens += c.cacheWriteTokens || 0;
-      b.webSearches += c.webSearches || 0;
-      b.usd += usd || 0;
-      b.ms += c.ms || 0;
-    };
-    add(total);
-    add(DETERMINISTIC_LEGS.has(leg) ? deterministic : synthesis);
-    add((byLeg[leg] ||= zero()));
-    add((byModel[served || 'unknown'] ||= zero()));
-  }
-  const r = (b) => ({ ...b, usd: round(b.usd, 5) });
-  return {
-    total: r(total),
-    synthesis: r(synthesis),
-    deterministic: r(deterministic),
-    byLeg: Object.fromEntries(Object.entries(byLeg).map(([k, v]) => [k, r(v)])),
-    byModel: Object.fromEntries(Object.entries(byModel).map(([k, v]) => [k, r(v)])),
-    failures,
-    timeouts,
-    unpriced,
-    modelMismatches: mismatches,
-  };
-}
-
-/* claude-haiku-4-5 vs claude-haiku-4-5-20251001: the API may answer with a dated id. */
-function sameModel(a, b) {
-  const norm = (x) => String(x).replace(/-\d{8}$/, '');
-  return norm(a) === norm(b);
-}
+/* Usage and cost summaries live in lib/sonar/model-usage.js (production uses them too). */
+export { summarizeUsage } from '@/lib/sonar/model-usage';
 
 /* ---------------------------------------------------------------- judges --------- */
 
@@ -716,7 +863,7 @@ export const CRITERIA = [
   ['correctness', 'Factual correctness: nothing contradicts the evidence; no invented numbers'],
   [
     'relationships',
-    'Cross-dataset relationships: connects datasets (for example trades to contracts, ownership to fundamentals) instead of summarizing each source separately',
+    'Cross-dataset relationships: states a valid, relevant relationship between datasets grounded in the evidence (same entity joined correctly, periods aligned, supported by computed results). Citing several datasets side by side, or listing observations from each, earns nothing.',
   ],
 ];
 const JUDGES = ['claude-opus-5-5', 'claude-sonnet-5-5'];
@@ -834,7 +981,7 @@ export function parsePair(answer, { xIs }) {
 
 /** The head-to-head comparisons for a case (left vs right). */
 export function pairsFor(c, variant = null) {
-  if (variant && VARIANTS[variant]) return VARIANTS[variant].pairs();
+  if (variant && VARIANTS[variant]) return VARIANTS[variant].pairs(c);
   if (c.depth === 'deep')
     return [
       ['C', 'B', 'Sonnet 5.5 director (C) vs Opus 5.5 director (B)'],
@@ -861,7 +1008,7 @@ export function pairsFor(c, variant = null) {
  * worker knows what is done.
  */
 export function suitePlan({ deepTrials = 3, env = {}, variant = null } = {}) {
-  const cases = variant && VARIANTS[variant] ? VARIANTS[variant].cases() : MODEL_BENCH_CASES;
+  const cases = casesForVariant(variant);
   const trialsOf = (c) => (c.depth === 'deep' ? deepTrials : 1);
   const steps = [{ key: 'availability', phase: 1, kind: 'availability' }];
   for (const c of cases)
@@ -1002,7 +1149,19 @@ export function aggregate(rows) {
         ),
       ),
       crossFindingShare: mean(sc.map((s) => s.relationships?.crossFindingShare)),
+      validCrossPerRun: mean(sc.map((s) => s.relationships?.validCrossInsights)),
       pairsLinked: mean(sc.map((s) => s.relationships?.pairsLinked)),
+      retrievalComplete: mean(
+        sc.filter((s) => s.retrieval).map((s) => (s.retrieval.complete ? 1 : 0)),
+      ),
+      calcsOk: mean(sc.filter((s) => s.calcs).map((s) => (s.calcs.ok ? 1 : 0))),
+      truncatedPerRun: mean(sc.filter((s) => s.roles).map((s) => s.roles.truncated)),
+      invalidPerRun: mean(sc.filter((s) => s.roles).map((s) => s.roles.invalid_output)),
+      roleTimeoutsPerRun: mean(sc.filter((s) => s.roles).map((s) => s.roles.timeout)),
+      fallbacks: sc.reduce((a, s) => a + (s.roles?.fallbacks || 0), 0),
+      specialistsDone: mean(
+        sc.filter((s) => s.specialists?.calls).map((s) => s.specialists.done / s.specialists.calls),
+      ),
       completionRate: mean(sc.map((s) => (s.completed ? 1 : 0))),
       partialRate: mean(sc.map((s) => (s.partial ? 1 : 0))),
       timeoutRate: mean(sc.map((s) => (s.timedOut ? 1 : 0))),
@@ -1081,6 +1240,13 @@ export function aggregatePairs(rows) {
 export const MODEL_BENCH_PROPOSED_CASES = [
   {
     id: 'screen_congress_contracts_13f',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['congress_company', 'congress_sector', 'congress_activity'],
+      ['contracts_history', 'contracts_profile'],
+      ['institutional_13f', 'holder_positioning'],
+    ],
+    requiredCalcs: ['metrics'],
     category: 'Complex cross-dataset screening',
     depth: 'deep',
     query:
@@ -1103,6 +1269,13 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'screen_lobbying_contracts_margin',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['lobbying_company', 'lobbying_leaders', 'lobbying_profile'],
+      ['contracts_history', 'contracts_profile'],
+      ['company_financials', 'peer_financials'],
+    ],
+    requiredCalcs: ['metrics'],
     category: 'Complex cross-dataset screening',
     depth: 'standard',
     query:
@@ -1121,6 +1294,9 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'model_dcf_sensitivity',
+    evidenceClass: 'complete',
+    requiredDatasets: [['company_financials'], ['capex_monetization'], ['estimates']],
+    requiredCalcs: ['valuation'],
     category: 'Financial modelling',
     depth: 'deep',
     query:
@@ -1139,6 +1315,13 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'model_contract_revenue_bridge',
+    evidenceClass: 'complete',
+    requiredDatasets: [
+      ['contracts_profile', 'contracts_history', 'composition'],
+      ['company_financials'],
+      ['estimates'],
+    ],
+    requiredCalcs: ['composition'],
     category: 'Financial modelling',
     depth: 'standard',
     query:
@@ -1165,6 +1348,9 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'contradiction_insider_vs_institutions',
+    evidenceClass: 'complete',
+    requiredDatasets: [['sec_filings'], ['institutional_13f', 'holder_positioning']],
+    requiredCalcs: [],
     category: 'Contradictory evidence',
     depth: 'standard',
     query:
@@ -1187,6 +1373,9 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'contradiction_macro_vs_market',
+    evidenceClass: 'complete',
+    requiredDatasets: [['macro_series', 'macro_country']],
+    requiredCalcs: [],
     category: 'Contradictory evidence',
     depth: 'standard',
     query:
@@ -1213,6 +1402,9 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'causal_export_controls_revenue',
+    evidenceClass: 'complete',
+    requiredDatasets: [['export_controls'], ['revenue_geo'], ['company_financials']],
+    requiredCalcs: ['metrics'],
     category: 'Causal reasoning',
     depth: 'deep',
     query:
@@ -1239,6 +1431,9 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'causal_rates_bank_ownership',
+    evidenceClass: 'complete',
+    requiredDatasets: [['macro_series'], ['institutional_13f', 'holder_positioning']],
+    requiredCalcs: [],
     category: 'Causal reasoning',
     depth: 'standard',
     query:
@@ -1257,6 +1452,10 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'partial_private_company',
+    evidenceClass: 'incomplete_evidence',
+    evidenceNote: 'Intentionally incomplete: a private company has no public financials.',
+    requiredDatasets: [['contracts_history', 'contracts_profile']],
+    requiredCalcs: [],
     category: 'Partially available data',
     depth: 'standard',
     query:
@@ -1279,6 +1478,10 @@ export const MODEL_BENCH_PROPOSED_CASES = [
   },
   {
     id: 'partial_stale_filings',
+    evidenceClass: 'incomplete_evidence',
+    evidenceNote: 'Intentionally incomplete: filings lag and one is delayed.',
+    requiredDatasets: [['institutional_13f', 'holder_positioning'], ['sec_filings']],
+    requiredCalcs: [],
     category: 'Partially available data',
     depth: 'standard',
     query:

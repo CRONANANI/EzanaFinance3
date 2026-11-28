@@ -210,6 +210,27 @@ export function timeHorizonOf(text, now = new Date()) {
  * @param {object} understood  understandQuery() output
  * @param {{ query?: string, resolution?: object, depth?: 'quick'|'standard'|'deep', now?: Date }} opts
  */
+/**
+ * Nov 28 2026: a question about a company the resolver found ("Give me a fundamental
+ * analysis of Apple": the understanding step saw no ticker, so the intent was an open
+ * question) gets the company intent's domain prior, so its financial sources are planned.
+ * Existing scores are only raised. Pure.
+ */
+export function withSubjectPrior(domains, subject) {
+  if (subject?.kind !== 'company') return domains;
+  const prior = { company: 0.9, company_financials: 0.5, analyst_views: 0.4 };
+  const byId = new Map(domains.map((d) => [d.id, { ...d, why: [...(d.why || [])] }]));
+  for (const [id, score] of Object.entries(prior)) {
+    const cur = byId.get(id);
+    if (!cur) byId.set(id, { id, score, why: ['subject:company'] });
+    else if (cur.score < score) {
+      cur.score = score;
+      cur.why.push('subject:company');
+    }
+  }
+  return [...byId.values()].sort((a, b) => b.score - a.score);
+}
+
 export function buildResearchSpec(
   understood,
   {
@@ -236,9 +257,12 @@ export function buildResearchSpec(
     }));
   }
   const memo = fundFit || isInvestmentMemo(text, resolution.subject, signal);
-  const domains = memo
-    ? withMemoDomains(scoreDomains(text, understood), signal.angles)
-    : scoreDomains(text, understood);
+  const domains = withSubjectPrior(
+    memo
+      ? withMemoDomains(scoreDomains(text, understood), signal.angles)
+      : scoreDomains(text, understood),
+    resolution.subject,
+  );
   const entities = (understood?.entities || []).map((e) => ({
     kind: e.kind,
     id: e.id,

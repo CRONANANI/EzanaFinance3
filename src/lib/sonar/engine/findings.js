@@ -23,6 +23,7 @@
  *
  * Pure apart from the synthesis call. Validation is unit-tested.
  */
+import { writerContract } from './output-contracts.js';
 import { numbersOf } from './evidence';
 import { repairClaim, contradictions } from './claim-check.js';
 import { answerExtras } from '@/lib/sonar/answer-extras';
@@ -115,11 +116,10 @@ ${ev || '(none)'}
 Metrics:
 ${ms || '(none)'}
 
-${LENGTH_BUDGET}`;
+${writerContract(spec.depth)}`;
 }
 
-/* Nov 28 2026: the whole reply has to fit its token limit or it cannot be parsed. */
-export const LENGTH_BUDGET = `Length budget: the whole JSON stays under about 1,300 words. Executive conclusion at most 70 words; at most four key findings, each explanation at most 60 words and each of comparison, implication and caveat one short line or null; at most two analysis items of at most 70 words; summary one or two paragraphs of at most 90 words in total; three takeaways of at most 25 words. Write executiveConclusion and keyFindings first, in the order of the schema.`;
+/* Nov 28 2026: the writer's length contract comes from output-contracts.js by depth. */
 
 /** Parse the model's JSON, tolerating code fences and leading prose. */
 export function parseResearchJson(text) {
