@@ -162,23 +162,31 @@ async function benchComposition(question, admin, { deep }) {
       return { composition: null, note: 'holder not resolved' };
   }
   const cap = deep ? 45_000 : 20_000;
-  const comp = await runResearchComposition(
-    {
-      question: String(question).slice(0, 600),
-      primary,
-      attachments: attachments.slice(0, 8),
-      userId: null,
-      resolvedPrimary,
-      deadlineAt: Date.now() + cap - 1_500,
-    },
-    admin,
-  ).catch((e) => ({ ok: false, error: e?.message }));
-  return comp?.ok
+  /* runResearchComposition returns the composition itself (the research route's timeout
+     wrapper adds { ok, value }). */
+  let composition = null;
+  let failure = null;
+  try {
+    composition = await runResearchComposition(
+      {
+        question: String(question).slice(0, 600),
+        primary,
+        attachments: attachments.slice(0, 8),
+        userId: null,
+        resolvedPrimary,
+        deadlineAt: Date.now() + cap - 1_500,
+      },
+      admin,
+    );
+  } catch (e) {
+    failure = e?.message || 'threw';
+  }
+  return composition
     ? {
-        composition: comp.value,
+        composition,
         note: `${canonical.family}: ${attachments.map((a) => a.capability).join(', ')}`,
       }
-    : { composition: null, note: `composition failed: ${comp?.error || 'error'}` };
+    : { composition: null, note: `composition failed: ${failure || 'empty'}` };
 }
 
 export async function capture(admin, { suite, caseId, stepKey }) {

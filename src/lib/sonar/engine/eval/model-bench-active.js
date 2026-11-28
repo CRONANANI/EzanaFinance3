@@ -26,8 +26,17 @@ export const MODEL_BENCH_SUITES = [
   },
   /* Suite 3: current vs Profile D after the specialist budget and output-contract fixes;
      17 cases (the seven, the deep valuation, the ten proposed), deep in two trials. */
+  /* Stopped at capture (14:40 UTC): the composition step failed for every case that has
+     one (it read the route's { ok, value } wrapper). Superseded by profile-d2. */
   {
     suite: 'model-bench-2026-11-28-profile-d',
+    until: '2026-11-28T14:40:00Z',
+    maxUsd: 1,
+    deepTrials: 2,
+    variant: 'profile-d',
+  },
+  {
+    suite: 'model-bench-2026-11-28-profile-d2',
     until: '2026-11-30T05:00:00Z',
     maxUsd: 45,
     deepTrials: 2,
