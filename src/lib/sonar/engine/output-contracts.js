@@ -91,9 +91,9 @@ export function memoContract(memoKind) {
 
 /* ── Specialist contracts ──────────────────────────────────────────────────────── */
 
-const STANDARD_SPECIALIST = `Length budget: the whole JSON stays under about 240 words. conclusion: at most two sentences (40 words) answering your assignment. At most four findings, each claim at most 30 words with its refs and period; findings are evidence statements, not commentary. Cite every computed metric that bears on your assignment as M:id in refs (those are the required metrics). counterevidence and dataGaps: at most two each, at most 15 words. handoffs: at most one. Fields your output contract adds: at most two, each at most 25 words; omit any the evidence cannot fill.`;
+const STANDARD_SPECIALIST = `Length budget: the whole JSON stays under about 240 words. conclusion: at most two sentences (40 words) answering your assignment. At most four findings, each claim at most 30 words with its refs and period; findings are evidence statements, not commentary. Cite every computed metric that bears on your assignment as M:id in refs (those are the required metrics). counterevidence and dataGaps: at most two each, at most 15 words. handoffs: at most one. No other fields.`;
 
-const DEEP_SPECIALIST = `Length budget: the whole JSON stays under about 550 words. conclusion: at most three sentences (60 words). At most six findings, most material first; each claim at most 40 words and carries refs ([S#] records or M:id metrics) and its period; a finding without a ref is labelled hypothesis. counterevidence and dataGaps: at most three each, at most 20 words. handoffs: at most two. Fields your output contract adds: at most four, each at most 40 words; omit any the evidence cannot fill.`;
+const DEEP_SPECIALIST = `Length budget: the whole JSON stays under about 550 words. conclusion: at most three sentences (60 words). At most six findings, most material first; each claim at most 40 words and carries refs ([S#] records or M:id metrics) and its period; a finding without a ref is labelled hypothesis. counterevidence and dataGaps: at most three each, at most 20 words. handoffs: at most two. No other fields.`;
 
 /** The specialist's length contract for a mode. */
 export function specialistContract(mode) {

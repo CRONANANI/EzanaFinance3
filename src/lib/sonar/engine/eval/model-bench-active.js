@@ -48,12 +48,23 @@ export const MODEL_BENCH_SUITES = [
   },
   /* Suite 3 as run: current vs Profile D with role budgets, bounded contracts, the
      production composition and valuation frozen, and thinking/effort set per role. */
+  /* Stopped at 15:35 UTC after 28 runs: specialists still spent their caps on extra fields
+     their skill contracts list and the engine discards. Its frozen evidence is reused. */
   {
     suite: 'model-bench-2026-11-28-profile-d3',
-    until: '2026-11-30T05:00:00Z',
+    until: '2026-11-28T15:35:00Z',
     maxUsd: 45,
     deepTrials: 2,
     variant: 'profile-d',
+  },
+  /* Suite 3 as reported: d3's frozen evidence, specialists return only the fields Sonar reads. */
+  {
+    suite: 'model-bench-2026-11-28-profile-d4',
+    until: '2026-11-30T05:00:00Z',
+    maxUsd: 40,
+    deepTrials: 2,
+    variant: 'profile-d',
+    snapshotsFrom: 'model-bench-2026-11-28-profile-d3',
   },
 ];
 export const MODEL_BENCH_LANES = 6;

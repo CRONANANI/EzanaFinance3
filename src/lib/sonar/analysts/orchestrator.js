@@ -142,7 +142,7 @@ export function scopeEvidence(marked, capabilities, { fallback = 8 } = {}) {
 /** The standard contract every specialist returns (its skill adds fields). */
 export const STANDARD_CONTRACT = `Return ONLY one JSON object, no prose around it:
 {"analyst":"<id>","question":"<restated>","conclusion":"1 to 3 sentences answering your assignment","confidence":"high | moderate | low","confidenceReason":"...","findings":[{"claim":"...","label":"fact | calculation | interpretation | hypothesis","refs":["S3","M:metric_id"],"period":"2026-09"}],"counterevidence":["..."],"dataGaps":["..."],"handoffs":[{"analyst":"<id>","why":"..."}]}
-Plus any fields your output contract below adds. Every number must come from a cited record [S#] or a computed metric [M:id], with its period. Never write a number neither supplies.`;
+Return only these fields: Sonar reads nothing else, so leave out any extra fields your skill's output contract lists (fiscal calendars, period tables, segment notes); apply their checks inside your findings instead. Every number must come from a cited record [S#] or a computed metric [M:id], with its period. Never write a number neither supplies.`;
 
 const MACRO_DOMAINS = new Set([
   'country',

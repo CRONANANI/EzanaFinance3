@@ -320,14 +320,27 @@ export function evidenceTerms(snap) {
 /* Replay one cell on the frozen evidence; score it; store it. */
 export async function runCell(
   admin,
-  { caseId, cellId, suite, trial = 1, stepKey = null, suiteSnapshots = false, variant = null },
+  {
+    caseId,
+    cellId,
+    suite,
+    trial = 1,
+    stepKey = null,
+    suiteSnapshots = false,
+    variant = null,
+    snapshotSuite = null,
+  },
 ) {
   const c = caseOf(caseId);
   if (!c) throw new Error(`unknown case ${caseId}`);
   const cell = cellsForVariant(c, variant, process.env).find((x) => x.id === cellId);
   if (!cell) throw new Error(`unknown cell ${cellId} for ${caseId}`);
   if (!suite) throw new Error('suite required');
-  const snap = await latestSnapshot(admin, caseId, suiteSnapshots ? suite : null);
+  const snap = await latestSnapshot(
+    admin,
+    caseId,
+    snapshotSuite || (suiteSnapshots ? suite : null),
+  );
   const replayLog = [];
   const leaks = [];
   const startedAt = Date.now();
@@ -630,7 +643,7 @@ export function eligibleSteps(plan, state, { lane, lanes, now = Date.now() }) {
   return { open, steps };
 }
 
-async function executeStep(admin, suite, step) {
+async function executeStep(admin, suite, step, { snapshotSuite = null } = {}) {
   const base = { suite, stepKey: step.key };
   if (step.kind === 'availability') return availability(admin, base);
   if (step.kind === 'capture') return capture(admin, { ...base, caseId: step.caseId });
@@ -642,6 +655,7 @@ async function executeStep(admin, suite, step) {
       trial: step.trial,
       suiteSnapshots: true,
       variant: step.variant || null,
+      snapshotSuite,
     });
   if (step.kind === 'judge')
     return judgeRow(admin, {
@@ -682,11 +696,15 @@ export async function workerTick(
     budgetMs = 170_000,
     env = {},
     variant = null,
+    /* Reuse another suite's frozen evidence (identical inputs, no capture phase). */
+    snapshotsFrom = null,
   },
 ) {
   const t0 = Date.now();
   if (until && t0 > new Date(until).getTime()) return { idle: 'expired' };
-  const plan = suitePlan({ deepTrials, env, variant });
+  const plan = suitePlan({ deepTrials, env, variant }).filter(
+    (st) => !snapshotsFrom || st.kind !== 'capture',
+  );
   const ran = [];
   for (;;) {
     // eslint-disable-next-line no-await-in-loop
@@ -709,7 +727,7 @@ export async function workerTick(
     });
     try {
       // eslint-disable-next-line no-await-in-loop
-      const out = await executeStep(admin, suite, step);
+      const out = await executeStep(admin, suite, step, { snapshotSuite: snapshotsFrom });
       ran.push({ key: step.key, ok: true, out });
     } catch (e) {
       ran.push({ key: step.key, ok: false, error: String(e?.message || e).slice(0, 300) });
