@@ -381,6 +381,30 @@
     {
       "path": "/api/cron/plaid-sync-drain",
       "schedule": "2-59/5 * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=0",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=1",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=2",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=3",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=4",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sonar-model-bench?lane=5",
+      "schedule": "* * * * *"
     }
   ]
 }

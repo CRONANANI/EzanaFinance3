@@ -306,11 +306,111 @@ test('aggregate and judge parsing', () => {
   assert.equal(agg[0].judgeOverall, 4);
   assert.deepEqual(
     B.parseJudge(
-      '{"correctness":4,"objective":5,"financial":3,"insight":4,"calibration":4,"unsupported":[],"note":"ok"}',
+      '{"objective":5,"financial":3,"insight":4,"evidence":4,"correctness":4,"relationships":4,"unsupported":[],"note":"ok"}',
     ).overall,
     4,
   );
   assert.equal(B.parseJudge('not json'), null);
   const { user } = B.judgePrompt(CASE, RUN);
   assert.ok(!/sonnet|opus|haiku/i.test(user), 'the judge never sees model names');
+});
+
+test('relationships: cross-dataset findings vs single-source summaries', () => {
+  const run = {
+    evidence: [
+      { id: 'a', marker: '1', source: 'congress_trades', text: 'Rep. X bought LMT' },
+      { id: 'b', marker: '2', source: 'contracts', text: 'LMT awarded $2B' },
+      { id: 'c', marker: '3', source: 'institutional', text: '13F holders rose' },
+    ],
+    keyFindings: [
+      {
+        title: 'Purchases preceded awards',
+        explanation: 'Buying came ahead of the $2B award.',
+        evidence: ['1', '2'],
+      },
+      { title: 'Holders rose', explanation: 'More funds hold LMT.', evidence: ['3'] },
+      {
+        title: 'Two sources, no link',
+        explanation: 'Trades happened. Awards happened.',
+        evidence: ['1', '2'],
+      },
+    ],
+  };
+  const r = B.relationshipScore(run);
+  assert.equal(r.datasetsInEvidence, 3);
+  assert.equal(r.datasetsCited, 3);
+  assert.equal(r.crossFindings, 1);
+  assert.equal(r.pairsLinked, 1);
+  assert.deepEqual(r.pairs, ['congress_trades+contracts']);
+  assert.equal(B.scoreRun({ ...RUN, ...run }, CASE).relationships.crossFindings, 1);
+});
+
+test('paired verdicts map back to cells whichever answer was shown first', () => {
+  const ans = JSON.stringify(
+    Object.fromEntries(
+      [...B.CRITERIA.map(([k]) => k), 'overall'].map((k) => [
+        k,
+        { winner: k === 'insight' ? 'tie' : 'X', reason: 'r' },
+      ]),
+    ),
+  );
+  const a = B.parsePair(ans, { xIs: 'left' });
+  const b = B.parsePair(ans, { xIs: 'right' });
+  assert.equal(a.overall.winner, 'left');
+  assert.equal(b.overall.winner, 'right');
+  assert.equal(a.insight.winner, 'tie');
+  assert.equal(B.parsePair('{"overall":{"winner":"maybe"}}', { xIs: 'left' }), null);
+  const { user } = B.pairPrompt(CASE, RUN, RUN);
+  assert.ok(!/sonnet|opus|haiku/i.test(user));
+  const agg = B.aggregatePairs([
+    { caseId: 'c', left: 'L', right: 'R', trial: 1, judge: 'j1', xIs: 'left', verdict: a },
+    { caseId: 'c', left: 'L', right: 'R', trial: 1, judge: 'j1', xIs: 'right', verdict: b },
+  ]);
+  assert.equal(agg[0].criteria.overall.net, 0);
+  assert.equal(agg[0].orderConsistency, 0, 'X won both times: position bias, not a result');
+});
+
+test('suite plan: phases, unique keys, every pair and judge', () => {
+  const plan = B.suitePlan({ deepTrials: 3 });
+  const keys = new Set(plan.map((s) => s.key));
+  assert.equal(keys.size, plan.length);
+  assert.ok(
+    plan.every((s, i) => i === 0 || plan[i - 1].phase <= s.phase),
+    'phases in order',
+  );
+  const runs = plan.filter((s) => s.kind === 'run');
+  assert.equal(runs.filter((s) => s.caseId === 'deep_research').length, 12);
+  assert.equal(runs.length, 6 * 6 + 2 * 2 + 12);
+  for (const p of plan.filter((s) => s.kind === 'pair'))
+    for (const cell of [p.left, p.right])
+      assert.ok(
+        runs.some((r) => r.caseId === p.caseId && r.cellId === cell && r.trial === p.trial),
+        p.key,
+      );
+});
+
+test('quality score is research quality only and zero for an incomplete run', () => {
+  const s = B.scoreRun(RUN, CASE);
+  const q = B.qualityScore(s, {
+    objective: 5,
+    financial: 5,
+    insight: 5,
+    evidence: 5,
+    correctness: 5,
+  });
+  const lo = B.qualityScore(s, {
+    objective: 1,
+    financial: 1,
+    insight: 1,
+    evidence: 1,
+    correctness: 1,
+  });
+  assert.ok(q > lo);
+  assert.equal(B.qualityScore({ ...s, completed: false }, null), 0);
+  const fast = B.qualityScore({ ...s, durationMs: 1 }, null);
+  assert.equal(
+    fast,
+    B.qualityScore({ ...s, durationMs: 999_999 }, null),
+    'latency never moves quality',
+  );
 });

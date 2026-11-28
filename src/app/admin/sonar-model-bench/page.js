@@ -36,28 +36,145 @@ const pct = (v) => (v == null ? '' : `${Math.round(v * 100)}%`);
 const usd = (v) => (v == null ? '' : `$${v < 0.01 ? v.toFixed(4) : v.toFixed(3)}`);
 const sec = (v) => (v == null ? '' : `${(v / 1000).toFixed(1)}s`);
 
+const n2 = (v) => (v == null ? '' : Number(v).toFixed(2));
+/* Research quality first; reliability, latency and cost after. */
 const COLUMNS = [
   ['label', 'Cell', (r) => r.label],
   ['runs', 'Runs', (r) => r.runs],
-  ['completionRate', 'Completed', (r) => pct(r.completionRate)],
-  ['timeoutRate', 'Timeouts', (r) => pct(r.timeoutRate)],
-  ['partialRate', 'Partial', (r) => pct(r.partialRate)],
-  ['objectiveCompletion', 'Objectives', (r) => pct(r.objectiveCompletion)],
-  ['caveatRate', 'Caveats', (r) => pct(r.caveatRate)],
+  ['quality', 'Quality (0-100)', (r) => (r.quality == null ? '' : r.quality)],
+  ['judgeObjective', 'Objective', (r) => n2(r.judgeObjective)],
+  ['judgeFinancial', 'Financial', (r) => n2(r.judgeFinancial)],
+  ['judgeInsight', 'Insight', (r) => n2(r.judgeInsight)],
+  ['judgeEvidence', 'Evidence', (r) => n2(r.judgeEvidence)],
+  ['judgeCorrectness', 'Correct', (r) => n2(r.judgeCorrectness)],
+  ['judgeRelationships', 'Cross-data', (r) => n2(r.judgeRelationships)],
+  ['objectiveCompletion', 'Objectives met', (r) => pct(r.objectiveCompletion)],
   ['citationValidity', 'Cite valid', (r) => pct(r.citationValidity)],
-  ['citationCoverage', 'Cite cover', (r) => pct(r.citationCoverage)],
   ['numericFidelity', 'Numbers traced', (r) => pct(r.numericFidelity)],
   ['unsupportedPerRun', 'Unsupported/run', (r) => r.unsupportedPerRun],
-  ['forbiddenHits', 'Forbidden', (r) => r.forbiddenHits],
-  ['judgeOverall', 'Judge (1-5)', (r) => r.judgeOverall ?? ''],
+  ['crossFindingShare', 'Cross findings', (r) => pct(r.crossFindingShare)],
+  ['completionRate', 'Completed', (r) => pct(r.completionRate)],
+  ['timeoutRate', 'Timeouts', (r) => pct(r.timeoutRate)],
   ['latencyP50Ms', 'p50', (r) => sec(r.latencyP50Ms)],
   ['latencyP90Ms', 'p90', (r) => sec(r.latencyP90Ms)],
   ['usdPerRun', '$/run', (r) => usd(r.usdPerRun)],
-  ['synthesisUsdPerRun', 'LLM synth $/run', (r) => usd(r.synthesisUsdPerRun)],
-  ['inputTokensPerRun', 'In tok', (r) => Math.round(r.inputTokensPerRun || 0)],
-  ['outputTokensPerRun', 'Out tok', (r) => Math.round(r.outputTokensPerRun || 0)],
   ['modelMismatches', 'Served≠asked', (r) => r.modelMismatches],
 ];
+
+const CRIT = [
+  'objective',
+  'financial',
+  'insight',
+  'evidence',
+  'correctness',
+  'relationships',
+  'overall',
+];
+
+function PairsTable({ pairs }) {
+  if (!pairs?.length) return null;
+  return (
+    <div className="smb-table-wrap">
+      <table className="smb-table">
+        <thead>
+          <tr>
+            <th>Head to head (right vs left)</th>
+            <th>Judgments</th>
+            {CRIT.map((k) => (
+              <th key={k}>{k}</th>
+            ))}
+            <th>Order-consistent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pairs.map((p) => (
+            <tr key={`${p.left}|${p.right}`}>
+              <td>{p.label || `${p.right} vs ${p.left}`}</td>
+              <td>{p.judgments}</td>
+              {CRIT.map((k) => {
+                const c = p.criteria[k];
+                return (
+                  <td key={k} title={`right ${c.right} / tie ${c.tie} / left ${c.left}`}>
+                    {c.net == null ? '' : `${c.net > 0 ? '+' : ''}${c.net.toFixed(2)}`}
+                  </td>
+                );
+              })}
+              <td>{pct(p.orderConsistency)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function SideBySide({ data, caseId, pair, cases }) {
+  if (!data || !pair) return null;
+  const c = cases.find((x) => x.id === caseId);
+  const find = (cellId) =>
+    data.rows.find((r) => r.caseId === caseId && r.cellId === cellId && r.trial === 1);
+  const L = find(pair.left);
+  const R = find(pair.right);
+  const verdicts = (data.pairVerdicts || []).filter(
+    (v) => v.caseId === caseId && v.left === pair.left && v.right === pair.right && v.trial === 1,
+  );
+  const col = (row, label) => (
+    <div className="smb-col">
+      <h3 className="smb-h3">{label}</h3>
+      {row ? (
+        <>
+          <p className="smb-meta">
+            quality {row.quality ?? ''} · judge {row.judge?.overall ?? ''} ·{' '}
+            {sec(row.score?.durationMs)} · {usd(row.usage?.total?.usd)}
+          </p>
+          <div className="smb-answer">{row.output?.text || '(no answer)'}</div>
+        </>
+      ) : (
+        <p>Not run yet.</p>
+      )}
+    </div>
+  );
+  return (
+    <>
+      <p className="smb-sub">{c?.query}</p>
+      <div className="smb-table-wrap">
+        <table className="smb-table">
+          <thead>
+            <tr>
+              <th>Judge, order</th>
+              {CRIT.map((k) => (
+                <th key={k}>{k}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {verdicts.map((v) => (
+              <tr key={`${v.judge}|${v.xIs}`}>
+                <td>
+                  {v.judge.replace('claude-', '')}, {pair.left} shown{' '}
+                  {v.xIs === 'left' ? 'first' : 'second'}
+                </td>
+                {CRIT.map((k) => (
+                  <td key={k} title={v.verdict?.[k]?.reason || ''}>
+                    {v.verdict?.[k]?.winner === 'tie'
+                      ? 'tie'
+                      : v.verdict?.[k]?.winner === 'left'
+                        ? pair.left
+                        : pair.right}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="smb-pair">
+        {col(L, pair.left)}
+        {col(R, pair.right)}
+      </div>
+    </>
+  );
+}
 
 function Table({ rows }) {
   if (!rows?.length) return null;
@@ -97,12 +214,16 @@ export default function ModelBenchAdmin() {
   const [availability, setAvailability] = useState(null);
   const [error, setError] = useState(null);
   const stop = useRef(false);
+  const [textData, setTextData] = useState(null);
+  const [sel, setSel] = useState({ caseId: '', pair: 0 });
 
   const note = (s) => setLog((l) => [...l, `${new Date().toLocaleTimeString()}  ${s}`]);
 
   const loadPlan = useCallback(async () => {
     try {
-      setPlan(await call('GET', null, '?action=plan'));
+      const p = await call('GET', null, '?action=plan');
+      setPlan(p);
+      setSuite((cur) => cur || p.active?.suite || '');
     } catch (e) {
       setError(e.message);
     }
@@ -120,6 +241,16 @@ export default function ModelBenchAdmin() {
       setError(e.message);
     }
   }, []);
+
+  const loadText = async () => {
+    try {
+      setTextData(
+        await call('GET', null, `?action=results&text=1&suite=${encodeURIComponent(suite)}`),
+      );
+    } catch (e) {
+      setError(e.message);
+    }
+  };
 
   const step = async (label, fn) => {
     try {
@@ -152,16 +283,12 @@ export default function ModelBenchAdmin() {
   };
 
   const runAll = async () => {
-    const id = suite || `model-bench-${new Date().toISOString().slice(0, 16)}`;
+    const id = suite || plan?.active?.suite;
     setSuite(id);
     setBusy(true);
     stop.current = false;
     for (let t = 1; t <= trials; t += 1)
       for (const c of plan?.cases || []) {
-        if (!c.capturedAt) {
-          note(`skip ${c.id}: no frozen evidence yet`);
-          continue;
-        }
         for (const cell of c.cells) {
           if (stop.current) break;
           // eslint-disable-next-line no-await-in-loop
@@ -171,22 +298,6 @@ export default function ModelBenchAdmin() {
         }
       }
     await loadResults(id);
-    setBusy(false);
-  };
-
-  const judgeAll = async () => {
-    if (!results?.rows?.length) return;
-    setBusy(true);
-    stop.current = false;
-    for (const r of results.rows) {
-      if (stop.current) break;
-      if (r.judge) continue;
-      // eslint-disable-next-line no-await-in-loop
-      await step(`judge ${r.caseId} × ${r.cellId}`, () =>
-        call('POST', { action: 'judge', rowId: r.id }),
-      );
-    }
-    await loadResults(suite);
     setBusy(false);
   };
 
@@ -213,6 +324,17 @@ export default function ModelBenchAdmin() {
         page. {plan ? `${plan.cases.length} cases, ${totalCells} cells per trial.` : ''}
       </p>
 
+      {plan?.progress ? (
+        <p className="smb-sub">
+          Suite <strong>{plan.progress.suite}</strong>:{' '}
+          {Object.entries(plan.progress.byPhase)
+            .map(([ph, b]) => `phase ${ph} ${b.done}/${b.total}`)
+            .join(' · ')}{' '}
+          · spent {usd(plan.progress.spentUsd)} of ${plan.active?.maxUsd} cap. The worker runs this
+          suite unattended until {plan.active?.until}.
+        </p>
+      ) : null}
+
       <div className="smb-row">
         <button type="button" onClick={checkAvailability} disabled={busy}>
           1. Check model availability
@@ -238,9 +360,6 @@ export default function ModelBenchAdmin() {
         />
         <button type="button" className="smb-primary" onClick={runAll} disabled={busy || !plan}>
           3. Run all cells
-        </button>
-        <button type="button" onClick={judgeAll} disabled={busy || !results?.rows?.length}>
-          4. Blind judge (optional)
         </button>
         <button type="button" onClick={() => loadResults(suite)} disabled={busy || !suite}>
           Load results
@@ -294,7 +413,7 @@ export default function ModelBenchAdmin() {
                   <th>Case</th>
                   <th>Depth</th>
                   <th>Cells</th>
-                  <th>Evidence frozen</th>
+                  <th>Pairs</th>
                 </tr>
               </thead>
               <tbody>
@@ -303,7 +422,7 @@ export default function ModelBenchAdmin() {
                     <td>{c.category}</td>
                     <td>{c.depth}</td>
                     <td>{c.cells.length}</td>
-                    <td>{c.capturedAt ? new Date(c.capturedAt).toLocaleString() : 'no'}</td>
+                    <td>{c.pairs.length}</td>
                   </tr>
                 ))}
               </tbody>
@@ -314,16 +433,90 @@ export default function ModelBenchAdmin() {
 
       {results ? (
         <>
-          <h2 className="smb-h2">Side by side, all cases</h2>
-          <Table rows={results.overall} />
+          <h2 className="smb-h2">Research quality, all cases</h2>
+          <Table
+            rows={[...results.overall].sort((a, b) => (b.quality ?? -1) - (a.quality ?? -1))}
+          />
+          <h2 className="smb-h2">Head to head, all cases</h2>
+          <p className="smb-sub">
+            Net win rate of the right-hand cell, from -1 to +1, across both judges and both answer
+            orders.
+          </p>
+          <PairsTable pairs={results.pairs} />
           {Object.entries(results.perCase || {}).map(([caseId, rows]) => (
             <div key={caseId}>
               <h2 className="smb-h2">
                 {plan?.cases.find((c) => c.id === caseId)?.category || caseId}
               </h2>
               <Table rows={rows} />
+              <PairsTable pairs={results.pairsPerCase?.[caseId]} />
             </div>
           ))}
+
+          <h2 className="smb-h2">Answers side by side</h2>
+          <div className="smb-row">
+            <select
+              value={sel.caseId}
+              onChange={(e) => setSel({ caseId: e.target.value, pair: 0 })}
+              aria-label="Case"
+            >
+              <option value="">Choose a case</option>
+              {(plan?.cases || []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.category}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sel.pair}
+              onChange={(e) => setSel((x) => ({ ...x, pair: Number(e.target.value) }))}
+              aria-label="Comparison"
+              disabled={!sel.caseId}
+            >
+              {(plan?.cases.find((c) => c.id === sel.caseId)?.pairs || []).map((p, i) => (
+                <option key={`${p.left}|${p.right}`} value={i}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <button type="button" onClick={loadText} disabled={!suite}>
+              Load answers
+            </button>
+          </div>
+          {sel.caseId ? (
+            <SideBySide
+              data={textData}
+              caseId={sel.caseId}
+              pair={plan?.cases.find((c) => c.id === sel.caseId)?.pairs[sel.pair]}
+              cases={plan?.cases || []}
+            />
+          ) : null}
+
+          {plan?.proposed?.length ? (
+            <>
+              <h2 className="smb-h2">Proposed next cases (not yet run)</h2>
+              <div className="smb-table-wrap">
+                <table className="smb-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Depth</th>
+                      <th>Question</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plan.proposed.map((c) => (
+                      <tr key={c.id}>
+                        <td>{c.category}</td>
+                        <td>{c.depth}</td>
+                        <td className="smb-wrap">{c.query}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
         </>
       ) : null}
 

@@ -86,3 +86,51 @@
 .smb-error {
   color: var(--danger, var(--text-primary));
 }
+.smb-row select {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+.smb-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+.smb-col {
+  min-width: 0;
+}
+.smb-h3 {
+  margin: 0 0 4px;
+  font-size: var(--type-card-title-size);
+}
+.smb-meta {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: var(--type-caption-size);
+}
+.smb-answer {
+  max-height: 640px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  font-size: var(--type-body-size);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.smb-table td.smb-wrap {
+  white-space: normal;
+  text-align: left;
+  min-width: 320px;
+}
+@media (max-width: 800px) {
+  .smb-pair {
+    grid-template-columns: 1fr;
+  }
+}

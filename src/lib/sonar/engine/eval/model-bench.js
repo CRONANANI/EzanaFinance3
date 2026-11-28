@@ -423,6 +423,7 @@ export function scoreRun(run, c) {
     findings.length -
     findings.filter((f) => (f.evidence || []).some((m) => markers.has(String(m)))).length;
 
+  const relationships = relationshipScore(run);
   const fp = fingerprint(run);
   return {
     completed,
@@ -455,6 +456,7 @@ export function scoreRun(run, c) {
       sentencesWithUntracedNumbers: untracedSentences.size,
       examples: [...unsupportedExamples, ...[...untracedSentences].slice(0, 4)],
     },
+    relationships,
     textChars: text.length,
     fingerprint: fp,
   };
@@ -462,6 +464,58 @@ export function scoreRun(run, c) {
 
 function round(x, d = 3) {
   return Math.round(x * 10 ** d) / 10 ** d;
+}
+
+/* ---------------------------------------------------------------- relationships -- */
+
+/* Language that links one fact to another (cause, comparison, contrast, timing,
+   exposure). A finding that cites two or more datasets AND uses it is doing synthesis;
+   one that cites a single dataset, or lists records without linking them, is summary. */
+const RELATIONAL =
+  /\b(because|driven by|due to|reflects?|explains?|consistent with|inconsistent with|contradict\w*|despite|while|whereas|compared (?:with|to)|relative to|in contrast|correlat\w*|coincid\w*|preced\w*|followed by|ahead of|after the|implies|suggests?|exposure to|exposed to|tied to|linked to|offsets?|amplif\w*|depends? on|dependence|concentrat\w*)\b/i;
+
+function datasetOf(e) {
+  return String(e?.source || e?.category || 'unknown').split(/[:/]/)[0];
+}
+
+/**
+ * Whether the answer relates datasets to each other rather than summarizing records:
+ *   datasetsInEvidence  distinct datasets the frozen evidence came from
+ *   datasetsCited       distinct datasets the findings cite
+ *   crossFindings       findings citing 2+ datasets with relational language
+ *   crossFindingShare   crossFindings / findings
+ *   pairsLinked         distinct dataset pairs joined by a cross finding
+ *   pairCoverage        pairsLinked / the pairs the evidence made possible (capped at 1)
+ */
+export function relationshipScore(run) {
+  const bySource = new Map();
+  for (const e of run?.evidence || []) bySource.set(String(e.marker ?? e.id), datasetOf(e));
+  const inEvidence = new Set(bySource.values());
+  const cited = new Set();
+  const pairs = new Set();
+  let cross = 0;
+  const findings = run?.keyFindings || [];
+  for (const f of findings) {
+    const ds = new Set((f.evidence || []).map((m) => bySource.get(String(m))).filter(Boolean));
+    ds.forEach((d) => cited.add(d));
+    const words = [f.title, f.explanation, f.comparison, f.implication].filter(Boolean).join(' ');
+    if (ds.size >= 2 && RELATIONAL.test(words)) {
+      cross += 1;
+      const list = [...ds].sort();
+      for (let i = 0; i < list.length; i += 1)
+        for (let j = i + 1; j < list.length; j += 1) pairs.add(`${list[i]}+${list[j]}`);
+    }
+  }
+  const possible = (inEvidence.size * (inEvidence.size - 1)) / 2;
+  return {
+    datasetsInEvidence: inEvidence.size,
+    datasetsCited: cited.size,
+    crossFindings: cross,
+    crossFindingShare: findings.length ? round(cross / findings.length) : 0,
+    pairsLinked: pairs.size,
+    pairCoverage: possible ? round(Math.min(1, pairs.size / Math.min(possible, 6))) : null,
+    pairs: [...pairs].slice(0, 12),
+  };
 }
 
 /* FNV-1a over evidence ids and computed metrics: same value means same deterministic half. */
@@ -562,16 +616,265 @@ function sameModel(a, b) {
   return norm(a) === norm(b);
 }
 
-/* ---------------------------------------------------------------- aggregation ---- */
+/* ---------------------------------------------------------------- judges --------- */
+
+/* Research-quality criteria, in the order they matter. Latency and cost are never part
+   of a quality score; they are reported beside it. */
+export const CRITERIA = [
+  ['objective', 'Objective completion: the research question is fully answered'],
+  [
+    'financial',
+    'Financial reasoning: mechanisms, magnitudes, comparisons, what it means for the business or investor',
+  ],
+  [
+    'insight',
+    'Insight quality: non-obvious, decision-useful conclusions rather than restated data',
+  ],
+  ['evidence', 'Evidence support: each material claim is tied to the cited evidence'],
+  ['correctness', 'Factual correctness: nothing contradicts the evidence; no invented numbers'],
+  [
+    'relationships',
+    'Cross-dataset relationships: connects datasets (for example trades to contracts, ownership to fundamentals) instead of summarizing each source separately',
+  ],
+];
+const JUDGES = ['claude-opus-5-5', 'claude-sonnet-5-5'];
+
+function evidenceDigest(run, cap = 40) {
+  return (run?.evidence || [])
+    .slice(0, cap)
+    .map(
+      (e) =>
+        `[${e.marker ?? e.id}] (${datasetOf(e)}) ${e.title || ''}: ${String(e.text || '').slice(0, 280)}`,
+    )
+    .join('\n');
+}
 
 /**
- * Side-by-side table from result rows ({ caseId, cellId, score, usage, judge? }).
- * One row per cell, averaged across cases and trials.
+ * Absolute rubric. The judge sees the question, the expected objectives, the frozen
+ * evidence (with each record's dataset) and an anonymized answer; never the model.
+ */
+export function judgePrompt(c, run) {
+  const system =
+    'You grade financial research answers against the evidence they were given. Be strict and concrete. Reply with JSON only.';
+  const user = `QUESTION: ${c.query}
+
+WHAT A COMPLETE ANSWER ADDRESSES:
+${(c.objectives || []).map((o) => `- ${o.label}`).join('\n')}
+
+EVIDENCE THE ANSWER HAD (frozen; dataset in parentheses):
+${evidenceDigest(run) || '(none)'}
+
+ANSWER TO GRADE:
+${runText(run).slice(0, 12000)}
+
+Score each criterion 1 to 5 (5 best):
+${CRITERIA.map(([k, d]) => `- ${k}: ${d}`).join('\n')}
+List up to 3 unsupported or wrong claims verbatim.
+JSON: {${CRITERIA.map(([k]) => `"${k}":n`).join(',')},"unsupported":["..."],"note":"one sentence"}`;
+  return { system, user };
+}
+
+export function parseJudge(answer) {
+  try {
+    const m = String(answer || '').match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : answer);
+    const keys = CRITERIA.map(([k]) => k);
+    const vals = keys.map((k) => Number(j[k]));
+    if (!vals.every((v) => v >= 1 && v <= 5)) return null;
+    return {
+      ...Object.fromEntries(keys.map((k, i) => [k, vals[i]])),
+      overall: round(vals.reduce((a, b) => a + b, 0) / vals.length, 2),
+      unsupported: Array.isArray(j.unsupported) ? j.unsupported.slice(0, 3).map(String) : [],
+      note: String(j.note || '').slice(0, 300),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Paired comparison: two anonymized answers to the same question on the same frozen
+ * evidence. Each criterion gets a winner (X, Y or tie) and a one-line reason. The runner
+ * asks twice with the order swapped and with two judges, so position and self-preference
+ * bias show up as disagreement instead of as a result.
+ */
+export function pairPrompt(c, x, y) {
+  const system =
+    'You compare two financial research answers written from the same evidence. Judge substance, not length or style. Reply with JSON only.';
+  const user = `QUESTION: ${c.query}
+
+WHAT A COMPLETE ANSWER ADDRESSES:
+${(c.objectives || []).map((o) => `- ${o.label}`).join('\n')}
+
+EVIDENCE BOTH ANSWERS HAD (frozen; dataset in parentheses):
+${evidenceDigest(x, 36) || '(none)'}
+
+ANSWER X:
+${runText(x).slice(0, 9000)}
+
+ANSWER Y:
+${runText(y).slice(0, 9000)}
+
+For each criterion pick "X", "Y" or "tie", with a reason of at most 25 words naming the specific difference:
+${CRITERIA.map(([k, d]) => `- ${k}: ${d}`).join('\n')}
+Then "overall": which answer would a portfolio manager rather receive.
+JSON: {${CRITERIA.map(([k]) => `"${k}":{"winner":"X|Y|tie","reason":"..."}`).join(',')},"overall":{"winner":"X|Y|tie","reason":"..."}}`;
+  return { system, user };
+}
+
+/** Parsed verdicts mapped back to cells: { criterion: { winner: 'left'|'right'|'tie', reason } }. */
+export function parsePair(answer, { xIs }) {
+  try {
+    const m = String(answer || '').match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : answer);
+    const out = {};
+    for (const k of [...CRITERIA.map(([c]) => c), 'overall']) {
+      const w = String(j?.[k]?.winner || '')
+        .trim()
+        .toUpperCase();
+      if (!['X', 'Y', 'TIE'].includes(w)) return null;
+      const side = w === 'TIE' ? 'tie' : (w === 'X') === (xIs === 'left') ? 'left' : 'right';
+      out[k] = { winner: side, reason: String(j[k].reason || '').slice(0, 240) };
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+/* ---------------------------------------------------------------- pairs ---------- */
+
+/** The head-to-head comparisons for a case (left vs right). */
+export function pairsFor(c) {
+  if (c.depth === 'deep')
+    return [
+      ['C', 'B', 'Sonnet 5.5 director (C) vs Opus 5.5 director (B)'],
+      ['A', 'B', 'Sonnet 5.5 everywhere (A) vs Opus 5.5 director (B)'],
+      ['A', 'C', 'Sonnet 5.5 everywhere (A) vs C with selective Opus'],
+      ['current', 'C', 'Current production vs C'],
+    ];
+  const out = [
+    ['model:sonnet55', 'model:opus55', 'Sonnet 5.5 vs Opus 5.5'],
+    ['model:haiku55', 'model:sonnet55', 'Haiku 5.5 vs Sonnet 5.5'],
+    ['model:haiku45', 'model:haiku55', 'Haiku 4.5 vs Haiku 5.5'],
+    ['current', 'BC', 'Current production vs B/C standard'],
+  ];
+  if (c.id === 'congress_institutional_ownership' || c.id === 'macro_research')
+    out.push(['quick:current', 'quick:haiku55', 'Quick: Haiku 4.5 vs Haiku 5.5']);
+  return out;
+}
+
+/* ---------------------------------------------------------------- plan ----------- */
+
+/**
+ * The ordered steps of a suite. Phase 1 freezes evidence (and checks availability),
+ * phase 2 runs every cell, phase 3 judges. Each step has a stable key, which is how the
+ * worker knows what is done.
+ */
+export function suitePlan({ deepTrials = 3, env = {} } = {}) {
+  const steps = [{ key: 'availability', phase: 1, kind: 'availability' }];
+  for (const c of MODEL_BENCH_CASES)
+    steps.push({ key: `capture|${c.id}`, phase: 1, kind: 'capture', caseId: c.id });
+  for (const c of MODEL_BENCH_CASES) {
+    const trials = c.depth === 'deep' ? deepTrials : 1;
+    for (let t = 1; t <= trials; t += 1)
+      for (const cell of cellsFor(c, env))
+        steps.push({
+          key: `run|${c.id}|${cell.id}|t${t}`,
+          phase: 2,
+          kind: 'run',
+          caseId: c.id,
+          cellId: cell.id,
+          trial: t,
+        });
+  }
+  for (const c of MODEL_BENCH_CASES) {
+    const trials = c.depth === 'deep' ? deepTrials : 1;
+    for (let t = 1; t <= trials; t += 1) {
+      for (const [left, right] of pairsFor(c))
+        for (const judge of JUDGES)
+          for (const xIs of ['left', 'right'])
+            steps.push({
+              key: `pair|${c.id}|${left}|${right}|t${t}|${judge}|${xIs}`,
+              phase: 3,
+              kind: 'pair',
+              caseId: c.id,
+              left,
+              right,
+              trial: t,
+              judge,
+              xIs,
+            });
+      for (const cell of cellsFor(c, env))
+        for (const judge of JUDGES)
+          steps.push({
+            key: `judge|${c.id}|${cell.id}|t${t}|${judge}`,
+            phase: 3,
+            kind: 'judge',
+            caseId: c.id,
+            cellId: cell.id,
+            trial: t,
+            judge,
+          });
+    }
+  }
+  return steps;
+}
+
+/* ---------------------------------------------------------------- aggregation ---- */
+
+const norm5 = (v) => (Number.isFinite(v) ? (v - 1) / 4 : null);
+function avg(xs) {
+  const v = xs.filter((x) => Number.isFinite(x));
+  return v.length ? round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+}
+
+/**
+ * Quality score, 0 to 100, research quality only (weights in priority order):
+ *   objective completion 25, financial reasoning 20, insight 15, evidence support 20,
+ *   factual correctness 20. Deterministic and judge signals are blended where both exist;
+ *   a criterion with no signal is dropped and the weights renormalize.
+ */
+export function qualityScore(score, judge) {
+  const det = {
+    objective: score.objectives.total ? score.objectives.met / score.objectives.total : 0,
+    evidence: avg([score.citations.validity, score.citations.coverage, score.numbers.fidelity]),
+    correctness:
+      score.numbers.fidelity == null
+        ? null
+        : Math.max(0, score.numbers.fidelity - 0.25 * score.forbiddenHits),
+  };
+  const parts = [
+    [25, avg([det.objective, norm5(judge?.objective)])],
+    [20, norm5(judge?.financial)],
+    [15, norm5(judge?.insight)],
+    [20, avg([det.evidence, norm5(judge?.evidence)])],
+    [20, avg([det.correctness, norm5(judge?.correctness)])],
+  ].filter(([, v]) => v != null);
+  if (!score.completed) return 0;
+  const w = parts.reduce((a, [x]) => a + x, 0);
+  return w ? round((100 * parts.reduce((a, [x, v]) => a + x * v, 0)) / w, 1) : null;
+}
+
+/** Mean of the judges' absolute scores for one run, and how far apart they were. */
+export function meanJudge(judges = []) {
+  const ok = judges.filter(Boolean);
+  if (!ok.length) return null;
+  const keys = [...CRITERIA.map(([k]) => k), 'overall'];
+  const out = Object.fromEntries(keys.map((k) => [k, avg(ok.map((j) => j[k]))]));
+  out.judges = ok.length;
+  out.spread = ok.length > 1 ? round(Math.abs(ok[0].overall - ok[1].overall), 2) : 0;
+  return out;
+}
+
+/**
+ * Side-by-side table from result rows ({ caseId, cellId, cellLabel, score, usage,
+ * judge }), one row per cell, averaged across cases and trials. Quality first.
  */
 export function aggregate(rows) {
   const byCell = {};
   for (const r of rows) (byCell[r.cellId] ||= []).push(r);
-  const mean = (xs) => (xs.length ? round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+  const mean = (xs) => avg(xs);
   const pct = (xs, p) => {
     if (!xs.length) return null;
     const s = [...xs].sort((a, b) => a - b);
@@ -580,32 +883,40 @@ export function aggregate(rows) {
   return Object.entries(byCell).map(([cellId, rs]) => {
     const sc = rs.map((r) => r.score);
     const lat = sc.map((s) => s.durationMs).filter((x) => x != null);
-    const judged = rs.filter((r) => r.judge && Number.isFinite(r.judge.overall));
+    const j = (k) => mean(rs.map((r) => r.judge?.[k]));
     return {
       cellId,
       label: rs[0].cellLabel || cellId,
       runs: rs.length,
-      completionRate: mean(sc.map((s) => (s.completed ? 1 : 0))),
-      partialRate: mean(sc.map((s) => (s.partial ? 1 : 0))),
-      timeoutRate: mean(sc.map((s) => (s.timedOut ? 1 : 0))),
-      recoveredPartials: sc.filter((s) => s.partial && s.completed).length,
+      quality: mean(rs.map((r) => qualityScore(r.score, r.judge))),
+      judgeObjective: j('objective'),
+      judgeFinancial: j('financial'),
+      judgeInsight: j('insight'),
+      judgeEvidence: j('evidence'),
+      judgeCorrectness: j('correctness'),
+      judgeRelationships: j('relationships'),
+      judgeOverall: j('overall'),
+      judgeSpread: j('spread'),
       objectiveCompletion: mean(
         sc.map((s) => (s.objectives.total ? s.objectives.met / s.objectives.total : 0)),
       ),
       caveatRate: mean(sc.map((s) => (s.caveats.total ? s.caveats.met / s.caveats.total : 0))),
       forbiddenHits: sc.reduce((a, s) => a + s.forbiddenHits, 0),
       citationCoverage: mean(sc.map((s) => s.citations.coverage)),
-      citationValidity: mean(sc.map((s) => s.citations.validity).filter((x) => x != null)),
-      numericFidelity: mean(sc.map((s) => s.numbers.fidelity).filter((x) => x != null)),
+      citationValidity: mean(sc.map((s) => s.citations.validity)),
+      numericFidelity: mean(sc.map((s) => s.numbers.fidelity)),
       unsupportedPerRun: mean(
         sc.map(
           (s) =>
             s.unsupported.findingsWithoutValidCitation + s.unsupported.sentencesWithUntracedNumbers,
         ),
       ),
-      judgeOverall: judged.length ? mean(judged.map((r) => r.judge.overall)) : null,
-      judgeInsight: judged.length ? mean(judged.map((r) => r.judge.insight)) : null,
-      judgeFinancial: judged.length ? mean(judged.map((r) => r.judge.financial)) : null,
+      crossFindingShare: mean(sc.map((s) => s.relationships?.crossFindingShare)),
+      pairsLinked: mean(sc.map((s) => s.relationships?.pairsLinked)),
+      completionRate: mean(sc.map((s) => (s.completed ? 1 : 0))),
+      partialRate: mean(sc.map((s) => (s.partial ? 1 : 0))),
+      timeoutRate: mean(sc.map((s) => (s.timedOut ? 1 : 0))),
+      deterministicFallbacks: sc.filter((s) => s.deterministicFallback).length,
       latencyP50Ms: pct(lat, 0.5),
       latencyP90Ms: pct(lat, 0.9),
       usdPerRun: mean(rs.map((r) => r.usage?.total?.usd || 0)),
@@ -617,57 +928,281 @@ export function aggregate(rows) {
   });
 }
 
-/* ---------------------------------------------------------------- judge ---------- */
+/**
+ * Head-to-head summary from pair verdict rows ({ caseId, left, right, judge, xIs,
+ * verdict }). Per comparison and criterion: right's net win rate in [-1, 1] (wins minus
+ * losses over judgments), the raw counts, and whether the order-swapped and
+ * cross-judge verdicts agreed.
+ */
+export function aggregatePairs(rows) {
+  const groups = {};
+  for (const r of rows) {
+    if (!r.verdict) continue;
+    const k = `${r.left}|${r.right}`;
+    (groups[k] ||= { left: r.left, right: r.right, label: r.label, rows: [] }).rows.push(r);
+  }
+  return Object.values(groups).map((g) => {
+    const crit = {};
+    for (const k of [...CRITERIA.map(([c]) => c), 'overall']) {
+      let right = 0;
+      let left = 0;
+      let tie = 0;
+      for (const r of g.rows) {
+        const w = r.verdict[k]?.winner;
+        if (w === 'right') right += 1;
+        else if (w === 'left') left += 1;
+        else tie += 1;
+      }
+      const n = right + left + tie;
+      crit[k] = { right, left, tie, net: n ? round((right - left) / n) : null };
+    }
+    /* Consistency: the same case/trial/judge in both orders agreeing on overall. */
+    const byKey = {};
+    for (const r of g.rows)
+      (byKey[`${r.caseId}|${r.trial}|${r.judge}`] ||= []).push(r.verdict.overall?.winner);
+    const both = Object.values(byKey).filter((v) => v.length === 2);
+    const consistent = both.filter((v) => v[0] === v[1]).length;
+    const byJudge = {};
+    for (const r of g.rows) {
+      const w = r.verdict.overall?.winner;
+      const b = (byJudge[r.judge] ||= { right: 0, left: 0, tie: 0 });
+      b[w === 'right' ? 'right' : w === 'left' ? 'left' : 'tie'] += 1;
+    }
+    return {
+      left: g.left,
+      right: g.right,
+      label: g.label,
+      judgments: g.rows.length,
+      criteria: crit,
+      orderConsistency: both.length ? round(consistent / both.length) : null,
+      byJudge,
+    };
+  });
+}
+
+/* ---------------------------------------------------------------- proposed cases - */
 
 /**
- * Prompt for the optional blind rubric judge. The judge sees the question, the expected
- * objectives, an evidence digest and an anonymized answer; never the model or the cell.
- * Limitation, stated in the report: an Opus judge may prefer Opus-style prose, so the
- * judge score is a secondary signal next to the deterministic ones.
+ * The next benchmark tier (proposed, not yet run). Each targets a capability the first
+ * seven only touch: complex cross-dataset screening, financial modelling, contradictory
+ * evidence, causal reasoning, and partially available data. Same shape as the cases
+ * above, so promoting one is moving it into MODEL_BENCH_CASES.
  */
-export function judgePrompt(c, run) {
-  const evidence = (run?.evidence || [])
-    .slice(0, 40)
-    .map((e) => `[${e.marker ?? e.id}] ${e.title || ''}: ${String(e.text || '').slice(0, 300)}`)
-    .join('\n');
-  const system =
-    'You grade financial research answers against the evidence they were given. Be strict and concrete. Reply with JSON only.';
-  const user = `QUESTION: ${c.query}
-
-WHAT A COMPLETE ANSWER ADDRESSES:
-${(c.objectives || []).map((o) => `- ${o.label}`).join('\n')}
-
-EVIDENCE THE ANSWER HAD (frozen):
-${evidence || '(none)'}
-
-ANSWER TO GRADE:
-${runText(run).slice(0, 12000)}
-
-Score 1 to 5 (5 best):
-- correctness: claims are right and follow from the evidence
-- objective: the research question is fully answered
-- financial: financial interpretation is sound (mechanisms, magnitudes, comparisons, what it means for the business or investor)
-- insight: says something non-obvious and useful, not a restatement of the data
-- calibration: confidence matches the evidence; limits are stated
-List up to 3 unsupported or wrong claims verbatim.
-JSON: {"correctness":n,"objective":n,"financial":n,"insight":n,"calibration":n,"unsupported":["..."],"note":"one sentence"}`;
-  return { system, user };
-}
-
-export function parseJudge(answer) {
-  try {
-    const m = String(answer || '').match(/\{[\s\S]*\}/);
-    const j = JSON.parse(m ? m[0] : answer);
-    const keys = ['correctness', 'objective', 'financial', 'insight', 'calibration'];
-    const vals = keys.map((k) => Number(j[k])).filter((v) => v >= 1 && v <= 5);
-    if (vals.length !== keys.length) return null;
-    return {
-      ...Object.fromEntries(keys.map((k) => [k, Number(j[k])])),
-      overall: round(vals.reduce((a, b) => a + b, 0) / vals.length, 2),
-      unsupported: Array.isArray(j.unsupported) ? j.unsupported.slice(0, 3).map(String) : [],
-      note: String(j.note || '').slice(0, 300),
-    };
-  } catch {
-    return null;
-  }
-}
+export const MODEL_BENCH_PROPOSED_CASES = [
+  {
+    id: 'screen_congress_contracts_13f',
+    category: 'Complex cross-dataset screening',
+    depth: 'deep',
+    query:
+      'Find companies where members of Congress bought shares in the last 12 months, the company won new federal contracts in the same period, and institutional ownership rose. Rank them and explain what links the three signals.',
+    objectives: [
+      {
+        id: 'screen',
+        label: 'Applies all three filters, not one or two',
+        any: ['contract', 'institution|13f'],
+      },
+      { id: 'rank', label: 'Ranks with a stated basis', any: ['rank', 'top', 'score'] },
+      {
+        id: 'link',
+        label: 'Explains the timing link between trades, awards and holdings',
+        any: ['before|after|ahead of|preced|follow'],
+      },
+    ],
+    caveats: ['disclos', 'lag|delay', 'correlation|not evidence of'],
+    forbidden: [CONDUCT],
+  },
+  {
+    id: 'screen_lobbying_contracts_margin',
+    category: 'Complex cross-dataset screening',
+    depth: 'standard',
+    query:
+      'Which defense contractors increased lobbying spend while their contract awards grew faster than revenue? What does that say about margin pressure?',
+    objectives: [
+      { id: 'lobbying', label: 'Uses lobbying spend', any: ['lobby'] },
+      {
+        id: 'awards_vs_revenue',
+        label: 'Compares award growth with revenue growth',
+        any: ['award', 'revenue'],
+      },
+      { id: 'margin', label: 'Reasons about margins', any: ['margin'] },
+    ],
+    caveats: ['award.*(?:obligat|ceiling)|obligat', 'lag'],
+    forbidden: [CONDUCT],
+  },
+  {
+    id: 'model_dcf_sensitivity',
+    category: 'Financial modelling',
+    depth: 'deep',
+    query:
+      'Build a three-scenario DCF for NVIDIA with explicit revenue, margin and capex paths, and show how intrinsic value moves with a 1-point change in WACC and terminal growth.',
+    objectives: [
+      { id: 'scenarios', label: 'Three explicit scenarios', any: ['bear', 'base', 'bull'] },
+      { id: 'drivers', label: 'Revenue, margin and capex paths', any: ['capex', 'margin'] },
+      {
+        id: 'sensitivity',
+        label: 'WACC and terminal growth sensitivity',
+        any: ['sensitiv', 'wacc'],
+      },
+    ],
+    caveats: ['assum'],
+    forbidden: [],
+  },
+  {
+    id: 'model_contract_revenue_bridge',
+    category: 'Financial modelling',
+    depth: 'standard',
+    query:
+      "Estimate how much of Palantir's next-year revenue is already covered by awarded government contracts, and what growth the commercial business must deliver to hit consensus.",
+    objectives: [
+      {
+        id: 'backlog',
+        label: 'Converts awards to an annual revenue estimate',
+        any: ['award', 'backlog|obligat'],
+      },
+      {
+        id: 'consensus',
+        label: 'Compares with consensus or guidance',
+        any: ['consensus|guidance|estimate'],
+      },
+      {
+        id: 'implied',
+        label: 'Derives the implied commercial growth',
+        any: ['commercial', 'implied|required|must'],
+      },
+    ],
+    caveats: ['assum', 'obligat|ceiling'],
+    forbidden: [],
+  },
+  {
+    id: 'contradiction_insider_vs_institutions',
+    category: 'Contradictory evidence',
+    depth: 'standard',
+    query:
+      'Insiders at Tesla have been selling while institutions added shares. Which signal deserves more weight, and why?',
+    objectives: [
+      { id: 'both', label: 'States both signals with data', any: ['insider', 'institution|13f'] },
+      {
+        id: 'weigh',
+        label: 'Weighs them with reasons (plans, tax, rebalancing, index flows)',
+        any: ['10b5-1|plan|tax|index|rebalanc|passive'],
+      },
+      {
+        id: 'verdict',
+        label: 'Reaches a calibrated conclusion',
+        any: ['more weight|outweigh|less informative|more informative'],
+      },
+    ],
+    caveats: ['lag|quarter', 'uncertain|cannot'],
+    forbidden: [CONDUCT],
+  },
+  {
+    id: 'contradiction_macro_vs_market',
+    category: 'Contradictory evidence',
+    depth: 'standard',
+    query:
+      "Turkey's official inflation is falling but the lira keeps weakening. Reconcile the two and say what it implies for the next six months.",
+    objectives: [
+      {
+        id: 'both',
+        label: 'Uses both inflation and currency data',
+        any: ['inflation', 'lira|try'],
+      },
+      {
+        id: 'reconcile',
+        label: 'Offers mechanisms (real rates, reserves, current account, credibility)',
+        any: ['real (?:interest )?rate|reserve|current account|credib'],
+      },
+      {
+        id: 'outlook',
+        label: 'Six-month implication',
+        any: ['six months|6 months|next two quarters|near term'],
+      },
+    ],
+    caveats: ['forecast|uncertain'],
+    forbidden: [],
+  },
+  {
+    id: 'causal_export_controls_revenue',
+    category: 'Causal reasoning',
+    depth: 'deep',
+    query:
+      "Did US export controls cause NVIDIA's China revenue decline, or would it have happened anyway? Separate the policy effect from demand and competition.",
+    objectives: [
+      {
+        id: 'timeline',
+        label: 'Lines up policy dates with revenue',
+        any: ['export', 'quarter|fiscal'],
+      },
+      {
+        id: 'alternatives',
+        label: 'Considers alternative causes (domestic competitors, demand)',
+        any: ['huawei|domestic|competi', 'demand'],
+      },
+      {
+        id: 'attribution',
+        label: 'Attributes with stated confidence, not certainty',
+        any: ['likely|partly|largely|most of'],
+      },
+    ],
+    caveats: ['cannot (?:fully )?(?:isolate|separate)|confound|correlation'],
+    forbidden: [],
+  },
+  {
+    id: 'causal_rates_bank_ownership',
+    category: 'Causal reasoning',
+    depth: 'standard',
+    query:
+      'Did rising interest rates drive the shift in institutional ownership of regional banks over the last two years?',
+    objectives: [
+      { id: 'rates', label: 'Uses the rate path', any: ['rate', 'fed|policy'] },
+      { id: 'ownership', label: 'Uses ownership changes', any: ['institution|13f|holders'] },
+      {
+        id: 'mechanism',
+        label: 'Names a mechanism (deposit costs, unrealized losses, CRE)',
+        any: ['deposit|unrealized|cre\\b|commercial real estate'],
+      },
+    ],
+    caveats: ['correlation|confound|other factors'],
+    forbidden: [],
+  },
+  {
+    id: 'partial_private_company',
+    category: 'Partially available data',
+    depth: 'standard',
+    query:
+      'How exposed is Anduril to the Pentagon budget, and how does that compare with listed defense peers?',
+    objectives: [
+      { id: 'contracts', label: 'Uses the contract records that exist', any: ['contract|award'] },
+      {
+        id: 'peers',
+        label: 'Compares with listed peers',
+        any: ['\\b(LMT|RTX|NOC|GD|LHX|PLTR)\\b'],
+      },
+      {
+        id: 'gap',
+        label: 'Says what cannot be known (no public financials)',
+        any: ['private|not public|no (?:public )?financials|undisclosed'],
+      },
+    ],
+    caveats: ['private|undisclosed'],
+    forbidden: [],
+  },
+  {
+    id: 'partial_stale_filings',
+    category: 'Partially available data',
+    depth: 'standard',
+    query:
+      'What did hedge funds do with Super Micro Computer after its delayed 10-K, and what can and cannot be concluded from filings so far?',
+    objectives: [
+      { id: 'flows', label: 'Uses 13F changes', any: ['13f|hedge fund|institution'] },
+      { id: 'filing', label: 'Accounts for the delayed filing', any: ['10-k|delay|late'] },
+      {
+        id: 'limits',
+        label: 'Separates what is known from what is not yet filed',
+        any: ['not yet|cannot|lag|45 days'],
+      },
+    ],
+    caveats: ['lag|quarter|45 days'],
+    forbidden: [],
+  },
+];

@@ -146,3 +146,33 @@ Each gate compares the candidate profile with `current` on the same frozen evide
 
 To pin a single role without moving a whole profile, for example Opus only for the deep
 red team, use `SONAR_MODEL_ROLE_<ROLE>`.
+
+## 7. Paired comparison, cross-dataset relationships, quality first (added Nov 28 2026)
+
+- **Quality score (0 to 100), research quality only.** Objective completion is 25, financial
+  reasoning 20, insight 15, evidence support 20 and factual correctness 20. Deterministic
+  and judge signals are blended where both exist. Latency and cost never enter the score;
+  they are tie-breakers reported beside it.
+- **Two judges.** Opus 5.5 and Sonnet 5.5 each grade every run on six criteria. The sixth
+  is cross-dataset relationships. Their spread is reported, so self-preference shows up
+  as disagreement between the judges.
+- **Paired comparison.** For each pair of cells, both judges see the two anonymized
+  answers (X and Y) and the same frozen evidence. They pick a winner per criterion and
+  give a reason. Each pair is judged in both orders. The order-consistency figure shows
+  how often a verdict survives the swap; a low value means position bias, not a result.
+  - Standard pairs: Sonnet vs Opus, Haiku 5.5 vs Sonnet, Haiku 4.5 vs Haiku 5.5, and
+    current vs B/C.
+  - Deep pairs: C vs B (the Opus question), A vs B, A vs C, and current vs C.
+- **Cross-dataset relationships (deterministic).** A finding counts as synthesis when it
+  cites two or more datasets and uses relating language (cause, comparison, contrast,
+  timing, exposure). Reported per run: datasets in the evidence, datasets cited, the share
+  of cross findings, and the dataset pairs linked.
+- **Unattended worker.** `/api/cron/sonar-model-bench?lane=0..5` runs every minute and walks
+  `ACTIVE_MODEL_BENCH` (`src/lib/sonar/engine/eval/model-bench-active.js`). It works in
+  phases: freeze evidence, then 52 replays (the deep case runs 3 trials), then judging.
+  Lanes shard the plan, so no two work on the same step. A step is retried once. The
+  worker stops on the expiry date or a $60 spend cap. Remove the six cron entries once
+  the suite is complete.
+- **Proposed next cases.** Ten cases in `MODEL_BENCH_PROPOSED_CASES` are defined but not yet
+  run. They cover complex cross-dataset screening, financial modelling, contradictory
+  evidence, causal reasoning, and partially available data.
