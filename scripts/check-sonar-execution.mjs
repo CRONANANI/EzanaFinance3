@@ -998,7 +998,13 @@ test('evidence contract: verified figures, allowed and unsupported conclusions, 
     { capability: 'company-comparison', status: 'failed', failed: 'no companies resolved' },
   ]);
   const [m, s, f] = c.steps;
-  assert.ok(m.allowed.some((a) => /Canada: 3 policy rate change\(s\) since 2026-01 \(2026-03 -0.25 points, 2026-06 -0.25 points, 2026-10 \+0.25 points\)/.test(a)));
+  assert.ok(
+    m.allowed.some((a) =>
+      /Canada: 3 policy rate change\(s\) since 2026-01 \(2026-03 -0.25 points, 2026-06 -0.25 points, 2026-10 \+0.25 points\)/.test(
+        a,
+      ),
+    ),
+  );
   assert.ok(m.unsupported.some((a) => /forecast/i.test(a)));
   assert.deepEqual(s.verified[0], {
     entity: 'AAA',
@@ -1011,4 +1017,48 @@ test('evidence contract: verified figures, allowed and unsupported conclusions, 
   assert.ok(/among the 270 companies checked/.test(s.allowed[0]));
   assert.equal(f.verified.length, 0);
   assert.match(evidenceContractBlock(c), /EVIDENCE CONTRACT/);
+});
+
+test('null audit: a missing filed figure is missing, never zero', async () => {
+  const { filed } = await import('./lib/sonar-exec-fixtures.mjs');
+  /* NUL filed revenue for 2024 only; its 2025 revenue row is null. Before the audit
+     Number(null) became 0 and revenue growth read -100%. */
+  const rows = filed('NUL', {
+    rev: null,
+    revPrev: 100e6,
+    opInc: 10e6,
+    ni: 5e6,
+    niPrev: 4e6,
+    ocf: 8e6,
+    capex: 2e6,
+  });
+  const tables = {
+    ...FIXTURES,
+    sec_fundamentals: [...FIXTURES.sec_fundamentals, ...rows],
+    company_industry: [...FIXTURES.company_industry],
+  };
+  const res = await runComparison(
+    fakeSupabase(tables),
+    {
+      capability: 'company-comparison',
+      params: { tickers: ['NUL', 'SFT'], metrics: ['revenue_growth'] },
+    },
+    { now: NOW },
+  );
+  const nul = res.table.find((r) => r.ticker === 'NUL');
+  assert.notEqual(nul?.ratios?.revenue_growth, -1);
+});
+
+test('macro provenance: observed vs derived, missing months listed, nothing interpolated', async () => {
+  const { runMacro } = await import('../src/lib/sonar/composer/analytics-server.js');
+  const res = await runMacro(
+    fakeSupabase(FIXTURES),
+    { capability: 'macro-indicators', params: { countries: ['USA'], measures: ['policy_rate'] } },
+    { now: NOW },
+  );
+  const p = res.macro.byCountry.USA.provenance;
+  assert.equal(p.interpolated, false);
+  /* The fixture's USA CPI is missing 2025-10, as in the real IMF series. */
+  assert.ok(p.missingMonths.includes('2025-10'));
+  assert.match(p.derived.latestYoY, /both months observed/);
 });

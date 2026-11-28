@@ -297,6 +297,8 @@ async function filedFigures(admin, tickers) {
   const out = {};
   for (const r of data || []) {
     const t = (out[r.ticker] = out[r.ticker] || { annual: {}, instant: {} });
+    /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */
+    if (r.value == null || r.value === '') continue;
     const v = Number(r.value);
     if (!Number.isFinite(v)) continue;
     if (r.period_type === 'annual') {

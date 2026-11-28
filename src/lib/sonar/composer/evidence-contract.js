@@ -123,12 +123,17 @@ function macroRules(r) {
     if (x.latestYoY == null) unknowns.push(`${x.country}: no year-on-year inflation figure.`);
     if (x.policyRate == null) unknowns.push(`${x.country}: no policy rate figure.`);
     if (x.gapNote) unknowns.push(`${x.country}: ${x.gapNote}`);
+    if (x.provenance?.missingMonths?.length)
+      unknowns.push(
+        `${x.country}: CPI months missing from the series (not interpolated): ${x.provenance.missingMonths.slice(0, 6).join(', ')}.`,
+      );
   }
   return {
     allowed,
     unsupported: [
       'Future policy moves, market expectations or inflation forecasts (none are in the evidence).',
       'Reasons a central bank acted, unless an [S] record states them.',
+      'Calling a derived figure (year-on-year, 3-month annualised, real rate) observed, or any value for a missing month.',
     ],
     unknowns,
   };

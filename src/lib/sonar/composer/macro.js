@@ -80,6 +80,38 @@ export function inflationTrend(index = {}) {
   };
 }
 
+/**
+ * Sonar 6.4 hardening: which figures are observed and which are derived, and the months
+ * missing inside the observed span. Nothing is interpolated: a derived figure needs every
+ * input month observed, and a missing month is listed, never filled.
+ */
+export function macroProvenance(index = {}) {
+  const months = Object.keys(index)
+    .filter((p) => Number.isFinite(index[p]))
+    .sort();
+  const missingMonths = [];
+  if (months.length) {
+    for (let p = months[0]; p < months[months.length - 1]; p = shiftMonth(p, 1)) {
+      if (!Number.isFinite(index[p])) missingMonths.push(p);
+      if (missingMonths.length > 24) break;
+    }
+  }
+  return {
+    observed: ['consumer price index (monthly level)', 'policy rate (as published)'],
+    derived: {
+      latestYoY: 'index(t) / index(t-12) - 1, both months observed',
+      annualized3m: '(index(t) / index(t-3))^4 - 1, both months observed',
+      yoySixMonthsEarlier: 'year-on-year rate six months before, both months observed',
+      realRate: 'policy rate minus year-on-year inflation for the same month',
+      changes: 'differences between consecutive observed policy rate values',
+    },
+    interpolated: false,
+    missingMonths,
+    firstObserved: months[0] || null,
+    lastObserved: months[months.length - 1] || null,
+  };
+}
+
 /** Policy rate minus year-on-year inflation for the latest month both are observed. */
 export function realPolicyRate(policyMonthly = {}, index = {}) {
   const yoy = yoySeries(index);

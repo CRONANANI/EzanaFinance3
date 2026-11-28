@@ -19,7 +19,13 @@
 
 import { companyRatios, ttmFigure, valuationRatios } from './calc.js';
 import { universeFor, dodDefined, industryMembers } from './industries.js';
-import { MACRO_VERSION, inflationTrend, policyChanges, realPolicyRate } from './macro.js';
+import {
+  MACRO_VERSION,
+  inflationTrend,
+  macroProvenance,
+  policyChanges,
+  realPolicyRate,
+} from './macro.js';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { fetchRevenueMix } from '@/lib/sonar/revenue-mix';
 import { normalizeUniverse } from './ownership.js';
@@ -116,6 +122,8 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       ),
     ]);
     for (const r of annual) {
+      /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (!Number.isFinite(v)) continue;
       const t = (out[r.ticker] ||= { annual: {}, instant: {} });
@@ -123,6 +131,8 @@ export async function filedFiguresPaged(admin, tickers, now = new Date()) {
       if (!list.some((x) => x.end === r.period_end)) list.push({ end: r.period_end, value: v });
     }
     for (const r of instant) {
+      /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (!Number.isFinite(v)) continue;
       const t = (out[r.ticker] ||= { annual: {}, instant: {} });
@@ -313,6 +323,8 @@ export async function valuationFor(admin, tickers, figs, now = new Date(), given
     ]);
     for (const r of q) {
       if (r.value == null || r.value === '') continue;
+      /* Missing stays missing: Number(null) is 0 (Sonar 6.4 null audit). */
+      if (r.value == null || r.value === '') continue;
       const v = Number(r.value);
       if (!Number.isFinite(v)) continue;
       ((quarters[r.ticker] ||= {})[r.concept] ||= []).push({ end: r.period_end, value: v });
@@ -496,6 +508,7 @@ async function contractsByTicker(admin, tickers, now = new Date()) {
     /* One fiscal year for every company, so the ranking compares like with like. */
     for (const r of rows) {
       if (Number(r.fiscal_year) !== fyWanted) continue;
+      if (r.total_amount == null || r.total_amount === '') continue;
       out[r.ticker] = (out[r.ticker] || 0) + (Number(r.total_amount) || 0);
     }
   }
@@ -514,8 +527,10 @@ async function insiderPurchases(admin, tickers, sinceDate) {
         .gte('transaction_date', sinceDate)
         .order('accession_no', { ascending: true }),
     );
-    for (const r of rows)
+    for (const r of rows) {
+      if (r.value_usd == null || r.value_usd === '') continue;
       out[r.issuer_ticker] = (out[r.issuer_ticker] || 0) + (Number(r.value_usd) || 0);
+    }
   }
   return out;
 }
@@ -573,7 +588,8 @@ async function lobbyingSpend(admin, tickers) {
     );
     for (const r of rows) {
       const t = names[r.client_name];
-      if (t) out[t] = (out[t] || 0) + (Number(r.amount) || 0);
+      if (t && r.amount != null && r.amount !== '')
+        out[t] = (out[t] || 0) + (Number(r.amount) || 0);
     }
   }
   return { values: out, year };
@@ -1329,6 +1345,7 @@ export async function runMacro(admin, att, { now = new Date() } = {}) {
       netChangeThisYear: ch ? ch.net : null,
       changes: ch?.changes || [],
       changeBasis: ch?.basis || null,
+      provenance: cpi[c] ? macroProvenance(cpi[c]) : null,
     };
   }
   if (!Object.keys(byCountry).length)
