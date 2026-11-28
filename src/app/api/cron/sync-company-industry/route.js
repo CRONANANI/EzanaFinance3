@@ -152,7 +152,9 @@ async function run(request) {
     ok: errors.length === 0,
     queued: queue.length,
     written,
-    skipped,
+    /* not `skipped`: that key marks the whole run skipped in ingest_runs */
+    gaps: skipped,
+    rowsRead: queue.length,
     remaining: Math.max(0, queue.length - written - skipped.no_cik - skipped.failed),
     countryColumns: hasCountry,
     secRequests: secRequestCount(),
