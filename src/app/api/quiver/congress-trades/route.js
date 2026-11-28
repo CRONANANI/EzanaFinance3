@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { fetchWithTimeout } from '@/lib/http/fetch-json';
 import { withApiGuard } from '@/lib/api-guard';
 import { getClientIp } from '@/lib/client-ip';
-import { quiverParams, serveQuiver } from '@/lib/quiver/proxy';
+import { noteQuiverRefusal, quiverParams, serveQuiver } from '@/lib/quiver/proxy';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +40,10 @@ async function fetchPage(page, params) {
       15000,
     );
 
+    if (res.status === 401 || res.status === 403) {
+      noteQuiverRefusal('congress-trades', res.status);
+      return null;
+    }
     if (!res.ok) {
       // 404 on an empty page is normal at the end of pagination
       if (res.status === 404) return [];
@@ -99,6 +103,17 @@ async function handler(request) {
       return { rows: all, pages };
     },
   });
+  if (out.unavailable) {
+    /* A provider refusal is not an empty result: the page shows that the data is
+       unavailable, never an empty table. */
+    return NextResponse.json(
+      {
+        error: 'provider_unavailable',
+        message: 'This dataset is temporarily unavailable from its provider.',
+      },
+      { status: 503 },
+    );
+  }
   if (out.quotaExceeded) {
     return NextResponse.json(
       { error: 'Daily limit for this data reached. Please try again later.' },

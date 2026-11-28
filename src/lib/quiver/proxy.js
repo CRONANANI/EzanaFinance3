@@ -56,6 +56,22 @@ export function quiverParams(sp, allowed) {
 }
 
 const cache = new Map();
+/* Sonar 6.4 final hardening: a persistent authorization refusal (401/403) is remembered per
+   route for an hour, so a missing entitlement is not retried on every page view. */
+const REFUSAL_MS = 60 * 60 * 1000;
+const refused = new Map();
+
+/** Record an upstream authorization refusal for a route (the route's fetchPage calls this). */
+export function noteQuiverRefusal(route, status) {
+  refused.set(route, { until: Date.now() + REFUSAL_MS, status });
+  logger.warn('quiver refused', { route, status });
+}
+
+/** The remembered refusal for a route, if still current. */
+export function quiverRefusal(route) {
+  const r = refused.get(route);
+  return r && Date.now() < r.until ? r : null;
+}
 const inflight = new Map();
 
 function cacheKey(route, params) {
@@ -69,6 +85,7 @@ function cacheKey(route, params) {
 export function clearQuiverCache() {
   cache.clear();
   inflight.clear();
+  refused.clear();
 }
 
 /**
@@ -92,6 +109,8 @@ export async function serveQuiver({
   now = Date.now,
 }) {
   const key = cacheKey(route, params);
+  const refusal = quiverRefusal(route);
+  if (refusal) return { unavailable: true, status: refusal.status };
   const hit = cache.get(key);
   if (hit && now() - hit.at < QUIVER_CACHE_MS) {
     logger.info('quiver upstream', {
@@ -116,6 +135,7 @@ export async function serveQuiver({
     }
     const t0 = now();
     const { rows, pages, failed = false } = await fetchAll();
+    if (quiverRefusal(route)) return { unavailable: true, status: quiverRefusal(route).status };
     /* A failed upstream read is answered empty and never cached. */
     if (!failed) cache.set(key, { at: now(), rows });
     logger.info('quiver upstream', {

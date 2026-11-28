@@ -211,7 +211,6 @@ const STAT_CARDS_BASE = [
    in-file SVG line chart + seed-data endpoint (/api/fmp/performance) have
    been replaced. */
 
-
 /* ── Spark SVG ── */
 function Spark({ seed = 0, color = '#10b981' }) {
   const pts = [];
@@ -277,6 +276,8 @@ function InsideTheCapitolContent() {
   const [lobbyingLoading, setLobbyingLoading] = useState(true);
   const [sec13fData, setSec13fData] = useState([]);
   const [sec13fLoading, setSec13fLoading] = useState(true);
+  /* Sonar 6.4 final hardening: a provider refusal shows as unavailable, not as no filings. */
+  const [sec13fUnavailable, setSec13fUnavailable] = useState(false);
   const [statsData, setStatsData] = useState({
     trades: { value: '–', change: 'Loading...', changeType: 'neutral' },
     volume: { value: '–', change: 'Loading...', changeType: 'neutral' },
@@ -404,7 +405,11 @@ function InsideTheCapitolContent() {
     (async () => {
       try {
         const res = await fetch('/api/quiver/sec13f');
-        const data = res.ok ? await res.json() : [];
+        if (!res.ok) {
+          if (!cancelled) setSec13fUnavailable(true);
+          return;
+        }
+        const data = await res.json();
         if (cancelled) return;
         const arr = Array.isArray(data) ? data : [];
         arr.sort((a, b) => {
@@ -415,7 +420,7 @@ function InsideTheCapitolContent() {
         setSec13fData(arr.slice(0, 25));
       } catch (err) {
         console.error('[sec13f] fetch failed:', err);
-        if (!cancelled) setSec13fData([]);
+        if (!cancelled) setSec13fUnavailable(true);
       } finally {
         if (!cancelled) setSec13fLoading(false);
       }
@@ -1069,6 +1074,12 @@ function InsideTheCapitolContent() {
                   }}
                 >
                   Loading 13F filings…
+                </div>
+              ) : sec13fUnavailable ? (
+                <div className="itc-unavailable" role="status">
+                  <i className="bi bi-exclamation-circle" aria-hidden="true" /> 13F holdings are
+                  temporarily unavailable from the data provider. This is not an empty filing
+                  record.
                 </div>
               ) : sec13fData.length === 0 ? (
                 <div

@@ -1685,3 +1685,16 @@ body.light-mode .itc-top-perf-row {
 body.light-mode .itc-top-perf-foot {
   border-top-color: rgba(0, 0, 0, 0.06);
 }
+
+/* Sonar 6.4 final hardening: a provider outage is shown as such, not as an empty table. */
+.itc-unavailable {
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--type-caption, 13px);
+}
+
+.itc-unavailable .bi {
+  color: var(--amber);
+  margin-right: 6px;
+}

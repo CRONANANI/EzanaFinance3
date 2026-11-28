@@ -60,3 +60,26 @@ test('cache, de-duplication, quota on misses only, failures not cached', async (
   await serveQuiver({ ...ok, params: {}, fetchAll: failing });
   assert.equal(n, 2);
 });
+
+test('a persistent authorization refusal is remembered and reported as unavailable, not empty', async () => {
+  const { noteQuiverRefusal } = await import('../src/lib/quiver/proxy.js');
+  clearQuiverCache();
+  let calls = 0;
+  const fetchAll = async () => {
+    calls += 1;
+    noteQuiverRefusal('sec13f', 403);
+    return { rows: [], pages: 1, failed: true };
+  };
+  const ok = {
+    route: 'sec13f',
+    caller: 'u:1',
+    dailyLimit: 10,
+    limiter: async () => ({ allowed: true }),
+  };
+  const a = await serveQuiver({ ...ok, params: { ticker: 'NVDA' }, fetchAll });
+  assert.equal(a.unavailable, true);
+  const b = await serveQuiver({ ...ok, params: { ticker: 'AMD' }, fetchAll });
+  assert.equal(b.unavailable, true);
+  assert.equal(calls, 1); // not retried within the hour
+  clearQuiverCache();
+});
