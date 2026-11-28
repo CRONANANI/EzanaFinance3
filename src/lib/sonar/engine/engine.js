@@ -105,6 +105,8 @@ import { setCacheClient } from './cache';
 import { analyticalIntent, intentBlock } from '@/lib/sonar/insight/intent';
 import { semanticFamilyScores } from '@/lib/sonar/insight/semantic';
 import { gateEvidence } from '@/lib/sonar/insight/relevance';
+import { objectiveOf, typedGate } from './typed-relevance.js';
+import { canonicalIntent } from '@/lib/sonar/semantic/canonical-intent';
 import { applyInsightStep } from '@/lib/sonar/insight/pipeline';
 import { fetchDeepValuation } from '@/lib/sonar/valuation/fetch';
 import { isEquityAnswer } from '@/lib/sonar/answer-sections';
@@ -730,7 +732,20 @@ export async function runResearch(query, opts = {}) {
   if (semantic) intent = analyticalIntent(query, { spec, understood, semantic });
   /* Nov 2026: every record is classified against the intent (direct, supporting,
      background, irrelevant). Irrelevant records never reach scoring or the answer. */
-  const relevanceGate = gateEvidence(all, intent, { now });
+  const keywordGate = gateEvidence(all, intent, { now });
+  /* Sonar 6.4 final hardening: the typed gate (entity type, measure, source family). A
+     record incompatible with the objective is removed from synthesis, with its reason. */
+  const objective = objectiveOf({
+    family: runMeta?.canonicalIntent?.family ?? canonicalIntent(spec.rawQuery || query).family,
+    understood,
+    resolution,
+  });
+  const typed = typedGate(keywordGate.kept, objective);
+  const relevanceGate = {
+    kept: typed.kept,
+    dropped: keywordGate.dropped,
+    typedRejected: typed.rejected,
+  };
   const subjectTerms = [
     resolution.subject?.label,
     resolution.subject?.id,
@@ -780,11 +795,18 @@ export async function runResearch(query, opts = {}) {
     })),
     excluded: decisions.filter((d) => !d.selected).length,
     irrelevant: relevanceGate.dropped.length,
+    typedRejected: relevanceGate.typedRejected.length,
   });
 
   /* ── Analysis and relationships ──────────────────────────────────── */
   emit('stage', { stage: 'analyzing' });
-  const { metrics, visualizations } = analyze(all, spec);
+  /* Sonar 6.4 final hardening: records the typed gate rejected never become calculated
+     metrics or visualizations (a world GDP ranking once opened a company comparison). */
+  const rejectedIds = new Set(relevanceGate.typedRejected.map((r) => r.id));
+  const { metrics, visualizations } = analyze(
+    all.filter((e) => !rejectedIds.has(e.id)),
+    spec,
+  );
   /* Nov 6: the quantitative engine's calculations on the selected evidence (both FX
      conventions, the ex-post real rate, REER against its history), citable as M:id. */
   if (teamMode !== 'quick') {
@@ -798,7 +820,10 @@ export async function runResearch(query, opts = {}) {
     for (const m of valuationMetrics(valuation)) if (!have.has(m.id)) metrics.push(m);
   }
   emit('analysis', { metrics, visualizations });
-  const relationships = discoverRelationships(all, layout);
+  const relationships = discoverRelationships(
+    all.filter((e) => !rejectedIds.has(e.id)),
+    layout,
+  );
   const rootId = resolution.subject
     ? `${resolution.subject.kind === 'politician' ? 'politician' : resolution.subject.kind}:${String(resolution.subject.id).toLowerCase()}`
     : null;
@@ -1436,7 +1461,12 @@ export async function runResearch(query, opts = {}) {
           objectives: intent.objectives,
           semantic: Boolean(semantic),
         },
-        evidence: { kept: relevanceGate.kept.length, irrelevant: relevanceGate.dropped.length },
+        evidence: {
+          kept: relevanceGate.kept.length,
+          irrelevant: relevanceGate.dropped.length,
+          objective: objective.kind,
+          typedRejected: relevanceGate.typedRejected.slice(0, 40),
+        },
         ...(insightRun.diagnostics || {}),
       },
       trace,
